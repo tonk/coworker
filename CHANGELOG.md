@@ -19,6 +19,7 @@
 - Made the chat panel **resizable**: drag the left edge to adjust width between 260 px and 720 px
 - Applied the same bubble/date-separator/avatar pattern to `DirectMessagesView.vue`
 - Added a conversation sidebar with an active indicator and empty state to `DirectMessagesView.vue`
+- Two lines added to router.go — one for `/favicon.svg` and one for `/logo.svg`.
 
 #### Direct Messages — sidebar navigation
 - Clicking a username in the app sidebar now correctly opens a direct message conversation
