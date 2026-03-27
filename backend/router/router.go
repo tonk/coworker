@@ -10,8 +10,12 @@ import (
 	"github.com/tonk/coworker/services"
 )
 
-func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string) *gin.Engine {
-	r := gin.Default()
+func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, apiLog bool) *gin.Engine {
+	r := gin.New()
+	r.Use(gin.Recovery())
+	if apiLog {
+		r.Use(gin.Logger())
+	}
 	r.Use(middleware.CORS(allowedOrigins))
 
 	authHandler := handlers.NewAuthHandler(authSvc)
@@ -53,6 +57,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string) 
 			admin.GET("/users/:id", handlers.AdminGetUser)
 			admin.PUT("/users/:id", handlers.AdminUpdateUser)
 			admin.DELETE("/users/:id", handlers.AdminDeleteUser)
+			admin.GET("/users/:id/projects", handlers.AdminGetUserProjects)
+			admin.PUT("/users/:id/projects", handlers.AdminSetUserProjects)
 			admin.GET("/projects", handlers.AdminListProjects)
 			admin.POST("/projects", handlers.AdminCreateProject)
 			admin.PUT("/projects/:id", handlers.AdminUpdateProject)
@@ -129,6 +135,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string) 
 			projects.POST("/:projectSlug/cards/:cardId/labels/:labelId", handlers.AssignLabel)
 			projects.DELETE("/:projectSlug/cards/:cardId/labels/:labelId", handlers.RemoveLabel)
 			projects.PUT("/:projectSlug/cards/:cardId/assignee", handlers.UpdateAssignee)
+			projects.POST("/:projectSlug/cards/:cardId/watchers/:userId", handlers.AddWatcher)
+			projects.DELETE("/:projectSlug/cards/:cardId/watchers/:userId", handlers.RemoveWatcher)
 
 			// Card history
 			projects.GET("/:projectSlug/cards/:cardId/history", handlers.GetCardHistory)

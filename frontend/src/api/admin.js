@@ -12,6 +12,8 @@ export const adminApi = {
   deleteProject: (id) => client.delete(`/admin/projects/${id}`),
 
   createUser: (data) => client.post('/admin/users', data),
+  getUserProjects: (id) => client.get(`/admin/users/${id}/projects`),
+  setUserProjects: (id, projectIds) => client.put(`/admin/users/${id}/projects`, { project_ids: projectIds }),
   getSystemSettings: () => client.get('/admin/system'),
   updateSystemSettings: (data) => client.put('/admin/system', data)
 }

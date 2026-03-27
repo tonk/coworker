@@ -77,7 +77,15 @@
     "move_to": "Mover a",
     "star": "Destacar proyecto",
     "unstar": "Quitar destacado",
-    "column_history": "Historial de columnas"
+    "column_history": "Historial de columnas",
+    "reply": "Responder",
+    "watchers": "Observadores",
+    "sort_none": "Orden predeterminado",
+    "sort_date": "Fecha",
+    "sort_assignee": "Asignado",
+    "sort_priority": "Prioridad",
+    "sort_asc": "Ascendente",
+    "sort_desc": "Descendente"
   },
   "chat": {
     "title": "Chat del equipo",
@@ -107,6 +115,7 @@
     "edit_project": "Editar proyecto",
     "unarchive": "Desarchivar",
     "create_user": "Crear usuario",
+    "assign_projects": "Asignar proyectos",
     "settings": "Configuración",
     "system_settings": "Configuración del sistema",
     "registration_enabled": "Registro de usuarios",

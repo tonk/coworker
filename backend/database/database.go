@@ -27,8 +27,18 @@ func Init(cfg *config.Config) error {
 		dialector = sqlite.Open(cfg.DBDSN)
 	}
 
+	logLevel := logger.Info
+	switch cfg.DBLog {
+	case "silent":
+		logLevel = logger.Silent
+	case "error":
+		logLevel = logger.Error
+	case "warn":
+		logLevel = logger.Warn
+	}
+
 	db, err := gorm.Open(dialector, &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)

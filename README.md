@@ -12,16 +12,20 @@ I haven't written a single line of code, I only created, and changed the
 
 ## Features
 
-- **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, due dates, assignees, markdown descriptions and comments
+- **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, due dates, assignees, watchers, markdown descriptions and comments
+- **Card sorting** — sort column cards by date, assignee, or priority (ascending / descending)
+- **Comment replies** — reply to any comment; replies are visually indented
 - **Multi-project** — each project has its own board, members, and chat
 - **Role-based access** — global roles (admin / user) and per-project roles (owner / member / viewer)
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
 - **Internal chat** — per-project team chat and direct messages between users
-- **Sidebar** — starred projects and live online-users list
-- **Dark / light / system theme**
-- **Multi-language** — English and Dutch (Nederlands)
+- **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages
+- **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed
+- **Starred project indicator** — ★ shown next to Project Settings in the board toolbar when a project is starred
+- **Dark / light / system theme** — defaults to light
+- **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français)
 - **User settings** — display name, avatar, email, locale, theme, date/time format, timezone, password change
-- **Admin panel** — manage all users (create, edit, disable, delete) and all projects; toggle public registration on/off
+- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects; toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font)
 - **Ticket API** — create cards, add comments, and move cards via API key (for CI/CD pipelines and external integrations)
 - **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
 
@@ -60,14 +64,28 @@ Copy the example config file and edit it:
 cp coworker.yaml.example coworker.yaml
 ```
 
-Settings can also be provided as environment variables, which always take precedence over the config file. See [INSTALL.md](INSTALL.md) for all options.
+Settings can also be provided as environment variables, which always take precedence over the config file. Key options:
+
+| Option | Env var | Default | Description |
+|--------|---------|---------|-------------|
+| `port` | `PORT` | `8080` | HTTP listen port |
+| `db_driver` | `DB_DRIVER` | `sqlite` | `sqlite` / `postgres` / `mysql` |
+| `db_dsn` | `DB_DSN` | `./coworker.db` | Database connection string |
+| `jwt_secret` | `JWT_SECRET` | *(change this)* | Secret for signing JWT tokens |
+| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:8080` | CORS allowed origins |
+| `default_locale` | `DEFAULT_LOCALE` | `en` | Default UI language for new users |
+| `gin_mode` | `GIN_MODE` | `debug` | `debug` or `release` |
+| `api_log` | `API_LOG` | `true` | Log incoming HTTP requests |
+| `db_log` | `DB_LOG` | `info` | DB query log level: `silent` / `error` / `warn` / `info` |
+
+See [INSTALL.md](INSTALL.md) for full options and deployment instructions.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Go 1.22, Gin, GORM, gorilla/websocket |
-| Frontend | Vue 3, Vite, Pinia, vue-router, vue-i18n |
+| Backend | Go 1.25, Gin, GORM, gorilla/websocket |
+| Frontend | Vue 3, Vite, Pinia, vue-router, vue-i18n, EasyMDE |
 | Database | SQLite / PostgreSQL / MySQL |
 | Auth | JWT (access + refresh tokens), bcrypt |
 

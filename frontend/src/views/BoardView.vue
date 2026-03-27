@@ -2,9 +2,11 @@
   <div class="board-layout">
     <div class="board-toolbar">
       <div class="board-toolbar-left">
-        <RouterLink :to="`/projects/${slug}/settings`" class="btn btn-ghost btn-sm">⚙ {{ $t('project.settings') }}</RouterLink>
-        <button class="btn btn-ghost btn-sm star-btn" :class="{ starred: sidebarStore.isStarred(projectStore.currentProject?.id) }" @click="toggleStar" :title="sidebarStore.isStarred(projectStore.currentProject?.id) ? $t('board.unstar') : $t('board.star')">
-          {{ sidebarStore.isStarred(projectStore.currentProject?.id) ? '★' : '☆' }}
+        <RouterLink :to="`/projects/${slug}/settings`" class="btn btn-ghost btn-sm">
+          ⚙ {{ $t('project.settings') }}<span v-if="sidebarStore.isStarred(slug)" class="settings-star">★</span>
+        </RouterLink>
+        <button class="btn btn-ghost btn-sm star-btn" :class="{ starred: sidebarStore.isStarred(slug) }" @click="toggleStar" :title="sidebarStore.isStarred(slug) ? $t('board.unstar') : $t('board.star')">
+          {{ sidebarStore.isStarred(slug) ? '★' : '☆' }}
         </button>
       </div>
       <div class="board-toolbar-right">
@@ -152,12 +154,11 @@ async function loadMembers() {
 }
 
 async function toggleStar() {
-  const id = projectStore.currentProject?.id
-  if (!id) return
-  if (sidebarStore.isStarred(id)) {
-    await sidebarStore.unstarProject(slug.value, id)
+  if (!slug.value) return
+  if (sidebarStore.isStarred(slug.value)) {
+    await sidebarStore.unstarProject(slug.value)
   } else {
-    await sidebarStore.starProject(slug.value, id)
+    await sidebarStore.starProject(slug.value)
   }
 }
 
@@ -276,6 +277,7 @@ async function onCardMoved({ cardId, fromColumnId, toColumnId, newIndex }) {
 .board-toolbar-left, .board-toolbar-right { display: flex; gap: 8px; align-items: center; }
 .star-btn { font-size: 18px; line-height: 1; color: var(--color-text-muted); }
 .star-btn.starred { color: #f59e0b; }
+.settings-star { color: #f59e0b; margin-left: 4px; font-size: 13px; }
 
 .board-body {
   flex: 1;

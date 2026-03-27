@@ -252,6 +252,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { messagesApi } from '@/api/messages'
+import { useNotificationsStore } from '@/stores/notifications'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
 import { marked } from 'marked'
@@ -259,6 +260,7 @@ import DOMPurify from 'dompurify'
 
 const route = useRoute()
 const auth = useAuthStore()
+const notificationsStore = useNotificationsStore()
 const { formatTime } = useDateFormat()
 const ui = useUIStore()
 
@@ -285,6 +287,7 @@ const addMemberSearch = ref('')
 const filteredAddMembers = ref([])
 
 onMounted(async () => {
+  notificationsStore.markSeen()
   try {
     const [convRes, userRes] = await Promise.all([
       messagesApi.getConversations(),

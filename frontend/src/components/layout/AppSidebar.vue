@@ -55,6 +55,7 @@
       <button class="section-header" @click="toggle('chat')">
         <span class="section-title">{{ $t('sidebar.users') }}</span>
         <span class="badge-count" v-if="sidebarStore.chatUsers.length">{{ sidebarStore.chatUsers.length }}</span>
+        <span v-if="notificationsStore.hasUnread" class="unread-dot" title="Unread messages"></span>
         <span class="chevron" :class="{ open: open.chat }">›</span>
       </button>
       <div v-show="open.chat" class="section-body">
@@ -83,9 +84,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
+const notificationsStore = useNotificationsStore()
 
 // Collapse state — persisted in localStorage
 const STORAGE_KEY = 'sidebar_open'
@@ -129,7 +132,12 @@ onMounted(() => {
   sidebarStore.fetchAllProjects()
   sidebarStore.fetchAllUsers()
   sidebarStore.fetchChatUsers()
-  pollInterval = setInterval(() => sidebarStore.fetchChatUsers(), 30_000)
+  notificationsStore.checkUnread()
+  pollInterval = setInterval(() => {
+    sidebarStore.fetchAllUsers()
+    sidebarStore.fetchChatUsers()
+    notificationsStore.checkUnread()
+  }, 30_000)
 })
 
 onUnmounted(() => {
@@ -185,6 +193,20 @@ onUnmounted(() => {
 }
 .chevron.open {
   transform: rotate(-90deg);
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-danger, #ef4444);
+  flex-shrink: 0;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
 }
 
 .badge-count {

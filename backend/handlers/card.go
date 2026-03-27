@@ -125,7 +125,7 @@ func GetCard(c *gin.Context) {
 	}
 
 	var card models.Card
-	if err := database.DB.Preload("Labels").Preload("Assignee").Preload("Comments.User").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
+	if err := database.DB.Preload("Labels").Preload("Assignee").Preload("Watchers").Preload("Comments.User").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
 		return
 	}

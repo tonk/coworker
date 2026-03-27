@@ -1,6 +1,6 @@
 import { ref, watchEffect } from 'vue'
 
-const theme = ref(localStorage.getItem('theme') || 'system')
+const theme = ref(localStorage.getItem('theme') || 'light')
 
 function applyTheme(value) {
   const root = document.documentElement

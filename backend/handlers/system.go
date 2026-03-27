@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tonk/coworker/config"
 	"github.com/tonk/coworker/database"
 	"github.com/tonk/coworker/models"
 )
@@ -26,6 +27,14 @@ var systemSettingDefaults = map[string]string{
 	settingDefaultFont:           "system",
 	settingDefaultFontSize:       "14",
 	settingDefaultLocale:         "en",
+}
+
+// InitSystemDefaults seeds the in-memory defaults from the config file so that
+// settings not yet stored in the database reflect the operator's preferences.
+func InitSystemDefaults(cfg *config.Config) {
+	if cfg.DefaultLocale != "" {
+		systemSettingDefaults[settingDefaultLocale] = cfg.DefaultLocale
+	}
 }
 
 // GetSystemSettings returns public system settings (registration + global UI defaults).

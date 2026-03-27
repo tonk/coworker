@@ -3,12 +3,14 @@
     <div class="card-detail">
       <div class="form-group">
         <label class="form-label">{{ $t('board.card_title') }}</label>
-        <input class="form-input" v-model="form.title" />
+        <input v-if="!locked" class="form-input" v-model="form.title" />
+        <div v-else class="description-text">{{ form.title }}</div>
       </div>
 
       <div class="form-group">
         <label class="form-label">{{ $t('board.description') }}</label>
-        <CardEditor v-model="form.description" />
+        <CardEditor v-if="!locked" v-model="form.description" />
+        <div v-else class="description-text comment-text" v-html="renderMarkdown(form.description)"></div>
       </div>
 
       <div class="detail-row">
@@ -47,10 +49,23 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label class="form-label">{{ $t('board.watchers') }}</label>
+        <div class="labels-picker">
+          <span
+            v-for="m in members"
+            :key="m.user.id"
+            class="label-chip watcher-chip"
+            :class="{ active: isWatching(m.user.id) }"
+            @click="toggleWatcher(m.user)"
+          >{{ m.user.display_name || m.user.username }}</span>
+        </div>
+      </div>
+
       <div class="comments-section">
         <h4>{{ $t('board.comments') }}</h4>
         <div class="comment-list">
-          <div v-for="comment in card.comments" :key="comment.id" class="comment">
+          <div v-for="comment in card.comments" :key="comment.id" class="comment" :class="{ 'comment-reply': comment.body.trimStart().startsWith('>') }">
             <div class="comment-avatar">
               <img v-if="avatarUrl(comment.user)" :src="avatarUrl(comment.user)" :alt="comment.user.display_name" class="comment-avatar-img" @error="e => e.target.style.display='none'" />
               <span v-else>{{ comment.user.display_name?.slice(0,2).toUpperCase() }}</span>
@@ -62,7 +77,7 @@
                 <span v-if="comment.is_edited" class="edited-badge">✎</span>
               </div>
               <div class="comment-text" v-html="renderMarkdown(comment.body)"></div>
-              <button v-if="comment.user_id === authUser?.id" class="btn btn-ghost btn-sm" @click="deleteComment(comment)">🗑</button>
+              <button class="btn btn-ghost btn-sm reply-btn" @click="replyTo(comment)">{{ $t('board.reply') }}</button>
             </div>
           </div>
         </div>
@@ -100,12 +115,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import BaseModal from '@/components/common/BaseModal.vue'
 import CardEditor from './CardEditor.vue'
-import { useAuthStore } from '@/stores/auth'
 import { useBoardStore } from '@/stores/board'
 import { projectsApi } from '@/api/projects'
 import { useUIStore } from '@/stores/ui'
@@ -120,11 +134,10 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'deleted'])
 
-const auth = useAuthStore()
 const boardStore = useBoardStore()
 const ui = useUIStore()
 const { formatDateTime, formatDate } = useDateFormat()
-const authUser = computed(() => auth.user)
+const locked = ref(!!props.card.description)
 const newComment = ref('')
 const history = ref([])
 const saving = ref(false)
@@ -150,6 +163,24 @@ const form = ref({
 
 function hasLabel(labelId) {
   return props.card.labels?.some(l => l.id === labelId)
+}
+
+function isWatching(userId) {
+  return props.card.watchers?.some(w => w.id === userId)
+}
+
+async function toggleWatcher(user) {
+  try {
+    if (isWatching(user.id)) {
+      await projectsApi.removeWatcher(props.projectSlug, props.card.id, user.id)
+      props.card.watchers = props.card.watchers.filter(w => w.id !== user.id)
+    } else {
+      await projectsApi.addWatcher(props.projectSlug, props.card.id, user.id)
+      props.card.watchers = [...(props.card.watchers || []), user]
+    }
+  } catch (e) {
+    ui.error('Failed to update watchers')
+  }
 }
 
 async function toggleLabel(label) {
@@ -178,7 +209,10 @@ async function save() {
       assignee_id: form.value.assignee_id
     }
     await boardStore.updateCardData(props.card.id, payload)
+    locked.value = true
+    if (newComment.value.trim()) await submitComment()
     ui.success('Saved')
+    emit('close')
   } catch (e) {
     ui.error('Failed to save')
   } finally {
@@ -197,13 +231,10 @@ async function submitComment() {
   }
 }
 
-async function deleteComment(comment) {
-  try {
-    await projectsApi.deleteComment(props.projectSlug, props.card.id, comment.id)
-    props.card.comments = props.card.comments.filter(c => c.id !== comment.id)
-  } catch (e) {
-    ui.error('Failed to delete comment')
-  }
+function replyTo(comment) {
+  const author = comment.user.display_name || comment.user.username
+  const quoted = comment.body.split('\n').map(l => `> ${l}`).join('\n')
+  newComment.value = `> **${author}**\n${quoted}\n\n`
 }
 
 async function confirmDelete() {
@@ -246,6 +277,7 @@ function renderMarkdown(text) {
 
 .comment-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
 .comment { display: flex; gap: 10px; }
+.comment-reply { margin-left: 28px; padding-left: 12px; border-left: 3px solid var(--color-border); }
 
 .comment-avatar {
   width: 28px;
@@ -271,6 +303,30 @@ function renderMarkdown(text) {
 .comment-text { font-size: 13px; line-height: 1.5; }
 .comment-text :deep(p) { margin-bottom: 6px; }
 .comment-text :deep(code) { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+
+.watcher-chip {
+  border-color: var(--color-text-muted) !important;
+  color: var(--color-text-muted) !important;
+  background: transparent !important;
+}
+.watcher-chip.active {
+  border-color: var(--color-primary) !important;
+  color: #fff !important;
+  background: var(--color-primary) !important;
+}
+
+.description-text {
+  padding: 8px 10px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  min-height: 40px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.reply-btn { margin-top: 4px; font-size: 12px; color: var(--color-text-muted); padding: 2px 8px; }
+.reply-btn:hover { color: var(--color-primary); }
 
 .add-comment { display: flex; flex-direction: column; gap: 8px; }
 .add-comment .btn { align-self: flex-end; }

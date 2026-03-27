@@ -12,7 +12,7 @@
         <!-- Users tab -->
         <div v-if="tab === 'users'">
           <div class="tab-toolbar">
-            <button class="btn btn-primary btn-sm" @click="showCreateUser = true">+ {{ $t('admin.create_user') }}</button>
+            <button class="btn btn-primary btn-sm" @click="openCreateUser">+ {{ $t('admin.create_user') }}</button>
           </div>
 
           <div v-if="loading" class="loading-state">
@@ -223,6 +223,20 @@
         <option value="admin">Admin</option>
       </select>
     </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('admin.assign_projects') }}</label>
+      <div class="labels-picker">
+        <span
+          v-for="p in projects"
+          :key="p.id"
+          class="label-chip project-chip"
+          :class="{ active: userProjectIds.includes(p.id) }"
+          :style="{ borderColor: p.color || '#6366f1', color: userProjectIds.includes(p.id) ? '#fff' : (p.color || '#6366f1'), background: userProjectIds.includes(p.id) ? (p.color || '#6366f1') : 'transparent' }"
+          @click="toggleUserProject(p.id)"
+        >{{ p.name }}</span>
+        <span v-if="!projects.length" class="form-hint">No projects yet</span>
+      </div>
+    </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showCreateUser = false">{{ $t('common.cancel') }}</button>
       <button class="btn btn-primary" @click="submitCreateUser">{{ $t('common.create') }}</button>
@@ -266,6 +280,20 @@
       <div class="form-group">
         <label class="form-label">{{ $t('auth.password') }} <span class="form-label-hint">(leave blank to keep current)</span></label>
         <input class="form-input" v-model="editUser._newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="New password…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ $t('admin.assign_projects') }}</label>
+        <div class="labels-picker">
+          <span
+            v-for="p in projects"
+            :key="p.id"
+            class="label-chip project-chip"
+            :class="{ active: userProjectIds.includes(p.id) }"
+            :style="{ borderColor: p.color || '#6366f1', color: userProjectIds.includes(p.id) ? '#fff' : (p.color || '#6366f1'), background: userProjectIds.includes(p.id) ? (p.color || '#6366f1') : 'transparent' }"
+            @click="toggleUserProject(p.id)"
+          >{{ p.name }}</span>
+          <span v-if="!projects.length" class="form-hint">No projects yet</span>
+        </div>
       </div>
       <template #footer>
         <button class="btn btn-secondary" @click="editUser = null">{{ $t('common.cancel') }}</button>
@@ -319,9 +347,11 @@ import { ref, onMounted } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { adminApi } from '@/api/admin'
 import { useUIStore } from '@/stores/ui'
+import { useSidebarStore } from '@/stores/sidebar'
 import { useDateFormat } from '@/composables/useDateFormat'
 
 const ui = useUIStore()
+const sidebarStore = useSidebarStore()
 const { formatDateTime } = useDateFormat()
 const tab = ref('users')
 
@@ -338,6 +368,7 @@ const showCreateUser = ref(false)
 const showCreateProject = ref(false)
 const newProject = ref({ name: '', description: '', color: '#6366f1' })
 const newUser = ref({ username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user' })
+const userProjectIds = ref([])
 
 const systemSettings = ref({
   registration_enabled: true,
@@ -382,6 +413,12 @@ async function loadProjects() {
   }
 }
 
+function toggleUserProject(id) {
+  const idx = userProjectIds.value.indexOf(id)
+  if (idx >= 0) userProjectIds.value.splice(idx, 1)
+  else userProjectIds.value.push(id)
+}
+
 async function loadSettings() {
   if (settingsLoaded) return
   try {
@@ -414,12 +451,23 @@ async function saveSettings() {
   }
 }
 
+function openCreateUser() {
+  userProjectIds.value = []
+  showCreateUser.value = true
+  loadProjects()
+}
+
 async function submitCreateUser() {
   try {
     const { data } = await adminApi.createUser(newUser.value)
+    if (userProjectIds.value.length) {
+      await adminApi.setUserProjects(data.id, userProjectIds.value)
+    }
     users.value.push(data)
     showCreateUser.value = false
     newUser.value = { username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user' }
+    userProjectIds.value = []
+    sidebarStore.fetchAllUsers()
     ui.success('User created')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to create user')
@@ -442,14 +490,21 @@ async function deleteUser(user) {
   try {
     await adminApi.deleteUser(user.id)
     users.value = users.value.filter(u => u.id !== user.id)
+    sidebarStore.fetchAllUsers()
     ui.success('User deleted')
   } catch {
     ui.error('Failed to delete user')
   }
 }
 
-function openEditUser(user) {
+async function openEditUser(user) {
   editUser.value = { ...user, _newPassword: '' }
+  userProjectIds.value = []
+  loadProjects()
+  try {
+    const { data } = await adminApi.getUserProjects(user.id)
+    userProjectIds.value = data.project_ids || []
+  } catch {}
 }
 
 async function saveEditUser() {
@@ -466,9 +521,11 @@ async function saveEditUser() {
       payload.password = editUser.value._newPassword
     }
     const { data } = await adminApi.updateUser(editUser.value.id, payload)
+    await adminApi.setUserProjects(editUser.value.id, userProjectIds.value)
     const idx = users.value.findIndex(u => u.id === data.id)
     if (idx >= 0) users.value[idx] = data
     editUser.value = null
+    userProjectIds.value = []
     ui.success('User updated')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to update user')
@@ -569,4 +626,19 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 500; cursor: pointer; }
 .toggle-row input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; }
 .form-hint { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; }
+.form-label-hint { font-size: 11px; color: var(--color-text-muted); font-weight: 400; }
+
+.labels-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.label-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid currentColor;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+.label-chip:hover { opacity: 0.85; }
 </style>

@@ -81,7 +81,7 @@ func GetProject(c *gin.Context) {
 		return
 	}
 
-	database.DB.Preload("Columns").Preload("Columns.Cards").Preload("Labels").Preload("Members.User").First(project, project.ID)
+	database.DB.Preload("Columns").Preload("Columns.Cards").Preload("Columns.Cards.Assignee").Preload("Columns.Cards.Labels").Preload("Labels").Preload("Members.User").First(project, project.ID)
 
 	c.JSON(http.StatusOK, project)
 }

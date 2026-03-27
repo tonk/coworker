@@ -15,6 +15,10 @@ type Config struct {
 	AllowedOrigins string `yaml:"allowed_origins"`
 	WebDir         string `yaml:"web_dir"`
 	RedisURL       string `yaml:"redis_url"` // optional — enables horizontal scaling
+	DefaultLocale  string `yaml:"default_locale"`
+	GinMode        string `yaml:"gin_mode"` // debug | release (default: debug)
+	DBLog          string `yaml:"db_log"`   // silent | error | warn | info (default: info)
+	APILog         bool   `yaml:"api_log"`  // log HTTP requests (default: true)
 }
 
 // Load reads configuration with the following priority (highest first):
@@ -39,6 +43,8 @@ func defaults() *Config {
 		JWTSecret:      "change-me-in-production",
 		AllowedOrigins: "http://localhost:5173",
 		WebDir:         "",
+		DefaultLocale:  "en",
+		APILog:         true,
 	}
 }
 
@@ -90,5 +96,17 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv("REDIS_URL"); v != "" {
 		cfg.RedisURL = v
+	}
+	if v := os.Getenv("DEFAULT_LOCALE"); v != "" {
+		cfg.DefaultLocale = v
+	}
+	if v := os.Getenv("GIN_MODE"); v != "" {
+		cfg.GinMode = v
+	}
+	if v := os.Getenv("DB_LOG"); v != "" {
+		cfg.DBLog = v
+	}
+	if v := os.Getenv("API_LOG"); v != "" {
+		cfg.APILog = v != "false" && v != "0"
 	}
 }

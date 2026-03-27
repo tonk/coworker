@@ -26,9 +26,21 @@
       <button class="btn btn-ghost btn-sm" @click="$emit('add-card', column.id)" title="Add card">+</button>
     </div>
 
+    <div class="sort-bar">
+      <select class="sort-select" v-model="sortField">
+        <option value="">{{ $t('board.sort_none') }}</option>
+        <option value="due_date">{{ $t('board.sort_date') }}</option>
+        <option value="assignee">{{ $t('board.sort_assignee') }}</option>
+        <option value="priority">{{ $t('board.sort_priority') }}</option>
+      </select>
+      <button v-if="sortField" class="sort-dir-btn" @click="sortDir = sortDir === 'asc' ? 'desc' : 'asc'" :title="sortDir === 'asc' ? $t('board.sort_asc') : $t('board.sort_desc')">
+        {{ sortDir === 'asc' ? '↑' : '↓' }}
+      </button>
+    </div>
+
     <div class="cards-list" ref="listEl">
       <BoardCard
-        v-for="card in column.cards"
+        v-for="card in sortedCards"
         :key="card.id"
         :card="card"
         @open="$emit('open-card', $event)"
@@ -44,7 +56,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import Sortable from 'sortablejs'
 import BoardCard from './BoardCard.vue'
 
@@ -56,6 +68,33 @@ const nameInput = ref(null)
 const editingName = ref(false)
 const editName = ref('')
 let sortable = null
+
+const sortField = ref('')
+const sortDir = ref('asc')
+
+const PRIORITY_ORDER = { none: 0, low: 1, medium: 2, high: 3, critical: 4 }
+
+const sortedCards = computed(() => {
+  if (!sortField.value) return props.column.cards
+  return [...props.column.cards].sort((a, b) => {
+    let av, bv
+    if (sortField.value === 'due_date') {
+      av = a.due_date ? new Date(a.due_date).getTime() : Infinity
+      bv = b.due_date ? new Date(b.due_date).getTime() : Infinity
+    } else if (sortField.value === 'assignee') {
+      av = (a.assignee?.display_name || a.assignee?.username || '').toLowerCase()
+      bv = (b.assignee?.display_name || b.assignee?.username || '').toLowerCase()
+      if (av === '' && bv !== '') return 1
+      if (bv === '' && av !== '') return -1
+    } else if (sortField.value === 'priority') {
+      av = PRIORITY_ORDER[a.priority] ?? 0
+      bv = PRIORITY_ORDER[b.priority] ?? 0
+    }
+    if (av < bv) return sortDir.value === 'asc' ? -1 : 1
+    if (av > bv) return sortDir.value === 'asc' ? 1 : -1
+    return 0
+  })
+})
 
 function startEdit() {
   editName.value = props.column.name
@@ -142,6 +181,38 @@ onBeforeUnmount(() => sortable?.destroy())
 
 .wip-badge { font-size: 11px; color: var(--color-text-muted); }
 .wip-over { color: var(--color-danger); font-weight: 700; }
+
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sort-select {
+  flex: 1;
+  font-size: 11px;
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.sort-dir-btn {
+  flex-shrink: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 3px 7px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text);
+  line-height: 1;
+}
+.sort-dir-btn:hover { background: var(--color-bg); }
 
 .cards-list {
   flex: 1;

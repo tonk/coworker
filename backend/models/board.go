@@ -38,6 +38,7 @@ type Card struct {
 	CreatedByID uint           `gorm:"not null" json:"created_by_id"`
 	CreatedBy   User           `json:"created_by"`
 	Labels      []Label        `gorm:"many2many:card_labels" json:"labels,omitempty"`
+	Watchers    []User         `gorm:"many2many:card_watchers" json:"watchers,omitempty"`
 	Comments    []CardComment  `json:"comments,omitempty"`
 }
 

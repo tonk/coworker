@@ -77,7 +77,15 @@
     "move_to": "Verschieben nach",
     "star": "Projekt markieren",
     "unstar": "Markierung entfernen",
-    "column_history": "Spaltenhistorie"
+    "column_history": "Spaltenhistorie",
+    "reply": "Antworten",
+    "watchers": "Beobachter",
+    "sort_none": "Standardreihenfolge",
+    "sort_date": "Datum",
+    "sort_assignee": "Zugewiesene Person",
+    "sort_priority": "Priorität",
+    "sort_asc": "Aufsteigend",
+    "sort_desc": "Absteigend"
   },
   "chat": {
     "title": "Team-Chat",
@@ -107,6 +115,7 @@
     "edit_project": "Projekt bearbeiten",
     "unarchive": "Archivierung aufheben",
     "create_user": "Benutzer erstellen",
+    "assign_projects": "Projekte zuweisen",
     "settings": "Einstellungen",
     "system_settings": "Systemeinstellungen",
     "registration_enabled": "Benutzerregistrierung",

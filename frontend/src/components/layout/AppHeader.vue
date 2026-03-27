@@ -14,6 +14,9 @@
         <select class="form-input lang-select" :value="locale" @change="onLocaleChange">
           <option value="en">EN</option>
           <option value="nl">NL</option>
+          <option value="de">DE</option>
+          <option value="es">ES</option>
+          <option value="fr">FR</option>
         </select>
       </div>
       <button class="btn-icon" @click="cycleTheme" :title="$t('settings.theme')">
@@ -31,7 +34,10 @@
           <div class="dropdown-item" @click="router.push('/settings')">{{ $t('nav.settings') }}</div>
           <div class="dropdown-item" v-if="auth.isAdmin" @click="router.push('/admin')">{{ $t('nav.admin') }}</div>
           <div class="dropdown-divider"></div>
-          <div class="dropdown-item" @click="router.push('/messages')">{{ $t('nav.messages') }}</div>
+          <div class="dropdown-item" @click="router.push('/messages')">
+            {{ $t('nav.messages') }}
+            <span v-if="notificationsStore.hasUnread" class="msg-unread-dot"></span>
+          </div>
           <div class="dropdown-divider"></div>
           <div class="dropdown-item dropdown-item-danger" @click="handleLogout">{{ $t('nav.logout') }}</div>
         </div>
@@ -47,6 +53,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { setLocale } from '@/i18n'
 import { useTheme } from '@/composables/useTheme'
+import { useNotificationsStore } from '@/stores/notifications'
 import { avatarUrl } from '@/composables/useAvatar'
 
 const props = defineProps({ presenceCount: { type: Number, default: 0 } })
@@ -55,6 +62,7 @@ const auth = useAuthStore()
 const router = useRouter()
 const { locale } = useI18n()
 const { theme, setTheme } = useTheme()
+const notificationsStore = useNotificationsStore()
 const menuOpen = ref(false)
 const menuRef = ref(null)
 const avatarErr = ref(false)
@@ -150,6 +158,21 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClick))
   color: var(--color-text);
 }
 .dropdown-item:hover { background: var(--color-bg); }
+.dropdown-item { display: flex; align-items: center; gap: 6px; }
+
+.msg-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-danger, #ef4444);
+  flex-shrink: 0;
+  margin-left: auto;
+  animation: hdr-pulse 1.4s ease-in-out infinite;
+}
+@keyframes hdr-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
 .dropdown-item-danger { color: var(--color-danger); }
 .dropdown-divider { height: 1px; background: var(--color-border); }
 

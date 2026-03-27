@@ -77,7 +77,15 @@
     "move_to": "Move to",
     "star": "Star project",
     "unstar": "Unstar project",
-    "column_history": "Column History"
+    "column_history": "Column History",
+    "reply": "Reply",
+    "watchers": "Watchers",
+    "sort_none": "Default order",
+    "sort_date": "Date",
+    "sort_assignee": "Assignee",
+    "sort_priority": "Priority",
+    "sort_asc": "Ascending",
+    "sort_desc": "Descending"
   },
   "chat": {
     "title": "Team Chat",
@@ -107,6 +115,7 @@
     "edit_project": "Edit Project",
     "unarchive": "Unarchive",
     "create_user": "Create User",
+    "assign_projects": "Assign Projects",
     "settings": "Settings",
     "system_settings": "System Settings",
     "registration_enabled": "User Registration",

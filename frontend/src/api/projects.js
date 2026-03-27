@@ -37,6 +37,8 @@ export const projectsApi = {
   moveCard: (slug, cardId, data) => client.patch(`/projects/${slug}/cards/${cardId}/move`, data),
   assignLabel: (slug, cardId, labelId) => client.post(`/projects/${slug}/cards/${cardId}/labels/${labelId}`),
   removeLabel: (slug, cardId, labelId) => client.delete(`/projects/${slug}/cards/${cardId}/labels/${labelId}`),
+  addWatcher: (slug, cardId, userId) => client.post(`/projects/${slug}/cards/${cardId}/watchers/${userId}`),
+  removeWatcher: (slug, cardId, userId) => client.delete(`/projects/${slug}/cards/${cardId}/watchers/${userId}`),
   updateAssignee: (slug, cardId, userId) => client.put(`/projects/${slug}/cards/${cardId}/assignee`, { user_id: userId }),
 
   // Comments

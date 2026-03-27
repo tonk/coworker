@@ -22,7 +22,7 @@ db_dsn: "./coworker.db"
 jwt_secret: "change-me-for-production"
 
 # Comma-separated list of allowed CORS origins, or * for any
-allowed_origins: "127.0.0.1"
+allowed_origins: "http://localhost:8080"
 
 # Path to the built frontend files (dist/web after running `make build`)
 # Leave empty during development (Vite dev server is used instead)
@@ -33,3 +33,22 @@ web_dir: "dist/web"
 # server instances deliver the message to their connected clients.
 # Omit or leave empty for single-instance deployments (no Redis needed).
 # redis_url: "redis://localhost:6379/0"
+
+# Default UI language for new users (en | nl | de | fr | es). Defaults to "en".
+# Can be overridden per-user in their profile settings.
+# default_locale: "en"
+
+# Gin framework mode: debug | release. Defaults to "debug".
+# Set to "release" in production to suppress verbose request logging.
+# Can also be set via the GIN_MODE environment variable.
+# gin_mode: "release"
+
+# Database query logging level: silent | error | warn | info. Defaults to "info".
+# Set to "silent" or "error" in production to suppress per-query log output.
+# Can also be set via the DB_LOG environment variable.
+# db_log: "silent"
+
+# Log incoming HTTP requests. Defaults to true.
+# Set to false to suppress per-request log lines (e.g. in production behind a reverse proxy).
+# Can also be set via the API_LOG environment variable (API_LOG=false to disable).
+# api_log: false

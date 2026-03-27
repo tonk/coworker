@@ -77,7 +77,15 @@
     "move_to": "Verplaatsen naar",
     "star": "Project markeren",
     "unstar": "Markering verwijderen",
-    "column_history": "Kolomgeschiedenis"
+    "column_history": "Kolomgeschiedenis",
+    "reply": "Beantwoorden",
+    "watchers": "Volgers",
+    "sort_none": "Standaardvolgorde",
+    "sort_date": "Datum",
+    "sort_assignee": "Toegewezene",
+    "sort_priority": "Prioriteit",
+    "sort_asc": "Oplopend",
+    "sort_desc": "Aflopend"
   },
   "chat": {
     "title": "Teamchat",
@@ -107,6 +115,7 @@
     "edit_project": "Project bewerken",
     "unarchive": "Dearchiveren",
     "create_user": "Gebruiker aanmaken",
+    "assign_projects": "Projecten toewijzen",
     "settings": "Instellingen",
     "system_settings": "Systeeminstellingen",
     "registration_enabled": "Gebruikersregistratie",

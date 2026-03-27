@@ -77,7 +77,15 @@
     "move_to": "Déplacer vers",
     "star": "Marquer le projet",
     "unstar": "Retirer le marquage",
-    "column_history": "Historique des colonnes"
+    "column_history": "Historique des colonnes",
+    "reply": "Répondre",
+    "watchers": "Observateurs",
+    "sort_none": "Ordre par défaut",
+    "sort_date": "Date",
+    "sort_assignee": "Responsable",
+    "sort_priority": "Priorité",
+    "sort_asc": "Croissant",
+    "sort_desc": "Décroissant"
   },
   "chat": {
     "title": "Chat d'équipe",
@@ -107,6 +115,7 @@
     "edit_project": "Modifier le projet",
     "unarchive": "Désarchiver",
     "create_user": "Créer un utilisateur",
+    "assign_projects": "Attribuer des projets",
     "settings": "Paramètres",
     "system_settings": "Paramètres système",
     "registration_enabled": "Inscription des utilisateurs",
