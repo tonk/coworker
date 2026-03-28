@@ -71,7 +71,7 @@ func (h *WSHandler) HandleWS(c *gin.Context) {
 	database.DB.First(&user, claims.UserID)
 
 	hub := appws.GetOrCreateHub(project.ID)
-	client := appws.NewClient(hub, conn, user.ID, user.Username, user.DisplayName, user.AvatarURL, project.ID, handleIncoming)
+	client := appws.NewClient(hub, conn, user.ID, user.Username, user.DisplayName, user.AvatarURL, project.ID, claims.GlobalRole, handleIncoming)
 
 	hub.Register(client)
 
@@ -94,7 +94,16 @@ func handleIncoming(client *appws.Client, raw []byte) {
 		}
 		data, _ := json.Marshal(pong)
 		client.Send(data)
+		return
+	}
 
+	// Viewers are read-only — block all write operations
+	if client.GlobalRole() == "viewer" {
+		client.SendError("forbidden", "viewers are read-only", msg.ID)
+		return
+	}
+
+	switch msg.Type {
 	case appws.TypeChatSend:
 		payloadBytes, _ := json.Marshal(msg.Payload)
 		var payload appws.ChatSendPayload
@@ -115,6 +124,10 @@ func handleIncoming(client *appws.Client, raw []byte) {
 			Type:    appws.TypeChatMessageCreated,
 			Payload: chatMsg,
 		})
+
+		if notifSvc != nil {
+			go notifSvc.NotifyMentions(payload.Body, client.UserID(), "project chat")
+		}
 
 	case appws.TypeChatEdit:
 		payloadBytes, _ := json.Marshal(msg.Payload)

@@ -8,6 +8,7 @@ export const useSidebarStore = defineStore('sidebar', () => {
   const allProjects = ref([])
   const allUsers = ref([])
   const chatUsers = ref([])
+  const favoriteUsers = ref([])
 
   async function fetchStarred() {
     try {
@@ -37,6 +38,27 @@ export const useSidebarStore = defineStore('sidebar', () => {
     } catch {}
   }
 
+  async function fetchFavoriteUsers() {
+    try {
+      const { data } = await client.get('/favorite-users')
+      favoriteUsers.value = data || []
+    } catch {}
+  }
+
+  async function addFavoriteUser(userId) {
+    await client.post(`/favorite-users/${userId}`)
+    await fetchFavoriteUsers()
+  }
+
+  async function removeFavoriteUser(userId) {
+    await client.delete(`/favorite-users/${userId}`)
+    favoriteUsers.value = favoriteUsers.value.filter(u => u.id !== userId)
+  }
+
+  function isFavorite(userId) {
+    return favoriteUsers.value.some(u => u.id === userId)
+  }
+
   async function starProject(slug) {
     await projectsApi.starProject(slug)
     await fetchStarred()
@@ -52,8 +74,9 @@ export const useSidebarStore = defineStore('sidebar', () => {
   }
 
   return {
-    starredProjects, allProjects, allUsers, chatUsers,
+    starredProjects, allProjects, allUsers, chatUsers, favoriteUsers,
     fetchStarred, fetchAllProjects, fetchAllUsers, fetchChatUsers,
+    fetchFavoriteUsers, addFavoriteUser, removeFavoriteUser, isFavorite,
     starProject, unstarProject, isStarred
   }
 })

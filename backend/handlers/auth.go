@@ -177,18 +177,19 @@ func (h *AuthHandler) Me(c *gin.Context) {
 func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	var req struct {
-		FirstName       string `json:"first_name"`
-		LastName        string `json:"last_name"`
-		DisplayName     string `json:"display_name"`
-		Email           string `json:"email"`
-		AvatarURL       string `json:"avatar_url"`
-		Locale          string `json:"locale"`
-		Theme           string `json:"theme"`
-		DateTimeFormat  string `json:"date_time_format"`
-		Timezone        string `json:"timezone"`
-		Font            string `json:"font"`
-		FontSize        string `json:"font_size"`
-		SidebarPosition string `json:"sidebar_position"`
+		FirstName          string `json:"first_name"`
+		LastName           string `json:"last_name"`
+		DisplayName        string `json:"display_name"`
+		Email              string `json:"email"`
+		AvatarURL          string `json:"avatar_url"`
+		Locale             string `json:"locale"`
+		Theme              string `json:"theme"`
+		DateTimeFormat     string `json:"date_time_format"`
+		Timezone           string `json:"timezone"`
+		Font               string `json:"font"`
+		FontSize           string `json:"font_size"`
+		SidebarPosition    string `json:"sidebar_position"`
+		EmailNotifications *bool  `json:"email_notifications"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -232,6 +233,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.SidebarPosition == "left" || req.SidebarPosition == "right" {
 		updates["sidebar_position"] = req.SidebarPosition
+	}
+	if req.EmailNotifications != nil {
+		updates["email_notifications"] = *req.EmailNotifications
 	}
 
 	now := time.Now()

@@ -1,6 +1,8 @@
 import { ref, onUnmounted } from 'vue'
 import { useBoardStore } from '@/stores/board'
 import { useChatStore } from '@/stores/chat'
+import { useTopicsStore } from '@/stores/topics'
+import { getWsUrl } from '@/api/serverConfig'
 
 export function useWebSocket(projectSlug) {
   const ws = ref(null)
@@ -11,13 +13,19 @@ export function useWebSocket(projectSlug) {
 
   const boardStore = useBoardStore()
   const chatStore = useChatStore()
+  const topicsStore = useTopicsStore()
 
   function connect() {
     const token = localStorage.getItem('access_token')
     if (!token) return
 
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const url = `${protocol}//${location.host}/api/v1/ws/${projectSlug}?token=${token}`
+    // Use the configured server URL when available (Tauri/desktop mode),
+    // otherwise fall back to the current page's origin (browser mode).
+    const wsUrlFromConfig = getWsUrl(`/api/v1/ws/${projectSlug}?token=${token}`)
+    const url = wsUrlFromConfig || (() => {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+      return `${protocol}//${location.host}/api/v1/ws/${projectSlug}?token=${token}`
+    })()
 
     ws.value = new WebSocket(url)
 
@@ -61,6 +69,8 @@ export function useWebSocket(projectSlug) {
       boardStore.handleWsEvent(type, payload)
     } else if (type.startsWith('chat.')) {
       chatStore.handleWsEvent(type, payload)
+    } else if (type.startsWith('topic.')) {
+      topicsStore.handleWsEvent(type, payload)
     } else if (type === 'presence.joined') {
       if (!presenceUsers.value.find(u => u.id === payload.id)) {
         presenceUsers.value.push(payload)

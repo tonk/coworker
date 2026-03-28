@@ -51,6 +51,31 @@
       "viewer": "Viewer"
     }
   },
+  "topics": {
+    "title": "Topics",
+    "new_topic": "New Topic",
+    "topic_title": "Title",
+    "topic_body": "Body",
+    "create": "Create Topic",
+    "no_topics": "No topics yet. Start a discussion!",
+    "replies": "replies",
+    "reply": "Reply",
+    "add_reply": "Write a reply…",
+    "post_reply": "Post Reply",
+    "edit": "Edit",
+    "delete": "Delete",
+    "pinned": "Pinned",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "edited": "edited",
+    "back": "Back to Topics"
+  },
+  "checklist": {
+    "title": "Checklist",
+    "add_item": "Add item",
+    "add_item_placeholder": "New checklist item…",
+    "progress": "{done} of {total} done"
+  },
   "board": {
     "add_column": "Add Column",
     "add_card": "Add Card",
@@ -61,6 +86,7 @@
     "priority": "Priority",
     "due_date": "Due Date",
     "assignee": "Assignee",
+    "assignees": "Assignees",
     "labels": "Labels",
     "wip_limit": "WIP Limit",
     "priorities": {
@@ -80,6 +106,8 @@
     "column_history": "Column History",
     "reply": "Reply",
     "watchers": "Watchers",
+    "tags": "Tags",
+    "add_tag_placeholder": "Add tag (e.g. frontend)",
     "sort_none": "Default order",
     "sort_date": "Date",
     "sort_assignee": "Assignee",
@@ -109,6 +137,9 @@
     "activate": "Activate",
     "make_admin": "Make Admin",
     "make_user": "Make User",
+    "role_admin": "Admin",
+    "role_user": "User",
+    "role_viewer": "Viewer",
     "last_login": "Last Login",
     "owner": "Owner",
     "edit_user": "Edit User",
@@ -121,7 +152,15 @@
     "registration_enabled": "User Registration",
     "registration_hint": "When disabled, the register link is hidden from the login page and new registrations are blocked.",
     "global_defaults_title": "Global Default Settings",
-    "global_defaults_hint": "These defaults apply to new users. Existing users can override them in their own settings."
+    "global_defaults_hint": "These defaults apply to new users. Existing users can override them in their own settings.",
+    "smtp_title": "Email (SMTP)",
+    "smtp_hint": "Configure an SMTP server to enable email notifications for mentions, DMs, and card assignments.",
+    "smtp_host": "SMTP Host",
+    "smtp_host_placeholder": "mail.example.com",
+    "smtp_port": "Port",
+    "smtp_from": "From Address",
+    "smtp_username": "Username",
+    "smtp_password": "Password"
   },
   "common": {
     "save": "Save",
@@ -136,7 +175,8 @@
     "no": "No",
     "search": "Search",
     "actions": "Actions",
-    "language": "Language"
+    "language": "Language",
+    "add": "Add"
   },
   "presence": {
     "online": "online"
@@ -176,8 +216,14 @@
     "no_starred": "No starred projects",
     "all_projects": "All Projects",
     "no_projects": "No projects",
-    "users": "Users",
-    "no_users": "No users"
+    "favorites": "Favorites",
+    "no_favorites": "No favorites yet",
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites",
+    "users": "People",
+    "no_users": "No users",
+    "online": "Online",
+    "offline": "Offline"
   },
   "apikeys": {
     "tab": "API Keys",

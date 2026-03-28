@@ -31,6 +31,22 @@ const (
 	TypePresenceLeft   = "presence.left"
 	TypePresenceList   = "presence.list"
 
+	// Server -> Client: reactions
+	TypeChatReactionUpdated = "chat.reaction.updated"
+	TypeDMReactionUpdated   = "dm.reaction.updated"
+
+	// Server -> Client: DM message updates
+	TypeDMMessageUpdated = "dm.message.updated"
+	TypeDMMessageDeleted = "dm.message.deleted"
+
+	// Server -> Client: topics
+	TypeTopicCreated      = "topic.created"
+	TypeTopicUpdated      = "topic.updated"
+	TypeTopicDeleted      = "topic.deleted"
+	TypeTopicReplyCreated = "topic.reply.created"
+	TypeTopicReplyUpdated = "topic.reply.updated"
+	TypeTopicReplyDeleted = "topic.reply.deleted"
+
 	// System
 	TypePong  = "pong"
 	TypeError = "error"

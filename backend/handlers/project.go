@@ -12,6 +12,15 @@ import (
 
 func ListProjects(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
+
+	// Global viewers can see all non-deleted projects (read-only access)
+	if globalRole == "viewer" {
+		var projects []models.Project
+		database.DB.Where("deleted_at IS NULL").Find(&projects)
+		c.JSON(http.StatusOK, projects)
+		return
+	}
 
 	var members []models.ProjectMember
 	database.DB.Preload("Project").Where("user_id = ?", userID).Find(&members)
@@ -28,6 +37,10 @@ func ListProjects(c *gin.Context) {
 
 func CreateProject(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	if middleware.GetGlobalRole(c) == "viewer" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "viewers cannot create projects"})
+		return
+	}
 	var req struct {
 		Name        string `json:"name" binding:"required,min=1,max=200"`
 		Description string `json:"description"`
@@ -43,6 +56,7 @@ func CreateProject(c *gin.Context) {
 		Description: req.Description,
 		Color:       req.Color,
 		Slug:        services.GenerateSlug(req.Name),
+		KeyPrefix:   services.GenerateKeyPrefix(req.Name),
 		CreatedByID: userID,
 	}
 
@@ -81,7 +95,7 @@ func GetProject(c *gin.Context) {
 		return
 	}
 
-	database.DB.Preload("Columns").Preload("Columns.Cards").Preload("Columns.Cards.Assignee").Preload("Columns.Cards.Labels").Preload("Labels").Preload("Members.User").First(project, project.ID)
+	database.DB.Preload("Columns").Preload("Columns.Cards").Preload("Columns.Cards.Assignee").Preload("Columns.Cards.Labels").Preload("Columns.Cards.Tags").Preload("Labels").Preload("Members.User").First(project, project.ID)
 
 	c.JSON(http.StatusOK, project)
 }

@@ -51,6 +51,31 @@
       "viewer": "Betrachter"
     }
   },
+  "topics": {
+    "title": "Themen",
+    "new_topic": "Neues Thema",
+    "topic_title": "Titel",
+    "topic_body": "Inhalt",
+    "create": "Thema erstellen",
+    "no_topics": "Noch keine Themen. Starte eine Diskussion!",
+    "replies": "Antworten",
+    "reply": "Antworten",
+    "add_reply": "Antwort schreiben…",
+    "post_reply": "Antwort senden",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "pinned": "Angeheftet",
+    "pin": "Anheften",
+    "unpin": "Lösen",
+    "edited": "bearbeitet",
+    "back": "Zurück zu Themen"
+  },
+  "checklist": {
+    "title": "Checkliste",
+    "add_item": "Element hinzufügen",
+    "add_item_placeholder": "Neues Checklisten-Element…",
+    "progress": "{done} von {total} erledigt"
+  },
   "board": {
     "add_column": "Spalte hinzufügen",
     "add_card": "Karte hinzufügen",
@@ -61,6 +86,7 @@
     "priority": "Priorität",
     "due_date": "Fälligkeitsdatum",
     "assignee": "Zugewiesen an",
+    "assignees": "Zugewiesen an",
     "labels": "Labels",
     "wip_limit": "WIP-Limit",
     "priorities": {
@@ -80,6 +106,8 @@
     "column_history": "Spaltenhistorie",
     "reply": "Antworten",
     "watchers": "Beobachter",
+    "tags": "Tags",
+    "add_tag_placeholder": "Tag hinzufügen (z.B. frontend)",
     "sort_none": "Standardreihenfolge",
     "sort_date": "Datum",
     "sort_assignee": "Zugewiesene Person",
@@ -109,6 +137,9 @@
     "activate": "Aktivieren",
     "make_admin": "Zum Administrator machen",
     "make_user": "Zum Benutzer machen",
+    "role_admin": "Administrator",
+    "role_user": "Benutzer",
+    "role_viewer": "Betrachter",
     "last_login": "Letzte Anmeldung",
     "owner": "Eigentümer",
     "edit_user": "Benutzer bearbeiten",
@@ -121,7 +152,15 @@
     "registration_enabled": "Benutzerregistrierung",
     "registration_hint": "Wenn deaktiviert, wird der Registrierungslink auf der Anmeldeseite ausgeblendet und neue Registrierungen werden blockiert.",
     "global_defaults_title": "Globale Standardeinstellungen",
-    "global_defaults_hint": "Diese Standards gelten für neue Benutzer. Bestehende Benutzer können sie in ihren eigenen Einstellungen überschreiben."
+    "global_defaults_hint": "Diese Standards gelten für neue Benutzer. Bestehende Benutzer können sie in ihren eigenen Einstellungen überschreiben.",
+    "smtp_title": "E-Mail (SMTP)",
+    "smtp_hint": "Konfigurieren Sie einen SMTP-Server, um E-Mail-Benachrichtigungen für Erwähnungen, DMs und Kartenzuweisungen zu aktivieren.",
+    "smtp_host": "SMTP-Server",
+    "smtp_host_placeholder": "mail.beispiel.de",
+    "smtp_port": "Port",
+    "smtp_from": "Absenderadresse",
+    "smtp_username": "Benutzername",
+    "smtp_password": "Passwort"
   },
   "common": {
     "save": "Speichern",
@@ -136,7 +175,8 @@
     "no": "Nein",
     "search": "Suchen",
     "actions": "Aktionen",
-    "language": "Sprache"
+    "language": "Sprache",
+    "add": "Hinzufügen"
   },
   "presence": {
     "online": "online"
@@ -176,8 +216,14 @@
     "no_starred": "Keine markierten Projekte",
     "all_projects": "Alle Projekte",
     "no_projects": "Keine Projekte",
-    "users": "Benutzer",
-    "no_users": "Keine Benutzer"
+    "favorites": "Favoriten",
+    "no_favorites": "Noch keine Favoriten",
+    "favorite": "Zu Favoriten hinzufügen",
+    "unfavorite": "Aus Favoriten entfernen",
+    "users": "Personen",
+    "no_users": "Keine Benutzer",
+    "online": "Online",
+    "offline": "Offline"
   },
   "apikeys": {
     "tab": "API-Schlüssel",

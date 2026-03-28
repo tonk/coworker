@@ -37,9 +37,30 @@ type Card struct {
 	Assignee    *User          `json:"assignee,omitempty"`
 	CreatedByID uint           `gorm:"not null" json:"created_by_id"`
 	CreatedBy   User           `json:"created_by"`
+	CardNumber  int            `gorm:"default:0" json:"card_number"`
 	Labels      []Label        `gorm:"many2many:card_labels" json:"labels,omitempty"`
+	Tags        []CardTag      `json:"tags,omitempty"`
+	Assignees   []User         `gorm:"many2many:card_assignees" json:"assignees,omitempty"`
 	Watchers    []User         `gorm:"many2many:card_watchers" json:"watchers,omitempty"`
 	Comments    []CardComment  `json:"comments,omitempty"`
+	Attachments []Attachment   `gorm:"-" json:"attachments,omitempty"`
+}
+
+// CardAssignee is the join table for multiple card assignees.
+type CardAssignee struct {
+	CardID uint `gorm:"primaryKey" json:"card_id"`
+	UserID uint `gorm:"primaryKey" json:"user_id"`
+}
+
+// CardChecklistItem is a single checklist item on a card.
+type CardChecklistItem struct {
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	CardID      uint      `gorm:"not null;index" json:"card_id"`
+	Body        string    `gorm:"type:text;not null" json:"body"`
+	IsCompleted bool      `gorm:"default:false" json:"is_completed"`
+	Position    float64   `gorm:"default:0" json:"position"`
 }
 
 type CardComment struct {

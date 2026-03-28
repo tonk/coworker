@@ -10,6 +10,7 @@ import (
 	"github.com/tonk/coworker/models"
 	"github.com/tonk/coworker/services"
 	appws "github.com/tonk/coworker/ws"
+	"gorm.io/gorm"
 )
 
 // TicketAdd creates a card via API key authentication.
@@ -48,6 +49,12 @@ func TicketAdd(c *gin.Context) {
 	var maxPos struct{ Pos float64 }
 	database.DB.Model(&models.Card{}).Select("COALESCE(MAX(position), 0) as pos").Where("column_id = ?", col.ID).Scan(&maxPos)
 
+	// Atomically increment the project's card counter
+	database.DB.Model(&models.Project{}).Where("id = ?", project.ID).
+		UpdateColumn("card_counter", gorm.Expr("card_counter + 1"))
+	var updatedProject models.Project
+	database.DB.Select("card_counter").First(&updatedProject, project.ID)
+
 	card := models.Card{
 		ColumnID:    col.ID,
 		ProjectID:   project.ID,
@@ -55,12 +62,13 @@ func TicketAdd(c *gin.Context) {
 		Description: req.Description,
 		Position:    maxPos.Pos + 1000,
 		CreatedByID: userID,
+		CardNumber:  updatedProject.CardCounter,
 	}
 	if err := database.DB.Create(&card).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	database.DB.Preload("CreatedBy").Preload("Assignee").Preload("Labels").First(&card, card.ID)
+	database.DB.Preload("CreatedBy").Preload("Assignee").Preload("Labels").Preload("Tags").First(&card, card.ID)
 
 	appws.BroadcastToProject(project.ID, appws.Message{Type: appws.TypeBoardCardCreated, Payload: card})
 	c.JSON(http.StatusCreated, card)

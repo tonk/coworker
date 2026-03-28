@@ -16,6 +16,8 @@ type Project struct {
 	Slug         string         `gorm:"uniqueIndex;not null;size:100" json:"slug"`
 	Color        string         `gorm:"size:7" json:"color"`
 	IsArchived   bool           `gorm:"default:false" json:"is_archived"`
+	KeyPrefix    string         `gorm:"size:3;not null;default:''" json:"key_prefix"`
+	CardCounter  int            `gorm:"default:0" json:"-"`
 	CreatedByID  uint           `gorm:"not null" json:"created_by_id"`
 	CreatedBy    User           `json:"created_by"`
 	Members      []ProjectMember `json:"members,omitempty"`

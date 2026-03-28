@@ -10,6 +10,9 @@
         </button>
       </div>
       <div class="board-toolbar-right">
+        <RouterLink :to="`/projects/${slug}/topics`" class="btn btn-ghost btn-sm">
+          💬 {{ $t('topics.title') }}
+        </RouterLink>
         <button class="btn btn-ghost btn-sm" @click="chatOpen = !chatOpen">
           💬 {{ $t('chat.title') }}
         </button>

@@ -176,6 +176,53 @@ func localBroadcastRaw(projectID uint, data []byte) {
 	}
 }
 
+// BroadcastToUser sends a message to all WebSocket connections belonging to a specific user.
+func BroadcastToUser(userID uint, msg Message) {
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return
+	}
+	hubsMu.Lock()
+	hubs := make([]*Hub, 0, len(globalHubs))
+	for _, h := range globalHubs {
+		hubs = append(hubs, h)
+	}
+	hubsMu.Unlock()
+	for _, h := range hubs {
+		h.mu.RLock()
+		for c := range h.clients {
+			if c.userID == userID {
+				select {
+				case c.send <- data:
+				default:
+				}
+			}
+		}
+		h.mu.RUnlock()
+	}
+}
+
+// IsUserOnline reports whether the user has at least one active WebSocket connection.
+func IsUserOnline(userID uint) bool {
+	hubsMu.Lock()
+	hubs := make([]*Hub, 0, len(globalHubs))
+	for _, h := range globalHubs {
+		hubs = append(hubs, h)
+	}
+	hubsMu.Unlock()
+	for _, h := range hubs {
+		h.mu.RLock()
+		for c := range h.clients {
+			if c.userID == userID {
+				h.mu.RUnlock()
+				return true
+			}
+		}
+		h.mu.RUnlock()
+	}
+	return false
+}
+
 // GetAllOnlineUsers returns a deduplicated list of all currently connected users across all hubs.
 func GetAllOnlineUsers() []PresenceUser {
 	hubsMu.Lock()

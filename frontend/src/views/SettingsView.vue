@@ -97,6 +97,13 @@
                 <option value="right">{{ $t('settings.sidebar_right') }}</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label">Email Notifications</label>
+              <label class="toggle-label">
+                <input type="checkbox" v-model="form.email_notifications" />
+                <span>Receive email notifications for mentions, DMs, and card assignments</span>
+              </label>
+            </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingProfile">
                 {{ savingProfile ? $t('common.loading') : $t('common.save') }}
@@ -168,7 +175,8 @@ const form = ref({
   timezone: 'UTC',
   font: 'system',
   font_size: '14',
-  sidebar_position: 'left'
+  sidebar_position: 'left',
+  email_notifications: true
 })
 
 const timezones = [
@@ -202,7 +210,8 @@ onMounted(() => {
       timezone: u.timezone || 'UTC',
       font: u.font || 'system',
       font_size: u.font_size || '14',
-      sidebar_position: u.sidebar_position || 'left'
+      sidebar_position: u.sidebar_position || 'left',
+      email_notifications: u.email_notifications !== undefined ? u.email_notifications : true
     }
   }
 })
@@ -222,7 +231,8 @@ async function saveProfile() {
       timezone: form.value.timezone,
       font: form.value.font,
       font_size: form.value.font_size,
-      sidebar_position: form.value.sidebar_position
+      sidebar_position: form.value.sidebar_position,
+      email_notifications: form.value.email_notifications
     })
     applyUserPreferences(auth.user)
     setTheme(form.value.theme)
@@ -275,4 +285,19 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .info-row { display: flex; justify-content: space-between; align-items: center; }
 .info-label { font-size: 13px; color: var(--color-text-muted); font-weight: 500; }
 .info-value { font-size: 13px; }
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text);
+}
+.toggle-label input[type=checkbox] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
 </style>

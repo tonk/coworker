@@ -1,7 +1,14 @@
 import axios from 'axios'
+import { getServerUrl } from './serverConfig'
+
+// Base URL is resolved at request time so it picks up runtime server config.
+// Falls back to relative '/api/v1' for the normal browser / Vite-proxy workflow.
+function apiBase() {
+  const server = getServerUrl()
+  return server ? `${server}/api/v1` : '/api/v1'
+}
 
 const client = axios.create({
-  baseURL: '/api/v1',
   headers: { 'Content-Type': 'application/json' }
 })
 
@@ -17,6 +24,7 @@ function processQueue(error, token = null) {
 }
 
 client.interceptors.request.use(config => {
+  config.baseURL = apiBase()
   const token = localStorage.getItem('access_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
@@ -49,7 +57,7 @@ client.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post('/api/v1/auth/refresh', { refresh_token: refreshToken })
+        const { data } = await axios.post(`${apiBase()}/auth/refresh`, { refresh_token: refreshToken })
         localStorage.setItem('access_token', data.access_token)
         localStorage.setItem('refresh_token', data.refresh_token)
         client.defaults.headers.common.Authorization = `Bearer ${data.access_token}`

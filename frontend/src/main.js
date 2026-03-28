@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { i18n } from './i18n'
+import { useSystemStore } from '@/stores/system'
 import './styles/main.css'
 
 const app = createApp(App)
@@ -12,6 +13,4 @@ app.use(router)
 app.use(i18n)
 app.mount('#app')
 
-// Fetch global system settings in the background after mount
-import { useSystemStore } from '@/stores/system'
 useSystemStore().fetchSettings()

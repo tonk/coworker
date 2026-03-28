@@ -51,6 +51,31 @@
       "viewer": "Observador"
     }
   },
+  "topics": {
+    "title": "Temas",
+    "new_topic": "Nuevo tema",
+    "topic_title": "Título",
+    "topic_body": "Contenido",
+    "create": "Crear tema",
+    "no_topics": "Todavía no hay temas. ¡Inicia una discusión!",
+    "replies": "respuestas",
+    "reply": "Responder",
+    "add_reply": "Escribe una respuesta…",
+    "post_reply": "Publicar respuesta",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "pinned": "Fijado",
+    "pin": "Fijar",
+    "unpin": "Desfijar",
+    "edited": "editado",
+    "back": "Volver a temas"
+  },
+  "checklist": {
+    "title": "Lista de verificación",
+    "add_item": "Agregar elemento",
+    "add_item_placeholder": "Nuevo elemento…",
+    "progress": "{done} de {total} completado"
+  },
   "board": {
     "add_column": "Agregar columna",
     "add_card": "Agregar tarjeta",
@@ -61,6 +86,7 @@
     "priority": "Prioridad",
     "due_date": "Fecha de vencimiento",
     "assignee": "Asignado a",
+    "assignees": "Asignados",
     "labels": "Etiquetas",
     "wip_limit": "Límite WIP",
     "priorities": {
@@ -80,6 +106,8 @@
     "column_history": "Historial de columnas",
     "reply": "Responder",
     "watchers": "Observadores",
+    "tags": "Etiquetas",
+    "add_tag_placeholder": "Añadir etiqueta (ej. frontend)",
     "sort_none": "Orden predeterminado",
     "sort_date": "Fecha",
     "sort_assignee": "Asignado",
@@ -109,6 +137,9 @@
     "activate": "Activar",
     "make_admin": "Hacer administrador",
     "make_user": "Hacer usuario",
+    "role_admin": "Administrador",
+    "role_user": "Usuario",
+    "role_viewer": "Visor",
     "last_login": "Último inicio de sesión",
     "owner": "Propietario",
     "edit_user": "Editar usuario",
@@ -121,7 +152,15 @@
     "registration_enabled": "Registro de usuarios",
     "registration_hint": "Cuando está desactivado, el enlace de registro se oculta en la página de inicio de sesión y los nuevos registros están bloqueados.",
     "global_defaults_title": "Configuración global predeterminada",
-    "global_defaults_hint": "Estos valores predeterminados se aplican a los nuevos usuarios. Los usuarios existentes pueden anularlos en su propia configuración."
+    "global_defaults_hint": "Estos valores predeterminados se aplican a los nuevos usuarios. Los usuarios existentes pueden anularlos en su propia configuración.",
+    "smtp_title": "Correo electrónico (SMTP)",
+    "smtp_hint": "Configure un servidor SMTP para habilitar notificaciones por correo electrónico para menciones, DMs y asignaciones de tarjetas.",
+    "smtp_host": "Servidor SMTP",
+    "smtp_host_placeholder": "mail.ejemplo.com",
+    "smtp_port": "Puerto",
+    "smtp_from": "Dirección de origen",
+    "smtp_username": "Usuario",
+    "smtp_password": "Contraseña"
   },
   "common": {
     "save": "Guardar",
@@ -136,7 +175,8 @@
     "no": "No",
     "search": "Buscar",
     "actions": "Acciones",
-    "language": "Idioma"
+    "language": "Idioma",
+    "add": "Agregar"
   },
   "presence": {
     "online": "en línea"
@@ -176,8 +216,14 @@
     "no_starred": "Sin proyectos destacados",
     "all_projects": "Todos los proyectos",
     "no_projects": "Sin proyectos",
-    "users": "Usuarios",
-    "no_users": "Sin usuarios"
+    "favorites": "Favoritos",
+    "no_favorites": "Aún sin favoritos",
+    "favorite": "Agregar a favoritos",
+    "unfavorite": "Quitar de favoritos",
+    "users": "Personas",
+    "no_users": "Sin usuarios",
+    "online": "En línea",
+    "offline": "Desconectado"
   },
   "apikeys": {
     "tab": "Claves API",

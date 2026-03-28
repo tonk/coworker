@@ -41,6 +41,11 @@ export const useChatStore = defineStore('chat', () => {
     if (msg) msg.is_deleted = true
   }
 
+  function updateReactions(messageId, reactions) {
+    const msg = messages.value.find(m => m.id === messageId)
+    if (msg) msg.reactions = reactions
+  }
+
   function reset() {
     messages.value = []
     hasMore.value = true
@@ -51,8 +56,9 @@ export const useChatStore = defineStore('chat', () => {
       case 'chat.message.created': addMessage(payload); break
       case 'chat.message.updated': updateMessage(payload); break
       case 'chat.message.deleted': removeMessage(payload); break
+      case 'chat.reaction.updated': updateReactions(payload.message_id, payload.reactions); break
     }
   }
 
-  return { messages, loading, hasMore, loadMessages, addMessage, updateMessage, removeMessage, reset, handleWsEvent }
+  return { messages, loading, hasMore, loadMessages, addMessage, updateMessage, removeMessage, updateReactions, reset, handleWsEvent }
 })

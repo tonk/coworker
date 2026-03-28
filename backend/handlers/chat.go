@@ -11,6 +11,13 @@ import (
 	"github.com/tonk/coworker/services"
 )
 
+// ChatMessageResponse wraps ChatMessage with extra computed fields.
+type ChatMessageResponse struct {
+	models.ChatMessage
+	Attachments []models.Attachment    `json:"attachments"`
+	Reactions   []models.ReactionSummary `json:"reactions"`
+}
+
 func ListChatMessages(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	slug := c.Param("projectSlug")
@@ -47,7 +54,30 @@ func ListChatMessages(c *gin.Context) {
 		messages[i], messages[j] = messages[j], messages[i]
 	}
 
-	c.JSON(http.StatusOK, messages)
+	// Build response with attachments and reactions
+	ids := make([]uint, len(messages))
+	for i, m := range messages {
+		ids[i] = m.ID
+	}
+	attachMap := LoadAttachments("chat_message", ids)
+	reactMap := LoadReactionSummaries("chat_message", ids)
+
+	out := make([]ChatMessageResponse, len(messages))
+	for i, m := range messages {
+		out[i] = ChatMessageResponse{
+			ChatMessage: m,
+			Attachments: attachMap[m.ID],
+			Reactions:   reactMap[m.ID],
+		}
+		if out[i].Attachments == nil {
+			out[i].Attachments = []models.Attachment{}
+		}
+		if out[i].Reactions == nil {
+			out[i].Reactions = []models.ReactionSummary{}
+		}
+	}
+
+	c.JSON(http.StatusOK, out)
 }
 
 func DeleteChatMessage(c *gin.Context) {

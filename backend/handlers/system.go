@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/coworker/config"
@@ -17,6 +19,11 @@ const (
 	settingDefaultFont            = "default_font"
 	settingDefaultFontSize        = "default_font_size"
 	settingDefaultLocale          = "default_locale"
+	settingSMTPHost               = "smtp_host"
+	settingSMTPPort               = "smtp_port"
+	settingSMTPFrom               = "smtp_from"
+	settingSMTPUsername           = "smtp_username"
+	settingSMTPPassword           = "smtp_password"
 )
 
 var systemSettingDefaults = map[string]string{
@@ -27,6 +34,11 @@ var systemSettingDefaults = map[string]string{
 	settingDefaultFont:           "system",
 	settingDefaultFontSize:       "14",
 	settingDefaultLocale:         "en",
+	settingSMTPHost:               "",
+	settingSMTPPort:               "587",
+	settingSMTPFrom:               "",
+	settingSMTPUsername:           "",
+	settingSMTPPassword:           "",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -34,6 +46,38 @@ var systemSettingDefaults = map[string]string{
 func InitSystemDefaults(cfg *config.Config) {
 	if cfg.DefaultLocale != "" {
 		systemSettingDefaults[settingDefaultLocale] = cfg.DefaultLocale
+	}
+	if cfg.SMTP.Host != "" {
+		systemSettingDefaults[settingSMTPHost] = cfg.SMTP.Host
+	}
+	if cfg.SMTP.Port != 0 {
+		systemSettingDefaults[settingSMTPPort] = fmt.Sprintf("%d", cfg.SMTP.Port)
+	}
+	if cfg.SMTP.From != "" {
+		systemSettingDefaults[settingSMTPFrom] = cfg.SMTP.From
+	}
+	if cfg.SMTP.Username != "" {
+		systemSettingDefaults[settingSMTPUsername] = cfg.SMTP.Username
+	}
+	if cfg.SMTP.Password != "" {
+		systemSettingDefaults[settingSMTPPassword] = cfg.SMTP.Password
+	}
+}
+
+// GetSMTPSettings returns the current SMTP configuration from the database.
+// Used by the email service so changes take effect without a restart.
+func GetSMTPSettings() config.SMTPConfig {
+	all := loadAllSettings()
+	port, _ := strconv.Atoi(all[settingSMTPPort])
+	if port == 0 {
+		port = 587
+	}
+	return config.SMTPConfig{
+		Host:     all[settingSMTPHost],
+		Port:     port,
+		From:     all[settingSMTPFrom],
+		Username: all[settingSMTPUsername],
+		Password: all[settingSMTPPassword],
 	}
 }
 
@@ -52,8 +96,13 @@ func GetSystemSettings(c *gin.Context) {
 }
 
 // AdminGetSystemSettings returns all system settings for admins.
+// The SMTP password is never sent back — only smtp_password_set (bool) is included.
 func AdminGetSystemSettings(c *gin.Context) {
 	all := loadAllSettings()
+	// Mask the password: send only whether one is configured
+	passwordSet := all[settingSMTPPassword] != ""
+	delete(all, settingSMTPPassword)
+	all["smtp_password_set"] = fmt.Sprintf("%t", passwordSet)
 	c.JSON(http.StatusOK, all)
 }
 
@@ -67,6 +116,11 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		DefaultFont           string `json:"default_font"`
 		DefaultFontSize       string `json:"default_font_size"`
 		DefaultLocale         string `json:"default_locale"`
+		SMTPHost              string `json:"smtp_host"`
+		SMTPPort              string `json:"smtp_port"`
+		SMTPFrom              string `json:"smtp_from"`
+		SMTPUsername          string `json:"smtp_username"`
+		SMTPPassword          *string `json:"smtp_password"` // pointer so empty string clears it
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -98,6 +152,16 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	validLocales := map[string]bool{"en": true, "nl": true, "de": true, "fr": true, "es": true}
 	if validLocales[req.DefaultLocale] {
 		database.DB.Save(&models.SystemSetting{Key: settingDefaultLocale, Value: req.DefaultLocale})
+	}
+	// SMTP — always save (empty string is a valid value to clear a setting)
+	database.DB.Save(&models.SystemSetting{Key: settingSMTPHost, Value: req.SMTPHost})
+	if req.SMTPPort != "" {
+		database.DB.Save(&models.SystemSetting{Key: settingSMTPPort, Value: req.SMTPPort})
+	}
+	database.DB.Save(&models.SystemSetting{Key: settingSMTPFrom, Value: req.SMTPFrom})
+	database.DB.Save(&models.SystemSetting{Key: settingSMTPUsername, Value: req.SMTPUsername})
+	if req.SMTPPassword != nil {
+		database.DB.Save(&models.SystemSetting{Key: settingSMTPPassword, Value: *req.SMTPPassword})
 	}
 
 	AdminGetSystemSettings(c)

@@ -39,7 +39,19 @@ export const projectsApi = {
   removeLabel: (slug, cardId, labelId) => client.delete(`/projects/${slug}/cards/${cardId}/labels/${labelId}`),
   addWatcher: (slug, cardId, userId) => client.post(`/projects/${slug}/cards/${cardId}/watchers/${userId}`),
   removeWatcher: (slug, cardId, userId) => client.delete(`/projects/${slug}/cards/${cardId}/watchers/${userId}`),
+  addCardTag: (slug, cardId, name) => client.post(`/projects/${slug}/cards/${cardId}/tags`, { name }),
+  removeCardTag: (slug, cardId, tagId) => client.delete(`/projects/${slug}/cards/${cardId}/tags/${tagId}`),
   updateAssignee: (slug, cardId, userId) => client.put(`/projects/${slug}/cards/${cardId}/assignee`, { user_id: userId }),
+
+  // Checklist
+  listChecklist: (slug, cardId) => client.get(`/projects/${slug}/cards/${cardId}/checklist`),
+  createChecklistItem: (slug, cardId, body) => client.post(`/projects/${slug}/cards/${cardId}/checklist`, { body }),
+  updateChecklistItem: (slug, cardId, itemId, data) => client.put(`/projects/${slug}/cards/${cardId}/checklist/${itemId}`, data),
+  deleteChecklistItem: (slug, cardId, itemId) => client.delete(`/projects/${slug}/cards/${cardId}/checklist/${itemId}`),
+
+  // Multiple assignees
+  addAssignee: (slug, cardId, userId) => client.post(`/projects/${slug}/cards/${cardId}/assignees/${userId}`),
+  removeAssignee: (slug, cardId, userId) => client.delete(`/projects/${slug}/cards/${cardId}/assignees/${userId}`),
 
   // Comments
   listComments: (slug, cardId) => client.get(`/projects/${slug}/cards/${cardId}/comments`),
@@ -50,6 +62,15 @@ export const projectsApi = {
   // Chat
   listMessages: (slug, params) => client.get(`/projects/${slug}/chat/messages`, { params }),
   deleteMessage: (slug, msgId) => client.delete(`/projects/${slug}/chat/messages/${msgId}`),
+
+  // Chat reactions
+  toggleChatReaction: (slug, msgId, emoji) => client.post(`/projects/${slug}/chat/messages/${msgId}/reactions`, { emoji }),
+
+  // Webhooks
+  listWebhooks: (slug) => client.get(`/projects/${slug}/webhooks`),
+  createWebhook: (slug, data) => client.post(`/projects/${slug}/webhooks`, data),
+  deleteWebhook: (slug, id) => client.delete(`/projects/${slug}/webhooks/${id}`),
+  regenerateWebhook: (slug, id) => client.post(`/projects/${slug}/webhooks/${id}/regenerate`),
 
   // Starred
   starProject: (slug) => client.post(`/projects/${slug}/star`),

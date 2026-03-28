@@ -9,7 +9,15 @@ import (
 	"github.com/tonk/coworker/database"
 	"github.com/tonk/coworker/middleware"
 	"github.com/tonk/coworker/models"
+	appws "github.com/tonk/coworker/ws"
 )
+
+// ConvMessageResponse wraps ConversationMessage with attachments and reactions.
+type ConvMessageResponse struct {
+	models.ConversationMessage
+	Attachments []models.Attachment      `json:"attachments"`
+	Reactions   []models.ReactionSummary `json:"reactions"`
+}
 
 // CreateConversation POST /conversations
 // Body: {"user_ids": [2, 3], "name": "optional group name"}
@@ -130,7 +138,29 @@ func GetConversationMessages(c *gin.Context) {
 		Limit(200).
 		Find(&msgs)
 
-	c.JSON(http.StatusOK, msgs)
+	ids := make([]uint, len(msgs))
+	for i, m := range msgs {
+		ids[i] = m.ID
+	}
+	attachMap := LoadAttachments("conv_message", ids)
+	reactMap := LoadReactionSummaries("conv_message", ids)
+
+	out := make([]ConvMessageResponse, len(msgs))
+	for i, m := range msgs {
+		out[i] = ConvMessageResponse{
+			ConversationMessage: m,
+			Attachments:         attachMap[m.ID],
+			Reactions:           reactMap[m.ID],
+		}
+		if out[i].Attachments == nil {
+			out[i].Attachments = []models.Attachment{}
+		}
+		if out[i].Reactions == nil {
+			out[i].Reactions = []models.ReactionSummary{}
+		}
+	}
+
+	c.JSON(http.StatusOK, out)
 }
 
 // SendConversationMessage POST /conversations/:id/messages
@@ -166,6 +196,12 @@ func SendConversationMessage(c *gin.Context) {
 		Update("updated_at", time.Now())
 
 	database.DB.Preload("Sender").First(&msg, msg.ID)
+
+	if notifSvc != nil {
+		go notifSvc.NotifyNewDM(msg, msg.Sender)
+		go notifSvc.NotifyMentions(msg.Body, me, "direct message")
+	}
+
 	c.JSON(http.StatusCreated, msg)
 }
 
@@ -185,6 +221,22 @@ func DeleteConversationMessage(c *gin.Context) {
 	}
 
 	database.DB.Model(&msg).Update("is_deleted", true)
+
+	// Broadcast to all conversation members
+	var memberIDs []uint
+	database.DB.Model(&models.ConversationMember{}).
+		Where("conversation_id = ?", c.Param("id")).
+		Pluck("user_id", &memberIDs)
+	for _, uid := range memberIDs {
+		appws.BroadcastToUser(uid, appws.Message{
+			Type: appws.TypeDMMessageDeleted,
+			Payload: map[string]interface{}{
+				"conversation_id": msg.ConversationID,
+				"id":              msg.ID,
+			},
+		})
+	}
+
 	c.JSON(http.StatusOK, msg)
 }
 
@@ -227,6 +279,58 @@ func AddConversationMember(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "added"})
+}
+
+// EditConversationMessage PATCH /conversations/:id/messages/:msgId
+func EditConversationMessage(c *gin.Context) {
+	me := middleware.GetUserID(c)
+	convID, _ := strconv.Atoi(c.Param("id"))
+	msgID, _ := strconv.Atoi(c.Param("msgId"))
+
+	if !isMember(uint(convID), me) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
+		return
+	}
+
+	var msg models.ConversationMessage
+	if err := database.DB.First(&msg, msgID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+	if msg.SenderID != me {
+		c.JSON(http.StatusForbidden, gin.H{"error": "not your message"})
+		return
+	}
+
+	var req struct {
+		Body string `json:"body" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	database.DB.Model(&msg).Updates(map[string]interface{}{"body": req.Body, "is_edited": true})
+
+	// Broadcast to all conversation members
+	var memberIDs []uint
+	database.DB.Model(&models.ConversationMember{}).
+		Where("conversation_id = ?", convID).
+		Pluck("user_id", &memberIDs)
+	for _, uid := range memberIDs {
+		appws.BroadcastToUser(uid, appws.Message{
+			Type: appws.TypeDMMessageUpdated,
+			Payload: map[string]interface{}{
+				"conversation_id": convID,
+				"id":              msg.ID,
+				"body":            req.Body,
+				"is_edited":       true,
+			},
+		})
+	}
+
+	database.DB.Preload("Sender").First(&msg, msg.ID)
+	c.JSON(http.StatusOK, msg)
 }
 
 func isMember(convID, userID uint) bool {

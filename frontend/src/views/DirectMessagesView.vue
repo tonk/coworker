@@ -188,22 +188,47 @@
                 <div class="msg-sender" v-if="msg.sender_id !== auth.user?.id">
                   {{ msg.sender?.display_name || msg.sender?.username }}
                 </div>
-                <div :class="['msg-bubble', msg.sender_id === auth.user?.id ? 'bubble-own' : 'bubble-other']">
-                  <span v-if="msg.is_deleted" class="msg-deleted">{{ $t('chat.deleted') }}</span>
-                  <div v-else class="msg-body" v-html="renderMarkdown(msg.body)"></div>
-                  <span v-if="msg.is_edited && !msg.is_deleted" class="msg-edited"> · {{ $t('chat.edited') }}</span>
-                </div>
-                <div class="msg-time">
-                  {{ formatTime(msg.created_at) }}
-                  <button
-                    v-if="msg.sender_id === auth.user?.id && !msg.is_deleted"
-                    class="delete-btn"
-                    @click="deleteMsg(msg)"
-                    title="Delete"
-                  >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </div>
+                <!-- Edit mode -->
+                <template v-if="editingMsgId === msg.id">
+                  <textarea class="edit-textarea" v-model="editBody" rows="2" @keydown.enter.exact.prevent="saveEdit(msg)" @keydown.escape="editingMsgId = null"></textarea>
+                  <div class="edit-actions">
+                    <button class="btn btn-primary btn-sm" @click="saveEdit(msg)">Save</button>
+                    <button class="btn btn-ghost btn-sm" @click="editingMsgId = null">Cancel</button>
+                  </div>
+                </template>
+
+                <template v-else>
+                  <div :class="['msg-bubble', msg.sender_id === auth.user?.id ? 'bubble-own' : 'bubble-other']">
+                    <span v-if="msg.is_deleted" class="msg-deleted">{{ $t('chat.deleted') }}</span>
+                    <div v-else class="msg-body" v-html="renderMarkdown(msg.body)"></div>
+                    <span v-if="msg.is_edited && !msg.is_deleted" class="msg-edited"> · {{ $t('chat.edited') }}</span>
+                  </div>
+                  <AttachmentList v-if="!msg.is_deleted" :attachments="msg.attachments" />
+                  <MessageReactions
+                    v-if="!msg.is_deleted"
+                    :reactions="msg.reactions"
+                    @toggle="(emoji) => toggleConvReaction(msg, emoji)"
+                  />
+                  <div class="msg-meta">
+                    <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
+                    <button
+                      v-if="msg.sender_id === auth.user?.id && !msg.is_deleted"
+                      class="msg-action-btn"
+                      @click="startEdit(msg)"
+                      title="Edit"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button
+                      v-if="msg.sender_id === auth.user?.id && !msg.is_deleted"
+                      class="msg-action-btn"
+                      @click="deleteMsg(msg)"
+                      title="Delete"
+                    >
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                </template>
               </div>
 
             </div>
@@ -218,11 +243,13 @@
 
         <!-- Compose -->
         <div class="dm-compose">
+          <AttachmentList v-if="pendingFiles.length" :attachments="pendingFiles" :can-delete="true" @remove="removePending" />
           <div class="compose-body">
             <div class="compose-avatar" :style="avatarBg(auth.user)">
               <img v-if="getAvatar(auth.user)" :src="getAvatar(auth.user)" class="avatar-img" @error="e => e.target.style.display='none'" />
               <span v-else class="avatar-initials avatar-initials-sm">{{ initials(auth.user) }}</span>
             </div>
+            <FileUploadButton @files-selected="onFilesSelected" />
             <textarea
               class="compose-textarea"
               v-model="newMessage"
@@ -233,7 +260,7 @@
               @keydown.enter.exact.prevent="send"
               @input="autoResize"
             ></textarea>
-            <button class="compose-send-btn" @click="send" :disabled="!newMessage.trim() || sending" :title="$t('chat.send')">
+            <button class="compose-send-btn" @click="send" :disabled="(!newMessage.trim() && !pendingFiles.length) || sending" :title="$t('chat.send')">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
@@ -252,11 +279,15 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { messagesApi } from '@/api/messages'
+import { attachmentsApi } from '@/api/attachments'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import AttachmentList from '@/components/common/AttachmentList.vue'
+import FileUploadButton from '@/components/common/FileUploadButton.vue'
+import MessageReactions from '@/components/common/MessageReactions.vue'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -280,6 +311,13 @@ const sending = ref(false)
 const messagesEl = ref(null)
 const textareaEl = ref(null)
 let pollTimer = null
+
+// Edit state
+const editingMsgId = ref(null)
+const editBody = ref('')
+
+// Pending file attachments
+const pendingFiles = ref([])
 
 // Add member panel
 const showAddMember = ref(false)
@@ -427,11 +465,30 @@ onUnmounted(() => clearInterval(pollTimer))
 
 async function send() {
   const body = newMessage.value.trim()
-  if (!body || !activeConv.value) return
+  if (!body && !pendingFiles.value.length || !activeConv.value) return
   sending.value = true
   try {
-    const { data } = await messagesApi.sendConvMessage(activeConv.value.id, { body })
-    messages.value.push(data)
+    const sendBody = body || '📎'
+    const { data } = await messagesApi.sendConvMessage(activeConv.value.id, { body: sendBody })
+    const newMsg = { ...data, attachments: [], reactions: [] }
+
+    // Upload any pending files linked to this message
+    if (pendingFiles.value.length) {
+      const filesToUpload = [...pendingFiles.value]
+      pendingFiles.value = []
+      for (const pf of filesToUpload) {
+        const fd = new FormData()
+        fd.append('file', pf._file)
+        fd.append('owner_type', 'conv_message')
+        fd.append('owner_id', String(data.id))
+        try {
+          const { data: att } = await attachmentsApi.upload(fd)
+          newMsg.attachments.push(att)
+        } catch {}
+      }
+    }
+
+    messages.value.push(newMsg)
     newMessage.value = ''
     if (textareaEl.value) textareaEl.value.style.height = 'auto'
     // Bump this conversation to the top
@@ -458,6 +515,47 @@ async function deleteMsg(msg) {
   } catch {
     ui.error('Failed to delete message')
   }
+}
+
+function startEdit(msg) {
+  editingMsgId.value = msg.id
+  editBody.value = msg.body
+}
+
+async function saveEdit(msg) {
+  if (!editBody.value.trim()) return
+  try {
+    await messagesApi.editConvMessage(activeConv.value.id, msg.id, editBody.value)
+    msg.body = editBody.value
+    msg.is_edited = true
+    editingMsgId.value = null
+  } catch {
+    ui.error('Failed to edit message')
+  }
+}
+
+async function toggleConvReaction(msg, emoji) {
+  if (!activeConv.value) return
+  try {
+    const { data } = await messagesApi.toggleConvReaction(activeConv.value.id, msg.id, emoji)
+    msg.reactions = data.reactions
+  } catch {}
+}
+
+function onFilesSelected(files) {
+  for (const f of files) {
+    pendingFiles.value.push({
+      id: Math.random(),
+      filename: f.name,
+      size_bytes: f.size,
+      mime_type: f.type || 'application/octet-stream',
+      _file: f
+    })
+  }
+}
+
+function removePending(a) {
+  pendingFiles.value = pendingFiles.value.filter(p => p.id !== a.id)
 }
 
 // Add member to active group conversation
@@ -1021,19 +1119,45 @@ function dayLabel(dateStr) {
   gap: 6px;
 }
 
-.delete-btn {
+.msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+}
+.msg-action-btn {
   background: none;
   border: none;
   cursor: pointer;
   color: var(--color-text-muted);
   padding: 1px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   opacity: 0;
   transition: opacity .15s;
 }
-.msg-time:hover .delete-btn { opacity: 1; }
-.delete-btn:hover { color: var(--color-danger); }
+.msg-meta:hover .msg-action-btn { opacity: 1; }
+.msg-action-btn:hover { color: var(--color-danger); background: var(--color-bg); }
+
+/* Edit inline */
+.edit-textarea {
+  width: 100%;
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+.edit-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
 
 /* Compose */
 .dm-compose {

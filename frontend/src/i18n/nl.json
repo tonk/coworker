@@ -51,6 +51,31 @@
       "viewer": "Kijker"
     }
   },
+  "topics": {
+    "title": "Onderwerpen",
+    "new_topic": "Nieuw onderwerp",
+    "topic_title": "Titel",
+    "topic_body": "Inhoud",
+    "create": "Onderwerp aanmaken",
+    "no_topics": "Nog geen onderwerpen. Begin een discussie!",
+    "replies": "reacties",
+    "reply": "Reageer",
+    "add_reply": "Schrijf een reactie…",
+    "post_reply": "Reactie plaatsen",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "pinned": "Vastgezet",
+    "pin": "Vastzetten",
+    "unpin": "Losmaken",
+    "edited": "bewerkt",
+    "back": "Terug naar onderwerpen"
+  },
+  "checklist": {
+    "title": "Checklist",
+    "add_item": "Item toevoegen",
+    "add_item_placeholder": "Nieuw checklist-item…",
+    "progress": "{done} van {total} gedaan"
+  },
   "board": {
     "add_column": "Kolom toevoegen",
     "add_card": "Kaart toevoegen",
@@ -61,6 +86,7 @@
     "priority": "Prioriteit",
     "due_date": "Vervaldatum",
     "assignee": "Toegewezen aan",
+    "assignees": "Toegewezen aan",
     "labels": "Labels",
     "wip_limit": "WIP-limiet",
     "priorities": {
@@ -80,6 +106,8 @@
     "column_history": "Kolomgeschiedenis",
     "reply": "Beantwoorden",
     "watchers": "Volgers",
+    "tags": "Tags",
+    "add_tag_placeholder": "Tag toevoegen (bv. frontend)",
     "sort_none": "Standaardvolgorde",
     "sort_date": "Datum",
     "sort_assignee": "Toegewezene",
@@ -109,6 +137,9 @@
     "activate": "Activeren",
     "make_admin": "Beheerder maken",
     "make_user": "Gebruiker maken",
+    "role_admin": "Beheerder",
+    "role_user": "Gebruiker",
+    "role_viewer": "Kijker",
     "last_login": "Laatste aanmelding",
     "owner": "Eigenaar",
     "edit_user": "Gebruiker bewerken",
@@ -121,7 +152,15 @@
     "registration_enabled": "Gebruikersregistratie",
     "registration_hint": "Als uitgeschakeld, wordt de registratielink verborgen op de inlogpagina en zijn nieuwe registraties geblokkeerd.",
     "global_defaults_title": "Standaard systeeminstellingen",
-    "global_defaults_hint": "Deze standaarden gelden voor nieuwe gebruikers. Bestaande gebruikers kunnen ze overschrijven in hun eigen instellingen."
+    "global_defaults_hint": "Deze standaarden gelden voor nieuwe gebruikers. Bestaande gebruikers kunnen ze overschrijven in hun eigen instellingen.",
+    "smtp_title": "E-mail (SMTP)",
+    "smtp_hint": "Configureer een SMTP-server om e-mailmeldingen in te schakelen voor vermeldingen, DM's en kaarttoewijzingen.",
+    "smtp_host": "SMTP-server",
+    "smtp_host_placeholder": "mail.voorbeeld.nl",
+    "smtp_port": "Poort",
+    "smtp_from": "Afzenderadres",
+    "smtp_username": "Gebruikersnaam",
+    "smtp_password": "Wachtwoord"
   },
   "common": {
     "save": "Opslaan",
@@ -136,7 +175,8 @@
     "no": "Nee",
     "search": "Zoeken",
     "actions": "Acties",
-    "language": "Taal"
+    "language": "Taal",
+    "add": "Toevoegen"
   },
   "presence": {
     "online": "online"
@@ -176,8 +216,14 @@
     "no_starred": "Geen gemarkeerde projecten",
     "all_projects": "Alle projecten",
     "no_projects": "Geen projecten",
-    "users": "Gebruikers",
-    "no_users": "Geen gebruikers"
+    "favorites": "Favorieten",
+    "no_favorites": "Nog geen favorieten",
+    "favorite": "Toevoegen aan favorieten",
+    "unfavorite": "Verwijderen uit favorieten",
+    "users": "Mensen",
+    "no_users": "Geen gebruikers",
+    "online": "Online",
+    "offline": "Offline"
   },
   "apikeys": {
     "tab": "API-sleutels",

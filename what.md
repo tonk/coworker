@@ -83,7 +83,7 @@ Create an application that has all these features and requirements
   * Add
   * Comment
   * Move to other column
-- Add a footer to the UIr
+- Add a footer to the UI
   * Application name and version number
     ** Align left
   * Logged users full name

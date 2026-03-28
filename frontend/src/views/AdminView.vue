@@ -38,9 +38,11 @@
                   <br><small class="email">{{ user.email }}</small>
                 </td>
                 <td>
-                  <span :class="['badge', user.global_role === 'admin' ? 'badge-admin' : 'badge-user']">
-                    {{ user.global_role }}
-                  </span>
+                  <select class="role-select" :value="user.global_role" @change="setRole(user, $event.target.value)">
+                    <option value="admin">{{ $t('admin.role_admin') }}</option>
+                    <option value="user">{{ $t('admin.role_user') }}</option>
+                    <option value="viewer">{{ $t('admin.role_viewer') }}</option>
+                  </select>
                 </td>
                 <td>
                   <small>{{ user.last_login_at ? formatDateTime(user.last_login_at) : '-' }}</small>
@@ -52,9 +54,6 @@
                 </td>
                 <td class="actions-cell">
                   <button class="btn btn-secondary btn-sm" @click="openEditUser(user)">{{ $t('common.edit') }}</button>
-                  <button class="btn btn-secondary btn-sm" @click="toggleAdmin(user)">
-                    {{ user.global_role === 'admin' ? $t('admin.make_user') : $t('admin.make_admin') }}
-                  </button>
                   <button class="btn btn-secondary btn-sm" @click="toggleActive(user)">
                     {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
                   </button>
@@ -187,6 +186,40 @@
                 <option value="es">Español</option>
               </select>
             </div>
+
+            <h3 class="settings-subsection">{{ $t('admin.smtp_title') }}</h3>
+            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.smtp_hint') }}</p>
+
+            <div class="form-row" style="max-width:500px">
+              <div class="form-group" style="flex:3">
+                <label class="form-label">{{ $t('admin.smtp_host') }}</label>
+                <input class="form-input" v-model="systemSettings.smtp_host" :placeholder="$t('admin.smtp_host_placeholder')" />
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">{{ $t('admin.smtp_port') }}</label>
+                <input class="form-input" v-model="systemSettings.smtp_port" type="number" placeholder="587" />
+              </div>
+            </div>
+
+            <div class="form-group" style="max-width:400px">
+              <label class="form-label">{{ $t('admin.smtp_from') }}</label>
+              <input class="form-input" v-model="systemSettings.smtp_from" type="email" placeholder="noreply@example.com" />
+            </div>
+
+            <div class="form-row" style="max-width:500px">
+              <div class="form-group" style="flex:1">
+                <label class="form-label">{{ $t('admin.smtp_username') }}</label>
+                <input class="form-input" v-model="systemSettings.smtp_username" autocomplete="off" />
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label">{{ $t('admin.smtp_password') }}</label>
+                <input class="form-input" v-model="systemSettings.smtp_password" type="password" autocomplete="new-password" :placeholder="smtpPasswordPlaceholder" />
+              </div>
+            </div>
+
+            <div class="form-actions" style="max-width:500px">
+              <button class="btn btn-primary" @click="saveSettings">{{ $t('common.save') }}</button>
+            </div>
           </div>
         </div>
       </div>
@@ -219,8 +252,9 @@
     <div class="form-group">
       <label class="form-label">{{ $t('admin.global_role') }}</label>
       <select class="form-input" v-model="newUser.global_role">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
+        <option value="user">{{ $t('admin.role_user') }}</option>
+        <option value="admin">{{ $t('admin.role_admin') }}</option>
+        <option value="viewer">{{ $t('admin.role_viewer') }}</option>
       </select>
     </div>
     <div class="form-group">
@@ -343,7 +377,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { adminApi } from '@/api/admin'
 import { useUIStore } from '@/stores/ui'
@@ -377,8 +411,16 @@ const systemSettings = ref({
   default_theme: 'system',
   default_font: 'system',
   default_font_size: '14',
-  default_locale: 'en'
+  default_locale: 'en',
+  smtp_host: '',
+  smtp_port: '587',
+  smtp_from: '',
+  smtp_username: '',
+  smtp_password: ''
 })
+// True when the server has a password saved (so we show a placeholder instead of the value)
+const smtpPasswordSet = ref(false)
+const smtpPasswordPlaceholder = computed(() => smtpPasswordSet.value ? '••••••••' : '')
 let settingsLoaded = false
 
 const timezones = [
@@ -430,21 +472,41 @@ async function loadSettings() {
     systemSettings.value.default_font             = data.default_font || 'system'
     systemSettings.value.default_font_size        = data.default_font_size || '14'
     systemSettings.value.default_locale           = data.default_locale || 'en'
+    systemSettings.value.smtp_host                = data.smtp_host || ''
+    systemSettings.value.smtp_port                = data.smtp_port || '587'
+    systemSettings.value.smtp_from                = data.smtp_from || ''
+    systemSettings.value.smtp_username            = data.smtp_username || ''
+    // Password is never sent back from the server — show placeholder if one is set
+    smtpPasswordSet.value = !!(data.smtp_password_set)
+    systemSettings.value.smtp_password            = ''
     settingsLoaded = true
   } catch {}
 }
 
 async function saveSettings() {
   try {
-    await adminApi.updateSystemSettings({
-      registration_enabled:    systemSettings.value.registration_enabled,
+    const payload = {
+      registration_enabled:     systemSettings.value.registration_enabled,
       default_date_time_format: systemSettings.value.default_date_time_format,
       default_timezone:         systemSettings.value.default_timezone,
       default_theme:            systemSettings.value.default_theme,
       default_font:             systemSettings.value.default_font,
       default_font_size:        systemSettings.value.default_font_size,
-      default_locale:           systemSettings.value.default_locale
-    })
+      default_locale:           systemSettings.value.default_locale,
+      smtp_host:                systemSettings.value.smtp_host,
+      smtp_port:                systemSettings.value.smtp_port,
+      smtp_from:                systemSettings.value.smtp_from,
+      smtp_username:            systemSettings.value.smtp_username
+    }
+    // Only include password if the admin typed something new
+    if (systemSettings.value.smtp_password) {
+      payload.smtp_password = systemSettings.value.smtp_password
+    }
+    await adminApi.updateSystemSettings(payload)
+    if (systemSettings.value.smtp_password) {
+      smtpPasswordSet.value = true
+      systemSettings.value.smtp_password = ''
+    }
     ui.success('Settings saved')
   } catch {
     ui.error('Failed to save settings')
@@ -474,8 +536,7 @@ async function submitCreateUser() {
   }
 }
 
-async function toggleAdmin(user) {
-  const newRole = user.global_role === 'admin' ? 'user' : 'admin'
+async function setRole(user, newRole) {
   await adminApi.updateUser(user.id, { global_role: newRole })
   user.global_role = newRole
 }
@@ -614,6 +675,16 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 
 .badge-admin { background: #ede9fe; color: #5b21b6; }
 .badge-user { background: #f1f5f9; color: #64748b; }
+
+.role-select {
+  font-size: 12px;
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
 .badge-active { background: #dcfce7; color: #166534; }
 .badge-inactive { background: #fee2e2; color: #991b1b; }
 

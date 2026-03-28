@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"unicode"
 
 	"github.com/tonk/coworker/database"
 	"github.com/tonk/coworker/models"
@@ -38,10 +39,17 @@ func GetMemberRole(projectID, userID uint) string {
 }
 
 // RequireProjectRole checks the user has at least minRole in the project.
-// It also passes if the user has global admin role.
+// Global admins pass unconditionally. Global viewers get implicit viewer-level
+// access to every project (read-only), but are blocked on write operations.
 func RequireProjectRole(projectID, userID uint, globalRole, minRole string) error {
 	if globalRole == "admin" {
 		return nil
+	}
+	if globalRole == "viewer" {
+		if roleRank[minRole] <= roleRank["viewer"] {
+			return nil
+		}
+		return ErrForbidden
 	}
 	role := GetMemberRole(projectID, userID)
 	if roleRank[role] < roleRank[minRole] {
@@ -64,6 +72,45 @@ func GenerateSlug(name string) string {
 		slug = base + "-" + itoa(counter)
 		counter++
 	}
+}
+
+// GenerateKeyPrefix creates a 3-letter uppercase abbreviation from a project name.
+// Examples: "Coworker" → "COW", "My Project" → "MYP", "My Big Task" → "MBT"
+func GenerateKeyPrefix(name string) string {
+	// Split into words by non-alphanumeric characters
+	var words [][]rune
+	var current []rune
+	for _, r := range name {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			current = append(current, unicode.ToUpper(r))
+		} else if len(current) > 0 {
+			words = append(words, current)
+			current = nil
+		}
+	}
+	if len(current) > 0 {
+		words = append(words, current)
+	}
+
+	var result []rune
+	// Take first letter of each word (up to 3)
+	for _, w := range words {
+		if len(result) >= 3 {
+			break
+		}
+		result = append(result, w[0])
+	}
+	// If still < 3, take more chars from the first word
+	if len(result) < 3 && len(words) > 0 {
+		for i := 1; i < len(words[0]) && len(result) < 3; i++ {
+			result = append(result, words[0][i])
+		}
+	}
+	// Pad with X if name too short
+	for len(result) < 3 {
+		result = append(result, 'X')
+	}
+	return string(result[:3])
 }
 
 func slugify(s string) string {

@@ -10,7 +10,7 @@ import (
 	"github.com/tonk/coworker/services"
 )
 
-func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, apiLog bool) *gin.Engine {
+func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, apiLog bool, uploadDir string) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	if apiLog {
@@ -73,6 +73,11 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		// Online presence (global)
 		protected.GET("/online-users", handlers.GetOnlineUsers)
 
+		// Favorite users
+		protected.GET("/favorite-users", handlers.ListFavoriteUsers)
+		protected.POST("/favorite-users/:userId", handlers.AddFavoriteUser)
+		protected.DELETE("/favorite-users/:userId", handlers.RemoveFavoriteUser)
+
 		// Starred projects
 		protected.GET("/starred-projects", handlers.ListStarredProjects)
 
@@ -85,6 +90,14 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			dm.DELETE("/:userId/:msgId", handlers.DeleteDirectMessage)
 		}
 
+		// File attachments
+		protected.POST("/attachments", handlers.UploadAttachment)
+		protected.GET("/attachments/:id", handlers.DownloadAttachment)
+		protected.DELETE("/attachments/:id", handlers.DeleteAttachment)
+
+		// Global search
+		protected.GET("/search", handlers.GlobalSearch)
+
 		// Conversations (1-on-1 and group)
 		convs := protected.Group("/conversations")
 		{
@@ -92,8 +105,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			convs.POST("", handlers.CreateConversation)
 			convs.GET("/:id/messages", handlers.GetConversationMessages)
 			convs.POST("/:id/messages", handlers.SendConversationMessage)
+			convs.PATCH("/:id/messages/:msgId", handlers.EditConversationMessage)
 			convs.DELETE("/:id/messages/:msgId", handlers.DeleteConversationMessage)
 			convs.POST("/:id/members", handlers.AddConversationMember)
+			convs.POST("/:id/messages/:msgId/reactions", handlers.ToggleConvReaction)
 		}
 
 		// Projects
@@ -137,6 +152,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			projects.PUT("/:projectSlug/cards/:cardId/assignee", handlers.UpdateAssignee)
 			projects.POST("/:projectSlug/cards/:cardId/watchers/:userId", handlers.AddWatcher)
 			projects.DELETE("/:projectSlug/cards/:cardId/watchers/:userId", handlers.RemoveWatcher)
+			projects.POST("/:projectSlug/cards/:cardId/tags", handlers.AddCardTag)
+			projects.DELETE("/:projectSlug/cards/:cardId/tags/:tagId", handlers.RemoveCardTag)
 
 			// Card history
 			projects.GET("/:projectSlug/cards/:cardId/history", handlers.GetCardHistory)
@@ -147,15 +164,46 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			projects.PUT("/:projectSlug/cards/:cardId/comments/:commentId", handlers.UpdateComment)
 			projects.DELETE("/:projectSlug/cards/:cardId/comments/:commentId", handlers.DeleteComment)
 
+			// Card checklist
+			projects.GET("/:projectSlug/cards/:cardId/checklist", handlers.ListChecklistItems)
+			projects.POST("/:projectSlug/cards/:cardId/checklist", handlers.CreateChecklistItem)
+			projects.PUT("/:projectSlug/cards/:cardId/checklist/:itemId", handlers.UpdateChecklistItem)
+			projects.DELETE("/:projectSlug/cards/:cardId/checklist/:itemId", handlers.DeleteChecklistItem)
+
+			// Card assignees (multiple)
+			projects.POST("/:projectSlug/cards/:cardId/assignees/:userId", handlers.AddCardAssignee)
+			projects.DELETE("/:projectSlug/cards/:cardId/assignees/:userId", handlers.RemoveCardAssignee)
+
+			// Topics (threaded project discussions)
+			projects.GET("/:projectSlug/topics", handlers.ListTopics)
+			projects.POST("/:projectSlug/topics", handlers.CreateTopic)
+			projects.GET("/:projectSlug/topics/:topicId", handlers.GetTopic)
+			projects.PUT("/:projectSlug/topics/:topicId", handlers.UpdateTopic)
+			projects.DELETE("/:projectSlug/topics/:topicId", handlers.DeleteTopic)
+			projects.POST("/:projectSlug/topics/:topicId/replies", handlers.CreateTopicReply)
+			projects.PUT("/:projectSlug/topics/:topicId/replies/:replyId", handlers.UpdateTopicReply)
+			projects.DELETE("/:projectSlug/topics/:topicId/replies/:replyId", handlers.DeleteTopicReply)
+
 			// Chat history
 			projects.GET("/:projectSlug/chat/messages", handlers.ListChatMessages)
 			projects.DELETE("/:projectSlug/chat/messages/:msgId", handlers.DeleteChatMessage)
+			projects.POST("/:projectSlug/chat/messages/:msgId/reactions", handlers.ToggleChatReaction)
+
+			// Webhooks
+			projects.GET("/:projectSlug/webhooks", handlers.ListWebhooks)
+			projects.POST("/:projectSlug/webhooks", handlers.CreateWebhook)
+			projects.DELETE("/:projectSlug/webhooks/:webhookId", handlers.DeleteWebhook)
+			projects.POST("/:projectSlug/webhooks/:webhookId/regenerate", handlers.RegenerateWebhookToken)
 
 			// Star / unstar project
 			projects.POST("/:projectSlug/star", handlers.StarProject)
 			projects.DELETE("/:projectSlug/star", handlers.UnstarProject)
 		}
 	}
+
+	// Public incoming webhook receivers
+	v1.POST("/webhooks/:token", handlers.IncomingWebhook)
+	v1.POST("/gitea-webhook/:token", handlers.IncomingGiteaWebhook)
 
 	// WebSocket (auth via ?token= query param)
 	v1.GET("/ws/:projectSlug", wsHandler.HandleWS)
@@ -167,6 +215,11 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		ticket.POST("/:projectSlug/cards", handlers.TicketAdd)
 		ticket.POST("/:projectSlug/cards/:cardId/comments", handlers.TicketComment)
 		ticket.PATCH("/:projectSlug/cards/:cardId/move", handlers.TicketMove)
+	}
+
+	// Serve uploaded files
+	if uploadDir != "" {
+		r.Static("/uploads", uploadDir)
 	}
 
 	// Serve frontend SPA from webDir when configured

@@ -24,12 +24,13 @@ type Client struct {
 	displayName string
 	avatarURL   string
 	projectID   uint
+	globalRole  string
 
 	// injected handler for incoming chat messages
 	onMessage func(client *Client, raw []byte)
 }
 
-func NewClient(hub *Hub, conn *websocket.Conn, userID uint, username, displayName, avatarURL string, projectID uint, onMessage func(*Client, []byte)) *Client {
+func NewClient(hub *Hub, conn *websocket.Conn, userID uint, username, displayName, avatarURL string, projectID uint, globalRole string, onMessage func(*Client, []byte)) *Client {
 	return &Client{
 		hub:         hub,
 		conn:        conn,
@@ -39,6 +40,7 @@ func NewClient(hub *Hub, conn *websocket.Conn, userID uint, username, displayNam
 		displayName: displayName,
 		avatarURL:   avatarURL,
 		projectID:   projectID,
+		globalRole:  globalRole,
 		onMessage:   onMessage,
 	}
 }
@@ -100,6 +102,7 @@ func (c *Client) WritePump() {
 
 func (c *Client) UserID() uint      { return c.userID }
 func (c *Client) ProjectID() uint   { return c.projectID }
+func (c *Client) GlobalRole() string { return c.globalRole }
 
 func (c *Client) Send(data []byte) {
 	select {

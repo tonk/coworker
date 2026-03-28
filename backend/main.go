@@ -19,6 +19,13 @@ func main() {
 
 	cfg := config.Load(*configFile)
 	handlers.InitSystemDefaults(cfg)
+	handlers.InitAttachments(cfg)
+
+	emailSvc := services.NewEmailService(cfg.SMTP)
+	// Allow the email service to read live SMTP settings from the DB after startup
+	services.SetSMTPConfigReader(handlers.GetSMTPSettings)
+	notifSvc := services.NewNotificationService(emailSvc)
+	handlers.InitNotifications(notifSvc)
 
 	if cfg.GinMode == "release" {
 		gin.SetMode(gin.ReleaseMode)
@@ -40,7 +47,7 @@ func main() {
 
 	authSvc := services.NewAuthService(cfg.JWTSecret)
 
-	r := router.Setup(authSvc, cfg.AllowedOrigins, cfg.WebDir, cfg.APILog)
+	r := router.Setup(authSvc, cfg.AllowedOrigins, cfg.WebDir, cfg.APILog, cfg.UploadDir)
 
 	log.Printf("Starting server on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {

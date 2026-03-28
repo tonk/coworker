@@ -51,6 +51,31 @@
       "viewer": "Observateur"
     }
   },
+  "topics": {
+    "title": "Sujets",
+    "new_topic": "Nouveau sujet",
+    "topic_title": "Titre",
+    "topic_body": "Contenu",
+    "create": "Créer un sujet",
+    "no_topics": "Aucun sujet pour l'instant. Lancez une discussion !",
+    "replies": "réponses",
+    "reply": "Répondre",
+    "add_reply": "Écrire une réponse…",
+    "post_reply": "Publier la réponse",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "pinned": "Épinglé",
+    "pin": "Épingler",
+    "unpin": "Désépingler",
+    "edited": "modifié",
+    "back": "Retour aux sujets"
+  },
+  "checklist": {
+    "title": "Liste de contrôle",
+    "add_item": "Ajouter un élément",
+    "add_item_placeholder": "Nouvel élément…",
+    "progress": "{done} sur {total} terminé"
+  },
   "board": {
     "add_column": "Ajouter une colonne",
     "add_card": "Ajouter une carte",
@@ -61,6 +86,7 @@
     "priority": "Priorité",
     "due_date": "Date d'échéance",
     "assignee": "Assigné à",
+    "assignees": "Assignés",
     "labels": "Étiquettes",
     "wip_limit": "Limite WIP",
     "priorities": {
@@ -80,6 +106,8 @@
     "column_history": "Historique des colonnes",
     "reply": "Répondre",
     "watchers": "Observateurs",
+    "tags": "Tags",
+    "add_tag_placeholder": "Ajouter un tag (ex. frontend)",
     "sort_none": "Ordre par défaut",
     "sort_date": "Date",
     "sort_assignee": "Responsable",
@@ -109,6 +137,9 @@
     "activate": "Activer",
     "make_admin": "Définir comme administrateur",
     "make_user": "Définir comme utilisateur",
+    "role_admin": "Administrateur",
+    "role_user": "Utilisateur",
+    "role_viewer": "Lecteur",
     "last_login": "Dernière connexion",
     "owner": "Propriétaire",
     "edit_user": "Modifier l'utilisateur",
@@ -121,7 +152,15 @@
     "registration_enabled": "Inscription des utilisateurs",
     "registration_hint": "Lorsque désactivé, le lien d'inscription est masqué sur la page de connexion et les nouvelles inscriptions sont bloquées.",
     "global_defaults_title": "Paramètres par défaut globaux",
-    "global_defaults_hint": "Ces valeurs par défaut s'appliquent aux nouveaux utilisateurs. Les utilisateurs existants peuvent les remplacer dans leurs propres paramètres."
+    "global_defaults_hint": "Ces valeurs par défaut s'appliquent aux nouveaux utilisateurs. Les utilisateurs existants peuvent les remplacer dans leurs propres paramètres.",
+    "smtp_title": "E-mail (SMTP)",
+    "smtp_hint": "Configurez un serveur SMTP pour activer les notifications par e-mail pour les mentions, DMs et attributions de cartes.",
+    "smtp_host": "Serveur SMTP",
+    "smtp_host_placeholder": "mail.exemple.fr",
+    "smtp_port": "Port",
+    "smtp_from": "Adresse expéditeur",
+    "smtp_username": "Nom d'utilisateur",
+    "smtp_password": "Mot de passe"
   },
   "common": {
     "save": "Enregistrer",
@@ -136,7 +175,8 @@
     "no": "Non",
     "search": "Rechercher",
     "actions": "Actions",
-    "language": "Langue"
+    "language": "Langue",
+    "add": "Ajouter"
   },
   "presence": {
     "online": "en ligne"
@@ -176,8 +216,14 @@
     "no_starred": "Aucun projet marqué",
     "all_projects": "Tous les projets",
     "no_projects": "Aucun projet",
-    "users": "Utilisateurs",
-    "no_users": "Aucun utilisateur"
+    "favorites": "Favoris",
+    "no_favorites": "Aucun favori pour l'instant",
+    "favorite": "Ajouter aux favoris",
+    "unfavorite": "Retirer des favoris",
+    "users": "Personnes",
+    "no_users": "Aucun utilisateur",
+    "online": "En ligne",
+    "offline": "Hors ligne"
   },
   "apikeys": {
     "tab": "Clés API",

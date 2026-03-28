@@ -11,6 +11,7 @@
           <button :class="['tab', { active: tab === 'members' }]" @click="tab = 'members'">{{ $t('project.members') }}</button>
           <button :class="['tab', { active: tab === 'labels' }]" @click="tab = 'labels'">{{ $t('project.labels') }}</button>
           <button :class="['tab', { active: tab === 'apikeys' }]" @click="tab = 'apikeys'; loadApiKeys()">{{ $t('apikeys.tab') }}</button>
+          <button :class="['tab', { active: tab === 'webhooks' }]" @click="tab = 'webhooks'; loadWebhooks()">Webhooks</button>
         </div>
 
         <!-- General Tab -->
@@ -126,6 +127,76 @@
           </div>
         </div>
 
+        <!-- Webhooks Tab -->
+        <div v-if="tab === 'webhooks'" class="tab-content">
+          <div class="form-group" style="max-width:420px">
+            <label class="form-label">Webhook name</label>
+            <input class="form-input" v-model="newWebhookName" placeholder="e.g. CI Bot" />
+          </div>
+          <div class="form-group" style="max-width:420px">
+            <label class="form-label">Type</label>
+            <select class="form-input" v-model="newWebhookType">
+              <option value="generic">Generic (plain JSON)</option>
+              <option value="gitea">Gitea / Forgejo</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" :disabled="!newWebhookName.trim()" @click="createWebhook">Create Webhook</button>
+
+          <div v-if="createdWebhookToken" class="new-key-box" style="margin-top:16px">
+            <p class="new-key-notice">Copy this token now — it won't be shown again.</p>
+            <code class="new-key-value">{{ createdWebhookToken }}</code>
+            <button class="btn btn-secondary btn-sm" @click="copyWebhookToken">Copy</button>
+          </div>
+
+          <!-- Generic webhook docs -->
+          <div class="webhook-docs" style="margin-top:20px">
+            <h4 style="margin:0 0 6px">Generic webhook</h4>
+            <p style="font-size:13px;color:var(--color-text-muted);margin:0 0 6px">
+              <code>POST /api/v1/webhooks/&lt;token&gt;</code> — body: <code>{"text": "...", "username": "Bot"}</code>
+            </p>
+            <h4 style="margin:12px 0 6px">Gitea / Forgejo webhook</h4>
+            <p style="font-size:13px;color:var(--color-text-muted);margin:0 0 4px">
+              Create a webhook of type <strong>Gitea / Forgejo</strong> above, then in your Gitea/Forgejo repository go to
+              <strong>Settings → Webhooks → Add Webhook → Gitea</strong> and set:
+            </p>
+            <ul style="font-size:13px;color:var(--color-text-muted);margin:0 0 4px;padding-left:18px">
+              <li>Target URL: <code>{{ baseUrl }}/api/v1/gitea-webhook/&lt;token&gt;</code></li>
+              <li>Content type: <code>application/json</code></li>
+              <li>Secret: leave empty (the token in the URL authenticates the request)</li>
+            </ul>
+            <p style="font-size:13px;color:var(--color-text-muted);margin:0">
+              Supported events: push, issues, pull request, comments, create, delete, release, fork.
+            </p>
+          </div>
+
+          <table class="data-table" style="margin-top:24px">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Token (hint)</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!webhooks.length">
+                <td colspan="5" style="text-align:center;color:var(--color-text-muted)">No webhooks yet</td>
+              </tr>
+              <tr v-for="wh in webhooks" :key="wh.id">
+                <td>{{ wh.name }}</td>
+                <td><span class="webhook-type-badge" :class="wh.type">{{ wh.type === 'gitea' ? 'Gitea/Forgejo' : 'Generic' }}</span></td>
+                <td><code>…{{ wh.token_hint }}</code></td>
+                <td>{{ formatDateTime(wh.created_at) }}</td>
+                <td style="display:flex;gap:6px">
+                  <button class="btn btn-secondary btn-sm" @click="regenerateWebhook(wh)">Regenerate</button>
+                  <button class="btn btn-danger btn-sm" @click="deleteWebhook(wh)">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Labels Tab -->
         <div v-if="tab === 'labels'" class="tab-content">
           <div class="section-action">
@@ -226,6 +297,13 @@ const form = ref({ name: '', description: '', color: '' })
 const apiKeys = ref([])
 const newKeyName = ref('')
 const generatedKey = ref('')
+
+// Webhooks state
+const webhooks = ref([])
+const newWebhookName = ref('')
+const newWebhookType = ref('generic')
+const createdWebhookToken = ref('')
+const baseUrl = computed(() => window.location.origin)
 
 // Users not yet in the project
 const invitableUsers = computed(() => {
@@ -365,6 +443,50 @@ function copyKey() {
   navigator.clipboard.writeText(generatedKey.value)
   ui.success('Copied!')
 }
+
+async function loadWebhooks() {
+  try {
+    const { data } = await projectsApi.listWebhooks(slug.value)
+    webhooks.value = data
+  } catch {}
+}
+
+async function createWebhook() {
+  try {
+    const { data } = await projectsApi.createWebhook(slug.value, {
+      name: newWebhookName.value.trim(),
+      type: newWebhookType.value,
+    })
+    createdWebhookToken.value = data.token
+    newWebhookName.value = ''
+    newWebhookType.value = 'generic'
+    await loadWebhooks()
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to create webhook')
+  }
+}
+
+async function deleteWebhook(wh) {
+  if (!confirm('Delete this webhook?')) return
+  await projectsApi.deleteWebhook(slug.value, wh.id)
+  await loadWebhooks()
+}
+
+async function regenerateWebhook(wh) {
+  if (!confirm('Regenerate token? The old token will stop working immediately.')) return
+  try {
+    const { data } = await projectsApi.regenerateWebhook(slug.value, wh.id)
+    createdWebhookToken.value = data.token
+    await loadWebhooks()
+  } catch (e) {
+    ui.error('Failed to regenerate token')
+  }
+}
+
+function copyWebhookToken() {
+  navigator.clipboard.writeText(createdWebhookToken.value)
+  ui.success('Copied!')
+}
 </script>
 
 <style scoped>
@@ -458,4 +580,11 @@ function copyKey() {
   font-weight: 500;
 }
 .method.patch { background: #f59e0b; }
+
+.webhook-type-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 9999px; }
+.webhook-type-badge.gitea { background: #fef3c7; color: #92400e; }
+.webhook-type-badge.generic { background: var(--color-surface); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+
+.webhook-docs { padding: 16px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); max-width: 640px; }
+.webhook-docs h4 { font-size: 13px; font-weight: 700; }
 </style>

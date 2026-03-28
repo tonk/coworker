@@ -4,6 +4,46 @@
 
 ### Features
 
+#### Topics — threaded project discussions
+- New `Topic` and `TopicReply` models with soft-delete, pin, and edit tracking
+- Full REST API: `GET/POST /projects/:slug/topics`, `GET/PUT/DELETE /projects/:slug/topics/:id`, replies sub-resource
+- Real-time WebSocket events: `topic.created/updated/deleted`, `topic.reply.created/updated/deleted`
+- `TopicsView.vue`: two-column layout with topic list sidebar and detail pane; pin/unpin, edit, delete, reply thread with markdown
+- Topics link added to the board toolbar; route `/projects/:slug/topics`
+
+#### Card checklists
+- New `CardChecklistItem` model (position-ordered, hard-delete)
+- REST API: `GET/POST /projects/:slug/cards/:id/checklist`, `PUT/DELETE` per item
+- Checklist section in `CardDetail.vue` with inline add/edit, completion toggle, and a progress bar showing completion percentage
+
+#### Multiple assignees per card
+- New `CardAssignee` many-to-many join table; `Card.Assignees []User` preloaded alongside the existing primary `AssigneeID`
+- REST API: `POST/DELETE /projects/:slug/cards/:id/assignees/:userId`
+- `CardDetail.vue`: multi-chip assignee selector (same UX as Watchers)
+- `BoardCard.vue`: stacked avatar display for up to three assignees, overflow counter for more
+
+#### Global "Viewer" role
+- Added `"viewer"` as a third value for `User.GlobalRole` (alongside `"admin"` and `"user"`)
+- `RequireProjectRole` grants global viewers implicit read-only access to every project; write routes return 403
+- `ListProjects` returns all non-deleted projects for viewers (not just memberships)
+- `CreateProject` blocked for viewers
+- WebSocket: ping still works for viewers; all write operations (`chat.send/edit/delete`) return a `forbidden` error
+- `AdminView.vue`: replaced toggle-admin button with an inline three-way role `<select>` (Admin / User / Viewer); viewer option in Create User modal
+- Translated viewer role label in all five locales
+
+#### Sidebar — favourite people & online presence
+- New `FavoriteUser` join table and REST API: `GET/POST/DELETE /favorite-users/:userId`
+- New **Favorites** section in the sidebar showing starred users with a green online dot and a direct link to their DM; one-click unfavorite
+- **People** section (renamed from "Users"): all users sorted online-first; green dot = active WebSocket connection, grey = offline; `☆/★` hover button to favourite/unfavourite without navigating away
+- Badge count on the People header shows the number of currently online users
+
+### Bug Fixes
+- Fixed WebSocket 404 in development: Vite proxy `/api` now has `ws: true`, so connections to `/api/v1/ws/...` are correctly upgraded instead of returning 404
+
+## [Previous unreleased]
+
+### Features
+
 #### Internationalization
 - Added German (`de`), French (`fr`), and Spanish (`es`) translation files with full coverage of all 191 UI keys
 - Registered all three new locales in `i18n/index.js` alongside the existing English and Dutch

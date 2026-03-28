@@ -19,6 +19,18 @@ type Config struct {
 	GinMode        string `yaml:"gin_mode"` // debug | release (default: debug)
 	DBLog          string `yaml:"db_log"`   // silent | error | warn | info (default: info)
 	APILog         bool   `yaml:"api_log"`  // log HTTP requests (default: true)
+	UploadDir      string `yaml:"upload_dir"`   // directory for uploaded files (default: ./uploads)
+	MaxUploadMB    int64  `yaml:"max_upload_mb"` // max upload size in MB (default: 25)
+	SMTP           SMTPConfig `yaml:"smtp"`
+}
+
+type SMTPConfig struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	From     string `yaml:"from"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	UseTLS   bool   `yaml:"use_tls"`
 }
 
 // Load reads configuration with the following priority (highest first):
@@ -45,6 +57,9 @@ func defaults() *Config {
 		WebDir:         "",
 		DefaultLocale:  "en",
 		APILog:         true,
+		UploadDir:      "./uploads",
+		MaxUploadMB:    25,
+		SMTP:           SMTPConfig{Port: 587},
 	}
 }
 

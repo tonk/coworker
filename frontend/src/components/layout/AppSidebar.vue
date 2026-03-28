@@ -50,24 +50,55 @@
       </div>
     </section>
 
-    <!-- All Users -->
+    <!-- Favorite People -->
     <section class="sidebar-section">
-      <button class="section-header" @click="toggle('chat')">
-        <span class="section-title">{{ $t('sidebar.users') }}</span>
-        <span class="badge-count" v-if="sidebarStore.chatUsers.length">{{ sidebarStore.chatUsers.length }}</span>
-        <span v-if="notificationsStore.hasUnread" class="unread-dot" title="Unread messages"></span>
-        <span class="chevron" :class="{ open: open.chat }">›</span>
+      <button class="section-header" @click="toggle('favorites')">
+        <span class="section-title">{{ $t('sidebar.favorites') }}</span>
+        <span class="chevron" :class="{ open: open.favorites }">›</span>
       </button>
-      <div v-show="open.chat" class="section-body">
+      <div v-show="open.favorites" class="section-body">
+        <div v-if="!favoritedUsers.length" class="section-empty">
+          {{ $t('sidebar.no_favorites') }}
+        </div>
+        <div class="user-list">
+          <RouterLink
+            v-for="user in favoritedUsers"
+            :key="user.id"
+            :to="{ name: 'messages', query: { user: user.id } }"
+            class="user-row"
+          >
+            <span class="presence-dot" :class="{ online: isOnline(user.id) }" :title="isOnline(user.id) ? $t('sidebar.online') : $t('sidebar.offline')"></span>
+            <span class="user-row-name">{{ user.display_name || user.username }}</span>
+            <button class="fav-btn fav-btn-active" @click.prevent="unfavorite(user)" :title="$t('sidebar.unfavorite')">★</button>
+          </RouterLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- All People -->
+    <section class="sidebar-section">
+      <button class="section-header" @click="toggle('people')">
+        <span class="section-title">{{ $t('sidebar.users') }}</span>
+        <span class="badge-count" v-if="onlineCount">{{ onlineCount }}</span>
+        <span v-if="notificationsStore.hasUnread" class="unread-dot" title="Unread messages"></span>
+        <span class="chevron" :class="{ open: open.people }">›</span>
+      </button>
+      <div v-show="open.people" class="section-body">
         <div class="user-list">
           <RouterLink
             v-for="user in sortedUsers"
             :key="user.id"
             :to="{ name: 'messages', query: { user: user.id } }"
-            class="online-user"
+            class="user-row"
           >
-            <span class="user-dot" :class="{ 'in-chat': user.inChat }"></span>
-            <span class="online-name">{{ user.display_name || user.username }}</span>
+            <span class="presence-dot" :class="{ online: user.online }" :title="user.online ? $t('sidebar.online') : $t('sidebar.offline')"></span>
+            <span class="user-row-name">{{ user.display_name || user.username }}</span>
+            <button
+              class="fav-btn"
+              :class="{ 'fav-btn-active': sidebarStore.isFavorite(user.id) }"
+              @click.prevent="toggleFavorite(user)"
+              :title="sidebarStore.isFavorite(user.id) ? $t('sidebar.unfavorite') : $t('sidebar.favorite')"
+            >{{ sidebarStore.isFavorite(user.id) ? '★' : '☆' }}</button>
           </RouterLink>
           <div v-if="!sortedUsers.length" class="section-empty">
             {{ $t('sidebar.no_users') }}
@@ -92,7 +123,7 @@ const notificationsStore = useNotificationsStore()
 
 // Collapse state — persisted in localStorage
 const STORAGE_KEY = 'sidebar_open'
-const defaults = { starred: true, projects: true, chat: true }
+const defaults = { starred: true, projects: true, favorites: true, people: true }
 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaults
 const open = ref({ ...defaults, ...saved })
 
@@ -100,6 +131,16 @@ function toggle(section) {
   open.value[section] = !open.value[section]
   localStorage.setItem(STORAGE_KEY, JSON.stringify(open.value))
 }
+
+const onlineIds = computed(() => new Set(sidebarStore.chatUsers.map(u => u.id)))
+
+function isOnline(userId) {
+  return onlineIds.value.has(userId)
+}
+
+const onlineCount = computed(() => {
+  return sidebarStore.allUsers.filter(u => u.id !== auth.user?.id && isOnline(u.id)).length
+})
 
 // All projects sorted: starred first (marked), then the rest
 const sortedProjects = computed(() => {
@@ -113,17 +154,33 @@ const sortedProjects = computed(() => {
   return [...starred, ...rest]
 })
 
-// All users sorted: in-chat users first (marked), then the rest
-const sortedUsers = computed(() => {
-  const chatSet = new Set(sidebarStore.chatUsers.map(u => u.id))
-  const inChat = sidebarStore.allUsers
-    .filter(u => chatSet.has(u.id) && u.id !== auth.user?.id)
-    .map(u => ({ ...u, inChat: true }))
-  const notInChat = sidebarStore.allUsers
-    .filter(u => !chatSet.has(u.id) && u.id !== auth.user?.id)
-    .map(u => ({ ...u, inChat: false }))
-  return [...inChat, ...notInChat]
+// Favorites section — only favorited users, enriched with online status
+const favoritedUsers = computed(() => {
+  const favIds = new Set(sidebarStore.favoriteUsers.map(u => u.id))
+  return sidebarStore.allUsers
+    .filter(u => favIds.has(u.id))
+    .map(u => ({ ...u, online: isOnline(u.id) }))
 })
+
+// All users: online first, then offline; exclude self
+const sortedUsers = computed(() => {
+  const others = sidebarStore.allUsers.filter(u => u.id !== auth.user?.id)
+  const online = others.filter(u => isOnline(u.id)).map(u => ({ ...u, online: true }))
+  const offline = others.filter(u => !isOnline(u.id)).map(u => ({ ...u, online: false }))
+  return [...online, ...offline]
+})
+
+async function toggleFavorite(user) {
+  if (sidebarStore.isFavorite(user.id)) {
+    await sidebarStore.removeFavoriteUser(user.id)
+  } else {
+    await sidebarStore.addFavoriteUser(user.id)
+  }
+}
+
+async function unfavorite(user) {
+  await sidebarStore.removeFavoriteUser(user.id)
+}
 
 let pollInterval = null
 
@@ -132,6 +189,7 @@ onMounted(() => {
   sidebarStore.fetchAllProjects()
   sidebarStore.fetchAllUsers()
   sidebarStore.fetchChatUsers()
+  sidebarStore.fetchFavoriteUsers()
   notificationsStore.checkUnread()
   pollInterval = setInterval(() => {
     sidebarStore.fetchAllUsers()
@@ -262,35 +320,57 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
+/* User rows (favorites + people) */
 .user-list { display: flex; flex-direction: column; }
 
-.online-user {
+.user-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 16px;
+  gap: 7px;
+  padding: 5px 10px 5px 16px;
   font-size: 13px;
   text-decoration: none;
   color: var(--color-text);
   cursor: pointer;
 }
-.online-user:hover { background: var(--color-bg); }
+.user-row:hover { background: var(--color-bg); }
+.user-row.router-link-active { background: var(--color-bg); color: var(--color-primary); }
 
-.user-dot {
+.presence-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--color-border);
   flex-shrink: 0;
+  transition: background .2s;
 }
-.user-dot.in-chat {
+.presence-dot.online {
   background: var(--color-success);
 }
 
-.online-name {
+.user-row-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--color-text);
+  flex: 1;
 }
+
+.fav-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  opacity: 0;
+  line-height: 1;
+  transition: opacity .1s, color .1s;
+}
+.user-row:hover .fav-btn { opacity: 1; }
+.fav-btn.fav-btn-active {
+  color: #f59e0b;
+  opacity: 1;
+}
+.fav-btn:hover { color: #f59e0b; }
 </style>

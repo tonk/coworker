@@ -18,6 +18,17 @@ db_dsn: "./coworker.db"
 # db_driver: mysql
 # db_dsn: "coworker:secret@tcp(localhost:3306)/coworker?charset=utf8mb4&parseTime=True&loc=Local"
 
+# SMTP email settings (used for notifications: mentions, DMs, card assignments).
+# These values are used as initial defaults; they can be overridden via the admin
+# panel (Admin → Settings → Email) without requiring a server restart.
+# Leave smtp.host empty to disable outbound email entirely.
+smtp:
+  host: ""             # e.g. mail.example.com or smtp.gmail.com
+  port: 587            # 587 for STARTTLS (recommended), 465 for SSL, 25 for plaintext
+  from: ""             # e.g. coworker@example.com
+  username: ""         # SMTP login (often the same as the from address)
+  password: ""         # SMTP password or app-specific password
+
 # Secret used to sign JWT tokens — change this to a long random string in production
 jwt_secret: "change-me-for-production"
 

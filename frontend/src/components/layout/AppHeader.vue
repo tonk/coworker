@@ -6,6 +6,9 @@
       </RouterLink>
       <slot name="breadcrumb" />
     </div>
+    <div class="header-center">
+      <GlobalSearch />
+    </div>
     <div class="header-right">
       <span class="presence-count" v-if="presenceCount > 0" :title="`${presenceCount} ${$t('presence.online')}`">
         <span class="presence-dot"></span>{{ presenceCount }}
@@ -55,6 +58,7 @@ import { setLocale } from '@/i18n'
 import { useTheme } from '@/composables/useTheme'
 import { useNotificationsStore } from '@/stores/notifications'
 import { avatarUrl } from '@/composables/useAvatar'
+import GlobalSearch from '@/components/common/GlobalSearch.vue'
 
 const props = defineProps({ presenceCount: { type: Number, default: 0 } })
 
@@ -114,6 +118,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClick))
 }
 
 .header-left { display: flex; align-items: center; gap: 16px; }
+.header-center { flex: 1; display: flex; justify-content: center; padding: 0 16px; }
 .header-right { display: flex; align-items: center; gap: 12px; }
 
 .logo { text-decoration: none; display: flex; align-items: center; }

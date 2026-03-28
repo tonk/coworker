@@ -12,6 +12,7 @@ import (
 	"github.com/tonk/coworker/models"
 	"github.com/tonk/coworker/services"
 	"github.com/tonk/coworker/ws"
+	"gorm.io/gorm"
 )
 
 func ListCards(c *gin.Context) {
@@ -34,7 +35,7 @@ func ListCards(c *gin.Context) {
 	}
 
 	var cards []models.Card
-	database.DB.Preload("Labels").Preload("Assignee").Where("column_id = ? AND project_id = ?", colID, project.ID).Order("position asc").Find(&cards)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").Where("column_id = ? AND project_id = ?", colID, project.ID).Order("position asc").Find(&cards)
 	c.JSON(http.StatusOK, cards)
 }
 
@@ -87,6 +88,12 @@ func CreateCard(c *gin.Context) {
 		}
 	}
 
+	// Atomically increment the project's card counter
+	database.DB.Model(&models.Project{}).Where("id = ?", project.ID).
+		UpdateColumn("card_counter", gorm.Expr("card_counter + 1"))
+	var updatedProject models.Project
+	database.DB.Select("card_counter").First(&updatedProject, project.ID)
+
 	card := models.Card{
 		ColumnID:    uint(colID),
 		ProjectID:   project.ID,
@@ -97,9 +104,10 @@ func CreateCard(c *gin.Context) {
 		AssigneeID:  req.AssigneeID,
 		CreatedByID: userID,
 		Position:    maxPos + 1000,
+		CardNumber:  updatedProject.CardCounter,
 	}
 	database.DB.Create(&card)
-	database.DB.Preload("Labels").Preload("Assignee").First(&card, card.ID)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").First(&card, card.ID)
 
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCardCreated, Payload: card})
 	c.JSON(http.StatusCreated, card)
@@ -125,9 +133,12 @@ func GetCard(c *gin.Context) {
 	}
 
 	var card models.Card
-	if err := database.DB.Preload("Labels").Preload("Assignee").Preload("Watchers").Preload("Comments.User").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
+	if err := database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Watchers").Preload("Comments.User").Preload("Tags").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
 		return
+	}
+	if am := LoadAttachments("card", []uint{card.ID}); len(am[card.ID]) > 0 {
+		card.Attachments = am[card.ID]
 	}
 	c.JSON(http.StatusOK, card)
 }
@@ -193,7 +204,7 @@ func UpdateCard(c *gin.Context) {
 	}
 
 	database.DB.Model(&card).Updates(updates)
-	database.DB.Preload("Labels").Preload("Assignee").First(&card, card.ID)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").First(&card, card.ID)
 
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCardUpdated, Payload: card})
 	c.JSON(http.StatusOK, card)
@@ -421,5 +432,15 @@ func UpdateAssignee(c *gin.Context) {
 	c.ShouldBindJSON(&req)
 
 	database.DB.Model(&models.Card{}).Where("id = ? AND project_id = ?", cardID, project.ID).Update("assignee_id", req.UserID)
+
+	if notifSvc != nil && req.UserID != nil {
+		var card models.Card
+		var assignee, assigner models.User
+		database.DB.First(&card, cardID)
+		database.DB.First(&assignee, *req.UserID)
+		database.DB.First(&assigner, userID)
+		go notifSvc.NotifyCardAssignment(card, assignee, assigner)
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "updated"})
 }
