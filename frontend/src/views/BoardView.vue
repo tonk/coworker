@@ -267,7 +267,7 @@ async function onCardMoved({ cardId, fromColumnId, toColumnId, newIndex }) {
 </script>
 
 <style scoped>
-.board-layout { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.board-layout { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 
 .board-toolbar {
   background: var(--color-surface);

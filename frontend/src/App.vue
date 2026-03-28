@@ -80,7 +80,7 @@ onUnmounted(() => {
 
 <style>
 .app-shell {
-  min-height: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   font-family: var(--user-font, var(--font-family));
@@ -88,6 +88,7 @@ onUnmounted(() => {
 }
 
 .app-shell-header {
+  flex-shrink: 0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -95,9 +96,9 @@ onUnmounted(() => {
 
 .app-shell-body {
   flex: 1;
+  min-height: 0;
   display: flex;
   overflow: hidden;
-  height: calc(100vh - 56px);
 }
 
 .app-shell-body.sidebar-right {
@@ -106,6 +107,7 @@ onUnmounted(() => {
 
 .app-shell-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;

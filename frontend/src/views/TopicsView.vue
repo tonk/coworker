@@ -341,7 +341,7 @@ function renderMarkdown(text) {
 </script>
 
 <style scoped>
-.topics-layout { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.topics-layout { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 .topics-toolbar { display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid var(--color-border); flex-shrink: 0; }
 .topics-body { display: flex; flex: 1; overflow: hidden; }
 
