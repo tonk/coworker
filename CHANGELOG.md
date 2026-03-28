@@ -6,6 +6,7 @@ All notable changes to Coworker are documented here.
 
 ### Added
 - Configurable idle session timeout (admin setting, default 1 hour); users are automatically logged out after the configured period of inactivity
+- Update check against GitHub releases on login; a dismissable banner is shown when a newer version is available (web and desktop)
 
 ## 2026-03-28
 

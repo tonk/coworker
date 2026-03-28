@@ -1,5 +1,6 @@
 <template>
   <div v-if="auth.isLoggedIn" class="app-shell">
+    <UpdateBanner v-if="updateAvailable" :latest-version="latestVersion" :release-url="releaseUrl" />
     <AppHeader class="app-shell-header" />
     <div class="app-shell-body" :class="sidebarPos === 'right' ? 'sidebar-right' : 'sidebar-left'">
       <AppSidebar />
@@ -26,10 +27,18 @@ import { useSystemStore } from '@/stores/system'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
+import UpdateBanner from '@/components/common/UpdateBanner.vue'
 import { applyUserPreferences } from '@/composables/useUserPreferences'
+import { useUpdateCheck } from '@/composables/useUpdateCheck'
 
 const auth = useAuthStore()
 const systemStore = useSystemStore()
+
+const { updateAvailable, latestVersion, releaseUrl, check: checkForUpdate } = useUpdateCheck()
+// Run once when the user is logged in
+watch(() => auth.isLoggedIn, (loggedIn) => {
+  if (loggedIn) checkForUpdate(appVersion)
+}, { immediate: true })
 
 const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.getItem('sidebar_position') || 'left')
 

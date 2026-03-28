@@ -165,6 +165,10 @@
     "smtp_username": "Usuario",
     "smtp_password": "Contraseña"
   },
+  "update": {
+    "available": "Hay una nueva versión de Coworker disponible: v{version}.",
+    "release_notes": "Ver notas de la versión"
+  },
   "common": {
     "save": "Guardar",
     "cancel": "Cancelar",
