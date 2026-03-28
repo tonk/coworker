@@ -122,6 +122,15 @@
               <p class="form-hint">{{ $t('admin.registration_hint') }}</p>
             </div>
 
+            <div class="form-group" style="max-width:400px">
+              <label class="form-label">{{ $t('admin.session_timeout') }}</label>
+              <div class="form-row" style="align-items:center;gap:8px;max-width:240px">
+                <input class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveSettings" style="width:100px" />
+                <span class="form-hint" style="margin:0">{{ $t('admin.session_timeout_unit') }}</span>
+              </div>
+              <p class="form-hint">{{ $t('admin.session_timeout_hint') }}</p>
+            </div>
+
             <h3 class="settings-subsection">{{ $t('admin.global_defaults_title') }}</h3>
             <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.global_defaults_hint') }}</p>
 
@@ -406,6 +415,7 @@ const userProjectIds = ref([])
 
 const systemSettings = ref({
   registration_enabled: true,
+  session_timeout_minutes: 60,
   default_date_time_format: 'YYYY-MM-DD HH:mm',
   default_timezone: 'UTC',
   default_theme: 'system',
@@ -466,6 +476,7 @@ async function loadSettings() {
   try {
     const { data } = await adminApi.getSystemSettings()
     systemSettings.value.registration_enabled    = data.registration_enabled !== 'false'
+    systemSettings.value.session_timeout_minutes  = parseInt(data.session_timeout_minutes) || 0
     systemSettings.value.default_date_time_format = data.default_date_time_format || 'YYYY-MM-DD HH:mm'
     systemSettings.value.default_timezone         = data.default_timezone || 'UTC'
     systemSettings.value.default_theme            = data.default_theme || 'system'
@@ -487,6 +498,7 @@ async function saveSettings() {
   try {
     const payload = {
       registration_enabled:     systemSettings.value.registration_enabled,
+      session_timeout_minutes:  systemSettings.value.session_timeout_minutes,
       default_date_time_format: systemSettings.value.default_date_time_format,
       default_timezone:         systemSettings.value.default_timezone,
       default_theme:            systemSettings.value.default_theme,

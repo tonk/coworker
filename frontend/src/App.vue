@@ -17,17 +17,19 @@
 </template>
 
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, watch, onMounted, onUnmounted } from 'vue'
 
 const appVersion = __APP_VERSION__
 import { RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useSystemStore } from '@/stores/system'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
 import { applyUserPreferences } from '@/composables/useUserPreferences'
 
 const auth = useAuthStore()
+const systemStore = useSystemStore()
 
 const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.getItem('sidebar_position') || 'left')
 
@@ -41,6 +43,30 @@ const userFullName = computed(() => {
 watch(() => auth.user, (user) => {
   if (user) applyUserPreferences(user)
 }, { immediate: true })
+
+// ── Idle session timeout ─────────────────────────────────────────────────────
+const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll']
+
+function onActivity() {
+  if (auth.isLoggedIn) auth.resetIdleTimer(systemStore.sessionTimeoutMinutes)
+}
+
+watch([() => auth.isLoggedIn, () => systemStore.sessionTimeoutMinutes], ([loggedIn, timeout]) => {
+  if (loggedIn && timeout > 0) {
+    auth.startIdleTimer(timeout)
+  } else {
+    auth.stopIdleTimer()
+  }
+}, { immediate: true })
+
+onMounted(() => {
+  ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, onActivity, { passive: true }))
+})
+
+onUnmounted(() => {
+  ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, onActivity))
+  auth.stopIdleTimer()
+})
 </script>
 
 <style>

@@ -24,6 +24,7 @@ const (
 	settingSMTPFrom               = "smtp_from"
 	settingSMTPUsername           = "smtp_username"
 	settingSMTPPassword           = "smtp_password"
+	settingSessionTimeoutMinutes  = "session_timeout_minutes"
 )
 
 var systemSettingDefaults = map[string]string{
@@ -39,6 +40,7 @@ var systemSettingDefaults = map[string]string{
 	settingSMTPFrom:               "",
 	settingSMTPUsername:           "",
 	settingSMTPPassword:           "",
+	settingSessionTimeoutMinutes:  "60",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -84,6 +86,7 @@ func GetSMTPSettings() config.SMTPConfig {
 // GetSystemSettings returns public system settings (registration + global UI defaults).
 func GetSystemSettings(c *gin.Context) {
 	all := loadAllSettings()
+	timeoutMinutes, _ := strconv.Atoi(all[settingSessionTimeoutMinutes])
 	c.JSON(http.StatusOK, gin.H{
 		"registration_enabled":        all[settingRegistrationEnabled] != "false",
 		"default_date_time_format":    all[settingDefaultDateTimeFormat],
@@ -92,6 +95,7 @@ func GetSystemSettings(c *gin.Context) {
 		"default_font":                all[settingDefaultFont],
 		"default_font_size":           all[settingDefaultFontSize],
 		"default_locale":              all[settingDefaultLocale],
+		"session_timeout_minutes":     timeoutMinutes,
 	})
 }
 
@@ -109,18 +113,19 @@ func AdminGetSystemSettings(c *gin.Context) {
 // AdminUpdateSystemSettings updates system settings.
 func AdminUpdateSystemSettings(c *gin.Context) {
 	var req struct {
-		RegistrationEnabled   *bool  `json:"registration_enabled"`
-		DefaultDateTimeFormat string `json:"default_date_time_format"`
-		DefaultTimezone       string `json:"default_timezone"`
-		DefaultTheme          string `json:"default_theme"`
-		DefaultFont           string `json:"default_font"`
-		DefaultFontSize       string `json:"default_font_size"`
-		DefaultLocale         string `json:"default_locale"`
-		SMTPHost              string `json:"smtp_host"`
-		SMTPPort              string `json:"smtp_port"`
-		SMTPFrom              string `json:"smtp_from"`
-		SMTPUsername          string `json:"smtp_username"`
-		SMTPPassword          *string `json:"smtp_password"` // pointer so empty string clears it
+		RegistrationEnabled    *bool   `json:"registration_enabled"`
+		DefaultDateTimeFormat  string  `json:"default_date_time_format"`
+		DefaultTimezone        string  `json:"default_timezone"`
+		DefaultTheme           string  `json:"default_theme"`
+		DefaultFont            string  `json:"default_font"`
+		DefaultFontSize        string  `json:"default_font_size"`
+		DefaultLocale          string  `json:"default_locale"`
+		SMTPHost               string  `json:"smtp_host"`
+		SMTPPort               string  `json:"smtp_port"`
+		SMTPFrom               string  `json:"smtp_from"`
+		SMTPUsername           string  `json:"smtp_username"`
+		SMTPPassword           *string `json:"smtp_password"` // pointer so empty string clears it
+		SessionTimeoutMinutes  *int    `json:"session_timeout_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -162,6 +167,13 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	database.DB.Save(&models.SystemSetting{Key: settingSMTPUsername, Value: req.SMTPUsername})
 	if req.SMTPPassword != nil {
 		database.DB.Save(&models.SystemSetting{Key: settingSMTPPassword, Value: *req.SMTPPassword})
+	}
+	if req.SessionTimeoutMinutes != nil {
+		timeout := *req.SessionTimeoutMinutes
+		if timeout < 0 {
+			timeout = 0
+		}
+		database.DB.Save(&models.SystemSetting{Key: settingSessionTimeoutMinutes, Value: fmt.Sprintf("%d", timeout)})
 	}
 
 	AdminGetSystemSettings(c)

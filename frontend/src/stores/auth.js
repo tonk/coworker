@@ -10,6 +10,30 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoggedIn = computed(() => !!accessToken.value && !!user.value)
   const isAdmin = computed(() => user.value?.global_role === 'admin')
 
+  // ── Idle session timeout ─────────────────────────────────────────────────
+  let idleTimer = null
+
+  function startIdleTimer(timeoutMinutes) {
+    stopIdleTimer()
+    if (!timeoutMinutes || timeoutMinutes <= 0) return
+    idleTimer = setTimeout(() => {
+      logout()
+      window.location.href = '/login'
+    }, timeoutMinutes * 60 * 1000)
+  }
+
+  function resetIdleTimer(timeoutMinutes) {
+    if (!timeoutMinutes || timeoutMinutes <= 0) return
+    startIdleTimer(timeoutMinutes)
+  }
+
+  function stopIdleTimer() {
+    if (idleTimer) {
+      clearTimeout(idleTimer)
+      idleTimer = null
+    }
+  }
+
   async function login(login, password) {
     const { data } = await authApi.login({ login, password })
     setTokens(data.access_token, data.refresh_token)
@@ -36,6 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
+    stopIdleTimer()
     user.value = null
     accessToken.value = null
     localStorage.removeItem('access_token')
@@ -50,5 +75,5 @@ export const useAuthStore = defineStore('auth', () => {
     if (data.locale) setLocale(data.locale)
   }
 
-  return { user, accessToken, isLoggedIn, isAdmin, login, register, logout, fetchMe, updateProfile }
+  return { user, accessToken, isLoggedIn, isAdmin, login, register, logout, fetchMe, updateProfile, startIdleTimer, resetIdleTimer, stopIdleTimer }
 })

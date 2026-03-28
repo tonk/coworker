@@ -5,6 +5,7 @@ import { setLocale } from '@/i18n'
 
 export const useSystemStore = defineStore('system', () => {
   const registrationEnabled = ref(true)
+  const sessionTimeoutMinutes = ref(60)
   const defaults = ref({
     date_time_format: 'YYYY-MM-DD HH:mm',
     timezone: 'UTC',
@@ -18,6 +19,7 @@ export const useSystemStore = defineStore('system', () => {
     try {
       const { data } = await systemApi.getSettings()
       registrationEnabled.value = data.registration_enabled !== false
+      sessionTimeoutMinutes.value = data.session_timeout_minutes || 0
       if (data.default_date_time_format) defaults.value.date_time_format = data.default_date_time_format
       if (data.default_timezone)         defaults.value.timezone         = data.default_timezone
       if (data.default_theme)            defaults.value.theme            = data.default_theme
@@ -31,5 +33,5 @@ export const useSystemStore = defineStore('system', () => {
     } catch {}
   }
 
-  return { registrationEnabled, defaults, fetchSettings }
+  return { registrationEnabled, sessionTimeoutMinutes, defaults, fetchSettings }
 })
