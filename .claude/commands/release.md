@@ -31,14 +31,18 @@ Only include sections that have entries. Be specific and user-facing in the desc
 ## 4. Update what.md
 Append any new features or changes as bullet points at the end of the file, matching the imperative style already used there.
 
-## 5. Commit and tag
+## 5. Update documentation
+- If any changes where done that need an update on the documentation,
+  update the documentation
+
+## 6. Commit and tag
 ```bash
 git add CHANGELOG.md README.md what.md
 git commit -m "chore: release v{version} — CHANGELOG, README, what.md\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git tag -a v{version} -m "Release v{version}"
 ```
 
-## 6. Push
+## 7. Push
 ```bash
 git push && git push --tags
 ```
