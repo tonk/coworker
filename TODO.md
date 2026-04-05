@@ -18,9 +18,15 @@
   * `X-Forgejo-Event-Type: issues`
   * `X-Forgejo-Signature:`
 
+- In the project overview, allow projects to be moved, change the order
+
 - Allow external repo servers (Gitea, Forgejo, Github, Gitlab) to follow
   projects, so that the comments (with the Gitea issue tag) are also
   linked in the issue
+
+- Currently the theme is blue, also allow, per user, a red, green,
+  orange, black and white theme (Save buttons, highlight lines in the
+  sidebar, etc). This, of course, needs to be a user setting
 
 - In the client, when a new version is available and the "Release notes"
   are clicked, nothing happens
