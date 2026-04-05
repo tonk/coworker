@@ -38,8 +38,8 @@
   monitoring, and create a user type that is only allowed to read these
   metrics
 
-- Add '@..' mentions in cards, the description and comments, for users
-  and for teams
+- Re-add '@..' mentions in cards, the description and comments, for users
+  and for teams, this worked before.
 
 - Add cross reference between cards
 
