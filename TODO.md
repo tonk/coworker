@@ -18,6 +18,10 @@
   * `X-Forgejo-Event-Type: issues`
   * `X-Forgejo-Signature:`
 
+- Allow external repo servers (Gitea, Forgejo, Github, Gitlab) to follow
+  projects, so that the comments (with the Gitea issue tag) are also
+  linked in the issue
+
 - In the client, when a new version is available and the "Release notes"
   are clicked, nothing happens
 
@@ -27,6 +31,11 @@
 - Add a `/api/v1/metrics`, non public, API endpoint for Prometheus
   monitoring, and create a user type that is only allowed to read these
   metrics
+
+- Add '@..' mentions in cards, the description and comments, for users
+  and for teams
+
+- Add cross reference between cards
 
 - Investigate:
   When starting the Windows client it takes rather long before
