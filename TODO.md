@@ -4,13 +4,35 @@
   Client was built on Ubuntu 24.04. Could be that this library is
   LD_PRELOAD=/usr/lib/libwayland-client.so on Ubuntu
   Fix this, once and for all
-- In the client, an issue created in Gitea is displayed on the card, but
+
+- In the client, an issue created in Forgejo is displayed on the card, but
   when clicked, nothing happens. The link should be opened in a browser.
   This works in the browser version.
+
+- When a Forgejo webhook is configured and triggered, the card shows the
+  the Gitea logo. This is not really an error, but can be better.
+  Show the Forgejo logo when the event comes from Forgejo. Forgejo sends
+  this:
+  * `X-Forgejo-Delivery:`
+  * `X-Forgejo-Event: issues`
+  * `X-Forgejo-Event-Type: issues`
+  * `X-Forgejo-Signature:`
+
+- In the client, when a new version is available and the "Release notes"
+  are clicked, noting happens
+
+- In the chat show when someone else in the chat is typing and who it is
+
 - Investigate:
   When starting the Windows client it takes rather long before
   it responds… for userid/password entry
 
-- Nice to have:
-  * Change projects to add an extra layer
-    so that we can have "Customer / Projects"
+- Change projects to add an extra layer
+  so that we can have "Customer / Projects" and between the "Customer / Projects"
+  the should be the option for "Contract". So:
+  * "Customer / Projects"
+  * "Customer / Contract / Projects"
+
+- Implement sub-cards in the cards
+
+- Implement a Gantt chart per project
