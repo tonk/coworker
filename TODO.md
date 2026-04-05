@@ -10,7 +10,7 @@
   This works in the browser version.
 
 - When a Forgejo webhook is configured and triggered, the card shows the
-  the Gitea logo. This is not really an error, but can be better.
+  Gitea logo. This is not really an error, but can be better.
   Show the Forgejo logo when the event comes from Forgejo. Forgejo sends
   this:
   * `X-Forgejo-Delivery:`
@@ -19,9 +19,10 @@
   * `X-Forgejo-Signature:`
 
 - In the client, when a new version is available and the "Release notes"
-  are clicked, noting happens
+  are clicked, nothing happens
 
-- In the chat show when someone else in the chat is typing and who it is
+- In the chat show an indication when someone else in the chat is typing
+  and who it is
 
 - Add a `/api/v1/metrics`, non public, API endpoint for Prometheus
   monitoring, and create a user type that is only allowed to read these
