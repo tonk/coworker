@@ -23,6 +23,10 @@
 
 - In the chat show when someone else in the chat is typing and who it is
 
+- Add a `/api/v1/metrics`, non public, API endpoint for Prometheus
+  monitoring, and create a user type that is only allowed to read these
+  metrics
+
 - Investigate:
   When starting the Windows client it takes rather long before
   it responds… for userid/password entry
