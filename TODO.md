@@ -29,19 +29,32 @@
   sidebar, etc). This, of course, needs to be a user setting
 
 - In the client, when a new version is available and the "Release notes"
-  are clicked, nothing happens
+  are clicked, nothing happens.
+  This works in the browser version.
 
 - In the chat show an indication when someone else in the chat is typing
   and who it is
 
 - Add a `/api/v1/metrics`, non public, API endpoint for Prometheus
   monitoring, and create a user type that is only allowed to read these
-  metrics
+  metrics. User type should be "metrics"
+  Metrics should show:
+  * Number of projects
+  * Project names
+  * Number of columns per projects
+  * Column names
+  * Number of open and closed cards per column
 
 - Re-add '@..' mentions in cards, the description and comments, for users
-  and for teams, this worked before.
+  and for teams, this worked before. This does work in the chat
 
 - Add cross reference between cards
+
+- Pressing "Esc" in an open card, should close the card, if no changes
+  where made
+
+- Pressing "Cancel" with changes in the card should show a pop-up with
+  "Save" and "No save"
 
 - Investigate:
   When starting the Windows client it takes rather long before
