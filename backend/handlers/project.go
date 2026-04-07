@@ -93,13 +93,13 @@ func ListProjects(c *gin.Context) {
 	// Admins and global viewers see all non-deleted projects
 	if globalRole == "admin" || globalRole == "viewer" {
 		var projects []models.Project
-		database.DB.Where("deleted_at IS NULL").Order("position asc, id asc").Find(&projects)
+		database.DB.Preload("Customer").Preload("Contract").Where("deleted_at IS NULL").Order("position asc, id asc").Find(&projects)
 		c.JSON(http.StatusOK, projectsWithCounts(projects))
 		return
 	}
 
 	var members []models.ProjectMember
-	database.DB.Preload("Project").Where("user_id = ?", userID).Find(&members)
+	database.DB.Preload("Project.Customer").Preload("Project.Contract").Where("user_id = ?", userID).Find(&members)
 
 	projects := make([]models.Project, 0, len(members))
 	for _, m := range members {
@@ -139,6 +139,8 @@ func CreateProject(c *gin.Context) {
 		Name        string `json:"name" binding:"required,min=1,max=200"`
 		Description string `json:"description"`
 		Color       string `json:"color"`
+		CustomerID  *uint  `json:"customer_id"`
+		ContractID  *uint  `json:"contract_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -152,6 +154,8 @@ func CreateProject(c *gin.Context) {
 		Slug:        services.GenerateSlug(req.Name),
 		KeyPrefix:   services.GenerateKeyPrefix(req.Name),
 		CreatedByID: userID,
+		CustomerID:  req.CustomerID,
+		ContractID:  req.ContractID,
 	}
 
 	if err := database.DB.Create(&project).Error; err != nil {
@@ -206,7 +210,7 @@ func GetProject(c *gin.Context) {
 		return
 	}
 
-	database.DB.Preload("Columns").Preload("Columns.Cards").Preload("Columns.Cards.Assignee").Preload("Columns.Cards.Labels").Preload("Columns.Cards.Tags").Preload("Labels").Preload("Members.User").First(project, project.ID)
+	database.DB.Preload("Columns").Preload("Columns.Cards").Preload("Columns.Cards.Assignee").Preload("Columns.Cards.Labels").Preload("Columns.Cards.Tags").Preload("Labels").Preload("Members.User").Preload("Customer").Preload("Contract").First(project, project.ID)
 
 	c.JSON(http.StatusOK, project)
 }
@@ -243,6 +247,8 @@ func UpdateProject(c *gin.Context) {
 		Description string `json:"description"`
 		Color       string `json:"color"`
 		IsArchived  *bool  `json:"is_archived"`
+		CustomerID  *uint  `json:"customer_id"`
+		ContractID  *uint  `json:"contract_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -262,6 +268,9 @@ func UpdateProject(c *gin.Context) {
 	if req.IsArchived != nil {
 		updates["is_archived"] = *req.IsArchived
 	}
+	// Always write customer_id and contract_id (nil clears the association)
+	updates["customer_id"] = req.CustomerID
+	updates["contract_id"] = req.ContractID
 
 	database.DB.Model(project).Updates(updates)
 	database.DB.First(project, project.ID)

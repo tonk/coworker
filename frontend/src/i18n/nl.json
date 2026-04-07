@@ -50,7 +50,47 @@
       "admin": "Projectbeheerder",
       "member": "Lid",
       "viewer": "Kijker"
-    }
+    },
+    "customer": "Klant",
+    "contract": "Contract",
+    "no_customer": "Geen klant"
+  },
+  "customer": {
+    "customers": "Klanten",
+    "new_customer": "Nieuwe klant",
+    "name": "Klantnaam",
+    "description": "Omschrijving",
+    "logo_url": "Logo-URL",
+    "no_customers": "Nog geen klanten. Maak uw eerste klant aan!",
+    "star": "Klant markeren",
+    "unstar": "Markering verwijderen",
+    "starred": "Gemarkeerde klanten",
+    "all_customers": "Alle klanten",
+    "projects": "Projecten",
+    "unassigned": "Projecten zonder contract",
+    "delete_confirm": "Deze klant verwijderen? Alle gekoppelde projecten worden losgekoppeld.",
+    "edit": "Klant bewerken",
+    "contracts": "Contracten",
+    "project_count": "{n} project | {n} projecten",
+    "contract_count": "{n} contract | {n} contracten"
+  },
+  "contract": {
+    "contracts": "Contracten",
+    "new_contract": "Nieuw contract",
+    "name": "Contractnaam",
+    "description": "Omschrijving",
+    "start_date": "Startdatum",
+    "end_date": "Einddatum",
+    "no_contracts": "Nog geen contracten.",
+    "delete_confirm": "Dit contract verwijderen? Gekoppelde projecten worden losgekoppeld.",
+    "edit": "Contract bewerken"
+  },
+  "subcard": {
+    "sub_cards": "Deeltaken",
+    "add_sub_card": "Deeltaak toevoegen…",
+    "open": "Openen",
+    "child_of": "Subtaak van",
+    "progress": "{done} van {total} gedaan"
   },
   "topics": {
     "title": "Onderwerpen",
@@ -308,7 +348,9 @@
     "online": "Online",
     "offline": "Offline",
     "all_chats": "Alle chats…",
-    "unread_messages": "Ongelezen berichten"
+    "unread_messages": "Ongelezen berichten",
+    "customers": "Klanten",
+    "no_customers": "Geen gemarkeerde klanten"
   },
   "apikeys": {
     "tab": "API-sleutels",

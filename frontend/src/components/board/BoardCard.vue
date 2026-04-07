@@ -40,9 +40,12 @@
     <div class="card-tags" v-if="card.tags?.length">
       <span v-for="tag in card.tags" :key="tag.id" class="card-tag">#{{ tag.name }}</span>
     </div>
-    <div class="card-footer" v-if="card.due_date">
-      <span class="card-due" :class="{ overdue: isOverdue }">
+    <div class="card-footer" v-if="card.due_date || card.sub_card_count > 0">
+      <span v-if="card.due_date" class="card-due" :class="{ overdue: isOverdue }">
         📅 {{ formatDate(card.due_date.slice(0, 10)) }}
+      </span>
+      <span v-if="card.sub_card_count > 0" class="subcard-pill" :class="{ 'subcard-all-done': card.sub_cards_done === card.sub_card_count }">
+        ☐ {{ card.sub_cards_done }}/{{ card.sub_card_count }}
       </span>
     </div>
   </div>
@@ -168,9 +171,23 @@ const isOverdue = computed(() => {
   background: transparent;
 }
 
-.card-footer { display: flex; align-items: center; }
+.card-footer { display: flex; align-items: center; gap: 8px; }
 .card-due { font-size: 11px; color: var(--color-text-muted); }
 .card-due.overdue { color: var(--color-danger); }
+
+.subcard-pill {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  padding: 0 6px;
+  line-height: 18px;
+}
+.subcard-pill.subcard-all-done {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
 
 .board-card--closed { opacity: 0.6; }
 .board-card--closed .card-title { text-decoration: line-through; color: var(--color-text-muted); }

@@ -26,6 +26,7 @@
             <div class="project-color-bar" :style="{ background: project.color || '#6366f1' }"></div>
             <div class="project-card-body">
               <h3>{{ project.name }}</h3>
+              <p v-if="project.customer" class="project-customer">🏢 {{ project.customer.name }}</p>
               <p v-if="project.description" class="project-desc">{{ project.description }}</p>
               <p class="project-open-cards">{{ project.open_card_count }} {{ $t('board.open_cards') }}</p>
               <div class="project-actions">
@@ -164,6 +165,7 @@ async function handleCreate() {
 
 .project-card-body { padding: 16px; }
 .project-card-body h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.project-customer { font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; }
 .project-desc { font-size: 13px; color: var(--color-text-muted); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .project-open-cards { font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px; }
 

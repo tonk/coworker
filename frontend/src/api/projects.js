@@ -86,5 +86,9 @@ export const projectsApi = {
   // Project-scoped API keys
   listApiKeys: (slug) => client.get(`/projects/${slug}/api-keys`),
   createApiKey: (slug, name) => client.post(`/projects/${slug}/api-keys`, { name }),
-  deleteApiKey: (slug, id) => client.delete(`/projects/${slug}/api-keys/${id}`)
+  deleteApiKey: (slug, id) => client.delete(`/projects/${slug}/api-keys/${id}`),
+
+  // Sub-cards
+  listSubCards:  (slug, cardId)       => client.get(`/projects/${slug}/cards/${cardId}/subcards`),
+  createSubCard: (slug, cardId, data) => client.post(`/projects/${slug}/cards/${cardId}/subcards`, data),
 }

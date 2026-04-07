@@ -50,7 +50,47 @@
       "admin": "Administrateur de projet",
       "member": "Membre",
       "viewer": "Observateur"
-    }
+    },
+    "customer": "Client",
+    "contract": "Contrat",
+    "no_customer": "Aucun client"
+  },
+  "customer": {
+    "customers": "Clients",
+    "new_customer": "Nouveau client",
+    "name": "Nom du client",
+    "description": "Description",
+    "logo_url": "URL du logo",
+    "no_customers": "Aucun client pour l'instant. Créez votre premier client !",
+    "star": "Marquer le client",
+    "unstar": "Retirer la marque",
+    "starred": "Clients marqués",
+    "all_customers": "Tous les clients",
+    "projects": "Projets",
+    "unassigned": "Projets sans contrat",
+    "delete_confirm": "Supprimer ce client ? Tous les projets liés seront détachés.",
+    "edit": "Modifier le client",
+    "contracts": "Contrats",
+    "project_count": "{n} projet | {n} projets",
+    "contract_count": "{n} contrat | {n} contrats"
+  },
+  "contract": {
+    "contracts": "Contrats",
+    "new_contract": "Nouveau contrat",
+    "name": "Nom du contrat",
+    "description": "Description",
+    "start_date": "Date de début",
+    "end_date": "Date de fin",
+    "no_contracts": "Aucun contrat pour l'instant.",
+    "delete_confirm": "Supprimer ce contrat ? Les projets liés seront détachés.",
+    "edit": "Modifier le contrat"
+  },
+  "subcard": {
+    "sub_cards": "Sous-tâches",
+    "add_sub_card": "Ajouter une sous-tâche…",
+    "open": "Ouvrir",
+    "child_of": "Sous-tâche de",
+    "progress": "{done} sur {total} terminé"
   },
   "topics": {
     "title": "Sujets",
@@ -308,7 +348,9 @@
     "online": "En ligne",
     "offline": "Hors ligne",
     "all_chats": "Tous les chats…",
-    "unread_messages": "Messages non lus"
+    "unread_messages": "Messages non lus",
+    "customers": "Clients",
+    "no_customers": "Aucun client marqué"
   },
   "apikeys": {
     "tab": "Clés API",

@@ -192,6 +192,45 @@
         </div>
       </div>
 
+      <!-- Sub-cards section (hidden from board; shown only here) -->
+      <div v-if="!card.parent_card_id" class="subcards-section">
+        <div class="subcards-header">
+          <h4>{{ $t('subcard.sub_cards') }}</h4>
+          <span v-if="subCards.length" class="subcards-progress">
+            {{ subCards.filter(s => s.closed).length }}/{{ subCards.length }}
+          </span>
+        </div>
+        <div v-if="subCards.length" class="subcards-progress-bar">
+          <div class="subcards-progress-fill" :style="{ width: subCardPct + '%' }"></div>
+        </div>
+        <div class="subcard-list">
+          <div v-for="sc in subCards" :key="sc.id" class="subcard-row">
+            <input type="checkbox" class="subcard-check" :checked="sc.closed" @change="toggleSubCard(sc)" />
+            <span class="subcard-title" :class="{ 'subcard-closed': sc.closed }">
+              {{ sc.title }}
+              <span class="subcard-ref">{{ cardRefString(sc) }}</span>
+            </span>
+            <button class="btn-icon-xs" @click="openSubCard(sc)" :title="$t('subcard.open')">↗</button>
+          </div>
+        </div>
+        <div class="subcard-add-row">
+          <input
+            class="form-input subcard-new-input"
+            v-model="newSubCardTitle"
+            :placeholder="$t('subcard.add_sub_card')"
+            @keydown.enter.prevent="addSubCard"
+          />
+          <button class="btn btn-secondary btn-sm" @click="addSubCard" :disabled="!newSubCardTitle.trim()">
+            {{ $t('common.add') }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Parent card indicator -->
+      <div v-if="card.parent_card_id" class="parent-card-badge">
+        ↑ {{ $t('subcard.child_of') }} #{{ card.parent_card_id }}
+      </div>
+
       <div class="comments-section">
         <h4>{{ $t('board.comments') }}</h4>
         <div class="comment-list">
@@ -321,6 +360,16 @@
       </template>
     </template>
   </BaseModal>
+
+  <!-- Nested sub-card detail modal -->
+  <CardDetail
+    v-if="openSubCardRef"
+    :card="openSubCardRef"
+    :project-slug="props.projectSlug"
+    :members="members"
+    :labels="labels"
+    @close="openSubCardRef = null; loadSubCards()"
+  />
 </template>
 
 <script setup>
@@ -331,6 +380,7 @@ import DOMPurify from 'dompurify'
 import BaseModal from '@/components/common/BaseModal.vue'
 import AttachmentList from '@/components/common/AttachmentList.vue'
 import MentionDropdown from '@/components/common/MentionDropdown.vue'
+import CardDetail from '@/components/board/CardDetail.vue'
 import { useCompose } from '@/composables/useCompose'
 import { useBoardStore } from '@/stores/board'
 import { useProjectStore } from '@/stores/project'
@@ -427,6 +477,51 @@ const checklistPct = computed(() => {
   if (!checklist.value.length) return 0
   return Math.round(checklist.value.filter(i => i.is_completed).length / checklist.value.length * 100)
 })
+
+// Sub-cards
+const subCards = ref([])
+const newSubCardTitle = ref('')
+const openSubCardRef = ref(null) // card to show in nested modal
+
+const subCardPct = computed(() => {
+  if (!subCards.value.length) return 0
+  return Math.round(subCards.value.filter(s => s.closed).length / subCards.value.length * 100)
+})
+
+function cardRefString(sc) {
+  // sc may have a card_number; build a reference like the parent project's key
+  return sc.card_number ? ` #${sc.card_number}` : ''
+}
+
+async function loadSubCards() {
+  if (props.card.parent_card_id) return // don't load sub-cards for sub-cards
+  try {
+    const { data } = await projectsApi.listSubCards(props.projectSlug, props.card.id)
+    subCards.value = data || []
+  } catch {}
+}
+
+async function addSubCard() {
+  const title = newSubCardTitle.value.trim()
+  if (!title) return
+  try {
+    const { data } = await projectsApi.createSubCard(props.projectSlug, props.card.id, { title })
+    subCards.value.push(data)
+    newSubCardTitle.value = ''
+  } catch {}
+}
+
+async function toggleSubCard(sc) {
+  try {
+    const { data } = await projectsApi.updateCard(props.projectSlug, sc.id, { closed: !sc.closed })
+    const idx = subCards.value.findIndex(s => s.id === sc.id)
+    if (idx !== -1) subCards.value[idx] = { ...subCards.value[idx], closed: data.closed }
+  } catch {}
+}
+
+function openSubCard(sc) {
+  openSubCardRef.value = sc
+}
 
 function isAssigned(userId) {
   return assignees.value.some(a => a.id === userId)
@@ -592,6 +687,7 @@ onMounted(async () => {
     checklist.value = checkRes.data || []
     gitLinks.value = linksRes.data || []
   } catch {}
+  await loadSubCards()
 })
 
 onUnmounted(() => { document.removeEventListener('keydown', onKeyDown) })
@@ -1071,4 +1167,21 @@ function renderMarkdown(text) {
 .description-textarea { resize: vertical; min-height: 160px; font-family: monospace; font-size: 13px; }
 
 .cancel-confirm-msg { font-size: 13px; color: var(--color-text-muted); flex: 1; }
+
+/* Sub-cards */
+.subcards-section { margin-bottom: 20px; }
+.subcards-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.subcards-header h4 { margin: 0; font-size: 14px; font-weight: 600; }
+.subcards-progress { font-size: 12px; color: var(--color-text-muted); }
+.subcards-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
+.subcards-progress-fill { height: 100%; background: var(--color-primary); border-radius: 2px; transition: width .3s; }
+.subcard-list { display: flex; flex-direction: column; gap: 4px; }
+.subcard-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.subcard-check { flex-shrink: 0; }
+.subcard-title { flex: 1; font-size: 13px; }
+.subcard-closed { text-decoration: line-through; color: var(--color-text-muted); }
+.subcard-ref { font-size: 11px; color: var(--color-text-muted); margin-left: 4px; }
+.subcard-add-row { display: flex; gap: 8px; margin-top: 8px; }
+.subcard-new-input { flex: 1; padding: 6px 8px; font-size: 13px; }
+.parent-card-badge { font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px; }
 </style>

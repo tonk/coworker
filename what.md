@@ -261,3 +261,11 @@ Create an application that has all these features and requirements
 - Prometheus metrics endpoint GET /api/v1/metrics: project count, column count per project, open/closed card count per column; protected by a new metrics global role
 - Admin UI: metrics role option added to the role selector in user list and create user form
 - Project ordering: admins can drag project tiles on the dashboard to reorder them; order persisted to database and shown to all users
+- Fix Linux desktop app blank screen on Fedora / Wayland: at startup, automatically detect libwayland-client.so at well-known paths (Fedora /usr/lib64, Ubuntu /usr/lib/x86_64-linux-gnu, ARM64, etc.) and re-exec the binary once with LD_PRELOAD set; a sentinel env var (WARMDESK_PRELOAD_DONE) prevents infinite loops; no manual LD_PRELOAD configuration required
+- Add Customer/Contract/Project hierarchy: customers are top-level entities; contracts sit under customers; projects can be linked to a customer and optionally to a contract within that customer; manage from a dedicated Customers view and from Project Settings
+- Add Customers page (/customers): grid of customer tiles showing name, description, logo, contract count, project count; star/unstar favourites; admins and project owners can create/edit customers and contracts
+- Add Customer detail page (/customers/:id): shows customer info, contracts with their projects grouped beneath, and unassigned projects; admins can create/edit/delete contracts; inline name editing for managers
+- Add Customers section to sidebar: starred customers shown with star/unstar toggle; link to all customers
+- Link projects to customers and contracts via Project Settings General tab; customer and contract dropdowns are filtered and linked
+- Show customer name on dashboard project tiles when a project is linked to a customer
+- Add sub-cards: cards can have child cards (one level deep) visible only in the parent card's detail view; parent cards show a progress pill (done/total) on the board; sub-cards are hidden from the board column; sub-cards have full card detail (comments, assignees, labels, etc.) accessible via open button; adding a sub-card creates a card number in the same project

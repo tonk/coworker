@@ -19,6 +19,10 @@ type Project struct {
 	KeyPrefix    string         `gorm:"size:3;not null;default:''" json:"key_prefix"`
 	Position     int            `gorm:"default:0" json:"position"`
 	CardCounter  int            `gorm:"default:0" json:"-"`
+	CustomerID   *uint          `gorm:"index" json:"customer_id,omitempty"`
+	Customer     *Customer      `json:"customer,omitempty"`
+	ContractID   *uint          `gorm:"index" json:"contract_id,omitempty"`
+	Contract     *Contract      `json:"contract,omitempty"`
 	CreatedByID  uint           `gorm:"not null" json:"created_by_id"`
 	CreatedBy    User           `json:"created_by"`
 	Members      []ProjectMember `json:"members,omitempty"`

@@ -46,7 +46,20 @@ func ListCards(c *gin.Context) {
 	}
 
 	var cards []models.Card
-	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").Where("column_id = ? AND project_id = ?", colID, project.ID).Order("position asc").Find(&cards)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").
+		Where("column_id = ? AND project_id = ? AND parent_card_id IS NULL", colID, project.ID).
+		Order("position asc").Find(&cards)
+
+	// Populate sub-card counts so the board can show progress pills
+	for i := range cards {
+		var total, done int64
+		database.DB.Model(&models.Card{}).Where("parent_card_id = ?", cards[i].ID).Count(&total)
+		if total > 0 {
+			database.DB.Model(&models.Card{}).Where("parent_card_id = ? AND closed = true", cards[i].ID).Count(&done)
+		}
+		cards[i].SubCardCount = int(total)
+		cards[i].SubCardsDone = int(done)
+	}
 	c.JSON(http.StatusOK, cards)
 }
 
@@ -175,6 +188,14 @@ func GetCard(c *gin.Context) {
 	if am := LoadAttachments("card", []uint{card.ID}); len(am[card.ID]) > 0 {
 		card.Attachments = am[card.ID]
 	}
+	// Populate sub-card counts
+	var subTotal, subDone int64
+	database.DB.Model(&models.Card{}).Where("parent_card_id = ?", card.ID).Count(&subTotal)
+	if subTotal > 0 {
+		database.DB.Model(&models.Card{}).Where("parent_card_id = ? AND closed = true", card.ID).Count(&subDone)
+	}
+	card.SubCardCount = int(subTotal)
+	card.SubCardsDone = int(subDone)
 	c.JSON(http.StatusOK, card)
 }
 

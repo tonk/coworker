@@ -95,6 +95,22 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		// Starred projects
 		protected.GET("/starred-projects", handlers.ListStarredProjects)
 
+		// Customers and contracts
+		customers := protected.Group("/customers")
+		{
+			customers.GET("", handlers.ListCustomers)
+			customers.POST("", handlers.CreateCustomer)
+			customers.GET("/:customerId", handlers.GetCustomer)
+			customers.PUT("/:customerId", handlers.UpdateCustomer)
+			customers.DELETE("/:customerId", handlers.DeleteCustomer)
+			customers.POST("/:customerId/favorite", handlers.AddCustomerFavorite)
+			customers.DELETE("/:customerId/favorite", handlers.RemoveCustomerFavorite)
+			customers.GET("/:customerId/contracts", handlers.ListContracts)
+			customers.POST("/:customerId/contracts", handlers.CreateContract)
+			customers.PUT("/:customerId/contracts/:contractId", handlers.UpdateContract)
+			customers.DELETE("/:customerId/contracts/:contractId", handlers.DeleteContract)
+		}
+
 		// Direct messages (legacy 1-on-1)
 		dm := protected.Group("/direct-messages")
 		{
@@ -179,6 +195,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			projects.DELETE("/:projectSlug/cards/:cardId/watchers/:userId", handlers.RemoveWatcher)
 			projects.POST("/:projectSlug/cards/:cardId/tags", handlers.AddCardTag)
 			projects.DELETE("/:projectSlug/cards/:cardId/tags/:tagId", handlers.RemoveCardTag)
+
+			// Sub-cards
+			projects.GET("/:projectSlug/cards/:cardId/subcards", handlers.ListSubCards)
+			projects.POST("/:projectSlug/cards/:cardId/subcards", handlers.CreateSubCard)
 
 			// Card history
 			projects.GET("/:projectSlug/cards/:cardId/history", handlers.GetCardHistory)

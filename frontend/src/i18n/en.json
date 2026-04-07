@@ -50,7 +50,47 @@
       "admin": "Project Admin",
       "member": "Member",
       "viewer": "Viewer"
-    }
+    },
+    "customer": "Customer",
+    "contract": "Contract",
+    "no_customer": "No customer"
+  },
+  "customer": {
+    "customers": "Customers",
+    "new_customer": "New Customer",
+    "name": "Customer Name",
+    "description": "Description",
+    "logo_url": "Logo URL",
+    "no_customers": "No customers yet. Create your first customer!",
+    "star": "Star customer",
+    "unstar": "Unstar customer",
+    "starred": "Starred Customers",
+    "all_customers": "All Customers",
+    "projects": "Projects",
+    "unassigned": "Projects without a contract",
+    "delete_confirm": "Delete this customer? All linked projects will be detached.",
+    "edit": "Edit Customer",
+    "contracts": "Contracts",
+    "project_count": "{n} project | {n} projects",
+    "contract_count": "{n} contract | {n} contracts"
+  },
+  "contract": {
+    "contracts": "Contracts",
+    "new_contract": "New Contract",
+    "name": "Contract Name",
+    "description": "Description",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "no_contracts": "No contracts yet.",
+    "delete_confirm": "Delete this contract? Linked projects will be detached from it.",
+    "edit": "Edit Contract"
+  },
+  "subcard": {
+    "sub_cards": "Sub-cards",
+    "add_sub_card": "Add sub-card…",
+    "open": "Open",
+    "child_of": "Child of",
+    "progress": "{done} of {total} done"
   },
   "topics": {
     "title": "Topics",
@@ -328,6 +368,8 @@
     "no_starred": "No starred projects",
     "all_projects": "All Projects",
     "no_projects": "No projects",
+    "customers": "Customers",
+    "no_customers": "No starred customers",
     "favorites": "Favorites",
     "no_favorites": "No favorites yet",
     "favorite": "Add to favorites",

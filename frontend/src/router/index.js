@@ -15,6 +15,8 @@ const routes = [
   { path: '/messages', redirect: '/chats' },
   { path: '/admin', name: 'admin', component: () => import('@/views/AdminView.vue'), meta: { adminOnly: true } },
   { path: '/reports', name: 'reports', component: () => import('@/views/ReportView.vue'), meta: { reportsOnly: true } },
+  { path: '/customers', name: 'customers', component: () => import('@/views/CustomersView.vue') },
+  { path: '/customers/:id', name: 'customer-detail', component: () => import('@/views/CustomerDetailView.vue') },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 

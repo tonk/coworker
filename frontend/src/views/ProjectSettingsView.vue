@@ -28,6 +28,20 @@
             <label class="form-label">{{ $t('project.color') }}</label>
             <input type="color" class="form-input" v-model="form.color" style="height:40px;padding:4px;width:80px" />
           </div>
+          <div class="form-group">
+            <label class="form-label">{{ $t('project.customer') }}</label>
+            <select class="form-input" v-model="form.customer_id" style="max-width:400px" @change="form.contract_id = null; loadContractsForCustomer(form.customer_id)">
+              <option :value="null">{{ $t('project.no_customer') }}</option>
+              <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div v-if="form.customer_id" class="form-group">
+            <label class="form-label">{{ $t('project.contract') }}</label>
+            <select class="form-input" v-model="form.contract_id" style="max-width:400px">
+              <option :value="null">—</option>
+              <option v-for="con in filteredContracts" :key="con.id" :value="con.id">{{ con.name }}</option>
+            </select>
+          </div>
           <button class="btn btn-primary" @click="saveGeneral">{{ $t('common.save') }}</button>
 
           <div class="danger-zone">
@@ -307,6 +321,7 @@ import { authApi } from '@/api/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
 import client from '@/api/client'
 import { getServerUrl } from '@/api/serverConfig'
+import { customersApi } from '@/api/customers'
 
 const route = useRoute()
 const { formatDateTime } = useDateFormat()
@@ -325,7 +340,20 @@ const invite = ref({ userIds: [], role: 'member' })
 const inviteSearch = ref('')
 const allUsers = ref([])
 const newLabel = ref({ name: '', color: '#6366f1' })
-const form = ref({ name: '', description: '', color: '' })
+const form = ref({ name: '', description: '', color: '', customer_id: null, contract_id: null })
+const customers = ref([])
+const allContracts = ref([])
+const filteredContracts = computed(() =>
+  allContracts.value.filter(c => c.customer_id === form.value.customer_id)
+)
+
+async function loadContractsForCustomer(customerId) {
+  if (!customerId) { allContracts.value = []; return }
+  try {
+    const { data } = await customersApi.listContracts(customerId)
+    allContracts.value = data || []
+  } catch {}
+}
 const apiKeys = ref([])
 const newKeyName = ref('')
 const generatedKey = ref('')
@@ -356,9 +384,19 @@ const filteredInvitableUsers = computed(() => {
 onMounted(async () => {
   const data = await projectStore.fetchProject(slug.value)
   project.value = data
-  form.value = { name: data.name, description: data.description || '', color: data.color || '#6366f1' }
+  form.value = { name: data.name, description: data.description || '', color: data.color || '#6366f1', customer_id: data.customer_id || null, contract_id: data.contract_id || null }
   loadMembers()
   loadLabels()
+  // Load customers and contracts for the dropdowns
+  try {
+    const [custRes] = await Promise.all([customersApi.list()])
+    customers.value = custRes.data || []
+    // Fetch all contracts for the selected customer
+    if (form.value.customer_id) {
+      const conRes = await customersApi.listContracts(form.value.customer_id)
+      allContracts.value = conRes.data || []
+    }
+  } catch {}
   // Load all active users for the invite dropdown
   try {
     const { data: users } = await client.get('/users')

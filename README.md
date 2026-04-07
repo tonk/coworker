@@ -36,6 +36,9 @@ and asked Claude Code to generate the app.
 
 ## Features
 
+- **Customer / Contract / Project hierarchy** — customers are top-level entities; contracts sit under a customer; projects can be linked to a customer and optionally to a contract; manage from the Customers page or from Project Settings
+- **Customers sidebar** — starred customers listed in the sidebar with star/unstar toggle; dedicated Customers page (`/customers`) with grid view and full Customer detail page
+- **Sub-cards** — add child cards (one level deep) inside a parent card's detail view; hidden from the board; parent card shows a done/total progress pill; each sub-card has its own card number, assignees, labels, and comments
 - **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, due dates, assignees, watchers, markdown descriptions and comments
 - **Card sorting** — sort column cards by date, assignee, or priority (ascending / descending)
 - **Copy card** — duplicate a card within the same column with one click

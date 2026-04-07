@@ -269,5 +269,8 @@ func autoMigrate(db *gorm.DB) error {
 		&models.TopicReply{},
 		&models.FavoriteUser{},
 		&models.CardLink{},
+		&models.Customer{},
+		&models.Contract{},
+		&models.CustomerFavorite{},
 	)
 }

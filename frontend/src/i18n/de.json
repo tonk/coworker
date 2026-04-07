@@ -50,7 +50,47 @@
       "admin": "Projektadministrator",
       "member": "Mitglied",
       "viewer": "Betrachter"
-    }
+    },
+    "customer": "Kunde",
+    "contract": "Vertrag",
+    "no_customer": "Kein Kunde"
+  },
+  "customer": {
+    "customers": "Kunden",
+    "new_customer": "Neuer Kunde",
+    "name": "Kundenname",
+    "description": "Beschreibung",
+    "logo_url": "Logo-URL",
+    "no_customers": "Noch keine Kunden. Erstellen Sie Ihren ersten Kunden!",
+    "star": "Kunde markieren",
+    "unstar": "Markierung entfernen",
+    "starred": "Markierte Kunden",
+    "all_customers": "Alle Kunden",
+    "projects": "Projekte",
+    "unassigned": "Projekte ohne Vertrag",
+    "delete_confirm": "Diesen Kunden löschen? Alle verknüpften Projekte werden getrennt.",
+    "edit": "Kunde bearbeiten",
+    "contracts": "Verträge",
+    "project_count": "{n} Projekt | {n} Projekte",
+    "contract_count": "{n} Vertrag | {n} Verträge"
+  },
+  "contract": {
+    "contracts": "Verträge",
+    "new_contract": "Neuer Vertrag",
+    "name": "Vertragsname",
+    "description": "Beschreibung",
+    "start_date": "Startdatum",
+    "end_date": "Enddatum",
+    "no_contracts": "Noch keine Verträge.",
+    "delete_confirm": "Diesen Vertrag löschen? Verknüpfte Projekte werden davon getrennt.",
+    "edit": "Vertrag bearbeiten"
+  },
+  "subcard": {
+    "sub_cards": "Teilaufgaben",
+    "add_sub_card": "Teilaufgabe hinzufügen…",
+    "open": "Öffnen",
+    "child_of": "Unteraufgabe von",
+    "progress": "{done} von {total} erledigt"
   },
   "topics": {
     "title": "Themen",
@@ -308,7 +348,9 @@
     "online": "Online",
     "offline": "Offline",
     "all_chats": "Alle Chats…",
-    "unread_messages": "Ungelesene Nachrichten"
+    "unread_messages": "Ungelesene Nachrichten",
+    "customers": "Kunden",
+    "no_customers": "Keine markierten Kunden"
   },
   "apikeys": {
     "tab": "API-Schlüssel",

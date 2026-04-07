@@ -26,8 +26,33 @@
       </div>
     </section>
 
-    <!-- All Projects -->
+    <!-- Customers -->
     <section class="sidebar-section">
+      <button class="section-header" @click="toggle('customers')">
+        <span class="section-title">{{ $t('sidebar.customers') }}</span>
+        <span class="chevron" :class="{ open: open.customers }">›</span>
+      </button>
+      <div v-show="open.customers" class="section-body">
+        <div v-if="!customersStore.starredCustomers.length" class="section-empty">
+          {{ $t('sidebar.no_customers') }}
+        </div>
+        <nav class="sidebar-nav">
+          <RouterLink
+            v-for="c in customersStore.starredCustomers"
+            :key="c.id"
+            :to="`/customers/${c.id}`"
+            class="sidebar-link"
+          >
+            <span class="customer-icon">🏢</span>
+            <span class="link-text">{{ c.name }}</span>
+            <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :title="$t('customer.unstar')">★</button>
+          </RouterLink>
+        </nav>
+        <RouterLink to="/customers" class="sidebar-link sidebar-link-all">{{ $t('customer.customers') }}…</RouterLink>
+      </div>
+    </section>
+
+    <!-- All Projects --><section class="sidebar-section">
       <button class="section-header" @click="toggle('projects')">
         <span class="section-title">{{ $t('sidebar.all_projects') }}</span>
         <span class="chevron" :class="{ open: open.projects }">›</span>
@@ -182,16 +207,18 @@ import { RouterLink } from 'vue-router'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
+import { useCustomersStore } from '@/stores/customers'
 
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
 const notificationsStore = useNotificationsStore()
+const customersStore = useCustomersStore()
 
 const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.getItem('sidebar_position') || 'left')
 
 // Collapse state — persisted in localStorage
 const STORAGE_KEY = 'sidebar_open'
-const defaults = { starred: true, projects: true, favorites: true, chats: true, people: true }
+const defaults = { starred: true, projects: true, customers: false, favorites: true, chats: true, people: true }
 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaults
 const open = ref({ ...defaults, ...saved })
 
@@ -285,6 +312,7 @@ onMounted(() => {
   sidebarStore.fetchAllUsers()
   sidebarStore.fetchChatUsers()
   sidebarStore.fetchFavoriteUsers()
+  customersStore.fetchCustomers()
   notificationsStore.checkUnread()
   pollInterval = setInterval(() => {
     sidebarStore.fetchAllUsers()
@@ -429,6 +457,11 @@ onUnmounted(() => {
 .star-mark {
   font-size: 11px;
   color: var(--color-warning, #f59e0b);
+  flex-shrink: 0;
+}
+
+.customer-icon {
+  font-size: 13px;
   flex-shrink: 0;
 }
 

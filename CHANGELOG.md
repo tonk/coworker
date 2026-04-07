@@ -2,6 +2,20 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.5.3 — 2026-04-07
+
+### Added
+- **Customer / Contract / Project hierarchy** — customers are top-level entities; contracts sit under a customer; projects can be linked to a customer and optionally to a contract within that customer
+- **Customers page** (`/customers`) — grid of customer tiles showing name, description, logo, contract count, and project count; star/unstar favourites; admins and project owners can create, edit, and delete customers and contracts
+- **Customer detail page** (`/customers/:id`) — customer header with inline name editing; contracts listed with their projects grouped beneath; unassigned projects shown separately; contract date ranges displayed
+- **Customers section in sidebar** — starred customers displayed with star/unstar toggle; link to the full customers list
+- **Customer / Contract in Project Settings** — General tab gains Customer and Contract dropdowns; saving links the project to the selected customer and contract (or clears the link)
+- **Customer badge on dashboard tiles** — project tiles show the customer name when a project is linked to a customer
+- **Sub-cards** — cards can have child cards (one level deep); sub-cards are created and managed inside the parent card's detail view and are hidden from the board column; parent cards show a progress pill (done / total) on the board; each sub-card gets its own card number and full detail (assignees, labels, comments, etc.); clicking the open button in the sub-card list opens the sub-card in a nested detail modal
+
+### Fixed
+- **Linux desktop app blank screen on Fedora / Wayland** — at startup the app now automatically detects `libwayland-client.so` at well-known paths (Fedora `/usr/lib64`, Ubuntu `/usr/lib/x86_64-linux-gnu`, ARM64, and others) and re-execs itself once with `LD_PRELOAD` set; a sentinel env var (`WARMDESK_PRELOAD_DONE`) prevents infinite loops; no manual `LD_PRELOAD` configuration is required
+
 ## v0.5.2 — 2026-04-07
 
 ### Added

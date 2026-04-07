@@ -50,7 +50,47 @@
       "admin": "Administrador de proyecto",
       "member": "Miembro",
       "viewer": "Observador"
-    }
+    },
+    "customer": "Cliente",
+    "contract": "Contrato",
+    "no_customer": "Sin cliente"
+  },
+  "customer": {
+    "customers": "Clientes",
+    "new_customer": "Nuevo cliente",
+    "name": "Nombre del cliente",
+    "description": "Descripción",
+    "logo_url": "URL del logo",
+    "no_customers": "Aún no hay clientes. ¡Cree su primer cliente!",
+    "star": "Marcar cliente",
+    "unstar": "Quitar marca",
+    "starred": "Clientes marcados",
+    "all_customers": "Todos los clientes",
+    "projects": "Proyectos",
+    "unassigned": "Proyectos sin contrato",
+    "delete_confirm": "¿Eliminar este cliente? Todos los proyectos vinculados serán desvinculados.",
+    "edit": "Editar cliente",
+    "contracts": "Contratos",
+    "project_count": "{n} proyecto | {n} proyectos",
+    "contract_count": "{n} contrato | {n} contratos"
+  },
+  "contract": {
+    "contracts": "Contratos",
+    "new_contract": "Nuevo contrato",
+    "name": "Nombre del contrato",
+    "description": "Descripción",
+    "start_date": "Fecha de inicio",
+    "end_date": "Fecha de fin",
+    "no_contracts": "Aún no hay contratos.",
+    "delete_confirm": "¿Eliminar este contrato? Los proyectos vinculados serán desvinculados.",
+    "edit": "Editar contrato"
+  },
+  "subcard": {
+    "sub_cards": "Subtareas",
+    "add_sub_card": "Agregar subtarea…",
+    "open": "Abrir",
+    "child_of": "Subtarea de",
+    "progress": "{done} de {total} completado"
   },
   "topics": {
     "title": "Temas",
@@ -308,7 +348,9 @@
     "online": "En línea",
     "offline": "Desconectado",
     "all_chats": "Todos los chats…",
-    "unread_messages": "Mensajes no leídos"
+    "unread_messages": "Mensajes no leídos",
+    "customers": "Clientes",
+    "no_customers": "No hay clientes marcados"
   },
   "apikeys": {
     "tab": "Claves API",
