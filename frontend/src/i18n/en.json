@@ -133,7 +133,9 @@
     "transfer_move": "Move Here",
     "select_project": "Select project",
     "select_column": "Select column",
-    "open_cards": "open cards"
+    "open_cards": "open cards",
+    "unsaved_changes": "You have unsaved changes.",
+    "discard": "Discard"
   },
   "chat": {
     "title": "Team Chat",
@@ -160,6 +162,7 @@
     "role_admin": "Admin",
     "role_user": "User",
     "role_viewer": "Viewer",
+    "role_metrics": "Metrics",
     "last_login": "Last Login",
     "owner": "Owner",
     "open_cards": "Open Cards",

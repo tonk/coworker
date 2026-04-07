@@ -187,6 +187,17 @@ func handleIncoming(client *appws.Client, raw []byte) {
 			Payload: map[string]interface{}{"id": chatMsg.ID, "body": payload.Body, "is_edited": true},
 		})
 
+	case appws.TypeChatTyping:
+		// Broadcast typing notification to all other clients in the project.
+		appws.BroadcastToProject(client.ProjectID(), appws.Message{
+			Type: appws.TypeChatUserTyping,
+			Payload: map[string]interface{}{
+				"user_id":      client.UserID(),
+				"username":     client.Username(),
+				"display_name": client.DisplayName(),
+			},
+		})
+
 	case appws.TypeChatDelete:
 		payloadBytes, _ := json.Marshal(msg.Payload)
 		var payload appws.ChatDeletePayload

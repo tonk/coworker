@@ -133,7 +133,9 @@
     "transfer_move": "Hier verschieben",
     "select_project": "Projekt auswählen",
     "select_column": "Spalte auswählen",
-    "open_cards": "offene Karten"
+    "open_cards": "offene Karten",
+    "unsaved_changes": "Sie haben ungespeicherte Änderungen.",
+    "discard": "Verwerfen"
   },
   "chat": {
     "title": "Team-Chat",
@@ -160,6 +162,7 @@
     "role_admin": "Administrator",
     "role_user": "Benutzer",
     "role_viewer": "Betrachter",
+    "role_metrics": "Metriken",
     "last_login": "Letzte Anmeldung",
     "owner": "Eigentümer",
     "open_cards": "Offene Karten",

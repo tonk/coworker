@@ -1,6 +1,6 @@
 [package]
 name = "warmdesk"
-version = "0.5.1-4-g524ea0f"
+version = "0.5.1-14-g14979b3"
 edition = "2021"
 
 [lib]
@@ -13,6 +13,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = [] }
 tauri-plugin-http = { version = "2", default-features = false, features = ["rustls-tls", "charset", "macos-system-configuration", "cookies"] }
+tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 

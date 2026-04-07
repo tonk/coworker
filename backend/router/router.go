@@ -115,6 +115,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		// Reports
 		protected.GET("/reports/time", handlers.GetTimeReport)
 
+		// Prometheus metrics (admin or metrics role)
+		protected.GET("/metrics", middleware.MetricsAuth(), handlers.GetMetrics)
+
 		// Conversations (1-on-1 and group)
 		convs := protected.Group("/conversations")
 		{
@@ -135,6 +138,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		{
 			projects.GET("", handlers.ListProjects)
 			projects.POST("", handlers.CreateProject)
+			projects.PATCH("/reorder", handlers.ReorderProjects)
 			projects.GET("/:projectSlug", handlers.GetProject)
 			projects.PUT("/:projectSlug", handlers.UpdateProject)
 			projects.DELETE("/:projectSlug", handlers.DeleteProject)

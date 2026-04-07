@@ -133,7 +133,9 @@
     "transfer_move": "Déplacer ici",
     "select_project": "Sélectionner le projet",
     "select_column": "Sélectionner la colonne",
-    "open_cards": "cartes ouvertes"
+    "open_cards": "cartes ouvertes",
+    "unsaved_changes": "Vous avez des modifications non enregistrées.",
+    "discard": "Abandonner"
   },
   "chat": {
     "title": "Chat d'équipe",
@@ -160,6 +162,7 @@
     "role_admin": "Administrateur",
     "role_user": "Utilisateur",
     "role_viewer": "Lecteur",
+    "role_metrics": "Métriques",
     "last_login": "Dernière connexion",
     "owner": "Propriétaire",
     "open_cards": "Cartes ouvertes",

@@ -2,7 +2,7 @@
   <div v-if="visible" class="update-banner">
     <span>
       {{ $t('update.available', { version: latestVersion }) }}
-      <a :href="releaseUrl" target="_blank" rel="noopener" class="update-link">{{ $t('update.release_notes') }}</a>
+      <button class="update-link" @click="openLink(releaseUrl)">{{ $t('update.release_notes') }}</button>
     </span>
     <button class="update-dismiss" @click="dismiss" :aria-label="$t('common.close')">✕</button>
   </div>
@@ -15,6 +15,14 @@ const props = defineProps({
   latestVersion: { type: String, required: true },
   releaseUrl: { type: String, required: true }
 })
+
+async function openLink(url) {
+  if (window.__TAURI_INTERNALS__) {
+    await window.__TAURI_INTERNALS__.invoke('plugin:opener|open_url', { url, with: null })
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+}
 
 const DISMISS_KEY = 'update_dismissed'
 
@@ -40,10 +48,15 @@ function dismiss() {
   z-index: 200;
 }
 .update-link {
+  background: none;
+  border: none;
+  padding: 0;
   color: #fff;
   font-weight: 600;
   margin-left: 6px;
   text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
 }
 .update-link:hover { opacity: 0.85; }
 .update-dismiss {

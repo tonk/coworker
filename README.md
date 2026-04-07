@@ -43,8 +43,8 @@ and asked Claude Code to generate the app.
 - **Close / reopen cards** — mark cards as closed; closed cards stay on the board with a strikethrough and muted style and can be reopened at any time
 - **Comment replies** — reply to any comment; replies are visually indented
 - **Time tracking** — log hours and minutes spent directly on a card
-- **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel
-- **Role-based access** — global roles (admin / user / viewer) and per-project roles (owner / admin / member / viewer); project admins can manage columns
+- **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
+- **Role-based access** — global roles (admin / user / viewer / metrics) and per-project roles (owner / admin / member / viewer); project admins can manage columns
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
 - **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management
 - **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
@@ -66,7 +66,10 @@ and asked Claude Code to generate the app.
 - **Configurable initial columns** — admin can define which columns are created when a new project is made (defaults to "Backlog")
 - **Ticket API** — create cards, add comments, and move cards via API key (for CI/CD pipelines and external integrations); API keys also work on all other authenticated endpoints
 - **Project-scoped API keys** — keys created in Project Settings are locked to that project; personal API keys in User Settings give full access across all projects
-- **Git integration** — connect GitHub, GitLab, Gitea, or Forgejo; commit/PR/issue events post to project chat and automatically link to cards when a card reference (e.g. `PRJ-42`) appears in the message or title
+- **Typing indicator** — animated indicator in project chat shows who is currently typing
+- **@mention autocomplete** — `@username` dropdown in project chat, card descriptions, and card comments
+- **Prometheus metrics** — `GET /api/v1/metrics` exposes project, column, and card counts; protected by the `metrics` role
+- **Git integration** — connect GitHub, GitLab, Gitea, or Forgejo; commit/PR/issue events post to project chat and automatically link to cards when a card reference (e.g. `PRJ-42`) appears in the message or title; Forgejo events show the Forgejo logo
 - **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
 - **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast
 - **App zoom** — `Ctrl +` / `Ctrl -` to zoom in/out; `Ctrl 0` to reset; level persisted across sessions

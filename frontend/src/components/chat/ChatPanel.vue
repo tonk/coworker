@@ -99,6 +99,12 @@
       </div>
     </div>
 
+    <!-- Typing indicator -->
+    <div v-if="otherTypingUsers.length" class="typing-indicator">
+      <span class="typing-dots"><span></span><span></span><span></span></span>
+      <span class="typing-text">{{ typingText }}</span>
+    </div>
+
     <!-- Compose area -->
     <div class="chat-compose">
       <AttachmentList v-if="pendingFiles.length" :attachments="pendingFiles" :can-delete="true" @remove="removePending" />
@@ -142,7 +148,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { useChatStore } from '@/stores/chat'
@@ -196,9 +202,30 @@ function onEmojiPick(emoji) {
   emojiOpen.value = false
 }
 
+// Typing indicator — debounced send to avoid flooding the server
+let _typingTimer = null
+function sendTyping() {
+  if (_typingTimer) return   // already scheduled
+  props.wsSend?.('chat.typing', {})
+  _typingTimer = setTimeout(() => { _typingTimer = null }, 2000)
+}
+onUnmounted(() => clearTimeout(_typingTimer))
+
+// Other users currently typing (exclude self)
+const otherTypingUsers = computed(() =>
+  chatStore.typingUsers.filter(u => u.user_id !== authUser.value?.id)
+)
+const typingText = computed(() => {
+  const names = otherTypingUsers.value.map(u => u.display_name || u.username)
+  if (names.length === 1) return `${names[0]} is typing…`
+  if (names.length === 2) return `${names[0]} and ${names[1]} are typing…`
+  return 'Several people are typing…'
+})
+
 function onInput(e) {
   autoResize(e)
   onTextareaInput()
+  sendTyping()
 }
 
 function onEnter(e) {
@@ -738,4 +765,34 @@ function dayLabel(dateStr) {
 .emoji-trigger-btn:hover { opacity: 1; }
 
 .compose-outer { position: relative; }
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  min-height: 20px;
+}
+
+.typing-dots {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+.typing-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  animation: typing-bounce 1.2s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: .4; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
 </style>

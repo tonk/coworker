@@ -53,6 +53,18 @@ func AdminOnly() gin.HandlerFunc {
 	}
 }
 
+// MetricsAuth allows admin and metrics roles (read-only Prometheus scraper accounts).
+func MetricsAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, _ := c.Get(ContextGlobalRole)
+		if role != "admin" && role != "metrics" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+		c.Next()
+	}
+}
+
 func GetUserID(c *gin.Context) uint {
 	v, _ := c.Get(ContextUserID)
 	id, _ := v.(uint)

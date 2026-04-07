@@ -3,6 +3,7 @@ import client from './client'
 export const projectsApi = {
   list: () => client.get('/projects'),
   create: (data) => client.post('/projects', data),
+  reorder: (items) => client.patch('/projects/reorder', items),
   get: (slug) => client.get(`/projects/${slug}`),
   update: (slug, data) => client.put(`/projects/${slug}`, data),
   delete: (slug) => client.delete(`/projects/${slug}`),

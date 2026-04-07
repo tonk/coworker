@@ -1,5 +1,5 @@
 <template>
-  <BaseModal :title="$t('board.edit_card')" @close="$emit('close')" :resizable="true" style="--modal-width: 700px">
+  <BaseModal :title="$t('board.edit_card')" @close="handleClose" :resizable="true" style="--modal-width: 700px">
     <div class="card-detail">
       <div v-if="cardRef" class="card-ref-badge">{{ cardRef }}</div>
       <div class="form-group">
@@ -10,9 +10,15 @@
 
       <div class="form-group">
         <label class="form-label">{{ $t('board.description') }}</label>
-        <textarea v-if="!locked" class="form-input description-textarea" v-model="form.description"
-                  spellcheck="true" :lang="auth.user?.locale || 'en'"
-                  :placeholder="$t('board.description')" rows="8"></textarea>
+        <div v-if="!locked" style="position:relative">
+          <MentionDropdown v-if="descMentionUsers.length" :users="descMentionUsers" :active-index="descMentionIndex"
+            @pick="descPickMention" @update:activeIndex="descMentionIndex = $event" />
+          <textarea class="form-input description-textarea" v-model="form.description"
+                    ref="descTextareaEl"
+                    spellcheck="true" :lang="auth.user?.locale || 'en'"
+                    :placeholder="$t('board.description')" rows="8"
+                    @input="descOnInput" @keydown="descOnKeydown"></textarea>
+        </div>
         <div v-else class="description-text comment-text" v-html="renderMarkdown(form.description)"></div>
       </div>
 
@@ -207,14 +213,21 @@
         </div>
 
         <div class="add-comment">
-          <textarea
-            class="form-input comment-textarea"
-            v-model="newComment"
-            :placeholder="$t('board.add_comment')"
-            spellcheck="true"
-            :lang="auth.user?.locale || 'en'"
-            rows="3"
-          ></textarea>
+          <div style="position:relative">
+            <MentionDropdown v-if="commentMentionUsers.length" :users="commentMentionUsers" :active-index="commentMentionIndex"
+              @pick="commentPickMention" @update:activeIndex="commentMentionIndex = $event" />
+            <textarea
+              class="form-input comment-textarea"
+              v-model="newComment"
+              ref="commentTextareaEl"
+              :placeholder="$t('board.add_comment')"
+              spellcheck="true"
+              :lang="auth.user?.locale || 'en'"
+              rows="3"
+              @input="commentOnInput"
+              @keydown="commentOnKeydown"
+            ></textarea>
+          </div>
           <button class="btn btn-primary btn-sm" @click="submitComment" :disabled="!newComment.trim()">
             {{ $t('board.add_comment') }}
           </button>
@@ -224,13 +237,12 @@
       <div v-if="gitLinks.length" class="git-links-section">
         <h4>Git Links</h4>
         <div class="git-links-list">
-          <a
+          <div
             v-for="link in gitLinks"
             :key="link.id"
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
             class="git-link-row"
+            style="cursor: pointer"
+            @click="openLink(link.url)"
           >
             <span class="git-link-icon">
               <template v-if="link.link_type === 'commit'">⬡</template>
@@ -246,7 +258,7 @@
             </span>
             <span class="git-link-title">{{ link.title }}</span>
             <span class="git-link-status" :class="'status-' + link.status">{{ link.status }}</span>
-          </a>
+          </div>
         </div>
       </div>
 
@@ -293,23 +305,33 @@
     </div>
 
     <template #footer>
-      <button class="btn btn-danger btn-sm" @click="confirmDelete">{{ $t('board.delete_card') }}</button>
-      <button class="btn btn-secondary btn-sm" @click="toggleClose">{{ isClosed ? $t('board.reopen_card') : $t('board.close_card') }}</button>
-      <button class="btn btn-secondary btn-sm" @click="copyCard" :disabled="copying">{{ $t('board.copy_card') }}</button>
-      <button class="btn btn-secondary btn-sm" @click="toggleTransferPanel">{{ $t('board.transfer_card') }}</button>
-      <button class="btn btn-secondary" @click="$emit('close')">{{ $t('common.cancel') }}</button>
-      <button class="btn btn-primary" @click="save" :disabled="saving">{{ saving ? $t('common.loading') : $t('common.save') }}</button>
+      <template v-if="showCancelConfirm">
+        <span class="cancel-confirm-msg">{{ $t('board.unsaved_changes') }}</span>
+        <button class="btn btn-primary btn-sm" @click="save">{{ $t('common.save') }}</button>
+        <button class="btn btn-danger btn-sm" @click="$emit('close')">{{ $t('board.discard') }}</button>
+        <button class="btn btn-ghost btn-sm" @click="showCancelConfirm = false">{{ $t('common.cancel') }}</button>
+      </template>
+      <template v-else>
+        <button class="btn btn-danger btn-sm" @click="confirmDelete">{{ $t('board.delete_card') }}</button>
+        <button class="btn btn-secondary btn-sm" @click="toggleClose">{{ isClosed ? $t('board.reopen_card') : $t('board.close_card') }}</button>
+        <button class="btn btn-secondary btn-sm" @click="copyCard" :disabled="copying">{{ $t('board.copy_card') }}</button>
+        <button class="btn btn-secondary btn-sm" @click="toggleTransferPanel">{{ $t('board.transfer_card') }}</button>
+        <button class="btn btn-secondary" @click="handleClose">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-primary" @click="save" :disabled="saving">{{ saving ? $t('common.loading') : $t('common.save') }}</button>
+      </template>
     </template>
   </BaseModal>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import BaseModal from '@/components/common/BaseModal.vue'
 import AttachmentList from '@/components/common/AttachmentList.vue'
+import MentionDropdown from '@/components/common/MentionDropdown.vue'
+import { useCompose } from '@/composables/useCompose'
 import { useBoardStore } from '@/stores/board'
 import { useProjectStore } from '@/stores/project'
 import { useAuthStore } from '@/stores/auth'
@@ -390,6 +412,11 @@ const assignees = ref([...(props.card.assignees || [])])
 const gitLinks = ref([])
 const copying = ref(false)
 const showTransferPanel = ref(false)
+const showCancelConfirm = ref(false)
+
+// @mention support for description and comment textareas
+const descTextareaEl = ref(null)
+const commentTextareaEl = ref(null)
 const transferProjectSlug = ref('')
 const transferColumnId = ref('')
 const transferColumns = ref([])
@@ -536,7 +563,25 @@ async function deleteAttachment(a) {
   }
 }
 
+function handleClose() {
+  if (!isDirty.value) { emit('close'); return }
+  showCancelConfirm.value = true
+}
+
+function onKeyDown(e) {
+  if (e.key === 'Escape' && !e.defaultPrevented && !isDirty.value) emit('close')
+}
+
+async function openLink(url) {
+  if (window.__TAURI_INTERNALS__) {
+    await window.__TAURI_INTERNALS__.invoke('plugin:opener|open_url', { url, with: null })
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+}
+
 onMounted(async () => {
+  document.addEventListener('keydown', onKeyDown)
   try {
     const [histRes, checkRes, linksRes] = await Promise.all([
       projectsApi.getCardHistory(props.projectSlug, props.card.id),
@@ -548,6 +593,8 @@ onMounted(async () => {
     gitLinks.value = linksRes.data || []
   } catch {}
 })
+
+onUnmounted(() => { document.removeEventListener('keydown', onKeyDown) })
 
 const priorities = ['none', 'low', 'medium', 'high', 'critical']
 
@@ -561,6 +608,45 @@ const form = ref({
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
   time_spent_minutes: props.card.time_spent_minutes || 0
+})
+
+// Snapshot for dirty-check (plain values, not reactive)
+const _init = {
+  title: props.card.title,
+  description: props.card.description || '',
+  priority: props.card.priority || 'none',
+  due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
+  assignee_id: props.card.assignee_id || null,
+  time_spent_minutes: props.card.time_spent_minutes || 0
+}
+const isDirty = computed(() =>
+  newComment.value.trim() !== '' ||
+  form.value.title !== _init.title ||
+  form.value.description !== _init.description ||
+  form.value.priority !== _init.priority ||
+  form.value.due_date !== _init.due_date ||
+  form.value.assignee_id !== _init.assignee_id ||
+  form.value.time_spent_minutes !== _init.time_spent_minutes
+)
+
+const {
+  mentionUsers: descMentionUsers, mentionIndex: descMentionIndex,
+  onTextareaInput: descOnInput, onTextareaKeydown: descOnKeydown, pickMention: descPickMention
+} = useCompose({
+  textareaEl: descTextareaEl,
+  getValue: () => form.value.description,
+  setValue: (v) => { form.value.description = v },
+  users: memberUsers
+})
+
+const {
+  mentionUsers: commentMentionUsers, mentionIndex: commentMentionIndex,
+  onTextareaInput: commentOnInput, onTextareaKeydown: commentOnKeydown, pickMention: commentPickMention
+} = useCompose({
+  textareaEl: commentTextareaEl,
+  getValue: () => newComment.value,
+  setValue: (v) => { newComment.value = v },
+  users: memberUsers
 })
 
 const displayDueDate = ref(form.value.due_date ? formatDate(form.value.due_date) : '')
@@ -983,4 +1069,6 @@ function renderMarkdown(text) {
 
 .comment-textarea { resize: vertical; min-height: 80px; font-family: inherit; }
 .description-textarea { resize: vertical; min-height: 160px; font-family: monospace; font-size: 13px; }
+
+.cancel-confirm-msg { font-size: 13px; color: var(--color-text-muted); flex: 1; }
 </style>

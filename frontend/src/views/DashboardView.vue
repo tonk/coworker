@@ -14,13 +14,15 @@
           <p>{{ $t('project.no_projects') }}</p>
         </div>
 
-        <div v-else class="projects-grid">
+        <div v-else class="projects-grid" ref="gridEl">
           <div
             v-for="project in projectStore.projects"
             :key="project.id"
             class="project-card"
+            :data-id="project.id"
             @click="router.push(`/projects/${project.slug}`)"
           >
+            <div v-if="isAdmin" class="drag-handle" title="Drag to reorder" @click.stop>⠿</div>
             <div class="project-color-bar" :style="{ background: project.color || '#6366f1' }"></div>
             <div class="project-card-body">
               <h3>{{ project.name }}</h3>
@@ -66,25 +68,47 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
+import Sortable from 'sortablejs'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useProjectStore } from '@/stores/project'
 import { useUIStore } from '@/stores/ui'
 import { useSidebarStore } from '@/stores/sidebar'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const projectStore = useProjectStore()
 const ui = useUIStore()
 const sidebarStore = useSidebarStore()
+const auth = useAuthStore()
 const showCreate = ref(false)
+const gridEl = ref(null)
+let sortable = null
+
+const isAdmin = computed(() => auth.user?.global_role === 'admin')
 const creating = ref(false)
 const newProject = ref({ name: '', description: '', color: '#6366f1' })
 
-onMounted(() => {
-  projectStore.fetchProjects()
+onMounted(async () => {
+  await projectStore.fetchProjects()
   sidebarStore.fetchStarred()
+  if (isAdmin.value && gridEl.value) {
+    sortable = Sortable.create(gridEl.value, {
+      handle: '.drag-handle',
+      animation: 150,
+      onEnd({ oldIndex, newIndex }) {
+        if (oldIndex === newIndex) return
+        const reordered = [...projectStore.projects]
+        const [moved] = reordered.splice(oldIndex, 1)
+        reordered.splice(newIndex, 0, moved)
+        projectStore.reorderProjects(reordered)
+      }
+    })
+  }
 })
+
+onUnmounted(() => sortable?.destroy())
 
 async function toggleStar(project) {
   if (sidebarStore.isStarred(project.slug)) {
@@ -131,6 +155,7 @@ async function handleCreate() {
   border-radius: var(--radius);
   cursor: pointer;
   overflow: hidden;
+  position: relative;
   transition: box-shadow .15s, transform .1s;
 }
 .project-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
@@ -143,6 +168,20 @@ async function handleCreate() {
 .project-open-cards { font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px; }
 
 .project-actions { display: flex; justify-content: flex-end; }
+
+.drag-handle {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity .15s;
+  line-height: 1;
+}
+.project-card:hover .drag-handle { opacity: 0.6; }
+.drag-handle:active { cursor: grabbing; }
 
 .loading-state { display: flex; justify-content: center; padding: 60px; }
 .empty-state { text-align: center; padding: 60px; color: var(--color-text-muted); }

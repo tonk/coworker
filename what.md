@@ -251,3 +251,13 @@ Create an application that has all these features and requirements
 - Show server version in footer alongside client version (fetched from new public GET /api/v1/version endpoint)
 - Fix make appimage/dmg broken by non-semver git tags: pass --match 'v*' to git describe in Makefile
 - Fix webhook setup URL showing tauri://localhost in desktop app: use configured server URL instead of window.location.origin for GitHub, GitLab, and Gitea payload URL display
+- Fix Forgejo webhook showing Gitea logo on card Git Links: detect platform from X-Forgejo-Event header instead of webhook name
+- Fix git links and release notes banner doing nothing when clicked in desktop app: open in system browser via tauri-plugin-opener
+- Fix Escape key closing card modal even when a mention dropdown is open: check e.defaultPrevented before closing
+- Fix Cancel button discarding unsaved card changes silently: show Save / Discard / Back confirmation panel when the card is dirty
+- Escape key closes card modal when there are no unsaved changes
+- Typing indicator in project chat: animated three-dot indicator shows who is typing; auto-clears after 4 seconds of inactivity
+- @mention autocomplete in card description and comment fields (same dropdown as in project chat)
+- Prometheus metrics endpoint GET /api/v1/metrics: project count, column count per project, open/closed card count per column; protected by a new metrics global role
+- Admin UI: metrics role option added to the role selector in user list and create user form
+- Project ordering: admins can drag project tiles on the dashboard to reorder them; order persisted to database and shown to all users

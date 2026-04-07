@@ -100,9 +100,11 @@ func (c *Client) WritePump() {
 	}
 }
 
-func (c *Client) UserID() uint      { return c.userID }
-func (c *Client) ProjectID() uint   { return c.projectID }
+func (c *Client) UserID() uint       { return c.userID }
+func (c *Client) ProjectID() uint    { return c.projectID }
 func (c *Client) GlobalRole() string { return c.globalRole }
+func (c *Client) Username() string   { return c.username }
+func (c *Client) DisplayName() string { return c.displayName }
 
 func (c *Client) Send(data []byte) {
 	select {

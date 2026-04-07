@@ -2,6 +2,20 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.5.2 — 2026-04-07
+
+### Added
+- **Prometheus metrics endpoint** — `GET /api/v1/metrics` exposes project, column, and card counts in Prometheus text format; protected by a new `metrics` global role (assignable in Admin → Users); admins also have access
+- **Typing indicator in chat** — animated three-dot indicator appears above the compose area showing who is currently typing in project chat; auto-clears 4 seconds after the last keystroke
+- **@mention autocomplete in card description and comments** — the `@username` mention dropdown (already available in chat) now works in the card detail description field and comment box; Escape dismisses the dropdown without closing the card
+- **Project ordering** — admins can drag project tiles on the dashboard to set a custom display order; order is persisted to the database and respected for all users
+
+### Fixed
+- **Forgejo webhook shows Gitea logo** — the card Git Links section now correctly detects Forgejo events from `X-Forgejo-Event` headers and shows the Forgejo badge (blue) rather than the Gitea badge (green)
+- **Git links in desktop app do nothing when clicked** — external links in the card Git Links section and the update banner "View release notes" link now open in the system browser when running as the desktop app (via `tauri-plugin-opener`); previously nothing happened
+- **Escape closes dirty card accidentally** — pressing Escape now only closes the card modal when there are no unsaved changes; if there are changes the card stays open
+- **Cancel with unsaved changes loses work silently** — clicking Cancel (or the ✕ button, or backdrop) on a card with unsaved changes now shows a "Save / Discard / Back" confirmation panel instead of closing immediately
+
 ## v0.5.1 — 2026-04-03
 
 ### Fixed

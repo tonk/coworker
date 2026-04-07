@@ -20,10 +20,6 @@
 
 - In the project overview, allow projects to be moved, change the order
 
-- Allow external repo servers (Gitea, Forgejo, Github, Gitlab) to follow
-  projects, so that the comments (with the Gitea issue tag) are also
-  linked in the issue
-
 - After zooming in or out, save the zoom setting for the nest session
 
 - Currently the theme is blue, also allow, per user, a red, green,
@@ -74,3 +70,8 @@
 - Implement sub-cards in the cards
 
 - Implement a Gantt chart per project
+
+- Allow external repo servers (Gitea, Forgejo, Github, Gitlab) to follow
+  projects, so that the comments (with the Gitea issue tag) are also
+  linked in the issue
+

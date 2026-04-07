@@ -48,5 +48,12 @@ export const useProjectStore = defineStore('project', () => {
     if (currentProject.value?.slug === slug) currentProject.value = null
   }
 
-  return { projects, currentProject, loading, fetchProjects, fetchProject, createProject, updateProject, deleteProject }
+  async function reorderProjects(ordered) {
+    // ordered: array of project objects in the desired new order
+    const items = ordered.map((p, i) => ({ id: p.id, position: i }))
+    projects.value = ordered
+    await projectsApi.reorder(items)
+  }
+
+  return { projects, currentProject, loading, fetchProjects, fetchProject, createProject, updateProject, deleteProject, reorderProjects }
 })

@@ -336,6 +336,34 @@ admin users only).
 | `user` | Can use the application; sees only their own projects |
 | `admin` | Full access to all projects, all admin panel features |
 | `viewer` | Read-only access; cannot create or modify anything |
+| `metrics` | Can only read `GET /api/v1/metrics`; no access to any other endpoint |
+
+The `metrics` role is intended for Prometheus scraper accounts. Create a dedicated user, set their role to `metrics`, generate an API key in User Settings, and configure Prometheus to send `Authorization: Bearer <token>` (or `?api_key=<key>`) with each scrape request.
+
+### Prometheus metrics
+
+`GET /api/v1/metrics` returns project, column, and card counts in Prometheus text format. Accessible to `admin` and `metrics` roles.
+
+Example Prometheus scrape config:
+
+```yaml
+scrape_configs:
+  - job_name: warmdesk
+    static_configs:
+      - targets: ['warmdesk.example.com']
+    metrics_path: /api/v1/metrics
+    scheme: https
+    authorization:
+      credentials: <api-key>
+```
+
+Metrics exposed:
+
+| Metric | Labels | Description |
+|--------|--------|-------------|
+| `warmdesk_projects_total` | — | Active (non-archived) project count |
+| `warmdesk_columns_total` | `project`, `project_name` | Column count per project |
+| `warmdesk_cards_total` | `project`, `column`, `status` | Card count per column; `status` is `open` or `closed` |
 
 ### Projects
 

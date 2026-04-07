@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"cmp"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -91,7 +93,7 @@ func ListProjects(c *gin.Context) {
 	// Admins and global viewers see all non-deleted projects
 	if globalRole == "admin" || globalRole == "viewer" {
 		var projects []models.Project
-		database.DB.Where("deleted_at IS NULL").Find(&projects)
+		database.DB.Where("deleted_at IS NULL").Order("position asc, id asc").Find(&projects)
 		c.JSON(http.StatusOK, projectsWithCounts(projects))
 		return
 	}
@@ -106,6 +108,13 @@ func ListProjects(c *gin.Context) {
 		}
 		projects = append(projects, m.Project)
 	}
+	// Sort by position then id
+	slices.SortFunc(projects, func(a, b models.Project) int {
+		if n := cmp.Compare(a.Position, b.Position); n != 0 {
+			return n
+		}
+		return cmp.Compare(a.ID, b.ID)
+	})
 	c.JSON(http.StatusOK, projectsWithCounts(projects))
 }
 
@@ -289,4 +298,27 @@ func DeleteProject(c *gin.Context) {
 
 	database.DB.Delete(project)
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+}
+
+// ReorderProjects PATCH /api/v1/projects/reorder — update display order (admin only).
+func ReorderProjects(c *gin.Context) {
+	if middleware.GetGlobalRole(c) != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "admin only"})
+		return
+	}
+
+	var req []struct {
+		ID       uint `json:"id"`
+		Position int  `json:"position"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for _, item := range req {
+		database.DB.Model(&models.Project{}).Where("id = ?", item.ID).Update("position", item.Position)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }

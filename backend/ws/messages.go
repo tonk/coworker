@@ -6,7 +6,11 @@ const (
 	TypeChatSend    = "chat.send"
 	TypeChatEdit    = "chat.edit"
 	TypeChatDelete  = "chat.delete"
+	TypeChatTyping  = "chat.typing"
 	TypePing        = "ping"
+
+	// Server -> Client: typing indicator
+	TypeChatUserTyping = "chat.user.typing"
 
 	// Server -> Client: chat
 	TypeChatMessageCreated = "chat.message.created"

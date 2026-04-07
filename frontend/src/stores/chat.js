@@ -6,6 +6,22 @@ export const useChatStore = defineStore('chat', () => {
   const messages = ref([])
   const loading = ref(false)
   const hasMore = ref(true)
+  const typingUsers = ref([])   // [{user_id, username, display_name, _timer}]
+
+  function setTyping(user) {
+    const existing = typingUsers.value.find(u => u.user_id === user.user_id)
+    if (existing) {
+      clearTimeout(existing._timer)
+      existing._timer = setTimeout(() => clearTyping(user.user_id), 4000)
+    } else {
+      const entry = { ...user, _timer: setTimeout(() => clearTyping(user.user_id), 4000) }
+      typingUsers.value.push(entry)
+    }
+  }
+
+  function clearTyping(userId) {
+    typingUsers.value = typingUsers.value.filter(u => u.user_id !== userId)
+  }
 
   async function loadMessages(slug, before = null) {
     loading.value = true
@@ -57,8 +73,9 @@ export const useChatStore = defineStore('chat', () => {
       case 'chat.message.updated': updateMessage(payload); break
       case 'chat.message.deleted': removeMessage(payload); break
       case 'chat.reaction.updated': updateReactions(payload.message_id, payload.reactions); break
+      case 'chat.user.typing': setTyping(payload); break
     }
   }
 
-  return { messages, loading, hasMore, loadMessages, addMessage, updateMessage, removeMessage, updateReactions, reset, handleWsEvent }
+  return { messages, loading, hasMore, typingUsers, loadMessages, addMessage, updateMessage, removeMessage, updateReactions, reset, handleWsEvent }
 })

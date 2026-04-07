@@ -133,7 +133,9 @@
     "transfer_move": "Hier verplaatsen",
     "select_project": "Selecteer project",
     "select_column": "Selecteer kolom",
-    "open_cards": "openstaande kaarten"
+    "open_cards": "openstaande kaarten",
+    "unsaved_changes": "U heeft onopgeslagen wijzigingen.",
+    "discard": "Verwijderen"
   },
   "chat": {
     "title": "Teamchat",
@@ -160,6 +162,7 @@
     "role_admin": "Beheerder",
     "role_user": "Gebruiker",
     "role_viewer": "Kijker",
+    "role_metrics": "Statistieken",
     "last_login": "Laatste aanmelding",
     "owner": "Eigenaar",
     "open_cards": "Openstaande kaarten",

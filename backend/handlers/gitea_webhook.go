@@ -260,10 +260,12 @@ func IncomingGiteaWebhook(c *gin.Context) {
 		return
 	}
 
-	// Determine event type.
+	// Determine event type and platform (Forgejo sends its own headers).
 	event := c.GetHeader("X-Gitea-Event")
+	platform := "gitea"
 	if event == "" {
 		event = c.GetHeader("X-Forgejo-Event")
+		platform = "forgejo"
 	}
 	if event == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing event header"})
@@ -301,16 +303,12 @@ func IncomingGiteaWebhook(c *gin.Context) {
 	})
 
 	// Extract card links from commits/PR/issue titles.
-	linkGiteaCards(hook, event, payload)
+	linkGiteaCards(hook, platform, event, payload)
 
 	c.JSON(http.StatusCreated, gin.H{"ok": true})
 }
 
-func linkGiteaCards(hook models.ProjectWebhook, event string, p giteaPayload) {
-	platform := "gitea"
-	if strings.Contains(strings.ToLower(hook.Name), "forgejo") {
-		platform = "forgejo"
-	}
+func linkGiteaCards(hook models.ProjectWebhook, platform string, event string, p giteaPayload) {
 	repo := p.Repository.FullName
 
 	switch event {
