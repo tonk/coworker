@@ -46,7 +46,8 @@
 
 - Investigate:
   When starting the Windows client it takes rather long before
-  it responds… for userid/password entry
+  it responds, for userid/password entry. After logging in, performance
+  is OK
 
 - ~~Change projects to add an extra layer
   so that we can have "Customer / Projects" and between the "Customer / Projects"
@@ -56,6 +57,15 @@
 
 - ~~Also add 'Customers' and "Favorite customers" to the sidebar
   with, of course, the possibility to "Star" and "Un-star"  customer.~~ **Done in v0.5.3**
+
+- Add indicator to card, to show that sub-cards are present
+
+- "Edit customer" shows empty fields
+
+- Switching customers in the sidebar doesn't update the overview on the
+  right hand side
+
+- Add customers and contracts, demo data, to `warmdesk-seed`
 
 - ~~Implement sub-cards in the cards~~ **Done in v0.5.3**
 

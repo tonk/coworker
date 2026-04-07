@@ -32,7 +32,7 @@ Only include sections that have entries. Be specific and user-facing in the desc
 Append any new features or changes as bullet points at the end of the file, matching the imperative style already used there.
 
 ## 5. Update documentation
-- If any changes where done that need an update on the documentation,
+- If any changes where made, that need an update on the documentation,
   update the documentation
 
 ## 6. Commit and tag
