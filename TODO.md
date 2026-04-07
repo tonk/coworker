@@ -24,6 +24,8 @@
   projects, so that the comments (with the Gitea issue tag) are also
   linked in the issue
 
+- After zooming in or out, save the zoom setting for the nest session
+
 - Currently the theme is blue, also allow, per user, a red, green,
   orange, black and white theme (Save buttons, highlight lines in the
   sidebar, etc). This, of course, needs to be a user setting
@@ -62,9 +64,12 @@
 
 - Change projects to add an extra layer
   so that we can have "Customer / Projects" and between the "Customer / Projects"
-  the should be the option for "Contract". So:
+  there should be the option for "Contract". So:
   * "Customer / Projects"
   * "Customer / Contract / Projects"
+
+- Also add 'Customers' and "Favorite customers" to the sidebar
+  with, of course, the possibility to "Star" and "Un-star"  customer.
 
 - Implement sub-cards in the cards
 
