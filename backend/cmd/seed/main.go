@@ -294,10 +294,12 @@ func main() {
 		labels   []string
 		tags     []string
 		assignee string // user key or ""
-		dueInDays *int
-		timeMin  int    // time_spent_minutes
+		startInDays *int
+		dueInDays   *int
+		timeMin     int // time_spent_minutes
 		checklist []struct{ body string; done bool }
 		comments  []struct{ author string; body string }
+		subCards  []cardSpec
 	}
 
 	webCards := []cardSpec{
@@ -310,7 +312,7 @@ func main() {
 		{
 			title: "Add cookie consent banner", col: "Backlog",
 			priority: "medium", labels: []string{"Feature"},
-			assignee: "marc", dueInDays: ptr(14),
+			assignee: "marc", startInDays: ptr(7), dueInDays: ptr(14),
 		},
 		{
 			title: "Write new About page copy", col: "Backlog",
@@ -321,7 +323,7 @@ func main() {
 		{
 			title: "Implement dark mode toggle", col: "In Progress",
 			priority: "medium", labels: []string{"Feature", "Design"},
-			assignee: "sarah", timeMin: 180, dueInDays: ptr(5),
+			assignee: "sarah", timeMin: 180, startInDays: ptr(-3), dueInDays: ptr(5),
 			checklist: []struct{ body string; done bool }{
 				{"Research CSS variables approach", true},
 				{"Implement toggle button in header", true},
@@ -332,11 +334,17 @@ func main() {
 				{"marc", "I suggest using `prefers-color-scheme` as the initial default — saves a flash of wrong theme on first load."},
 				{"sarah", "Good call! Adding that to the checklist."},
 			},
+			subCards: []cardSpec{
+				{title: "Define CSS custom properties for dark palette", assignee: "sarah", priority: "medium"},
+				{title: "Add toggle button to site header", assignee: "sarah", priority: "medium"},
+				{title: "Persist theme choice in localStorage", assignee: "marc", priority: "low"},
+				{title: "QA dark mode on Safari and Firefox", assignee: "priya", priority: "low"},
+			},
 		},
 		{
 			title: "Fix mobile navigation overflow on small screens", col: "In Progress",
 			priority: "high", labels: []string{"Bug"},
-			assignee: "marc", timeMin: 90, dueInDays: ptr(2),
+			assignee: "marc", timeMin: 90, startInDays: ptr(0), dueInDays: ptr(2),
 			comments: []struct{ author string; body string }{
 				{"sarah", "Reproduced on iPhone SE (375 px). The hamburger menu clips behind the logo."},
 				{"marc", "On it — looks like `overflow: hidden` is missing on the nav container."},
@@ -351,7 +359,7 @@ func main() {
 		{
 			title: "Optimise image loading with lazy + WebP", col: "Review",
 			priority: "medium", labels: []string{"Feature"},
-			assignee: "sarah", timeMin: 240, dueInDays: ptr(1),
+			assignee: "sarah", timeMin: 240, startInDays: ptr(-5), dueInDays: ptr(1),
 			comments: []struct{ author string; body string }{
 				{"marc", "LCP went from 3.8 s to 1.2 s in local tests — great improvement!"},
 				{"sarah", "Waiting for sign-off on the WebP fallback strategy for older browsers."},
@@ -360,28 +368,28 @@ func main() {
 		{
 			title: "Accessibility audit and ARIA fixes", col: "Review",
 			priority: "high", labels: []string{"Feature"},
-			assignee: "marc", timeMin: 300,
+			assignee: "marc", timeMin: 300, startInDays: ptr(-7), dueInDays: ptr(3),
 		},
 		// Done
 		{
 			title: "Set up GitHub Actions CI/CD pipeline", col: "Done",
 			priority: "high", labels: []string{"Feature"},
-			assignee: "admin", timeMin: 360, dueInDays: ptr(-10),
+			assignee: "admin", timeMin: 360, startInDays: ptr(-16), dueInDays: ptr(-10),
 		},
 		{
 			title: "Migrate DNS and SSL to new hosting provider", col: "Done",
 			priority: "critical", labels: []string{"Feature"},
-			assignee: "admin", timeMin: 480, dueInDays: ptr(-5),
+			assignee: "admin", timeMin: 480, startInDays: ptr(-9), dueInDays: ptr(-5),
 		},
 		{
 			title: "Create component library documentation", col: "Done",
 			priority: "low", labels: []string{"Design", "Content"},
-			assignee: "sarah", timeMin: 210, dueInDays: ptr(-3),
+			assignee: "sarah", timeMin: 210, startInDays: ptr(-10), dueInDays: ptr(-3),
 		},
 		{
 			title: "Audit and fix all broken links", col: "Done",
 			priority: "medium", labels: []string{"Bug"},
-			assignee: "marc", timeMin: 60, dueInDays: ptr(-7),
+			assignee: "marc", timeMin: 60, startInDays: ptr(-9), dueInDays: ptr(-7),
 		},
 	}
 
@@ -405,7 +413,7 @@ func main() {
 		{
 			title: "User profile screen", col: "Development",
 			priority: "high", labels: []string{"Enhancement", "iOS", "Android"},
-			assignee: "sarah", timeMin: 300, dueInDays: ptr(7),
+			assignee: "sarah", timeMin: 300, startInDays: ptr(-7), dueInDays: ptr(7),
 			checklist: []struct{ body string; done bool }{
 				{"Approve design mockup", true},
 				{"Build form components", true},
@@ -418,21 +426,28 @@ func main() {
 				{"sarah", "Added to the checklist. Let's decide before Thursday."},
 				{"lisa", "I can test on Android once the form components are done."},
 			},
+			subCards: []cardSpec{
+				{title: "Design mockup sign-off", assignee: "sarah", priority: "high"},
+				{title: "Build display name and bio form fields", assignee: "sarah", priority: "high"},
+				{title: "Implement avatar upload with crop", assignee: "marc", priority: "medium"},
+				{title: "Connect form to PATCH /profile API", assignee: "sarah", priority: "high"},
+				{title: "E2E tests for profile save flow", assignee: "lisa", priority: "medium"},
+			},
 		},
 		{
 			title: "Settings / preferences screen", col: "Development",
 			priority: "medium", labels: []string{"Enhancement", "iOS", "Android"},
-			assignee: "marc", timeMin: 180, dueInDays: ptr(10),
+			assignee: "marc", timeMin: 180, startInDays: ptr(0), dueInDays: ptr(10),
 		},
 		{
 			title: "Dark mode support", col: "Development",
 			priority: "low", labels: []string{"Enhancement"},
-			assignee: "lisa", timeMin: 240,
+			assignee: "lisa", timeMin: 240, startInDays: ptr(-5), dueInDays: ptr(14),
 		},
 		{
 			title: "App crashes on empty conversation list", col: "Development",
 			priority: "critical", labels: []string{"Bug"},
-			assignee: "marc", timeMin: 45, dueInDays: ptr(1),
+			assignee: "marc", timeMin: 45, startInDays: ptr(0), dueInDays: ptr(1),
 			comments: []struct{ author string; body string }{
 				{"lisa", "Stack trace attached. Null check missing in `ConversationListScreen.tsx` line 42."},
 				{"marc", "Fix is one line — pushing a hotfix build now."},
@@ -442,12 +457,12 @@ func main() {
 		{
 			title: "Integration tests for authentication flow", col: "Testing",
 			priority: "high", labels: []string{"Enhancement", "iOS", "Android"},
-			assignee: "lisa", timeMin: 360, dueInDays: ptr(3),
+			assignee: "lisa", timeMin: 360, startInDays: ptr(-4), dueInDays: ptr(3),
 		},
 		{
 			title: "Performance profiling on low-end Android devices", col: "Testing",
 			priority: "medium", labels: []string{"Enhancement", "Android"},
-			assignee: "sarah", timeMin: 150,
+			assignee: "sarah", timeMin: 150, startInDays: ptr(-3), dueInDays: ptr(7),
 			comments: []struct{ author string; body string }{
 				{"marc", "Focus on the feed screen — renders ~200 items without virtualisation right now."},
 			},
@@ -456,12 +471,12 @@ func main() {
 		{
 			title: "Initial 1.0 app release", col: "Released",
 			priority: "critical", labels: []string{"Enhancement", "iOS", "Android"},
-			assignee: "sarah", timeMin: 1200, dueInDays: ptr(-30),
+			assignee: "sarah", timeMin: 1200, startInDays: ptr(-60), dueInDays: ptr(-30),
 		},
 		{
 			title: "Bug fix release 1.0.1", col: "Released",
 			priority: "high", labels: []string{"Bug"},
-			assignee: "marc", timeMin: 120, dueInDays: ptr(-14),
+			assignee: "marc", timeMin: 120, startInDays: ptr(-18), dueInDays: ptr(-14),
 		},
 	}
 
@@ -470,7 +485,7 @@ func main() {
 		{
 			title: "Set up Kubernetes cluster on cloud provider", col: "Todo",
 			priority: "high", labels: []string{"Enhancement"},
-			dueInDays: ptr(21),
+			startInDays: ptr(3), dueInDays: ptr(21),
 			checklist: []struct{ body string; done bool }{
 				{"Choose cloud provider (GKE / EKS / AKS)", false},
 				{"Design namespace and RBAC structure", false},
@@ -478,22 +493,29 @@ func main() {
 				{"Set up auto-scaling policies", false},
 				{"Disaster recovery runbook", false},
 			},
+			subCards: []cardSpec{
+				{title: "Evaluate GKE vs EKS pricing and SLAs", assignee: "marc", priority: "high"},
+				{title: "Design namespace and RBAC structure", assignee: "lisa", priority: "high"},
+				{title: "Configure ingress controller and TLS termination", assignee: "marc", priority: "medium"},
+				{title: "Set up cluster auto-scaler", assignee: "lisa", priority: "medium"},
+				{title: "Write disaster recovery runbook", assignee: "raj", priority: "low"},
+			},
 		},
 		{
 			title: "Add Prometheus + Grafana monitoring stack", col: "Todo",
 			priority: "medium", labels: []string{"Monitoring"},
-			assignee: "lisa", dueInDays: ptr(28),
+			assignee: "lisa", startInDays: ptr(7), dueInDays: ptr(28),
 		},
 		{
 			title: "Quarterly security audit", col: "Todo",
 			priority: "critical", labels: []string{"Security"},
-			dueInDays: ptr(7),
+			startInDays: ptr(1), dueInDays: ptr(7),
 		},
 		// In Progress
 		{
 			title: "Migrate primary database to PostgreSQL", col: "In Progress",
 			priority: "high", labels: []string{"Enhancement"},
-			assignee: "marc", timeMin: 480, dueInDays: ptr(4),
+			assignee: "marc", timeMin: 480, startInDays: ptr(-10), dueInDays: ptr(4),
 			comments: []struct{ author string; body string }{
 				{"admin", "Remember to keep the SQLite DB as a read-only fallback for at least two weeks after cutover."},
 				{"marc", "Agreed. I've scripted the data export — schema diff is smaller than expected."},
@@ -503,28 +525,28 @@ func main() {
 		{
 			title: "Automate database backups with off-site retention", col: "In Progress",
 			priority: "high", labels: []string{"Monitoring"},
-			assignee: "lisa", timeMin: 180, dueInDays: ptr(6),
+			assignee: "lisa", timeMin: 180, startInDays: ptr(-2), dueInDays: ptr(6),
 		},
 		{
 			title: "Renew and automate SSL certificate rotation", col: "In Progress",
 			priority: "critical", labels: []string{"Security"},
-			assignee: "marc", timeMin: 60, dueInDays: ptr(2),
+			assignee: "marc", timeMin: 60, startInDays: ptr(-1), dueInDays: ptr(2),
 		},
 		// Done
 		{
 			title: "Set up private Docker registry", col: "Done",
 			priority: "medium", labels: []string{"Enhancement"},
-			assignee: "marc", timeMin: 240, dueInDays: ptr(-10),
+			assignee: "marc", timeMin: 240, startInDays: ptr(-14), dueInDays: ptr(-10),
 		},
 		{
 			title: "Configure Nginx load balancer with health checks", col: "Done",
 			priority: "high", labels: []string{"Enhancement"},
-			assignee: "lisa", timeMin: 300, dueInDays: ptr(-8),
+			assignee: "lisa", timeMin: 300, startInDays: ptr(-13), dueInDays: ptr(-8),
 		},
 		{
 			title: "Deploy staging environment", col: "Done",
 			priority: "high", labels: []string{"Enhancement"},
-			assignee: "marc", timeMin: 360, dueInDays: ptr(-15),
+			assignee: "marc", timeMin: 360, startInDays: ptr(-21), dueInDays: ptr(-15),
 		},
 	}
 
@@ -533,6 +555,8 @@ func main() {
 		"mobile-app-v2":    mobCards,
 		"devops-infra":     infCards,
 	}
+
+	createdCards := map[string]*models.Card{} // key: "slug/title"
 
 	totalCards := 0
 	for slug, specs := range projectCards {
@@ -559,7 +583,10 @@ func main() {
 				priority = "none"
 			}
 
-			var dueDate *time.Time
+			var startDate, dueDate *time.Time
+			if spec.startInDays != nil {
+				startDate = days(*spec.startInDays)
+			}
 			if spec.dueInDays != nil {
 				dueDate = days(*spec.dueInDays)
 			}
@@ -573,10 +600,12 @@ func main() {
 				CreatedByID:      users["admin"].ID,
 				Position:         float64((i + 1) * 1000),
 				CardNumber:       proj.CardCounter,
+				StartDate:        startDate,
 				DueDate:          dueDate,
 				TimeSpentMinutes: spec.timeMin,
 			}
 			must(db.Create(card).Error)
+			createdCards[slug+"/"+spec.title] = card
 
 			// Labels
 			for _, lname := range spec.labels {
@@ -616,10 +645,74 @@ func main() {
 				}).Error)
 			}
 
+			// Sub-cards
+			for si, sub := range spec.subCards {
+				must(db.Model(&models.Project{}).Where("id = ?", pd.project.ID).
+					UpdateColumn("card_counter", gorm.Expr("card_counter + 1")).Error)
+				var subProj models.Project
+				must(db.Select("card_counter").First(&subProj, pd.project.ID).Error)
+
+				var subAssigneeID *uint
+				if sub.assignee != "" {
+					subAssigneeID = &users[sub.assignee].ID
+				}
+				subPriority := sub.priority
+				if subPriority == "" {
+					subPriority = "none"
+				}
+				subCard := &models.Card{
+					ColumnID:     col.ID,
+					ProjectID:    pd.project.ID,
+					ParentCardID: &card.ID,
+					Title:        sub.title,
+					Priority:     subPriority,
+					AssigneeID:   subAssigneeID,
+					CreatedByID:  users["admin"].ID,
+					Position:     float64((si + 1) * 1000),
+					CardNumber:   subProj.CardCounter,
+				}
+				must(db.Create(subCard).Error)
+				if subAssigneeID != nil {
+					must(db.Exec("INSERT OR IGNORE INTO card_assignees (card_id, user_id) VALUES (?, ?)", subCard.ID, *subAssigneeID).Error)
+				}
+				totalCards++
+			}
+
 			totalCards++
 		}
 	}
 	fmt.Printf("   Created %d cards\n", totalCards)
+
+	// ── 3b. Card cross-references ─────────────────────────────────────────────
+	fmt.Println("→ Creating card cross-references…")
+
+	cardLinks := [][2]string{
+		// Same feature implemented on two platforms
+		{"website-redesign/Implement dark mode toggle", "mobile-app-v2/Dark mode support"},
+		// Both contribute to Lighthouse score / site quality
+		{"website-redesign/Accessibility audit and ARIA fixes", "website-redesign/Optimise image loading with lazy + WebP"},
+		// Auth tests cover the profile screen flow
+		{"mobile-app-v2/User profile screen", "mobile-app-v2/Integration tests for authentication flow"},
+		// K8s cluster is a prerequisite for the DB migration
+		{"devops-infra/Set up Kubernetes cluster on cloud provider", "devops-infra/Migrate primary database to PostgreSQL"},
+		// Monitoring stack runs on the new K8s cluster
+		{"devops-infra/Add Prometheus + Grafana monitoring stack", "devops-infra/Set up Kubernetes cluster on cloud provider"},
+		// Backups depend on the completed DB migration
+		{"devops-infra/Automate database backups with off-site retention", "devops-infra/Migrate primary database to PostgreSQL"},
+	}
+
+	totalRefs := 0
+	for _, pair := range cardLinks {
+		src, ok1 := createdCards[pair[0]]
+		tgt, ok2 := createdCards[pair[1]]
+		if !ok1 || !ok2 {
+			fmt.Printf("   ⚠ skipping ref %q ↔ %q (card not found)\n", pair[0], pair[1])
+			continue
+		}
+		must(db.Create(&models.CardReference{SourceCardID: src.ID, TargetCardID: tgt.ID}).Error)
+		totalRefs++
+	}
+	fmt.Printf("   Created %d card cross-references\n", totalRefs)
 
 	// ── 4. Topics ─────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating topics…")
@@ -1018,7 +1111,104 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d conversations (%d messages)\n", totalConvs, totalConvMsgs)
 
-	// ── 6. Summary ────────────────────────────────────────────────────────────
+	// ── 6. Customers & Contracts ──────────────────────────────────────────────
+	fmt.Println("→ Creating customers and contracts…")
+
+	type contractSpec struct {
+		name      string
+		desc      string
+		startDays int  // relative to today
+		endDays   int  // 0 = no end date
+		projects  []string // project slugs to link
+	}
+	type customerSpec struct {
+		name      string
+		desc      string
+		logoURL   string
+		contracts []contractSpec
+		projects  []string // unassigned projects (no contract)
+	}
+
+	demoCustomers := []customerSpec{
+		{
+			name: "Acme Corporation",
+			desc: "Long-running client delivering internal tooling and web platforms.",
+			contracts: []contractSpec{
+				{
+					name:      "Phase 1 — Marketing Site",
+					desc:      "Full redesign and relaunch of the corporate marketing website.",
+					startDays: -180,
+					endDays:   90,
+					projects:  []string{"website-redesign"},
+				},
+				{
+					name:      "Phase 2 — Mobile Apps",
+					desc:      "iOS and Android companion apps for the new platform.",
+					startDays: -60,
+					endDays:   180,
+					projects:  []string{"mobile-app-v2"},
+				},
+			},
+		},
+		{
+			name: "Globex Systems",
+			desc: "Infrastructure-heavy client focused on cloud reliability and security.",
+			contracts: []contractSpec{
+				{
+					name:      "Managed DevOps 2025",
+					desc:      "Kubernetes migration, monitoring setup, and on-call engineering support.",
+					startDays: -90,
+					endDays:   275,
+					projects:  []string{"devops-infra"},
+				},
+			},
+		},
+		{
+			name:     "Initech Ltd",
+			desc:     "Prospective client — evaluation phase, no active contract yet.",
+			projects: []string{}, // no projects yet
+		},
+	}
+
+	var demoCustomerIDs []uint
+	for _, cs := range demoCustomers {
+		cust := &models.Customer{Name: cs.name, Description: cs.desc, LogoURL: cs.logoURL}
+		must(db.Create(cust).Error)
+		demoCustomerIDs = append(demoCustomerIDs, cust.ID)
+
+		// Star Acme for the admin user so the sidebar shows a favourite
+		if cs.name == "Acme Corporation" {
+			must(db.Create(&models.CustomerFavorite{UserID: users["admin"].ID, CustomerID: cust.ID}).Error)
+		}
+
+		for _, conSpec := range cs.contracts {
+			start := time.Now().UTC().AddDate(0, 0, conSpec.startDays).Truncate(24 * time.Hour)
+			con := &models.Contract{
+				CustomerID:  cust.ID,
+				Name:        conSpec.name,
+				Description: conSpec.desc,
+				StartDate:   &start,
+			}
+			if conSpec.endDays != 0 {
+				end := time.Now().UTC().AddDate(0, 0, conSpec.endDays).Truncate(24 * time.Hour)
+				con.EndDate = &end
+			}
+			must(db.Create(con).Error)
+
+			for _, slug := range conSpec.projects {
+				must(db.Model(&models.Project{}).Where("slug = ?", slug).
+					Updates(map[string]interface{}{"customer_id": cust.ID, "contract_id": con.ID}).Error)
+			}
+		}
+
+		for _, slug := range cs.projects {
+			must(db.Model(&models.Project{}).Where("slug = ?", slug).
+				Updates(map[string]interface{}{"customer_id": cust.ID}).Error)
+		}
+	}
+	fmt.Printf("   Created %d customers with contracts\n", len(demoCustomers))
+
+	// ── 7. Summary ────────────────────────────────────────────────────────────
 	fmt.Println()
 	fmt.Println("✅ Demo data seeded successfully!")
 	fmt.Println()
@@ -1051,6 +1241,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 func removeDemoData(db *gorm.DB) {
 	demoUsernames := []string{"demo.admin", "demo.sarah", "demo.marc", "demo.lisa", "demo.viewer", "demo.priya", "demo.james", "demo.elena", "demo.raj"}
 	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra"}
+	demoCustomerNames := []string{"Acme Corporation", "Globex Systems", "Initech Ltd"}
 
 	// Collect user IDs
 	var userIDs []uint
@@ -1071,6 +1262,7 @@ func removeDemoData(db *gorm.DB) {
 			db.Where("card_id IN ?", cardIDs).Delete(&models.CardTag{})
 			db.Exec("DELETE FROM card_labels WHERE card_id IN ?", cardIDs)
 			db.Exec("DELETE FROM card_assignees WHERE card_id IN ?", cardIDs)
+			db.Where("source_card_id IN ? OR target_card_id IN ?", cardIDs, cardIDs).Delete(&models.CardReference{})
 		}
 
 		db.Unscoped().Where("project_id IN ?", projectIDs).Delete(&models.Card{})
@@ -1100,6 +1292,15 @@ func removeDemoData(db *gorm.DB) {
 			db.Unscoped().Where("id IN ?", convIDs).Delete(&models.Conversation{})
 		}
 		db.Unscoped().Where("id IN ?", userIDs).Delete(&models.User{})
+	}
+
+	// Customers and contracts
+	var custIDs []uint
+	db.Model(&models.Customer{}).Where("name IN ?", demoCustomerNames).Pluck("id", &custIDs)
+	if len(custIDs) > 0 {
+		db.Where("customer_id IN ?", custIDs).Delete(&models.CustomerFavorite{})
+		db.Where("customer_id IN ?", custIDs).Delete(&models.Contract{})
+		db.Where("id IN ?", custIDs).Delete(&models.Customer{})
 	}
 
 	fmt.Println("   Done.")

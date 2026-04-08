@@ -92,6 +92,11 @@
     "child_of": "Subtarea de",
     "progress": "{done} de {total} completado"
   },
+  "card_ref": {
+    "linked_cards": "Tarjetas vinculadas",
+    "add_link_placeholder": "Vincular tarjeta por ref., ej. WEB-4…",
+    "remove_link": "Eliminar vínculo"
+  },
   "topics": {
     "title": "Temas",
     "new_topic": "Nuevo tema",
@@ -127,6 +132,7 @@
     "card_title": "Título de la tarjeta",
     "description": "Descripción",
     "priority": "Prioridad",
+    "start_date": "Fecha de inicio",
     "due_date": "Fecha de vencimiento",
     "assignee": "Asignado a",
     "assignees": "Asignados",
@@ -401,5 +407,14 @@
     "grand_total": "Total general",
     "export_pdf": "Exportar como PDF",
     "export_xlsx": "Exportar como Excel"
+  },
+  "gantt": {
+    "title": "Gantt",
+    "no_dates": "Ninguna tarjeta tiene fecha de inicio o vencimiento aún.",
+    "view_day": "Día",
+    "view_week": "Semana",
+    "view_month": "Mes",
+    "no_start": "Sin inicio",
+    "no_end": "Sin fin"
   }
 }

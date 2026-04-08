@@ -210,7 +210,50 @@ func GetProject(c *gin.Context) {
 		return
 	}
 
-	database.DB.Preload("Columns").Preload("Columns.Cards").Preload("Columns.Cards.Assignee").Preload("Columns.Cards.Labels").Preload("Columns.Cards.Tags").Preload("Labels").Preload("Members.User").Preload("Customer").Preload("Contract").First(project, project.ID)
+	database.DB.
+		Preload("Columns").
+		Preload("Columns.Cards", "parent_card_id IS NULL").
+		Preload("Columns.Cards.Assignee").
+		Preload("Columns.Cards.Labels").
+		Preload("Columns.Cards.Tags").
+		Preload("Labels").
+		Preload("Members.User").
+		Preload("Customer").
+		Preload("Contract").
+		First(project, project.ID)
+
+	// Populate sub-card counts for all board cards in one query
+	var allCardIDs []uint
+	for _, col := range project.Columns {
+		for _, card := range col.Cards {
+			allCardIDs = append(allCardIDs, card.ID)
+		}
+	}
+	if len(allCardIDs) > 0 {
+		type subStat struct {
+			ParentCardID uint
+			Total        int64
+			Done         int64
+		}
+		var stats []subStat
+		database.DB.Model(&models.Card{}).
+			Select("parent_card_id, count(*) as total, sum(case when closed = true then 1 else 0 end) as done").
+			Where("parent_card_id IN ?", allCardIDs).
+			Group("parent_card_id").
+			Scan(&stats)
+		statMap := make(map[uint]subStat, len(stats))
+		for _, s := range stats {
+			statMap[s.ParentCardID] = s
+		}
+		for ci := range project.Columns {
+			for i := range project.Columns[ci].Cards {
+				if s, ok := statMap[project.Columns[ci].Cards[i].ID]; ok {
+					project.Columns[ci].Cards[i].SubCardCount = int(s.Total)
+					project.Columns[ci].Cards[i].SubCardsDone = int(s.Done)
+				}
+			}
+		}
+	}
 
 	c.JSON(http.StatusOK, project)
 }

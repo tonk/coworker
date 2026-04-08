@@ -92,6 +92,11 @@
     "child_of": "Sous-tâche de",
     "progress": "{done} sur {total} terminé"
   },
+  "card_ref": {
+    "linked_cards": "Cartes liées",
+    "add_link_placeholder": "Lier une carte par réf., ex. WEB-4…",
+    "remove_link": "Supprimer le lien"
+  },
   "topics": {
     "title": "Sujets",
     "new_topic": "Nouveau sujet",
@@ -127,6 +132,7 @@
     "card_title": "Titre de la carte",
     "description": "Description",
     "priority": "Priorité",
+    "start_date": "Date de début",
     "due_date": "Date d'échéance",
     "assignee": "Assigné à",
     "assignees": "Assignés",
@@ -401,5 +407,14 @@
     "grand_total": "Total général",
     "export_pdf": "Exporter en PDF",
     "export_xlsx": "Exporter en Excel"
+  },
+  "gantt": {
+    "title": "Gantt",
+    "no_dates": "Aucune carte n'a encore de date de début ou d'échéance.",
+    "view_day": "Jour",
+    "view_week": "Semaine",
+    "view_month": "Mois",
+    "no_start": "Sans début",
+    "no_end": "Sans fin"
   }
 }

@@ -92,6 +92,11 @@
     "child_of": "Subtaak van",
     "progress": "{done} van {total} gedaan"
   },
+  "card_ref": {
+    "linked_cards": "Gekoppelde kaarten",
+    "add_link_placeholder": "Koppel kaart via ref, bijv. WEB-4…",
+    "remove_link": "Koppeling verwijderen"
+  },
   "topics": {
     "title": "Onderwerpen",
     "new_topic": "Nieuw onderwerp",
@@ -127,6 +132,7 @@
     "card_title": "Kaarttitel",
     "description": "Beschrijving",
     "priority": "Prioriteit",
+    "start_date": "Startdatum",
     "due_date": "Vervaldatum",
     "assignee": "Toegewezen aan",
     "assignees": "Toegewezen aan",
@@ -401,5 +407,14 @@
     "grand_total": "Eindtotaal",
     "export_pdf": "Exporteren als PDF",
     "export_xlsx": "Exporteren als Excel"
+  },
+  "gantt": {
+    "title": "Gantt",
+    "no_dates": "Geen kaarten hebben nog een startdatum of vervaldatum.",
+    "view_day": "Dag",
+    "view_week": "Week",
+    "view_month": "Maand",
+    "no_start": "Geen start",
+    "no_end": "Geen einde"
   }
 }

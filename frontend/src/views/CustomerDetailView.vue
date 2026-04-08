@@ -27,7 +27,7 @@
             :class="{ active: detail.customer.is_favorite }"
             @click="toggleFav"
           >{{ detail.customer.is_favorite ? '★' : '☆' }}</button>
-          <button v-if="canManage" class="btn btn-sm" @click="showEdit = true">{{ $t('customer.edit') }}</button>
+          <button v-if="canManage" class="btn btn-sm" @click="openEdit">{{ $t('customer.edit') }}</button>
           <button v-if="auth.isAdmin" class="btn btn-sm btn-danger" @click="doDelete">{{ $t('common.delete') }}</button>
         </div>
       </div>
@@ -147,7 +147,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useCustomersStore } from '@/stores/customers'
@@ -179,6 +179,7 @@ const canManage = computed(() => auth.isAdmin || auth.user?.global_role === 'use
 const custId = computed(() => Number(route.params.id))
 
 onMounted(() => load())
+watch(custId, () => load())
 
 async function load() {
   loading.value = true

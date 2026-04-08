@@ -30,6 +30,27 @@
           </select>
         </div>
         <div class="form-group half">
+          <label class="form-label">{{ $t('board.start_date') }}</label>
+          <div class="date-input-row">
+            <input
+              class="form-input"
+              type="text"
+              v-model="displayStartDate"
+              :placeholder="dateOnlyFormat()"
+              @blur="parseStartDate"
+            />
+            <input
+              ref="startDatePickerRef"
+              type="date"
+              style="display:none"
+              :value="form.start_date"
+              @change="onStartDatePickerChange"
+            />
+            <button class="btn-icon-xs" @click="startDatePickerRef.showPicker()" title="Pick date">&#128197;</button>
+            <button v-if="displayStartDate" class="btn-icon-xs" @click="displayStartDate = ''; form.start_date = ''" title="Clear">×</button>
+          </div>
+        </div>
+        <div class="form-group half">
           <label class="form-label">{{ $t('board.due_date') }}</label>
           <div class="date-input-row">
             <input
@@ -231,6 +252,36 @@
         ↑ {{ $t('subcard.child_of') }} #{{ card.parent_card_id }}
       </div>
 
+      <!-- Linked cards (cross-references) -->
+      <div class="linked-cards-section">
+        <div class="linked-cards-header">
+          <h4>{{ $t('card_ref.linked_cards') }}</h4>
+          <span v-if="linkedCards.length" class="linked-cards-count">{{ linkedCards.length }}</span>
+        </div>
+        <div class="linked-card-list">
+          <div v-for="lc in linkedCards" :key="lc.ref_id" class="linked-card-row" @click="openLinkedCard(lc)">
+            <span class="linked-card-ref" :class="{ 'ref-closed': lc.closed }">
+              {{ lc.key_prefix }}-{{ lc.card_number }}
+            </span>
+            <span class="linked-card-title" :class="{ 'ref-closed': lc.closed }">{{ lc.title }}</span>
+            <span class="linked-card-col">{{ lc.column_name }}</span>
+            <span v-if="lc.project_slug !== projectSlug" class="linked-card-project">{{ lc.project_name }}</span>
+            <button class="btn-icon-xs" @click.stop="removeLinkedCard(lc)" :title="$t('card_ref.remove_link')">✕</button>
+          </div>
+        </div>
+        <div v-if="!locked" class="linked-card-add-row">
+          <input
+            class="form-input linked-card-new-input"
+            v-model="newLinkedCardRef"
+            :placeholder="$t('card_ref.add_link_placeholder')"
+            @keydown.enter.prevent="addLinkedCard"
+          />
+          <button class="btn btn-secondary btn-sm" @click="addLinkedCard" :disabled="!newLinkedCardRef.trim()">
+            {{ $t('common.add') }}
+          </button>
+        </div>
+      </div>
+
       <div class="comments-section">
         <h4>{{ $t('board.comments') }}</h4>
         <div class="comment-list">
@@ -369,6 +420,16 @@
     :members="members"
     :labels="labels"
     @close="openSubCardRef = null; loadSubCards()"
+  />
+
+  <!-- Nested linked-card detail modal -->
+  <CardDetail
+    v-if="openLinkedCardRef"
+    :card="openLinkedCardRef"
+    :project-slug="openLinkedCardSlug"
+    :members="openLinkedCardSlug === props.projectSlug ? members : []"
+    :labels="openLinkedCardSlug === props.projectSlug ? labels : []"
+    @close="openLinkedCardRef = null; openLinkedCardSlug = null; loadLinkedCards()"
   />
 </template>
 
@@ -521,6 +582,48 @@ async function toggleSubCard(sc) {
 
 function openSubCard(sc) {
   openSubCardRef.value = sc
+}
+
+// Linked cards (cross-references)
+const linkedCards = ref([])
+const newLinkedCardRef = ref('')
+
+async function loadLinkedCards() {
+  try {
+    const { data } = await projectsApi.listCardRefs(props.projectSlug, props.card.id)
+    linkedCards.value = data || []
+  } catch {}
+}
+
+async function addLinkedCard() {
+  const ref = newLinkedCardRef.value.trim()
+  if (!ref) return
+  try {
+    const { data } = await projectsApi.createCardRef(props.projectSlug, props.card.id, { ref })
+    linkedCards.value.push(data)
+    newLinkedCardRef.value = ''
+  } catch (e) {
+    const msg = e?.response?.data?.error || 'Failed to link card'
+    ui.error(msg)
+  }
+}
+
+async function removeLinkedCard(lc) {
+  try {
+    await projectsApi.deleteCardRef(props.projectSlug, props.card.id, lc.ref_id)
+    linkedCards.value = linkedCards.value.filter(c => c.ref_id !== lc.ref_id)
+  } catch {}
+}
+
+const openLinkedCardRef = ref(null)
+const openLinkedCardSlug = ref(null)
+
+async function openLinkedCard(lc) {
+  try {
+    const { data } = await projectsApi.getCard(lc.project_slug, lc.id)
+    openLinkedCardSlug.value = lc.project_slug
+    openLinkedCardRef.value = data
+  } catch {}
 }
 
 function isAssigned(userId) {
@@ -688,6 +791,7 @@ onMounted(async () => {
     gitLinks.value = linksRes.data || []
   } catch {}
   await loadSubCards()
+  await loadLinkedCards()
 })
 
 onUnmounted(() => { document.removeEventListener('keydown', onKeyDown) })
@@ -701,6 +805,7 @@ const form = ref({
   title: props.card.title,
   description: props.card.description || '',
   priority: props.card.priority || 'none',
+  start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
   time_spent_minutes: props.card.time_spent_minutes || 0
@@ -711,6 +816,7 @@ const _init = {
   title: props.card.title,
   description: props.card.description || '',
   priority: props.card.priority || 'none',
+  start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
   time_spent_minutes: props.card.time_spent_minutes || 0
@@ -720,6 +826,7 @@ const isDirty = computed(() =>
   form.value.title !== _init.title ||
   form.value.description !== _init.description ||
   form.value.priority !== _init.priority ||
+  form.value.start_date !== _init.start_date ||
   form.value.due_date !== _init.due_date ||
   form.value.assignee_id !== _init.assignee_id ||
   form.value.time_spent_minutes !== _init.time_spent_minutes
@@ -744,6 +851,32 @@ const {
   setValue: (v) => { newComment.value = v },
   users: memberUsers
 })
+
+const displayStartDate = ref(form.value.start_date ? formatDate(form.value.start_date) : '')
+const startDatePickerRef = ref(null)
+
+function parseStartDate() {
+  const val = displayStartDate.value.trim()
+  if (!val) { form.value.start_date = ''; return }
+  const fmt = dateOnlyFormat()
+  const yPos = fmt.indexOf('YYYY'), mPos = fmt.indexOf('MM'), dPos = fmt.indexOf('DD')
+  const y = parseInt(val.slice(yPos, yPos + 4))
+  const m = parseInt(val.slice(mPos, mPos + 2))
+  const d = parseInt(val.slice(dPos, dPos + 2))
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    displayStartDate.value = form.value.start_date ? formatDate(form.value.start_date) : ''
+    return
+  }
+  const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  form.value.start_date = iso
+  displayStartDate.value = formatDate(iso)
+}
+
+function onStartDatePickerChange(e) {
+  const iso = e.target.value
+  form.value.start_date = iso
+  displayStartDate.value = iso ? formatDate(iso) : ''
+}
 
 const displayDueDate = ref(form.value.due_date ? formatDate(form.value.due_date) : '')
 
@@ -800,6 +933,7 @@ async function save() {
       title: form.value.title,
       description: form.value.description,
       priority: form.value.priority,
+      start_date: form.value.start_date || null,
       due_date: form.value.due_date || null,
       assignee_id: form.value.assignee_id,
       time_spent_minutes: form.value.time_spent_minutes
@@ -1184,4 +1318,19 @@ function renderMarkdown(text) {
 .subcard-add-row { display: flex; gap: 8px; margin-top: 8px; }
 .subcard-new-input { flex: 1; padding: 6px 8px; font-size: 13px; }
 .parent-card-badge { font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px; }
+
+.linked-cards-section { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
+.linked-cards-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.linked-cards-header h4 { margin: 0; font-size: 14px; font-weight: 600; }
+.linked-cards-count { font-size: 12px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 10px; padding: 1px 7px; color: var(--color-text-muted); }
+.linked-card-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.linked-card-row { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; background: var(--color-bg); border: 1px solid var(--color-border); font-size: 13px; cursor: pointer; }
+.linked-card-row:hover { border-color: var(--color-primary); }
+.linked-card-ref { font-size: 11px; font-weight: 600; font-family: monospace; color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 12%, transparent); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+.linked-card-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.linked-card-col { font-size: 11px; color: var(--color-text-muted); white-space: nowrap; }
+.linked-card-project { font-size: 11px; color: var(--color-text-muted); font-style: italic; white-space: nowrap; }
+.ref-closed .linked-card-title, .ref-closed.linked-card-ref, .ref-closed.linked-card-title { text-decoration: line-through; opacity: .6; }
+.linked-card-add-row { display: flex; gap: 8px; margin-top: 4px; }
+.linked-card-new-input { flex: 1; font-size: 13px; }
 </style>

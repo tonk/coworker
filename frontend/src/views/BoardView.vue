@@ -11,6 +11,9 @@
         </RouterLink>
       </div>
       <div class="board-toolbar-right">
+        <RouterLink :to="`/projects/${slug}/gantt`" class="btn btn-ghost btn-sm">
+          📅 {{ $t('gantt.title') }}
+        </RouterLink>
         <RouterLink :to="`/projects/${slug}/topics`" class="btn btn-ghost btn-sm">
           💬 {{ $t('topics.title') }}
         </RouterLink>

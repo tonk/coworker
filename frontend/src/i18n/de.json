@@ -92,6 +92,11 @@
     "child_of": "Unteraufgabe von",
     "progress": "{done} von {total} erledigt"
   },
+  "card_ref": {
+    "linked_cards": "Verknüpfte Karten",
+    "add_link_placeholder": "Karte per Referenz verknüpfen, z. B. WEB-4…",
+    "remove_link": "Verknüpfung entfernen"
+  },
   "topics": {
     "title": "Themen",
     "new_topic": "Neues Thema",
@@ -127,6 +132,7 @@
     "card_title": "Kartentitel",
     "description": "Beschreibung",
     "priority": "Priorität",
+    "start_date": "Startdatum",
     "due_date": "Fälligkeitsdatum",
     "assignee": "Zugewiesen an",
     "assignees": "Zugewiesen an",
@@ -401,5 +407,14 @@
     "grand_total": "Gesamtsumme",
     "export_pdf": "Als PDF exportieren",
     "export_xlsx": "Als Excel exportieren"
+  },
+  "gantt": {
+    "title": "Gantt",
+    "no_dates": "Noch keine Karten mit Start- oder Fälligkeitsdatum.",
+    "view_day": "Tag",
+    "view_week": "Woche",
+    "view_month": "Monat",
+    "no_start": "Kein Start",
+    "no_end": "Kein Ende"
   }
 }

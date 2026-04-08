@@ -92,6 +92,11 @@
     "child_of": "Child of",
     "progress": "{done} of {total} done"
   },
+  "card_ref": {
+    "linked_cards": "Linked Cards",
+    "add_link_placeholder": "Link card by ref, e.g. WEB-4…",
+    "remove_link": "Remove link"
+  },
   "topics": {
     "title": "Topics",
     "new_topic": "New Topic",
@@ -127,6 +132,7 @@
     "card_title": "Card Title",
     "description": "Description",
     "priority": "Priority",
+    "start_date": "Start Date",
     "due_date": "Due Date",
     "assignee": "Assignee",
     "assignees": "Assignees",
@@ -401,5 +407,14 @@
     "docs_add": "Add ticket",
     "docs_comment": "Add comment",
     "docs_move": "Move ticket"
+  },
+  "gantt": {
+    "title": "Gantt",
+    "no_dates": "No cards have a start date or due date yet.",
+    "view_day": "Day",
+    "view_week": "Week",
+    "view_month": "Month",
+    "no_start": "No start",
+    "no_end": "No end"
   }
 }

@@ -91,4 +91,9 @@ export const projectsApi = {
   // Sub-cards
   listSubCards:  (slug, cardId)       => client.get(`/projects/${slug}/cards/${cardId}/subcards`),
   createSubCard: (slug, cardId, data) => client.post(`/projects/${slug}/cards/${cardId}/subcards`, data),
+
+  // Card cross-references
+  listCardRefs:   (slug, cardId)        => client.get(`/projects/${slug}/cards/${cardId}/refs`),
+  createCardRef:  (slug, cardId, data)  => client.post(`/projects/${slug}/cards/${cardId}/refs`, data),
+  deleteCardRef:  (slug, cardId, refId) => client.delete(`/projects/${slug}/cards/${cardId}/refs/${refId}`),
 }

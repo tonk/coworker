@@ -206,6 +206,11 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			// Card git links
 			projects.GET("/:projectSlug/cards/:cardId/links", handlers.ListCardLinks)
 
+			// Card cross-references
+			projects.GET("/:projectSlug/cards/:cardId/refs", handlers.ListCardRefs)
+			projects.POST("/:projectSlug/cards/:cardId/refs", handlers.CreateCardRef)
+			projects.DELETE("/:projectSlug/cards/:cardId/refs/:refId", handlers.DeleteCardRef)
+
 			// Card comments
 			projects.GET("/:projectSlug/cards/:cardId/comments", handlers.ListComments)
 			projects.POST("/:projectSlug/cards/:cardId/comments", handlers.CreateComment)

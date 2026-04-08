@@ -2,6 +2,18 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.0 — 2026-04-08
+
+### Added
+- **Gantt chart per project** — a Gantt view (frappe-gantt) is accessible from the board toolbar via the 📅 button; cards with a start date and/or due date appear as bars; bars are colour-coded by priority; clicking a bar opens the card detail; dragging a bar updates the card's start and due dates; Day / Week / Month view modes
+- **Start date on cards** — cards now have a `start_date` field alongside the existing `due_date`; editable in the card detail via the same date-picker style as due date; stored in the database and returned in all card API responses
+- **Cross-references between cards** — cards can be linked to each other from the card detail "Linked Cards" section; links are bidirectional; shown with card number, project key, title, priority, and column; clicking a linked card opens it in a nested detail modal; cross-project references supported
+- **Demo data extended** — the seed tool now includes start dates and due dates on all demo cards, sub-cards on selected cards, and cross-reference links between cards; all three demo projects now populate the Gantt view
+
+### Fixed
+- **"Edit customer" shows empty fields** — clicking the edit button in Customer Detail now correctly pre-populates the form before opening it
+- **Switching customers in the sidebar does not update the overview** — the Customer Detail view now watches the route parameter and reloads when the customer changes
+
 ## v0.5.3 — 2026-04-07
 
 ### Added

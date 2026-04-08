@@ -13,10 +13,10 @@
   Gitea logo. This is not really an error, but can be better.
   Show the Forgejo logo when the event comes from Forgejo.~~ **Done in v0.5.2**
 
-- In the project overview, allow projects to be moved, change the order
-  ~~Drag-to-reorder on dashboard (admin only)~~ **Done in v0.5.2**
+- ~~In the project overview, allow projects to be moved, change the order
+  Drag-to-reorder on dashboard (admin only)~~ **Done in v0.5.2**
 
-- After zooming in or out, save the zoom setting for the next session
+- ~~After zooming in or out, save the zoom setting for the next session~~ **Already implemented (localStorage)**
 
 - Currently the theme is blue, also allow, per user, a red, green,
   orange, black and white theme (Save buttons, highlight lines in the
@@ -36,7 +36,7 @@
 - ~~Re-add '@..' mentions in cards, the description and comments, for users
   and for teams, this worked before. This does work in the chat~~ **Done in v0.5.2**
 
-- Add cross reference between cards
+- ~~Add cross reference between cards~~ **Done in v0.6.0**
 
 - ~~Pressing "Esc" in an open card, should close the card, if no changes
   where made~~ **Done in v0.5.2**
@@ -58,18 +58,18 @@
 - ~~Also add 'Customers' and "Favorite customers" to the sidebar
   with, of course, the possibility to "Star" and "Un-star"  customer.~~ **Done in v0.5.3**
 
-- Add indicator to card, to show that sub-cards are present
+- ~~Add indicator to card, to show that sub-cards are present~~ **Already implemented (BoardCard.vue)**
 
-- "Edit customer" shows empty fields
+- ~~"Edit customer" shows empty fields~~ **Fixed: openEdit() was never called**
 
-- Switching customers in the sidebar doesn't update the overview on the
-  right hand side
+- ~~Switching customers in the sidebar doesn't update the overview on the
+  right hand side~~ **Fixed: added watch(custId) to CustomerDetailView**
 
-- Add customers and contracts, demo data, to `warmdesk-seed`
+- ~~Add customers and contracts, demo data, to `warmdesk-seed`~~ **Done**
 
 - ~~Implement sub-cards in the cards~~ **Done in v0.5.3**
 
-- Implement a Gantt chart per project
+- ~~Implement a Gantt chart per project~~ **Done in v0.6.0**
 
 - Allow external repo servers (Gitea, Forgejo, Github, Gitlab) to follow
   projects, so that the comments (with the Gitea issue tag) are also

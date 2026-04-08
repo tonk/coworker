@@ -31,6 +31,7 @@ type Card struct {
 	Title       string         `gorm:"not null;size:500" json:"title"`
 	Description string         `gorm:"type:text" json:"description"`
 	Position    float64        `gorm:"not null;default:0" json:"position"`
+	StartDate   *time.Time     `json:"start_date"`
 	DueDate     *time.Time     `json:"due_date"`
 	Priority    string         `gorm:"size:20;default:'none'" json:"priority"`
 	AssigneeID  *uint          `json:"assignee_id"`
@@ -97,6 +98,15 @@ type CardLabel struct {
 	CardID    uint      `gorm:"primaryKey" json:"card_id"`
 	LabelID   uint      `gorm:"primaryKey" json:"label_id"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+// CardReference is a bidirectional "relates to" link between two cards.
+// The link is stored once (source → target); both sides are shown when listing.
+type CardReference struct {
+	ID           uint      `gorm:"primaryKey" json:"id"`
+	SourceCardID uint      `gorm:"not null;index;uniqueIndex:idx_card_ref_pair" json:"source_card_id"`
+	TargetCardID uint      `gorm:"not null;index;uniqueIndex:idx_card_ref_pair" json:"target_card_id"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 // CardHistory records every column change for a card.

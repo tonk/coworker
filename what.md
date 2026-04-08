@@ -269,3 +269,9 @@ Create an application that has all these features and requirements
 - Link projects to customers and contracts via Project Settings General tab; customer and contract dropdowns are filtered and linked
 - Show customer name on dashboard project tiles when a project is linked to a customer
 - Add sub-cards: cards can have child cards (one level deep) visible only in the parent card's detail view; parent cards show a progress pill (done/total) on the board; sub-cards are hidden from the board column; sub-cards have full card detail (comments, assignees, labels, etc.) accessible via open button; adding a sub-card creates a card number in the same project
+- Add start_date field to cards: editable in card detail alongside due_date; stored in database; returned in all card API responses
+- Add cross-references between cards: bidirectional links shown in card detail "Linked Cards" section with card number, project key, title, priority, and column; clicking opens linked card in nested detail modal; cross-project references supported
+- Add Gantt chart per project: frappe-gantt based view accessible from board toolbar; cards with start/due dates shown as colour-coded priority bars; click to open card detail; drag to update dates; Day/Week/Month view modes
+- Fix "Edit customer" showing empty fields: openEdit() now pre-populates form before opening dialog
+- Fix switching customers in sidebar not updating overview: added watch(custId) to CustomerDetailView to reload on route param change
+- Extend demo seed: start dates, due dates, sub-cards, and cross-reference links added to all demo card sets

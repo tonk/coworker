@@ -272,5 +272,6 @@ func autoMigrate(db *gorm.DB) error {
 		&models.Customer{},
 		&models.Contract{},
 		&models.CustomerFavorite{},
+		&models.CardReference{},
 	)
 }

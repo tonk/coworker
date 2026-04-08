@@ -99,7 +99,8 @@ func CreateCard(c *gin.Context) {
 		Title       string          `json:"title" binding:"required"`
 		Description string          `json:"description"`
 		Priority    string          `json:"priority"`
-		DueDate     json.RawMessage `json:"due_date"` // "YYYY-MM-DD" string or null
+		StartDate   json.RawMessage `json:"start_date"` // "YYYY-MM-DD" string or null
+		DueDate     json.RawMessage `json:"due_date"`   // "YYYY-MM-DD" string or null
 		AssigneeID  *uint           `json:"assignee_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -115,14 +116,17 @@ func CreateCard(c *gin.Context) {
 		priority = "none"
 	}
 
-	var dueDate *time.Time
-	if len(req.DueDate) > 0 && string(req.DueDate) != "null" {
-		var dateStr string
-		if err := json.Unmarshal(req.DueDate, &dateStr); err == nil && dateStr != "" {
-			if t, err := time.Parse("2006-01-02", dateStr); err == nil {
-				dueDate = &t
+	parseDate := func(raw json.RawMessage) *time.Time {
+		if len(raw) == 0 || string(raw) == "null" {
+			return nil
+		}
+		var s string
+		if err := json.Unmarshal(raw, &s); err == nil && s != "" {
+			if t, err := time.Parse("2006-01-02", s); err == nil {
+				return &t
 			}
 		}
+		return nil
 	}
 
 	// Atomically increment the project's card counter
@@ -137,7 +141,8 @@ func CreateCard(c *gin.Context) {
 		Title:       req.Title,
 		Description: req.Description,
 		Priority:    priority,
-		DueDate:     dueDate,
+		StartDate:   parseDate(req.StartDate),
+		DueDate:     parseDate(req.DueDate),
 		AssigneeID:  req.AssigneeID,
 		CreatedByID: userID,
 		Position:    maxPos + 1000,
@@ -241,12 +246,29 @@ func UpdateCard(c *gin.Context) {
 		Title            string          `json:"title"`
 		Description      string          `json:"description"`
 		Priority         string          `json:"priority"`
-		DueDate          json.RawMessage `json:"due_date"` // "YYYY-MM-DD" string or null
+		StartDate        json.RawMessage `json:"start_date"` // "YYYY-MM-DD" string or null
+		DueDate          json.RawMessage `json:"due_date"`   // "YYYY-MM-DD" string or null
 		AssigneeID       *uint           `json:"assignee_id"`
 		TimeSpentMinutes *int            `json:"time_spent_minutes"`
 		Closed           *bool           `json:"closed"`
 	}
 	c.ShouldBindJSON(&req)
+
+	parseDate := func(raw json.RawMessage) (interface{}, bool) {
+		if len(raw) == 0 {
+			return nil, false
+		}
+		if string(raw) == "null" {
+			return nil, true
+		}
+		var s string
+		if err := json.Unmarshal(raw, &s); err == nil && s != "" {
+			if t, err := time.Parse("2006-01-02", s); err == nil {
+				return t, true
+			}
+		}
+		return nil, false
+	}
 
 	updates := map[string]interface{}{}
 	if req.Title != "" {
@@ -258,17 +280,11 @@ func UpdateCard(c *gin.Context) {
 	if req.Priority != "" {
 		updates["priority"] = req.Priority
 	}
-	if len(req.DueDate) > 0 {
-		if string(req.DueDate) == "null" {
-			updates["due_date"] = nil
-		} else {
-			var dateStr string
-			if err := json.Unmarshal(req.DueDate, &dateStr); err == nil && dateStr != "" {
-				if t, err := time.Parse("2006-01-02", dateStr); err == nil {
-					updates["due_date"] = t
-				}
-			}
-		}
+	if v, ok := parseDate(req.StartDate); ok {
+		updates["start_date"] = v
+	}
+	if v, ok := parseDate(req.DueDate); ok {
+		updates["due_date"] = v
 	}
 	if req.AssigneeID != nil {
 		updates["assignee_id"] = req.AssigneeID
