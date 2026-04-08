@@ -39,14 +39,10 @@
               :placeholder="dateOnlyFormat()"
               @blur="parseStartDate"
             />
-            <input
-              ref="startDatePickerRef"
-              type="date"
-              style="display:none"
-              :value="form.start_date"
-              @change="onStartDatePickerChange"
-            />
-            <button class="btn-icon-xs" @click="startDatePickerRef.showPicker()" title="Pick date">&#128197;</button>
+            <label class="picker-wrap" :title="$t('common.pick_date')">
+              <span class="btn-icon-xs">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="form.start_date" @change="onStartDatePickerChange" />
+            </label>
             <button v-if="displayStartDate" class="btn-icon-xs" @click="displayStartDate = ''; form.start_date = ''" title="Clear">×</button>
           </div>
         </div>
@@ -60,14 +56,10 @@
               :placeholder="dateOnlyFormat()"
               @blur="parseDueDate"
             />
-            <input
-              ref="datePickerRef"
-              type="date"
-              style="display:none"
-              :value="form.due_date"
-              @change="onDatePickerChange"
-            />
-            <button class="btn-icon-xs" @click="datePickerRef.showPicker()" title="Pick date">&#128197;</button>
+            <label class="picker-wrap" :title="$t('common.pick_date')">
+              <span class="btn-icon-xs">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="form.due_date" @change="onDatePickerChange" />
+            </label>
             <button v-if="displayDueDate" class="btn-icon-xs" @click="displayDueDate = ''; form.due_date = ''" title="Clear">×</button>
           </div>
         </div>
@@ -497,8 +489,6 @@ function parseDueDate() {
   form.value.due_date = iso
   displayDueDate.value = formatDate(iso)
 }
-const datePickerRef = ref(null)
-
 function onDatePickerChange(e) {
   const iso = e.target.value  // always YYYY-MM-DD
   form.value.due_date = iso
@@ -853,7 +843,6 @@ const {
 })
 
 const displayStartDate = ref(form.value.start_date ? formatDate(form.value.start_date) : '')
-const startDatePickerRef = ref(null)
 
 function parseStartDate() {
   const val = displayStartDate.value.trim()
@@ -1296,6 +1285,20 @@ function renderMarkdown(text) {
 
 .date-input-row { display: flex; align-items: center; gap: 6px; }
 .date-input-row .form-input { flex: 1; }
+
+.picker-wrap {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+.date-picker-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
 
 .comment-textarea { resize: vertical; min-height: 80px; font-family: inherit; }
 .description-textarea { resize: vertical; min-height: 160px; font-family: monospace; font-size: 13px; }

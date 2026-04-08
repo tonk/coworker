@@ -2,6 +2,16 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.1 — 2026-04-08
+
+### Added
+- **Sidebar drag-to-reorder starred projects and customers** — starred projects and starred customers in the sidebar can be dragged to a custom order; order is persisted in localStorage
+- **All Customers section in sidebar** — a new collapsible "All Customers" section lists every customer alphabetically (starred ones first with a ★ badge); collapsed by default
+
+### Fixed
+- **Card date pickers don't open** — Start Date and Due Date pickers in the card detail now use an overlay `<input type="date">` hidden behind the calendar icon button; avoids the browser `NotAllowedError` thrown by `showPicker()` on `display:none` elements
+- **Contract editor date fields ignore configured date format** — Start Date and End Date in the contract editor now use the same text-input + overlay-picker pattern as card dates; they display and parse dates according to the user's configured date format, with a calendar icon and a clear button
+
 ## v0.6.0 — 2026-04-08
 
 ### Added

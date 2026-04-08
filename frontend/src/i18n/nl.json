@@ -272,7 +272,8 @@
     "search": "Zoeken",
     "actions": "Acties",
     "language": "Taal",
-    "add": "Toevoegen"
+    "add": "Toevoegen",
+    "pick_date": "Datum kiezen"
   },
   "presence": {
     "online": "online"

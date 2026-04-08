@@ -272,7 +272,8 @@
     "search": "Rechercher",
     "actions": "Actions",
     "language": "Langue",
-    "add": "Ajouter"
+    "add": "Ajouter",
+    "pick_date": "Choisir une date"
   },
   "presence": {
     "online": "en ligne"

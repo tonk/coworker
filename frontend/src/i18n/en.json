@@ -301,7 +301,8 @@
     "search": "Search",
     "actions": "Actions",
     "language": "Language",
-    "add": "Add"
+    "add": "Add",
+    "pick_date": "Pick date"
   },
   "presence": {
     "online": "online"

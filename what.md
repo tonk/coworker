@@ -275,3 +275,7 @@ Create an application that has all these features and requirements
 - Fix "Edit customer" showing empty fields: openEdit() now pre-populates form before opening dialog
 - Fix switching customers in sidebar not updating overview: added watch(custId) to CustomerDetailView to reload on route param change
 - Extend demo seed: start dates, due dates, sub-cards, and cross-reference links added to all demo card sets
+- Sidebar drag-to-reorder starred projects and customers: drag handles appear on hover; custom order persisted in localStorage
+- All Customers section in sidebar: collapsible list of every customer, starred ones first with a ★ badge; collapsed by default
+- Fix card Start Date and Due Date pickers not opening: use overlay input[type=date] behind calendar icon button instead of showPicker() on hidden element
+- Fix contract editor date fields ignoring configured date format: Start Date and End Date now use the text-input + overlay-picker pattern with format-aware display and parsing

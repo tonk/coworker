@@ -131,11 +131,25 @@
       <div class="detail-row">
         <div class="form-group half">
           <label class="form-label">{{ $t('contract.start_date') }}</label>
-          <input class="form-input" type="date" v-model="contractForm.start_date" />
+          <div class="date-input-row">
+            <input class="form-input" type="text" v-model="displayContractStartDate" :placeholder="dateOnlyFormat()" @blur="parseContractStartDate" />
+            <label class="picker-wrap" :title="$t('common.pick_date')">
+              <span class="btn-icon-xs">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="contractForm.start_date" @change="onContractStartDateChange" />
+            </label>
+            <button v-if="displayContractStartDate" class="btn-icon-xs" @click="displayContractStartDate = ''; contractForm.start_date = ''" title="Clear">×</button>
+          </div>
         </div>
         <div class="form-group half">
           <label class="form-label">{{ $t('contract.end_date') }}</label>
-          <input class="form-input" type="date" v-model="contractForm.end_date" />
+          <div class="date-input-row">
+            <input class="form-input" type="text" v-model="displayContractEndDate" :placeholder="dateOnlyFormat()" @blur="parseContractEndDate" />
+            <label class="picker-wrap" :title="$t('common.pick_date')">
+              <span class="btn-icon-xs">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="contractForm.end_date" @change="onContractEndDateChange" />
+            </label>
+            <button v-if="displayContractEndDate" class="btn-icon-xs" @click="displayContractEndDate = ''; contractForm.end_date = ''" title="Clear">×</button>
+          </div>
         </div>
       </div>
       <template #footer>
@@ -154,6 +168,7 @@ import { useCustomersStore } from '@/stores/customers'
 import { useUIStore } from '@/stores/ui'
 import { customersApi } from '@/api/customers'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { useDateFormat } from '@/composables/useDateFormat'
 
 const route = useRoute()
 const router = useRouter()
@@ -167,9 +182,44 @@ const detail = ref(null)
 const showEdit = ref(false)
 const editForm = ref({ name: '', description: '', logo_url: '' })
 
+const { formatDate, dateOnlyFormat } = useDateFormat()
+
 const showAddContract = ref(false)
 const editingContract = ref(null)
 const contractForm = ref({ name: '', description: '', start_date: '', end_date: '' })
+const displayContractStartDate = ref('')
+const displayContractEndDate   = ref('')
+
+function _parseContractDate(displayRef, isoKey) {
+  const val = displayRef.value.trim()
+  if (!val) { contractForm.value[isoKey] = ''; return }
+  const fmt = dateOnlyFormat()
+  const yPos = fmt.indexOf('YYYY'), mPos = fmt.indexOf('MM'), dPos = fmt.indexOf('DD')
+  const y = parseInt(val.slice(yPos, yPos + 4))
+  const m = parseInt(val.slice(mPos, mPos + 2))
+  const d = parseInt(val.slice(dPos, dPos + 2))
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    displayRef.value = contractForm.value[isoKey] ? formatDate(contractForm.value[isoKey]) : ''
+    return
+  }
+  const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  contractForm.value[isoKey] = iso
+  displayRef.value = formatDate(iso)
+}
+
+function parseContractStartDate() { _parseContractDate(displayContractStartDate, 'start_date') }
+function parseContractEndDate()   { _parseContractDate(displayContractEndDate,   'end_date')   }
+
+function onContractStartDateChange(e) {
+  const iso = e.target.value
+  contractForm.value.start_date = iso
+  displayContractStartDate.value = iso ? formatDate(iso) : ''
+}
+function onContractEndDateChange(e) {
+  const iso = e.target.value
+  contractForm.value.end_date = iso
+  displayContractEndDate.value = iso ? formatDate(iso) : ''
+}
 
 const editingName = ref(false)
 const nameEdit = ref('')
@@ -252,12 +302,16 @@ function editContract(grp) {
     start_date: grp.start_date ? grp.start_date.split('T')[0] : '',
     end_date:   grp.end_date   ? grp.end_date.split('T')[0]   : '',
   }
+  displayContractStartDate.value = contractForm.value.start_date ? formatDate(contractForm.value.start_date) : ''
+  displayContractEndDate.value   = contractForm.value.end_date   ? formatDate(contractForm.value.end_date)   : ''
 }
 
 function closeContractModal() {
   showAddContract.value = false
   editingContract.value = null
   contractForm.value = { name: '', description: '', start_date: '', end_date: '' }
+  displayContractStartDate.value = ''
+  displayContractEndDate.value   = ''
 }
 
 async function saveContract() {
@@ -290,10 +344,6 @@ async function deleteContract(grp) {
   }
 }
 
-function formatDate(dt) {
-  if (!dt) return ''
-  return dt.split('T')[0]
-}
 </script>
 
 <style scoped>
@@ -449,4 +499,14 @@ function formatDate(dt) {
 .form-input { width: 100%; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-bg); color: var(--color-text); font-size: 14px; box-sizing: border-box; }
 .detail-row { display: flex; gap: 12px; }
 .half { flex: 1; }
+
+.date-input-row { display: flex; align-items: center; gap: 6px; }
+.date-input-row .form-input { flex: 1; }
+.picker-wrap { position: relative; display: inline-flex; cursor: pointer; }
+.date-picker-overlay { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.btn-icon-xs {
+  background: none; border: none; cursor: pointer; color: var(--color-text-muted);
+  padding: 2px 4px; font-size: 13px; line-height: 1; border-radius: 3px; flex-shrink: 0;
+}
+.btn-icon-xs:hover { background: var(--color-bg); color: var(--color-text); }
 </style>

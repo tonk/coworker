@@ -22,6 +22,17 @@
   orange, black and white theme (Save buttons, highlight lines in the
   sidebar, etc). This, of course, needs to be a user setting
 
+- ~~In the sidebar, allow for re-ordering the starred customers and
+  projects~~ **Done in v0.6.1**
+
+- ~~In the sidebar show all customers~~ **Done in v0.6.1**
+
+- ~~In the cards, the date-pickers for the "Start Date" and "Due Date"
+  don't work~~ **Done in v0.6.1**
+
+- ~~In the contract editor the date fields should follow the configured
+  date format~~ **Done in v0.6.1**
+
 - ~~In the client, when a new version is available and the "Release notes"
   are clicked, nothing happens.
   This works in the browser version.~~ **Done in v0.5.2**

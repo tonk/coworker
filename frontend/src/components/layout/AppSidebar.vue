@@ -9,16 +9,23 @@
         <span class="chevron" :class="{ open: open.starred }">›</span>
       </button>
       <div v-show="open.starred" class="section-body">
-        <div v-if="!sidebarStore.starredProjects.length" class="section-empty">
+        <div v-if="!orderedStarredProjects.length" class="section-empty">
           {{ $t('sidebar.no_starred') }}
         </div>
         <nav class="sidebar-nav">
           <RouterLink
-            v-for="project in sidebarStore.starredProjects"
+            v-for="project in orderedStarredProjects"
             :key="project.id"
             :to="`/projects/${project.slug}`"
             class="sidebar-link"
+            :class="{ 'drag-over': dragOverId === project.id }"
+            draggable="true"
+            @dragstart="onDragStart($event, project, 'project')"
+            @dragover.prevent="dragOverId = project.id"
+            @dragleave="dragOverId = null"
+            @drop="onDrop($event, project, 'project')"
           >
+            <span class="drag-handle">⠿</span>
             <span class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
             <span class="link-text">{{ project.name }}</span>
           </RouterLink>
@@ -33,22 +40,54 @@
         <span class="chevron" :class="{ open: open.customers }">›</span>
       </button>
       <div v-show="open.customers" class="section-body">
-        <div v-if="!customersStore.starredCustomers.length" class="section-empty">
+        <div v-if="!orderedStarredCustomers.length" class="section-empty">
           {{ $t('sidebar.no_customers') }}
         </div>
         <nav class="sidebar-nav">
           <RouterLink
-            v-for="c in customersStore.starredCustomers"
+            v-for="c in orderedStarredCustomers"
             :key="c.id"
             :to="`/customers/${c.id}`"
             class="sidebar-link"
+            :class="{ 'drag-over': dragOverId === c.id }"
+            draggable="true"
+            @dragstart="onDragStart($event, c, 'customer')"
+            @dragover.prevent="dragOverId = c.id"
+            @dragleave="dragOverId = null"
+            @drop="onDrop($event, c, 'customer')"
           >
+            <span class="drag-handle">⠿</span>
             <span class="customer-icon">🏢</span>
             <span class="link-text">{{ c.name }}</span>
             <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :title="$t('customer.unstar')">★</button>
           </RouterLink>
         </nav>
         <RouterLink to="/customers" class="sidebar-link sidebar-link-all">{{ $t('customer.customers') }}…</RouterLink>
+      </div>
+    </section>
+
+    <!-- All Customers -->
+    <section class="sidebar-section">
+      <button class="section-header" @click="toggle('allCustomers')">
+        <span class="section-title">{{ $t('customer.all_customers') }}</span>
+        <span class="chevron" :class="{ open: open.allCustomers }">›</span>
+      </button>
+      <div v-show="open.allCustomers" class="section-body">
+        <div v-if="!sortedCustomers.length" class="section-empty">
+          {{ $t('sidebar.no_customers') }}
+        </div>
+        <nav class="sidebar-nav">
+          <RouterLink
+            v-for="c in sortedCustomers"
+            :key="c.id"
+            :to="`/customers/${c.id}`"
+            class="sidebar-link"
+          >
+            <span class="customer-icon">🏢</span>
+            <span class="link-text">{{ c.name }}</span>
+            <span v-if="c.starred" class="star-mark">★</span>
+          </RouterLink>
+        </nav>
       </div>
     </section>
 
@@ -218,7 +257,7 @@ const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.ge
 
 // Collapse state — persisted in localStorage
 const STORAGE_KEY = 'sidebar_open'
-const defaults = { starred: true, projects: true, customers: false, favorites: true, chats: true, people: true }
+const defaults = { starred: true, projects: true, customers: false, allCustomers: false, favorites: true, chats: true, people: true }
 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaults
 const open = ref({ ...defaults, ...saved })
 
@@ -237,7 +276,66 @@ const onlineCount = computed(() => {
   return sidebarStore.allUsers.filter(u => u.id !== auth.user?.id && isOnline(u.id)).length
 })
 
-// All projects sorted: starred first (marked), then the rest
+// ── Drag-to-reorder for starred sections ──────────────────────────────────────
+const STARRED_PROJECTS_ORDER_KEY  = 'sidebar_starred_projects_order'
+const STARRED_CUSTOMERS_ORDER_KEY = 'sidebar_starred_customers_order'
+
+const starredProjectOrder  = ref(JSON.parse(localStorage.getItem(STARRED_PROJECTS_ORDER_KEY)  || 'null') || [])
+const starredCustomerOrder = ref(JSON.parse(localStorage.getItem(STARRED_CUSTOMERS_ORDER_KEY) || 'null') || [])
+const dragOverId = ref(null)
+let _dragItem = null
+let _dragType = null
+
+function onDragStart(e, item, type) {
+  _dragItem = item
+  _dragType = type
+  e.dataTransfer.effectAllowed = 'move'
+}
+
+function onDrop(e, target, type) {
+  dragOverId.value = null
+  if (!_dragItem || _dragType !== type || _dragItem.id === target.id) { _dragItem = null; _dragType = null; return }
+  if (type === 'project') {
+    const ids = orderedStarredProjects.value.map(p => p.id)
+    const fi = ids.indexOf(_dragItem.id), ti = ids.indexOf(target.id)
+    if (fi !== -1 && ti !== -1) { ids.splice(fi, 1); ids.splice(ti, 0, _dragItem.id) }
+    starredProjectOrder.value = ids
+    localStorage.setItem(STARRED_PROJECTS_ORDER_KEY, JSON.stringify(ids))
+  } else if (type === 'customer') {
+    const ids = orderedStarredCustomers.value.map(c => c.id)
+    const fi = ids.indexOf(_dragItem.id), ti = ids.indexOf(target.id)
+    if (fi !== -1 && ti !== -1) { ids.splice(fi, 1); ids.splice(ti, 0, _dragItem.id) }
+    starredCustomerOrder.value = ids
+    localStorage.setItem(STARRED_CUSTOMERS_ORDER_KEY, JSON.stringify(ids))
+  }
+  _dragItem = null; _dragType = null
+}
+
+const orderedStarredProjects = computed(() => {
+  const list = sidebarStore.starredProjects
+  if (!starredProjectOrder.value.length) return list
+  const map = new Map(list.map(p => [p.id, p]))
+  const ordered = starredProjectOrder.value.map(id => map.get(id)).filter(Boolean)
+  const rest = list.filter(p => !starredProjectOrder.value.includes(p.id))
+  return [...ordered, ...rest]
+})
+
+const orderedStarredCustomers = computed(() => {
+  const list = customersStore.starredCustomers
+  if (!starredCustomerOrder.value.length) return list
+  const map = new Map(list.map(c => [c.id, c]))
+  const ordered = starredCustomerOrder.value.map(id => map.get(id)).filter(Boolean)
+  const rest = list.filter(c => !starredCustomerOrder.value.includes(c.id))
+  return [...ordered, ...rest]
+})
+
+const sortedCustomers = computed(() => {
+  const starred = customersStore.customers.filter(c => c.is_favorite).map(c => ({ ...c, starred: true }))
+  const rest    = customersStore.customers.filter(c => !c.is_favorite).map(c => ({ ...c, starred: false }))
+  return [...starred, ...rest]
+})
+
+// ── All projects sorted: starred first (marked), then the rest ────────────────
 const sortedProjects = computed(() => {
   const starredSet = new Set(sidebarStore.starredProjects.map(p => p.id))
   const starred = sidebarStore.allProjects
@@ -541,5 +639,20 @@ onUnmounted(() => {
   padding-bottom: 4px;
   border-top: 1px solid var(--color-border);
   margin-top: 2px;
+}
+
+/* Drag-to-reorder */
+.drag-handle {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  opacity: 0;
+  cursor: grab;
+  transition: opacity .1s;
+}
+.sidebar-link:hover .drag-handle { opacity: 1; }
+.sidebar-link.drag-over {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border-radius: 4px;
 }
 </style>
