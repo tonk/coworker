@@ -60,7 +60,7 @@ type AdminProjectListItem struct {
 
 func AdminListProjects(c *gin.Context) {
 	var projects []models.Project
-	database.DB.Unscoped().Preload("CreatedBy").Find(&projects)
+	database.DB.Preload("CreatedBy").Find(&projects)
 
 	result := make([]AdminProjectListItem, len(projects))
 	for i, p := range projects {

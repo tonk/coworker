@@ -816,6 +816,7 @@ async function deleteProject(project) {
   try {
     await adminApi.deleteProject(project.id)
     projects.value = projects.value.filter(p => p.id !== project.id)
+    sidebarStore.allProjects = sidebarStore.allProjects.filter(p => p.id !== project.id)
     ui.success('Project deleted')
   } catch {
     ui.error('Failed to delete project')

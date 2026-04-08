@@ -2,6 +2,13 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.2 — 2026-04-08
+
+### Fixed
+- **Deleted projects reappear in admin list** — the admin project list no longer returns soft-deleted projects; previously `Unscoped()` caused deleted projects to reappear whenever the admin navigated back to the Projects tab
+- **Deleted project stays visible in sidebar** — deleting a project via the admin interface now immediately removes it from the sidebar "All Projects" list without requiring a page refresh
+- **Seed `--reset` fails with unique constraint error** — `--reset` now collects soft-deleted demo projects (via `Unscoped`) before wiping; previously, projects deleted through the admin UI were missed and their slugs remained in the database, causing a UNIQUE constraint failure on re-seed
+
 ## v0.6.1 — 2026-04-08
 
 ### Added

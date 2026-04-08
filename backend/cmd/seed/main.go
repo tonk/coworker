@@ -1249,7 +1249,7 @@ func removeDemoData(db *gorm.DB) {
 
 	// Collect project IDs
 	var projectIDs []uint
-	db.Model(&models.Project{}).Where("slug IN ?", demoSlugs).Pluck("id", &projectIDs)
+	db.Unscoped().Model(&models.Project{}).Where("slug IN ?", demoSlugs).Pluck("id", &projectIDs)
 
 	if len(projectIDs) > 0 {
 		// Collect card IDs

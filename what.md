@@ -279,3 +279,6 @@ Create an application that has all these features and requirements
 - All Customers section in sidebar: collapsible list of every customer, starred ones first with a ★ badge; collapsed by default
 - Fix card Start Date and Due Date pickers not opening: use overlay input[type=date] behind calendar icon button instead of showPicker() on hidden element
 - Fix contract editor date fields ignoring configured date format: Start Date and End Date now use the text-input + overlay-picker pattern with format-aware display and parsing
+- Fix deleted projects reappearing in admin list: remove Unscoped() from AdminListProjects so soft-deleted projects are excluded
+- Fix deleted project remaining visible in sidebar until refresh: admin delete now immediately filters the project from sidebarStore.allProjects
+- Fix seed --reset failing with UNIQUE constraint error when demo projects were previously soft-deleted: collect project IDs via Unscoped() before wiping
