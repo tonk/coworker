@@ -18,9 +18,9 @@
 
 - ~~After zooming in or out, save the zoom setting for the next session~~ **Already implemented (localStorage)**
 
-- Currently the theme is blue, also allow, per user, a red, green,
+- ~~Currently the theme is blue, also allow, per user, a red, green,
   orange, black and white theme (Save buttons, highlight lines in the
-  sidebar, etc). This, of course, needs to be a user setting
+  sidebar, etc). This, of course, needs to be a user setting~~ **Done in v0.6.3 (blue, red, green, orange — black and white skipped)**
 
 - ~~In the sidebar, allow for re-ordering the starred customers and
   projects~~ **Done in v0.6.1**
@@ -57,7 +57,8 @@
 
 - Investigate:
   When starting the Windows client it takes rather long before
-  it responds, for userid/password entry. After logging in, performance
+  it responds, it does show the login screen, but typing lags behind and
+  is very slow, for userid/password entry. After logging in, performance
   is OK
 
 - ~~Change projects to add an extra layer

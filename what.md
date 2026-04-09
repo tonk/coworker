@@ -286,3 +286,5 @@ Create an application that has all these features and requirements
 - Drag-to-reorder sidebar sections: grab handle on each section header; default order is Starred Projects, All Projects, Favourite Customers, All Customers, Favourites, People, Chats; order persisted in localStorage
 - Increase whitespace between sidebar sections for readability
 - Indent items in All Projects, All Customers, People, and Chats sidebar sections; apply the same indent to empty-state messages throughout the sidebar
+- Fix Windows desktop app typing lag during login: register the Ctrl+zoom keydown listener as passive in Tauri so WebView2 skips the synchronous IPC round-trip on every keystroke
+- Fix sidebar drag-to-reorder broken on Linux desktop app: replace HTML5 Drag-and-Drop API with pointer events (pointerdown/pointermove/pointerup) because WebKitGTK's DnD support is incomplete; new implementation works on all platforms

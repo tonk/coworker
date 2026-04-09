@@ -2,6 +2,12 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.4 — 2026-04-09
+
+### Fixed
+- **Windows desktop app typing lag on login screen** — the global `keydown` listener for Ctrl+zoom is now registered as a passive listener in the Tauri desktop app; WebView2 required a synchronous IPC round-trip for every keystroke when the listener was non-passive, causing visible lag when typing credentials; the fix does not affect browser builds
+- **Sidebar drag-to-reorder broken on Linux desktop app** — replaced the HTML5 Drag-and-Drop API with a pointer-events implementation (`pointerdown` / `pointermove` / `pointerup`); WebKitGTK's DnD support is incomplete so section and item reordering was silently broken on the Linux AppImage; the new approach works on all platforms
+
 ## v0.6.3 — 2026-04-09
 
 ### Added

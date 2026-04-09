@@ -129,6 +129,14 @@ const ZOOM_STEP = 0.1
 const ZOOM_MIN = 0.5
 const ZOOM_MAX = 2.0
 
+// In a Tauri desktop window WebView2 does not intercept Ctrl+zoom for its own
+// browser zoom, so preventDefault() is not needed there.  In a regular browser
+// we do need it to suppress the native zoom.  Passive listeners skip the
+// synchronous IPC round-trip that WebView2 requires for every keystroke when a
+// non-passive keydown listener is registered on window — removing that overhead
+// eliminates the typing lag on the Windows desktop app login screen.
+const isTauri = !!window.__TAURI_INTERNALS__
+
 function applyZoom(level) {
   document.documentElement.style.zoom = level
   localStorage.setItem(ZOOM_KEY, level)
@@ -136,16 +144,16 @@ function applyZoom(level) {
 
 function onKeyZoom(e) {
   if (!e.ctrlKey && !e.metaKey) return
-  if (e.key === '+' || e.key === '=' ) {
-    e.preventDefault()
+  if (e.key === '+' || e.key === '=') {
+    if (!isTauri) e.preventDefault()
     const current = parseFloat(localStorage.getItem(ZOOM_KEY) || 1)
     applyZoom(Math.min(ZOOM_MAX, Math.round((current + ZOOM_STEP) * 10) / 10))
   } else if (e.key === '-') {
-    e.preventDefault()
+    if (!isTauri) e.preventDefault()
     const current = parseFloat(localStorage.getItem(ZOOM_KEY) || 1)
     applyZoom(Math.max(ZOOM_MIN, Math.round((current - ZOOM_STEP) * 10) / 10))
   } else if (e.key === '0') {
-    e.preventDefault()
+    if (!isTauri) e.preventDefault()
     applyZoom(1)
   }
 }
@@ -178,7 +186,7 @@ watch([() => auth.isLoggedIn, () => systemStore.sessionTimeoutMinutes], ([logged
 
 onMounted(() => {
   ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, onActivity, { passive: true }))
-  window.addEventListener('keydown', onKeyZoom)
+  window.addEventListener('keydown', onKeyZoom, { passive: isTauri })
   window.addEventListener('wheel', onWheelZoom, { passive: false })
   const savedZoom = localStorage.getItem(ZOOM_KEY)
   if (savedZoom) applyZoom(parseFloat(savedZoom))

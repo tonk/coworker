@@ -7,14 +7,10 @@
       class="sidebar-section"
       :style="sectionStyle('starred')"
       :class="{ 'section-drag-over': sectionDragOver === 'starred' }"
-      draggable="true"
-      @dragstart="onSectionDragStart($event, 'starred')"
-      @dragover.prevent="onSectionDragOver('starred')"
-      @dragleave="sectionDragOver = null"
-      @drop="onSectionDrop($event, 'starred')"
+      data-section-key="starred"
     >
       <button class="section-header" @click="toggle('starred')">
-        <span class="section-drag-handle">⠿</span>
+        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'starred')">⠿</span>
         <span class="section-title">{{ $t('sidebar.starred') }}</span>
         <span class="chevron" :class="{ open: open.starred }">›</span>
       </button>
@@ -29,13 +25,11 @@
             :to="`/projects/${project.slug}`"
             class="sidebar-link"
             :class="{ 'drag-over': dragOverId === project.id }"
-            draggable="true"
-            @dragstart="onDragStart($event, project, 'project')"
-            @dragover.prevent="dragOverId = project.id"
-            @dragleave="dragOverId = null"
-            @drop="onDrop($event, project, 'project')"
+            draggable="false"
+            :data-item-id="project.id"
+            data-item-type="project"
           >
-            <span class="drag-handle">⠿</span>
+            <span class="drag-handle" @pointerdown.prevent.stop="onItemHandleDown($event, project, 'project')">⠿</span>
             <span class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
             <span class="link-text">{{ project.name }}</span>
           </RouterLink>
@@ -48,14 +42,10 @@
       class="sidebar-section"
       :style="sectionStyle('projects')"
       :class="{ 'section-drag-over': sectionDragOver === 'projects' }"
-      draggable="true"
-      @dragstart="onSectionDragStart($event, 'projects')"
-      @dragover.prevent="onSectionDragOver('projects')"
-      @dragleave="sectionDragOver = null"
-      @drop="onSectionDrop($event, 'projects')"
+      data-section-key="projects"
     >
       <button class="section-header" @click="toggle('projects')">
-        <span class="section-drag-handle">⠿</span>
+        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'projects')">⠿</span>
         <span class="section-title">{{ $t('sidebar.all_projects') }}</span>
         <span class="chevron" :class="{ open: open.projects }">›</span>
       </button>
@@ -83,14 +73,10 @@
       class="sidebar-section"
       :style="sectionStyle('customers')"
       :class="{ 'section-drag-over': sectionDragOver === 'customers' }"
-      draggable="true"
-      @dragstart="onSectionDragStart($event, 'customers')"
-      @dragover.prevent="onSectionDragOver('customers')"
-      @dragleave="sectionDragOver = null"
-      @drop="onSectionDrop($event, 'customers')"
+      data-section-key="customers"
     >
       <button class="section-header" @click="toggle('customers')">
-        <span class="section-drag-handle">⠿</span>
+        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'customers')">⠿</span>
         <span class="section-title">{{ $t('sidebar.customers') }}</span>
         <span class="chevron" :class="{ open: open.customers }">›</span>
       </button>
@@ -105,13 +91,11 @@
             :to="`/customers/${c.id}`"
             class="sidebar-link"
             :class="{ 'drag-over': dragOverId === c.id }"
-            draggable="true"
-            @dragstart="onDragStart($event, c, 'customer')"
-            @dragover.prevent="dragOverId = c.id"
-            @dragleave="dragOverId = null"
-            @drop="onDrop($event, c, 'customer')"
+            draggable="false"
+            :data-item-id="c.id"
+            data-item-type="customer"
           >
-            <span class="drag-handle">⠿</span>
+            <span class="drag-handle" @pointerdown.prevent.stop="onItemHandleDown($event, c, 'customer')">⠿</span>
             <span class="customer-icon">🏢</span>
             <span class="link-text">{{ c.name }}</span>
             <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :title="$t('customer.unstar')">★</button>
@@ -126,14 +110,10 @@
       class="sidebar-section"
       :style="sectionStyle('allCustomers')"
       :class="{ 'section-drag-over': sectionDragOver === 'allCustomers' }"
-      draggable="true"
-      @dragstart="onSectionDragStart($event, 'allCustomers')"
-      @dragover.prevent="onSectionDragOver('allCustomers')"
-      @dragleave="sectionDragOver = null"
-      @drop="onSectionDrop($event, 'allCustomers')"
+      data-section-key="allCustomers"
     >
       <button class="section-header" @click="toggle('allCustomers')">
-        <span class="section-drag-handle">⠿</span>
+        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'allCustomers')">⠿</span>
         <span class="section-title">{{ $t('customer.all_customers') }}</span>
         <span class="chevron" :class="{ open: open.allCustomers }">›</span>
       </button>
@@ -161,14 +141,10 @@
       class="sidebar-section"
       :style="sectionStyle('favorites')"
       :class="{ 'section-drag-over': sectionDragOver === 'favorites' }"
-      draggable="true"
-      @dragstart="onSectionDragStart($event, 'favorites')"
-      @dragover.prevent="onSectionDragOver('favorites')"
-      @dragleave="sectionDragOver = null"
-      @drop="onSectionDrop($event, 'favorites')"
+      data-section-key="favorites"
     >
       <button class="section-header" @click="toggle('favorites')">
-        <span class="section-drag-handle">⠿</span>
+        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'favorites')">⠿</span>
         <span class="section-title">{{ $t('sidebar.favorites') }}</span>
         <span class="chevron" :class="{ open: open.favorites }">›</span>
       </button>
@@ -196,14 +172,10 @@
       class="sidebar-section"
       :style="sectionStyle('people')"
       :class="{ 'section-drag-over': sectionDragOver === 'people' }"
-      draggable="true"
-      @dragstart="onSectionDragStart($event, 'people')"
-      @dragover.prevent="onSectionDragOver('people')"
-      @dragleave="sectionDragOver = null"
-      @drop="onSectionDrop($event, 'people')"
+      data-section-key="people"
     >
       <button class="section-header" @click="toggle('people')">
-        <span class="section-drag-handle">⠿</span>
+        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'people')">⠿</span>
         <span class="section-title">{{ $t('sidebar.users') }}</span>
         <span class="badge-count" v-if="onlineCount">{{ onlineCount }}</span>
         <span class="chevron" :class="{ open: open.people }">›</span>
@@ -237,14 +209,10 @@
       class="sidebar-section"
       :style="sectionStyle('chats')"
       :class="{ 'section-drag-over': sectionDragOver === 'chats' }"
-      draggable="true"
-      @dragstart="onSectionDragStart($event, 'chats')"
-      @dragover.prevent="onSectionDragOver('chats')"
-      @dragleave="sectionDragOver = null"
-      @drop="onSectionDrop($event, 'chats')"
+      data-section-key="chats"
     >
       <button class="section-header" @click="toggle('chats')">
-        <span class="section-drag-handle">⠿</span>
+        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'chats')">⠿</span>
         <span class="section-title">{{ $t('nav.messages') }}</span>
         <span v-if="notificationsStore.hasUnread" class="unread-dot" :title="$t('sidebar.unread_messages')"></span>
         <span class="chevron" :class="{ open: open.chats }">›</span>
@@ -347,7 +315,7 @@ const onlineCount = computed(() => {
   return sidebarStore.allUsers.filter(u => u.id !== auth.user?.id && isOnline(u.id)).length
 })
 
-// ── Section drag-to-reorder ───────────────────────────────────────────────────
+// ── Section drag-to-reorder (pointer events — works on WebKitGTK/Linux) ───────
 const SECTION_ORDER_KEY = 'sidebar_section_order'
 const DEFAULT_SECTION_ORDER = ['starred', 'projects', 'customers', 'allCustomers', 'favorites', 'people', 'chats']
 
@@ -361,29 +329,35 @@ function sectionStyle(key) {
   return { order: sectionOrder.value.indexOf(key) }
 }
 
-function onSectionDragStart(e, key) {
+function onSectionHandleDown(e, key) {
   _sectionDragKey = key
-  e.dataTransfer.effectAllowed = 'move'
-  e.stopPropagation()
-}
-
-function onSectionDragOver(key) {
-  if (_sectionDragKey) sectionDragOver.value = key
-}
-
-function onSectionDrop(e, targetKey) {
   sectionDragOver.value = null
-  if (!_sectionDragKey || _sectionDragKey === targetKey) { _sectionDragKey = null; return }
+  document.addEventListener('pointermove', onSectionPointerMove, { passive: true })
+  document.addEventListener('pointerup', onSectionPointerUp)
+}
+
+function onSectionPointerMove(e) {
+  const el = document.elementFromPoint(e.clientX, e.clientY)
+  const sec = el?.closest('[data-section-key]')
+  sectionDragOver.value = sec?.dataset.sectionKey || null
+}
+
+function onSectionPointerUp() {
+  const target = sectionDragOver.value
+  sectionDragOver.value = null
+  document.removeEventListener('pointermove', onSectionPointerMove)
+  document.removeEventListener('pointerup', onSectionPointerUp)
+  if (!_sectionDragKey || !target || _sectionDragKey === target) { _sectionDragKey = null; return }
   const order = [...sectionOrder.value]
   const fi = order.indexOf(_sectionDragKey)
-  const ti = order.indexOf(targetKey)
+  const ti = order.indexOf(target)
   if (fi !== -1 && ti !== -1) { order.splice(fi, 1); order.splice(ti, 0, _sectionDragKey) }
   sectionOrder.value = order
   localStorage.setItem(SECTION_ORDER_KEY, JSON.stringify(order))
   _sectionDragKey = null
 }
 
-// ── Drag-to-reorder for starred sections ──────────────────────────────────────
+// ── Item drag-to-reorder for starred sections (pointer events) ────────────────
 const STARRED_PROJECTS_ORDER_KEY  = 'sidebar_starred_projects_order'
 const STARRED_CUSTOMERS_ORDER_KEY = 'sidebar_starred_customers_order'
 
@@ -393,25 +367,37 @@ const dragOverId = ref(null)
 let _dragItem = null
 let _dragType = null
 
-function onDragStart(e, item, type) {
-  e.stopPropagation()
+function onItemHandleDown(e, item, type) {
   _dragItem = item
   _dragType = type
-  e.dataTransfer.effectAllowed = 'move'
+  dragOverId.value = null
+  document.addEventListener('pointermove', onItemPointerMove, { passive: true })
+  document.addEventListener('pointerup', onItemPointerUp)
 }
 
-function onDrop(e, target, type) {
+function onItemPointerMove(e) {
+  const el = document.elementFromPoint(e.clientX, e.clientY)
+  const item = el?.closest(`[data-item-id][data-item-type="${_dragType}"]`)
+  dragOverId.value = item ? Number(item.dataset.itemId) : null
+}
+
+function onItemPointerUp() {
+  const targetId = dragOverId.value
   dragOverId.value = null
-  if (!_dragItem || _dragType !== type || _dragItem.id === target.id) { _dragItem = null; _dragType = null; return }
-  if (type === 'project') {
+  document.removeEventListener('pointermove', onItemPointerMove)
+  document.removeEventListener('pointerup', onItemPointerUp)
+  if (!_dragItem || targetId === null || targetId === undefined || _dragItem.id === targetId) {
+    _dragItem = null; _dragType = null; return
+  }
+  if (_dragType === 'project') {
     const ids = orderedStarredProjects.value.map(p => p.id)
-    const fi = ids.indexOf(_dragItem.id), ti = ids.indexOf(target.id)
+    const fi = ids.indexOf(_dragItem.id), ti = ids.indexOf(targetId)
     if (fi !== -1 && ti !== -1) { ids.splice(fi, 1); ids.splice(ti, 0, _dragItem.id) }
     starredProjectOrder.value = ids
     localStorage.setItem(STARRED_PROJECTS_ORDER_KEY, JSON.stringify(ids))
-  } else if (type === 'customer') {
+  } else if (_dragType === 'customer') {
     const ids = orderedStarredCustomers.value.map(c => c.id)
-    const fi = ids.indexOf(_dragItem.id), ti = ids.indexOf(target.id)
+    const fi = ids.indexOf(_dragItem.id), ti = ids.indexOf(targetId)
     if (fi !== -1 && ti !== -1) { ids.splice(fi, 1); ids.splice(ti, 0, _dragItem.id) }
     starredCustomerOrder.value = ids
     localStorage.setItem(STARRED_CUSTOMERS_ORDER_KEY, JSON.stringify(ids))
@@ -530,6 +516,11 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(pollInterval)
   stopResize()
+  // Clean up any in-progress pointer drags
+  document.removeEventListener('pointermove', onSectionPointerMove)
+  document.removeEventListener('pointerup', onSectionPointerUp)
+  document.removeEventListener('pointermove', onItemPointerMove)
+  document.removeEventListener('pointerup', onItemPointerUp)
 })
 </script>
 
@@ -590,9 +581,11 @@ onUnmounted(() => {
   font-size: 12px;
   opacity: 0;
   cursor: grab;
+  touch-action: none;
   transition: opacity .1s;
   padding: 0 2px;
 }
+.section-drag-handle:active { cursor: grabbing; }
 .sidebar-section:hover .section-drag-handle { opacity: 1; }
 
 .section-title {
@@ -775,8 +768,10 @@ onUnmounted(() => {
   font-size: 12px;
   opacity: 0;
   cursor: grab;
+  touch-action: none;
   transition: opacity .1s;
 }
+.drag-handle:active { cursor: grabbing; }
 .sidebar-link:hover .drag-handle { opacity: 1; }
 .sidebar-link.drag-over {
   background: color-mix(in srgb, var(--color-primary) 15%, transparent);
