@@ -38,6 +38,15 @@ html, body, #app { height: 100%; }
   --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
 }
 
+/* Accent colour overrides — applied on top of light/dark variables */
+[data-accent="red"]    { --color-primary: #ef4444; --color-primary-hover: #dc2626; }
+[data-accent="green"]  { --color-primary: #22c55e; --color-primary-hover: #16a34a; }
+[data-accent="orange"] { --color-primary: #f97316; --color-primary-hover: #ea580c; }
+
+[data-theme="dark"][data-accent="red"]    { --color-primary: #f87171; --color-primary-hover: #ef4444; }
+[data-theme="dark"][data-accent="green"]  { --color-primary: #4ade80; --color-primary-hover: #22c55e; }
+[data-theme="dark"][data-accent="orange"] { --color-primary: #fb923c; --color-primary-hover: #f97316; }
+
 [data-theme="dark"] {
   --color-bg: #0f172a;
   --color-surface: #1e293b;

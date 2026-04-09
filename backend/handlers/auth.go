@@ -271,6 +271,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		Font               string `json:"font"`
 		FontSize           string `json:"font_size"`
 		SidebarPosition    string `json:"sidebar_position"`
+		AccentColor        string `json:"accent_color"`
 		EmailNotifications *bool  `json:"email_notifications"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -315,6 +316,10 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.SidebarPosition == "left" || req.SidebarPosition == "right" {
 		updates["sidebar_position"] = req.SidebarPosition
+	}
+	validAccents := map[string]bool{"blue": true, "red": true, "green": true, "orange": true}
+	if validAccents[req.AccentColor] {
+		updates["accent_color"] = req.AccentColor
 	}
 	if req.EmailNotifications != nil {
 		updates["email_notifications"] = *req.EmailNotifications

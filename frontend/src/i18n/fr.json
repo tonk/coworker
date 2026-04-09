@@ -323,7 +323,12 @@
     "font_size": "Taille de police",
     "sidebar_position": "Position de la barre latérale",
     "sidebar_left": "Gauche",
-    "sidebar_right": "Droite"
+    "sidebar_right": "Droite",
+    "accent_color": "Couleur d'accentuation",
+    "accent_blue": "Bleu",
+    "accent_red": "Rouge",
+    "accent_green": "Vert",
+    "accent_orange": "Orange"
   },
   "dm": {
     "title": "Chats",

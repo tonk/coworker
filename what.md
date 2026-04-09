@@ -282,3 +282,7 @@ Create an application that has all these features and requirements
 - Fix deleted projects reappearing in admin list: remove Unscoped() from AdminListProjects so soft-deleted projects are excluded
 - Fix deleted project remaining visible in sidebar until refresh: admin delete now immediately filters the project from sidebarStore.allProjects
 - Fix seed --reset failing with UNIQUE constraint error when demo projects were previously soft-deleted: collect project IDs via Unscoped() before wiping
+- Per-user accent colour setting (blue, red, green, orange): saved to user profile, applied on login, affects buttons, links, and active highlights across the full UI
+- Drag-to-reorder sidebar sections: grab handle on each section header; default order is Starred Projects, All Projects, Favourite Customers, All Customers, Favourites, People, Chats; order persisted in localStorage
+- Increase whitespace between sidebar sections for readability
+- Indent items in All Projects, All Customers, People, and Chats sidebar sections; apply the same indent to empty-state messages throughout the sidebar

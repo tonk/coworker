@@ -52,10 +52,11 @@ and asked Claude Code to generate the app.
 - **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management
 - **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
 - **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages
-- **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted)
+- **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted); all sections are drag-to-reorder with custom order persisted in localStorage
 - **Dark / light / system theme** — defaults to light
+- **Accent colour** — per-user accent colour (blue, red, green, or orange) applied throughout the UI; saved as a user setting
 - **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français)
-- **User settings** — display name, avatar, email, locale, theme, date/time format, timezone, font, password change
+- **User settings** — display name, avatar, email, locale, theme, accent colour, date/time format, timezone, font, password change
 - **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects; toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo
 - **SMTP email** — configurable from the admin panel without a server restart; username and password are optional for relay servers
 - **Session timeout** — configurable idle timeout (default 60 minutes); set to 0 to disable

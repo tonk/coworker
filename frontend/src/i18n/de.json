@@ -323,7 +323,12 @@
     "font_size": "Schriftgröße",
     "sidebar_position": "Seitenleistenposition",
     "sidebar_left": "Links",
-    "sidebar_right": "Rechts"
+    "sidebar_right": "Rechts",
+    "accent_color": "Akzentfarbe",
+    "accent_blue": "Blau",
+    "accent_red": "Rot",
+    "accent_green": "Grün",
+    "accent_orange": "Orange"
   },
   "dm": {
     "title": "Chats",

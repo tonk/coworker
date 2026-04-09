@@ -4,7 +4,7 @@
  * Call applyUserPreferences(user) whenever the user object changes.
  */
 import { useSystemStore } from '@/stores/system'
-
+import { useTheme } from '@/composables/useTheme'
 
 export function applyUserPreferences(user) {
   if (!user) return
@@ -29,4 +29,8 @@ export function applyUserPreferences(user) {
   const pos = user.sidebar_position === 'right' ? 'right' : 'left'
   localStorage.setItem('sidebar_position', pos)
   root.setAttribute('data-sidebar', pos)
+
+  // Accent colour
+  const { setAccentColor } = useTheme()
+  setAccentColor(user.accent_color || 'blue')
 }

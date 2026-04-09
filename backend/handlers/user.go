@@ -53,6 +53,7 @@ func AdminUpdateUser(c *gin.Context) {
 		Font            string `json:"font"`
 		FontSize        string `json:"font_size"`
 		SidebarPosition string `json:"sidebar_position"`
+		AccentColor     string `json:"accent_color"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -98,6 +99,10 @@ func AdminUpdateUser(c *gin.Context) {
 	}
 	if req.SidebarPosition == "left" || req.SidebarPosition == "right" {
 		updates["sidebar_position"] = req.SidebarPosition
+	}
+	validAccents := map[string]bool{"blue": true, "red": true, "green": true, "orange": true}
+	if validAccents[req.AccentColor] {
+		updates["accent_color"] = req.AccentColor
 	}
 	if req.Password != "" {
 		if len(req.Password) < 8 {

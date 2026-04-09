@@ -29,6 +29,7 @@ type User struct {
 	Font            string `gorm:"size:100;default:'system'" json:"font"`
 	FontSize        string `gorm:"size:10;default:'14'" json:"font_size"`
 	SidebarPosition string `gorm:"size:10;default:'left'" json:"sidebar_position"`
+	AccentColor     string `gorm:"size:20;default:'blue'" json:"accent_color"` // "blue" | "red" | "green" | "orange"
 	LastLoginAt        *time.Time `json:"last_login_at"`
 	SettingsUpdatedAt  *time.Time `json:"settings_updated_at"`
 	IsActive           bool       `gorm:"default:true" json:"is_active"`

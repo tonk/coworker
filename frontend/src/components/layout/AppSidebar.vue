@@ -3,8 +3,18 @@
     <div class="resize-handle" :class="sidebarPos === 'right' ? 'handle-left' : 'handle-right'" @mousedown="startResize"></div>
 
     <!-- Starred Projects -->
-    <section class="sidebar-section">
+    <section
+      class="sidebar-section"
+      :style="sectionStyle('starred')"
+      :class="{ 'section-drag-over': sectionDragOver === 'starred' }"
+      draggable="true"
+      @dragstart="onSectionDragStart($event, 'starred')"
+      @dragover.prevent="onSectionDragOver('starred')"
+      @dragleave="sectionDragOver = null"
+      @drop="onSectionDrop($event, 'starred')"
+    >
       <button class="section-header" @click="toggle('starred')">
+        <span class="section-drag-handle">⠿</span>
         <span class="section-title">{{ $t('sidebar.starred') }}</span>
         <span class="chevron" :class="{ open: open.starred }">›</span>
       </button>
@@ -33,9 +43,54 @@
       </div>
     </section>
 
-    <!-- Customers -->
-    <section class="sidebar-section">
+    <!-- All Projects -->
+    <section
+      class="sidebar-section"
+      :style="sectionStyle('projects')"
+      :class="{ 'section-drag-over': sectionDragOver === 'projects' }"
+      draggable="true"
+      @dragstart="onSectionDragStart($event, 'projects')"
+      @dragover.prevent="onSectionDragOver('projects')"
+      @dragleave="sectionDragOver = null"
+      @drop="onSectionDrop($event, 'projects')"
+    >
+      <button class="section-header" @click="toggle('projects')">
+        <span class="section-drag-handle">⠿</span>
+        <span class="section-title">{{ $t('sidebar.all_projects') }}</span>
+        <span class="chevron" :class="{ open: open.projects }">›</span>
+      </button>
+      <div v-show="open.projects" class="section-body indented">
+        <div v-if="!sortedProjects.length" class="section-empty">
+          {{ $t('sidebar.no_projects') }}
+        </div>
+        <nav class="sidebar-nav">
+          <RouterLink
+            v-for="project in sortedProjects"
+            :key="project.id"
+            :to="`/projects/${project.slug}`"
+            class="sidebar-link"
+          >
+            <span class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
+            <span class="link-text">{{ project.name }}</span>
+            <span v-if="project.starred" class="star-mark">★</span>
+          </RouterLink>
+        </nav>
+      </div>
+    </section>
+
+    <!-- Favorite Customers -->
+    <section
+      class="sidebar-section"
+      :style="sectionStyle('customers')"
+      :class="{ 'section-drag-over': sectionDragOver === 'customers' }"
+      draggable="true"
+      @dragstart="onSectionDragStart($event, 'customers')"
+      @dragover.prevent="onSectionDragOver('customers')"
+      @dragleave="sectionDragOver = null"
+      @drop="onSectionDrop($event, 'customers')"
+    >
       <button class="section-header" @click="toggle('customers')">
+        <span class="section-drag-handle">⠿</span>
         <span class="section-title">{{ $t('sidebar.customers') }}</span>
         <span class="chevron" :class="{ open: open.customers }">›</span>
       </button>
@@ -67,12 +122,22 @@
     </section>
 
     <!-- All Customers -->
-    <section class="sidebar-section">
+    <section
+      class="sidebar-section"
+      :style="sectionStyle('allCustomers')"
+      :class="{ 'section-drag-over': sectionDragOver === 'allCustomers' }"
+      draggable="true"
+      @dragstart="onSectionDragStart($event, 'allCustomers')"
+      @dragover.prevent="onSectionDragOver('allCustomers')"
+      @dragleave="sectionDragOver = null"
+      @drop="onSectionDrop($event, 'allCustomers')"
+    >
       <button class="section-header" @click="toggle('allCustomers')">
+        <span class="section-drag-handle">⠿</span>
         <span class="section-title">{{ $t('customer.all_customers') }}</span>
         <span class="chevron" :class="{ open: open.allCustomers }">›</span>
       </button>
-      <div v-show="open.allCustomers" class="section-body">
+      <div v-show="open.allCustomers" class="section-body indented">
         <div v-if="!sortedCustomers.length" class="section-empty">
           {{ $t('sidebar.no_customers') }}
         </div>
@@ -91,33 +156,19 @@
       </div>
     </section>
 
-    <!-- All Projects --><section class="sidebar-section">
-      <button class="section-header" @click="toggle('projects')">
-        <span class="section-title">{{ $t('sidebar.all_projects') }}</span>
-        <span class="chevron" :class="{ open: open.projects }">›</span>
-      </button>
-      <div v-show="open.projects" class="section-body">
-        <div v-if="!sortedProjects.length" class="section-empty">
-          {{ $t('sidebar.no_projects') }}
-        </div>
-        <nav class="sidebar-nav">
-          <RouterLink
-            v-for="project in sortedProjects"
-            :key="project.id"
-            :to="`/projects/${project.slug}`"
-            class="sidebar-link"
-          >
-            <span class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
-            <span class="link-text">{{ project.name }}</span>
-            <span v-if="project.starred" class="star-mark">★</span>
-          </RouterLink>
-        </nav>
-      </div>
-    </section>
-
     <!-- Favorite People -->
-    <section class="sidebar-section">
+    <section
+      class="sidebar-section"
+      :style="sectionStyle('favorites')"
+      :class="{ 'section-drag-over': sectionDragOver === 'favorites' }"
+      draggable="true"
+      @dragstart="onSectionDragStart($event, 'favorites')"
+      @dragover.prevent="onSectionDragOver('favorites')"
+      @dragleave="sectionDragOver = null"
+      @drop="onSectionDrop($event, 'favorites')"
+    >
       <button class="section-header" @click="toggle('favorites')">
+        <span class="section-drag-handle">⠿</span>
         <span class="section-title">{{ $t('sidebar.favorites') }}</span>
         <span class="chevron" :class="{ open: open.favorites }">›</span>
       </button>
@@ -140,40 +191,24 @@
       </div>
     </section>
 
-    <!-- Chats -->
-    <section class="sidebar-section">
-      <button class="section-header" @click="toggle('chats')">
-        <span class="section-title">{{ $t('nav.messages') }}</span>
-        <span v-if="notificationsStore.hasUnread" class="unread-dot" :title="$t('sidebar.unread_messages')"></span>
-        <span class="chevron" :class="{ open: open.chats }">›</span>
-      </button>
-      <div v-show="open.chats" class="section-body">
-        <nav class="sidebar-nav">
-          <RouterLink
-            v-for="conv in recentConversations"
-            :key="conv.id"
-            :to="convLink(conv)"
-            class="sidebar-link conv-link"
-          >
-            <span class="conv-indicator" :class="{ unread: notificationsStore.isConvUnread(conv) }"></span>
-            <span class="link-text">{{ convSidebarName(conv) }}</span>
-          </RouterLink>
-          <RouterLink v-if="!recentConversations.length" to="/chats" class="sidebar-link">
-            <span class="link-text">{{ $t('dm.no_conversations') }}</span>
-          </RouterLink>
-        </nav>
-        <RouterLink to="/chats" class="sidebar-link sidebar-link-all">{{ $t('sidebar.all_chats') }}</RouterLink>
-      </div>
-    </section>
-
     <!-- All People -->
-    <section class="sidebar-section">
+    <section
+      class="sidebar-section"
+      :style="sectionStyle('people')"
+      :class="{ 'section-drag-over': sectionDragOver === 'people' }"
+      draggable="true"
+      @dragstart="onSectionDragStart($event, 'people')"
+      @dragover.prevent="onSectionDragOver('people')"
+      @dragleave="sectionDragOver = null"
+      @drop="onSectionDrop($event, 'people')"
+    >
       <button class="section-header" @click="toggle('people')">
+        <span class="section-drag-handle">⠿</span>
         <span class="section-title">{{ $t('sidebar.users') }}</span>
         <span class="badge-count" v-if="onlineCount">{{ onlineCount }}</span>
         <span class="chevron" :class="{ open: open.people }">›</span>
       </button>
-      <div v-show="open.people" class="section-body">
+      <div v-show="open.people" class="section-body indented">
         <div class="user-list">
           <RouterLink
             v-for="user in sortedUsers"
@@ -194,6 +229,42 @@
             {{ $t('sidebar.no_users') }}
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Chats -->
+    <section
+      class="sidebar-section"
+      :style="sectionStyle('chats')"
+      :class="{ 'section-drag-over': sectionDragOver === 'chats' }"
+      draggable="true"
+      @dragstart="onSectionDragStart($event, 'chats')"
+      @dragover.prevent="onSectionDragOver('chats')"
+      @dragleave="sectionDragOver = null"
+      @drop="onSectionDrop($event, 'chats')"
+    >
+      <button class="section-header" @click="toggle('chats')">
+        <span class="section-drag-handle">⠿</span>
+        <span class="section-title">{{ $t('nav.messages') }}</span>
+        <span v-if="notificationsStore.hasUnread" class="unread-dot" :title="$t('sidebar.unread_messages')"></span>
+        <span class="chevron" :class="{ open: open.chats }">›</span>
+      </button>
+      <div v-show="open.chats" class="section-body indented">
+        <nav class="sidebar-nav">
+          <RouterLink
+            v-for="conv in recentConversations"
+            :key="conv.id"
+            :to="convLink(conv)"
+            class="sidebar-link conv-link"
+          >
+            <span class="conv-indicator" :class="{ unread: notificationsStore.isConvUnread(conv) }"></span>
+            <span class="link-text">{{ convSidebarName(conv) }}</span>
+          </RouterLink>
+          <RouterLink v-if="!recentConversations.length" to="/chats" class="sidebar-link">
+            <span class="link-text">{{ $t('dm.no_conversations') }}</span>
+          </RouterLink>
+        </nav>
+        <RouterLink to="/chats" class="sidebar-link sidebar-link-all">{{ $t('sidebar.all_chats') }}</RouterLink>
       </div>
     </section>
 
@@ -276,6 +347,42 @@ const onlineCount = computed(() => {
   return sidebarStore.allUsers.filter(u => u.id !== auth.user?.id && isOnline(u.id)).length
 })
 
+// ── Section drag-to-reorder ───────────────────────────────────────────────────
+const SECTION_ORDER_KEY = 'sidebar_section_order'
+const DEFAULT_SECTION_ORDER = ['starred', 'projects', 'customers', 'allCustomers', 'favorites', 'people', 'chats']
+
+const sectionOrder = ref(
+  JSON.parse(localStorage.getItem(SECTION_ORDER_KEY) || 'null') || [...DEFAULT_SECTION_ORDER]
+)
+const sectionDragOver = ref(null)
+let _sectionDragKey = null
+
+function sectionStyle(key) {
+  return { order: sectionOrder.value.indexOf(key) }
+}
+
+function onSectionDragStart(e, key) {
+  _sectionDragKey = key
+  e.dataTransfer.effectAllowed = 'move'
+  e.stopPropagation()
+}
+
+function onSectionDragOver(key) {
+  if (_sectionDragKey) sectionDragOver.value = key
+}
+
+function onSectionDrop(e, targetKey) {
+  sectionDragOver.value = null
+  if (!_sectionDragKey || _sectionDragKey === targetKey) { _sectionDragKey = null; return }
+  const order = [...sectionOrder.value]
+  const fi = order.indexOf(_sectionDragKey)
+  const ti = order.indexOf(targetKey)
+  if (fi !== -1 && ti !== -1) { order.splice(fi, 1); order.splice(ti, 0, _sectionDragKey) }
+  sectionOrder.value = order
+  localStorage.setItem(SECTION_ORDER_KEY, JSON.stringify(order))
+  _sectionDragKey = null
+}
+
 // ── Drag-to-reorder for starred sections ──────────────────────────────────────
 const STARRED_PROJECTS_ORDER_KEY  = 'sidebar_starred_projects_order'
 const STARRED_CUSTOMERS_ORDER_KEY = 'sidebar_starred_customers_order'
@@ -287,6 +394,7 @@ let _dragItem = null
 let _dragType = null
 
 function onDragStart(e, item, type) {
+  e.stopPropagation()
   _dragItem = item
   _dragType = type
   e.dataTransfer.effectAllowed = 'move'
@@ -454,14 +562,20 @@ onUnmounted(() => {
 }
 
 .sidebar-section {
-  margin-bottom: 4px;
+  margin-bottom: 12px;
+}
+
+.sidebar-section.section-drag-over {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border-radius: 4px;
+  outline: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 6px 12px 6px 16px;
+  padding: 6px 12px 6px 8px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -469,6 +583,17 @@ onUnmounted(() => {
   text-align: left;
 }
 .section-header:hover { background: var(--color-bg); }
+
+.section-drag-handle {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  opacity: 0;
+  cursor: grab;
+  transition: opacity .1s;
+  padding: 0 2px;
+}
+.sidebar-section:hover .section-drag-handle { opacity: 1; }
 
 .section-title {
   font-size: 11px;
@@ -516,9 +641,11 @@ onUnmounted(() => {
 }
 
 .section-body { }
+.section-body.indented .sidebar-link { padding-left: 28px; }
+.section-body.indented .user-row     { padding-left: 28px; }
 
 .section-empty {
-  padding: 4px 16px;
+  padding: 4px 16px 4px 28px;
   font-size: 12px;
   color: var(--color-text-muted);
 }
@@ -641,7 +768,7 @@ onUnmounted(() => {
   margin-top: 2px;
 }
 
-/* Drag-to-reorder */
+/* Item drag-to-reorder */
 .drag-handle {
   flex-shrink: 0;
   color: var(--color-text-muted);

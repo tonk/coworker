@@ -53,6 +53,21 @@
               </select>
             </div>
             <div class="form-group">
+              <label class="form-label">{{ $t('settings.accent_color') }}</label>
+              <div class="accent-swatches">
+                <button
+                  v-for="c in accentColors"
+                  :key="c.value"
+                  type="button"
+                  class="accent-swatch"
+                  :class="{ active: form.accent_color === c.value }"
+                  :style="{ background: c.hex }"
+                  :title="c.label"
+                  @click="form.accent_color = c.value"
+                ></button>
+              </div>
+            </div>
+            <div class="form-group">
               <label class="form-label">{{ $t('settings.date_time_format') }}</label>
               <select class="form-input" v-model="form.date_time_format">
                 <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm (ISO)</option>
@@ -264,7 +279,14 @@ import { useDateFormat } from '@/composables/useDateFormat'
 
 const auth = useAuthStore()
 const ui = useUIStore()
-const { setTheme } = useTheme()
+const { setTheme, setAccentColor } = useTheme()
+
+const accentColors = [
+  { value: 'blue',   hex: '#6366f1' },
+  { value: 'red',    hex: '#ef4444' },
+  { value: 'green',  hex: '#22c55e' },
+  { value: 'orange', hex: '#f97316' },
+]
 const { formatDateTime } = useDateFormat()
 const { t: $t } = useI18n()
 
@@ -276,6 +298,7 @@ const form = ref({
   avatar_url: '',
   locale: 'en',
   theme: 'system',
+  accent_color: 'blue',
   date_time_format: 'YYYY-MM-DD HH:mm',
   timezone: 'UTC',
   font: 'system',
@@ -322,6 +345,7 @@ onMounted(() => {
       avatar_url: u.avatar_url || '',
       locale: u.locale || 'en',
       theme: u.theme || localStorage.getItem('theme') || 'system',
+      accent_color: u.accent_color || localStorage.getItem('accent_color') || 'blue',
       date_time_format: u.date_time_format || 'YYYY-MM-DD HH:mm',
       timezone: u.timezone || 'UTC',
       font: u.font || 'system',
@@ -343,6 +367,7 @@ async function saveProfile() {
       avatar_url: form.value.avatar_url,
       locale: form.value.locale,
       theme: form.value.theme,
+      accent_color: form.value.accent_color,
       date_time_format: form.value.date_time_format,
       timezone: form.value.timezone,
       font: form.value.font,
@@ -352,6 +377,7 @@ async function saveProfile() {
     })
     applyUserPreferences(auth.user)
     setTheme(form.value.theme)
+    setAccentColor(form.value.accent_color)
     ui.success('Profile saved')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to save profile')
@@ -464,6 +490,23 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 .form-hint { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; display: block; }
+
+.accent-swatches { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.accent-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform .1s, border-color .1s;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.accent-swatch:hover { transform: scale(1.15); }
+.accent-swatch.active {
+  outline-color: var(--color-text);
+  transform: scale(1.15);
+}
 
 .form-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
 

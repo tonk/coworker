@@ -2,6 +2,16 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.3 — 2026-04-09
+
+### Added
+- **Per-user accent colour** — users can choose an accent colour (blue, red, green, or orange) in Account Settings; affects buttons, links, active highlights, and focus rings throughout the UI; saved per user in the database and applied on login
+- **Drag-to-reorder sidebar sections** — all sidebar sections can be reordered by dragging their grab handle; new default order is Starred Projects → All Projects → Favourite Customers → All Customers → Favourites → People → Chats; order persisted in localStorage
+
+### Changed
+- **Sidebar section spacing** — increased whitespace between sidebar sections for improved readability
+- **Sidebar item indentation** — items in All Projects, All Customers, People, and Chats sections are indented to visually group them under their section header; empty-state messages follow the same indent
+
 ## v0.6.2 — 2026-04-08
 
 ### Fixed

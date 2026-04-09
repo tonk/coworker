@@ -323,7 +323,12 @@
     "font_size": "Lettergrootte",
     "sidebar_position": "Zijbalkpositie",
     "sidebar_left": "Links",
-    "sidebar_right": "Rechts"
+    "sidebar_right": "Rechts",
+    "accent_color": "Accentkleur",
+    "accent_blue": "Blauw",
+    "accent_red": "Rood",
+    "accent_green": "Groen",
+    "accent_orange": "Oranje"
   },
   "dm": {
     "title": "Chats",
