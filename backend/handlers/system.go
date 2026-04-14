@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/smtp"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/config"
@@ -32,16 +33,42 @@ const (
 	settingDefaultColumns         = "default_columns"
 	settingDefaultLabels          = "default_labels"
 	settingMFARequired            = "mfa_required"
+	settingPasswordMinLength      = "password_min_length"
+	settingPasswordRequireUpper   = "password_require_upper"
+	settingPasswordRequireLower   = "password_require_lower"
+	settingPasswordRequireDigit   = "password_require_digit"
+	settingPasswordRequireSpecial = "password_require_special"
 )
 
+// configuredBaseURL stores the value of base_url from the config file so
+// auth handlers can build absolute URLs (e.g. password-reset links) without
+// requiring a DB setting.
+var configuredBaseURL string
+
+// SetBaseURL is called from main.go after loading the config.
+func SetBaseURL(u string) { configuredBaseURL = u }
+
+// baseURL returns an absolute base URL suitable for building links in emails.
+// It prefers the configured base_url; if absent it derives one from the request.
+func baseURL(c *gin.Context) string {
+	if configuredBaseURL != "" {
+		return strings.TrimRight(configuredBaseURL, "/")
+	}
+	scheme := "http"
+	if c.Request.Header.Get("X-Forwarded-Proto") == "https" || c.Request.TLS != nil {
+		scheme = "https"
+	}
+	return scheme + "://" + c.Request.Host
+}
+
 var systemSettingDefaults = map[string]string{
-	settingRegistrationEnabled:   "true",
-	settingDefaultDateTimeFormat: "YYYY-MM-DD HH:mm",
-	settingDefaultTimezone:       "UTC",
-	settingDefaultTheme:          "system",
-	settingDefaultFont:           "system",
-	settingDefaultFontSize:       "14",
-	settingDefaultLocale:         "en",
+	settingRegistrationEnabled:    "true",
+	settingDefaultDateTimeFormat:  "YYYY-MM-DD HH:mm",
+	settingDefaultTimezone:        "UTC",
+	settingDefaultTheme:           "system",
+	settingDefaultFont:            "system",
+	settingDefaultFontSize:        "14",
+	settingDefaultLocale:          "en",
 	settingSMTPHost:               "",
 	settingSMTPPort:               "587",
 	settingSMTPFrom:               "",
@@ -53,6 +80,11 @@ var systemSettingDefaults = map[string]string{
 	settingDefaultColumns:         "Backlog",
 	settingDefaultLabels:          "Bug\nFeature\nDesign\nContent",
 	settingMFARequired:            "false",
+	settingPasswordMinLength:      "8",
+	settingPasswordRequireUpper:   "false",
+	settingPasswordRequireLower:   "false",
+	settingPasswordRequireDigit:   "false",
+	settingPasswordRequireSpecial: "false",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -116,6 +148,7 @@ func GetSystemSettings(c *gin.Context) {
 		"company_name":                all[settingCompanyName],
 		"company_logo":                all[settingCompanyLogo],
 		"mfa_required":                all[settingMFARequired] == "true",
+		"password_policy":             GetPasswordPolicy(),
 	})
 }
 
@@ -141,6 +174,11 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		DefaultFont            string  `json:"default_font"`
 		DefaultFontSize        string  `json:"default_font_size"`
 		DefaultLocale          string  `json:"default_locale"`
+		PasswordMinLength      *int    `json:"password_min_length"`
+		PasswordRequireUpper   *bool   `json:"password_require_upper"`
+		PasswordRequireLower   *bool   `json:"password_require_lower"`
+		PasswordRequireDigit   *bool   `json:"password_require_digit"`
+		PasswordRequireSpecial *bool   `json:"password_require_special"`
 		SMTPHost               *string `json:"smtp_host"`
 		SMTPPort               json.Number `json:"smtp_port"` // accepts "587" or 587
 		SMTPFrom               *string `json:"smtp_from"`
@@ -157,6 +195,27 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		return
 	}
 
+	if req.PasswordMinLength != nil {
+		minLen := *req.PasswordMinLength
+		if minLen < 8 {
+			minLen = 8
+		}
+		saveSetting(settingPasswordMinLength, fmt.Sprintf("%d", minLen))
+	}
+	boolSetting := func(ptr *bool, key string) {
+		if ptr == nil {
+			return
+		}
+		if *ptr {
+			saveSetting(key, "true")
+		} else {
+			saveSetting(key, "false")
+		}
+	}
+	boolSetting(req.PasswordRequireUpper, settingPasswordRequireUpper)
+	boolSetting(req.PasswordRequireLower, settingPasswordRequireLower)
+	boolSetting(req.PasswordRequireDigit, settingPasswordRequireDigit)
+	boolSetting(req.PasswordRequireSpecial, settingPasswordRequireSpecial)
 	if req.MFARequired != nil {
 		val := "false"
 		if *req.MFARequired {
@@ -264,6 +323,53 @@ func AdminSendTestEmail(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Test email sent to " + req.To})
+}
+
+// PasswordPolicy holds the active password requirements.
+type PasswordPolicy struct {
+	MinLength      int  `json:"min_length"`
+	RequireUpper   bool `json:"require_upper"`
+	RequireLower   bool `json:"require_lower"`
+	RequireDigit   bool `json:"require_digit"`
+	RequireSpecial bool `json:"require_special"`
+}
+
+// GetPasswordPolicy returns the current password policy from system settings.
+func GetPasswordPolicy() PasswordPolicy {
+	all := loadAllSettings()
+	minLen, _ := strconv.Atoi(all[settingPasswordMinLength])
+	if minLen < 8 {
+		minLen = 8
+	}
+	return PasswordPolicy{
+		MinLength:      minLen,
+		RequireUpper:   all[settingPasswordRequireUpper] == "true",
+		RequireLower:   all[settingPasswordRequireLower] == "true",
+		RequireDigit:   all[settingPasswordRequireDigit] == "true",
+		RequireSpecial: all[settingPasswordRequireSpecial] == "true",
+	}
+}
+
+// ValidatePasswordPolicy checks password against the current policy.
+// Returns a human-readable error message, or "" when the password is valid.
+func ValidatePasswordPolicy(password string) string {
+	p := GetPasswordPolicy()
+	if len(password) < p.MinLength {
+		return fmt.Sprintf("password must be at least %d characters", p.MinLength)
+	}
+	if p.RequireUpper && !strings.ContainsAny(password, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+		return "password must contain at least one uppercase letter"
+	}
+	if p.RequireLower && !strings.ContainsAny(password, "abcdefghijklmnopqrstuvwxyz") {
+		return "password must contain at least one lowercase letter"
+	}
+	if p.RequireDigit && !strings.ContainsAny(password, "0123456789") {
+		return "password must contain at least one digit"
+	}
+	if p.RequireSpecial && !strings.ContainsAny(password, `!@#$%^&*()_+-=[]{}|;':",./<>?`) {
+		return "password must contain at least one special character"
+	}
+	return ""
 }
 
 // IsMFARequired returns true when the admin has enabled system-wide MFA enforcement.

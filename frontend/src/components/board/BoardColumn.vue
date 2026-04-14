@@ -185,8 +185,8 @@ onBeforeUnmount(() => sortable?.destroy())
   width: 120px;
 }
 .card-count {
-  background: var(--color-border);
-  color: var(--color-text-muted);
+  background: var(--color-primary);
+  color: #fff;
   border-radius: 9999px;
   padding: 1px 7px;
   font-size: 11px;

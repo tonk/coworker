@@ -74,8 +74,10 @@ func main() {
 	emailSvc := services.NewEmailService(cfg.SMTP)
 	// Allow the email service to read live SMTP settings from the DB after startup
 	services.SetSMTPConfigReader(handlers.GetSMTPSettings)
+	services.SetEmailService(emailSvc)
 	notifSvc := services.NewNotificationService(emailSvc)
 	handlers.InitNotifications(notifSvc)
+	handlers.SetBaseURL(cfg.BaseURL)
 
 	if cfg.GinMode == "release" {
 		gin.SetMode(gin.ReleaseMode)

@@ -12,13 +12,14 @@
 8. [SMTP Email](#8-smtp-email)
 9. [Company Branding](#9-company-branding)
 10. [System Settings](#10-system-settings)
-11. [Horizontal Scaling](#11-horizontal-scaling)
-12. [Desktop Apps](#12-desktop-apps)
-13. [Updates](#13-updates)
-14. [Backup and Recovery](#14-backup-and-recovery)
-15. [Demo Data](#15-demo-data)
-16. [Migration Tools](#16-migration-tools)
-17. [Security Checklist](#17-security-checklist)
+11. [Password Policy](#11-password-policy)
+12. [Horizontal Scaling](#12-horizontal-scaling)
+13. [Desktop Apps](#13-desktop-apps)
+14. [Updates](#14-updates)
+15. [Backup and Recovery](#15-backup-and-recovery)
+16. [Demo Data](#16-demo-data)
+17. [Migration Tools](#17-migration-tools)
+18. [Security Checklist](#18-security-checklist)
 
 ---
 
@@ -292,24 +293,29 @@ setting — no extra configuration is needed for the native clients.
 
 ## 6. First Admin Account
 
-Register normally through the web interface. Then promote the account to admin:
-
-**SQLite**
-```bash
-sqlite3 /var/lib/warmdesk/warmdesk.db \
-  "UPDATE users SET global_role='admin' WHERE username='yourname';"
-```
-
-**PostgreSQL / MySQL**
-```sql
-UPDATE users SET global_role = 'admin' WHERE username = 'yourname';
-```
+Register normally through the web interface. The **first account registered
+on a fresh database is automatically made a global admin** — no database
+manipulation required.
 
 Once one admin exists, you can promote further users through
-**Admin → Users → Edit** in the web interface without touching the database.
+**Admin → Users → Edit** in the web interface.
 
 If public registration is not desired, disable it after creating the first
 admin: **Admin → Settings → Allow public registration → Off**.
+
+> **Recovery:** if you ever need to promote an account via the database
+> directly (e.g. after accidentally demoting the only admin):
+>
+> **SQLite**
+> ```bash
+> sqlite3 /var/lib/warmdesk/warmdesk.db \
+>   "UPDATE users SET global_role='admin' WHERE username='yourname';"
+> ```
+>
+> **PostgreSQL / MySQL**
+> ```sql
+> UPDATE users SET global_role = 'admin' WHERE username = 'yourname';
+> ```
 
 ---
 
@@ -381,7 +387,7 @@ server restart**. They are stored in the database and loaded at request time.
 
 Email is used for:
 - @mention notifications when the mentioned user is offline
-- (Future: password reset)
+- Password reset links (when a user clicks "Forgot password?" on the login page)
 
 ### Configuring SMTP
 
@@ -500,7 +506,27 @@ Individual users can override any of these in their own User Settings.
 
 ---
 
-## 11. Horizontal Scaling
+## 11. Password Policy
+
+**Admin → Settings → Password Policy**
+
+Configure the requirements that all new passwords must satisfy — whether set during registration, changed by the user in Settings, or reset via email.
+
+| Setting | Notes |
+|---------|-------|
+| **Minimum length** | Minimum number of characters; the floor is 8 and cannot be set lower |
+| **Require uppercase** | At least one uppercase letter (A–Z) |
+| **Require lowercase** | At least one lowercase letter (a–z) |
+| **Require digit** | At least one digit (0–9) |
+| **Require special character** | At least one character from `!@#$%^&*()_+-=[]{}|;':",./<>?` |
+
+Click **Save** below the checkboxes to apply changes. The policy is enforced immediately; existing user passwords are not affected until they are next changed.
+
+The active requirements are displayed to users beneath the new-password field in their Settings page and on the password reset form.
+
+---
+
+## 12. Horizontal Scaling
 
 WarmDesk uses WebSocket connections for real-time updates. In a single-instance
 setup, connections are managed in memory. When running multiple instances behind
@@ -547,7 +573,7 @@ redis-cli -h redis-host ping
 
 ---
 
-## 12. Desktop Apps
+## 13. Desktop Apps
 
 WarmDesk ships Tauri-based desktop apps that wrap the web frontend and connect
 to a WarmDesk server. The apps are standalone — they do not bundle the server.
@@ -587,7 +613,7 @@ See [INSTALL.md](../INSTALL.md) — the `make appimage`, `make dmg`, and
 
 ---
 
-## 13. Updates
+## 14. Updates
 
 ```bash
 # Pull latest source
@@ -612,7 +638,7 @@ manual migration step is needed.
 
 ---
 
-## 14. Backup and Recovery
+## 15. Backup and Recovery
 
 ### What to back up
 
@@ -652,7 +678,7 @@ gunzip -c /backup/warmdesk-20260329.sql.gz | psql -U warmdesk warmdesk
 
 ---
 
-## 15. Demo Data
+## 16. Demo Data
 
 The `warmdesk-seed` binary ships alongside `warmdesk` and populates the
 database with realistic demo content for evaluation and testing.
@@ -681,14 +707,16 @@ cd dist
 **Demo content**
 
 - 3 projects: Website Redesign, Mobile App v2, DevOps & Infra
-- Multiple columns per project with realistic cards
-- Checklists, labels, priorities, due dates, and time entries on cards
+- Multiple columns per project with realistic cards including checklists, labels, priorities, start dates, due dates, time entries, and card cross-references
 - Threaded topics per project
 - 4 direct message conversations and 1 group chat with realistic history
+- 3 customers (Acme Corporation, Globex Systems, Initech Ltd) with contracts linked to projects
+- Starred projects pre-set for each demo user (e.g. admin has all three; owners have their own project plus one adjacent)
+- Starred customers pre-set (Acme starred for admin, sarah, marc; Globex for marc, lisa)
 
 ---
 
-## 16. Migration Tools
+## 17. Migration Tools
 
 `warmdesk-export` and `warmdesk-import` are standalone binaries (shipped in
 `dist/` alongside the main server) for moving projects between WarmDesk and
@@ -754,7 +782,7 @@ cd dist
 
 ---
 
-## 17. Security Checklist
+## 18. Security Checklist
 
 Before exposing WarmDesk to the internet:
 
@@ -771,5 +799,7 @@ Before exposing WarmDesk to the internet:
 - [ ] Backup schedule is in place for the database and uploads
 - [ ] Public registration disabled (`Allow public registration = off`) if only
       known users should access the instance
+- [ ] Password policy configured (**Admin → Settings → Password Policy**) with
+      a minimum length of at least 12 and one or more character-class requirements
 - [ ] SMTP credentials (if used) are an app-specific password, not a primary
       account password

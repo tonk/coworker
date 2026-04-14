@@ -39,6 +39,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		auth.POST("/login", authHandler.Login)
 		auth.POST("/refresh", authHandler.Refresh)
 		auth.POST("/mfa/verify", authHandler.MFAVerify)
+		auth.POST("/forgot-password", authHandler.ForgotPassword)
+		auth.POST("/reset-password", authHandler.ResetPassword)
 	}
 
 	// Authenticated routes
@@ -119,6 +121,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			dm.POST("/:userId", handlers.SendDirectMessage)
 			dm.DELETE("/:userId/:msgId", handlers.DeleteDirectMessage)
 		}
+
+		// Image upload (avatars, logos)
+		protected.POST("/upload/image", handlers.UploadImage)
 
 		// File attachments
 		protected.POST("/attachments", handlers.UploadAttachment)

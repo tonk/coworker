@@ -284,6 +284,37 @@ func main() {
 	}
 	fmt.Printf("   Created %d projects\n", len(projects))
 
+	// ── 2b. Starred projects ──────────────────────────────────────────────────
+	fmt.Println("→ Starring projects…")
+
+	starredProjectRules := []struct {
+		user    string
+		project string
+	}{
+		// Admin has all three in the sidebar
+		{"admin", "website-redesign"},
+		{"admin", "mobile-app-v2"},
+		{"admin", "devops-infra"},
+		// Sarah owns website-redesign, also follows mobile-app-v2
+		{"sarah", "website-redesign"},
+		{"sarah", "mobile-app-v2"},
+		// Marc owns mobile-app-v2, also follows devops-infra
+		{"marc", "mobile-app-v2"},
+		{"marc", "devops-infra"},
+		// Lisa owns devops-infra, also follows website-redesign
+		{"lisa", "devops-infra"},
+		{"lisa", "website-redesign"},
+	}
+
+	for _, r := range starredProjectRules {
+		pd := projects[r.project]
+		must(db.Create(&models.StarredProject{
+			UserID:    users[r.user].ID,
+			ProjectID: pd.project.ID,
+		}).Error)
+	}
+	fmt.Printf("   Starred %d project–user pairs\n", len(starredProjectRules))
+
 	// ── 3. Cards ──────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating cards…")
 
@@ -1176,9 +1207,17 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		must(db.Create(cust).Error)
 		demoCustomerIDs = append(demoCustomerIDs, cust.ID)
 
-		// Star Acme for the admin user so the sidebar shows a favourite
-		if cs.name == "Acme Corporation" {
+		// Star customers for relevant users so the sidebar shows favourites
+		switch cs.name {
+		case "Acme Corporation":
+			// Admin, Sarah (website owner), and Marc (mobile owner) work on Acme contracts
 			must(db.Create(&models.CustomerFavorite{UserID: users["admin"].ID, CustomerID: cust.ID}).Error)
+			must(db.Create(&models.CustomerFavorite{UserID: users["sarah"].ID, CustomerID: cust.ID}).Error)
+			must(db.Create(&models.CustomerFavorite{UserID: users["marc"].ID, CustomerID: cust.ID}).Error)
+		case "Globex Systems":
+			// Marc and Lisa own the DevOps contract for Globex
+			must(db.Create(&models.CustomerFavorite{UserID: users["marc"].ID, CustomerID: cust.ID}).Error)
+			must(db.Create(&models.CustomerFavorite{UserID: users["lisa"].ID, CustomerID: cust.ID}).Error)
 		}
 
 		for _, conSpec := range cs.contracts {
@@ -1232,6 +1271,27 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Printf("  Cards         : %d\n", totalCards)
 	fmt.Printf("  Topics        : %d\n", totalTopics)
 	fmt.Printf("  Conversations : %d (%d messages)\n", totalConvs, totalConvMsgs)
+	fmt.Printf("  Customers     : %d (Acme Corporation, Globex Systems, Initech Ltd)\n", len(demoCustomers))
+	fmt.Println()
+	fmt.Println("  Starred projects")
+	fmt.Println("  ┌─────────────────────┬──────────────────────────────────────────────────────────────┐")
+	fmt.Println("  │ Username            │ Starred projects                                             │")
+	fmt.Println("  ├─────────────────────┼──────────────────────────────────────────────────────────────┤")
+	fmt.Println("  │ demo.admin          │ Website Redesign, Mobile App v2, DevOps & Infra              │")
+	fmt.Println("  │ demo.sarah          │ Website Redesign, Mobile App v2                              │")
+	fmt.Println("  │ demo.marc           │ Mobile App v2, DevOps & Infra                                │")
+	fmt.Println("  │ demo.lisa           │ DevOps & Infra, Website Redesign                             │")
+	fmt.Println("  └─────────────────────┴──────────────────────────────────────────────────────────────┘")
+	fmt.Println()
+	fmt.Println("  Starred customers")
+	fmt.Println("  ┌─────────────────────┬──────────────────────────────────────────────────────────────┐")
+	fmt.Println("  │ Username            │ Starred customers                                            │")
+	fmt.Println("  ├─────────────────────┼──────────────────────────────────────────────────────────────┤")
+	fmt.Println("  │ demo.admin          │ Acme Corporation                                             │")
+	fmt.Println("  │ demo.sarah          │ Acme Corporation                                             │")
+	fmt.Println("  │ demo.marc           │ Acme Corporation, Globex Systems                             │")
+	fmt.Println("  │ demo.lisa           │ Globex Systems                                               │")
+	fmt.Println("  └─────────────────────┴──────────────────────────────────────────────────────────────┘")
 	fmt.Println()
 	fmt.Println("  Start the server and log in at http://localhost:8080")
 }
@@ -1268,6 +1328,7 @@ func removeDemoData(db *gorm.DB) {
 		db.Unscoped().Where("project_id IN ?", projectIDs).Delete(&models.Card{})
 		db.Unscoped().Where("project_id IN ?", projectIDs).Delete(&models.Column{})
 		db.Unscoped().Where("project_id IN ?", projectIDs).Delete(&models.Label{})
+		db.Where("project_id IN ?", projectIDs).Delete(&models.StarredProject{})
 		db.Where("project_id IN ?", projectIDs).Delete(&models.ProjectMember{})
 
 		// Topics

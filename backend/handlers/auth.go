@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -57,6 +60,11 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if msg := ValidatePasswordPolicy(req.Password); msg != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 		return
 	}
 
@@ -371,6 +379,11 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
+	if msg := ValidatePasswordPolicy(req.NewPassword); msg != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
+	}
+
 	hash, err := h.authSvc.HashPassword(req.NewPassword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -509,6 +522,103 @@ func (h *AuthHandler) MFADisable(c *gin.Context) {
 		"totp_secret":  "",
 	})
 	c.JSON(http.StatusOK, gin.H{"message": "mfa disabled"})
+}
+
+// ForgotPassword handles POST /auth/forgot-password.
+// Looks up the user by email; if found, active, and with a non-empty email
+// address it sends a one-time reset link. Always responds 200 so callers
+// cannot enumerate accounts.
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	var req struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		// Still 200 — do not reveal validation details.
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+		return
+	}
+
+	go func() {
+		var user models.User
+		if err := database.DB.Where("email = ?", strings.ToLower(req.Email)).First(&user).Error; err != nil {
+			return // unknown email — silent
+		}
+		if !user.IsActive || user.Email == "" {
+			return // inactive or no email — silent
+		}
+
+		// Generate a 32-byte random token, hex-encoded (64 chars).
+		raw := make([]byte, 32)
+		if _, err := rand.Read(raw); err != nil {
+			return
+		}
+		token := hex.EncodeToString(raw)
+		expiry := time.Now().Add(time.Hour)
+
+		database.DB.Model(&user).Updates(map[string]any{
+			"password_reset_token":  token,
+			"password_reset_expiry": expiry,
+		})
+
+		resetURL := fmt.Sprintf("%s/reset-password?token=%s", baseURL(c), token)
+		subject := "Reset your WarmDesk password"
+		body := fmt.Sprintf(
+			"Hi %s,\n\nClick the link below to reset your WarmDesk password.\n"+
+				"The link is valid for one hour.\n\n%s\n\n"+
+				"If you did not request a password reset, ignore this email.",
+			user.DisplayName, resetURL,
+		)
+
+		emailSvc := services.GetEmailService()
+		if emailSvc != nil {
+			_ = emailSvc.Send(user.Email, subject, body)
+		}
+	}()
+
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// ResetPassword handles POST /auth/reset-password.
+// Validates the token and sets the new password. Consumes the token on success.
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	var req struct {
+		Token    string `json:"token" binding:"required"`
+		Password string `json:"password" binding:"required,min=8"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var user models.User
+	if err := database.DB.Where("password_reset_token = ?", req.Token).First(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired reset link"})
+		return
+	}
+
+	if user.PasswordResetExpiry == nil || time.Now().After(*user.PasswordResetExpiry) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired reset link"})
+		return
+	}
+
+	if msg := ValidatePasswordPolicy(req.Password); msg != "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
+	}
+
+	hash, err := h.authSvc.HashPassword(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	database.DB.Model(&user).Updates(map[string]any{
+		"password_hash":         hash,
+		"password_reset_token":  "",
+		"password_reset_expiry": nil,
+	})
+
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
 func (h *AuthHandler) issueTokens(user models.User) (*tokenResponse, error) {

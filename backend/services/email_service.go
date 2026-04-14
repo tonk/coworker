@@ -21,6 +21,16 @@ func SetSMTPConfigReader(fn func() config.SMTPConfig) {
 	smtpConfigReader = fn
 }
 
+// globalEmailService is the EmailService instance created in main.go, stored
+// here so handlers can send emails without holding a direct reference.
+var globalEmailService *EmailService
+
+// SetEmailService stores the global EmailService created at startup.
+func SetEmailService(s *EmailService) { globalEmailService = s }
+
+// GetEmailService returns the global EmailService (nil if not yet initialised).
+func GetEmailService() *EmailService { return globalEmailService }
+
 var mentionRe = regexp.MustCompile(`@([a-zA-Z0-9_]+)`)
 
 // EmailService sends SMTP emails, reading configuration dynamically so admin

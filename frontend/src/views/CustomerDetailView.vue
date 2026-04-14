@@ -6,7 +6,7 @@
       <!-- Customer header -->
       <div class="cust-header">
         <div class="cust-logo-wrap">
-          <img v-if="detail.customer.logo_url" :src="detail.customer.logo_url" class="cust-logo" alt="" />
+          <img v-if="detail.customer.logo_url" :src="resolveAssetUrl(detail.customer.logo_url)" class="cust-logo" alt="" />
           <span v-else class="cust-logo-placeholder">{{ detail.customer.name[0] }}</span>
         </div>
         <div class="cust-info">
@@ -110,7 +110,11 @@
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('customer.logo_url') }}</label>
-        <input class="form-input" v-model="editForm.logo_url" placeholder="https://..." />
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" v-model="editForm.logo_url" placeholder="https://..." style="flex:1" />
+          <button type="button" class="btn btn-secondary btn-sm" @click="$refs.logoFileInput.click()">{{ $t('customer.upload_logo') }}</button>
+        </div>
+        <input ref="logoFileInput" type="file" accept="image/*" style="display:none" @change="onLogoFileSelected" />
       </div>
       <template #footer>
         <button class="btn" @click="showEdit = false">{{ $t('common.cancel') }}</button>
@@ -167,6 +171,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useCustomersStore } from '@/stores/customers'
 import { useUIStore } from '@/stores/ui'
 import { customersApi } from '@/api/customers'
+import { attachmentsApi } from '@/api/attachments'
+import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
 
@@ -269,6 +275,18 @@ async function saveNameEdit() {
 function openEdit() {
   editForm.value = { name: detail.value.customer.name, description: detail.value.customer.description, logo_url: detail.value.customer.logo_url }
   showEdit.value = true
+}
+
+async function onLogoFileSelected(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  e.target.value = ''
+  try {
+    const { data } = await attachmentsApi.uploadImage(file)
+    editForm.value.logo_url = data.url
+  } catch {
+    ui.error('Failed to upload image')
+  }
 }
 
 async function saveEdit() {

@@ -292,13 +292,50 @@
               <div v-if="systemSettings.company_logo" style="margin-top:8px">
                 <span class="form-hint">{{ $t('admin.company_logo_preview') }}</span>
                 <div style="margin-top:6px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius);display:inline-block;background:var(--color-bg)">
-                  <img :src="systemSettings.company_logo" alt="Logo preview" style="max-height:60px;max-width:200px;object-fit:contain" @error="systemSettings.company_logo=''" />
+                  <img :src="resolveAssetUrl(systemSettings.company_logo)" alt="Logo preview" style="max-height:60px;max-width:200px;object-fit:contain" @error="systemSettings.company_logo=''" />
                 </div>
               </div>
             </div>
 
             <div class="form-actions" style="max-width:400px">
               <button class="btn btn-primary" @click="saveBrandingSettings">{{ $t('common.save') }}</button>
+            </div>
+
+            <h3 class="settings-subsection">{{ $t('admin.password_policy_title') }}</h3>
+            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.password_policy_hint') }}</p>
+
+            <div class="form-group" style="max-width:240px">
+              <label class="form-label">{{ $t('admin.password_min_length') }}</label>
+              <input class="form-input" type="number" min="8" max="128" v-model.number="systemSettings.password_min_length" style="width:100px" />
+            </div>
+
+            <div class="form-group">
+              <label class="toggle-row">
+                <span>{{ $t('admin.password_require_upper') }}</span>
+                <input type="checkbox" v-model="systemSettings.password_require_upper" />
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="toggle-row">
+                <span>{{ $t('admin.password_require_lower') }}</span>
+                <input type="checkbox" v-model="systemSettings.password_require_lower" />
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="toggle-row">
+                <span>{{ $t('admin.password_require_digit') }}</span>
+                <input type="checkbox" v-model="systemSettings.password_require_digit" />
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="toggle-row">
+                <span>{{ $t('admin.password_require_special') }}</span>
+                <input type="checkbox" v-model="systemSettings.password_require_special" />
+              </label>
+            </div>
+
+            <div style="max-width:400px;margin-top:8px">
+              <button class="btn btn-primary btn-sm" @click="savePasswordPolicy">{{ $t('common.save') }}</button>
             </div>
           </div>
         </div>
@@ -469,6 +506,8 @@
 import { ref, computed, onMounted } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { adminApi } from '@/api/admin'
+import { attachmentsApi } from '@/api/attachments'
+import { resolveAssetUrl } from '@/api/serverConfig'
 import { useUIStore } from '@/stores/ui'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useDateFormat } from '@/composables/useDateFormat'
@@ -511,14 +550,19 @@ const systemSettings = ref({
   company_name: '',
   company_logo: '',
   default_columns: 'Backlog',
-  default_labels: 'Bug\nFeature\nDesign\nContent'
+  default_labels: 'Bug\nFeature\nDesign\nContent',
+  password_min_length: 8,
+  password_require_upper: false,
+  password_require_lower: false,
+  password_require_digit: false,
+  password_require_special: false,
 })
 // True when the server has a password saved (so we show a placeholder instead of the value)
 const smtpPasswordSet = ref(false)
 const smtpPasswordPlaceholder = computed(() => smtpPasswordSet.value ? '••••••••' : '')
 const smtpTestEmail = ref('')
 const smtpTestSending = ref(false)
-let settingsLoaded = false
+let settingsLoading = false
 
 const timezones = [
   'UTC',
@@ -559,7 +603,8 @@ function toggleUserProject(id) {
 }
 
 async function loadSettings() {
-  if (settingsLoaded) return
+  if (settingsLoading) return
+  settingsLoading = true
   try {
     const { data } = await adminApi.getSystemSettings()
     systemSettings.value.registration_enabled    = data.registration_enabled !== 'false'
@@ -582,19 +627,28 @@ async function loadSettings() {
     systemSettings.value.company_logo             = data.company_logo || ''
     systemSettings.value.default_columns          = data.default_columns || 'Backlog'
     systemSettings.value.default_labels           = data.default_labels || 'Bug\nFeature\nDesign\nContent'
-    settingsLoaded = true
+    systemSettings.value.password_min_length      = parseInt(data.password_min_length) || 8
+    systemSettings.value.password_require_upper   = data.password_require_upper === 'true'
+    systemSettings.value.password_require_lower   = data.password_require_lower === 'true'
+    systemSettings.value.password_require_digit   = data.password_require_digit === 'true'
+    systemSettings.value.password_require_special = data.password_require_special === 'true'
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to load settings')
+  } finally {
+    settingsLoading = false
   }
 }
 
-function onLogoFileSelected(e) {
+async function onLogoFileSelected(e) {
   const file = e.target.files[0]
   if (!file) return
-  const reader = new FileReader()
-  reader.onload = (ev) => { systemSettings.value.company_logo = ev.target.result }
-  reader.readAsDataURL(file)
   e.target.value = ''
+  try {
+    const { data } = await attachmentsApi.uploadImage(file)
+    systemSettings.value.company_logo = data.url
+  } catch {
+    ui.error('Failed to upload image')
+  }
 }
 
 async function saveBrandingSettings() {
@@ -602,6 +656,21 @@ async function saveBrandingSettings() {
     await adminApi.updateSystemSettings({
       company_name: systemSettings.value.company_name,
       company_logo: systemSettings.value.company_logo,
+    })
+    ui.success('Settings saved')
+  } catch {
+    ui.error('Failed to save settings')
+  }
+}
+
+async function savePasswordPolicy() {
+  try {
+    await adminApi.updateSystemSettings({
+      password_min_length:      systemSettings.value.password_min_length,
+      password_require_upper:   systemSettings.value.password_require_upper,
+      password_require_lower:   systemSettings.value.password_require_lower,
+      password_require_digit:   systemSettings.value.password_require_digit,
+      password_require_special: systemSettings.value.password_require_special,
     })
     ui.success('Settings saved')
   } catch {

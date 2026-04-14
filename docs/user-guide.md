@@ -12,7 +12,8 @@
 8. [Notifications & @Mentions](#8-notifications--mentions)
 9. [Time Reports](#9-time-reports)
 10. [User Settings](#10-user-settings)
-11. [Search](#11-search)
+11. [Customers](#11-customers)
+12. [Search](#12-search)
 
 ---
 
@@ -34,6 +35,17 @@ Enter your username and password. WarmDesk issues a short-lived JWT access
 token (15 minutes) and a 7-day refresh token that is used silently to keep you
 logged in as long as your browser tab is open.
 
+### Forgotten password
+
+Click **Forgot password?** on the login page and enter your email address. If an
+account with that address exists, a reset link is sent immediately. The link is
+valid for **one hour**. Click it to open the password reset form, enter and
+confirm your new password, and then log in normally.
+
+If you do not receive the email, check your spam folder and confirm that your
+account has a valid email address. Password reset requires SMTP to be configured
+by your administrator.
+
 ### Session timeout
 
 By default the session expires after **60 minutes of inactivity**. Any
@@ -51,10 +63,14 @@ contains:
 
 | Section | Contents |
 |---------|----------|
-| **Starred Projects** | Your pinned projects, collapsed by default |
+| **Starred Projects** | Your pinned projects — drag to reorder |
 | **Projects** | All projects you belong to; starred ones appear at the top with a star icon |
+| **Starred Customers** | Customers you have starred — drag to reorder; click ★ to unstar |
+| **All Customers** | Every customer, with starred ones shown first |
 | **Online Users** | Users currently connected; click a name to open a direct message |
 | **Chats** | Your 8 most recent conversations with unread indicators |
+
+All sections are drag-to-reorder (grab the ⠿ handle on the section header). Drag the inner edge of the sidebar to resize it — width and section order are persisted in your browser.
 
 ### Header
 
@@ -153,6 +169,20 @@ Use the sort controls at the top of any column to order cards by:
 Drag a card to a different column or a different position within the same
 column. All connected users see the move reflected instantly.
 
+### Gantt chart
+
+Click the **📅 Gantt** button in the board toolbar to open the project's
+timeline view. Any card that has a start date or a due date appears as a
+horizontal bar. Cards without dates are hidden.
+
+| Control | Action |
+|---------|--------|
+| Day / Week / Month buttons | Zoom level |
+| Click a bar | Open the card detail |
+| Drag a bar | Not supported — edit dates in the card detail |
+
+Return to the board with the breadcrumb at the top of the page.
+
 ---
 
 ## 5. Cards
@@ -178,13 +208,15 @@ Click a card to open its detail panel. The panel is resizable. Fields:
 | **Title** | Plain text |
 | **Description** | Markdown editor with toolbar, emoji picker, and @mention autocomplete |
 | **Priority** | None / Low / Medium / High / Critical |
+| **Start date** | Optional start date; used by the Gantt chart |
 | **Due date** | Displayed in your configured date format. Type a date directly or click the calendar icon (📅) to open the native date picker. Clear the field to remove the due date. |
 | **Time Spent** | Hours and minutes; contributes to time reports |
-| **Assignee** | Single primary assignee (legacy) |
 | **Assignees** | Multiple assignees — click a name to toggle |
 | **Labels** | Click a label chip to toggle; labels are project-specific |
 | **Tags** | Free-form hashtags; type and press Enter or comma |
 | **Watchers** | Subscribe to receive mention notifications on this card |
+| **Sub-cards** | Child tasks nested under this card (one level deep); each has its own card number, assignees, labels, and comments; a progress bar shows how many are closed |
+| **Linked cards** | Cards from any project linked as cross-references; shows reference, title, and current column |
 | **Attachments** | Upload files by clicking or dragging; images display inline |
 | **Checklist** | Add, check off, edit, and remove items; a progress bar shows completion % |
 | **Git Links** | Commits, pull requests, and issues linked via webhooks (auto-populated) |
@@ -240,10 +272,46 @@ it — the comment is quoted automatically.
 Use `@username` to mention a project member. If they are online they receive an
 instant popup notification; offline they receive an email.
 
+### Sub-cards
+
+Scroll to the **Sub-cards** section in the card detail. Type a title and press
+Enter or click **Add**. Each sub-card gets its own card number and can be
+opened to set assignees, labels, and comments. Check the checkbox on a sub-card
+to mark it closed. A progress bar at the top of the section shows done/total.
+
+Sub-cards are not shown on the Kanban board — only inside the parent card's
+detail view.
+
+### Linked cards (cross-references)
+
+Scroll to **Linked Cards** in the card detail. Type a card reference
+(e.g. `PRJ-42`) in the input field and press Enter to link it. The linked card
+appears with its reference, title, and current column. Cards from other projects
+you have access to can also be linked. Click **✕** to remove a link.
+
+### Copy card
+
+Click **Copy Card** in the card detail footer to duplicate the card in the same
+column. The copy gets a new card number. Labels, assignees, and checklist items
+are copied; comments and attachments are not.
+
+### Transfer card
+
+Click **Transfer** in the card detail footer to copy or move the card to a
+different project or column. Choose the destination project and column from the
+dropdowns, then click **Copy** or **Move**. Move also removes the card from its
+original column.
+
+### Close / reopen a card
+
+Click **Close Card** in the card detail footer to mark a card as done. Closed
+cards remain on the board with a strikethrough style and a "Closed" badge.
+Click **Reopen Card** at any time to restore it to open status.
+
 ### Saving
 
 Click **Save** in the card detail footer to persist changes to the title,
-description, priority, due date, assignees, and time spent. Labels, tags,
+description, priority, start date, due date, and time spent. Labels, tags,
 watchers, and assignees are saved immediately when toggled — no need to click
 Save.
 
@@ -375,17 +443,39 @@ Open User Settings by clicking your display name in the header.
 | **Avatar** | Upload an image or use your Gravatar (via email address) |
 | **Language** | English (en), Dutch (nl), German (de), French (fr), Spanish (es) |
 | **Theme** | Light / Dark / System |
+| **Accent colour** | Blue (default), Red, Green, or Orange — applied to buttons, active states, and highlights throughout the UI |
 | **Date format** | e.g. `YYYY-MM-DD` (ISO default), `DD/MM/YYYY`, `MM/DD/YYYY` |
 | **Time format** | 24-hour or 12-hour |
 | **Timezone** | UTC by default; affects date display throughout the UI |
 | **Font** | Interface font (system, inter, roboto, etc.) |
 | **Font size** | Small / Medium / Large |
 | **Sidebar position** | Left (default) or right |
-| **Change password** | Enter current password and a new one |
+| **Change password** | Enter your current password and a new one. Active password requirements (minimum length, character classes) are listed beneath the new-password field. |
 
 ---
 
-## 11. Search
+## 11. Customers
+
+The **Customers** page (`/customers`) lists all customer organisations. Each
+customer can have one or more contracts, and contracts can be linked to projects.
+
+### Starring a customer
+
+On the Customers page or in the customer detail, click the ★ icon to star a
+customer. Starred customers appear in the **Starred Customers** sidebar section
+for quick access. Click ★ again to unstar.
+
+### Customer detail
+
+Click a customer name to open the detail page, which shows:
+
+- Description and logo
+- Linked contracts with start / end dates
+- Projects linked to each contract
+
+---
+
+## 12. Search
 
 The global search bar (magnifying glass icon in the header) searches across:
 

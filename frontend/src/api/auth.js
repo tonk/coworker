@@ -14,4 +14,6 @@ export const authApi = {
   setupMFA: () => client.get('/auth/mfa/setup'),
   enableMFA: (code) => client.post('/auth/mfa/enable', { code }),
   disableMFA: (password) => client.post('/auth/mfa/disable', { password }),
+  forgotPassword: (email) => client.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => client.post('/auth/reset-password', { token, password }),
 }

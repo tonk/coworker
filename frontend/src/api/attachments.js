@@ -11,5 +11,11 @@ export const attachmentsApi = {
   url: (id) => {
     const server = getServerUrl()
     return server ? `${server}/api/v1/attachments/${id}` : `/api/v1/attachments/${id}`
+  },
+  // Upload an image file (avatar, logo, etc.) and return the server path (/uploads/...).
+  uploadImage: (file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return client.post('/upload/image', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
   }
 }

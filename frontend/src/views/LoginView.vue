@@ -23,6 +23,9 @@
             {{ $t('auth.login') }}
           </button>
         </form>
+        <p class="auth-link">
+          <RouterLink to="/forgot-password">{{ $t('auth.forgot_password') }}</RouterLink>
+        </p>
         <p v-if="registrationEnabled" class="auth-link">
           {{ $t('auth.no_account') }}
           <RouterLink to="/register">{{ $t('auth.register') }}</RouterLink>

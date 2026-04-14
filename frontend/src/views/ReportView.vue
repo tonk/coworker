@@ -91,7 +91,7 @@
       <!-- Report Header -->
       <div class="report-header">
         <div class="report-header-left">
-          <img v-if="report.company_logo" :src="report.company_logo" alt="Logo" class="report-logo" @error="report.company_logo = ''" />
+          <img v-if="report.company_logo" :src="resolveAssetUrl(report.company_logo)" alt="Logo" class="report-logo" @error="report.company_logo = ''" />
         </div>
         <div class="report-header-center">
           <div v-if="report.company_name" class="report-company-name">{{ report.company_name }}</div>
@@ -168,6 +168,7 @@ import { projectsApi } from '@/api/projects'
 import { reportsApi } from '@/api/reports'
 import { messagesApi } from '@/api/messages'
 import { useDateFormat } from '@/composables/useDateFormat'
+import { resolveAssetUrl } from '@/api/serverConfig'
 
 const { t } = useI18n()
 const { formatDateTime } = useDateFormat()

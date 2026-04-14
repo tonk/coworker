@@ -26,12 +26,13 @@
             </div>
             <div class="form-group">
               <label class="form-label">{{ $t('settings.avatar_url') }}</label>
-              <input class="form-input" v-model="form.avatar_url" :placeholder="$t('settings.avatar_url_placeholder')" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">{{ $t('settings.avatar_preview') }}</label>
-              <div class="avatar-preview" v-if="form.avatar_url">
-                <img :src="form.avatar_url" :alt="$t('settings.avatar_preview')" class="avatar-img" @error="avatarError = true" />
+              <div style="display:flex;gap:8px;align-items:center">
+                <input class="form-input" v-model="form.avatar_url" :placeholder="$t('settings.avatar_url_placeholder')" style="flex:1" />
+                <button type="button" class="btn btn-secondary btn-sm" @click="$refs.avatarFileInput.click()">{{ $t('settings.upload_avatar') }}</button>
+              </div>
+              <input ref="avatarFileInput" type="file" accept="image/*" style="display:none" @change="onAvatarFileSelected" />
+              <div class="avatar-preview" v-if="form.avatar_url" style="margin-top:8px">
+                <img :src="resolveAssetUrl(form.avatar_url)" :alt="$t('settings.avatar_preview')" class="avatar-img" @error="avatarError = true" />
               </div>
             </div>
             <div class="form-group">
@@ -139,7 +140,14 @@
             </div>
             <div class="form-group">
               <label class="form-label">{{ $t('auth.new_password') }}</label>
-              <input class="form-input" type="password" v-model="pwForm.new_password" required minlength="8" />
+              <input class="form-input" type="password" v-model="pwForm.new_password" required :minlength="passwordPolicy.min_length" />
+              <ul class="pw-requirements">
+                <li>{{ $t('settings.req_min_length', { n: passwordPolicy.min_length }) }}</li>
+                <li v-if="passwordPolicy.require_upper">{{ $t('settings.req_upper') }}</li>
+                <li v-if="passwordPolicy.require_lower">{{ $t('settings.req_lower') }}</li>
+                <li v-if="passwordPolicy.require_digit">{{ $t('settings.req_digit') }}</li>
+                <li v-if="passwordPolicy.require_special">{{ $t('settings.req_special') }}</li>
+              </ul>
             </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingPassword">
@@ -274,6 +282,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { useTheme } from '@/composables/useTheme'
 import { authApi } from '@/api/auth'
+import { systemApi } from '@/api/system'
+import { attachmentsApi } from '@/api/attachments'
+import { resolveAssetUrl } from '@/api/serverConfig'
 import { applyUserPreferences } from '@/composables/useUserPreferences'
 import { useDateFormat } from '@/composables/useDateFormat'
 
@@ -319,12 +330,26 @@ const timezones = [
 ]
 
 const pwForm = ref({ current_password: '', new_password: '' })
+const passwordPolicy = ref({ min_length: 8, require_upper: false, require_lower: false, require_digit: false, require_special: false })
 const savingProfile = ref(false)
 const personalKeys = ref([])
 const newPersonalKeyName = ref('')
 const generatedPersonalKey = ref('')
 const savingPassword = ref(false)
 const avatarError = ref(false)
+
+async function onAvatarFileSelected(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  e.target.value = ''
+  try {
+    const { data } = await attachmentsApi.uploadImage(file)
+    form.value.avatar_url = data.url
+    avatarError.value = false
+  } catch {
+    ui.error('Failed to upload image')
+  }
+}
 
 // MFA
 const mfaSetupData = ref(null)  // { secret, uri } during setup
@@ -333,8 +358,12 @@ const mfaDisablePassword = ref('')
 const mfaLoading = ref(false)
 const qrCanvas = ref(null)
 
-onMounted(() => {
+onMounted(async () => {
   loadPersonalKeys()
+  try {
+    const { data } = await systemApi.getSettings()
+    if (data.password_policy) passwordPolicy.value = data.password_policy
+  } catch {}
   const u = auth.user
   if (u) {
     form.value = {
@@ -558,4 +587,13 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .mfa-qr { display: block; margin-top: 12px; border-radius: var(--radius); border: 1px solid var(--color-border); }
 .mfa-secret { display: block; font-size: 13px; word-break: break-all; margin-top: 6px; letter-spacing: 2px; }
 .mfa-code-input { font-size: 20px; letter-spacing: 6px; text-align: center; font-family: monospace; }
+
+.pw-requirements {
+  margin: 6px 0 0 0;
+  padding: 0 0 0 16px;
+  list-style: disc;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.8;
+}
 </style>
