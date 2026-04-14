@@ -313,7 +313,14 @@ func main() {
 			ProjectID: pd.project.ID,
 		}).Error)
 	}
-	fmt.Printf("   Starred %d project–user pairs\n", len(starredProjectRules))
+	// Tonk is a persistent user not in the users map — star all three projects
+	for _, slug := range []string{"website-redesign", "mobile-app-v2", "devops-infra"} {
+		must(db.Create(&models.StarredProject{
+			UserID:    tonk.ID,
+			ProjectID: projects[slug].project.ID,
+		}).Error)
+	}
+	fmt.Printf("   Starred %d project–user pairs\n", len(starredProjectRules)+3)
 
 	// ── 3. Cards ──────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating cards…")
@@ -1210,12 +1217,14 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		// Star customers for relevant users so the sidebar shows favourites
 		switch cs.name {
 		case "Acme Corporation":
-			// Admin, Sarah (website owner), and Marc (mobile owner) work on Acme contracts
+			// Tonk, Admin, Sarah (website owner), and Marc (mobile owner) work on Acme contracts
+			must(db.Create(&models.CustomerFavorite{UserID: tonk.ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["admin"].ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["sarah"].ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["marc"].ID, CustomerID: cust.ID}).Error)
 		case "Globex Systems":
-			// Marc and Lisa own the DevOps contract for Globex
+			// Tonk, Marc and Lisa own the DevOps contract for Globex
+			must(db.Create(&models.CustomerFavorite{UserID: tonk.ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["marc"].ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["lisa"].ID, CustomerID: cust.ID}).Error)
 		}
@@ -1277,6 +1286,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Println("  ┌─────────────────────┬──────────────────────────────────────────────────────────────┐")
 	fmt.Println("  │ Username            │ Starred projects                                             │")
 	fmt.Println("  ├─────────────────────┼──────────────────────────────────────────────────────────────┤")
+	fmt.Println("  │ tonk                │ Website Redesign, Mobile App v2, DevOps & Infra              │")
 	fmt.Println("  │ demo.admin          │ Website Redesign, Mobile App v2, DevOps & Infra              │")
 	fmt.Println("  │ demo.sarah          │ Website Redesign, Mobile App v2                              │")
 	fmt.Println("  │ demo.marc           │ Mobile App v2, DevOps & Infra                                │")
@@ -1287,6 +1297,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Println("  ┌─────────────────────┬──────────────────────────────────────────────────────────────┐")
 	fmt.Println("  │ Username            │ Starred customers                                            │")
 	fmt.Println("  ├─────────────────────┼──────────────────────────────────────────────────────────────┤")
+	fmt.Println("  │ tonk                │ Acme Corporation, Globex Systems                             │")
 	fmt.Println("  │ demo.admin          │ Acme Corporation                                             │")
 	fmt.Println("  │ demo.sarah          │ Acme Corporation                                             │")
 	fmt.Println("  │ demo.marc           │ Acme Corporation, Globex Systems                             │")

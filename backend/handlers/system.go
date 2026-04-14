@@ -80,7 +80,7 @@ var systemSettingDefaults = map[string]string{
 	settingDefaultColumns:         "Backlog",
 	settingDefaultLabels:          "Bug\nFeature\nDesign\nContent",
 	settingMFARequired:            "false",
-	settingPasswordMinLength:      "8",
+	settingPasswordMinLength:      "12",
 	settingPasswordRequireUpper:   "false",
 	settingPasswordRequireLower:   "false",
 	settingPasswordRequireDigit:   "false",

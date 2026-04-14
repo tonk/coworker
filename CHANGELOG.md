@@ -2,6 +2,21 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.6 — 2026-04-14
+
+### Added
+- **Forgotten password** — users can click **Forgot password?** on the login page and receive a one-time reset link by email; the link is valid for one hour; requires SMTP to be configured by an administrator
+- **Password policy** — administrators can configure minimum password length, and require uppercase, lowercase, digit, and/or special characters under **Admin → Settings → Password Policy**; policy is enforced on registration, password change, and password reset; active requirements are shown to users beneath the password field
+- **Avatar image upload** — users can upload an avatar image directly in User Settings instead of supplying a URL; the image is stored on the server like any other attachment
+
+### Changed
+- **Default minimum password length raised to 12** — new installations default to a minimum of 12 characters instead of 8; existing deployments are not affected until the setting is explicitly saved
+
+### Fixed
+- **Seed: tonk user now has starred projects and customers** — the persistent `tonk` admin account is pre-seeded with all three demo projects and Acme Corporation + Globex Systems starred, matching the experience for the `demo.admin` account
+- **INSTALL.md Go requirement corrected** — the installation manual now states Go 1.25 (matching `go.mod`); it previously incorrectly listed 1.22
+- **INSTALL.md first-admin instructions corrected** — the first registered user is automatically promoted to admin; the manual previously gave incorrect instructions to update the database manually
+
 ## v0.6.4 — 2026-04-09
 
 ### Fixed

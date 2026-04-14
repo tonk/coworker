@@ -288,3 +288,9 @@ Create an application that has all these features and requirements
 - Indent items in All Projects, All Customers, People, and Chats sidebar sections; apply the same indent to empty-state messages throughout the sidebar
 - Fix Windows desktop app typing lag during login: register the Ctrl+zoom keydown listener as passive in Tauri so WebView2 skips the synchronous IPC round-trip on every keystroke
 - Fix sidebar drag-to-reorder broken on Linux desktop app: replace HTML5 Drag-and-Drop API with pointer events (pointerdown/pointermove/pointerup) because WebKitGTK's DnD support is incomplete; new implementation works on all platforms
+- Forgotten password: Forgot password? link on login page sends a one-time reset link by email valid for one hour; requires SMTP; always responds 200 to prevent account enumeration
+- Password policy: admin-configurable minimum length (floor 8, default 12), require uppercase, lowercase, digit, special character; enforced on registration, password change, and reset; active requirements shown to users beneath the password field
+- Avatar image upload in User Settings: upload an image file directly instead of providing a URL; stored as an attachment on the server
+- Raise default password minimum length from 8 to 12 in system settings defaults
+- Seed: star all three demo projects and Acme Corporation + Globex Systems for the persistent tonk admin user
+- Fix INSTALL.md Go requirement (1.22 → 1.25) and first-admin instructions (first registered user is auto-promoted, no DB update needed)

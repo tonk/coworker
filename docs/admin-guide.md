@@ -514,7 +514,7 @@ Configure the requirements that all new passwords must satisfy — whether set d
 
 | Setting | Notes |
 |---------|-------|
-| **Minimum length** | Minimum number of characters; the floor is 8 and cannot be set lower |
+| **Minimum length** | Minimum number of characters; default is 12; the floor is 8 and cannot be set lower |
 | **Require uppercase** | At least one uppercase letter (A–Z) |
 | **Require lowercase** | At least one lowercase letter (a–z) |
 | **Require digit** | At least one digit (0–9) |

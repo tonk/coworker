@@ -4,7 +4,7 @@
 
 | Component | Requirement |
 |-----------|-------------|
-| Go | 1.22 or later |
+| Go | 1.25 or later |
 | Node.js | 20 or later |
 | GCC | Required for SQLite (not needed for MySQL/PostgreSQL) |
 
@@ -255,21 +255,26 @@ sudo gtk-update-icon-cache /usr/share/icons/hicolor
 
 ## 10. First Admin Account
 
-The first registered user is a regular user. To grant admin rights:
+The **first account registered on a fresh database is automatically made a
+global admin** — no database manipulation required. Register normally through
+the web interface.
 
-**SQLite**
-```bash
-sqlite3 /opt/warmdesk/data/warmdesk.db \
-  "UPDATE users SET global_role='admin' WHERE id=1;"
-```
-
-**PostgreSQL / MySQL**
-```sql
-UPDATE users SET global_role = 'admin' WHERE id = 1;
-```
-
-Once an admin account exists, further admin promotion can be done through
+Once one admin exists, further users can be promoted through
 **Admin → Users → Edit** in the web interface.
+
+> **Recovery:** if you ever need to promote an account directly (e.g. after
+> accidentally demoting the only admin):
+>
+> **SQLite**
+> ```bash
+> sqlite3 /opt/warmdesk/data/warmdesk.db \
+>   "UPDATE users SET global_role='admin' WHERE username='yourname';"
+> ```
+>
+> **PostgreSQL / MySQL**
+> ```sql
+> UPDATE users SET global_role = 'admin' WHERE username = 'yourname';
+> ```
 
 ---
 
