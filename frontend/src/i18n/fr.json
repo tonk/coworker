@@ -446,7 +446,9 @@
     "pdf_font": "Police PDF",
     "pdf_font_freesans": "FreeSans (sans-serif)",
     "pdf_font_freeserif": "FreeSerif (serif)",
-    "pdf_font_freemono": "FreeMono (chasse fixe)"
+    "pdf_font_freemono": "FreeMono (chasse fixe)",
+    "pdf_lang": "Langue du PDF",
+    "pdf_lang_auto": "Auto (langue interface)"
   },
   "gantt": {
     "title": "Gantt",

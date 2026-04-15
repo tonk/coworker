@@ -437,8 +437,8 @@ Go to **Admin → Settings → Branding** to set:
 
 | Setting | Notes |
 |---------|-------|
-| Company name | Appears in the report header |
-| Company logo | URL or uploaded image; displayed on time reports |
+| Company name | Appears in the report header and PDF footer |
+| Company logo | Upload an image file (JPG, PNG, GIF, WebP, or SVG); displayed in the on-screen report header and in exported PDFs. Click **Clear** to remove the logo. |
 
 Changes take effect immediately and appear on the next report export.
 

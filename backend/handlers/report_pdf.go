@@ -5,6 +5,8 @@ import (
 	"embed"
 	"fmt"
 	"image"
+	"image/color"
+	"image/draw"
 	"image/png"
 	"net/http"
 	"os"
@@ -98,6 +100,93 @@ func pdfFontFamily(fontPref string) string {
 	default:
 		return "FreeSans"
 	}
+}
+
+// pdfI18n holds translated strings used directly in the PDF.
+type pdfI18n struct {
+	TimeReport string // e.g. "Time Report"
+	ColRef     string // e.g. "Ref"
+	ColTask    string // e.g. "Task"
+	ColAssign  string // e.g. "Assignees"
+	ColTime    string // e.g. "Time"
+	Subtotal   string // e.g. "Subtotal:"
+	GrandTotal string // e.g. "Grand Total:"
+	Page       string // e.g. "Page"
+	Generated  string // e.g. "Generated:"
+}
+
+// pdfTranslations provides label sets for each supported language code.
+// Strings are derived from the same source as the frontend i18n files.
+var pdfTranslations = map[string]pdfI18n{
+	"en": {
+		TimeReport: "Time Report",
+		ColRef:     "Ref",
+		ColTask:    "Task",
+		ColAssign:  "Assignees",
+		ColTime:    "Time",
+		Subtotal:   "Subtotal:",
+		GrandTotal: "Grand Total:",
+		Page:       "Page",
+		Generated:  "Generated:",
+	},
+	"nl": {
+		TimeReport: "Tijdrapport",
+		ColRef:     "Ref",
+		ColTask:    "Taak",
+		ColAssign:  "Toegewezen",
+		ColTime:    "Tijd",
+		Subtotal:   "Subtotaal:",
+		GrandTotal: "Eindtotaal:",
+		Page:       "Pagina",
+		Generated:  "Gegenereerd:",
+	},
+	"de": {
+		TimeReport: "Zeitbericht",
+		ColRef:     "Ref",
+		ColTask:    "Aufgabe",
+		ColAssign:  "Bearbeiter",
+		ColTime:    "Zeit",
+		Subtotal:   "Zwischensumme:",
+		GrandTotal: "Gesamtsumme:",
+		Page:       "Seite",
+		Generated:  "Erstellt:",
+	},
+	"fr": {
+		TimeReport: "Rapport de temps",
+		ColRef:     "Réf",
+		ColTask:    "Tâche",
+		ColAssign:  "Assignés",
+		ColTime:    "Temps",
+		Subtotal:   "Sous-total :",
+		GrandTotal: "Total général :",
+		Page:       "Page",
+		Generated:  "Généré le :",
+	},
+	"es": {
+		TimeReport: "Informe de tiempo",
+		ColRef:     "Ref",
+		ColTask:    "Tarea",
+		ColAssign:  "Asignados",
+		ColTime:    "Tiempo",
+		Subtotal:   "Subtotal:",
+		GrandTotal: "Total general:",
+		Page:       "Página",
+		Generated:  "Generado el:",
+	},
+}
+
+// pdfI18nFromLang returns the translation set for the given BCP-47 language tag.
+// Falls back to English for unknown or empty codes.
+func pdfI18nFromLang(lang string) pdfI18n {
+	// Accept tags like "nl-NL" as well as plain "nl".
+	code := strings.ToLower(lang)
+	if idx := strings.IndexByte(code, '-'); idx > 0 {
+		code = code[:idx]
+	}
+	if tr, ok := pdfTranslations[code]; ok {
+		return tr
+	}
+	return pdfTranslations["en"]
 }
 
 // fmtMinutes formats a minute count as H:MM.
@@ -227,6 +316,9 @@ func GetTimeReportPDF(c *gin.Context) {
 		fontFamily = fam
 	}
 
+	// Resolve PDF language: ?lang= param, default English.
+	tr := pdfI18nFromLang(c.Query("lang"))
+
 	// ── Build PDF ────────────────────────────────────────────────
 
 	pdf := gofpdf.New("P", "mm", "A4", "")
@@ -242,7 +334,7 @@ func GetTimeReportPDF(c *gin.Context) {
 	}
 
 	// PDF metadata.
-	title := "Time Report — " + report.PeriodLabel
+	title := tr.TimeReport + " — " + report.PeriodLabel
 	author := user.DisplayName
 	if author == "" {
 		author = user.Username
@@ -259,17 +351,18 @@ func GetTimeReportPDF(c *gin.Context) {
 	// Footer — repeated on every page.
 	ff := fontFamily
 	rpt := report
+	trr := tr
 	pdf.SetFooterFunc(func() {
 		pdf.SetY(-12)
 		pdf.SetFont(ff, "", 8)
 		setTxt(pdf, clrMuted)
-		label := "WarmDesk — Time Report"
+		label := "WarmDesk — " + trr.TimeReport
 		if rpt.CompanyName != "" {
-			label = rpt.CompanyName + " — Time Report"
+			label = rpt.CompanyName + " — " + trr.TimeReport
 		}
 		pdf.CellFormat(pdfBodyW/2, 5, label, "", 0, "L", false, 0, "")
 		pdf.CellFormat(pdfBodyW/2, 5,
-			fmt.Sprintf("Page %d / {nb}", pdf.PageNo()), "", 0, "R", false, 0, "")
+			fmt.Sprintf("%s %d / {nb}", trr.Page, pdf.PageNo()), "", 0, "R", false, 0, "")
 	})
 
 	pdf.AddPage()
@@ -310,12 +403,31 @@ func GetTimeReportPDF(c *gin.Context) {
 				imgType = "WEBP"
 			}
 			if imgType != "" {
-				if f, err := os.Open(logoPath); err == nil {
+				if rawBytes, err := os.ReadFile(logoPath); err == nil {
+					var imgReader *bytes.Reader
+					if imgType == "PNG" {
+						// Composite over white to strip any alpha channel, which
+						// gofpdf cannot handle and causes an internal error.
+						if src, decErr := png.Decode(bytes.NewReader(rawBytes)); decErr == nil {
+							bounds := src.Bounds()
+							dst := image.NewRGBA(bounds)
+							draw.Draw(dst, bounds, &image.Uniform{color.White}, image.Point{}, draw.Src)
+							draw.Draw(dst, bounds, src, bounds.Min, draw.Over)
+							var pngBuf bytes.Buffer
+							if encErr := png.Encode(&pngBuf, dst); encErr == nil {
+								imgReader = bytes.NewReader(pngBuf.Bytes())
+							}
+						}
+					}
+					if imgReader == nil {
+						imgReader = bytes.NewReader(rawBytes)
+					}
 					opts := gofpdf.ImageOptions{ImageType: imgType}
-					pdf.RegisterImageOptionsReader("_logo", opts, f)
-					f.Close()
-					pdf.ImageOptions("_logo", pdfMargin, logoY, 0, 18, false, opts, 0, "")
-					logoLoaded = true
+					pdf.RegisterImageOptionsReader("_logo", opts, imgReader)
+					if pdf.Error() == nil {
+						pdf.ImageOptions("_logo", pdfMargin, logoY, 0, 18, false, opts, 0, "")
+						logoLoaded = true
+					}
 				}
 			}
 		}
@@ -338,7 +450,7 @@ func GetTimeReportPDF(c *gin.Context) {
 
 	pdf.SetFont(fontFamily, "B", 17)
 	setTxt(pdf, clrText)
-	pdf.CellFormat(textW, 9, "Time Report", "", 2, "L", false, 0, "")
+	pdf.CellFormat(textW, 9, tr.TimeReport, "", 2, "L", false, 0, "")
 	pdf.SetX(textX)
 
 	pdf.SetFont(fontFamily, "", 10)
@@ -347,7 +459,7 @@ func GetTimeReportPDF(c *gin.Context) {
 	pdf.SetX(textX)
 
 	pdf.SetFont(fontFamily, "", 8)
-	pdf.CellFormat(textW, 4.5, "Generated: "+report.GeneratedAt, "", 2, "L", false, 0, "")
+	pdf.CellFormat(textW, 4.5, tr.Generated+" "+report.GeneratedAt, "", 2, "L", false, 0, "")
 
 	// Horizontal rule below header.
 	ruleY := pdf.GetY() + 2
@@ -362,22 +474,51 @@ func GetTimeReportPDF(c *gin.Context) {
 	// ── Project sections ─────────────────────────────────────────
 
 	for _, proj := range report.Projects {
-		// Section header bar.
+		// Section header bar — primary-coloured background with project name on
+		// the left and a white pill badge showing the total on the right.
+		const hdrH = 7.0
+		hdrY := pdf.GetY()
+
+		// Full-width primary bar.
 		setFill(pdf, clrPrimary)
+		setDraw(pdf, clrPrimary)
+		pdf.Rect(pdfMargin, hdrY, pdfBodyW, hdrH, "F")
+
+		// Pill badge: measure the time string, draw a white rounded rect.
+		pdf.SetFont(fontFamily, "B", 8)
+		timeStr := fmtMinutes(proj.TotalMinutes)
+		const badgePadX = 4.0
+		const badgeH = 4.5
+		badgeW := pdf.GetStringWidth(timeStr) + 2*badgePadX
+		badgeX := pdfMargin + pdfBodyW - badgeW - 2.5
+		badgeY := hdrY + (hdrH-badgeH)/2
+		pdf.SetFillColor(255, 255, 255)
+		pdf.SetDrawColor(255, 255, 255)
+		pdf.RoundedRect(badgeX, badgeY, badgeW, badgeH, badgeH/2, "1234", "F")
+		setTxt(pdf, clrPrimary)
+		pdf.SetXY(badgeX, badgeY)
+		pdf.CellFormat(badgeW, badgeH, timeStr, "", 0, "C", false, 0, "")
+
+		// Project name (left side of bar, white text).
 		setTxt(pdf, clrWhite)
 		pdf.SetFont(fontFamily, "B", 9.5)
-		pdf.SetX(pdfMargin)
-		pdf.CellFormat(pdfBodyW, 7, "  "+proj.ProjectName, "", 2, "L", true, 0, "")
+		nameW := pdfBodyW - badgeW - 6
+		pdf.SetXY(pdfMargin, hdrY)
+		pdf.CellFormat(nameW, hdrH, "  "+proj.ProjectName, "", 0, "L", false, 0, "")
+
+		// Restore draw colour and advance past the header row.
+		setDraw(pdf, clrPrimary)
+		pdf.SetY(hdrY + hdrH)
 
 		// Column header row.
 		setFill(pdf, clrTblHdr)
 		setTxt(pdf, clrText)
 		pdf.SetFont(fontFamily, "B", 8)
 		pdf.SetX(pdfMargin)
-		pdf.CellFormat(pdfColRef, pdfRowH, "Ref", "", 0, "L", true, 0, "")
-		pdf.CellFormat(pdfColTit, pdfRowH, "Title", "", 0, "L", true, 0, "")
-		pdf.CellFormat(pdfColAss, pdfRowH, "Assignees", "", 0, "L", true, 0, "")
-		pdf.CellFormat(pdfColTim, pdfRowH, "Time", "B", 2, "R", true, 0, "")
+		pdf.CellFormat(pdfColRef, pdfRowH, tr.ColRef, "", 0, "L", true, 0, "")
+		pdf.CellFormat(pdfColTit, pdfRowH, tr.ColTask, "", 0, "L", true, 0, "")
+		pdf.CellFormat(pdfColAss, pdfRowH, tr.ColAssign, "", 0, "L", true, 0, "")
+		pdf.CellFormat(pdfColTim, pdfRowH, tr.ColTime, "B", 2, "R", true, 0, "")
 
 		// Card rows.
 		for i, card := range proj.Cards {
@@ -401,7 +542,7 @@ func GetTimeReportPDF(c *gin.Context) {
 		setTxt(pdf, clrText)
 		pdf.SetFont(fontFamily, "B", 8)
 		pdf.SetX(pdfMargin)
-		pdf.CellFormat(pdfColRef+pdfColTit+pdfColAss, pdfRowH, "Subtotal:", "T", 0, "R", true, 0, "")
+		pdf.CellFormat(pdfColRef+pdfColTit+pdfColAss, pdfRowH, tr.Subtotal, "T", 0, "R", true, 0, "")
 		pdf.CellFormat(pdfColTim, pdfRowH, fmtMinutes(proj.TotalMinutes), "T", 2, "R", true, 0, "")
 
 		pdf.Ln(4)
@@ -418,7 +559,7 @@ func GetTimeReportPDF(c *gin.Context) {
 	setTxt(pdf, clrWhite)
 	pdf.SetFont(fontFamily, "B", 9.5)
 	pdf.SetX(pdfMargin)
-	pdf.CellFormat(pdfColRef+pdfColTit+pdfColAss, 8, "Grand Total:", "", 0, "R", true, 0, "")
+	pdf.CellFormat(pdfColRef+pdfColTit+pdfColAss, 8, tr.GrandTotal, "", 0, "R", true, 0, "")
 	pdf.CellFormat(pdfColTim, 8, fmtMinutes(report.TotalMinutes), "", 2, "R", true, 0, "")
 
 	// ── Stream output ────────────────────────────────────────────

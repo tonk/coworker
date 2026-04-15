@@ -446,7 +446,9 @@
     "pdf_font": "Fuente PDF",
     "pdf_font_freesans": "FreeSans (sin serifa)",
     "pdf_font_freeserif": "FreeSerif (con serifa)",
-    "pdf_font_freemono": "FreeMono (monoespaciada)"
+    "pdf_font_freemono": "FreeMono (monoespaciada)",
+    "pdf_lang": "Idioma del PDF",
+    "pdf_lang_auto": "Automático (interfaz)"
   },
   "gantt": {
     "title": "Gantt",

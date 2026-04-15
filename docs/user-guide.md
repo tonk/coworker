@@ -430,9 +430,17 @@ are shown in H:MM format.
 
 ### Exporting
 
-- **PDF** — click **Export PDF**. The page prints using `@media print` styles
-  that hide the sidebar, header, and footer, showing only the report table with
-  the company name and logo (if configured).
+Before exporting you can choose two options that are saved for your next visit:
+
+| Option | Description |
+|--------|-------------|
+| **PDF Font** | Font used in the PDF: Inter, Roboto, Open Sans, Source Code Pro, FreeSans, FreeSerif, or FreeMono |
+| **PDF Language** | Language for all PDF labels. **Auto** follows your UI language. You can also pin it to English, Nederlands, Deutsch, Français, or Español — useful when your interface is in one language but the report is for someone else. |
+
+- **PDF** — click **Export PDF** to download a server-generated PDF. The PDF
+  includes the company name and logo (if configured in Admin → Branding),
+  per-project totals shown as pill badges in the project header bars, column
+  headers, subtotals, and a grand total.
 - **Excel (XLSX)** — click **Export Excel** to download a `.xlsx` file with the
   same data ready for further analysis.
 
@@ -446,7 +454,7 @@ Open User Settings by clicking your display name in the header.
 |---------|-------|
 | **Display name** | Shown throughout the UI and in reports |
 | **Email** | Used for notifications and Gravatar |
-| **Avatar** | Upload an image or use your Gravatar (via email address) |
+| **Avatar** | Upload an image or use your Gravatar (via email address). Click **Clear** to remove a custom avatar and fall back to Gravatar. |
 | **Language** | English (en), Dutch (nl), German (de), French (fr), Spanish (es) |
 | **Theme** | Light / Dark / System |
 | **Accent colour** | Blue (default), Red, Green, or Orange — applied to buttons, active states, and highlights throughout the UI |

@@ -305,6 +305,8 @@
     "pdf_font_freesans": "FreeSans (sans-serif)",
     "pdf_font_freeserif": "FreeSerif (serif)",
     "pdf_font_freemono": "FreeMono (monospace)",
+    "pdf_lang": "PDF Language",
+    "pdf_lang_auto": "Auto (UI language)",
     "generated_at": "Generated",
     "loading": "Loading report...",
     "run": "Generate Report"

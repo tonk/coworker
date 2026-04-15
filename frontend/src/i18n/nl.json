@@ -446,7 +446,9 @@
     "pdf_font": "PDF-lettertype",
     "pdf_font_freesans": "FreeSans (schreefloos)",
     "pdf_font_freeserif": "FreeSerif (schreef)",
-    "pdf_font_freemono": "FreeMono (monospace)"
+    "pdf_font_freemono": "FreeMono (monospace)",
+    "pdf_lang": "PDF-taal",
+    "pdf_lang_auto": "Automatisch (interface)"
   },
   "gantt": {
     "title": "Gantt",

@@ -86,6 +86,17 @@
               <option value="freemono">{{ $t('report.pdf_font_freemono') }}</option>
             </select>
           </div>
+          <div class="pdf-font-group">
+            <label class="filter-label">{{ $t('report.pdf_lang') }}</label>
+            <select class="form-input" v-model="pdfLang">
+              <option value="auto">{{ $t('report.pdf_lang_auto') }}</option>
+              <option value="en">English</option>
+              <option value="nl">Nederlands</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
           <button class="btn btn-secondary" @click="exportPDF">{{ $t('report.export_pdf') }}</button>
           <button class="btn btn-secondary" @click="exportXLSX">{{ $t('report.export_xlsx') }}</button>
         </div>
@@ -182,13 +193,15 @@ import { messagesApi } from '@/api/messages'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { resolveAssetUrl } from '@/api/serverConfig'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { formatDateTime } = useDateFormat()
 
 const loading = ref(false)
 const report = ref(null)
 const pdfFont = ref(localStorage.getItem('report.pdfFont') || 'inter')
 watch(pdfFont, v => localStorage.setItem('report.pdfFont', v))
+const pdfLang = ref(localStorage.getItem('report.pdfLang') || 'auto')
+watch(pdfLang, v => localStorage.setItem('report.pdfLang', v))
 const projects = ref([])
 const allUsers = ref([])
 const showAssigneeDropdown = ref(false)
@@ -277,6 +290,7 @@ async function exportPDF() {
     if (filters.value.project !== 'all') params.project = filters.value.project
     if (filters.value.assignees.length) params.assignees = filters.value.assignees.join(',')
     params.font = pdfFont.value
+    params.lang = pdfLang.value === 'auto' ? locale.value : pdfLang.value
     const { data } = await reportsApi.getTimeReportPDF(params)
     const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
     const a = document.createElement('a')
