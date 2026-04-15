@@ -443,9 +443,9 @@
     "export_pdf": "Exportar como PDF",
     "export_xlsx": "Exportar como Excel",
     "pdf_font": "Fuente PDF",
-    "pdf_font_sans": "Sin serifa (FreeSans)",
-    "pdf_font_serif": "Con serifa (FreeSerif)",
-    "pdf_font_mono": "Monoespaciada (FreeMono)"
+    "pdf_font_freesans": "FreeSans (sin serifa)",
+    "pdf_font_freeserif": "FreeSerif (con serifa)",
+    "pdf_font_freemono": "FreeMono (monoespaciada)"
   },
   "gantt": {
     "title": "Gantt",

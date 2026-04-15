@@ -37,10 +37,56 @@ func mustFont(name string) []byte {
 	return b
 }
 
-// pdfFontFamily maps a user's CSS font preference to a FreeFont family name.
+// pdfFonts maps font family names to their embedded TTF file names (regular, bold).
+var pdfFonts = map[string][2]string{
+	"Inter":            {"Inter-Regular.ttf", "Inter-Bold.ttf"},
+	"Roboto":           {"Roboto-Regular.ttf", "Roboto-Bold.ttf"},
+	"OpenSans":         {"OpenSans-Regular.ttf", "OpenSans-Bold.ttf"},
+	"SourceCodePro":    {"SourceCodePro-Regular.ttf", "SourceCodePro-Bold.ttf"},
+	"FreeSans":         {"FreeSans.ttf", "FreeSansBold.ttf"},
+	"FreeSerif":        {"FreeSerif.ttf", "FreeSerifBold.ttf"},
+	"FreeMono":         {"FreeMono.ttf", "FreeMonoBold.ttf"},
+}
+
+// pdfFontFromParam maps the ?font= query value to a registered family name.
+func pdfFontFromParam(param string) (string, bool) {
+	switch param {
+	case "inter":
+		return "Inter", true
+	case "roboto":
+		return "Roboto", true
+	case "opensans":
+		return "OpenSans", true
+	case "sourcecode":
+		return "SourceCodePro", true
+	case "freesans":
+		return "FreeSans", true
+	case "freeserif":
+		return "FreeSerif", true
+	case "freemono":
+		return "FreeMono", true
+	}
+	return "", false
+}
+
+// pdfFontFamily maps a user's CSS font preference to an embedded font family.
 func pdfFontFamily(fontPref string) string {
 	fp := strings.ToLower(fontPref)
 	switch {
+	case strings.Contains(fp, "inter"):
+		return "Inter"
+	case strings.Contains(fp, "roboto"):
+		return "Roboto"
+	case strings.Contains(fp, "open sans"):
+		return "OpenSans"
+	case strings.Contains(fp, "source code") || strings.Contains(fp, "code pro"):
+		return "SourceCodePro"
+	case strings.Contains(fp, "freemono") || (strings.Contains(fp, "mono") && strings.Contains(fp, "free")):
+		return "FreeMono"
+	case strings.Contains(fp, "freeserif") || (strings.Contains(fp, "serif") && strings.Contains(fp, "free")):
+		return "FreeSerif"
+	case strings.Contains(fp, "freesans") || (strings.Contains(fp, "sans") && strings.Contains(fp, "free")):
+		return "FreeSans"
 	case strings.Contains(fp, "mono") || strings.Contains(fp, "code"):
 		return "FreeMono"
 	case strings.Contains(fp, "serif") || strings.Contains(fp, "georgia"):
@@ -115,13 +161,8 @@ func GetTimeReportPDF(c *gin.Context) {
 	if err := database.DB.First(&user, userID).Error; err == nil {
 		fontFamily = pdfFontFamily(user.Font)
 	}
-	switch c.Query("font") {
-	case "sans":
-		fontFamily = "FreeSans"
-	case "serif":
-		fontFamily = "FreeSerif"
-	case "mono":
-		fontFamily = "FreeMono"
+	if fam, ok := pdfFontFromParam(c.Query("font")); ok {
+		fontFamily = fam
 	}
 
 	// ── Build PDF ────────────────────────────────────────────────
@@ -131,12 +172,11 @@ func GetTimeReportPDF(c *gin.Context) {
 	pdf.SetMargins(pdfMargin, pdfMargin, pdfMargin)
 	pdf.SetAutoPageBreak(true, 20)
 
-	// Register FreeFont families (regular + bold) directly from embedded bytes.
-	// AddUTF8Font in gofpdf v1 does not use SetFontLoader, so we use
-	// AddUTF8FontFromBytes which accepts raw TTF bytes.
-	for _, fam := range []string{"FreeSans", "FreeSerif", "FreeMono"} {
-		pdf.AddUTF8FontFromBytes(fam, "", mustFont(fam+".ttf"))
-		pdf.AddUTF8FontFromBytes(fam, "B", mustFont(fam+"Bold.ttf"))
+	// Register all font families from embedded bytes.
+	// AddUTF8Font in gofpdf v1 ignores SetFontLoader, so we use AddUTF8FontFromBytes.
+	for fam, files := range pdfFonts {
+		pdf.AddUTF8FontFromBytes(fam, "", mustFont(files[0]))
+		pdf.AddUTF8FontFromBytes(fam, "B", mustFont(files[1]))
 	}
 
 	// PDF metadata.

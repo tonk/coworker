@@ -77,9 +77,13 @@
           <div class="pdf-font-group">
             <label class="filter-label">{{ $t('report.pdf_font') }}</label>
             <select class="form-input" v-model="pdfFont">
-              <option value="sans">{{ $t('report.pdf_font_sans') }}</option>
-              <option value="serif">{{ $t('report.pdf_font_serif') }}</option>
-              <option value="mono">{{ $t('report.pdf_font_mono') }}</option>
+              <option value="inter">Inter</option>
+              <option value="roboto">Roboto</option>
+              <option value="opensans">Open Sans</option>
+              <option value="sourcecode">Source Code Pro</option>
+              <option value="freesans">{{ $t('report.pdf_font_freesans') }}</option>
+              <option value="freeserif">{{ $t('report.pdf_font_freeserif') }}</option>
+              <option value="freemono">{{ $t('report.pdf_font_freemono') }}</option>
             </select>
           </div>
           <button class="btn btn-secondary" @click="exportPDF">{{ $t('report.export_pdf') }}</button>
@@ -183,7 +187,7 @@ const { formatDateTime } = useDateFormat()
 
 const loading = ref(false)
 const report = ref(null)
-const pdfFont = ref('sans')
+const pdfFont = ref('inter')
 const projects = ref([])
 const allUsers = ref([])
 const showAssigneeDropdown = ref(false)

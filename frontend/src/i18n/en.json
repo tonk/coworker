@@ -302,9 +302,9 @@
     "export_pdf": "Export PDF",
     "export_xlsx": "Export Excel",
     "pdf_font": "PDF Font",
-    "pdf_font_sans": "Sans-serif (FreeSans)",
-    "pdf_font_serif": "Serif (FreeSerif)",
-    "pdf_font_mono": "Monospace (FreeMono)",
+    "pdf_font_freesans": "FreeSans (sans-serif)",
+    "pdf_font_freeserif": "FreeSerif (serif)",
+    "pdf_font_freemono": "FreeMono (monospace)",
     "generated_at": "Generated",
     "loading": "Loading report...",
     "run": "Generate Report"
