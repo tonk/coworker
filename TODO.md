@@ -55,11 +55,11 @@
 - ~~Pressing "Cancel" with changes in the card should show a pop-up with
   "Save" and "No save"~~ **Done in v0.5.2**
 
-- Investigate:
+- ~~Investigate:
   When starting the Windows client it takes rather long before
   it responds, it does show the login screen, but typing lags behind and
   is very slow, for userid/password entry. After logging in, performance
-  is OK
+  is OK~~ **Fix applied (pending Windows verification): passive keydown listener for zoom + `::-ms-reveal { display: none }` to suppress WebView2 password-reveal IPC round-trip**
 
 - ~~Change projects to add an extra layer
   so that we can have "Customer / Projects" and between the "Customer / Projects"
