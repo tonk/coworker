@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -27,12 +27,14 @@ func InitReport(cfg *config.Config) {
 	reportCfg = cfg
 }
 
-// embeddedFontLoader satisfies gofpdf.FontLoader.
-// It reads font files straight from the embedded FS.
-type embeddedFontLoader struct{}
-
-func (embeddedFontLoader) Open(name string) (io.Reader, error) {
-	return fontEmbedFS.Open("fonts/" + name)
+// mustFont reads a font file from the embedded FS and panics on failure.
+// Only called at server start-up when fonts are registered.
+func mustFont(name string) []byte {
+	b, err := fontEmbedFS.ReadFile("fonts/" + name)
+	if err != nil {
+		panic("warmdesk: embedded font missing: " + name + ": " + err.Error())
+	}
+	return b
 }
 
 // pdfFontFamily maps a user's CSS font preference to a FreeFont family name.
@@ -117,15 +119,16 @@ func GetTimeReportPDF(c *gin.Context) {
 	// ── Build PDF ────────────────────────────────────────────────
 
 	pdf := gofpdf.New("P", "mm", "A4", "")
-	pdf.SetFontLoader(embeddedFontLoader{})
 	pdf.AliasNbPages("{nb}")
 	pdf.SetMargins(pdfMargin, pdfMargin, pdfMargin)
 	pdf.SetAutoPageBreak(true, 20)
 
-	// Register FreeFont families (regular + bold).
+	// Register FreeFont families (regular + bold) directly from embedded bytes.
+	// AddUTF8Font in gofpdf v1 does not use SetFontLoader, so we use
+	// AddUTF8FontFromBytes which accepts raw TTF bytes.
 	for _, fam := range []string{"FreeSans", "FreeSerif", "FreeMono"} {
-		pdf.AddUTF8Font(fam, "", fam+".ttf")
-		pdf.AddUTF8Font(fam, "B", fam+"Bold.ttf")
+		pdf.AddUTF8FontFromBytes(fam, "", mustFont(fam+".ttf"))
+		pdf.AddUTF8FontFromBytes(fam, "B", mustFont(fam+"Bold.ttf"))
 	}
 
 	// Footer — repeated on every page.
@@ -289,10 +292,12 @@ func GetTimeReportPDF(c *gin.Context) {
 	}
 	filename += ".pdf"
 
-	c.Header("Content-Type", "application/pdf")
-	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
-	if err := pdf.Output(c.Writer); err != nil {
-		// Headers already sent; nothing more to do.
+	var buf bytes.Buffer
+	if err := pdf.Output(&buf); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "pdf generation failed: " + err.Error()})
 		return
 	}
+
+	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
+	c.Data(http.StatusOK, "application/pdf", buf.Bytes())
 }
