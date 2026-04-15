@@ -51,6 +51,26 @@ pub fn run() {
                         );
                     }
                 })?;
+
+                // On Windows, WebView2's autofill/credential service sends a
+                // synchronous IPC message to its browser process on every
+                // keystroke in any field it classifies as a password field
+                // (including ones disguised with -webkit-text-security).
+                // Disabling both autofill settings eliminates that round-trip
+                // and removes the typing lag on the login screen.
+                #[cfg(target_os = "windows")]
+                win.with_webview(|wv| {
+                    use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings2;
+                    use windows::core::Interface;
+                    unsafe {
+                        let Ok(core) = wv.controller().CoreWebView2() else { return };
+                        let Ok(settings) = core.Settings() else { return };
+                        if let Ok(s2) = settings.cast::<ICoreWebView2Settings2>() {
+                            let _ = s2.SetIsGeneralAutofillEnabled(false);
+                            let _ = s2.SetIsPasswordAutosaveEnabled(false);
+                        }
+                    }
+                })?;
             }
             Ok(())
         })
