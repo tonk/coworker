@@ -57,29 +57,9 @@ func isoWeekStart(year, week int) time.Time {
 	return monday.AddDate(0, 0, (week-jan4Week)*7)
 }
 
-// GetTimeReport godoc
-// @Summary      Get time report data
-// @Tags         reports
-// @Produce      json
-// @Security     BearerAuth
-// @Param        period query string false "all|year|month|week"
-// @Param        year query int false "Year filter"
-// @Param        month query int false "Month filter"
-// @Param        week query int false "Week filter"
-// @Param        project query string false "Project slug filter"
-// @Param        assignees query string false "Comma-separated user IDs"
-// @Success      200 {object} map[string]interface{}
-// @Failure      403 {object} map[string]string
-// @Router       /reports/time [get]
-func GetTimeReport(c *gin.Context) {
-	userID := middleware.GetUserID(c)
-	globalRole := middleware.GetGlobalRole(c)
-
-	if !userCanViewReports(userID, globalRole) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "reports are only available to project admins and system admins"})
-		return
-	}
-
+// assembleTimeReport builds the report data from query params.
+// Returns (data, httpStatus, errMsg). httpStatus == 0 means success.
+func assembleTimeReport(c *gin.Context, userID uint, globalRole string) (*TimeReportResponse, int, string) {
 	period := c.DefaultQuery("period", "all")
 	projectSlug := c.Query("project")
 	yearStr := c.Query("year")
@@ -92,12 +72,10 @@ func GetTimeReport(c *gin.Context) {
 	if projectSlug != "" && projectSlug != "all" {
 		project, err := services.GetProjectBySlug(projectSlug)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
-			return
+			return nil, http.StatusNotFound, "project not found"
 		}
 		if err := services.RequireProjectRole(project.ID, userID, globalRole, "viewer"); err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
-			return
+			return nil, http.StatusForbidden, "forbidden"
 		}
 		query = query.Where("project_id = ?", project.ID)
 	} else if globalRole != "admin" {
@@ -105,15 +83,14 @@ func GetTimeReport(c *gin.Context) {
 		database.DB.Model(&models.ProjectMember{}).Where("user_id = ?", userID).Pluck("project_id", &memberProjectIDs)
 		if len(memberProjectIDs) == 0 {
 			settings := loadAllSettings()
-			c.JSON(http.StatusOK, TimeReportResponse{
+			return &TimeReportResponse{
 				GeneratedAt: time.Now().UTC().Format("2006-01-02 15:04"),
 				Period:      period,
 				PeriodLabel: "All Time",
 				Projects:    []ReportProject{},
 				CompanyName: settings["company_name"],
 				CompanyLogo: settings["company_logo"],
-			})
-			return
+			}, 0, ""
 		}
 		query = query.Where("project_id IN ?", memberProjectIDs)
 	}
@@ -158,7 +135,6 @@ func GetTimeReport(c *gin.Context) {
 		query = query.Where("updated_at >= ? AND updated_at < ?", start, end)
 	}
 
-	// Filter by assignees if specified
 	if assigneesStr != "" {
 		var assigneeIDs []uint
 		for _, s := range strings.Split(assigneesStr, ",") {
@@ -250,7 +226,7 @@ func GetTimeReport(c *gin.Context) {
 	})
 
 	settings := loadAllSettings()
-	c.JSON(http.StatusOK, TimeReportResponse{
+	return &TimeReportResponse{
 		GeneratedAt:  now.Format("2006-01-02 15:04"),
 		Period:       period,
 		PeriodLabel:  periodLabel,
@@ -258,5 +234,36 @@ func GetTimeReport(c *gin.Context) {
 		TotalMinutes: totalMinutes,
 		CompanyName:  settings["company_name"],
 		CompanyLogo:  settings["company_logo"],
-	})
+	}, 0, ""
+}
+
+// GetTimeReport godoc
+// @Summary      Get time report data
+// @Tags         reports
+// @Produce      json
+// @Security     BearerAuth
+// @Param        period query string false "all|year|month|week"
+// @Param        year query int false "Year filter"
+// @Param        month query int false "Month filter"
+// @Param        week query int false "Week filter"
+// @Param        project query string false "Project slug filter"
+// @Param        assignees query string false "Comma-separated user IDs"
+// @Success      200 {object} map[string]interface{}
+// @Failure      403 {object} map[string]string
+// @Router       /reports/time [get]
+func GetTimeReport(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
+
+	if !userCanViewReports(userID, globalRole) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "reports are only available to project admins and system admins"})
+		return
+	}
+
+	report, status, errMsg := assembleTimeReport(c, userID, globalRole)
+	if status != 0 {
+		c.JSON(status, gin.H{"error": errMsg})
+		return
+	}
+	c.JSON(http.StatusOK, report)
 }

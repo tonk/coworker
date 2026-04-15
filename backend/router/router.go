@@ -135,6 +135,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 
 		// Reports
 		protected.GET("/reports/time", handlers.GetTimeReport)
+		protected.GET("/reports/time/pdf", handlers.GetTimeReportPDF)
 
 		// Prometheus metrics (admin or metrics role)
 		protected.GET("/metrics", middleware.MetricsAuth(), handlers.GetMetrics)

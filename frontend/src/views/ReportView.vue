@@ -253,8 +253,25 @@ async function loadReport() {
   }
 }
 
-function exportPDF() {
-  window.print()
+async function exportPDF() {
+  if (!report.value) return
+  try {
+    const params = { period: filters.value.period }
+    if (filters.value.period !== 'all') params.year = filters.value.year
+    if (filters.value.period === 'month') params.month = filters.value.month
+    if (filters.value.period === 'week') params.week = filters.value.week
+    if (filters.value.project !== 'all') params.project = filters.value.project
+    if (filters.value.assignees.length) params.assignees = filters.value.assignees.join(',')
+    const { data } = await reportsApi.getTimeReportPDF(params)
+    const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'time-report.pdf'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 async function exportXLSX() {

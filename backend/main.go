@@ -70,6 +70,7 @@ func main() {
 	handlers.SetVersion(version)
 	handlers.InitSystemDefaults(cfg)
 	handlers.InitAttachments(cfg)
+	handlers.InitReport(cfg)
 
 	emailSvc := services.NewEmailService(cfg.SMTP)
 	// Allow the email service to read live SMTP settings from the DB after startup
