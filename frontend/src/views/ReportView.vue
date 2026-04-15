@@ -174,7 +174,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { projectsApi } from '@/api/projects'
 import { reportsApi } from '@/api/reports'
@@ -187,7 +187,8 @@ const { formatDateTime } = useDateFormat()
 
 const loading = ref(false)
 const report = ref(null)
-const pdfFont = ref('inter')
+const pdfFont = ref(localStorage.getItem('report.pdfFont') || 'inter')
+watch(pdfFont, v => localStorage.setItem('report.pdfFont', v))
 const projects = ref([])
 const allUsers = ref([])
 const showAssigneeDropdown = ref(false)
