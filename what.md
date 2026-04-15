@@ -297,3 +297,7 @@ Create an application that has all these features and requirements
 - Reduce Windows desktop app login-screen typing lag: hide WebView2 password-reveal button (`::-ms-reveal`), disable spellcheck/autocorrect/autocapitalize on credential inputs, and disable WebView2 autofill IPC via ICoreWebView2Settings4 in Tauri Rust setup
 - Expand INSTALL.md desktop build prerequisites with per-platform details (Linux: Ubuntu 24.04 required for correct HarfBuzz; macOS: Xcode CLI tools + universal Rust targets; Windows: Go + Node.js + rustup-init.exe + WebView2 pre-installed)
 - Allow the card prefix (e.g. PRJ in PRJ-42) to be set when creating a project; auto-generated from the name but fully editable; 1–10 uppercase letters or digits; live preview shown; forced uppercase on input; cannot be changed after creation
+- PDF language selector in report export: choose output language (EN/NL/DE/FR/ES) independently of the UI language; Auto follows current locale; persisted in localStorage
+- Per-project subtotal shown as white pill badge on the right of each project header bar in exported PDFs, matching the on-screen report
+- Fix PDF export HTTP 500 when company logo is a PNG with alpha channel: composite over white before embedding
+- Suppress WebSocket close-1005 log noise: normal browser navigation/tab-close event, not an error

@@ -69,8 +69,8 @@ and asked Claude Code to generate the app.
 - **Multiple assignees** — assign more than one user to a card
 - **Watchers** — subscribe to card activity
 - **Favourite people** — mark users for quick access
-- **Time reports** — generate a time overview filtered by period (all / year / month / week), project, and one or more assignees; export to PDF (report only, no sidebar) or Excel (XLSX); time displayed as H:MM
-- **Company branding** — set a company name and logo that appears on reports
+- **Time reports** — generate a time overview filtered by period (all / year / month / week), project, and one or more assignees; export to server-generated PDF (selectable font and output language, company logo, per-project subtotal badges) or Excel (XLSX); time displayed as H:MM
+- **Company branding** — set a company name and logo (JPG, PNG, GIF, WebP, or SVG) that appears on reports
 - **Configurable initial columns** — admin can define which columns are created when a new project is made (defaults to "Backlog")
 - **Ticket API** — create cards, add comments, and move cards via API key (for CI/CD pipelines and external integrations); API keys also work on all other authenticated endpoints
 - **Project-scoped API keys** — keys created in Project Settings are locked to that project; personal API keys in User Settings give full access across all projects

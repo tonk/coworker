@@ -2,6 +2,16 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.9 — 2026-04-15
+
+### Added
+- **PDF language selector** — a new **PDF Language** dropdown in the report export bar lets you choose the language used for all labels in the exported PDF (column headers, subtotals, grand total, footer) independently of your UI language; **Auto** follows the current interface language; manual options are English, Nederlands, Deutsch, Français, and Español; selection is remembered across sessions — useful when the UI is in one language but the report is intended for someone using another
+- **Per-project subtotal pill badge in PDF** — each project header bar in the exported PDF now shows the project total time as a white rounded pill on the right, matching the on-screen report
+
+### Fixed
+- **PDF export crashes with HTTP 500 when company logo is a PNG with transparency** — PNG images with an alpha channel are now composited over a white background before embedding in the PDF; gofpdf cannot handle RGBA PNGs and previously set an internal error that caused the entire export to fail
+- **WebSocket close-1005 messages logged as errors** — close code 1005 ("no status received") is sent by browsers on normal navigation and tab close; it is no longer logged as an unexpected error
+
 ## v0.6.8 — 2026-04-15
 
 ### Added
