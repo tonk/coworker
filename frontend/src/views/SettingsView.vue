@@ -29,6 +29,7 @@
               <div style="display:flex;gap:8px;align-items:center">
                 <input class="form-input" v-model="form.avatar_url" :placeholder="$t('settings.avatar_url_placeholder')" style="flex:1" />
                 <button type="button" class="btn btn-secondary btn-sm" @click="$refs.avatarFileInput.click()">{{ $t('settings.upload_avatar') }}</button>
+                <button v-if="form.avatar_url" type="button" class="btn btn-danger btn-sm" @click="clearAvatar">{{ $t('common.clear') }}</button>
               </div>
               <input ref="avatarFileInput" type="file" accept="image/*" style="display:none" @change="onAvatarFileSelected" />
               <div class="avatar-preview" v-if="form.avatar_url" style="margin-top:8px">
@@ -384,6 +385,11 @@ onMounted(async () => {
     }
   }
 })
+
+async function clearAvatar() {
+  form.value.avatar_url = ''
+  await saveProfile()
+}
 
 async function saveProfile() {
   savingProfile.value = true

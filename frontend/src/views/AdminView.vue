@@ -284,8 +284,9 @@
             <div class="form-group" style="max-width:400px">
               <label class="form-label">{{ $t('admin.company_logo') }}</label>
               <input class="form-input" v-model="systemSettings.company_logo" :placeholder="'https://...'" style="margin-bottom:8px" />
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                 <button class="btn btn-secondary btn-sm" @click="$refs.logoFileInput.click()">{{ $t('admin.company_logo_upload') }}</button>
+                <button v-if="systemSettings.company_logo" class="btn btn-danger btn-sm" @click="clearCompanyLogo">{{ $t('common.clear') }}</button>
                 <span class="form-hint" style="margin:0">{{ $t('admin.company_logo_hint') }}</span>
               </div>
               <input ref="logoFileInput" type="file" accept="image/*" style="display:none" @change="onLogoFileSelected" />
@@ -679,6 +680,11 @@ async function onLogoFileSelected(e) {
   } catch {
     ui.error('Failed to upload image')
   }
+}
+
+async function clearCompanyLogo() {
+  systemSettings.value.company_logo = ''
+  await saveBrandingSettings()
 }
 
 async function saveBrandingSettings() {

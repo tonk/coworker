@@ -283,6 +283,7 @@
   "common": {
     "save": "Speichern",
     "cancel": "Abbrechen",
+    "clear": "Löschen",
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "create": "Erstellen",

@@ -271,7 +271,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		LastName           string `json:"last_name"`
 		DisplayName        string `json:"display_name"`
 		Email              string `json:"email"`
-		AvatarURL          string `json:"avatar_url"`
+		AvatarURL          *string `json:"avatar_url"`
 		Locale             string `json:"locale"`
 		Theme              string `json:"theme"`
 		DateTimeFormat     string `json:"date_time_format"`
@@ -300,8 +300,8 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	if req.Email != "" {
 		updates["email"] = strings.ToLower(req.Email)
 	}
-	if req.AvatarURL != "" {
-		updates["avatar_url"] = req.AvatarURL
+	if req.AvatarURL != nil {
+		updates["avatar_url"] = *req.AvatarURL
 	}
 	validLocales := map[string]bool{"en": true, "nl": true, "de": true, "fr": true, "es": true}
 	if validLocales[req.Locale] {

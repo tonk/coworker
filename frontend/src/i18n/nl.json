@@ -283,6 +283,7 @@
   "common": {
     "save": "Opslaan",
     "cancel": "Annuleren",
+    "clear": "Wissen",
     "delete": "Verwijderen",
     "edit": "Bewerken",
     "create": "Aanmaken",
