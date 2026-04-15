@@ -376,6 +376,11 @@ Metrics exposed:
 Admins can create, rename, archive, and delete any project regardless of
 project membership. Access via **Admin → Projects**.
 
+When creating a project the **Card Prefix** field sets the short identifier
+used in all card references (e.g. `PRJ-42`). It is auto-generated from the
+project name but can be freely edited before saving — 1–10 uppercase letters
+or digits. The prefix **cannot be changed after the project is created**.
+
 ### System settings
 
 All settings under **Admin → Settings** take effect **immediately without a

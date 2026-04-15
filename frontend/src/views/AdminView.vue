@@ -462,10 +462,23 @@
   </BaseModal>
 
   <!-- Create Project Modal -->
-  <BaseModal v-if="showCreateProject" :title="$t('project.new_project')" @close="showCreateProject = false">
+  <BaseModal v-if="showCreateProject" :title="$t('project.new_project')" @close="showCreateProject = false; newProject.key_prefix = ''; prefixTouched = false">
     <div class="form-group">
       <label class="form-label">{{ $t('project.project_name') }} *</label>
       <input class="form-input" v-model="newProject.name" autofocus />
+    </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('project.key_prefix') }} *</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input
+          class="form-input"
+          style="width:120px;text-transform:uppercase;font-family:monospace"
+          :value="newProject.key_prefix"
+          maxlength="10"
+          @input="e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); e.target.value = v; newProject.key_prefix = v; prefixTouched = true }"
+        />
+        <span style="font-size:13px;color:var(--color-text-muted)">{{ $t('project.key_prefix_hint') }} &nbsp;<code style="color:var(--color-primary)">{{ newProject.key_prefix || '???' }}-1</code></span>
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label">{{ $t('project.description') }}</label>
@@ -477,7 +490,7 @@
     </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showCreateProject = false">{{ $t('common.cancel') }}</button>
-      <button class="btn btn-primary" :disabled="!newProject.name.trim()" @click="submitCreateProject">{{ $t('common.create') }}</button>
+      <button class="btn btn-primary" :disabled="!newProject.name.trim() || !newProject.key_prefix.trim()" @click="submitCreateProject">{{ $t('common.create') }}</button>
     </template>
   </BaseModal>
 
@@ -503,7 +516,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { adminApi } from '@/api/admin'
 import { attachmentsApi } from '@/api/attachments'
@@ -528,7 +541,24 @@ const editUser = ref(null)
 const editProject = ref(null)
 const showCreateUser = ref(false)
 const showCreateProject = ref(false)
-const newProject = ref({ name: '', description: '', color: '#6366f1' })
+const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '' })
+const prefixTouched = ref(false)
+
+// Mirror GenerateKeyPrefix from the backend so the field auto-fills as the user types.
+function autoPrefix(name) {
+  const words = name.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean)
+  let r = ''
+  for (const w of words) { if (r.length >= 3) break; r += w[0] }
+  if (r.length < 3 && words.length > 0) {
+    for (let i = 1; i < words[0].length && r.length < 3; i++) r += words[0][i]
+  }
+  while (r.length < 3) r += 'X'
+  return r.slice(0, 3)
+}
+
+watch(() => newProject.value.name, (name) => {
+  if (!prefixTouched.value) newProject.value.key_prefix = autoPrefix(name)
+})
 const newUser = ref({ username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user' })
 const userProjectIds = ref([])
 
@@ -843,7 +873,8 @@ async function submitCreateProject() {
     const { data } = await adminApi.createProject(newProject.value)
     projects.value.unshift(data)
     showCreateProject.value = false
-    newProject.value = { name: '', description: '', color: '#6366f1' }
+    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '' }
+    prefixTouched.value = false
     ui.success('Project created')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to create project')

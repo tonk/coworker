@@ -45,6 +45,8 @@
     "project_name": "Projectnaam",
     "description": "Beschrijving",
     "color": "Kleur",
+    "key_prefix": "Kaartprefix",
+    "key_prefix_hint": "bijv.",
     "create": "Project aanmaken",
     "settings": "Projectinstellingen",
     "members": "Leden",

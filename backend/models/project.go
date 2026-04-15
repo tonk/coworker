@@ -16,7 +16,7 @@ type Project struct {
 	Slug         string         `gorm:"uniqueIndex;not null;size:100" json:"slug"`
 	Color        string         `gorm:"size:7" json:"color"`
 	IsArchived   bool           `gorm:"default:false" json:"is_archived"`
-	KeyPrefix    string         `gorm:"size:3;not null;default:''" json:"key_prefix"`
+	KeyPrefix    string         `gorm:"size:10;not null;default:''" json:"key_prefix"`
 	Position     int            `gorm:"default:0" json:"position"`
 	CardCounter  int            `gorm:"default:0" json:"-"`
 	CustomerID   *uint          `gorm:"index" json:"customer_id,omitempty"`

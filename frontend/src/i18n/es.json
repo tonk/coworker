@@ -45,6 +45,8 @@
     "project_name": "Nombre del proyecto",
     "description": "Descripción",
     "color": "Color",
+    "key_prefix": "Prefijo de tarjeta",
+    "key_prefix_hint": "ej.",
     "create": "Crear proyecto",
     "settings": "Configuración del proyecto",
     "members": "Miembros",

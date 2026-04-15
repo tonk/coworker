@@ -45,6 +45,8 @@
     "project_name": "Project Name",
     "description": "Description",
     "color": "Color",
+    "key_prefix": "Card Prefix",
+    "key_prefix_hint": "e.g.",
     "create": "Create Project",
     "settings": "Project Settings",
     "members": "Members",

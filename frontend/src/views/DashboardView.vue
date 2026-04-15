@@ -46,11 +46,24 @@
       </div>
   </main>
 
-  <BaseModal v-if="showCreate" :title="$t('project.new_project')" @close="showCreate = false">
+  <BaseModal v-if="showCreate" :title="$t('project.new_project')" @close="showCreate = false; newProject.key_prefix = ''; prefixTouched = false">
       <form @submit.prevent="handleCreate">
         <div class="form-group">
           <label class="form-label">{{ $t('project.project_name') }}</label>
           <input class="form-input" v-model="newProject.name" required autofocus />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ $t('project.key_prefix') }} *</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input
+              class="form-input"
+              style="width:120px;text-transform:uppercase;font-family:monospace"
+              :value="newProject.key_prefix"
+              maxlength="10"
+              @input="e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); e.target.value = v; newProject.key_prefix = v; prefixTouched = true }"
+            />
+            <span style="font-size:13px;color:var(--color-text-muted)">{{ $t('project.key_prefix_hint') }} &nbsp;<code style="color:var(--color-primary)">{{ newProject.key_prefix || '???' }}-1</code></span>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('project.description') }}</label>
@@ -63,13 +76,13 @@
       </form>
       <template #footer>
         <button class="btn btn-secondary" @click="showCreate = false">{{ $t('common.cancel') }}</button>
-        <button class="btn btn-primary" @click="handleCreate" :disabled="creating">{{ $t('project.create') }}</button>
+        <button class="btn btn-primary" @click="handleCreate" :disabled="creating || !newProject.key_prefix.trim()">{{ $t('project.create') }}</button>
       </template>
   </BaseModal>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import Sortable from 'sortablejs'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -89,7 +102,23 @@ let sortable = null
 
 const isAdmin = computed(() => auth.user?.global_role === 'admin')
 const creating = ref(false)
-const newProject = ref({ name: '', description: '', color: '#6366f1' })
+const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '' })
+const prefixTouched = ref(false)
+
+function autoPrefix(name) {
+  const words = name.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean)
+  let r = ''
+  for (const w of words) { if (r.length >= 3) break; r += w[0] }
+  if (r.length < 3 && words.length > 0) {
+    for (let i = 1; i < words[0].length && r.length < 3; i++) r += words[0][i]
+  }
+  while (r.length < 3) r += 'X'
+  return r.slice(0, 3)
+}
+
+watch(() => newProject.value.name, (name) => {
+  if (!prefixTouched.value) newProject.value.key_prefix = autoPrefix(name)
+})
 
 onMounted(async () => {
   await projectStore.fetchProjects()
@@ -125,7 +154,8 @@ async function handleCreate() {
   try {
     const project = await projectStore.createProject(newProject.value)
     showCreate.value = false
-    newProject.value = { name: '', description: '', color: '#6366f1' }
+    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '' }
+    prefixTouched.value = false
     router.push(`/projects/${project.slug}`)
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to create project')

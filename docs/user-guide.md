@@ -101,10 +101,16 @@ preference) themes. Change the theme in User Settings at any time.
 
 ### Creating a project
 
-Click **+ New Project** in the sidebar or on the dashboard. Give the project a
-name, optional description, and colour. Each project gets a short **key prefix**
-(e.g. `PRJ`) derived from its name, used in card references like `PRJ-42`. You
-can view and reference this prefix on any card detail.
+Click **+ New Project** on the dashboard. Fill in:
+
+| Field | Notes |
+|-------|-------|
+| **Name** | Required. The project's display name. |
+| **Card Prefix** | 1–10 uppercase letters or digits (e.g. `PRJ`). Auto-generated from the name but fully editable. Used in all card references like `PRJ-42`. **Cannot be changed after the project is created.** |
+| **Description** | Optional free-text summary. |
+| **Colour** | Accent colour shown on the dashboard tile and board toolbar. |
+
+The live preview next to the Card Prefix field shows what card references will look like (e.g. `PRJ-1`).
 
 ### Project members
 

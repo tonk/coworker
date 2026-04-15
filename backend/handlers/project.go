@@ -3,6 +3,7 @@ package handlers
 import (
 	"cmp"
 	"net/http"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/tonk/warmdesk/models"
 	"github.com/tonk/warmdesk/services"
 )
+
+var keyPrefixRe = regexp.MustCompile(`^[A-Z0-9]{1,10}$`)
 
 // labelPalette is cycled through when assigning colors to default labels.
 var labelPalette = []string{
@@ -139,6 +142,7 @@ func CreateProject(c *gin.Context) {
 		Name        string `json:"name" binding:"required,min=1,max=200"`
 		Description string `json:"description"`
 		Color       string `json:"color"`
+		KeyPrefix   string `json:"key_prefix"`
 		CustomerID  *uint  `json:"customer_id"`
 		ContractID  *uint  `json:"contract_id"`
 	}
@@ -147,12 +151,22 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
+	keyPrefix := strings.ToUpper(strings.TrimSpace(req.KeyPrefix))
+	if keyPrefix != "" {
+		if !keyPrefixRe.MatchString(keyPrefix) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "card prefix must be 1–10 uppercase letters or digits"})
+			return
+		}
+	} else {
+		keyPrefix = services.GenerateKeyPrefix(req.Name)
+	}
+
 	project := models.Project{
 		Name:        req.Name,
 		Description: req.Description,
 		Color:       req.Color,
 		Slug:        services.GenerateSlug(req.Name),
-		KeyPrefix:   services.GenerateKeyPrefix(req.Name),
+		KeyPrefix:   keyPrefix,
 		CreatedByID: userID,
 		CustomerID:  req.CustomerID,
 		ContractID:  req.ContractID,

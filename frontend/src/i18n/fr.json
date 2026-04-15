@@ -45,6 +45,8 @@
     "project_name": "Nom du projet",
     "description": "Description",
     "color": "Couleur",
+    "key_prefix": "Préfixe de carte",
+    "key_prefix_hint": "ex.",
     "create": "Créer le projet",
     "settings": "Paramètres du projet",
     "members": "Membres",
