@@ -1,3 +1,4 @@
+---
 basePath: /api/v1
 definitions:
   handlers.loginRequest:

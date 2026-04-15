@@ -1,3 +1,4 @@
+---
 # warmdesk-migrate.yaml — configuration for warmdesk-export and warmdesk-import
 #
 # Sensitive values (passwords, tokens) can be provided as environment variables

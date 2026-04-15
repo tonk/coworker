@@ -1,0 +1,17 @@
+---
+namespace: ansilab
+name: warmdesk
+version: 0.1.0
+readme: README.md
+description: >
+  Ansible collection to manage WarmDesk — users, projects, boards,
+  customers, contracts and system settings via the WarmDesk REST API.
+license:
+  - GPL-2.0-or-later
+authors:
+  - Ton Kersten
+tags:
+  - warmdesk
+  - project_management
+  - kanban
+dependencies: {}

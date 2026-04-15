@@ -40,6 +40,11 @@ frontend/package-lock.json
 warmdesk.yaml
 *.local.yaml
 
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+
 # ── OS / editor artifacts ─────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
@@ -49,3 +54,5 @@ Thumbs.db
 *.swo
 *~
 backend/seed
+backend/training
+backend/cmd/training/
