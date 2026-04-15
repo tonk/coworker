@@ -11,7 +11,8 @@
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
             <label class="form-label">{{ $t('auth.email') }} / {{ $t('auth.username') }}</label>
-            <input class="form-input" v-model="form.login" required autofocus />
+            <input class="form-input" v-model="form.login" required autofocus
+              spellcheck="false" autocorrect="off" autocapitalize="off" />
           </div>
           <div class="form-group">
             <label class="form-label">{{ $t('auth.password') }}</label>
@@ -24,6 +25,7 @@
               :type="isTauri ? 'text' : 'password'"
               :class="{ 'input-masked': isTauri }"
               :autocomplete="isTauri ? 'off' : 'current-password'"
+              spellcheck="false" autocorrect="off" autocapitalize="off"
               v-model="form.password"
               required
             />
