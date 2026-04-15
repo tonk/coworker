@@ -326,35 +326,65 @@ Then follow steps 3–7 above.
 
 ## 14. Desktop App Builds
 
-The desktop apps are Tauri 2 wrappers around the same frontend. They require
-Rust and the system libraries listed below in addition to the normal
-prerequisites.
+The desktop apps are Tauri 2 wrappers around the same frontend. Each platform
+must be built natively — cross-compilation is not supported.
 
-### System libraries
+### Prerequisites by platform
 
-**Ubuntu / Debian**
-```bash
-sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev libssl-dev \
-  libsoup-3.0-dev libglib2.0-dev librsvg2-dev squashfs-tools
-```
+#### Linux (AppImage)
 
-**RHEL / Fedora**
-```bash
-sudo dnf install gtk3-devel webkit2gtk4.1-devel openssl-devel \
-  libsoup3-devel glib2-devel librsvg2-devel squashfs-tools
-```
+> **Important:** build on **Ubuntu 24.04**. Ubuntu 22.04 bundles an old
+> HarfBuzz (2.7.4) into the AppImage which breaks font rendering and causes a
+> webkit2gtk crash on Fedora 43 and other modern distros.
 
-**macOS** — no extra libraries needed beyond Xcode Command Line Tools.
+- Go 1.25+, Node.js 20+, GCC (see sections 1–3 above)
+- Rust (via [rustup](https://rustup.rs)):
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  source "$HOME/.cargo/env"
+  ```
+- System libraries — **Ubuntu 24.04**:
+  ```bash
+  sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev libssl-dev \
+    libsoup-3.0-dev libglib2.0-dev librsvg2-dev squashfs-tools
+  ```
+- System libraries — **RHEL / Fedora**:
+  ```bash
+  sudo dnf install gtk3-devel webkit2gtk4.1-devel openssl-devel \
+    libsoup3-devel glib2-devel librsvg2-devel squashfs-tools
+  ```
 
-**Windows** — no extra libraries needed; the NSIS installer tool is
-downloaded automatically by Tauri.
+#### macOS (DMG)
+
+- Go 1.25+, Node.js 20+ (see sections 1–2 above)
+- Xcode Command Line Tools:
+  ```bash
+  xcode-select --install
+  ```
+- Rust (via [rustup](https://rustup.rs)):
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  source "$HOME/.cargo/env"
+  # Add both targets for a universal (Apple Silicon + Intel) binary
+  rustup target add aarch64-apple-darwin x86_64-apple-darwin
+  ```
+- No extra system libraries needed.
+
+#### Windows (installer / portable)
+
+- Go 1.25+ — download from https://go.dev/dl/
+- Node.js 20+ — download from https://nodejs.org/ (LTS recommended)
+- Rust (via [rustup](https://rustup.rs)) — download the `rustup-init.exe` installer
+- WebView2 — pre-installed on Windows 10 (2018+) and Windows 11; nothing to do
+- NSIS (installer only) — downloaded automatically by Tauri during the build
 
 ### Build
 
 ```bash
-make appimage          # Linux — WarmDesk-vX.Y.Z-x86_64.AppImage
-make dmg               # macOS — WarmDesk-vX.Y.Z-universal.dmg
-make windows-installer # Windows — WarmDesk-vX.Y.Z-x64-setup.exe
+make appimage          # Linux  — WarmDesk-vX.Y.Z-x86_64.AppImage
+make dmg               # macOS  — WarmDesk-vX.Y.Z-universal.dmg
+make windows-installer # Windows — WarmDesk_vX.Y.Z_x64-setup.exe
+make windows-portable  # Windows — WarmDesk-portable.zip (no installation needed)
 ```
 
 Output is placed in `frontend/src-tauri/target/release/bundle/`.

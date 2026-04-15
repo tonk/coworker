@@ -15,7 +15,18 @@
           </div>
           <div class="form-group">
             <label class="form-label">{{ $t('auth.password') }}</label>
-            <input class="form-input" type="password" v-model="form.password" required />
+            <!-- In Tauri, type="password" triggers WebView2's PasswordAutofillAgent which
+                 sends a synchronous IPC message on every keystroke, causing severe typing lag.
+                 Switching to type="text" with -webkit-text-security: disc gives identical
+                 visual masking while bypassing the credential IPC entirely. -->
+            <input
+              class="form-input"
+              :type="isTauri ? 'text' : 'password'"
+              :class="{ 'input-masked': isTauri }"
+              :autocomplete="isTauri ? 'off' : 'current-password'"
+              v-model="form.password"
+              required
+            />
           </div>
           <p v-if="error" class="auth-error">{{ error }}</p>
           <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
@@ -219,4 +230,8 @@ async function handleMFASubmit() {
   color: var(--color-text-muted);
   opacity: 0.6;
 }
+
+/* Visually mask text like a password field without triggering WebView2's
+   PasswordAutofillAgent (which causes per-keystroke IPC lag on Windows). */
+.input-masked { -webkit-text-security: disc; }
 </style>
