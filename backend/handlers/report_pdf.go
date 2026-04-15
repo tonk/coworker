@@ -131,6 +131,21 @@ func GetTimeReportPDF(c *gin.Context) {
 		pdf.AddUTF8FontFromBytes(fam, "B", mustFont(fam+"Bold.ttf"))
 	}
 
+	// PDF metadata.
+	title := "Time Report — " + report.PeriodLabel
+	author := user.DisplayName
+	if author == "" {
+		author = user.Username
+	}
+	company := report.CompanyName
+	if company == "" {
+		company = "WarmDesk"
+	}
+	pdf.SetTitle(title, true)
+	pdf.SetAuthor(author, true)
+	pdf.SetSubject(company+" — "+title, true)
+	pdf.SetCreator(company, true)
+
 	// Footer — repeated on every page.
 	ff := fontFamily
 	rpt := report
