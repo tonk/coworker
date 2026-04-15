@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"image"
+	"image/png"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,6 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jung-kurt/gofpdf"
+	"github.com/srwiley/oksvg"
+	"github.com/srwiley/rasterx"
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/middleware"
@@ -139,6 +143,64 @@ func setFill(pdf *gofpdf.Fpdf, c rgb) { pdf.SetFillColor(c.r, c.g, c.b) }
 func setDraw(pdf *gofpdf.Fpdf, c rgb) { pdf.SetDrawColor(c.r, c.g, c.b) }
 func setTxt(pdf *gofpdf.Fpdf, c rgb)  { pdf.SetTextColor(c.r, c.g, c.b) }
 
+// svgToPNG rasterizes an SVG file to a PNG held in a bytes.Buffer.
+// heightMM is the desired output height in millimetres; width is derived from
+// the SVG's own aspect ratio. We render at 3× (≈ 216 dpi for A4) for crisp output.
+func svgToPNG(svgPath string, heightMM float64) (bytes.Buffer, error) {
+	f, err := os.Open(svgPath)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+	defer f.Close()
+
+	icon, err := oksvg.ReadIconStream(f)
+	if err != nil {
+		return bytes.Buffer{}, err
+	}
+
+	// Target pixel height at 3× (72 dpi base × 3 = 216 dpi).
+	const scale = 3.0
+	const dpi = 72.0
+	const mmPerInch = 25.4
+	pxH := int(heightMM / mmPerInch * dpi * scale)
+
+	// Derive width from the SVG viewport aspect ratio.
+	vw, vh := icon.ViewBox.W, icon.ViewBox.H
+	if vh == 0 {
+		vh = 1
+	}
+	pxW := int(float64(pxH) * vw / vh)
+	if pxW < 1 {
+		pxW = 1
+	}
+
+	icon.SetTarget(0, 0, float64(pxW), float64(pxH))
+
+	img := image.NewRGBA(image.Rect(0, 0, pxW, pxH))
+	// Fill with transparent white so the background is white in the PDF.
+	for i := range img.Pix {
+		img.Pix[i] = 255
+	}
+
+	scanner := rasterx.NewScannerGV(pxW, pxH, img, img.Bounds())
+	raster := rasterx.NewDasher(pxW, pxH, scanner)
+	icon.Draw(raster, 1.0)
+
+	// Set fully opaque alpha for all pixels (compose over white).
+	for i := 3; i < len(img.Pix); i += 4 {
+		if img.Pix[i] == 0 {
+			// Transparent pixel — already white from the fill above, make opaque.
+			img.Pix[i] = 255
+		}
+	}
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		return bytes.Buffer{}, err
+	}
+	return buf, nil
+}
+
 // GetTimeReportPDF generates the time report as a PDF file.
 func GetTimeReportPDF(c *gin.Context) {
 	userID := middleware.GetUserID(c)
@@ -214,7 +276,8 @@ func GetTimeReportPDF(c *gin.Context) {
 
 	// ── Page header ──────────────────────────────────────────────
 
-	// Try to load company logo (uploaded files only; skip SVG and external URLs).
+	// Try to load company logo (uploaded files only; skip external URLs).
+	// SVGs are rasterized to PNG in memory; raster formats are streamed directly.
 	logoY := pdfMargin
 	logoLoaded := false
 	if report.CompanyLogo != "" && strings.HasPrefix(report.CompanyLogo, "/uploads/") {
@@ -225,24 +288,35 @@ func GetTimeReportPDF(c *gin.Context) {
 		storedName := strings.TrimPrefix(report.CompanyLogo, "/uploads/")
 		logoPath := filepath.Join(uploadDir, storedName)
 		ext := strings.ToLower(filepath.Ext(logoPath))
-		imgType := ""
-		switch ext {
-		case ".jpg", ".jpeg":
-			imgType = "JPG"
-		case ".png":
-			imgType = "PNG"
-		case ".gif":
-			imgType = "GIF"
-		case ".webp":
-			imgType = "WEBP"
-		}
-		if imgType != "" {
-			if f, err := os.Open(logoPath); err == nil {
-				opts := gofpdf.ImageOptions{ImageType: imgType, ReadDpi: false}
-				pdf.RegisterImageOptionsReader("_logo", opts, f)
-				f.Close()
+
+		if ext == ".svg" {
+			// Rasterize SVG → PNG at 2× resolution for a crisp 18 mm logo.
+			if pngBuf, err := svgToPNG(logoPath, 18); err == nil {
+				opts := gofpdf.ImageOptions{ImageType: "PNG"}
+				pdf.RegisterImageOptionsReader("_logo", opts, &pngBuf)
 				pdf.ImageOptions("_logo", pdfMargin, logoY, 0, 18, false, opts, 0, "")
 				logoLoaded = true
+			}
+		} else {
+			imgType := ""
+			switch ext {
+			case ".jpg", ".jpeg":
+				imgType = "JPG"
+			case ".png":
+				imgType = "PNG"
+			case ".gif":
+				imgType = "GIF"
+			case ".webp":
+				imgType = "WEBP"
+			}
+			if imgType != "" {
+				if f, err := os.Open(logoPath); err == nil {
+					opts := gofpdf.ImageOptions{ImageType: imgType}
+					pdf.RegisterImageOptionsReader("_logo", opts, f)
+					f.Close()
+					pdf.ImageOptions("_logo", pdfMargin, logoY, 0, 18, false, opts, 0, "")
+					logoLoaded = true
+				}
 			}
 		}
 	}
