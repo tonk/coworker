@@ -441,7 +441,11 @@
     "subtotal": "Subtotaal",
     "grand_total": "Eindtotaal",
     "export_pdf": "Exporteren als PDF",
-    "export_xlsx": "Exporteren als Excel"
+    "export_xlsx": "Exporteren als Excel",
+    "pdf_font": "PDF-lettertype",
+    "pdf_font_sans": "Schreefloos (FreeSans)",
+    "pdf_font_serif": "Schreef (FreeSerif)",
+    "pdf_font_mono": "Monospace (FreeMono)"
   },
   "gantt": {
     "title": "Gantt",

@@ -441,7 +441,11 @@
     "subtotal": "Zwischensumme",
     "grand_total": "Gesamtsumme",
     "export_pdf": "Als PDF exportieren",
-    "export_xlsx": "Als Excel exportieren"
+    "export_xlsx": "Als Excel exportieren",
+    "pdf_font": "PDF-Schriftart",
+    "pdf_font_sans": "Serifenlos (FreeSans)",
+    "pdf_font_serif": "Serifen (FreeSerif)",
+    "pdf_font_mono": "Festbreite (FreeMono)"
   },
   "gantt": {
     "title": "Gantt",

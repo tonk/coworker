@@ -301,6 +301,10 @@
     "no_data": "No time entries found for the selected period.",
     "export_pdf": "Export PDF",
     "export_xlsx": "Export Excel",
+    "pdf_font": "PDF Font",
+    "pdf_font_sans": "Sans-serif (FreeSans)",
+    "pdf_font_serif": "Serif (FreeSerif)",
+    "pdf_font_mono": "Monospace (FreeMono)",
     "generated_at": "Generated",
     "loading": "Loading report...",
     "run": "Generate Report"

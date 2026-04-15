@@ -109,11 +109,19 @@ func GetTimeReportPDF(c *gin.Context) {
 		return
 	}
 
-	// Resolve user's font preference.
+	// Resolve font: explicit ?font= param wins, then user profile preference.
 	var user models.User
 	fontFamily := "FreeSans"
 	if err := database.DB.First(&user, userID).Error; err == nil {
 		fontFamily = pdfFontFamily(user.Font)
+	}
+	switch c.Query("font") {
+	case "sans":
+		fontFamily = "FreeSans"
+	case "serif":
+		fontFamily = "FreeSerif"
+	case "mono":
+		fontFamily = "FreeMono"
 	}
 
 	// ── Build PDF ────────────────────────────────────────────────

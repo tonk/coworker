@@ -74,6 +74,14 @@
         </div>
 
         <div class="export-row" v-if="report">
+          <div class="pdf-font-group">
+            <label class="filter-label">{{ $t('report.pdf_font') }}</label>
+            <select class="form-input" v-model="pdfFont">
+              <option value="sans">{{ $t('report.pdf_font_sans') }}</option>
+              <option value="serif">{{ $t('report.pdf_font_serif') }}</option>
+              <option value="mono">{{ $t('report.pdf_font_mono') }}</option>
+            </select>
+          </div>
           <button class="btn btn-secondary" @click="exportPDF">{{ $t('report.export_pdf') }}</button>
           <button class="btn btn-secondary" @click="exportXLSX">{{ $t('report.export_xlsx') }}</button>
         </div>
@@ -175,6 +183,7 @@ const { formatDateTime } = useDateFormat()
 
 const loading = ref(false)
 const report = ref(null)
+const pdfFont = ref('sans')
 const projects = ref([])
 const allUsers = ref([])
 const showAssigneeDropdown = ref(false)
@@ -262,6 +271,7 @@ async function exportPDF() {
     if (filters.value.period === 'week') params.week = filters.value.week
     if (filters.value.project !== 'all') params.project = filters.value.project
     if (filters.value.assignees.length) params.assignees = filters.value.assignees.join(',')
+    params.font = pdfFont.value
     const { data } = await reportsApi.getTimeReportPDF(params)
     const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
     const a = document.createElement('a')
@@ -426,10 +436,16 @@ onUnmounted(() => {
 .assignee-option input[type="checkbox"] { accent-color: var(--color-primary); cursor: pointer; }
 .export-row {
   display: flex;
+  align-items: flex-end;
   gap: 10px;
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--color-border);
+}
+.pdf-font-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 /* Report content */
