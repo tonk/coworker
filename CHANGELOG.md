@@ -2,6 +2,14 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.7 — 2026-04-15
+
+### Fixed
+- **Windows desktop app login-screen typing lag (further reduced)** — three additional mitigations applied: (1) WebView2's built-in password-reveal button is now hidden via `::-ms-reveal { display: none }`, removing a synchronous IPC round-trip that fired each time the password field gained focus; (2) `spellcheck`, `autocorrect`, and `autocapitalize` are disabled on both credential inputs, preventing the Windows Spell Check service IPC from running on every word boundary; (3) WebView2 autofill is disabled at the engine level via `ICoreWebView2Settings4::SetIsGeneralAutofillEnabled(false)` and `SetIsPasswordAutosaveEnabled(false)`, cutting the per-keystroke credential-manager IPC from the renderer to the browser process; some residual lag remains under investigation
+
+### Changed
+- **INSTALL.md desktop build prerequisites expanded** — section 14 now lists per-platform requirements in full: Linux requires Ubuntu 24.04 (older HarfBuzz bundled by Ubuntu 22.04 breaks font rendering on Fedora 43), Rust via rustup, and the appropriate system libraries; macOS requires Xcode Command Line Tools, Rust, and both architecture targets for a universal binary; Windows requires Go, Node.js, Rust via rustup-init.exe, and notes that WebView2 is pre-installed and NSIS is downloaded automatically
+
 ## v0.6.6 — 2026-04-14
 
 ### Added

@@ -294,3 +294,5 @@ Create an application that has all these features and requirements
 - Raise default password minimum length from 8 to 12 in system settings defaults
 - Seed: star all three demo projects and Acme Corporation + Globex Systems for the persistent tonk admin user
 - Fix INSTALL.md Go requirement (1.22 → 1.25) and first-admin instructions (first registered user is auto-promoted, no DB update needed)
+- Reduce Windows desktop app login-screen typing lag: hide WebView2 password-reveal button (`::-ms-reveal`), disable spellcheck/autocorrect/autocapitalize on credential inputs, and disable WebView2 autofill IPC via ICoreWebView2Settings4 in Tauri Rust setup
+- Expand INSTALL.md desktop build prerequisites with per-platform details (Linux: Ubuntu 24.04 required for correct HarfBuzz; macOS: Xcode CLI tools + universal Rust targets; Windows: Go + Node.js + rustup-init.exe + WebView2 pre-installed)
