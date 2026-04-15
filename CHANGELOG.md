@@ -2,6 +2,11 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.6.8 — 2026-04-15
+
+### Added
+- **Configurable card prefix** — the short identifier used in card references (e.g. `PRJ-42`) can now be set when creating a project; it auto-generates from the project name (same algorithm as before) but can be freely edited to any 1–10 uppercase letter/digit string; a live preview (e.g. `PRJ-1`) is shown next to the field; input is forced to uppercase as you type; the prefix cannot be changed after the project is created; available in both the dashboard **New Project** modal and the admin **Projects** panel
+
 ## v0.6.7 — 2026-04-15
 
 ### Fixed
