@@ -89,7 +89,7 @@
               <tr v-for="project in projects" :key="project.id">
                 <td>
                   <strong>{{ project.name }}</strong>
-                  <br><small>{{ project.slug }}</small>
+                  <br><small>{{ project.slug }} &middot; <code>{{ project.key_prefix }}</code></small>
                   <br><small>{{ project.description }}</small>
                 </td>
                 <td>
