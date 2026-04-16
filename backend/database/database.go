@@ -173,23 +173,32 @@ func applyMySQLTLS(cfg *config.Config) (string, error) {
 }
 
 // deduplicateKeyPrefixes ensures every project has a unique, non-empty
-// key_prefix before AutoMigrate adds the unique index. It runs in two passes:
+// key_prefix before AutoMigrate adds the unique index.
 //
-//  1. Projects with an existing (non-empty) prefix are processed oldest-first;
-//     duplicates get a numeric suffix (e.g. "PRJ" → "PRJ2", "PRJ3", …).
-//  2. Projects with an empty prefix are assigned a fresh unique prefix derived
-//     from the project name, also oldest-first.
+// The tricky case is a database that predates the key_prefix column entirely:
+// AutoMigrate would add the column (DEFAULT '') and the unique index in one
+// step, which fails immediately because every existing row gets ''.
 //
-// Both passes must complete before AutoMigrate or the unique index creation
-// will fail on the empty-string rows.
+// To handle that we add the column ourselves — without the unique index — if
+// it is not already present, then fill and deduplicate, and finally let
+// AutoMigrate add the unique index on clean data.
 func deduplicateKeyPrefixes(db *gorm.DB) error {
+	// If the column doesn't exist yet, add it without the unique index so we
+	// can populate it before AutoMigrate tries to create the constraint.
+	if !db.Migrator().HasColumn(&models.Project{}, "key_prefix") {
+		log.Println("key_prefix column missing — adding without unique index for pre-migration backfill")
+		if err := db.Exec("ALTER TABLE projects ADD COLUMN key_prefix VARCHAR(10) NOT NULL DEFAULT ''").Error; err != nil {
+			return fmt.Errorf("add key_prefix column: %w", err)
+		}
+	}
+
 	type row struct {
 		ID        uint
 		Name      string
 		KeyPrefix string
 	}
 
-	// Pass 1: deduplicate existing non-empty prefixes.
+	// Pass 1: deduplicate existing non-empty prefixes (oldest project keeps its prefix).
 	var withPrefix []row
 	db.Model(&models.Project{}).
 		Where("key_prefix != '' AND key_prefix IS NOT NULL AND deleted_at IS NULL").
@@ -214,8 +223,7 @@ func deduplicateKeyPrefixes(db *gorm.DB) error {
 	}
 
 	// Pass 2: assign prefixes to projects that have none (empty or NULL).
-	// This must happen here, before AutoMigrate, because multiple empty strings
-	// would violate the unique index.
+	// Must complete before AutoMigrate or the unique index creation fails.
 	var withoutPrefix []row
 	db.Model(&models.Project{}).
 		Where("(key_prefix = '' OR key_prefix IS NULL) AND deleted_at IS NULL").
