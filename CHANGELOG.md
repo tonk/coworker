@@ -2,6 +2,17 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.1 — 2026-04-16
+
+### Added
+- **Key prefix visible in Admin → Projects** — each project row now shows its card prefix (e.g. `AAP`) next to the slug, making duplicate or missing prefixes immediately visible
+
+### Fixed
+- **Database upgrade fails with UNIQUE constraint on `key_prefix`** — three-part fix for databases upgrading from before v0.7.0:
+  1. When the `key_prefix` column does not exist yet, it is added via `ALTER TABLE` (without the unique index) so data can be populated before AutoMigrate creates the constraint
+  2. Projects with an empty prefix are now assigned generated prefixes before AutoMigrate runs, not after
+  3. Soft-deleted projects are included in both deduplication passes — the unique index applies to all rows in the table, not just active ones
+
 ## v0.7.0 — 2026-04-16
 
 ### Added
