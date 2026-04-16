@@ -343,9 +343,12 @@ admin users only).
 | `user` | Can use the application; sees only their own projects |
 | `admin` | Full access to all projects, all admin panel features |
 | `viewer` | Read-only access; cannot create or modify anything |
-| `metrics` | Can only read `GET /api/v1/metrics`; no access to any other endpoint |
+| `metrics` | Can only call `GET /api/v1/metrics`; no access to any other endpoint |
+| `backup` | Can only call `POST /api/v1/backup`; no access to any other endpoint |
 
 The `metrics` role is intended for Prometheus scraper accounts. Create a dedicated user, set their role to `metrics`, generate an API key in User Settings, and configure Prometheus to send `Authorization: Bearer <token>` (or `?api_key=<key>`) with each scrape request.
+
+The `backup` role is intended for automated backup scripts and cron jobs. See [section 15](#15-backup-and-recovery) for setup instructions.
 
 ### Customer access control
 
@@ -677,36 +680,78 @@ manual migration step is needed.
 
 | Item | Location | Frequency |
 |------|----------|-----------|
-| Database | `warmdesk.db` (SQLite) or PostgreSQL/MySQL dump | Daily or more |
+| Database | `./backups/` (via admin panel) or raw DB file | Daily or more |
 | Uploads | `upload_dir` (default `./uploads/`) | Daily or more |
 | Config | `warmdesk.yaml` | On change |
 
-### SQLite backup
+### Via the Admin panel
 
-```bash
-# Hot copy — safe while the server is running
-sqlite3 /var/lib/warmdesk/warmdesk.db ".backup /backup/warmdesk-$(date +%Y%m%d).db"
+The **Admin → Backup / Restore** tab provides full backup management without touching the server directly.
 
-# Or stop the service first and copy directly
-sudo systemctl stop warmdesk
-cp /var/lib/warmdesk/warmdesk.db /backup/warmdesk-$(date +%Y%m%d).db
-sudo systemctl start warmdesk
+**Create a backup**
+
+Click **Create Backup**. WarmDesk creates a timestamped file in `./backups/` next to the server binary:
+
+```
+./backups/warmdesk_db_20260416_1430.db   ← SQLite
+./backups/warmdesk_db_20260416_1430.sql  ← PostgreSQL / MySQL
 ```
 
-### PostgreSQL backup
+For SQLite, `VACUUM INTO` is used — an atomic online copy that requires no downtime. For PostgreSQL, `pg_dump --clean --if-exists` is used. For MySQL, `mysqldump` is used.
+
+**List, restore, and delete backups**
+
+All files in `./backups/` are listed in the tab with filename, size, and creation date, newest first.
+
+- **Restore** — replaces the live database with the selected backup. SQLite restores are live (the connection pool is closed, the file is replaced, and the connection is reopened — no server restart needed). A confirmation prompt is shown before proceeding.
+- **Delete** — removes the backup file from disk after confirmation.
+
+Every backup and restore operation is logged to the server log with the filename, database driver, user ID, and client IP.
+
+### Automated backups (cron / CI)
+
+Use the `backup` global role to create a service account for automated backups:
+
+1. In **Admin → Users**, create a user (e.g. `backup-bot`) and set their role to **Backup**.
+2. Log in as that user and generate an API key under **User Settings → API Keys**.
+3. Call `POST /api/v1/backup` on a schedule:
+
+```bash
+# Cron — daily at 02:00
+0 2 * * * curl -sf -X POST https://desk.example.com/api/v1/backup \
+               -H "X-API-Key: cwk_your_key_here"
+```
+
+The `backup` role cannot access any other endpoint.
+
+### Server-side backup (manual)
+
+You can also back up the database directly on the server without going through the API.
+
+**SQLite**
+
+```bash
+# Hot copy using VACUUM INTO — safe while the server is running
+sqlite3 /var/lib/warmdesk/warmdesk.db \
+  ".backup /backup/warmdesk-$(date +%Y%m%d).db"
+```
+
+**PostgreSQL**
 
 ```bash
 pg_dump -U warmdesk warmdesk | gzip > /backup/warmdesk-$(date +%Y%m%d).sql.gz
 ```
 
-### Restoring
+**Restoring manually**
 
 ```bash
-# SQLite
-cp /backup/warmdesk-20260329.db /var/lib/warmdesk/warmdesk.db
+# SQLite — stop the service, replace the file, restart
+sudo systemctl stop warmdesk
+cp /backup/warmdesk-20260416.db /var/lib/warmdesk/warmdesk.db
+sudo systemctl start warmdesk
 
 # PostgreSQL
-gunzip -c /backup/warmdesk-20260329.sql.gz | psql -U warmdesk warmdesk
+gunzip -c /backup/warmdesk-20260416.sql.gz | psql -U warmdesk warmdesk
 ```
 
 ---

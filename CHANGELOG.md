@@ -2,6 +2,15 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.2 — 2026-04-16
+
+### Added
+- **Backup / Restore tab in Admin panel** — new dedicated tab next to Users, Projects, and Settings; create a timestamped backup (`warmdesk_db_YYYYmmdd_HHMM`) stored in `./backups/`; list all available backups with filename, size, and creation date; restore from any backup (SQLite: live close / copy / reinit — no server restart needed; PostgreSQL: `psql`; MySQL: `mysql`); delete individual backup files
+- **`backup` global role** — dedicated role for automated backup accounts; users with this role can only call `POST /api/v1/backup`; intended for cron jobs and CI scripts: create a user, assign the `backup` role, generate an API key, then `curl -X POST .../api/v1/backup -H "X-API-Key: ..."` on a schedule
+- **Backup and restore logging** — server logs every successful backup and restore with filename, database driver, triggering user ID, and client IP
+- **Show and restore deleted projects** — Admin → Projects now has a "Show deleted" toggle; deleted projects appear with a Deleted badge and a Restore button that recovers them from soft-delete
+- **All 12 languages in user settings and PDF export** — the per-user locale selector in User Settings and the PDF language selector in the Report view now list all 12 supported languages (previously only 5 were available in those two places)
+
 ## v0.7.1 — 2026-04-16
 
 ### Added

@@ -49,7 +49,7 @@ and asked Claude Code to generate the app.
 - **Comment replies** — reply to any comment; replies are visually indented
 - **Time tracking** — log hours and minutes spent directly on a card
 - **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
-- **Role-based access** — global roles (admin / user / viewer / metrics) and per-project roles (owner / admin / member / viewer); project admins can manage columns
+- **Role-based access** — global roles (admin / user / viewer / metrics / backup) and per-project roles (owner / admin / member / viewer); project admins can manage columns
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
 - **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management
 - **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
@@ -61,7 +61,7 @@ and asked Claude Code to generate the app.
 - **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, password change
 - **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
 - **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
-- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects; toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo
+- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create and restore database backups
 - **SMTP email** — configurable from the admin panel without a server restart; username and password are optional for relay servers
 - **Session timeout** — configurable idle timeout (default 60 minutes); set to 0 to disable
 - **Topics** — threaded discussions per project with markdown support and replies
@@ -77,6 +77,7 @@ and asked Claude Code to generate the app.
 - **Typing indicator** — animated indicator in project chat shows who is currently typing
 - **@mention autocomplete** — `@username` dropdown in project chat, card descriptions, and card comments
 - **Prometheus metrics** — `GET /api/v1/metrics` exposes project, column, and card counts; protected by the `metrics` role
+- **Database backup** — Admin → Backup / Restore tab; create timestamped backups stored in `./backups/`; list, restore (live, no restart needed for SQLite), and delete backups from the UI; automated backups via `POST /api/v1/backup` using a dedicated `backup` role service account
 - **Git integration** — connect GitHub, GitLab, Gitea, or Forgejo; commit/PR/issue events post to project chat and automatically link to cards when a card reference (e.g. `PRJ-42`) appears in the message or title; Forgejo events show the Forgejo logo
 - **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
 - **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast
