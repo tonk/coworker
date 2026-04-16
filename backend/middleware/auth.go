@@ -65,6 +65,18 @@ func MetricsAuth() gin.HandlerFunc {
 	}
 }
 
+// BackupAuth allows admin and backup roles (automated backup accounts).
+func BackupAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, _ := c.Get(ContextGlobalRole)
+		if role != "admin" && role != "backup" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+		c.Next()
+	}
+}
+
 func GetUserID(c *gin.Context) uint {
 	v, _ := c.Get(ContextUserID)
 	id, _ := v.(uint)

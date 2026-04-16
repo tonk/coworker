@@ -303,7 +303,8 @@
     "backup_delete_confirm": "Slet denne sikkerhedskopiefil?",
     "backup_delete_success": "Sikkerhedskopi slettet",
     "backup_delete_failed": "Kunne ikke slette sikkerhedskopi",
-    "backup_tab": "Sikkerhedskopi / Gendan"
+    "backup_tab": "Sikkerhedskopi / Gendan",
+    "role_backup": "Sikkerhedskopi"
   },
   "report": {
     "title": "Tidsrapport",

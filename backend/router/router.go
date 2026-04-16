@@ -149,6 +149,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		// Prometheus metrics (admin or metrics role)
 		protected.GET("/metrics", middleware.MetricsAuth(), handlers.GetMetrics)
 
+		// Automated backup trigger (admin or backup role)
+		protected.POST("/backup", middleware.BackupAuth(), handlers.AdminBackupDatabase)
+
 		// Conversations (1-on-1 and group)
 		convs := protected.Group("/conversations")
 		{

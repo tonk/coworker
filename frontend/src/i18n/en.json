@@ -303,7 +303,8 @@
     "backup_delete_confirm": "Delete this backup file?",
     "backup_delete_success": "Backup deleted",
     "backup_delete_failed": "Failed to delete backup",
-    "backup_tab": "Backup / Restore"
+    "backup_tab": "Backup / Restore",
+    "role_backup": "Backup"
   },
   "report": {
     "title": "Time Report",

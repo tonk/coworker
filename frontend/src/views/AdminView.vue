@@ -44,6 +44,7 @@
                     <option value="user">{{ $t('admin.role_user') }}</option>
                     <option value="viewer">{{ $t('admin.role_viewer') }}</option>
                     <option value="metrics">{{ $t('admin.role_metrics') }}</option>
+                    <option value="backup">{{ $t('admin.role_backup') }}</option>
                   </select>
                 </td>
                 <td>
@@ -427,6 +428,7 @@
         <option value="admin">{{ $t('admin.role_admin') }}</option>
         <option value="viewer">{{ $t('admin.role_viewer') }}</option>
         <option value="metrics">{{ $t('admin.role_metrics') }}</option>
+        <option value="backup">{{ $t('admin.role_backup') }}</option>
       </select>
     </div>
     <div class="form-group">

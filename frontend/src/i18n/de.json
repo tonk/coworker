@@ -303,7 +303,8 @@
     "backup_delete_confirm": "Diese Sicherungsdatei löschen?",
     "backup_delete_success": "Sicherung gelöscht",
     "backup_delete_failed": "Sicherung konnte nicht gelöscht werden",
-    "backup_tab": "Sicherung / Wiederherstellung"
+    "backup_tab": "Sicherung / Wiederherstellung",
+    "role_backup": "Sicherung"
   },
   "update": {
     "available": "Eine neue Version von WarmDesk ist verfügbar: v{version}.",

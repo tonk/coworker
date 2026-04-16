@@ -303,7 +303,8 @@
     "backup_delete_confirm": "Eyða þessari afrittunaskrá?",
     "backup_delete_success": "Afrit eytt",
     "backup_delete_failed": "Tókst ekki að eyða afriti",
-    "backup_tab": "Afrit / Endurheimta"
+    "backup_tab": "Afrit / Endurheimta",
+    "role_backup": "Afrit"
   },
   "report": {
     "title": "Tímaskýrsla",

@@ -303,7 +303,8 @@
     "backup_delete_confirm": "Slette denne sikkerhetskopifilen?",
     "backup_delete_success": "Sikkerhetskopi slettet",
     "backup_delete_failed": "Kunne ikke slette sikkerhetskopi",
-    "backup_tab": "Sikkerhetskopi / Gjenopprett"
+    "backup_tab": "Sikkerhetskopi / Gjenopprett",
+    "role_backup": "Sikkerhetskopi"
   },
   "report": {
     "title": "Tidsrapport",
