@@ -44,6 +44,13 @@
                 <option value="de">Deutsch</option>
                 <option value="fr">Français</option>
                 <option value="es">Español</option>
+                <option value="da">Dansk</option>
+                <option value="sv">Svenska</option>
+                <option value="nb">Norsk</option>
+                <option value="fi">Suomi</option>
+                <option value="is">Íslenska</option>
+                <option value="pt">Português</option>
+                <option value="it">Italiano</option>
               </select>
             </div>
             <div class="form-group">
