@@ -55,4 +55,3 @@ Thumbs.db
 *~
 backend/seed
 backend/training
-backend/cmd/training/

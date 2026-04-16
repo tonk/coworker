@@ -41,35 +41,57 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm ci && npm run build
 
-      - name: Copy frontend assets
-        run: mkdir -p dist/web && cp -r frontend/dist/. dist/web/
-
-      - name: Build backend
+      - name: Build backend (linux/amd64)
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+          GOARCH: amd64
         run: |
           SHA=$(git rev-parse --short HEAD)
-          mkdir -p dist
+          mkdir -p dist-amd64
           cd backend
-          go build -ldflags="-s -w -X main.version=dev-${SHA}" -o ../dist/warmdesk .
-          go build -ldflags="-s -w" -o ../dist/warmdesk-seed ./cmd/seed
-          go build -ldflags="-s -w" -o ../dist/warmdesk-export ./cmd/export
-          go build -ldflags="-s -w" -o ../dist/warmdesk-import ./cmd/importer
+          go build -ldflags="-s -w -X main.version=dev-${SHA}" -o ../dist-amd64/warmdesk .
+          go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-seed ./cmd/seed
+          go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-export ./cmd/export
+          go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-import ./cmd/importer
+          go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-training ./cmd/training
 
-      - name: Assemble distribution
-        run: |
-          cp warmdesk.yaml.example dist/warmdesk.yaml.example
-          cp warmdesk-migrate.yaml.example dist/warmdesk-migrate.yaml.example
-          cp -r deploy dist/deploy
-          cp INSTALL.md dist/INSTALL.md
-          cp README.md dist/README.md
-          cp -r docs dist/docs
-
-      - name: Create archive
+      - name: Build backend (linux/arm64)
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+          GOARCH: arm64
         run: |
           SHA=$(git rev-parse --short HEAD)
-          tar -czf "warmdesk-dev-${SHA}.tar.gz" -C dist .
+          mkdir -p dist-arm64
+          cd backend
+          go build -ldflags="-s -w -X main.version=dev-${SHA}" -o ../dist-arm64/warmdesk .
+          go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-seed ./cmd/seed
+          go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-export ./cmd/export
+          go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-import ./cmd/importer
+          go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-training ./cmd/training
 
-      - name: Upload artifact
+      - name: Assemble distributions
+        run: |
+          for ARCH in amd64 arm64; do
+            mkdir -p dist-${ARCH}/web
+            cp -r frontend/dist/. dist-${ARCH}/web/
+            cp warmdesk.yaml.example dist-${ARCH}/warmdesk.yaml.example
+            cp warmdesk-migrate.yaml.example dist-${ARCH}/warmdesk-migrate.yaml.example
+            cp -r deploy dist-${ARCH}/deploy
+            cp INSTALL.md dist-${ARCH}/INSTALL.md
+            cp README.md dist-${ARCH}/README.md
+            cp -r docs dist-${ARCH}/docs
+          done
+
+      - name: Create archives
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          tar -czf "warmdesk-dev-${SHA}-linux-amd64.tar.gz" -C dist-amd64 .
+          tar -czf "warmdesk-dev-${SHA}-linux-arm64.tar.gz" -C dist-arm64 .
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: WarmDesk-server
-          path: warmdesk-dev-*.tar.gz
+          path: warmdesk-dev-*-linux-*.tar.gz
