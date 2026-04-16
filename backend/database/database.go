@@ -199,9 +199,10 @@ func deduplicateKeyPrefixes(db *gorm.DB) error {
 	}
 
 	// Pass 1: deduplicate existing non-empty prefixes (oldest project keeps its prefix).
+	// Includes soft-deleted projects — the unique index covers all rows in the table.
 	var withPrefix []row
-	db.Model(&models.Project{}).
-		Where("key_prefix != '' AND key_prefix IS NOT NULL AND deleted_at IS NULL").
+	db.Unscoped().Model(&models.Project{}).
+		Where("key_prefix != '' AND key_prefix IS NOT NULL").
 		Order("id asc").
 		Select("id, name, key_prefix").
 		Scan(&withPrefix)
@@ -218,15 +219,16 @@ func deduplicateKeyPrefixes(db *gorm.DB) error {
 		seen[candidate] = true
 		if candidate != p.KeyPrefix {
 			log.Printf("key_prefix dedup: project %d %q → %q", p.ID, p.KeyPrefix, candidate)
-			db.Model(&models.Project{}).Where("id = ?", p.ID).UpdateColumn("key_prefix", candidate)
+			db.Unscoped().Model(&models.Project{}).Where("id = ?", p.ID).UpdateColumn("key_prefix", candidate)
 		}
 	}
 
 	// Pass 2: assign prefixes to projects that have none (empty or NULL).
-	// Must complete before AutoMigrate or the unique index creation fails.
+	// Includes soft-deleted projects — all rows must be unique before AutoMigrate
+	// creates the index.
 	var withoutPrefix []row
-	db.Model(&models.Project{}).
-		Where("(key_prefix = '' OR key_prefix IS NULL) AND deleted_at IS NULL").
+	db.Unscoped().Model(&models.Project{}).
+		Where("key_prefix = '' OR key_prefix IS NULL").
 		Order("id asc").
 		Select("id, name, key_prefix").
 		Scan(&withoutPrefix)
@@ -241,7 +243,7 @@ func deduplicateKeyPrefixes(db *gorm.DB) error {
 		}
 		seen[candidate] = true
 		log.Printf("key_prefix backfill: project %d %q → %q", p.ID, p.Name, candidate)
-		db.Model(&models.Project{}).Where("id = ?", p.ID).UpdateColumn("key_prefix", candidate)
+		db.Unscoped().Model(&models.Project{}).Where("id = ?", p.ID).UpdateColumn("key_prefix", candidate)
 	}
 
 	return nil
