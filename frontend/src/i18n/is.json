@@ -289,11 +289,20 @@
     "show_deleted": "Sýna eydd",
     "restore": "Endurheimta",
     "backup_title": "Gagnagrunnsafrit",
-    "backup_description": "Búðu til afrit af gagnagrunni á þjóninum.",
+    "backup_description": "Búðu til afrit af gagnagrunni á þjóninum. Afrit eru geymd í möppunni backups/ við hlið þjónsins.",
     "backup_button": "Búa til afrit",
     "backup_creating": "Býr til afrit…",
     "backup_success": "Afrit búið til: {filename}",
-    "backup_failed": "Afrittun mistókst"
+    "backup_failed": "Afrittun mistókst",
+    "backup_list_empty": "Engin afrit enn.",
+    "backup_restore": "Endurheimta",
+    "backup_restoring": "Endurheimtir…",
+    "backup_restore_confirm": "Skipta út núverandi gagnagrunni fyrir þetta afrit? Allar breytingar síðan afrittun fara forgörðum.",
+    "backup_restore_success": "Gagnagrunnur endurheimtur úr {filename}",
+    "backup_restore_failed": "Endurheimting mistókst",
+    "backup_delete_confirm": "Eyða þessari afrittunaskrá?",
+    "backup_delete_success": "Afrit eytt",
+    "backup_delete_failed": "Tókst ekki að eyða afriti"
   },
   "report": {
     "title": "Tímaskýrsla",

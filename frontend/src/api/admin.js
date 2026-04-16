@@ -21,5 +21,8 @@ export const adminApi = {
   updateSystemSettings: (data) => client.put('/admin/system', data),
   sendTestEmail: (to) => client.post('/admin/system/test-email', { to }),
   backupDatabase: () => client.post('/admin/system/backup'),
+  listBackups: () => client.get('/admin/system/backups'),
+  restoreBackup: (filename) => client.post('/admin/system/backups/restore', { filename }),
+  deleteBackup: (filename) => client.delete(`/admin/system/backups/${encodeURIComponent(filename)}`),
   disableUserMFA: (id) => client.post(`/admin/users/${id}/mfa/disable`)
 }

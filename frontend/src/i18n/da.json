@@ -289,11 +289,20 @@
     "show_deleted": "Vis slettede",
     "restore": "Gendan",
     "backup_title": "Databasesikkerhedskopi",
-    "backup_description": "Opret en sikkerhedskopi af databasen på serveren.",
+    "backup_description": "Opret en sikkerhedskopi af databasen på serveren. Sikkerhedskopier gemmes i mappen backups/ ved siden af serveren.",
     "backup_button": "Opret sikkerhedskopi",
     "backup_creating": "Opretter sikkerhedskopi…",
     "backup_success": "Sikkerhedskopi oprettet: {filename}",
-    "backup_failed": "Sikkerhedskopi mislykkedes"
+    "backup_failed": "Sikkerhedskopi mislykkedes",
+    "backup_list_empty": "Ingen sikkerhedskopier endnu.",
+    "backup_restore": "Gendan",
+    "backup_restoring": "Gendanner…",
+    "backup_restore_confirm": "Erstat den aktuelle database med denne sikkerhedskopi? Alle ændringer siden denne sikkerhedskopi vil gå tabt.",
+    "backup_restore_success": "Database gendannet fra {filename}",
+    "backup_restore_failed": "Gendannelse mislykkedes",
+    "backup_delete_confirm": "Slet denne sikkerhedskopiefil?",
+    "backup_delete_success": "Sikkerhedskopi slettet",
+    "backup_delete_failed": "Kunne ikke slette sikkerhedskopi"
   },
   "report": {
     "title": "Tidsrapport",

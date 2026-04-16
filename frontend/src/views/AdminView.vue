@@ -358,14 +358,38 @@
           </div>
 
           <!-- Database Backup -->
-          <div class="settings-section">
+          <div class="settings-section" style="max-width:680px">
             <h3>{{ $t('admin.backup_title') }}</h3>
-            <p class="form-hint" style="margin-bottom:0">{{ $t('admin.backup_description') }}</p>
-            <div style="margin-top:12px">
+            <p class="form-hint">{{ $t('admin.backup_description') }}</p>
+            <div style="margin-bottom:16px">
               <button class="btn btn-secondary btn-sm" :disabled="backingUp" @click="createBackup">
                 {{ backingUp ? $t('admin.backup_creating') : $t('admin.backup_button') }}
               </button>
             </div>
+            <table v-if="backups.length" class="data-table">
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th style="width:80px">Size</th>
+                  <th style="width:160px">Created</th>
+                  <th style="width:180px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="b in backups" :key="b.filename">
+                  <td style="font-family:monospace;font-size:12px">{{ b.filename }}</td>
+                  <td>{{ formatBytes(b.size) }}</td>
+                  <td>{{ formatDateTime(b.modified_at) }}</td>
+                  <td style="white-space:nowrap;text-align:right">
+                    <button class="btn btn-secondary btn-sm" :disabled="restoringBackup === b.filename" @click="restoreBackup(b)" style="margin-right:6px">
+                      {{ restoringBackup === b.filename ? $t('admin.backup_restoring') : $t('admin.backup_restore') }}
+                    </button>
+                    <button class="btn btn-danger btn-sm" @click="deleteBackup(b)">{{ $t('common.delete') }}</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p v-else class="form-hint">{{ $t('admin.backup_list_empty') }}</p>
           </div>
         </div>
       </div>
@@ -795,6 +819,7 @@ async function loadSettings() {
   } finally {
     settingsLoading = false
   }
+  loadBackups()
 }
 
 async function onLogoFileSelected(e) {
@@ -827,17 +852,59 @@ async function saveBrandingSettings() {
 }
 
 const backingUp = ref(false)
+const backups = ref([])
+const restoringBackup = ref(null)
+
+async function loadBackups() {
+  try {
+    const { data } = await adminApi.listBackups()
+    backups.value = data
+  } catch {
+    // silently ignore — backups dir may not exist yet
+  }
+}
 
 async function createBackup() {
   backingUp.value = true
   try {
     const { data } = await adminApi.backupDatabase()
     ui.success(`Backup created: ${data.filename}`)
+    await loadBackups()
   } catch {
     ui.error('Backup failed')
   } finally {
     backingUp.value = false
   }
+}
+
+async function restoreBackup(b) {
+  if (!confirm(`Replace the current database with "${b.filename}"? All changes since this backup will be lost.`)) return
+  restoringBackup.value = b.filename
+  try {
+    await adminApi.restoreBackup(b.filename)
+    ui.success(`Database restored from ${b.filename}`)
+  } catch {
+    ui.error('Restore failed')
+  } finally {
+    restoringBackup.value = null
+  }
+}
+
+async function deleteBackup(b) {
+  if (!confirm(`Delete backup "${b.filename}"?`)) return
+  try {
+    await adminApi.deleteBackup(b.filename)
+    backups.value = backups.value.filter(x => x.filename !== b.filename)
+    ui.success('Backup deleted')
+  } catch {
+    ui.error('Failed to delete backup')
+  }
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 async function savePasswordPolicy() {

@@ -289,11 +289,20 @@
     "show_deleted": "Mostra eliminati",
     "restore": "Ripristina",
     "backup_title": "Backup del database",
-    "backup_description": "Crea una copia di backup del database sul server.",
+    "backup_description": "Crea una copia di backup del database sul server. I backup vengono salvati nella directory backups/ accanto al server.",
     "backup_button": "Crea backup",
     "backup_creating": "Creazione del backup…",
     "backup_success": "Backup creato: {filename}",
-    "backup_failed": "Backup non riuscito"
+    "backup_failed": "Backup non riuscito",
+    "backup_list_empty": "Nessun backup ancora.",
+    "backup_restore": "Ripristina",
+    "backup_restoring": "Ripristino in corso…",
+    "backup_restore_confirm": "Sostituire il database attuale con questo backup? Tutte le modifiche apportate da allora andranno perse.",
+    "backup_restore_success": "Database ripristinato da {filename}",
+    "backup_restore_failed": "Ripristino non riuscito",
+    "backup_delete_confirm": "Eliminare questo file di backup?",
+    "backup_delete_success": "Backup eliminato",
+    "backup_delete_failed": "Impossibile eliminare il backup"
   },
   "report": {
     "title": "Report ore",

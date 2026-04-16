@@ -289,11 +289,20 @@
     "show_deleted": "Visa raderade",
     "restore": "Återställ",
     "backup_title": "Databasbackup",
-    "backup_description": "Skapa en säkerhetskopia av databasen på servern.",
+    "backup_description": "Skapa en säkerhetskopia av databasen på servern. Backuper lagras i katalogen backups/ bredvid servern.",
     "backup_button": "Skapa backup",
     "backup_creating": "Skapar backup…",
     "backup_success": "Backup skapad: {filename}",
-    "backup_failed": "Backup misslyckades"
+    "backup_failed": "Backup misslyckades",
+    "backup_list_empty": "Inga backuper än.",
+    "backup_restore": "Återställ",
+    "backup_restoring": "Återställer…",
+    "backup_restore_confirm": "Ersätt den aktuella databasen med denna backup? Alla ändringar sedan denna backup gjordes kommer att förloras.",
+    "backup_restore_success": "Databasen återställd från {filename}",
+    "backup_restore_failed": "Återställning misslyckades",
+    "backup_delete_confirm": "Ta bort denna backupfil?",
+    "backup_delete_success": "Backup borttagen",
+    "backup_delete_failed": "Det gick inte att ta bort backup"
   },
   "report": {
     "title": "Tidsrapport",

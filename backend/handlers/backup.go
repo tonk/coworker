@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -15,6 +17,8 @@ import (
 )
 
 var backupCfg *config.Config
+
+const backupsDir = "./backups"
 
 // InitBackup stores the config reference for the backup handler.
 func InitBackup(cfg *config.Config) {
@@ -29,6 +33,11 @@ func AdminBackupDatabase(c *gin.Context) {
 	ts := time.Now().Format("20060102_1504")
 	filename := "warmdesk_db_" + ts
 
+	if err := os.MkdirAll(backupsDir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create backups directory: " + err.Error()})
+		return
+	}
+
 	switch backupCfg.DBDriver {
 	case "sqlite", "sqlite3", "":
 		adminBackupSQLite(c, filename)
@@ -41,20 +50,111 @@ func AdminBackupDatabase(c *gin.Context) {
 	}
 }
 
-func adminBackupSQLite(c *gin.Context, filename string) {
-	dsn := backupCfg.DBDSN
-	// Strip query params (e.g. ?cache=shared&mode=rwc)
-	if idx := strings.Index(dsn, "?"); idx >= 0 {
-		dsn = dsn[:idx]
-	}
+type BackupInfo struct {
+	Filename   string `json:"filename"`
+	Size       int64  `json:"size"`
+	ModifiedAt string `json:"modified_at"`
+}
 
-	dbDir := filepath.Dir(dsn)
-	if err := os.MkdirAll(dbDir, 0755); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot access database directory: " + err.Error()})
+// AdminListBackups returns all backup files in the backups directory.
+func AdminListBackups(c *gin.Context) {
+	if err := os.MkdirAll(backupsDir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	backupPath := filepath.Join(dbDir, filename+".db")
+	entries, err := os.ReadDir(backupsDir)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var result []BackupInfo
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasPrefix(e.Name(), "warmdesk_db_") {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+		result = append(result, BackupInfo{
+			Filename:   e.Name(),
+			Size:       info.Size(),
+			ModifiedAt: info.ModTime().UTC().Format(time.RFC3339),
+		})
+	}
+
+	// Newest first
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Filename > result[j].Filename
+	})
+
+	if result == nil {
+		result = []BackupInfo{}
+	}
+	c.JSON(http.StatusOK, result)
+}
+
+// AdminRestoreBackup replaces the active database with a named backup.
+func AdminRestoreBackup(c *gin.Context) {
+	var body struct {
+		Filename string `json:"filename"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil || body.Filename == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "filename required"})
+		return
+	}
+
+	// Sanitise: strip any path components to prevent traversal
+	filename := filepath.Base(body.Filename)
+	if !strings.HasPrefix(filename, "warmdesk_db_") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid backup filename"})
+		return
+	}
+
+	backupPath := filepath.Join(backupsDir, filename)
+	if _, err := os.Stat(backupPath); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "backup file not found"})
+		return
+	}
+
+	switch backupCfg.DBDriver {
+	case "sqlite", "sqlite3", "":
+		adminRestoreSQLite(c, backupPath)
+	case "postgres", "postgresql":
+		adminRestorePostgres(c, backupPath)
+	case "mysql":
+		adminRestoreMySQL(c, backupPath)
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported database driver: " + backupCfg.DBDriver})
+	}
+}
+
+// AdminDeleteBackup removes a backup file.
+func AdminDeleteBackup(c *gin.Context) {
+	filename := filepath.Base(c.Param("filename"))
+	if !strings.HasPrefix(filename, "warmdesk_db_") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid backup filename"})
+		return
+	}
+
+	backupPath := filepath.Join(backupsDir, filename)
+	if err := os.Remove(backupPath); err != nil {
+		if os.IsNotExist(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "backup not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+}
+
+// ---- backup helpers ----
+
+func adminBackupSQLite(c *gin.Context, filename string) {
+	backupPath := filepath.Join(backupsDir, filename+".db")
 
 	// VACUUM INTO creates a clean, compacted copy atomically (SQLite ≥ 3.27).
 	sql := fmt.Sprintf("VACUUM INTO '%s'", strings.ReplaceAll(backupPath, "'", "''"))
@@ -76,14 +176,9 @@ func adminBackupPostgres(c *gin.Context, filename string) {
 		return
 	}
 
-	backupDir := "./backups"
-	if err := os.MkdirAll(backupDir, 0755); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create backups directory: " + err.Error()})
-		return
-	}
-
-	backupPath := filepath.Join(backupDir, filename+".sql")
-	cmd := exec.Command("pg_dump", backupCfg.DBDSN, "-f", backupPath) //nolint:gosec
+	backupPath := filepath.Join(backupsDir, filename+".sql")
+	// --clean --if-exists adds DROP statements so the dump is self-contained for restore.
+	cmd := exec.Command("pg_dump", "--clean", "--if-exists", "-f", backupPath, backupCfg.DBDSN) //nolint:gosec
 	if out, err := cmd.CombinedOutput(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "pg_dump failed: " + string(out)})
 		return
@@ -102,48 +197,8 @@ func adminBackupMySQL(c *gin.Context, filename string) {
 		return
 	}
 
-	backupDir := "./backups"
-	if err := os.MkdirAll(backupDir, 0755); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create backups directory: " + err.Error()})
-		return
-	}
-
-	// Parse Go MySQL DSN: user:pass@tcp(host:port)/dbname
-	dsn := backupCfg.DBDSN
-	args := []string{}
-
-	// Extract credentials and database from the DSN
-	if atIdx := strings.LastIndex(dsn, "@"); atIdx >= 0 {
-		userpass := dsn[:atIdx]
-		rest := dsn[atIdx+1:]
-
-		if colonIdx := strings.Index(userpass, ":"); colonIdx >= 0 {
-			args = append(args, "-u", userpass[:colonIdx], "-p"+userpass[colonIdx+1:])
-		} else {
-			args = append(args, "-u", userpass)
-		}
-
-		// rest: tcp(host:port)/dbname or unix(/path)/dbname
-		if strings.HasPrefix(rest, "tcp(") {
-			inner := strings.TrimPrefix(rest, "tcp(")
-			if closeIdx := strings.Index(inner, ")"); closeIdx >= 0 {
-				hostport := inner[:closeIdx]
-				dbpart := strings.TrimPrefix(inner[closeIdx+1:], "/")
-				if colonIdx := strings.LastIndex(hostport, ":"); colonIdx >= 0 {
-					args = append(args, "-h", hostport[:colonIdx], "-P", hostport[colonIdx+1:])
-				} else {
-					args = append(args, "-h", hostport)
-				}
-				// Strip query params
-				if qIdx := strings.Index(dbpart, "?"); qIdx >= 0 {
-					dbpart = dbpart[:qIdx]
-				}
-				args = append(args, dbpart)
-			}
-		}
-	}
-
-	backupPath := filepath.Join(backupDir, filename+".sql")
+	args := mysqlDumpArgs(backupCfg.DBDSN)
+	backupPath := filepath.Join(backupsDir, filename+".sql")
 	args = append([]string{"--result-file=" + backupPath}, args...)
 
 	cmd := exec.Command("mysqldump", args...) //nolint:gosec
@@ -157,4 +212,142 @@ func adminBackupMySQL(c *gin.Context, filename string) {
 		"filename": filename + ".sql",
 		"path":     backupPath,
 	})
+}
+
+// ---- restore helpers ----
+
+func adminRestoreSQLite(c *gin.Context, backupPath string) {
+	dsn := backupCfg.DBDSN
+	if idx := strings.Index(dsn, "?"); idx >= 0 {
+		dsn = dsn[:idx]
+	}
+
+	// Close all connections before overwriting the file.
+	sqlDB, err := database.DB.DB()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot get DB handle: " + err.Error()})
+		return
+	}
+	if err := sqlDB.Close(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot close DB: " + err.Error()})
+		return
+	}
+
+	if err := copyFile(backupPath, dsn); err != nil {
+		// Attempt to reconnect even on failure so the server stays up.
+		_ = database.Init(backupCfg)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "copy failed: " + err.Error()})
+		return
+	}
+
+	if err := database.Init(backupCfg); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "DB reinit failed after restore: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
+}
+
+func adminRestorePostgres(c *gin.Context, backupPath string) {
+	if _, err := exec.LookPath("psql"); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "psql not found in PATH"})
+		return
+	}
+
+	cmd := exec.Command("psql", backupCfg.DBDSN, "-f", backupPath) //nolint:gosec
+	if out, err := cmd.CombinedOutput(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "psql restore failed: " + string(out)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
+}
+
+func adminRestoreMySQL(c *gin.Context, backupPath string) {
+	if _, err := exec.LookPath("mysql"); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "mysql not found in PATH"})
+		return
+	}
+
+	args := mysqlClientArgs(backupCfg.DBDSN)
+	cmd := exec.Command("mysql", args...) //nolint:gosec
+	f, err := os.Open(backupPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot open backup: " + err.Error()})
+		return
+	}
+	defer f.Close()
+	cmd.Stdin = f
+
+	if out, err := cmd.CombinedOutput(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "mysql restore failed: " + string(out)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
+}
+
+// ---- utilities ----
+
+func copyFile(src, dst string) error {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, in); err != nil {
+		return err
+	}
+	return out.Sync()
+}
+
+// mysqlDumpArgs parses a Go MySQL DSN (user:pass@tcp(host:port)/dbname) into
+// mysqldump flags.
+func mysqlDumpArgs(dsn string) []string {
+	return mysqlArgs(dsn)
+}
+
+// mysqlClientArgs parses a Go MySQL DSN into mysql client flags.
+func mysqlClientArgs(dsn string) []string {
+	return mysqlArgs(dsn)
+}
+
+func mysqlArgs(dsn string) []string {
+	var args []string
+	atIdx := strings.LastIndex(dsn, "@")
+	if atIdx < 0 {
+		return args
+	}
+	userpass := dsn[:atIdx]
+	rest := dsn[atIdx+1:]
+
+	if colonIdx := strings.Index(userpass, ":"); colonIdx >= 0 {
+		args = append(args, "-u", userpass[:colonIdx], "-p"+userpass[colonIdx+1:])
+	} else {
+		args = append(args, "-u", userpass)
+	}
+
+	if inner, ok := strings.CutPrefix(rest, "tcp("); ok {
+		if closeIdx := strings.Index(inner, ")"); closeIdx >= 0 {
+			hostport := inner[:closeIdx]
+			dbpart := strings.TrimPrefix(inner[closeIdx+1:], "/")
+			if qIdx := strings.Index(dbpart, "?"); qIdx >= 0 {
+				dbpart = dbpart[:qIdx]
+			}
+			if colonIdx := strings.LastIndex(hostport, ":"); colonIdx >= 0 {
+				args = append(args, "-h", hostport[:colonIdx], "-P", hostport[colonIdx+1:])
+			} else {
+				args = append(args, "-h", hostport)
+			}
+			args = append(args, dbpart)
+		}
+	}
+	return args
 }

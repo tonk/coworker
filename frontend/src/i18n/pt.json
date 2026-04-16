@@ -289,11 +289,20 @@
     "show_deleted": "Mostrar eliminados",
     "restore": "Restaurar",
     "backup_title": "Cópia de segurança da base de dados",
-    "backup_description": "Criar uma cópia de segurança da base de dados no servidor.",
+    "backup_description": "Criar uma cópia de segurança da base de dados no servidor. As cópias são guardadas na pasta backups/ junto ao servidor.",
     "backup_button": "Criar cópia de segurança",
     "backup_creating": "A criar cópia de segurança…",
     "backup_success": "Cópia de segurança criada: {filename}",
-    "backup_failed": "Falha na cópia de segurança"
+    "backup_failed": "Falha na cópia de segurança",
+    "backup_list_empty": "Ainda não há cópias de segurança.",
+    "backup_restore": "Restaurar",
+    "backup_restoring": "A restaurar…",
+    "backup_restore_confirm": "Substituir a base de dados atual por esta cópia de segurança? Todas as alterações feitas desde então serão perdidas.",
+    "backup_restore_success": "Base de dados restaurada a partir de {filename}",
+    "backup_restore_failed": "Falha na restauração",
+    "backup_delete_confirm": "Eliminar este ficheiro de cópia de segurança?",
+    "backup_delete_success": "Cópia de segurança eliminada",
+    "backup_delete_failed": "Não foi possível eliminar a cópia de segurança"
   },
   "report": {
     "title": "Relatório de tempo",

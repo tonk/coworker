@@ -289,11 +289,20 @@
     "password_require_digit": "Require digit (0–9)",
     "password_require_special": "Require special character (!{'@'}#$…)",
     "backup_title": "Database Backup",
-    "backup_description": "Create a backup copy of the database on the server.",
+    "backup_description": "Create a backup copy of the database on the server. Backups are stored in the backups/ directory next to the server.",
     "backup_button": "Create Backup",
     "backup_creating": "Creating backup…",
     "backup_success": "Backup created: {filename}",
-    "backup_failed": "Backup failed"
+    "backup_failed": "Backup failed",
+    "backup_list_empty": "No backups yet.",
+    "backup_restore": "Restore",
+    "backup_restoring": "Restoring…",
+    "backup_restore_confirm": "Replace the current database with this backup? All changes since this backup was made will be lost.",
+    "backup_restore_success": "Database restored from {filename}",
+    "backup_restore_failed": "Restore failed",
+    "backup_delete_confirm": "Delete this backup file?",
+    "backup_delete_success": "Backup deleted",
+    "backup_delete_failed": "Failed to delete backup"
   },
   "report": {
     "title": "Time Report",

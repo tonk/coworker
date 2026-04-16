@@ -289,11 +289,20 @@
     "show_deleted": "Toon verwijderd",
     "restore": "Herstellen",
     "backup_title": "Databaseback-up",
-    "backup_description": "Maak een back-up van de database op de server.",
+    "backup_description": "Maak een back-up van de database op de server. Back-ups worden opgeslagen in de map backups/ naast de server.",
     "backup_button": "Back-up maken",
     "backup_creating": "Back-up maken…",
     "backup_success": "Back-up gemaakt: {filename}",
-    "backup_failed": "Back-up mislukt"
+    "backup_failed": "Back-up mislukt",
+    "backup_list_empty": "Nog geen back-ups.",
+    "backup_restore": "Herstellen",
+    "backup_restoring": "Herstellen…",
+    "backup_restore_confirm": "De huidige database vervangen door deze back-up? Alle wijzigingen na deze back-up gaan verloren.",
+    "backup_restore_success": "Database hersteld vanuit {filename}",
+    "backup_restore_failed": "Herstellen mislukt",
+    "backup_delete_confirm": "Dit back-upbestand verwijderen?",
+    "backup_delete_success": "Back-up verwijderd",
+    "backup_delete_failed": "Verwijderen van back-up mislukt"
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

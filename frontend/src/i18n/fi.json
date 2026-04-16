@@ -289,11 +289,20 @@
     "show_deleted": "Näytä poistetut",
     "restore": "Palauta",
     "backup_title": "Tietokannan varmuuskopio",
-    "backup_description": "Luo varmuuskopio tietokannasta palvelimelle.",
+    "backup_description": "Luo varmuuskopio tietokannasta palvelimelle. Varmuuskopiot tallennetaan hakemistoon backups/ palvelimen viereen.",
     "backup_button": "Luo varmuuskopio",
     "backup_creating": "Luodaan varmuuskopiota…",
     "backup_success": "Varmuuskopio luotu: {filename}",
-    "backup_failed": "Varmuuskopiointi epäonnistui"
+    "backup_failed": "Varmuuskopiointi epäonnistui",
+    "backup_list_empty": "Ei varmuuskopioita vielä.",
+    "backup_restore": "Palauta",
+    "backup_restoring": "Palautetaan…",
+    "backup_restore_confirm": "Korvataanko nykyinen tietokanta tällä varmuuskopiolla? Kaikki tämän jälkeen tehdyt muutokset menetetään.",
+    "backup_restore_success": "Tietokanta palautettu kohteesta {filename}",
+    "backup_restore_failed": "Palautus epäonnistui",
+    "backup_delete_confirm": "Poistetaanko tämä varmuuskopiotiedosto?",
+    "backup_delete_success": "Varmuuskopio poistettu",
+    "backup_delete_failed": "Varmuuskopion poistaminen epäonnistui"
   },
   "report": {
     "title": "Aikaraportti",

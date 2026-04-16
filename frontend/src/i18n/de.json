@@ -289,11 +289,20 @@
     "show_deleted": "Gelöschte anzeigen",
     "restore": "Wiederherstellen",
     "backup_title": "Datenbanksicherung",
-    "backup_description": "Eine Sicherungskopie der Datenbank auf dem Server erstellen.",
+    "backup_description": "Eine Sicherungskopie der Datenbank auf dem Server erstellen. Sicherungen werden im Verzeichnis backups/ neben dem Server gespeichert.",
     "backup_button": "Sicherung erstellen",
     "backup_creating": "Sicherung wird erstellt…",
     "backup_success": "Sicherung erstellt: {filename}",
-    "backup_failed": "Sicherung fehlgeschlagen"
+    "backup_failed": "Sicherung fehlgeschlagen",
+    "backup_list_empty": "Noch keine Sicherungen.",
+    "backup_restore": "Wiederherstellen",
+    "backup_restoring": "Wird wiederhergestellt…",
+    "backup_restore_confirm": "Die aktuelle Datenbank durch diese Sicherung ersetzen? Alle Änderungen seit dieser Sicherung gehen verloren.",
+    "backup_restore_success": "Datenbank aus {filename} wiederhergestellt",
+    "backup_restore_failed": "Wiederherstellung fehlgeschlagen",
+    "backup_delete_confirm": "Diese Sicherungsdatei löschen?",
+    "backup_delete_success": "Sicherung gelöscht",
+    "backup_delete_failed": "Sicherung konnte nicht gelöscht werden"
   },
   "update": {
     "available": "Eine neue Version von WarmDesk ist verfügbar: v{version}.",

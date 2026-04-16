@@ -289,11 +289,20 @@
     "show_deleted": "Afficher supprimés",
     "restore": "Restaurer",
     "backup_title": "Sauvegarde de la base de données",
-    "backup_description": "Créer une copie de sauvegarde de la base de données sur le serveur.",
+    "backup_description": "Créer une copie de sauvegarde de la base de données sur le serveur. Les sauvegardes sont stockées dans le répertoire backups/ à côté du serveur.",
     "backup_button": "Créer une sauvegarde",
     "backup_creating": "Création de la sauvegarde…",
     "backup_success": "Sauvegarde créée : {filename}",
-    "backup_failed": "Échec de la sauvegarde"
+    "backup_failed": "Échec de la sauvegarde",
+    "backup_list_empty": "Aucune sauvegarde pour l'instant.",
+    "backup_restore": "Restaurer",
+    "backup_restoring": "Restauration…",
+    "backup_restore_confirm": "Remplacer la base de données actuelle par cette sauvegarde ? Toutes les modifications effectuées depuis cette sauvegarde seront perdues.",
+    "backup_restore_success": "Base de données restaurée depuis {filename}",
+    "backup_restore_failed": "Échec de la restauration",
+    "backup_delete_confirm": "Supprimer ce fichier de sauvegarde ?",
+    "backup_delete_success": "Sauvegarde supprimée",
+    "backup_delete_failed": "Impossible de supprimer la sauvegarde"
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",

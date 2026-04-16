@@ -289,11 +289,20 @@
     "show_deleted": "Vis slettede",
     "restore": "Gjenopprett",
     "backup_title": "Databasesikkerhetskopiering",
-    "backup_description": "Lag en sikkerhetskopi av databasen på serveren.",
+    "backup_description": "Lag en sikkerhetskopi av databasen på serveren. Sikkerhetskopier lagres i mappen backups/ ved siden av serveren.",
     "backup_button": "Lag sikkerhetskopi",
     "backup_creating": "Lager sikkerhetskopi…",
     "backup_success": "Sikkerhetskopi opprettet: {filename}",
-    "backup_failed": "Sikkerhetskopiering mislyktes"
+    "backup_failed": "Sikkerhetskopiering mislyktes",
+    "backup_list_empty": "Ingen sikkerhetskopier ennå.",
+    "backup_restore": "Gjenopprett",
+    "backup_restoring": "Gjenoppretter…",
+    "backup_restore_confirm": "Erstatt gjeldende database med denne sikkerhetskopien? Alle endringer siden denne sikkerhetskopien vil gå tapt.",
+    "backup_restore_success": "Databasen gjenopprettet fra {filename}",
+    "backup_restore_failed": "Gjenoppretting mislyktes",
+    "backup_delete_confirm": "Slette denne sikkerhetskopifilen?",
+    "backup_delete_success": "Sikkerhetskopi slettet",
+    "backup_delete_failed": "Kunne ikke slette sikkerhetskopi"
   },
   "report": {
     "title": "Tidsrapport",
