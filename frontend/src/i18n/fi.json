@@ -302,7 +302,8 @@
     "backup_restore_failed": "Palautus epäonnistui",
     "backup_delete_confirm": "Poistetaanko tämä varmuuskopiotiedosto?",
     "backup_delete_success": "Varmuuskopio poistettu",
-    "backup_delete_failed": "Varmuuskopion poistaminen epäonnistui"
+    "backup_delete_failed": "Varmuuskopion poistaminen epäonnistui",
+    "backup_tab": "Varmuuskopio / Palautus"
   },
   "report": {
     "title": "Aikaraportti",

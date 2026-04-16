@@ -302,7 +302,8 @@
     "backup_restore_failed": "Herstellen mislukt",
     "backup_delete_confirm": "Dit back-upbestand verwijderen?",
     "backup_delete_success": "Back-up verwijderd",
-    "backup_delete_failed": "Verwijderen van back-up mislukt"
+    "backup_delete_failed": "Verwijderen van back-up mislukt",
+    "backup_tab": "Back-up / Herstel"
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

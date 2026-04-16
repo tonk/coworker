@@ -302,7 +302,8 @@
     "backup_restore_failed": "Échec de la restauration",
     "backup_delete_confirm": "Supprimer ce fichier de sauvegarde ?",
     "backup_delete_success": "Sauvegarde supprimée",
-    "backup_delete_failed": "Impossible de supprimer la sauvegarde"
+    "backup_delete_failed": "Impossible de supprimer la sauvegarde",
+    "backup_tab": "Sauvegarde / Restauration"
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",

@@ -302,7 +302,8 @@
     "backup_restore_failed": "Error en la restauración",
     "backup_delete_confirm": "¿Eliminar este archivo de copia de seguridad?",
     "backup_delete_success": "Copia de seguridad eliminada",
-    "backup_delete_failed": "No se pudo eliminar la copia de seguridad"
+    "backup_delete_failed": "No se pudo eliminar la copia de seguridad",
+    "backup_tab": "Copia de seguridad / Restaurar"
   },
   "update": {
     "available": "Hay una nueva versión de WarmDesk disponible: v{version}.",

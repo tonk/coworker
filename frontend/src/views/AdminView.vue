@@ -7,6 +7,7 @@
           <button :class="['tab', { active: tab === 'users' }]" @click="tab = 'users'">{{ $t('admin.users') }}</button>
           <button :class="['tab', { active: tab === 'projects' }]" @click="tab = 'projects'; loadProjects()">{{ $t('admin.projects') }}</button>
           <button :class="['tab', { active: tab === 'settings' }]" @click="tab = 'settings'; loadSettings()">{{ $t('admin.settings') }}</button>
+          <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups()">{{ $t('admin.backup_tab') }}</button>
         </div>
 
         <!-- Users tab -->
@@ -357,40 +358,40 @@
             </div>
           </div>
 
-          <!-- Database Backup -->
-          <div class="settings-section" style="max-width:680px">
-            <h3>{{ $t('admin.backup_title') }}</h3>
-            <p class="form-hint">{{ $t('admin.backup_description') }}</p>
-            <div style="margin-bottom:16px">
-              <button class="btn btn-secondary btn-sm" :disabled="backingUp" @click="createBackup">
-                {{ backingUp ? $t('admin.backup_creating') : $t('admin.backup_button') }}
-              </button>
-            </div>
-            <table v-if="backups.length" class="data-table">
-              <thead>
-                <tr>
-                  <th>File</th>
-                  <th style="width:80px">Size</th>
-                  <th style="width:160px">Created</th>
-                  <th style="width:180px"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="b in backups" :key="b.filename">
-                  <td style="font-family:monospace;font-size:12px">{{ b.filename }}</td>
-                  <td>{{ formatBytes(b.size) }}</td>
-                  <td>{{ formatDateTime(b.modified_at) }}</td>
-                  <td style="white-space:nowrap;text-align:right">
-                    <button class="btn btn-secondary btn-sm" :disabled="restoringBackup === b.filename" @click="restoreBackup(b)" style="margin-right:6px">
-                      {{ restoringBackup === b.filename ? $t('admin.backup_restoring') : $t('admin.backup_restore') }}
-                    </button>
-                    <button class="btn btn-danger btn-sm" @click="deleteBackup(b)">{{ $t('common.delete') }}</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p v-else class="form-hint">{{ $t('admin.backup_list_empty') }}</p>
+        </div>
+
+        <!-- Backup / Restore tab -->
+        <div v-if="tab === 'backup'">
+          <div class="tab-toolbar">
+            <button class="btn btn-primary btn-sm" :disabled="backingUp" @click="createBackup">
+              {{ backingUp ? $t('admin.backup_creating') : $t('admin.backup_button') }}
+            </button>
           </div>
+          <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.backup_description') }}</p>
+          <table v-if="backups.length" class="data-table">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th style="width:80px">Size</th>
+                <th style="width:160px">Created</th>
+                <th style="width:180px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="b in backups" :key="b.filename">
+                <td style="font-family:monospace;font-size:12px">{{ b.filename }}</td>
+                <td>{{ formatBytes(b.size) }}</td>
+                <td>{{ formatDateTime(b.modified_at) }}</td>
+                <td style="white-space:nowrap;text-align:right">
+                  <button class="btn btn-secondary btn-sm" :disabled="restoringBackup === b.filename" @click="restoreBackup(b)" style="margin-right:6px">
+                    {{ restoringBackup === b.filename ? $t('admin.backup_restoring') : $t('admin.backup_restore') }}
+                  </button>
+                  <button class="btn btn-danger btn-sm" @click="deleteBackup(b)">{{ $t('common.delete') }}</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-else class="form-hint">{{ $t('admin.backup_list_empty') }}</p>
         </div>
       </div>
   </main>
@@ -819,7 +820,6 @@ async function loadSettings() {
   } finally {
     settingsLoading = false
   }
-  loadBackups()
 }
 
 async function onLogoFileSelected(e) {

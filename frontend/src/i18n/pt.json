@@ -302,7 +302,8 @@
     "backup_restore_failed": "Falha na restauração",
     "backup_delete_confirm": "Eliminar este ficheiro de cópia de segurança?",
     "backup_delete_success": "Cópia de segurança eliminada",
-    "backup_delete_failed": "Não foi possível eliminar a cópia de segurança"
+    "backup_delete_failed": "Não foi possível eliminar a cópia de segurança",
+    "backup_tab": "Cópia de segurança / Restaurar"
   },
   "report": {
     "title": "Relatório de tempo",

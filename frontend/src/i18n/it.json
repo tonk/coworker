@@ -302,7 +302,8 @@
     "backup_restore_failed": "Ripristino non riuscito",
     "backup_delete_confirm": "Eliminare questo file di backup?",
     "backup_delete_success": "Backup eliminato",
-    "backup_delete_failed": "Impossibile eliminare il backup"
+    "backup_delete_failed": "Impossibile eliminare il backup",
+    "backup_tab": "Backup / Ripristino"
   },
   "report": {
     "title": "Report ore",

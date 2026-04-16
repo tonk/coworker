@@ -302,7 +302,8 @@
     "backup_restore_failed": "Återställning misslyckades",
     "backup_delete_confirm": "Ta bort denna backupfil?",
     "backup_delete_success": "Backup borttagen",
-    "backup_delete_failed": "Det gick inte att ta bort backup"
+    "backup_delete_failed": "Det gick inte att ta bort backup",
+    "backup_tab": "Backup / Återställ"
   },
   "report": {
     "title": "Tidsrapport",
