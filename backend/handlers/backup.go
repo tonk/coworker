@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -14,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/database"
+	"github.com/tonk/warmdesk/middleware"
 )
 
 var backupCfg *config.Config
@@ -163,6 +165,7 @@ func adminBackupSQLite(c *gin.Context, filename string) {
 		return
 	}
 
+	log.Printf("backup: created %s (sqlite, user=%d, ip=%s)", filename+".db", middleware.GetUserID(c), c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "backup created",
 		"filename": filename + ".db",
@@ -184,6 +187,7 @@ func adminBackupPostgres(c *gin.Context, filename string) {
 		return
 	}
 
+	log.Printf("backup: created %s (postgres, user=%d, ip=%s)", filename+".sql", middleware.GetUserID(c), c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "backup created",
 		"filename": filename + ".sql",
@@ -207,6 +211,7 @@ func adminBackupMySQL(c *gin.Context, filename string) {
 		return
 	}
 
+	log.Printf("backup: created %s (mysql, user=%d, ip=%s)", filename+".sql", middleware.GetUserID(c), c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "backup created",
 		"filename": filename + ".sql",
@@ -245,6 +250,7 @@ func adminRestoreSQLite(c *gin.Context, backupPath string) {
 		return
 	}
 
+	log.Printf("backup: restored %s (sqlite, user=%d, ip=%s)", filepath.Base(backupPath), middleware.GetUserID(c), c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
 }
 
@@ -260,6 +266,7 @@ func adminRestorePostgres(c *gin.Context, backupPath string) {
 		return
 	}
 
+	log.Printf("backup: restored %s (postgres, user=%d, ip=%s)", filepath.Base(backupPath), middleware.GetUserID(c), c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
 }
 
@@ -284,6 +291,7 @@ func adminRestoreMySQL(c *gin.Context, backupPath string) {
 		return
 	}
 
+	log.Printf("backup: restored %s (mysql, user=%d, ip=%s)", filepath.Base(backupPath), middleware.GetUserID(c), c.ClientIP())
 	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
 }
 
