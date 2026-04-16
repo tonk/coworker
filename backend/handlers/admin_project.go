@@ -60,7 +60,13 @@ type AdminProjectListItem struct {
 
 func AdminListProjects(c *gin.Context) {
 	var projects []models.Project
-	database.DB.Preload("CreatedBy").Find(&projects)
+	q := database.DB.Preload("CreatedBy")
+	if c.Query("deleted") == "true" {
+		q = q.Unscoped().Where("deleted_at IS NOT NULL")
+	} else {
+		q = q.Where("deleted_at IS NULL")
+	}
+	q.Find(&projects)
 
 	result := make([]AdminProjectListItem, len(projects))
 	for i, p := range projects {
@@ -69,6 +75,20 @@ func AdminListProjects(c *gin.Context) {
 		result[i] = AdminProjectListItem{Project: p, OpenCardCount: count}
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+func AdminRestoreProject(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	result := database.DB.Unscoped().Model(&models.Project{}).Where("id = ?", id).Update("deleted_at", nil)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "restored"})
 }
 
 func AdminUpdateProject(c *gin.Context) {

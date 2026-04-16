@@ -70,6 +70,10 @@
         <div v-if="tab === 'projects'">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="showCreateProject = true">+ {{ $t('project.new_project') }}</button>
+            <label class="toggle-label" style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+              <input type="checkbox" v-model="showDeletedProjects" @change="loadProjects()" />
+              {{ $t('admin.show_deleted') }}
+            </label>
           </div>
           <div v-if="loadingProjects" class="loading-state">
             <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
@@ -96,7 +100,8 @@
                   <small>{{ project.created_by?.display_name || project.created_by?.username }}</small>
                 </td>
                 <td>
-                  <span :class="['badge', project.is_archived ? 'badge-inactive' : 'badge-active']">
+                  <span v-if="showDeletedProjects" class="badge badge-deleted">{{ $t('admin.deleted') }}</span>
+                  <span v-else :class="['badge', project.is_archived ? 'badge-inactive' : 'badge-active']">
                     {{ project.is_archived ? $t('admin.archived') : $t('admin.active') }}
                   </span>
                 </td>
@@ -104,11 +109,16 @@
                   <span class="open-cards-count">{{ project.open_card_count }}</span>
                 </td>
                 <td class="actions-cell">
-                  <button class="btn btn-secondary btn-sm" @click="openEditProject(project)">{{ $t('common.edit') }}</button>
-                  <button class="btn btn-secondary btn-sm" @click="toggleArchive(project)">
-                    {{ project.is_archived ? $t('admin.unarchive') : $t('project.archive') }}
-                  </button>
-                  <button class="btn btn-danger btn-sm" @click="deleteProject(project)">{{ $t('common.delete') }}</button>
+                  <template v-if="showDeletedProjects">
+                    <button class="btn btn-secondary btn-sm" @click="restoreProject(project)">{{ $t('admin.restore') }}</button>
+                  </template>
+                  <template v-else>
+                    <button class="btn btn-secondary btn-sm" @click="openEditProject(project)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-secondary btn-sm" @click="toggleArchive(project)">
+                      {{ project.is_archived ? $t('admin.unarchive') : $t('project.archive') }}
+                    </button>
+                    <button class="btn btn-danger btn-sm" @click="deleteProject(project)">{{ $t('common.delete') }}</button>
+                  </template>
                 </td>
               </tr>
             </tbody>
@@ -597,6 +607,7 @@ const loading = ref(true)
 
 const projects = ref([])
 const loadingProjects = ref(false)
+const showDeletedProjects = ref(false)
 let projectsLoaded = false
 
 const editUser = ref(null)
@@ -711,14 +722,24 @@ onMounted(async () => {
 })
 
 async function loadProjects() {
-  if (projectsLoaded) return
   loadingProjects.value = true
+  projectsLoaded = false
   try {
-    const { data } = await adminApi.listProjects()
+    const { data } = await adminApi.listProjects(showDeletedProjects.value)
     projects.value = data
     projectsLoaded = true
   } finally {
     loadingProjects.value = false
+  }
+}
+
+async function restoreProject(project) {
+  try {
+    await adminApi.restoreProject(project.id)
+    projects.value = projects.value.filter(p => p.id !== project.id)
+    ui.success(`Project "${project.name}" restored`)
+  } catch {
+    ui.error('Failed to restore project')
   }
 }
 
@@ -1089,6 +1110,7 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 }
 .badge-active { background: #dcfce7; color: #166534; }
 .badge-inactive { background: #fee2e2; color: #991b1b; }
+.badge-deleted { background: #f1f5f9; color: #64748b; }
 .badge-mfa { background: #dbeafe; color: #1e40af; margin-left: 6px; }
 [data-theme="dark"] .badge-active { background: #14532d; color: #86efac; }
 [data-theme="dark"] .badge-inactive { background: #450a0a; color: #fca5a5; }

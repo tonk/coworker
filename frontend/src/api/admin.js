@@ -6,7 +6,8 @@ export const adminApi = {
   updateUser: (id, data) => client.put(`/admin/users/${id}`, data),
   deleteUser: (id) => client.delete(`/admin/users/${id}`),
 
-  listProjects: () => client.get('/admin/projects'),
+  listProjects: (deleted = false) => client.get('/admin/projects', { params: deleted ? { deleted: 'true' } : {} }),
+  restoreProject: (id) => client.post(`/admin/projects/${id}/restore`),
   createProject: (data) => client.post('/admin/projects', data),
   updateProject: (id, data) => client.put(`/admin/projects/${id}`, data),
   deleteProject: (id) => client.delete(`/admin/projects/${id}`),

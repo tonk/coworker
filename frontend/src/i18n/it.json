@@ -284,7 +284,10 @@
     "password_require_upper": "Richiedi maiuscola (A–Z)",
     "password_require_lower": "Richiedi minuscola (a–z)",
     "password_require_digit": "Richiedi cifra (0–9)",
-    "password_require_special": "Richiedi carattere speciale (!{'@'}#$…)"
+    "password_require_special": "Richiedi carattere speciale (!{'@'}#$…)",
+    "deleted": "Eliminato",
+    "show_deleted": "Mostra eliminati",
+    "restore": "Ripristina"
   },
   "report": {
     "title": "Report ore",

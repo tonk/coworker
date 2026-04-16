@@ -80,6 +80,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			admin.POST("/projects", handlers.AdminCreateProject)
 			admin.PUT("/projects/:id", handlers.AdminUpdateProject)
 			admin.DELETE("/projects/:id", handlers.AdminDeleteProject)
+			admin.POST("/projects/:id/restore", handlers.AdminRestoreProject)
 			admin.GET("/system", handlers.AdminGetSystemSettings)
 			admin.PUT("/system", handlers.AdminUpdateSystemSettings)
 			admin.POST("/system/test-email", handlers.AdminSendTestEmail)

@@ -284,7 +284,10 @@
     "password_require_upper": "Krev stor bokstav (A–Å)",
     "password_require_lower": "Krev liten bokstav (a–å)",
     "password_require_digit": "Krev siffer (0–9)",
-    "password_require_special": "Krev spesialtegn (!{'@'}#$…)"
+    "password_require_special": "Krev spesialtegn (!{'@'}#$…)",
+    "deleted": "Slettet",
+    "show_deleted": "Vis slettede",
+    "restore": "Gjenopprett"
   },
   "report": {
     "title": "Tidsrapport",

@@ -284,7 +284,10 @@
     "password_require_upper": "Majuscule requise (A–Z)",
     "password_require_lower": "Minuscule requise (a–z)",
     "password_require_digit": "Chiffre requis (0–9)",
-    "password_require_special": "Caractère spécial requis (!{'@'}#$…)"
+    "password_require_special": "Caractère spécial requis (!{'@'}#$…)",
+    "deleted": "Supprimé",
+    "show_deleted": "Afficher supprimés",
+    "restore": "Restaurer"
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",

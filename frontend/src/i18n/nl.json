@@ -284,7 +284,10 @@
     "password_require_upper": "Hoofdletter verplicht (A–Z)",
     "password_require_lower": "Kleine letter verplicht (a–z)",
     "password_require_digit": "Cijfer verplicht (0–9)",
-    "password_require_special": "Speciaal teken verplicht (!{'@'}#$…)"
+    "password_require_special": "Speciaal teken verplicht (!{'@'}#$…)",
+    "deleted": "Verwijderd",
+    "show_deleted": "Toon verwijderd",
+    "restore": "Herstellen"
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

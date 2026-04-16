@@ -284,7 +284,10 @@
     "password_require_upper": "Kräv stor bokstav (A–Ö)",
     "password_require_lower": "Kräv liten bokstav (a–ö)",
     "password_require_digit": "Kräv siffra (0–9)",
-    "password_require_special": "Kräv specialtecken (!{'@'}#$…)"
+    "password_require_special": "Kräv specialtecken (!{'@'}#$…)",
+    "deleted": "Raderad",
+    "show_deleted": "Visa raderade",
+    "restore": "Återställ"
   },
   "report": {
     "title": "Tidsrapport",

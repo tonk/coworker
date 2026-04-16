@@ -284,7 +284,10 @@
     "password_require_upper": "Exigir maiúscula (A–Z)",
     "password_require_lower": "Exigir minúscula (a–z)",
     "password_require_digit": "Exigir dígito (0–9)",
-    "password_require_special": "Exigir carácter especial (!{'@'}#$…)"
+    "password_require_special": "Exigir carácter especial (!{'@'}#$…)",
+    "deleted": "Eliminado",
+    "show_deleted": "Mostrar eliminados",
+    "restore": "Restaurar"
   },
   "report": {
     "title": "Relatório de tempo",

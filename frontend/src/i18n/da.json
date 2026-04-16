@@ -284,7 +284,10 @@
     "password_require_upper": "Kræv stort bogstav (A–Z)",
     "password_require_lower": "Kræv lille bogstav (a–z)",
     "password_require_digit": "Kræv ciffer (0–9)",
-    "password_require_special": "Kræv specialtegn (!{'@'}#$…)"
+    "password_require_special": "Kræv specialtegn (!{'@'}#$…)",
+    "deleted": "Slettet",
+    "show_deleted": "Vis slettede",
+    "restore": "Gendan"
   },
   "report": {
     "title": "Tidsrapport",

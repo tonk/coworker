@@ -284,7 +284,10 @@
     "password_require_upper": "Krefjast hástafa (A–Ö)",
     "password_require_lower": "Krefjast lágstafa (a–ö)",
     "password_require_digit": "Krefjast tölu (0–9)",
-    "password_require_special": "Krefjast sérstaks tákns (!{'@'}#$…)"
+    "password_require_special": "Krefjast sérstaks tákns (!{'@'}#$…)",
+    "deleted": "Eytt",
+    "show_deleted": "Sýna eydd",
+    "restore": "Endurheimta"
   },
   "report": {
     "title": "Tímaskýrsla",

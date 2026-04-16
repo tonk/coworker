@@ -284,7 +284,10 @@
     "password_require_upper": "Vaadi iso kirjain (A–Ö)",
     "password_require_lower": "Vaadi pieni kirjain (a–ö)",
     "password_require_digit": "Vaadi numero (0–9)",
-    "password_require_special": "Vaadi erikoismerkki (!{'@'}#$…)"
+    "password_require_special": "Vaadi erikoismerkki (!{'@'}#$…)",
+    "deleted": "Poistettu",
+    "show_deleted": "Näytä poistetut",
+    "restore": "Palauta"
   },
   "report": {
     "title": "Aikaraportti",
