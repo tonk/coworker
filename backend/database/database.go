@@ -172,24 +172,33 @@ func applyMySQLTLS(cfg *config.Config) (string, error) {
 	return dsn, nil
 }
 
-// deduplicateKeyPrefixes ensures every project has a unique key_prefix before
-// AutoMigrate adds the unique index. Projects are processed oldest-first so
-// the original owner of a prefix keeps it; duplicates get a numeric suffix
-// (e.g. "PRJ" → "PRJ2", "PRJ3", …).
+// deduplicateKeyPrefixes ensures every project has a unique, non-empty
+// key_prefix before AutoMigrate adds the unique index. It runs in two passes:
+//
+//  1. Projects with an existing (non-empty) prefix are processed oldest-first;
+//     duplicates get a numeric suffix (e.g. "PRJ" → "PRJ2", "PRJ3", …).
+//  2. Projects with an empty prefix are assigned a fresh unique prefix derived
+//     from the project name, also oldest-first.
+//
+// Both passes must complete before AutoMigrate or the unique index creation
+// will fail on the empty-string rows.
 func deduplicateKeyPrefixes(db *gorm.DB) error {
 	type row struct {
 		ID        uint
+		Name      string
 		KeyPrefix string
 	}
-	var projects []row
+
+	// Pass 1: deduplicate existing non-empty prefixes.
+	var withPrefix []row
 	db.Model(&models.Project{}).
 		Where("key_prefix != '' AND key_prefix IS NOT NULL AND deleted_at IS NULL").
 		Order("id asc").
-		Select("id, key_prefix").
-		Scan(&projects)
+		Select("id, name, key_prefix").
+		Scan(&withPrefix)
 
-	seen := make(map[string]bool, len(projects))
-	for _, p := range projects {
+	seen := make(map[string]bool, len(withPrefix))
+	for _, p := range withPrefix {
 		base := p.KeyPrefix
 		candidate := base
 		n := 2
@@ -203,6 +212,30 @@ func deduplicateKeyPrefixes(db *gorm.DB) error {
 			db.Model(&models.Project{}).Where("id = ?", p.ID).UpdateColumn("key_prefix", candidate)
 		}
 	}
+
+	// Pass 2: assign prefixes to projects that have none (empty or NULL).
+	// This must happen here, before AutoMigrate, because multiple empty strings
+	// would violate the unique index.
+	var withoutPrefix []row
+	db.Model(&models.Project{}).
+		Where("(key_prefix = '' OR key_prefix IS NULL) AND deleted_at IS NULL").
+		Order("id asc").
+		Select("id, name, key_prefix").
+		Scan(&withoutPrefix)
+
+	for _, p := range withoutPrefix {
+		base := generateKeyPrefix(p.Name)
+		candidate := base
+		n := 2
+		for seen[candidate] {
+			candidate = fmt.Sprintf("%s%d", base, n)
+			n++
+		}
+		seen[candidate] = true
+		log.Printf("key_prefix backfill: project %d %q → %q", p.ID, p.Name, candidate)
+		db.Model(&models.Project{}).Where("id = ?", p.ID).UpdateColumn("key_prefix", candidate)
+	}
+
 	return nil
 }
 
