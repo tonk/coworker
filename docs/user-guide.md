@@ -66,7 +66,7 @@ contains:
 | **Starred Projects** | Your pinned projects — drag to reorder |
 | **Projects** | All projects you belong to; starred ones appear at the top with a star icon |
 | **Starred Customers** | Customers you have starred — drag to reorder; click ★ to unstar |
-| **All Customers** | Every customer, with starred ones shown first |
+| **All Customers** | Customers you have been assigned to, with starred ones shown first |
 | **Online Users** | Users currently connected; click a name to open a direct message |
 | **Chats** | Your 8 most recent conversations with unread indicators |
 
@@ -106,7 +106,7 @@ Click **+ New Project** on the dashboard. Fill in:
 | Field | Notes |
 |-------|-------|
 | **Name** | Required. The project's display name. |
-| **Card Prefix** | 1–10 uppercase letters or digits (e.g. `PRJ`). Auto-generated from the name but fully editable. Used in all card references like `PRJ-42`. **Cannot be changed after the project is created.** |
+| **Card Prefix** | 1–10 uppercase letters or digits (e.g. `PRJ`). Auto-generated from the name but freely editable before saving. Must be unique across all projects. Used in all card references like `PRJ-42`. **Cannot be changed after the project is created.** |
 | **Description** | Optional free-text summary. |
 | **Colour** | Accent colour shown on the dashboard tile and board toolbar. |
 
@@ -470,8 +470,15 @@ Open User Settings by clicking your display name in the header.
 
 ## 11. Customers
 
-The **Customers** page (`/customers`) lists all customer organisations. Each
-customer can have one or more contracts, and contracts can be linked to projects.
+The **Customers** page (`/customers`) lists the customer organisations you have
+access to. Each customer can have one or more contracts, and contracts can be
+linked to projects.
+
+### Visibility
+
+You only see customers that an administrator has explicitly assigned to you.
+Global admins see all customers. If your list is empty, ask your administrator
+to assign you to the relevant customers.
 
 ### Starring a customer
 
@@ -486,6 +493,22 @@ Click a customer name to open the detail page, which shows:
 - Description and logo
 - Linked contracts with start / end dates
 - Projects linked to each contract
+
+### Managing members (customer-admins)
+
+If you hold the **Admin** role on a customer, a **Members** section is shown at
+the bottom of the customer detail page. Here you can:
+
+| Action | How |
+|--------|-----|
+| Add a member | Click **+ Add Member**, search for a user, select one or more, click **Add** |
+| Change a role | Click **↑** to promote a member to Admin, **↓** to demote to Member |
+| Remove a member | Click **✕** next to a member |
+
+Members see the customer but cannot modify it. Admins can also create and edit
+contracts and manage the member list.
+
+Global admins can do all of this regardless of their customer role.
 
 ---
 

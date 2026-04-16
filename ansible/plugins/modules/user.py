@@ -108,6 +108,19 @@ options:
     type: bool
     default: false
 
+  customer_roles:
+    description:
+      - Dict mapping customer B(name) to access role (C(member) or C(admin)).
+      - WarmDesk uses a strict allowlist model — only explicitly assigned
+        customers are visible to the user.
+      - This parameter performs a B(full sync): customers not listed are
+        removed, customers listed are added or updated.
+      - Pass an empty dict C({}) to remove all customer assignments (the user
+        will see no customers).
+      - Omit (or set to C(null)) to leave customer assignments unchanged.
+      - Customer names that cannot be resolved are skipped with a warning.
+    type: dict
+
   state:
     description:
       - C(present) ensures the account exists with the specified attributes.
@@ -178,6 +191,42 @@ EXAMPLES = r"""
     warmdesk_api_key: "{{ vault_api_key }}"
     username: alice
     mfa_disable: true
+
+# ---------------------------------------------------------------------------
+# Assign user to customers with specific roles
+# ---------------------------------------------------------------------------
+- name: Create alice and assign her to two customers
+  ansilab.warmdesk.user:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    username: alice
+    email: alice@example.com
+    password: "{{ vault_alice_password }}"
+    customer_roles:
+      Acme Corp: admin
+      Beta Ltd: member
+    state: present
+
+# ---------------------------------------------------------------------------
+# Update customer assignments for an existing user
+# ---------------------------------------------------------------------------
+- name: Give bob admin access to Acme Corp, remove all other customer access
+  ansilab.warmdesk.user:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    username: bob
+    customer_roles:
+      Acme Corp: admin
+
+# ---------------------------------------------------------------------------
+# Remove all customer assignments (user sees no customers)
+# ---------------------------------------------------------------------------
+- name: Strip all customer visibility from charlie
+  ansilab.warmdesk.user:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    username: charlie
+    customer_roles: {}
 
 # ---------------------------------------------------------------------------
 # Delete a user account
@@ -276,6 +325,56 @@ def _find_user(client, username):
     return None
 
 
+def _resolve_customer_roles(client, customer_roles_by_name):
+    """Convert {customer_name: role} to ({customer_id (int): role}, [unresolved]).
+
+    Roles that are not 'admin' or 'member' are coerced to 'member'.
+    """
+    if not customer_roles_by_name and customer_roles_by_name is not None:
+        # Empty dict — caller wants to clear all assignments.
+        return {}, []
+    customers = client.get('/customers')
+    by_name = {c['name']: c['id'] for c in customers}
+    resolved = {}
+    unresolved = []
+    for name, role in customer_roles_by_name.items():
+        if name in by_name:
+            resolved[by_name[name]] = role if role in ('admin', 'member') else 'member'
+        else:
+            unresolved.append(name)
+    return resolved, unresolved
+
+
+def _customer_roles_changed(current_data, desired_by_id):
+    """Return True when the desired customer assignments differ from current.
+
+    current_data is the response from GET /admin/users/:id/customers:
+      {"customer_ids": [...], "customer_roles": {"1": "admin", ...}}
+    desired_by_id is {int_id: role}.
+    """
+    current_ids = set(int(x) for x in current_data.get('customer_ids') or [])
+    current_roles = {
+        int(k): v for k, v in (current_data.get('customer_roles') or {}).items()
+    }
+    desired_ids = set(desired_by_id.keys())
+    if current_ids != desired_ids:
+        return True
+    for cid, role in desired_by_id.items():
+        if current_roles.get(cid) != role:
+            return True
+    return False
+
+
+def _apply_customer_roles(client, user_id, desired_by_id):
+    """PUT the full customer assignment list for *user_id*."""
+    ids = list(desired_by_id.keys())
+    roles = {str(cid): role for cid, role in desired_by_id.items()}
+    client.put('/admin/users/%d/customers' % user_id, {
+        'customer_ids': ids,
+        'customer_roles': roles,
+    })
+
+
 def _build_create_body(p):
     """Build the POST body from module params."""
     body = dict(
@@ -355,6 +454,7 @@ def run_module():
         accent_color=dict(type='str'),
         sidebar_position=dict(type='str'),
         mfa_disable=dict(type='bool', default=False),
+        customer_roles=dict(type='dict'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
 
@@ -398,6 +498,11 @@ def run_module():
             # consistent with the idempotent contract).
             if p['mfa_disable']:
                 user = client.post('/admin/users/%d/mfa/disable' % user['id'])
+            if p.get('customer_roles') is not None:
+                desired_by_id, unresolved = _resolve_customer_roles(client, p['customer_roles'])
+                if unresolved:
+                    module.warn('Unresolved customer names (skipped): %s' % ', '.join(unresolved))
+                _apply_customer_roles(client, user['id'], desired_by_id)
             module.exit_json(changed=True, user=user)
 
         # ------------------------------------------------------------------ #
@@ -413,6 +518,17 @@ def run_module():
             mfa_changed = True
             changed = True
 
+        customers_changed = False
+        desired_by_id = None
+        if p.get('customer_roles') is not None:
+            desired_by_id, unresolved = _resolve_customer_roles(client, p['customer_roles'])
+            if unresolved:
+                module.warn('Unresolved customer names (skipped): %s' % ', '.join(unresolved))
+            current_cust = client.get('/admin/users/%d/customers' % existing['id'])
+            if _customer_roles_changed(current_cust, desired_by_id):
+                customers_changed = True
+                changed = True
+
         if not changed:
             module.exit_json(changed=False, user=existing)
 
@@ -424,6 +540,8 @@ def run_module():
             user = client.put('/admin/users/%d' % existing['id'], update_body)
         if mfa_changed:
             user = client.post('/admin/users/%d/mfa/disable' % existing['id'])
+        if customers_changed:
+            _apply_customer_roles(client, existing['id'], desired_by_id)
 
         module.exit_json(changed=True, user=user)
 

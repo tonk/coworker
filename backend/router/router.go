@@ -74,6 +74,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			admin.POST("/users/:id/mfa/disable", handlers.AdminDisableUserMFA)
 			admin.GET("/users/:id/projects", handlers.AdminGetUserProjects)
 			admin.PUT("/users/:id/projects", handlers.AdminSetUserProjects)
+			admin.GET("/users/:id/customers", handlers.AdminGetUserCustomers)
+			admin.PUT("/users/:id/customers", handlers.AdminSetUserCustomers)
 			admin.GET("/projects", handlers.AdminListProjects)
 			admin.POST("/projects", handlers.AdminCreateProject)
 			admin.PUT("/projects/:id", handlers.AdminUpdateProject)
@@ -111,6 +113,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			customers.POST("/:customerId/contracts", handlers.CreateContract)
 			customers.PUT("/:customerId/contracts/:contractId", handlers.UpdateContract)
 			customers.DELETE("/:customerId/contracts/:contractId", handlers.DeleteContract)
+			customers.GET("/:customerId/members", handlers.ListCustomerMembers)
+			customers.PUT("/:customerId/members", handlers.SetCustomerMembers)
 		}
 
 		// Direct messages (legacy 1-on-1)

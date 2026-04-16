@@ -96,6 +96,50 @@
         </div>
       </section>
 
+      <!-- Members section (visible to admins and customer-admins) -->
+      <section v-if="canManage" class="members-section">
+        <div class="section-header-row">
+          <h2>{{ $t('customer.members') }}</h2>
+          <button class="btn btn-primary btn-sm" @click="openAddMember">+ {{ $t('customer.add_member') }}</button>
+        </div>
+        <div v-if="members.length === 0" class="empty-state-sm" style="padding:16px 0">
+          {{ $t('customer.no_members') }}
+        </div>
+        <div v-else class="members-list">
+          <div v-for="m in members" :key="m.user_id" class="member-row">
+            <img v-if="m.avatar_url" :src="resolveAssetUrl(m.avatar_url)" class="member-avatar" alt="" />
+            <img v-else :src="m.gravatar_url" class="member-avatar" alt="" />
+            <div class="member-info">
+              <span class="member-name">{{ m.display_name || m.username }}</span>
+              <span class="member-email">{{ m.email }}</span>
+            </div>
+            <span :class="['role-badge', m.role === 'admin' ? 'role-admin' : 'role-member']">
+              {{ m.role === 'admin' ? $t('customer.role_admin') : $t('customer.role_member') }}
+            </span>
+            <div class="member-actions">
+              <button
+                v-if="m.role === 'member'"
+                class="btn btn-sm"
+                @click="setMemberRole(m.user_id, 'admin')"
+                :title="$t('customer.promote')"
+              >↑</button>
+              <button
+                v-else-if="auth.isAdmin || m.user_id !== authUserId"
+                class="btn btn-sm"
+                @click="setMemberRole(m.user_id, 'member')"
+                :title="$t('customer.demote')"
+              >↓</button>
+              <button
+                v-if="auth.isAdmin || m.user_id !== authUserId"
+                class="icon-btn icon-danger"
+                @click="removeMember(m.user_id)"
+                title="Remove"
+              >✕</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </template>
 
     <!-- Edit customer modal -->
@@ -161,6 +205,37 @@
         <button class="btn btn-primary" @click="saveContract" :disabled="!contractForm.name.trim()">{{ $t('common.save') }}</button>
       </template>
     </BaseModal>
+  <!-- Add member modal -->
+  <BaseModal v-if="showAddMember" :title="$t('customer.add_member')" @close="showAddMember = false">
+    <div class="form-group">
+      <input class="form-input" v-model="memberSearch" :placeholder="$t('common.search') + '…'" />
+    </div>
+    <div class="user-picker-list">
+      <div
+        v-for="u in filteredUsers"
+        :key="u.id"
+        class="user-picker-row"
+        :class="{ selected: pendingMemberIds.includes(u.id) }"
+        @click="togglePendingMember(u.id)"
+      >
+        <img v-if="u.avatar_url" :src="resolveAssetUrl(u.avatar_url)" class="member-avatar" alt="" />
+        <img v-else :src="u.gravatar_url" class="member-avatar" alt="" />
+        <div class="member-info">
+          <span class="member-name">{{ u.display_name || u.username }}</span>
+          <span class="member-email">{{ u.email }}</span>
+        </div>
+        <span v-if="pendingMemberIds.includes(u.id)" class="check-mark">✓</span>
+      </div>
+      <div v-if="filteredUsers.length === 0" class="empty-state-sm" style="padding:8px 0">
+        {{ $t('common.no_results') }}
+      </div>
+    </div>
+    <template #footer>
+      <button class="btn btn-secondary" @click="showAddMember = false">{{ $t('common.cancel') }}</button>
+      <button class="btn btn-primary" :disabled="pendingMemberIds.length === 0" @click="confirmAddMembers">{{ $t('common.add') }}</button>
+    </template>
+  </BaseModal>
+
   </div>
 </template>
 
@@ -175,6 +250,7 @@ import { attachmentsApi } from '@/api/attachments'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
+import client from '@/api/client'
 
 const route = useRoute()
 const router = useRouter()
@@ -230,7 +306,93 @@ function onContractEndDateChange(e) {
 const editingName = ref(false)
 const nameEdit = ref('')
 
-const canManage = computed(() => auth.isAdmin || auth.user?.global_role === 'user')
+const canManage = computed(() => auth.isAdmin || detail.value?.customer?.my_role === 'admin')
+
+const authUserId = computed(() => auth.user?.id)
+
+// ── Member management ──────────────────────────────────────────────────────
+const members = ref([])
+const showAddMember = ref(false)
+const allUsers = ref([])
+let allUsersLoaded = false
+const memberSearch = ref('')
+const pendingMemberIds = ref([])
+
+const filteredUsers = computed(() => {
+  const q = memberSearch.value.toLowerCase()
+  const existingIds = new Set(members.value.map(m => m.user_id))
+  return allUsers.value.filter(u => {
+    if (existingIds.has(u.id)) return false
+    if (!q) return true
+    return (u.display_name || '').toLowerCase().includes(q) ||
+           u.username.toLowerCase().includes(q) ||
+           u.email.toLowerCase().includes(q)
+  })
+})
+
+async function loadMembers() {
+  try {
+    const { data } = await customersApi.listMembers(custId.value)
+    members.value = data || []
+  } catch {}
+}
+
+async function openAddMember() {
+  memberSearch.value = ''
+  pendingMemberIds.value = []
+  if (!allUsersLoaded) {
+    try {
+      const { data } = await client.get('/users')
+      allUsers.value = data || []
+      allUsersLoaded = true
+    } catch {}
+  }
+  showAddMember.value = true
+}
+
+function togglePendingMember(id) {
+  const idx = pendingMemberIds.value.indexOf(id)
+  if (idx >= 0) pendingMemberIds.value.splice(idx, 1)
+  else pendingMemberIds.value.push(id)
+}
+
+async function confirmAddMembers() {
+  const newMembers = [
+    ...members.value.map(m => ({ user_id: m.user_id, role: m.role })),
+    ...pendingMemberIds.value.map(id => ({ user_id: id, role: 'member' })),
+  ]
+  try {
+    await customersApi.setMembers(custId.value, newMembers)
+    await loadMembers()
+    showAddMember.value = false
+  } catch {
+    ui.error('Failed to add members')
+  }
+}
+
+async function removeMember(userId) {
+  const newMembers = members.value
+    .filter(m => m.user_id !== userId)
+    .map(m => ({ user_id: m.user_id, role: m.role }))
+  try {
+    await customersApi.setMembers(custId.value, newMembers)
+    await loadMembers()
+  } catch {
+    ui.error('Failed to remove member')
+  }
+}
+
+async function setMemberRole(userId, role) {
+  const newMembers = members.value.map(m =>
+    m.user_id === userId ? { user_id: m.user_id, role } : { user_id: m.user_id, role: m.role }
+  )
+  try {
+    await customersApi.setMembers(custId.value, newMembers)
+    await loadMembers()
+  } catch {
+    ui.error('Failed to update role')
+  }
+}
 
 const custId = computed(() => Number(route.params.id))
 
@@ -242,6 +404,9 @@ async function load() {
   try {
     const { data } = await customersApi.get(custId.value)
     detail.value = data
+    if (data?.customer?.my_role === 'admin' || auth.isAdmin) {
+      await loadMembers()
+    }
   } catch {
     ui.error('Customer not found')
     router.push('/customers')
@@ -527,4 +692,58 @@ async function deleteContract(grp) {
   padding: 2px 4px; font-size: 13px; line-height: 1; border-radius: 3px; flex-shrink: 0;
 }
 .btn-icon-xs:hover { background: var(--color-bg); color: var(--color-text); }
+
+.members-section { margin-top: 32px; }
+
+.members-list { display: flex; flex-direction: column; gap: 8px; }
+
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.member-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+
+.member-info { flex: 1; min-width: 0; }
+.member-name { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.member-email { display: block; font-size: 11px; color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.role-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.role-admin { background: #0ea5e9; color: #fff; }
+.role-member { background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+
+.member-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.user-picker-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.user-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border);
+}
+.user-picker-row:last-child { border-bottom: none; }
+.user-picker-row:hover { background: var(--color-bg); }
+.user-picker-row.selected { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
+
+.check-mark { font-size: 14px; color: var(--color-primary); font-weight: 700; flex-shrink: 0; }
 </style>

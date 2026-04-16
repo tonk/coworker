@@ -14,4 +14,9 @@ tags:
   - warmdesk
   - project_management
   - kanban
+repository: https://github.com/tonk/warmdesk
+homepage: https://github.com/tonk/warmdesk
+documentation: https://github.com/tonk/warmdesk/tree/main/docs
+issues: https://github.com/tonk/warmdesk/issues
 dependencies: {}
+build_ignore: []

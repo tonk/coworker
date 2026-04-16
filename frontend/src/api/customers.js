@@ -12,4 +12,6 @@ export const customersApi = {
   createContract: (cid, data)               => client.post(`/customers/${cid}/contracts`, data),
   updateContract: (cid, rid, data)          => client.put(`/customers/${cid}/contracts/${rid}`, data),
   deleteContract: (cid, rid)                => client.delete(`/customers/${cid}/contracts/${rid}`),
+  listMembers:    (cid)                      => client.get(`/customers/${cid}/members`),
+  setMembers:     (cid, members)             => client.put(`/customers/${cid}/members`, { members }),
 }

@@ -31,3 +31,13 @@ type CustomerFavorite struct {
 	UserID     uint `gorm:"primaryKey" json:"user_id"`
 	CustomerID uint `gorm:"primaryKey" json:"customer_id"`
 }
+
+// CustomerAccess grants a non-admin user explicit visibility of a customer.
+// When a user has at least one row here they can only see those customers.
+// Users with no rows see all customers. Admins always see all customers.
+// Role "member" = read access only; "admin" = can manage contracts and access.
+type CustomerAccess struct {
+	UserID     uint   `gorm:"primaryKey" json:"user_id"`
+	CustomerID uint   `gorm:"primaryKey" json:"customer_id"`
+	Role       string `gorm:"default:member" json:"role"`
+}

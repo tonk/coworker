@@ -87,7 +87,14 @@
     "edit": "Editar cliente",
     "contracts": "Contratos",
     "project_count": "{n} proyecto | {n} proyectos",
-    "contract_count": "{n} contrato | {n} contratos"
+    "contract_count": "{n} contrato | {n} contratos",
+    "members": "Miembros",
+    "add_member": "Agregar miembro",
+    "no_members": "Sin miembros. Todos pueden ver este cliente.",
+    "role_admin": "Admin",
+    "role_member": "Miembro",
+    "promote": "Promover a admin",
+    "demote": "Degradar a miembro"
   },
   "contract": {
     "contracts": "Contratos",
@@ -232,6 +239,8 @@
     "unarchive": "Desarchivar",
     "create_user": "Crear usuario",
     "assign_projects": "Asignar proyectos",
+    "assign_customers": "Acceso a clientes",
+    "assign_customers_hint": "solo los clientes asignados son visibles",
     "settings": "Configuración",
     "system_settings": "Configuración del sistema",
     "registration_enabled": "Registro de usuarios",
@@ -296,7 +305,8 @@
     "actions": "Acciones",
     "language": "Idioma",
     "add": "Agregar",
-    "pick_date": "Elegir fecha"
+    "pick_date": "Elegir fecha",
+    "no_results": "Sin resultados"
   },
   "presence": {
     "online": "en línea"

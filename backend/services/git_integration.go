@@ -8,8 +8,8 @@ import (
 	"github.com/tonk/warmdesk/models"
 )
 
-// cardRefRe matches card references like PRJ-42 (2-8 uppercase letters, dash, digits).
-var cardRefRe = regexp.MustCompile(`\b([A-Z]{2,8})-(\d+)\b`)
+// cardRefRe matches card references like PRJ-42 or WAR2-7 (1-10 uppercase letters/digits, dash, digits).
+var cardRefRe = regexp.MustCompile(`\b([A-Z][A-Z0-9]{0,9})-(\d+)\b`)
 
 // LinkCardsFromText scans text for card references, looks up the matching cards,
 // and upserts a CardLink for each found card.  The template argument provides all

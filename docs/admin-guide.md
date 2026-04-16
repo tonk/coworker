@@ -333,6 +333,7 @@ admin users only).
 | Reset a password | Admin → Users → Edit → Change Password |
 | Disable / enable | Admin → Users → Edit → Enabled toggle |
 | Assign to projects | Admin → Users → (click user) → Projects tab |
+| Assign to customers | Admin → Users → (click user) → Customer Access picker |
 | Delete a user | Admin → Users → Edit → Delete (permanent) |
 
 **Global roles**
@@ -345,6 +346,29 @@ admin users only).
 | `metrics` | Can only read `GET /api/v1/metrics`; no access to any other endpoint |
 
 The `metrics` role is intended for Prometheus scraper accounts. Create a dedicated user, set their role to `metrics`, generate an API key in User Settings, and configure Prometheus to send `Authorization: Bearer <token>` (or `?api_key=<key>`) with each scrape request.
+
+### Customer access control
+
+Non-admin users only see the customers they are **explicitly assigned to**. A
+user with no customer assignments sees an empty customer list.
+
+Assign customers in **Admin → Users → Edit User → Customer Access**. Click a
+customer chip to toggle access; when a chip is selected, click the small **M**
+or **A** badge inside it to set the role:
+
+| Role | Access |
+|------|--------|
+| **M** (Member) | Can see the customer and its contracts and projects |
+| **A** (Admin) | All member permissions plus: edit customer details, create/edit contracts, manage the customer's member list |
+
+Global admins bypass all customer access checks and always see every customer.
+
+**Customer-admin self-service**
+
+A user with the Admin role on a customer can also manage that customer's member
+list directly from the **Customer Detail** page → **Members** section, without
+needing access to the Admin panel. They can add users, change roles, and remove
+members. They cannot remove themselves from the customer (prevents self-lockout).
 
 ### Prometheus metrics
 
@@ -379,7 +403,11 @@ project membership. Access via **Admin → Projects**.
 When creating a project the **Card Prefix** field sets the short identifier
 used in all card references (e.g. `PRJ-42`). It is auto-generated from the
 project name but can be freely edited before saving — 1–10 uppercase letters
-or digits. The prefix **cannot be changed after the project is created**.
+or digits. The prefix must be **unique** across all projects; if the
+auto-generated value is already taken a numeric suffix is appended
+automatically (`WAR`, `WAR2`, `WAR3`, …). The prefix **cannot be changed
+after the project is created** — existing card codes in commit messages and
+external integrations would become invalid.
 
 ### System settings
 
@@ -718,6 +746,34 @@ cd dist
 - 3 customers (Acme Corporation, Globex Systems, Initech Ltd) with contracts linked to projects
 - Starred projects pre-set for each demo user (e.g. admin has all three; owners have their own project plus one adjacent)
 - Starred customers pre-set (Acme starred for admin, sarah, marc; Globex for marc, lisa)
+
+### Training seeder
+
+The `warmdesk-training` binary sets up isolated training environments — one
+customer, contract, project, and user per slot.
+
+```bash
+# Create trainer (guru00) + 5 trainees (guru01…guru05), password base "Training"
+./warmdesk-training 5 Training
+
+# Remove all guru** training data from the database
+./warmdesk-training --reset
+```
+
+**Training slots**
+
+| Slot | Username | Password | Customer | Role |
+|------|----------|----------|----------|------|
+| 00 | `guru00` | `Training00` | All training customers | Customer-admin (sees all) |
+| 01 | `guru01` | `Training01` | Ansible Laboratory 01 | Member (restricted to own) |
+| … | … | … | … | … |
+
+- Each trainee sees **only** their own customer.
+- The trainer (guru00) has customer-admin access to every training customer so
+  they can observe and assist all trainees.
+- Users are seeded with a DiceBear avatar so they are visually distinct.
+- The seeder is idempotent: re-running applies any missing access rows and
+  avatars without duplicating data.
 
 ---
 

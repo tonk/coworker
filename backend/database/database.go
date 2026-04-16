@@ -14,7 +14,7 @@ import (
 	"github.com/tonk/warmdesk/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -61,6 +61,9 @@ func Init(cfg *config.Config) error {
 	DB = db
 	log.Printf("Connected to %s database", cfg.DBDriver)
 
+	if err := deduplicateKeyPrefixes(db); err != nil {
+		return err
+	}
 	if err := autoMigrate(db); err != nil {
 		return err
 	}
@@ -169,14 +172,48 @@ func applyMySQLTLS(cfg *config.Config) (string, error) {
 	return dsn, nil
 }
 
+// deduplicateKeyPrefixes ensures every project has a unique key_prefix before
+// AutoMigrate adds the unique index. Projects are processed oldest-first so
+// the original owner of a prefix keeps it; duplicates get a numeric suffix
+// (e.g. "PRJ" → "PRJ2", "PRJ3", …).
+func deduplicateKeyPrefixes(db *gorm.DB) error {
+	type row struct {
+		ID        uint
+		KeyPrefix string
+	}
+	var projects []row
+	db.Model(&models.Project{}).
+		Where("key_prefix != '' AND key_prefix IS NOT NULL AND deleted_at IS NULL").
+		Order("id asc").
+		Select("id, key_prefix").
+		Scan(&projects)
+
+	seen := make(map[string]bool, len(projects))
+	for _, p := range projects {
+		base := p.KeyPrefix
+		candidate := base
+		n := 2
+		for seen[candidate] {
+			candidate = fmt.Sprintf("%s%d", base, n)
+			n++
+		}
+		seen[candidate] = true
+		if candidate != p.KeyPrefix {
+			log.Printf("key_prefix dedup: project %d %q → %q", p.ID, p.KeyPrefix, candidate)
+			db.Model(&models.Project{}).Where("id = ?", p.ID).UpdateColumn("key_prefix", candidate)
+		}
+	}
+	return nil
+}
+
 // backfillCardNumbers assigns key_prefix to projects and card_number to existing cards
 // that were created before this feature was added (card_number == 0).
 func backfillCardNumbers(db *gorm.DB) error {
-	// Backfill key_prefix for projects that don't have one
+	// Backfill key_prefix for projects that don't have one, ensuring uniqueness.
 	var projects []models.Project
 	db.Where("key_prefix = '' OR key_prefix IS NULL").Find(&projects)
 	for _, p := range projects {
-		prefix := generateKeyPrefix(p.Name)
+		prefix := uniqueKeyPrefix(db, p.Name, p.ID)
 		db.Model(&p).UpdateColumn("key_prefix", prefix)
 	}
 
@@ -205,6 +242,26 @@ func backfillCardNumbers(db *gorm.DB) error {
 		db.Model(&models.Project{}).Where("id = ?", pid).UpdateColumn("card_counter", counter)
 	}
 	return nil
+}
+
+// uniqueKeyPrefix generates a key_prefix for projectID that is not already
+// used by another project. excludeID is the project being assigned (so we
+// don't collide with ourselves).
+func uniqueKeyPrefix(db *gorm.DB, name string, excludeID uint) string {
+	base := generateKeyPrefix(name)
+	candidate := base
+	n := 2
+	for {
+		var count int64
+		db.Model(&models.Project{}).
+			Where("key_prefix = ? AND id != ?", candidate, excludeID).
+			Count(&count)
+		if count == 0 {
+			return candidate
+		}
+		candidate = fmt.Sprintf("%s%d", base, n)
+		n++
+	}
 }
 
 func generateKeyPrefix(name string) string {
@@ -272,6 +329,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.Customer{},
 		&models.Contract{},
 		&models.CustomerFavorite{},
+		&models.CustomerAccess{},
 		&models.CardReference{},
 	)
 }

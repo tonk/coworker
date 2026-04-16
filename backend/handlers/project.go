@@ -157,6 +157,12 @@ func CreateProject(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "card prefix must be 1–10 uppercase letters or digits"})
 			return
 		}
+		var count int64
+		database.DB.Model(&models.Project{}).Where("key_prefix = ?", keyPrefix).Count(&count)
+		if count > 0 {
+			c.JSON(http.StatusConflict, gin.H{"error": "card prefix is already used by another project"})
+			return
+		}
 	} else {
 		keyPrefix = services.GenerateKeyPrefix(req.Name)
 	}

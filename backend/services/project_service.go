@@ -75,9 +75,26 @@ func GenerateSlug(name string) string {
 	}
 }
 
-// GenerateKeyPrefix creates a 3-letter uppercase abbreviation from a project name.
-// Examples: "WarmDesk" → "WAR", "My Project" → "MYP", "My Big Task" → "MBT"
+// GenerateKeyPrefix creates a unique uppercase abbreviation from a project name.
+// It derives a 3-character base (e.g. "WarmDesk" → "WAR", "My Project" → "MYP")
+// and appends a numeric suffix if that base is already taken ("WAR2", "WAR3", …).
 func GenerateKeyPrefix(name string) string {
+	base := keyPrefixBase(name)
+	candidate := base
+	n := 2
+	for {
+		var count int64
+		database.DB.Model(&models.Project{}).Where("key_prefix = ?", candidate).Count(&count)
+		if count == 0 {
+			return candidate
+		}
+		candidate = base + itoa(n)
+		n++
+	}
+}
+
+// keyPrefixBase derives the 3-character abbreviation without uniqueness checking.
+func keyPrefixBase(name string) string {
 	// Split into words by non-alphanumeric characters
 	var words [][]rune
 	var current []rune

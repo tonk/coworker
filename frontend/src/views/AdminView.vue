@@ -390,6 +390,29 @@
         <span v-if="!projects.length" class="form-hint">No projects yet</span>
       </div>
     </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('admin.assign_customers') }} <span class="form-label-hint">({{ $t('admin.assign_customers_hint') }})</span></label>
+      <div class="labels-picker">
+        <span
+          v-for="cu in allCustomers"
+          :key="cu.id"
+          class="label-chip customer-chip-wrap"
+          :class="{ active: userCustomerIds.includes(cu.id) }"
+          :style="{ borderColor: '#0ea5e9', color: userCustomerIds.includes(cu.id) ? '#fff' : '#0ea5e9', background: userCustomerIds.includes(cu.id) ? '#0ea5e9' : 'transparent' }"
+          @click="toggleUserCustomer(cu.id)"
+        >
+          {{ cu.name }}
+          <span
+            v-if="userCustomerIds.includes(cu.id)"
+            class="admin-toggle"
+            :class="{ 'is-admin': userCustomerAdminIds.includes(cu.id) }"
+            :title="userCustomerAdminIds.includes(cu.id) ? $t('admin.role_admin') : $t('admin.role_user')"
+            @click.stop="toggleCustomerAdmin(cu.id, $event)"
+          >{{ userCustomerAdminIds.includes(cu.id) ? 'A' : 'M' }}</span>
+        </span>
+        <span v-if="!allCustomers.length" class="form-hint">No customers yet</span>
+      </div>
+    </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showCreateUser = false">{{ $t('common.cancel') }}</button>
       <button class="btn btn-primary" @click="submitCreateUser">{{ $t('common.create') }}</button>
@@ -456,6 +479,29 @@
           <span v-if="!projects.length" class="form-hint">No projects yet</span>
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label">{{ $t('admin.assign_customers') }} <span class="form-label-hint">({{ $t('admin.assign_customers_hint') }})</span></label>
+        <div class="labels-picker">
+          <span
+            v-for="cu in allCustomers"
+            :key="cu.id"
+            class="label-chip customer-chip-wrap"
+            :class="{ active: userCustomerIds.includes(cu.id) }"
+            :style="{ borderColor: '#0ea5e9', color: userCustomerIds.includes(cu.id) ? '#fff' : '#0ea5e9', background: userCustomerIds.includes(cu.id) ? '#0ea5e9' : 'transparent' }"
+            @click="toggleUserCustomer(cu.id)"
+          >
+            {{ cu.name }}
+            <span
+              v-if="userCustomerIds.includes(cu.id)"
+              class="admin-toggle"
+              :class="{ 'is-admin': userCustomerAdminIds.includes(cu.id) }"
+              :title="userCustomerAdminIds.includes(cu.id) ? $t('admin.role_admin') : $t('admin.role_user')"
+              @click.stop="toggleCustomerAdmin(cu.id, $event)"
+            >{{ userCustomerAdminIds.includes(cu.id) ? 'A' : 'M' }}</span>
+          </span>
+          <span v-if="!allCustomers.length" class="form-hint">No customers yet</span>
+        </div>
+      </div>
       <template #footer>
         <button class="btn btn-secondary" @click="editUser = null">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="saveEditUser">{{ $t('common.save') }}</button>
@@ -520,6 +566,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { adminApi } from '@/api/admin'
+import { customersApi } from '@/api/customers'
 import { attachmentsApi } from '@/api/attachments'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import { useUIStore } from '@/stores/ui'
@@ -562,6 +609,40 @@ watch(() => newProject.value.name, (name) => {
 })
 const newUser = ref({ username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user' })
 const userProjectIds = ref([])
+const userCustomerIds = ref([])
+const userCustomerAdminIds = ref([])
+
+const allCustomers = ref([])
+let customersLoaded = false
+
+async function loadAllCustomers() {
+  if (customersLoaded) return
+  try {
+    const { data } = await customersApi.list()
+    allCustomers.value = data || []
+    customersLoaded = true
+  } catch {}
+}
+
+function toggleUserCustomer(id) {
+  const idx = userCustomerIds.value.indexOf(id)
+  if (idx >= 0) {
+    userCustomerIds.value.splice(idx, 1)
+    // Also remove admin flag when removing access entirely
+    const ai = userCustomerAdminIds.value.indexOf(id)
+    if (ai >= 0) userCustomerAdminIds.value.splice(ai, 1)
+  } else {
+    userCustomerIds.value.push(id)
+  }
+}
+
+function toggleCustomerAdmin(id, event) {
+  event.stopPropagation()
+  if (!userCustomerIds.value.includes(id)) return
+  const idx = userCustomerAdminIds.value.indexOf(id)
+  if (idx >= 0) userCustomerAdminIds.value.splice(idx, 1)
+  else userCustomerAdminIds.value.push(id)
+}
 
 const systemSettings = ref({
   registration_enabled: true,
@@ -782,8 +863,11 @@ async function sendSmtpTest() {
 
 function openCreateUser() {
   userProjectIds.value = []
+  userCustomerIds.value = []
+  userCustomerAdminIds.value = []
   showCreateUser.value = true
   loadProjects()
+  loadAllCustomers()
 }
 
 async function submitCreateUser() {
@@ -792,10 +876,15 @@ async function submitCreateUser() {
     if (userProjectIds.value.length) {
       await adminApi.setUserProjects(data.id, userProjectIds.value)
     }
+    const customerRoles = {}
+    userCustomerIds.value.forEach(id => { customerRoles[id] = userCustomerAdminIds.value.includes(id) ? 'admin' : 'member' })
+    await adminApi.setUserCustomers(data.id, userCustomerIds.value, customerRoles)
     users.value.push(data)
     showCreateUser.value = false
     newUser.value = { username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user' }
     userProjectIds.value = []
+    userCustomerIds.value = []
+    userCustomerAdminIds.value = []
     sidebarStore.fetchAllUsers()
     ui.success('User created')
   } catch (e) {
@@ -842,10 +931,21 @@ async function adminResetMFA(user) {
 async function openEditUser(user) {
   editUser.value = { ...user, _newPassword: '' }
   userProjectIds.value = []
+  userCustomerIds.value = []
+  userCustomerAdminIds.value = []
   loadProjects()
+  loadAllCustomers()
   try {
-    const { data } = await adminApi.getUserProjects(user.id)
-    userProjectIds.value = data.project_ids || []
+    const [projRes, custRes] = await Promise.all([
+      adminApi.getUserProjects(user.id),
+      adminApi.getUserCustomers(user.id),
+    ])
+    userProjectIds.value = projRes.data.project_ids || []
+    userCustomerIds.value = custRes.data.customer_ids || []
+    const roles = custRes.data.customer_roles || {}
+    userCustomerAdminIds.value = Object.entries(roles)
+      .filter(([, role]) => role === 'admin')
+      .map(([id]) => Number(id))
   } catch {}
 }
 
@@ -864,10 +964,15 @@ async function saveEditUser() {
     }
     const { data } = await adminApi.updateUser(editUser.value.id, payload)
     await adminApi.setUserProjects(editUser.value.id, userProjectIds.value)
+    const customerRoles = {}
+    userCustomerIds.value.forEach(id => { customerRoles[id] = userCustomerAdminIds.value.includes(id) ? 'admin' : 'member' })
+    await adminApi.setUserCustomers(editUser.value.id, userCustomerIds.value, customerRoles)
     const idx = users.value.findIndex(u => u.id === data.id)
     if (idx >= 0) users.value[idx] = data
     editUser.value = null
     userProjectIds.value = []
+    userCustomerIds.value = []
+    userCustomerAdminIds.value = []
     ui.success('User updated')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to update user')
@@ -1000,4 +1105,24 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
   user-select: none;
 }
 .label-chip:hover { opacity: 0.85; }
+
+.customer-chip-wrap { display: inline-flex; align-items: center; gap: 4px; }
+
+.admin-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.3);
+  color: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.admin-toggle.is-admin { background: rgba(0,0,0,0.25); }
+.admin-toggle:hover { background: rgba(0,0,0,0.2); }
 </style>

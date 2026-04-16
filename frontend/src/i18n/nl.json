@@ -87,7 +87,14 @@
     "edit": "Klant bewerken",
     "contracts": "Contracten",
     "project_count": "{n} project | {n} projecten",
-    "contract_count": "{n} contract | {n} contracten"
+    "contract_count": "{n} contract | {n} contracten",
+    "members": "Leden",
+    "add_member": "Lid toevoegen",
+    "no_members": "Geen leden. Iedereen kan deze klant zien.",
+    "role_admin": "Admin",
+    "role_member": "Lid",
+    "promote": "Promoveer naar admin",
+    "demote": "Degradeer naar lid"
   },
   "contract": {
     "contracts": "Contracten",
@@ -232,6 +239,8 @@
     "unarchive": "Dearchiveren",
     "create_user": "Gebruiker aanmaken",
     "assign_projects": "Projecten toewijzen",
+    "assign_customers": "Klanttoegang",
+    "assign_customers_hint": "alleen toegewezen klanten zijn zichtbaar",
     "settings": "Instellingen",
     "system_settings": "Systeeminstellingen",
     "registration_enabled": "Gebruikersregistratie",
@@ -296,7 +305,8 @@
     "actions": "Acties",
     "language": "Taal",
     "add": "Toevoegen",
-    "pick_date": "Datum kiezen"
+    "pick_date": "Datum kiezen",
+    "no_results": "Geen resultaten"
   },
   "presence": {
     "online": "online"
