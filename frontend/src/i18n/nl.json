@@ -287,7 +287,13 @@
     "password_require_special": "Speciaal teken verplicht (!{'@'}#$…)",
     "deleted": "Verwijderd",
     "show_deleted": "Toon verwijderd",
-    "restore": "Herstellen"
+    "restore": "Herstellen",
+    "backup_title": "Databaseback-up",
+    "backup_description": "Maak een back-up van de database op de server.",
+    "backup_button": "Back-up maken",
+    "backup_creating": "Back-up maken…",
+    "backup_success": "Back-up gemaakt: {filename}",
+    "backup_failed": "Back-up mislukt"
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

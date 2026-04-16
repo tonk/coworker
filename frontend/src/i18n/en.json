@@ -287,7 +287,13 @@
     "password_require_upper": "Require uppercase letter (A–Z)",
     "password_require_lower": "Require lowercase letter (a–z)",
     "password_require_digit": "Require digit (0–9)",
-    "password_require_special": "Require special character (!{'@'}#$…)"
+    "password_require_special": "Require special character (!{'@'}#$…)",
+    "backup_title": "Database Backup",
+    "backup_description": "Create a backup copy of the database on the server.",
+    "backup_button": "Create Backup",
+    "backup_creating": "Creating backup…",
+    "backup_success": "Backup created: {filename}",
+    "backup_failed": "Backup failed"
   },
   "report": {
     "title": "Time Report",

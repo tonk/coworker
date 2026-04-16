@@ -287,7 +287,13 @@
     "password_require_special": "Exigir carácter especial (!{'@'}#$…)",
     "deleted": "Eliminado",
     "show_deleted": "Mostrar eliminados",
-    "restore": "Restaurar"
+    "restore": "Restaurar",
+    "backup_title": "Cópia de segurança da base de dados",
+    "backup_description": "Criar uma cópia de segurança da base de dados no servidor.",
+    "backup_button": "Criar cópia de segurança",
+    "backup_creating": "A criar cópia de segurança…",
+    "backup_success": "Cópia de segurança criada: {filename}",
+    "backup_failed": "Falha na cópia de segurança"
   },
   "report": {
     "title": "Relatório de tempo",

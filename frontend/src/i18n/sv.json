@@ -287,7 +287,13 @@
     "password_require_special": "Kräv specialtecken (!{'@'}#$…)",
     "deleted": "Raderad",
     "show_deleted": "Visa raderade",
-    "restore": "Återställ"
+    "restore": "Återställ",
+    "backup_title": "Databasbackup",
+    "backup_description": "Skapa en säkerhetskopia av databasen på servern.",
+    "backup_button": "Skapa backup",
+    "backup_creating": "Skapar backup…",
+    "backup_success": "Backup skapad: {filename}",
+    "backup_failed": "Backup misslyckades"
   },
   "report": {
     "title": "Tidsrapport",

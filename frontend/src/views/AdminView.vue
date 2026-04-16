@@ -356,6 +356,17 @@
               <button class="btn btn-primary btn-sm" @click="savePasswordPolicy">{{ $t('common.save') }}</button>
             </div>
           </div>
+
+          <!-- Database Backup -->
+          <div class="settings-section">
+            <h3>{{ $t('admin.backup_title') }}</h3>
+            <p class="form-hint" style="margin-bottom:0">{{ $t('admin.backup_description') }}</p>
+            <div style="margin-top:12px">
+              <button class="btn btn-secondary btn-sm" :disabled="backingUp" @click="createBackup">
+                {{ backingUp ? $t('admin.backup_creating') : $t('admin.backup_button') }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
   </main>
@@ -815,6 +826,20 @@ async function saveBrandingSettings() {
   }
 }
 
+const backingUp = ref(false)
+
+async function createBackup() {
+  backingUp.value = true
+  try {
+    const { data } = await adminApi.backupDatabase()
+    ui.success(`Backup created: ${data.filename}`)
+  } catch {
+    ui.error('Backup failed')
+  } finally {
+    backingUp.value = false
+  }
+}
+
 async function savePasswordPolicy() {
   try {
     await adminApi.updateSystemSettings({
@@ -1122,6 +1147,7 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .tab-toolbar { margin-bottom: 16px; }
 .settings-section { max-width: 560px; }
 .settings-section h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.settings-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 .settings-subsection { font-size: 14px; font-weight: 600; margin-top: 28px; margin-bottom: 4px; color: var(--color-text); }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 500; cursor: pointer; }
 .toggle-row input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; }

@@ -287,7 +287,13 @@
     "password_require_special": "Krev spesialtegn (!{'@'}#$…)",
     "deleted": "Slettet",
     "show_deleted": "Vis slettede",
-    "restore": "Gjenopprett"
+    "restore": "Gjenopprett",
+    "backup_title": "Databasesikkerhetskopiering",
+    "backup_description": "Lag en sikkerhetskopi av databasen på serveren.",
+    "backup_button": "Lag sikkerhetskopi",
+    "backup_creating": "Lager sikkerhetskopi…",
+    "backup_success": "Sikkerhetskopi opprettet: {filename}",
+    "backup_failed": "Sikkerhetskopiering mislyktes"
   },
   "report": {
     "title": "Tidsrapport",

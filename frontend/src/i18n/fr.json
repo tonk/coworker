@@ -287,7 +287,13 @@
     "password_require_special": "Caractère spécial requis (!{'@'}#$…)",
     "deleted": "Supprimé",
     "show_deleted": "Afficher supprimés",
-    "restore": "Restaurer"
+    "restore": "Restaurer",
+    "backup_title": "Sauvegarde de la base de données",
+    "backup_description": "Créer une copie de sauvegarde de la base de données sur le serveur.",
+    "backup_button": "Créer une sauvegarde",
+    "backup_creating": "Création de la sauvegarde…",
+    "backup_success": "Sauvegarde créée : {filename}",
+    "backup_failed": "Échec de la sauvegarde"
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",

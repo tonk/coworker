@@ -287,7 +287,13 @@
     "password_require_special": "Kræv specialtegn (!{'@'}#$…)",
     "deleted": "Slettet",
     "show_deleted": "Vis slettede",
-    "restore": "Gendan"
+    "restore": "Gendan",
+    "backup_title": "Databasesikkerhedskopi",
+    "backup_description": "Opret en sikkerhedskopi af databasen på serveren.",
+    "backup_button": "Opret sikkerhedskopi",
+    "backup_creating": "Opretter sikkerhedskopi…",
+    "backup_success": "Sikkerhedskopi oprettet: {filename}",
+    "backup_failed": "Sikkerhedskopi mislykkedes"
   },
   "report": {
     "title": "Tidsrapport",

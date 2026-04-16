@@ -287,7 +287,13 @@
     "password_require_special": "Vaadi erikoismerkki (!{'@'}#$…)",
     "deleted": "Poistettu",
     "show_deleted": "Näytä poistetut",
-    "restore": "Palauta"
+    "restore": "Palauta",
+    "backup_title": "Tietokannan varmuuskopio",
+    "backup_description": "Luo varmuuskopio tietokannasta palvelimelle.",
+    "backup_button": "Luo varmuuskopio",
+    "backup_creating": "Luodaan varmuuskopiota…",
+    "backup_success": "Varmuuskopio luotu: {filename}",
+    "backup_failed": "Varmuuskopiointi epäonnistui"
   },
   "report": {
     "title": "Aikaraportti",

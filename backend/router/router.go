@@ -84,6 +84,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			admin.GET("/system", handlers.AdminGetSystemSettings)
 			admin.PUT("/system", handlers.AdminUpdateSystemSettings)
 			admin.POST("/system/test-email", handlers.AdminSendTestEmail)
+			admin.POST("/system/backup", handlers.AdminBackupDatabase)
 		}
 
 		// Users (for direct messages / user lookup)

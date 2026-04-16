@@ -287,7 +287,13 @@
     "password_require_special": "Richiedi carattere speciale (!{'@'}#$…)",
     "deleted": "Eliminato",
     "show_deleted": "Mostra eliminati",
-    "restore": "Ripristina"
+    "restore": "Ripristina",
+    "backup_title": "Backup del database",
+    "backup_description": "Crea una copia di backup del database sul server.",
+    "backup_button": "Crea backup",
+    "backup_creating": "Creazione del backup…",
+    "backup_success": "Backup creato: {filename}",
+    "backup_failed": "Backup non riuscito"
   },
   "report": {
     "title": "Report ore",

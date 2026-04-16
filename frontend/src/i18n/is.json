@@ -287,7 +287,13 @@
     "password_require_special": "Krefjast sérstaks tákns (!{'@'}#$…)",
     "deleted": "Eytt",
     "show_deleted": "Sýna eydd",
-    "restore": "Endurheimta"
+    "restore": "Endurheimta",
+    "backup_title": "Gagnagrunnsafrit",
+    "backup_description": "Búðu til afrit af gagnagrunni á þjóninum.",
+    "backup_button": "Búa til afrit",
+    "backup_creating": "Býr til afrit…",
+    "backup_success": "Afrit búið til: {filename}",
+    "backup_failed": "Afrittun mistókst"
   },
   "report": {
     "title": "Tímaskýrsla",

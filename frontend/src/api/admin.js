@@ -20,5 +20,6 @@ export const adminApi = {
   getSystemSettings: () => client.get('/admin/system'),
   updateSystemSettings: (data) => client.put('/admin/system', data),
   sendTestEmail: (to) => client.post('/admin/system/test-email', { to }),
+  backupDatabase: () => client.post('/admin/system/backup'),
   disableUserMFA: (id) => client.post(`/admin/users/${id}/mfa/disable`)
 }
