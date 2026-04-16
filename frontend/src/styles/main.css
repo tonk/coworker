@@ -230,10 +230,18 @@ input, textarea, select {
 }
 .modal-resizable {
   resize: both;
-  overflow: auto;
+  overflow: hidden;
   min-width: 400px;
   min-height: 300px;
   max-width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.modal-resizable .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .modal-header {

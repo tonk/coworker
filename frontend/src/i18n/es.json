@@ -8,7 +8,8 @@
     "admin": "Administración",
     "logout": "Cerrar sesión",
     "profile": "Perfil",
-    "messages": "Chats"
+    "messages": "Chats",
+    "about": "Acerca de"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -306,7 +307,13 @@
     "language": "Idioma",
     "add": "Agregar",
     "pick_date": "Elegir fecha",
-    "no_results": "Sin resultados"
+    "no_results": "Sin resultados",
+    "close": "Cerrar"
+  },
+  "about": {
+    "repository": "Repositorio",
+    "license": "Licencia",
+    "built_with": "Creado con"
   },
   "presence": {
     "online": "en línea"

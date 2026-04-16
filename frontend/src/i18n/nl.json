@@ -8,7 +8,8 @@
     "admin": "Beheer",
     "logout": "Uitloggen",
     "profile": "Profiel",
-    "messages": "Chats"
+    "messages": "Chats",
+    "about": "Over"
   },
   "auth": {
     "login": "Inloggen",
@@ -306,7 +307,13 @@
     "language": "Taal",
     "add": "Toevoegen",
     "pick_date": "Datum kiezen",
-    "no_results": "Geen resultaten"
+    "no_results": "Geen resultaten",
+    "close": "Sluiten"
+  },
+  "about": {
+    "repository": "Repository",
+    "license": "Licentie",
+    "built_with": "Gemaakt met"
   },
   "presence": {
     "online": "online"

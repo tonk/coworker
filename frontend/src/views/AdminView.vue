@@ -207,6 +207,13 @@
                 <option value="de">Deutsch</option>
                 <option value="fr">Français</option>
                 <option value="es">Español</option>
+                <option value="da">Dansk</option>
+                <option value="sv">Svenska</option>
+                <option value="nb">Norsk</option>
+                <option value="fi">Suomi</option>
+                <option value="is">Íslenska</option>
+                <option value="pt">Português</option>
+                <option value="it">Italiano</option>
               </select>
             </div>
 
@@ -420,7 +427,7 @@
   </BaseModal>
 
   <!-- Edit User Modal -->
-    <BaseModal v-if="editUser" :title="$t('admin.edit_user')" @close="editUser = null">
+    <BaseModal v-if="editUser" :title="$t('admin.edit_user')" :resizable="true" @close="editUser = null">
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">{{ $t('settings.first_name') }}</label>
@@ -451,6 +458,13 @@
           <option value="de">Deutsch</option>
           <option value="fr">Français</option>
           <option value="es">Español</option>
+          <option value="da">Dansk</option>
+          <option value="sv">Svenska</option>
+          <option value="nb">Norsk</option>
+          <option value="fi">Suomi</option>
+          <option value="is">Íslenska</option>
+          <option value="pt">Português</option>
+          <option value="it">Italiano</option>
         </select>
       </div>
       <div class="form-group">

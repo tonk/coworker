@@ -89,7 +89,7 @@ redis_url: ""                     # REDIS_URL — e.g. redis://localhost:6379
                                   # Leave empty to use in-process pub/sub
 
 # ── Locale defaults (overridden per user) ─────────────────────────────────────
-default_locale: "en"              # DEFAULT_LOCALE — en | nl | de | fr | es
+default_locale: "en"              # DEFAULT_LOCALE — en | nl | de | fr | es | da | sv | nb | fi | is | pt | it
 ```
 
 ### Generating a strong JWT secret

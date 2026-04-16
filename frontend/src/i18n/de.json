@@ -8,7 +8,8 @@
     "admin": "Verwaltung",
     "logout": "Abmelden",
     "profile": "Profil",
-    "messages": "Chats"
+    "messages": "Chats",
+    "about": "Über"
   },
   "auth": {
     "login": "Anmelden",
@@ -306,7 +307,13 @@
     "language": "Sprache",
     "add": "Hinzufügen",
     "pick_date": "Datum wählen",
-    "no_results": "Keine Ergebnisse"
+    "no_results": "Keine Ergebnisse",
+    "close": "Schließen"
+  },
+  "about": {
+    "repository": "Repository",
+    "license": "Lizenz",
+    "built_with": "Erstellt mit"
   },
   "presence": {
     "online": "online"

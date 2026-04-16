@@ -2,6 +2,23 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.0 — 2026-04-16
+
+### Added
+- **7 new UI languages** — Danish (Dansk), Swedish (Svenska), Norwegian Bokmål (Norsk), Finnish (Suomi), Icelandic (Íslenska), Portuguese (Português), and Italian (Italiano); all ~350 translation keys covered; all 12 languages are selectable in the header language picker, the system-default locale setting, and the per-user locale setting in Admin → Edit User
+- **About modal** — a new **About** item in the user navigation dropdown opens a modal showing the frontend version, server version (fetched live), project description, repository link, license, and copyright notice
+- **Customer access control** — non-admin users only see customers they are explicitly assigned to (strict allowlist — no assignment means not visible); global admins always see all customers
+- **Per-customer roles** — each CustomerAccess row carries a role: **Member** (read-only visibility) or **Admin** (can edit customer details, contracts, and manage the member list); configurable from Admin → Users → Edit User → Customer Access and from the Customer Detail page → Members
+- **Customer member management API** — `GET/PUT /customers/:id/members` lets global admins and customer-admins manage customer visibility and roles; self-lockout protection prevents a non-global-admin from removing their own admin row
+- **Unique card prefix enforcement** — `key_prefix` (e.g. `PRJ` in `PRJ-42`) is now unique across all projects so card codes are unambiguous for GitHub and webhook integrations; the auto-generator appends a numeric suffix when the base is taken (`WAR`, `WAR2`, `WAR3`); duplicate prefixes in existing databases are deduplicated on startup before AutoMigrate runs; the prefix cannot be changed after creation
+- **Ansible `customer_member` module** — new `ansilab.warmdesk.customer_member` module manages `GET/PUT /customers/:id/members`; parameters: `customer` (name), `username`, `role` (member/admin), `state` (present/absent); full-list sync via PUT; resolves username to user\_id via `GET /users`; check\_mode aware
+- **Ansible `user` module `customer_roles` parameter** — a dict `{customer_name: role}` that performs a full sync of a user's customer assignments; pass `{}` to clear all; customer names are resolved to IDs via `GET /customers`
+
+### Changed
+- **Resizable Edit User modal** — the Admin → Edit User modal can now be resized by dragging any corner or edge; header and footer remain pinned while the body scrolls
+- **Training seeder unique prefixes** — training projects now receive unique card prefixes (`EDA00`, `EDA01`, …) to satisfy the new uniqueness constraint
+- **Git integration regex** — the card-reference pattern updated from `[A-Z]{2,8}` to `[A-Z][A-Z0-9]{0,9}` to match digit-suffixed prefixes like `WAR2`
+
 ## v0.6.9 — 2026-04-15
 
 ### Added

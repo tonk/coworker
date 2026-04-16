@@ -20,6 +20,13 @@
           <option value="de">DE</option>
           <option value="es">ES</option>
           <option value="fr">FR</option>
+          <option value="da">DA</option>
+          <option value="sv">SV</option>
+          <option value="nb">NB</option>
+          <option value="fi">FI</option>
+          <option value="is">IS</option>
+          <option value="pt">PT</option>
+          <option value="it">IT</option>
         </select>
       </div>
       <button class="btn-icon" @click="cycleTheme" :title="$t('settings.theme')">
@@ -43,11 +50,13 @@
           </div>
           <div class="dropdown-item" v-if="auth.canViewReports" @click="router.push('/reports')">{{ $t('report.nav') }}</div>
           <div class="dropdown-divider"></div>
+          <div class="dropdown-item" @click="showAbout = true">{{ $t('nav.about') }}</div>
           <div class="dropdown-item dropdown-item-danger" @click="handleLogout">{{ $t('nav.logout') }}</div>
         </div>
       </div>
     </div>
   </header>
+  <AboutModal v-if="showAbout" @close="showAbout = false" />
 </template>
 
 <script setup>
@@ -60,6 +69,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useNotificationsStore } from '@/stores/notifications'
 import { avatarUrl } from '@/composables/useAvatar'
 import GlobalSearch from '@/components/common/GlobalSearch.vue'
+import AboutModal from '@/components/common/AboutModal.vue'
 
 const props = defineProps({ presenceCount: { type: Number, default: 0 } })
 
@@ -69,6 +79,7 @@ const { locale } = useI18n()
 const { theme, setTheme } = useTheme()
 const notificationsStore = useNotificationsStore()
 const menuOpen = ref(false)
+const showAbout = ref(false)
 const menuRef = ref(null)
 const avatarErr = ref(false)
 
