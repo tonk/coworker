@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name={{app_name}}
+GenericName=Project Management
+Comment={{short_description}}
+Exec={{exec}}
+Icon={{icon}}
+Categories={{categories}}
+Keywords=kanban;project;management;tasks;board;chat;
+StartupWMClass={{app_name}}
+StartupNotify=true
+Terminal=false
