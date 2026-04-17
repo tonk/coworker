@@ -9,6 +9,7 @@ All notable changes to WarmDesk are documented here.
 
 ### Fixed
 - **nginx WebSocket config** — dedicated `location ~ ^/api/v1/ws` block with hardcoded `Upgrade`/`Connection` headers; fixes WebSocket failures with nginx 1.25+ and HTTP/2 where `$http_upgrade` is empty for RFC 8441 extended CONNECT requests; updated `listen` directive to `listen 443 ssl; http2 on;` (required syntax from nginx 1.25+)
+- **Ansible collection — DOCUMENTATION parse errors** — replaced colon-after-word patterns in RST description strings that YAML interpreted as key-value pairs; added missing `doc_fragments/connection.py` fragment; fixed three modules that referenced a non-existent `auth` fragment; corrected the `card` module example that was missing `card_number`
 
 ## v0.7.2 — 2026-04-16
 
