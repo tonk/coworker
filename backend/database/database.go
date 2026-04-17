@@ -183,6 +183,12 @@ func applyMySQLTLS(cfg *config.Config) (string, error) {
 // it is not already present, then fill and deduplicate, and finally let
 // AutoMigrate add the unique index on clean data.
 func deduplicateKeyPrefixes(db *gorm.DB) error {
+	// Fresh database — projects table doesn't exist yet; AutoMigrate will create
+	// it with key_prefix correctly, so nothing to do here.
+	if !db.Migrator().HasTable(&models.Project{}) {
+		return nil
+	}
+
 	// If the column doesn't exist yet, add it without the unique index so we
 	// can populate it before AutoMigrate tries to create the constraint.
 	if !db.Migrator().HasColumn(&models.Project{}, "key_prefix") {
