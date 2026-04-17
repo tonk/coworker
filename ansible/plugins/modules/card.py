@@ -122,8 +122,7 @@ EXAMPLES = r'''
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
-    column: Backlog
-    title: "Implement login page"
+    card_number: EDA-42
     assignee: jdoe
     start_date: "2026-04-20"
 
