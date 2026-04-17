@@ -688,7 +688,18 @@ manual migration step is needed.
 
 The **Admin → Backup / Restore** tab provides full backup management without touching the server directly.
 
-**Create a backup**
+**Scheduled backups**
+
+At the top of the tab you can configure automatic backups:
+
+| Field | Description |
+|-------|-------------|
+| **Interval** | Disabled / Every 6 h (4×/day) / Every 8 h (3×/day) / Every 12 h (2×/day) / Once a day |
+| **Keep last (backups)** | Maximum number of backup files to retain on disk. Oldest files are pruned automatically after each scheduled run. Default: 10. |
+
+The scheduler runs server-side — no cron job or external tool needed. It checks every 5 minutes whether a backup is due, compares against the last run time, and creates a new file when the interval has elapsed. The last run time and next scheduled run are displayed below the settings.
+
+**Create a manual backup**
 
 Click **Create Backup**. WarmDesk creates a timestamped file in `./backups/` next to the server binary:
 

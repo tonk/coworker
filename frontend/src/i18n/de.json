@@ -304,6 +304,18 @@
     "backup_delete_success": "Sicherung gelöscht",
     "backup_delete_failed": "Sicherung konnte nicht gelöscht werden",
     "backup_tab": "Sicherung / Wiederherstellung",
+    "backup_schedule_title": "Geplante Sicherungen",
+    "backup_schedule_label": "Intervall",
+    "backup_schedule_disabled": "Deaktiviert",
+    "backup_schedule_6h": "Alle 6 Stunden (4× / Tag)",
+    "backup_schedule_8h": "Alle 8 Stunden (3× / Tag)",
+    "backup_schedule_12h": "Alle 12 Stunden (2× / Tag)",
+    "backup_schedule_24h": "Einmal täglich",
+    "backup_keep_label": "Letzte behalten (Sicherungen)",
+    "backup_last_run": "Letzter Lauf",
+    "backup_next_run": "Nächster Lauf",
+    "backup_never": "Nie",
+    "backup_schedule_save": "Zeitplan speichern",
     "role_backup": "Sicherung"
   },
   "update": {

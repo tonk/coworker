@@ -304,6 +304,18 @@
     "backup_delete_success": "Sauvegarde supprimée",
     "backup_delete_failed": "Impossible de supprimer la sauvegarde",
     "backup_tab": "Sauvegarde / Restauration",
+    "backup_schedule_title": "Sauvegardes planifiées",
+    "backup_schedule_label": "Intervalle",
+    "backup_schedule_disabled": "Désactivé",
+    "backup_schedule_6h": "Toutes les 6 heures (4× / jour)",
+    "backup_schedule_8h": "Toutes les 8 heures (3× / jour)",
+    "backup_schedule_12h": "Toutes les 12 heures (2× / jour)",
+    "backup_schedule_24h": "Une fois par jour",
+    "backup_keep_label": "Conserver les dernières (sauvegardes)",
+    "backup_last_run": "Dernière exécution",
+    "backup_next_run": "Prochaine exécution",
+    "backup_never": "Jamais",
+    "backup_schedule_save": "Enregistrer la planification",
     "role_backup": "Sauvegarde"
   },
   "update": {

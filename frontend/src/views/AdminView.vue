@@ -7,7 +7,7 @@
           <button :class="['tab', { active: tab === 'users' }]" @click="tab = 'users'">{{ $t('admin.users') }}</button>
           <button :class="['tab', { active: tab === 'projects' }]" @click="tab = 'projects'; loadProjects()">{{ $t('admin.projects') }}</button>
           <button :class="['tab', { active: tab === 'settings' }]" @click="tab = 'settings'; loadSettings()">{{ $t('admin.settings') }}</button>
-          <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups()">{{ $t('admin.backup_tab') }}</button>
+          <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()">{{ $t('admin.backup_tab') }}</button>
         </div>
 
         <!-- Users tab -->
@@ -363,6 +363,37 @@
 
         <!-- Backup / Restore tab -->
         <div v-if="tab === 'backup'">
+          <!-- Scheduled backups -->
+          <div style="margin-bottom:24px">
+            <h3 class="form-section-title">{{ $t('admin.backup_schedule_title') }}</h3>
+            <div class="form-row" style="align-items:flex-end;gap:16px;flex-wrap:wrap">
+              <div class="form-group" style="flex:1;min-width:180px">
+                <label class="form-label">{{ $t('admin.backup_schedule_label') }}</label>
+                <select class="form-input" v-model="systemSettings.backup_schedule">
+                  <option value="disabled">{{ $t('admin.backup_schedule_disabled') }}</option>
+                  <option value="6h">{{ $t('admin.backup_schedule_6h') }}</option>
+                  <option value="8h">{{ $t('admin.backup_schedule_8h') }}</option>
+                  <option value="12h">{{ $t('admin.backup_schedule_12h') }}</option>
+                  <option value="24h">{{ $t('admin.backup_schedule_24h') }}</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:0 0 120px">
+                <label class="form-label">{{ $t('admin.backup_keep_label') }}</label>
+                <input class="form-input" type="number" min="1" max="100" v-model.number="systemSettings.backup_keep" />
+              </div>
+              <div class="form-group" style="flex:0 0 auto;padding-bottom:1px">
+                <button class="btn btn-primary btn-sm" @click="saveBackupSchedule">{{ $t('admin.backup_schedule_save') }}</button>
+              </div>
+            </div>
+            <p class="form-hint" v-if="systemSettings.backup_schedule !== 'disabled'">
+              {{ $t('admin.backup_last_run') }}:
+              {{ systemSettings.backup_last_run ? formatDateTime(systemSettings.backup_last_run) : $t('admin.backup_never') }}
+              &nbsp;·&nbsp;
+              {{ $t('admin.backup_next_run') }}: {{ backupNextRunDisplay }}
+            </p>
+          </div>
+          <hr style="margin:0 0 20px" />
+          <!-- Manual backup -->
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" :disabled="backingUp" @click="createBackup">
               {{ backingUp ? $t('admin.backup_creating') : $t('admin.backup_button') }}
@@ -731,6 +762,9 @@ const systemSettings = ref({
   password_require_lower: false,
   password_require_digit: false,
   password_require_special: false,
+  backup_schedule: 'disabled',
+  backup_keep: 10,
+  backup_last_run: '',
 })
 // True when the server has a password saved (so we show a placeholder instead of the value)
 const smtpPasswordSet = ref(false)
@@ -817,6 +851,9 @@ async function loadSettings() {
     systemSettings.value.password_require_lower   = data.password_require_lower === 'true'
     systemSettings.value.password_require_digit   = data.password_require_digit === 'true'
     systemSettings.value.password_require_special = data.password_require_special === 'true'
+    systemSettings.value.backup_schedule           = data.backup_schedule || 'disabled'
+    systemSettings.value.backup_keep               = parseInt(data.backup_keep) || 10
+    systemSettings.value.backup_last_run           = data.backup_last_run || ''
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to load settings')
   } finally {
@@ -856,6 +893,25 @@ async function saveBrandingSettings() {
 const backingUp = ref(false)
 const backups = ref([])
 const restoringBackup = ref(null)
+
+const backupNextRunDisplay = computed(() => {
+  const hours = { '6h': 6, '8h': 8, '12h': 12, '24h': 24 }[systemSettings.value.backup_schedule]
+  const lastRun = systemSettings.value.backup_last_run
+  if (!hours || !lastRun) return '–'
+  return formatDateTime(new Date(new Date(lastRun).getTime() + hours * 3600000).toISOString())
+})
+
+async function saveBackupSchedule() {
+  try {
+    await adminApi.updateSystemSettings({
+      backup_schedule: systemSettings.value.backup_schedule,
+      backup_keep: systemSettings.value.backup_keep,
+    })
+    ui.success('Backup schedule saved')
+  } catch {
+    ui.error('Failed to save backup schedule')
+  }
+}
 
 async function loadBackups() {
   try {

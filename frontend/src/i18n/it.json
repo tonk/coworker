@@ -304,6 +304,18 @@
     "backup_delete_success": "Backup eliminato",
     "backup_delete_failed": "Impossibile eliminare il backup",
     "backup_tab": "Backup / Ripristino",
+    "backup_schedule_title": "Backup pianificati",
+    "backup_schedule_label": "Intervallo",
+    "backup_schedule_disabled": "Disabilitato",
+    "backup_schedule_6h": "Ogni 6 ore (4× / giorno)",
+    "backup_schedule_8h": "Ogni 8 ore (3× / giorno)",
+    "backup_schedule_12h": "Ogni 12 ore (2× / giorno)",
+    "backup_schedule_24h": "Una volta al giorno",
+    "backup_keep_label": "Mantieni ultimi (backup)",
+    "backup_last_run": "Ultima esecuzione",
+    "backup_next_run": "Prossima esecuzione",
+    "backup_never": "Mai",
+    "backup_schedule_save": "Salva pianificazione",
     "role_backup": "Backup"
   },
   "report": {

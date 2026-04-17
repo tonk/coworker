@@ -38,6 +38,9 @@ const (
 	settingPasswordRequireLower   = "password_require_lower"
 	settingPasswordRequireDigit   = "password_require_digit"
 	settingPasswordRequireSpecial = "password_require_special"
+	settingBackupSchedule         = "backup_schedule"
+	settingBackupLastRun          = "backup_last_run"
+	settingBackupKeep             = "backup_keep"
 )
 
 // configuredBaseURL stores the value of base_url from the config file so
@@ -85,6 +88,9 @@ var systemSettingDefaults = map[string]string{
 	settingPasswordRequireLower:   "false",
 	settingPasswordRequireDigit:   "false",
 	settingPasswordRequireSpecial: "false",
+	settingBackupSchedule:         "disabled",
+	settingBackupLastRun:          "",
+	settingBackupKeep:             "10",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -189,6 +195,8 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		CompanyLogo            *string `json:"company_logo"`
 		DefaultColumns         *string `json:"default_columns"`
 		DefaultLabels          *string `json:"default_labels"`
+		BackupSchedule         *string `json:"backup_schedule"`
+		BackupKeep             *int    `json:"backup_keep"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -284,6 +292,17 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	}
 	if req.DefaultLabels != nil {
 		saveSetting(settingDefaultLabels, *req.DefaultLabels)
+	}
+	validSchedules := map[string]bool{"disabled": true, "6h": true, "8h": true, "12h": true, "24h": true}
+	if req.BackupSchedule != nil && validSchedules[*req.BackupSchedule] {
+		saveSetting(settingBackupSchedule, *req.BackupSchedule)
+	}
+	if req.BackupKeep != nil {
+		keep := *req.BackupKeep
+		if keep < 1 {
+			keep = 1
+		}
+		saveSetting(settingBackupKeep, fmt.Sprintf("%d", keep))
 	}
 
 	AdminGetSystemSettings(c)

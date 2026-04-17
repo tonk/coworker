@@ -88,6 +88,7 @@ func main() {
 	if err := database.Init(cfg); err != nil {
 		log.Fatalf("database init failed: %v", err)
 	}
+	handlers.StartBackupScheduler()
 
 	// Initialise pub/sub backend (Redis for horizontal scaling, memory for single instance)
 	if cfg.RedisURL != "" {

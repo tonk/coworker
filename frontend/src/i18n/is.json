@@ -304,6 +304,18 @@
     "backup_delete_success": "Afrit eytt",
     "backup_delete_failed": "Tókst ekki að eyða afriti",
     "backup_tab": "Afrit / Endurheimta",
+    "backup_schedule_title": "Áætluð afrit",
+    "backup_schedule_label": "Bil",
+    "backup_schedule_disabled": "Óvirkt",
+    "backup_schedule_6h": "Á 6 tíma fresti (4× / dag)",
+    "backup_schedule_8h": "Á 8 tíma fresti (3× / dag)",
+    "backup_schedule_12h": "Á 12 tíma fresti (2× / dag)",
+    "backup_schedule_24h": "Einu sinni á dag",
+    "backup_keep_label": "Geyma síðustu (afrit)",
+    "backup_last_run": "Síðasta keyrsla",
+    "backup_next_run": "Næsta keyrsla",
+    "backup_never": "Aldrei",
+    "backup_schedule_save": "Vista áætlun",
     "role_backup": "Afrit"
   },
   "report": {

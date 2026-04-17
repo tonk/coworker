@@ -304,6 +304,18 @@
     "backup_delete_success": "Backup deleted",
     "backup_delete_failed": "Failed to delete backup",
     "backup_tab": "Backup / Restore",
+    "backup_schedule_title": "Scheduled Backups",
+    "backup_schedule_label": "Interval",
+    "backup_schedule_disabled": "Disabled",
+    "backup_schedule_6h": "Every 6 hours (4× / day)",
+    "backup_schedule_8h": "Every 8 hours (3× / day)",
+    "backup_schedule_12h": "Every 12 hours (2× / day)",
+    "backup_schedule_24h": "Once a day",
+    "backup_keep_label": "Keep last (backups)",
+    "backup_last_run": "Last run",
+    "backup_next_run": "Next run",
+    "backup_never": "Never",
+    "backup_schedule_save": "Save schedule",
     "role_backup": "Backup"
   },
   "report": {

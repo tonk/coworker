@@ -304,6 +304,18 @@
     "backup_delete_success": "Back-up verwijderd",
     "backup_delete_failed": "Verwijderen van back-up mislukt",
     "backup_tab": "Back-up / Herstel",
+    "backup_schedule_title": "Geplande back-ups",
+    "backup_schedule_label": "Interval",
+    "backup_schedule_disabled": "Uitgeschakeld",
+    "backup_schedule_6h": "Elke 6 uur (4× / dag)",
+    "backup_schedule_8h": "Elke 8 uur (3× / dag)",
+    "backup_schedule_12h": "Elke 12 uur (2× / dag)",
+    "backup_schedule_24h": "Eén keer per dag",
+    "backup_keep_label": "Bewaar laatste (back-ups)",
+    "backup_last_run": "Laatste uitvoering",
+    "backup_next_run": "Volgende uitvoering",
+    "backup_never": "Nooit",
+    "backup_schedule_save": "Schema opslaan",
     "role_backup": "Back-up"
   },
   "update": {

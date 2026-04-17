@@ -304,6 +304,18 @@
     "backup_delete_success": "Backup borttagen",
     "backup_delete_failed": "Det gick inte att ta bort backup",
     "backup_tab": "Backup / Återställ",
+    "backup_schedule_title": "Schemalagda säkerhetskopior",
+    "backup_schedule_label": "Intervall",
+    "backup_schedule_disabled": "Inaktiverad",
+    "backup_schedule_6h": "Var 6:e timme (4× / dag)",
+    "backup_schedule_8h": "Var 8:e timme (3× / dag)",
+    "backup_schedule_12h": "Var 12:e timme (2× / dag)",
+    "backup_schedule_24h": "En gång om dagen",
+    "backup_keep_label": "Behåll senaste (säkerhetskopior)",
+    "backup_last_run": "Senaste körning",
+    "backup_next_run": "Nästa körning",
+    "backup_never": "Aldrig",
+    "backup_schedule_save": "Spara schema",
     "role_backup": "Backup"
   },
   "report": {

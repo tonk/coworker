@@ -304,6 +304,18 @@
     "backup_delete_success": "Varmuuskopio poistettu",
     "backup_delete_failed": "Varmuuskopion poistaminen epäonnistui",
     "backup_tab": "Varmuuskopio / Palautus",
+    "backup_schedule_title": "Ajoitetut varmuuskopiot",
+    "backup_schedule_label": "Väli",
+    "backup_schedule_disabled": "Poistettu käytöstä",
+    "backup_schedule_6h": "Joka 6. tunti (4× / vrk)",
+    "backup_schedule_8h": "Joka 8. tunti (3× / vrk)",
+    "backup_schedule_12h": "Joka 12. tunti (2× / vrk)",
+    "backup_schedule_24h": "Kerran päivässä",
+    "backup_keep_label": "Säilytä viimeisimmät (varmuuskopiot)",
+    "backup_last_run": "Viimeisin ajo",
+    "backup_next_run": "Seuraava ajo",
+    "backup_never": "Ei koskaan",
+    "backup_schedule_save": "Tallenna aikataulu",
     "role_backup": "Varmuuskopio"
   },
   "report": {

@@ -304,6 +304,18 @@
     "backup_delete_success": "Sikkerhedskopi slettet",
     "backup_delete_failed": "Kunne ikke slette sikkerhedskopi",
     "backup_tab": "Sikkerhedskopi / Gendan",
+    "backup_schedule_title": "Planlagte sikkerhedskopier",
+    "backup_schedule_label": "Interval",
+    "backup_schedule_disabled": "Deaktiveret",
+    "backup_schedule_6h": "Hver 6. time (4× / dag)",
+    "backup_schedule_8h": "Hver 8. time (3× / dag)",
+    "backup_schedule_12h": "Hver 12. time (2× / dag)",
+    "backup_schedule_24h": "Én gang om dagen",
+    "backup_keep_label": "Behold seneste (sikkerhedskopier)",
+    "backup_last_run": "Seneste kørsel",
+    "backup_next_run": "Næste kørsel",
+    "backup_never": "Aldrig",
+    "backup_schedule_save": "Gem tidsplan",
     "role_backup": "Sikkerhedskopi"
   },
   "report": {

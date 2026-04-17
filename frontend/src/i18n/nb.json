@@ -304,6 +304,18 @@
     "backup_delete_success": "Sikkerhetskopi slettet",
     "backup_delete_failed": "Kunne ikke slette sikkerhetskopi",
     "backup_tab": "Sikkerhetskopi / Gjenopprett",
+    "backup_schedule_title": "Planlagte sikkerhetskopier",
+    "backup_schedule_label": "Intervall",
+    "backup_schedule_disabled": "Deaktivert",
+    "backup_schedule_6h": "Hver 6. time (4× / dag)",
+    "backup_schedule_8h": "Hver 8. time (3× / dag)",
+    "backup_schedule_12h": "Hver 12. time (2× / dag)",
+    "backup_schedule_24h": "Én gang om dagen",
+    "backup_keep_label": "Behold siste (sikkerhetskopier)",
+    "backup_last_run": "Siste kjøring",
+    "backup_next_run": "Neste kjøring",
+    "backup_never": "Aldri",
+    "backup_schedule_save": "Lagre tidsplan",
     "role_backup": "Sikkerhetskopi"
   },
   "report": {

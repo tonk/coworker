@@ -304,6 +304,18 @@
     "backup_delete_success": "Copia de seguridad eliminada",
     "backup_delete_failed": "No se pudo eliminar la copia de seguridad",
     "backup_tab": "Copia de seguridad / Restaurar",
+    "backup_schedule_title": "Copias de seguridad programadas",
+    "backup_schedule_label": "Intervalo",
+    "backup_schedule_disabled": "Desactivado",
+    "backup_schedule_6h": "Cada 6 horas (4× / día)",
+    "backup_schedule_8h": "Cada 8 horas (3× / día)",
+    "backup_schedule_12h": "Cada 12 horas (2× / día)",
+    "backup_schedule_24h": "Una vez al día",
+    "backup_keep_label": "Conservar últimas (copias)",
+    "backup_last_run": "Última ejecución",
+    "backup_next_run": "Próxima ejecución",
+    "backup_never": "Nunca",
+    "backup_schedule_save": "Guardar programación",
     "role_backup": "Copia de seguridad"
   },
   "update": {

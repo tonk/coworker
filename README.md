@@ -77,7 +77,7 @@ updated `what.md` and asked Claude Code to generate the app.
 - **Typing indicator** — animated indicator in project chat shows who is currently typing
 - **@mention autocomplete** — `@username` dropdown in project chat, card descriptions, and card comments
 - **Prometheus metrics** — `GET /api/v1/metrics` exposes project, column, and card counts; protected by the `metrics` role
-- **Database backup** — Admin → Backup / Restore tab; create timestamped backups stored in `./backups/`; list, restore (live, no restart needed for SQLite), and delete backups from the UI; automated backups via `POST /api/v1/backup` using a dedicated `backup` role service account
+- **Database backup** — Admin → Backup / Restore tab; create timestamped backups stored in `./backups/`; list, restore (live, no restart needed for SQLite), and delete backups from the UI; built-in scheduler (every 6 h / 8 h / 12 h / 24 h) with configurable retention; automated backups via `POST /api/v1/backup` using a dedicated `backup` role service account
 - **Git integration** — connect GitHub, GitLab, Gitea, or Forgejo; commit/PR/issue events post to project chat and automatically link to cards when a card reference (e.g. `PRJ-42`) appears in the message or title; Forgejo events show the Forgejo logo
 - **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
 - **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast

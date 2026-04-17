@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -325,6 +326,132 @@ func mysqlDumpArgs(dsn string) []string {
 // mysqlClientArgs parses a Go MySQL DSN into mysql client flags.
 func mysqlClientArgs(dsn string) []string {
 	return mysqlArgs(dsn)
+}
+
+// StartBackupScheduler launches a background goroutine that creates automatic
+// backups based on the backup_schedule system setting. It checks every 5 minutes
+// whether a backup is due and prunes old files to stay within backup_keep.
+func StartBackupScheduler() {
+	go func() {
+		runScheduledBackupIfDue()
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			runScheduledBackupIfDue()
+		}
+	}()
+}
+
+func runScheduledBackupIfDue() {
+	all := loadAllSettings()
+	interval := scheduleInterval(all[settingBackupSchedule])
+	if interval == 0 {
+		return
+	}
+	lastRunStr := all[settingBackupLastRun]
+	if lastRunStr != "" {
+		lastRun, err := time.Parse(time.RFC3339, lastRunStr)
+		if err == nil && time.Since(lastRun) < interval {
+			return
+		}
+	}
+	performScheduledBackup()
+}
+
+func scheduleInterval(s string) time.Duration {
+	switch s {
+	case "6h":
+		return 6 * time.Hour
+	case "8h":
+		return 8 * time.Hour
+	case "12h":
+		return 12 * time.Hour
+	case "24h":
+		return 24 * time.Hour
+	}
+	return 0
+}
+
+func performScheduledBackup() {
+	if backupCfg == nil {
+		return
+	}
+	ts := time.Now().Format("20060102_1504")
+	filename := "warmdesk_db_" + ts
+
+	if err := os.MkdirAll(backupsDir, 0755); err != nil {
+		log.Printf("backup scheduler: cannot create backups dir: %v", err)
+		return
+	}
+
+	var finalFilename string
+
+	switch backupCfg.DBDriver {
+	case "sqlite", "sqlite3", "":
+		backupPath := filepath.Join(backupsDir, filename+".db")
+		sql := fmt.Sprintf("VACUUM INTO '%s'", strings.ReplaceAll(backupPath, "'", "''"))
+		if err := database.DB.Exec(sql).Error; err != nil {
+			log.Printf("backup scheduler: sqlite backup failed: %v", err)
+			return
+		}
+		finalFilename = filename + ".db"
+	case "postgres", "postgresql":
+		if _, err := exec.LookPath("pg_dump"); err != nil {
+			log.Printf("backup scheduler: pg_dump not found in PATH")
+			return
+		}
+		backupPath := filepath.Join(backupsDir, filename+".sql")
+		cmd := exec.Command("pg_dump", "--clean", "--if-exists", "-f", backupPath, backupCfg.DBDSN) //nolint:gosec
+		if out, err := cmd.CombinedOutput(); err != nil {
+			log.Printf("backup scheduler: pg_dump failed: %s", out)
+			return
+		}
+		finalFilename = filename + ".sql"
+	case "mysql":
+		if _, err := exec.LookPath("mysqldump"); err != nil {
+			log.Printf("backup scheduler: mysqldump not found in PATH")
+			return
+		}
+		backupPath := filepath.Join(backupsDir, filename+".sql")
+		args := append([]string{"--result-file=" + backupPath}, mysqlDumpArgs(backupCfg.DBDSN)...)
+		cmd := exec.Command("mysqldump", args...) //nolint:gosec
+		if out, err := cmd.CombinedOutput(); err != nil {
+			log.Printf("backup scheduler: mysqldump failed: %s", out)
+			return
+		}
+		finalFilename = filename + ".sql"
+	default:
+		log.Printf("backup scheduler: unsupported driver %s", backupCfg.DBDriver)
+		return
+	}
+
+	saveSetting(settingBackupLastRun, time.Now().UTC().Format(time.RFC3339))
+	log.Printf("backup scheduler: created %s", finalFilename)
+	pruneOldBackups()
+}
+
+func pruneOldBackups() {
+	keep, err := strconv.Atoi(loadAllSettings()[settingBackupKeep])
+	if err != nil || keep <= 0 {
+		return
+	}
+	entries, err := os.ReadDir(backupsDir)
+	if err != nil {
+		return
+	}
+	var files []string
+	for _, e := range entries {
+		if !e.IsDir() && strings.HasPrefix(e.Name(), "warmdesk_db_") {
+			files = append(files, e.Name())
+		}
+	}
+	sort.Strings(files) // oldest first (timestamp in filename)
+	for len(files) > keep {
+		if err := os.Remove(filepath.Join(backupsDir, files[0])); err == nil {
+			log.Printf("backup scheduler: pruned %s", files[0])
+		}
+		files = files[1:]
+	}
 }
 
 func mysqlArgs(dsn string) []string {
