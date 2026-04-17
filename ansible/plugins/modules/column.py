@@ -11,7 +11,7 @@ version_added: "1.0.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, or deletes a Kanban column inside a WarmDesk project.
-  - Idempotent: a column is identified by I(project) slug + I(name). Running the
+  - Idempotent — a column is identified by I(project) slug + I(name). Running the
     module again with the same parameters produces no change.
   - Requires at least I(admin) role on the project (or global admin).
 options:

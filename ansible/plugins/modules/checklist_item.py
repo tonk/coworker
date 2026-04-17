@@ -11,7 +11,7 @@ version_added: "1.0.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, or deletes a single checklist item on a WarmDesk card.
-  - Idempotent: the item is identified by I(project) + I(card_number) + I(body)
+  - Idempotent — the item is identified by I(project) + I(card_number) + I(body)
     text. Running the module again with unchanged parameters produces no change.
   - The card is located via I(card_number) (e.g. C(EDA-42)) using
     C(find_card_by_number) from the shared resolver utilities.

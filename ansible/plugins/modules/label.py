@@ -12,7 +12,7 @@ author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, or deletes a label inside a WarmDesk project.
   - Labels are project-scoped coloured tags that can be attached to cards.
-  - Idempotent: a label is identified by I(project) slug + I(name). Running
+  - Idempotent — a label is identified by I(project) slug + I(name). Running
     the module again with unchanged parameters produces no change.
   - Requires at least I(member) role on the project (or global admin).
 options:

@@ -11,13 +11,13 @@ version_added: "1.0.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, moves, or deletes a card on a WarmDesk Kanban board.
-  - Idempotent for I(state=present): the module first tries to locate the card
+  - Idempotent for I(state=present) — the module first tries to locate the card
     by I(card_number) (preferred) or by I(project) + I(column) + I(title).
     If a matching card is found its fields are compared and only a PUT is
     issued when something differs.
   - For I(state=absent) and updates, I(card_number) (e.g. C(EDA-42)) is the
     preferred lookup key; I(title) is used as a fallback only for I(present).
-  - Optional I(move_to_column): if the card exists in a different column a
+  - Optional I(move_to_column) — if the card exists in a different column a
     PATCH move request is issued automatically.
   - Requires at least I(member) role on the project (or global admin).
 options:

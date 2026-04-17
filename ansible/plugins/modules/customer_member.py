@@ -12,7 +12,7 @@ author:
   - Ton Kersten (@tonk)
 description:
   - Add, update the role of, or remove a user's access to a WarmDesk customer.
-  - Idempotent: adding a user who already has the correct role produces no change.
+  - Idempotent — adding a user who already has the correct role produces no change.
     Updating the role is also idempotent.
   - WarmDesk uses a strict allowlist model — a user who has no C(CustomerAccess)
     row cannot see the customer at all.  This module manages those rows.
@@ -28,7 +28,7 @@ notes:
     ID via C(GET /users).  The calling account must have at least authenticated
     access to the WarmDesk instance for that lookup to succeed.
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilab.warmdesk.connection
 options:
   customer:
     description:

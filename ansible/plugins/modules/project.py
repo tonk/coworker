@@ -25,7 +25,7 @@ notes:
   - Deleting a project is permanent and removes all columns, cards, and members.
   - To manage project membership, use M(ansilab.warmdesk.project_member).
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilab.warmdesk.connection
 options:
   name:
     description:

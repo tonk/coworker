@@ -12,7 +12,7 @@ author:
   - Ton Kersten (@tonk)
 description:
   - Add, update the role of, or remove a user from a WarmDesk project.
-  - Idempotent: adding a user who is already a member with the correct role
+  - Idempotent — adding a user who is already a member with the correct role
     produces no change. Updating the role is also idempotent.
   - The C(project) parameter takes the project B(slug) (the server-generated
     URL-safe identifier). Use the return value of
@@ -26,7 +26,7 @@ notes:
   - The API uses C(login) (username or e-mail) to add a member. This module
     always sends the username; the server accepts either.
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilab.warmdesk.connection
 options:
   project:
     description:
