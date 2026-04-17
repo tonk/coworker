@@ -6,6 +6,7 @@ dist/
 warmdesk
 warmdesk.db
 warmdesk-*.tar.gz
+ansible/*.tar.gz
 
 # ── Go ───────────────────────────────────────────────────────────────────────
 *.exe
