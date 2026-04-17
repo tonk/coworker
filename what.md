@@ -318,3 +318,8 @@ Create an application that has all these features and requirements
 - Backup role: new global_role value "backup" (alongside admin/user/viewer/metrics); BackupAuth middleware allows admin + backup; dedicated endpoint POST /api/v1/backup triggers a backup via API key for cron jobs and automation scripts; backup role appears in the create-user and users-table role dropdowns in Admin
 - Built-in backup scheduler: Admin → Backup / Restore tab; choose interval (every 6 h / 8 h / 12 h / 24 h); configurable retention count; runs server-side without cron; last run and next scheduled run displayed in UI; oldest files pruned automatically when retention limit is reached
 - Backup start time: optional HH:MM anchor for the backup scheduler; when set, backups run at fixed time-of-day slots (e.g. start 02:00 + every 6 h → runs at 02:00, 08:00, 14:00, 20:00) instead of drifting with each run
+- Package as .deb (Debian/Ubuntu) and .rpm (Fedora/RHEL): make deb and make rpm targets using Tauri's built-in bundlers; .desktop entry and icons included automatically
+- Rename Ansible collection namespace from ansilab to ansilabnl
+- Ansible Galaxy compliance: add README.md and meta/runtime.yml (requires_ansible: ">=2.14")
+- Fix all remaining Ansible DOCUMENTATION YAML parse errors across all modules
+- Backup file list: truncate long filenames with ellipsis, widen Size column, correct unit to kB

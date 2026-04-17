@@ -2,6 +2,17 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.4 — 2026-04-17
+
+### Added
+- **`make deb` and `make rpm`** — build Debian and Fedora packages for the WarmDesk desktop client using Tauri's built-in bundlers; `.desktop` entry and icons are included automatically; requires `dpkg` (deb) or `rpm-build` (rpm) plus the same Rust/webkit dependencies as `make appimage`
+
+### Fixed
+- **Ansible collection — namespace renamed to `ansilabnl`** — was previously `ansilab`; all module, plugin, and import references updated
+- **Ansible collection — Galaxy upload requirements** — added `README.md` and `meta/runtime.yml` (with `requires_ansible: ">=2.14"`) which Ansible Galaxy requires before accepting an upload
+- **Ansible collection — remaining YAML parse errors** — fixed six modules still referencing the non-existent `auth` doc fragment (→ `connection`); fixed `Note:`, `B(...):`, and `following types:` colon patterns that YAML misread as keys; removed `{...}` literal in the `webhook` module description that triggered YAML flow-mapping parsing
+- **Backup file list** — long filenames now truncate with an ellipsis (full name visible on hover); Size column widened so values no longer wrap; unit corrected from `KB` to `kB` (SI prefix)
+
 ## v0.7.3 — 2026-04-17
 
 ### Added
