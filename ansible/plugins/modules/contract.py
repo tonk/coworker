@@ -22,7 +22,7 @@ notes:
     an empty string clears a previously set date.
 
 extends_documentation_fragment:
-  - ansilabnl.warmdesk.auth
+  - ansilabnl.warmdesk.connection
 
 options:
   customer:

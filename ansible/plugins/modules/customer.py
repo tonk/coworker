@@ -22,7 +22,7 @@ notes:
     starred.  It does not affect other users.
 
 extends_documentation_fragment:
-  - ansilabnl.warmdesk.auth
+  - ansilabnl.warmdesk.connection
 
 options:
   name:

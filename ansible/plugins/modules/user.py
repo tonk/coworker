@@ -22,7 +22,7 @@ notes:
   - MFA can be forcibly disabled by setting C(mfa_disable=true).
 
 extends_documentation_fragment:
-  - ansilabnl.warmdesk.auth
+  - ansilabnl.warmdesk.connection
 
 options:
   username:
@@ -113,7 +113,7 @@ options:
       - Dict mapping customer B(name) to access role (C(member) or C(admin)).
       - WarmDesk uses a strict allowlist model — only explicitly assigned
         customers are visible to the user.
-      - This parameter performs a B(full sync): customers not listed are
+      - This parameter performs a B(full sync) — customers not listed are
         removed, customers listed are added or updated.
       - Pass an empty dict C({}) to remove all customer assignments (the user
         will see no customers).

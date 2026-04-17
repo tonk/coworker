@@ -24,11 +24,11 @@ notes:
   - The plain-text token is only returned at creation time or after a token
     regeneration.  On subsequent idempotent runs C(token) is absent from the
     return value.
-  - WarmDesk webhooks support the following types: C(generic) (default),
+  - WarmDesk webhooks support the following types — C(generic) (default),
     C(gitea), C(github), C(gitlab).
 
 extends_documentation_fragment:
-  - ansilabnl.warmdesk.auth
+  - ansilabnl.warmdesk.connection
 
 options:
   project:
@@ -47,7 +47,7 @@ options:
   type:
     description:
       - Webhook flavour that controls how the incoming payload is interpreted.
-      - C(generic) — plain JSON C({"text": "…", "username": "…"}) body.
+      - C(generic) — plain JSON body with C(text) and optional C(username) fields.
       - C(gitea) / C(github) / C(gitlab) — parse the respective platform's
         event payload and format the chat message accordingly.
     type: str

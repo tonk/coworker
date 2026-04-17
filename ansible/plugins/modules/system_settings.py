@@ -31,7 +31,7 @@ notes:
     C(password_min_length)) should be passed as integers.
 
 extends_documentation_fragment:
-  - ansilabnl.warmdesk.auth
+  - ansilabnl.warmdesk.connection
 
 options:
   settings:

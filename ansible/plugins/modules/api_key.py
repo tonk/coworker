@@ -31,7 +31,7 @@ notes:
     returned at creation time.
 
 extends_documentation_fragment:
-  - ansilabnl.warmdesk.auth
+  - ansilabnl.warmdesk.connection
 
 options:
   scope:
@@ -64,7 +64,7 @@ options:
         C(name) field; the C(description) option is mapped to it as an
         additional label prefix when both are supplied, or used directly when
         only description is set).
-      - Note: The backend currently stores only the C(name) field; this
+      - Note — The backend currently stores only the C(name) field; this
         parameter is accepted for forward compatibility but may not appear in
         the API response depending on the WarmDesk version.
     type: str
