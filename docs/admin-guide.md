@@ -718,6 +718,7 @@ For SQLite, `VACUUM INTO` is used — an atomic online copy that requires no dow
 All files in `./backups/` are listed in the tab with filename, size, and creation date, newest first.
 
 - **Restore** — replaces the live database with the selected backup. SQLite restores are live (the connection pool is closed, the file is replaced, and the connection is reopened — no server restart needed). A confirmation prompt is shown before proceeding.
+- **Download** — downloads the backup file directly to your browser. Useful for offsite storage or transferring backups to another server.
 - **Delete** — removes the backup file from disk after confirmation.
 
 Every backup and restore operation is logged to the server log with the filename, database driver, user ID, and client IP.

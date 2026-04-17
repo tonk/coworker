@@ -323,3 +323,4 @@ Create an application that has all these features and requirements
 - Ansible Galaxy compliance: add README.md and meta/runtime.yml (requires_ansible: ">=2.14")
 - Fix all remaining Ansible DOCUMENTATION YAML parse errors across all modules
 - Backup file list: truncate long filenames with ellipsis, widen Size column, correct unit to kB
+- Download backup: each backup in Admin → Backup / Restore has a Download button that streams the file to the browser for offsite storage or transfer

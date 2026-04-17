@@ -2,6 +2,12 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.5 — 2026-04-17
+
+### Added
+- **Download backup** — each backup in Admin → Backup / Restore now has a Download button that streams the file directly to the browser; useful for offsite storage or transferring a backup to another server
+- **Repository layout docs** — new `docs/repository-layout.md` explains every directory in the repo
+
 ## v0.7.4 — 2026-04-17
 
 ### Added
