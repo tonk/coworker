@@ -324,3 +324,5 @@ Create an application that has all these features and requirements
 - Fix all remaining Ansible DOCUMENTATION YAML parse errors across all modules
 - Backup file list: truncate long filenames with ellipsis, widen Size column, correct unit to kB
 - Download backup: each backup in Admin → Backup / Restore has a Download button that streams the file to the browser for offsite storage or transfer
+- Fix warmdesk-seed --reset crash on fresh database: startup key_prefix migration guard now checks HasTable before attempting ALTER TABLE, so a brand-new or just-wiped database initialises cleanly without "no such table: projects"
+- Fix desktop app .desktop file incomplete: add custom Tauri desktop template (warmdesk.desktop) with GenericName, Comment, Keywords, StartupNotify; wire shortDescription and category in tauri.conf.json so Categories and Comment are populated in the installed .desktop entry

@@ -2,6 +2,12 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.6 — 2026-04-17
+
+### Fixed
+- **`warmdesk-seed --reset` crash on fresh database** — seed tool failed with "no such table: projects" when run against a brand-new (or just-wiped) database; the startup migration guard now checks whether the projects table exists before attempting the `key_prefix` column backfill, so fresh databases initialise cleanly
+- **Desktop app `.desktop` file incomplete** — generated `.desktop` file was missing `GenericName`, `Comment`, `Keywords`, and had an empty `Categories` field; fixed by adding a custom Tauri desktop template and wiring `shortDescription` and `category` in `tauri.conf.json`
+
 ## v0.7.5 — 2026-04-17
 
 ### Added
