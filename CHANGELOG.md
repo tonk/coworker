@@ -2,6 +2,12 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.7 — 2026-04-17
+
+### Fixed
+- **Desktop packages `.desktop` template** — `desktopTemplate` must be set under `bundle.linux.deb` and `bundle.linux.rpm` individually in Tauri 2, not under `bundle.linux` directly; previously caused a build error when bundling `.deb` and `.rpm`
+- **Desktop app category** — `"Office"` is not in Tauri's accepted category list; changed to `"Productivity"` which maps to the `Office;` XDG desktop category
+
 ## v0.7.6 — 2026-04-17
 
 ### Fixed
