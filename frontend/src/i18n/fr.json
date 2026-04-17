@@ -316,6 +316,7 @@
     "backup_next_run": "Prochaine exécution",
     "backup_never": "Jamais",
     "backup_start_time": "Heure de début",
+    "backup_download": "Télécharger",
     "backup_schedule_save": "Enregistrer la planification",
     "role_backup": "Sauvegarde"
   },

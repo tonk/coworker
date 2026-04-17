@@ -134,6 +134,22 @@ func AdminRestoreBackup(c *gin.Context) {
 	}
 }
 
+// AdminDownloadBackup streams a backup file as an attachment.
+func AdminDownloadBackup(c *gin.Context) {
+	filename := filepath.Base(c.Param("filename"))
+	if !strings.HasPrefix(filename, "warmdesk_db_") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid backup filename"})
+		return
+	}
+	backupPath := filepath.Join(backupsDir, filename)
+	if _, err := os.Stat(backupPath); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "backup file not found"})
+		return
+	}
+	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
+	c.File(backupPath)
+}
+
 // AdminDeleteBackup removes a backup file.
 func AdminDeleteBackup(c *gin.Context) {
 	filename := filepath.Base(c.Param("filename"))

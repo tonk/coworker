@@ -316,6 +316,7 @@
     "backup_next_run": "Næste kørsel",
     "backup_never": "Aldrig",
     "backup_start_time": "Starttidspunkt",
+    "backup_download": "Download",
     "backup_schedule_save": "Gem tidsplan",
     "role_backup": "Sikkerhedskopi"
   },

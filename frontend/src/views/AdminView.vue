@@ -410,7 +410,7 @@
                 <th>File</th>
                 <th style="width:120px">Size</th>
                 <th style="width:160px">Created</th>
-                <th style="width:180px"></th>
+                <th style="width:260px"></th>
               </tr>
             </thead>
             <tbody>
@@ -422,6 +422,7 @@
                   <button class="btn btn-secondary btn-sm" :disabled="restoringBackup === b.filename" @click="restoreBackup(b)" style="margin-right:6px">
                     {{ restoringBackup === b.filename ? $t('admin.backup_restoring') : $t('admin.backup_restore') }}
                   </button>
+                  <button class="btn btn-secondary btn-sm" @click="downloadBackup(b)" style="margin-right:6px">{{ $t('admin.backup_download') }}</button>
                   <button class="btn btn-danger btn-sm" @click="deleteBackup(b)">{{ $t('common.delete') }}</button>
                 </td>
               </tr>
@@ -965,6 +966,20 @@ async function restoreBackup(b) {
     ui.error('Restore failed')
   } finally {
     restoringBackup.value = null
+  }
+}
+
+async function downloadBackup(b) {
+  try {
+    const { data } = await adminApi.downloadBackup(b.filename)
+    const url = URL.createObjectURL(data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = b.filename
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    ui.error('Failed to download backup')
   }
 }
 

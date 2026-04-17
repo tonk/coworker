@@ -316,6 +316,7 @@
     "backup_next_run": "Seuraava ajo",
     "backup_never": "Ei koskaan",
     "backup_start_time": "Aloitusaika",
+    "backup_download": "Lataa",
     "backup_schedule_save": "Tallenna aikataulu",
     "role_backup": "Varmuuskopio"
   },

@@ -316,6 +316,7 @@
     "backup_next_run": "Nästa körning",
     "backup_never": "Aldrig",
     "backup_start_time": "Starttid",
+    "backup_download": "Ladda ner",
     "backup_schedule_save": "Spara schema",
     "role_backup": "Backup"
   },

@@ -316,6 +316,7 @@
     "backup_next_run": "Næsta keyrsla",
     "backup_never": "Aldrei",
     "backup_start_time": "Upphafsttími",
+    "backup_download": "Hlaða niður",
     "backup_schedule_save": "Vista áætlun",
     "role_backup": "Afrit"
   },

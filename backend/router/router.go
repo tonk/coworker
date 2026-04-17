@@ -87,6 +87,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			admin.POST("/system/backup", handlers.AdminBackupDatabase)
 			admin.GET("/system/backups", handlers.AdminListBackups)
 			admin.POST("/system/backups/restore", handlers.AdminRestoreBackup)
+			admin.GET("/system/backups/:filename", handlers.AdminDownloadBackup)
 			admin.DELETE("/system/backups/:filename", handlers.AdminDeleteBackup)
 		}
 
