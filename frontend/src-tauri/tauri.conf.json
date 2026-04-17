@@ -35,7 +35,7 @@
       "icons/icon.png"
     ],
     "shortDescription": "Self-hosted Kanban boards, team chat, and time tracking",
-    "category": "Office",
+    "category": "Productivity",
     "linux": {
       "deb": {
         "depends": [],
