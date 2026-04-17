@@ -56,3 +56,6 @@ Thumbs.db
 *~
 backend/seed
 backend/training
+
+# ── Other, temporary files ────────────────────────────────────────────────────
+resume
