@@ -408,14 +408,14 @@
             <thead>
               <tr>
                 <th>File</th>
-                <th style="width:80px">Size</th>
+                <th style="width:120px">Size</th>
                 <th style="width:160px">Created</th>
                 <th style="width:180px"></th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="b in backups" :key="b.filename">
-                <td style="font-family:monospace;font-size:12px">{{ b.filename }}</td>
+                <td style="font-family:monospace;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="b.filename">{{ b.filename }}</td>
                 <td>{{ formatBytes(b.size) }}</td>
                 <td>{{ formatDateTime(b.modified_at) }}</td>
                 <td style="white-space:nowrap;text-align:right">
