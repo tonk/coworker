@@ -315,6 +315,7 @@
     "backup_last_run": "Síðasta keyrsla",
     "backup_next_run": "Næsta keyrsla",
     "backup_never": "Aldrei",
+    "backup_start_time": "Upphafsttími",
     "backup_schedule_save": "Vista áætlun",
     "role_backup": "Afrit"
   },

@@ -315,6 +315,7 @@
     "backup_last_run": "Laatste uitvoering",
     "backup_next_run": "Volgende uitvoering",
     "backup_never": "Nooit",
+    "backup_start_time": "Begintijd",
     "backup_schedule_save": "Schema opslaan",
     "role_backup": "Back-up"
   },

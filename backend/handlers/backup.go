@@ -349,6 +349,25 @@ func runScheduledBackupIfDue() {
 		return
 	}
 	lastRunStr := all[settingBackupLastRun]
+	startTime := all[settingBackupStartTime]
+
+	if startTime != "" && isValidHHMM(startTime) {
+		// Slot-based scheduling: compute the most recent past slot derived from
+		// the start time and interval, then run only if last_run predates it.
+		slot := mostRecentSlot(startTime, interval)
+		if !slot.IsZero() {
+			if lastRunStr != "" {
+				lastRun, err := time.Parse(time.RFC3339, lastRunStr)
+				if err == nil && !lastRun.Before(slot) {
+					return
+				}
+			}
+			performScheduledBackup()
+			return
+		}
+	}
+
+	// Fallback: interval-from-last-run behaviour (no start time configured).
 	if lastRunStr != "" {
 		lastRun, err := time.Parse(time.RFC3339, lastRunStr)
 		if err == nil && time.Since(lastRun) < interval {
@@ -356,6 +375,22 @@ func runScheduledBackupIfDue() {
 		}
 	}
 	performScheduledBackup()
+}
+
+// mostRecentSlot returns the most recent past backup slot for the given
+// HH:MM start time and interval. Slots repeat throughout the day starting
+// from the anchor (today at HH:MM) and extending backwards as needed.
+func mostRecentSlot(startTime string, interval time.Duration) time.Time {
+	h, _ := strconv.Atoi(startTime[0:2])
+	m, _ := strconv.Atoi(startTime[3:5])
+	now := time.Now()
+	midnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	anchor := midnight.Add(time.Duration(h)*time.Hour + time.Duration(m)*time.Minute)
+	if anchor.After(now) {
+		anchor = anchor.Add(-24 * time.Hour)
+	}
+	n := int(now.Sub(anchor) / interval)
+	return anchor.Add(time.Duration(n) * interval)
 }
 
 func scheduleInterval(s string) time.Duration {

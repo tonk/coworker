@@ -695,9 +695,12 @@ At the top of the tab you can configure automatic backups:
 | Field | Description |
 |-------|-------------|
 | **Interval** | Disabled / Every 6 h (4×/day) / Every 8 h (3×/day) / Every 12 h (2×/day) / Once a day |
+| **Start time** | Optional HH:MM anchor for slot-based scheduling (e.g. `02:00`). When set, backups run at fixed time-of-day slots derived from the start time and the chosen interval — for example, `02:00` + every 6 h produces runs at 02:00, 08:00, 14:00, and 20:00. Leave empty to use the default behaviour (interval counted from the last run). |
 | **Keep last (backups)** | Maximum number of backup files to retain on disk. Oldest files are pruned automatically after each scheduled run. Default: 10. |
 
-The scheduler runs server-side — no cron job or external tool needed. It checks every 5 minutes whether a backup is due, compares against the last run time, and creates a new file when the interval has elapsed. The last run time and next scheduled run are displayed below the settings.
+The scheduler runs server-side — no cron job or external tool needed. It checks every 5 minutes whether a backup is due and creates a new file when a slot has been missed. The last run time and next scheduled run are displayed below the settings.
+
+> **Tip:** set the start time to an off-peak hour (e.g. `02:00`) to ensure backups never run during business hours.
 
 **Create a manual backup**
 

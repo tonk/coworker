@@ -377,6 +377,10 @@
                   <option value="24h">{{ $t('admin.backup_schedule_24h') }}</option>
                 </select>
               </div>
+              <div class="form-group" style="flex:0 0 130px" v-if="systemSettings.backup_schedule !== 'disabled'">
+                <label class="form-label">{{ $t('admin.backup_start_time') }}</label>
+                <input class="form-input" type="time" v-model="systemSettings.backup_start_time" />
+              </div>
               <div class="form-group" style="flex:0 0 120px">
                 <label class="form-label">{{ $t('admin.backup_keep_label') }}</label>
                 <input class="form-input" type="number" min="1" max="100" v-model.number="systemSettings.backup_keep" />
@@ -763,6 +767,7 @@ const systemSettings = ref({
   password_require_digit: false,
   password_require_special: false,
   backup_schedule: 'disabled',
+  backup_start_time: '',
   backup_keep: 10,
   backup_last_run: '',
 })
@@ -852,6 +857,7 @@ async function loadSettings() {
     systemSettings.value.password_require_digit   = data.password_require_digit === 'true'
     systemSettings.value.password_require_special = data.password_require_special === 'true'
     systemSettings.value.backup_schedule           = data.backup_schedule || 'disabled'
+    systemSettings.value.backup_start_time         = data.backup_start_time || ''
     systemSettings.value.backup_keep               = parseInt(data.backup_keep) || 10
     systemSettings.value.backup_last_run           = data.backup_last_run || ''
   } catch (e) {
@@ -896,8 +902,21 @@ const restoringBackup = ref(null)
 
 const backupNextRunDisplay = computed(() => {
   const hours = { '6h': 6, '8h': 8, '12h': 12, '24h': 24 }[systemSettings.value.backup_schedule]
+  if (!hours) return '–'
+  const startTime = systemSettings.value.backup_start_time
+  if (startTime) {
+    const [hh, mm] = startTime.split(':').map(Number)
+    const now = new Date()
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+    let anchor = new Date(midnight.getTime() + hh * 3600000 + mm * 60000)
+    if (anchor > now) anchor = new Date(anchor.getTime() - 24 * 3600000)
+    const intervalMs = hours * 3600000
+    const n = Math.floor((now - anchor) / intervalMs)
+    const nextSlot = new Date(anchor.getTime() + (n + 1) * intervalMs)
+    return formatDateTime(nextSlot.toISOString())
+  }
   const lastRun = systemSettings.value.backup_last_run
-  if (!hours || !lastRun) return '–'
+  if (!lastRun) return '–'
   return formatDateTime(new Date(new Date(lastRun).getTime() + hours * 3600000).toISOString())
 })
 
@@ -905,6 +924,7 @@ async function saveBackupSchedule() {
   try {
     await adminApi.updateSystemSettings({
       backup_schedule: systemSettings.value.backup_schedule,
+      backup_start_time: systemSettings.value.backup_start_time,
       backup_keep: systemSettings.value.backup_keep,
     })
     ui.success('Backup schedule saved')

@@ -315,6 +315,7 @@
     "backup_last_run": "Last run",
     "backup_next_run": "Next run",
     "backup_never": "Never",
+    "backup_start_time": "Start time",
     "backup_schedule_save": "Save schedule",
     "role_backup": "Backup"
   },

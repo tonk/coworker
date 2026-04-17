@@ -315,6 +315,7 @@
     "backup_last_run": "Letzter Lauf",
     "backup_next_run": "Nächster Lauf",
     "backup_never": "Nie",
+    "backup_start_time": "Startzeit",
     "backup_schedule_save": "Zeitplan speichern",
     "role_backup": "Sicherung"
   },

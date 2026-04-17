@@ -315,6 +315,7 @@
     "backup_last_run": "Siste kjøring",
     "backup_next_run": "Neste kjøring",
     "backup_never": "Aldri",
+    "backup_start_time": "Starttidspunkt",
     "backup_schedule_save": "Lagre tidsplan",
     "role_backup": "Sikkerhetskopi"
   },

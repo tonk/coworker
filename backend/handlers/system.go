@@ -39,6 +39,7 @@ const (
 	settingPasswordRequireDigit   = "password_require_digit"
 	settingPasswordRequireSpecial = "password_require_special"
 	settingBackupSchedule         = "backup_schedule"
+	settingBackupStartTime        = "backup_start_time"
 	settingBackupLastRun          = "backup_last_run"
 	settingBackupKeep             = "backup_keep"
 )
@@ -89,6 +90,7 @@ var systemSettingDefaults = map[string]string{
 	settingPasswordRequireDigit:   "false",
 	settingPasswordRequireSpecial: "false",
 	settingBackupSchedule:         "disabled",
+	settingBackupStartTime:        "",
 	settingBackupLastRun:          "",
 	settingBackupKeep:             "10",
 }
@@ -196,6 +198,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		DefaultColumns         *string `json:"default_columns"`
 		DefaultLabels          *string `json:"default_labels"`
 		BackupSchedule         *string `json:"backup_schedule"`
+		BackupStartTime        *string `json:"backup_start_time"`
 		BackupKeep             *int    `json:"backup_keep"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -296,6 +299,13 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	validSchedules := map[string]bool{"disabled": true, "6h": true, "8h": true, "12h": true, "24h": true}
 	if req.BackupSchedule != nil && validSchedules[*req.BackupSchedule] {
 		saveSetting(settingBackupSchedule, *req.BackupSchedule)
+	}
+	if req.BackupStartTime != nil {
+		// Accept "" (clear) or HH:MM format
+		v := *req.BackupStartTime
+		if v == "" || isValidHHMM(v) {
+			saveSetting(settingBackupStartTime, v)
+		}
 	}
 	if req.BackupKeep != nil {
 		keep := *req.BackupKeep
@@ -445,4 +455,14 @@ func loadAllSettings() map[string]string {
 		result[s.Key] = s.Value
 	}
 	return result
+}
+
+// isValidHHMM returns true if s is a valid 24-hour time string in HH:MM format.
+func isValidHHMM(s string) bool {
+	if len(s) != 5 || s[2] != ':' {
+		return false
+	}
+	h, err1 := strconv.Atoi(s[0:2])
+	m, err2 := strconv.Atoi(s[3:5])
+	return err1 == nil && err2 == nil && h >= 0 && h <= 23 && m >= 0 && m <= 59
 }

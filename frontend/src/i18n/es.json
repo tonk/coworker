@@ -315,6 +315,7 @@
     "backup_last_run": "Última ejecución",
     "backup_next_run": "Próxima ejecución",
     "backup_never": "Nunca",
+    "backup_start_time": "Hora de inicio",
     "backup_schedule_save": "Guardar programación",
     "role_backup": "Copia de seguridad"
   },
