@@ -7,6 +7,9 @@ All notable changes to WarmDesk are documented here.
 ### Added
 - **Backup scheduler** — Admin → Backup / Restore tab now includes a built-in scheduler; choose an interval (every 6 h, 8 h, 12 h, or once a day), set how many backups to retain, and WarmDesk creates backups automatically server-side — no cron job needed; last run time and next scheduled run are shown in the UI; old backups are pruned automatically once the retention limit is reached
 
+### Fixed
+- **nginx WebSocket config** — dedicated `location ~ ^/api/v1/ws` block with hardcoded `Upgrade`/`Connection` headers; fixes WebSocket failures with nginx 1.25+ and HTTP/2 where `$http_upgrade` is empty for RFC 8441 extended CONNECT requests; updated `listen` directive to `listen 443 ssl; http2 on;` (required syntax from nginx 1.25+)
+
 ## v0.7.2 — 2026-04-16
 
 ### Added
