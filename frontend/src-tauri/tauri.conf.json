@@ -37,12 +37,13 @@
     "shortDescription": "Self-hosted Kanban boards, team chat, and time tracking",
     "category": "Office",
     "linux": {
-      "desktopTemplate": "warmdesk.desktop",
       "deb": {
-        "depends": []
+        "depends": [],
+        "desktopTemplate": "warmdesk.desktop"
       },
       "rpm": {
-        "depends": []
+        "depends": [],
+        "desktopTemplate": "warmdesk.desktop"
       }
     }
   }
