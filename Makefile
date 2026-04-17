@@ -4,7 +4,7 @@ BACKEND  := backend
 FRONTEND := frontend
 VERSION  := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
 ARCHIVE  := warmdesk-$(VERSION).tar.gz
-.PHONY: all build build-frontend build-backend clean dev-backend dev-frontend run package stamp-desktop-version appimage dmg windows-installer windows-portable
+.PHONY: all build build-frontend build-backend clean dev-backend dev-frontend run package stamp-desktop-version appimage deb rpm dmg windows-installer windows-portable
 
 # Build everything into dist/
 all: build
@@ -70,6 +70,20 @@ appimage: stamp-desktop-version
 	@echo "Building WarmDesk desktop app (AppImage)..."
 	cd $(FRONTEND) && NO_STRIP=true npm run tauri:build -- --bundles appimage
 	@echo "AppImage: $(FRONTEND)/src-tauri/target/release/bundle/appimage/WarmDesk_*_amd64.AppImage"
+
+# Build the Tauri desktop client as a .deb package (Debian/Ubuntu).
+# Requires: Rust, dpkg, webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel
+deb: stamp-desktop-version
+	@echo "Building WarmDesk desktop app (.deb)..."
+	cd $(FRONTEND) && npm run tauri:build -- --bundles deb
+	@echo "Package: $(FRONTEND)/src-tauri/target/release/bundle/deb/"
+
+# Build the Tauri desktop client as an .rpm package (Fedora/RHEL).
+# Requires: Rust, rpm-build, webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel
+rpm: stamp-desktop-version
+	@echo "Building WarmDesk desktop app (.rpm)..."
+	cd $(FRONTEND) && npm run tauri:build -- --bundles rpm
+	@echo "Package: $(FRONTEND)/src-tauri/target/release/bundle/rpm/"
 
 # Build the Tauri desktop client as a macOS DMG (universal: Intel + Apple Silicon).
 # Must be run on macOS. Requires: Rust, Xcode command line tools.
