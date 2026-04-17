@@ -28,7 +28,7 @@ notes:
     C(gitea), C(github), C(gitlab).
 
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilabnl.warmdesk.auth
 
 options:
   project:
@@ -78,7 +78,7 @@ EXAMPLES = r"""
 # Create a generic incoming webhook for CI/CD notifications
 # ---------------------------------------------------------------------------
 - name: Create CI notification webhook
-  ansilab.warmdesk.webhook:
+  ansilabnl.warmdesk.webhook:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     project: eda-00
@@ -96,7 +96,7 @@ EXAMPLES = r"""
 # Create a Gitea webhook integration
 # ---------------------------------------------------------------------------
 - name: Ensure Gitea webhook exists on the platform project
-  ansilab.warmdesk.webhook:
+  ansilabnl.warmdesk.webhook:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     project: platform
@@ -108,7 +108,7 @@ EXAMPLES = r"""
 # Rotate the secret token for an existing webhook
 # ---------------------------------------------------------------------------
 - name: Regenerate token for the CI Bot webhook
-  ansilab.warmdesk.webhook:
+  ansilabnl.warmdesk.webhook:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     project: eda-00
@@ -124,7 +124,7 @@ EXAMPLES = r"""
 # Remove a webhook
 # ---------------------------------------------------------------------------
 - name: Delete the old deploy hook
-  ansilab.warmdesk.webhook:
+  ansilabnl.warmdesk.webhook:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     project: eda-00
@@ -188,7 +188,7 @@ token:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
     warmdesk_argument_spec,

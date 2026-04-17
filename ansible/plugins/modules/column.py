@@ -47,17 +47,17 @@ options:
     choices: [present, absent]
     default: present
 extends_documentation_fragment:
-  - ansilab.warmdesk.connection
+  - ansilabnl.warmdesk.connection
 notes:
   - Check mode is fully supported; no changes are made to the server.
 seealso:
-  - module: ansilab.warmdesk.card
-  - module: ansilab.warmdesk.label
+  - module: ansilabnl.warmdesk.card
+  - module: ansilabnl.warmdesk.label
 '''
 
 EXAMPLES = r'''
 - name: Ensure "In Progress" column exists (no WIP limit)
-  ansilab.warmdesk.column:
+  ansilabnl.warmdesk.column:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -65,7 +65,7 @@ EXAMPLES = r'''
     color: "#1E88E5"
 
 - name: Set a WIP limit of 3 on the "In Review" column
-  ansilab.warmdesk.column:
+  ansilabnl.warmdesk.column:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -74,7 +74,7 @@ EXAMPLES = r'''
     wip_limit: 3
 
 - name: Remove the "Archive" column (must be empty)
-  ansilab.warmdesk.column:
+  ansilabnl.warmdesk.column:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -82,7 +82,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Idempotent column setup using username/password
-  ansilab.warmdesk.column:
+  ansilabnl.warmdesk.column:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_username: admin
     warmdesk_password: "{{ vault_admin_password }}"
@@ -138,7 +138,7 @@ column:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskAPIError,
     WarmDeskClient,
     warmdesk_argument_spec,

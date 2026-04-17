@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 """
-Shared HTTP client and argument-spec helper for the ansilab.warmdesk collection.
+Shared HTTP client and argument-spec helper for the ansilabnl.warmdesk collection.
 
 All WarmDesk modules import WarmDeskClient, WarmDeskAPIError and
 warmdesk_argument_spec from here.

@@ -32,10 +32,10 @@ notes:
 options:
   plugin:
     description:
-      - Must be set to C(ansilab.warmdesk.warmdesk) to activate the plugin.
+      - Must be set to C(ansilabnl.warmdesk.warmdesk) to activate the plugin.
     required: true
     type: str
-    choices: [ansilab.warmdesk.warmdesk]
+    choices: [ansilabnl.warmdesk.warmdesk]
 
   url:
     description:
@@ -110,7 +110,7 @@ options:
 EXAMPLES = r"""
 # warmdesk.yml — single project
 # ----------------------------------------------------------------------
-plugin: ansilab.warmdesk.warmdesk
+plugin: ansilabnl.warmdesk.warmdesk
 url: https://warmdesk.example.com
 api_key: "cwk_a1b2c3d4e5f6"
 project: eda-00
@@ -122,7 +122,7 @@ groups:
 
 # warmdesk.yml — multiple projects with role groups
 # ----------------------------------------------------------------------
-plugin: ansilab.warmdesk.warmdesk
+plugin: ansilabnl.warmdesk.warmdesk
 url: https://warmdesk.example.com
 token: "{{ lookup('env', 'WARMDESK_TOKEN') }}"
 projects:
@@ -135,7 +135,7 @@ groups:
 
 # warmdesk.yml — username/password auth (development)
 # ----------------------------------------------------------------------
-plugin: ansilab.warmdesk.warmdesk
+plugin: ansilabnl.warmdesk.warmdesk
 url: http://localhost:8080
 username: admin
 password: "{{ lookup('env', 'WD_ADMIN_PASSWORD') }}"
@@ -165,17 +165,17 @@ import os
 from ansible.errors import AnsibleError, AnsibleParserError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
 )
 
-NAME = 'ansilab.warmdesk.warmdesk'
+NAME = 'ansilabnl.warmdesk.warmdesk'
 
 
 class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
-    NAME = 'ansilab.warmdesk.warmdesk'
+    NAME = 'ansilabnl.warmdesk.warmdesk'
 
     # ------------------------------------------------------------------
     # verify_file

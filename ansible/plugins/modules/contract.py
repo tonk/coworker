@@ -22,13 +22,13 @@ notes:
     an empty string clears a previously set date.
 
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilabnl.warmdesk.auth
 
 options:
   customer:
     description:
       - Name of the customer that owns this contract.
-      - The customer must already exist; use M(ansilab.warmdesk.customer)
+      - The customer must already exist; use M(ansilabnl.warmdesk.customer)
         to create it first.
     type: str
     required: true
@@ -72,7 +72,7 @@ EXAMPLES = r"""
 # Create a simple contract (no dates)
 # ---------------------------------------------------------------------------
 - name: Create annual support contract for Acme Corp
-  ansilab.warmdesk.contract:
+  ansilabnl.warmdesk.contract:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     customer: Acme Corp
@@ -84,7 +84,7 @@ EXAMPLES = r"""
 # Create a contract with explicit start and end dates
 # ---------------------------------------------------------------------------
 - name: Create time-boxed project contract
-  ansilab.warmdesk.contract:
+  ansilabnl.warmdesk.contract:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     customer: Acme Corp
@@ -97,7 +97,7 @@ EXAMPLES = r"""
 # Update an existing contract's description and extend the end date
 # ---------------------------------------------------------------------------
 - name: Extend Phase 2 contract
-  ansilab.warmdesk.contract:
+  ansilabnl.warmdesk.contract:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_username: admin
     warmdesk_password: "{{ vault_admin_password }}"
@@ -110,7 +110,7 @@ EXAMPLES = r"""
 # Provision contracts from a variable list (idempotent loop)
 # ---------------------------------------------------------------------------
 - name: Ensure all contracts are present
-  ansilab.warmdesk.contract:
+  ansilabnl.warmdesk.contract:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     customer: "{{ item.customer }}"
@@ -124,7 +124,7 @@ EXAMPLES = r"""
 # Delete a contract (admin operation)
 # ---------------------------------------------------------------------------
 - name: Remove expired contract
-  ansilab.warmdesk.contract:
+  ansilabnl.warmdesk.contract:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     customer: Acme Corp
@@ -184,12 +184,12 @@ contract:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
     warmdesk_argument_spec,
 )
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_resolve import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolve import (
     resolve_customer_id,
 )
 

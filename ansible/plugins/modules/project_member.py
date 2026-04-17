@@ -16,7 +16,7 @@ description:
     produces no change. Updating the role is also idempotent.
   - The C(project) parameter takes the project B(slug) (the server-generated
     URL-safe identifier). Use the return value of
-    M(ansilab.warmdesk.project) to obtain the slug.
+    M(ansilabnl.warmdesk.project) to obtain the slug.
 notes:
   - Only project owners (or global admins) may add members or change roles.
     Members may add other members but cannot promote to owner or change existing
@@ -26,13 +26,13 @@ notes:
   - The API uses C(login) (username or e-mail) to add a member. This module
     always sends the username; the server accepts either.
 extends_documentation_fragment:
-  - ansilab.warmdesk.connection
+  - ansilabnl.warmdesk.connection
 options:
   project:
     description:
       - The project slug (e.g. C(edge-data-analytics)). This is the
         server-generated, URL-safe identifier returned by
-        M(ansilab.warmdesk.project) as C(project.slug).
+        M(ansilabnl.warmdesk.project) as C(project.slug).
     type: str
     required: true
   username:
@@ -64,7 +64,7 @@ options:
 
 EXAMPLES = r'''
 - name: Add a member to a project (default role)
-  ansilab.warmdesk.project_member:
+  ansilabnl.warmdesk.project_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     project: edge-data-analytics
@@ -72,7 +72,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Add a viewer
-  ansilab.warmdesk.project_member:
+  ansilabnl.warmdesk.project_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     project: edge-data-analytics
@@ -81,7 +81,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Promote an existing member to owner
-  ansilab.warmdesk.project_member:
+  ansilabnl.warmdesk.project_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     project: edge-data-analytics
@@ -90,7 +90,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Ensure multiple users are members using a loop
-  ansilab.warmdesk.project_member:
+  ansilabnl.warmdesk.project_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     project: "{{ project.slug }}"
@@ -103,7 +103,7 @@ EXAMPLES = r'''
     - { user: carol, role: viewer }
 
 - name: Remove a user from a project
-  ansilab.warmdesk.project_member:
+  ansilabnl.warmdesk.project_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     project: edge-data-analytics
@@ -111,7 +111,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Add member using a project slug from warmdesk_project output
-  ansilab.warmdesk.project:
+  ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: New Team Project
@@ -119,7 +119,7 @@ EXAMPLES = r'''
   register: new_project
 
 - name: Grant the service account viewer access
-  ansilab.warmdesk.project_member:
+  ansilabnl.warmdesk.project_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     project: "{{ new_project.project.slug }}"
@@ -190,7 +190,7 @@ member:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskAPIError,
     WarmDeskClient,
     warmdesk_argument_spec,

@@ -18,7 +18,7 @@ description:
     row cannot see the customer at all.  This module manages those rows.
   - The C(customer) parameter takes the customer B(name) (the display name used
     as the unique identifier).  Use the return value of
-    M(ansilab.warmdesk.customer) to obtain it.
+    M(ansilabnl.warmdesk.customer) to obtain it.
 notes:
   - Only global admins and users who hold the C(admin) role for the specific
     customer may call the members endpoint.
@@ -28,7 +28,7 @@ notes:
     ID via C(GET /users).  The calling account must have at least authenticated
     access to the WarmDesk instance for that lookup to succeed.
 extends_documentation_fragment:
-  - ansilab.warmdesk.connection
+  - ansilabnl.warmdesk.connection
 options:
   customer:
     description:
@@ -64,7 +64,7 @@ options:
 
 EXAMPLES = r'''
 - name: Grant a user read-only access to a customer
-  ansilab.warmdesk.customer_member:
+  ansilabnl.warmdesk.customer_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     customer: Acme Corp
@@ -72,7 +72,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Promote a member to customer-admin
-  ansilab.warmdesk.customer_member:
+  ansilabnl.warmdesk.customer_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     customer: Acme Corp
@@ -81,7 +81,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Ensure multiple users have access using a loop
-  ansilab.warmdesk.customer_member:
+  ansilabnl.warmdesk.customer_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     customer: "{{ item.customer }}"
@@ -94,7 +94,7 @@ EXAMPLES = r'''
     - { customer: Beta Ltd,  user: carol }
 
 - name: Remove a user's access to a customer
-  ansilab.warmdesk.customer_member:
+  ansilabnl.warmdesk.customer_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     customer: Acme Corp
@@ -102,7 +102,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Provision access from a register result
-  ansilab.warmdesk.customer:
+  ansilabnl.warmdesk.customer:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: New Client GmbH
@@ -110,7 +110,7 @@ EXAMPLES = r'''
   register: new_customer
 
 - name: Grant the account manager admin access
-  ansilab.warmdesk.customer_member:
+  ansilabnl.warmdesk.customer_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     customer: "{{ new_customer.customer.name }}"
@@ -165,7 +165,7 @@ member:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskAPIError,
     WarmDeskClient,
     warmdesk_argument_spec,

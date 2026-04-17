@@ -82,7 +82,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Get customer record for Acme Corp
   ansible.builtin.set_fact:
-    acme: "{{ lookup('ansilab.warmdesk.customer', 'Acme Corp',
+    acme: "{{ lookup('ansilabnl.warmdesk.customer', 'Acme Corp',
                      url='https://warmdesk.example.com',
                      api_key=vault_api_key) }}"
 
@@ -95,7 +95,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Fetch several customers
   ansible.builtin.set_fact:
-    customers: "{{ lookup('ansilab.warmdesk.customer',
+    customers: "{{ lookup('ansilabnl.warmdesk.customer',
                           'Acme Corp', 'Globex', 'Initech',
                           url='https://warmdesk.example.com',
                           api_key=vault_api_key,
@@ -111,7 +111,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Look up customer by variable
   ansible.builtin.debug:
-    msg: "{{ lookup('ansilab.warmdesk.customer', customer_name,
+    msg: "{{ lookup('ansilabnl.warmdesk.customer', customer_name,
                    url=warmdesk_url, api_key=warmdesk_key) }}"
 """
 
@@ -158,7 +158,7 @@ _list:
 
 from ansible.errors import AnsibleError
 from ansible.plugins.lookup import LookupBase
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
 )

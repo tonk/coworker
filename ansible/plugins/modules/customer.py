@@ -22,7 +22,7 @@ notes:
     starred.  It does not affect other users.
 
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilabnl.warmdesk.auth
 
 options:
   name:
@@ -65,7 +65,7 @@ EXAMPLES = r"""
 # Create a new customer
 # ---------------------------------------------------------------------------
 - name: Create customer Acme Corp
-  ansilab.warmdesk.customer:
+  ansilabnl.warmdesk.customer:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     name: Acme Corp
@@ -77,7 +77,7 @@ EXAMPLES = r"""
 # Update description and mark as starred
 # ---------------------------------------------------------------------------
 - name: Update Acme Corp and star it
-  ansilab.warmdesk.customer:
+  ansilabnl.warmdesk.customer:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_username: admin
     warmdesk_password: "{{ vault_admin_password }}"
@@ -89,7 +89,7 @@ EXAMPLES = r"""
 # Ensure a customer is unstarred (without changing other fields)
 # ---------------------------------------------------------------------------
 - name: Unstar Acme Corp
-  ansilab.warmdesk.customer:
+  ansilabnl.warmdesk.customer:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     name: Acme Corp
@@ -99,7 +99,7 @@ EXAMPLES = r"""
 # Idempotent creation — safe to run in a provisioning loop
 # ---------------------------------------------------------------------------
 - name: Ensure all customers exist
-  ansilab.warmdesk.customer:
+  ansilabnl.warmdesk.customer:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     name: "{{ item.name }}"
@@ -110,7 +110,7 @@ EXAMPLES = r"""
 # Delete a customer (admin operation)
 # ---------------------------------------------------------------------------
 - name: Remove legacy customer
-  ansilab.warmdesk.customer:
+  ansilabnl.warmdesk.customer:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     name: OldCo Inc
@@ -169,7 +169,7 @@ customer:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
     warmdesk_argument_spec,

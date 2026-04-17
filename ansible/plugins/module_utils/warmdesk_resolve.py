@@ -4,7 +4,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 """
-Name-to-ID resolvers for the ansilab.warmdesk collection.
+Name-to-ID resolvers for the ansilabnl.warmdesk collection.
 
 Modules that need a numeric ID (e.g. customer_id for a contract) call these
 helpers rather than doing the lookup inline.  All resolvers raise
@@ -15,7 +15,7 @@ WarmDesk has no server-side search for most resources, and the lists are
 small enough that a linear scan is fine.
 """
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskAPIError,
 )
 

@@ -93,7 +93,7 @@ options:
     choices: [present, absent]
     default: present
 extends_documentation_fragment:
-  - ansilab.warmdesk.connection
+  - ansilabnl.warmdesk.connection
 notes:
   - Check mode is fully supported; no API writes are issued.
   - Date fields accept C(null) as a string to explicitly clear the date on an
@@ -101,13 +101,13 @@ notes:
   - The move operation (PATCH) is performed I(after) any field update (PUT),
     so both may fire in a single module run.
 seealso:
-  - module: ansilab.warmdesk.column
-  - module: ansilab.warmdesk.checklist_item
+  - module: ansilabnl.warmdesk.column
+  - module: ansilabnl.warmdesk.checklist_item
 '''
 
 EXAMPLES = r'''
 - name: Create a card in the Backlog column
-  ansilab.warmdesk.card:
+  ansilabnl.warmdesk.card:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -118,7 +118,7 @@ EXAMPLES = r'''
     due_date: "2026-05-01"
 
 - name: Assign a card to a team member and set a start date
-  ansilab.warmdesk.card:
+  ansilabnl.warmdesk.card:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -127,7 +127,7 @@ EXAMPLES = r'''
     start_date: "2026-04-20"
 
 - name: Move card EDA-42 to "In Review" column
-  ansilab.warmdesk.card:
+  ansilabnl.warmdesk.card:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -137,7 +137,7 @@ EXAMPLES = r'''
     move_to_column: In Review
 
 - name: Update priority of a known card by number
-  ansilab.warmdesk.card:
+  ansilabnl.warmdesk.card:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -148,7 +148,7 @@ EXAMPLES = r'''
     due_date: "2026-04-30"
 
 - name: Delete a card by number
-  ansilab.warmdesk.card:
+  ansilabnl.warmdesk.card:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -157,7 +157,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Create a batch of cards from a list
-  ansilab.warmdesk.card:
+  ansilabnl.warmdesk.card:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: ops-board
@@ -236,12 +236,12 @@ card:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskAPIError,
     WarmDeskClient,
     warmdesk_argument_spec,
 )
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_resolve import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolve import (
     find_card_by_number,
     resolve_column_id,
     resolve_user_id,

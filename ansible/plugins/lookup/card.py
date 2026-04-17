@@ -94,7 +94,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Fetch card EDA-42
   ansible.builtin.set_fact:
-    card: "{{ lookup('ansilab.warmdesk.card', 'EDA-42',
+    card: "{{ lookup('ansilabnl.warmdesk.card', 'EDA-42',
                      project='eda-00',
                      url='https://warmdesk.example.com',
                      api_key=vault_api_key) }}"
@@ -108,7 +108,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Fetch several cards from the platform project
   ansible.builtin.set_fact:
-    cards: "{{ lookup('ansilab.warmdesk.card',
+    cards: "{{ lookup('ansilabnl.warmdesk.card',
                       'PLAT-1', 'PLAT-5', 'PLAT-12',
                       project='platform',
                       url='https://warmdesk.example.com',
@@ -125,7 +125,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Get card details for a release card
   ansible.builtin.set_fact:
-    release_card: "{{ lookup('ansilab.warmdesk.card', release_card_ref,
+    release_card: "{{ lookup('ansilabnl.warmdesk.card', release_card_ref,
                              project=release_project,
                              url=warmdesk_url, api_key=warmdesk_key) }}"
 
@@ -189,11 +189,11 @@ _list:
 
 from ansible.errors import AnsibleError
 from ansible.plugins.lookup import LookupBase
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
 )
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_resolve import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolve import (
     find_card_by_number,
 )
 

@@ -22,7 +22,7 @@ notes:
   - MFA can be forcibly disabled by setting C(mfa_disable=true).
 
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilabnl.warmdesk.auth
 
 options:
   username:
@@ -135,7 +135,7 @@ EXAMPLES = r"""
 # Create a new standard user
 # ---------------------------------------------------------------------------
 - name: Create user alice
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_username: admin
     warmdesk_password: "{{ vault_admin_password }}"
@@ -150,7 +150,7 @@ EXAMPLES = r"""
 # Create an admin account using an API key
 # ---------------------------------------------------------------------------
 - name: Ensure ops-bot admin account exists
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: ops-bot
@@ -164,7 +164,7 @@ EXAMPLES = r"""
 # Update an existing user — change role and locale only
 # ---------------------------------------------------------------------------
 - name: Promote alice to admin and set locale
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: alice
@@ -176,7 +176,7 @@ EXAMPLES = r"""
 # Disable an account without deleting it
 # ---------------------------------------------------------------------------
 - name: Deactivate departed employee
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: bob
@@ -186,7 +186,7 @@ EXAMPLES = r"""
 # Forcibly disable MFA for a locked-out user
 # ---------------------------------------------------------------------------
 - name: Disable MFA for alice (admin reset)
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: alice
@@ -196,7 +196,7 @@ EXAMPLES = r"""
 # Assign user to customers with specific roles
 # ---------------------------------------------------------------------------
 - name: Create alice and assign her to two customers
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: alice
@@ -211,7 +211,7 @@ EXAMPLES = r"""
 # Update customer assignments for an existing user
 # ---------------------------------------------------------------------------
 - name: Give bob admin access to Acme Corp, remove all other customer access
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: bob
@@ -222,7 +222,7 @@ EXAMPLES = r"""
 # Remove all customer assignments (user sees no customers)
 # ---------------------------------------------------------------------------
 - name: Strip all customer visibility from charlie
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: charlie
@@ -232,7 +232,7 @@ EXAMPLES = r"""
 # Delete a user account
 # ---------------------------------------------------------------------------
 - name: Remove user bob
-  ansilab.warmdesk.user:
+  ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: bob
@@ -305,7 +305,7 @@ user:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
     warmdesk_argument_spec,

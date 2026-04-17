@@ -31,7 +31,7 @@ notes:
     C(password_min_length)) should be passed as integers.
 
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilabnl.warmdesk.auth
 
 options:
   settings:
@@ -63,7 +63,7 @@ EXAMPLES = r"""
 # Set basic branding and locale defaults
 # ---------------------------------------------------------------------------
 - name: Configure WarmDesk branding
-  ansilab.warmdesk.system_settings:
+  ansilabnl.warmdesk.system_settings:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_api_key }}"
     settings:
@@ -77,7 +77,7 @@ EXAMPLES = r"""
 # Configure SMTP (without touching password if already set)
 # ---------------------------------------------------------------------------
 - name: Configure SMTP relay
-  ansilab.warmdesk.system_settings:
+  ansilabnl.warmdesk.system_settings:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_api_key }}"
     settings:
@@ -91,7 +91,7 @@ EXAMPLES = r"""
 # Set project defaults (columns and labels)
 # ---------------------------------------------------------------------------
 - name: Set default board columns and labels
-  ansilab.warmdesk.system_settings:
+  ansilabnl.warmdesk.system_settings:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_api_key }}"
     settings:
@@ -102,7 +102,7 @@ EXAMPLES = r"""
 # Harden security settings
 # ---------------------------------------------------------------------------
 - name: Enforce password policy and MFA
-  ansilab.warmdesk.system_settings:
+  ansilabnl.warmdesk.system_settings:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_api_key }}"
     settings:
@@ -119,7 +119,7 @@ EXAMPLES = r"""
 # Check mode — preview what would change without applying
 # ---------------------------------------------------------------------------
 - name: Preview settings change
-  ansilab.warmdesk.system_settings:
+  ansilabnl.warmdesk.system_settings:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_api_key }}"
     settings:
@@ -171,7 +171,7 @@ diff:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
     warmdesk_argument_spec,

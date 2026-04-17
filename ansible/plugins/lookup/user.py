@@ -17,7 +17,7 @@ description:
 notes:
   - Uses the non-admin C(/users) endpoint, so any authenticated user can call
     this lookup.  The admin endpoint (C(/admin/users)) returns additional
-    fields and is used by the C(ansilab.warmdesk.user) module.
+    fields and is used by the C(ansilabnl.warmdesk.user) module.
   - Pass C(wantlist=true) in your task to always receive a list even when
     looking up a single username.
 
@@ -82,7 +82,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Get alice's user record
   ansible.builtin.debug:
-    msg: "{{ lookup('ansilab.warmdesk.user', 'alice',
+    msg: "{{ lookup('ansilabnl.warmdesk.user', 'alice',
               url='https://warmdesk.example.com',
               api_key=vault_api_key) }}"
 
@@ -91,7 +91,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Fetch several users
   ansible.builtin.set_fact:
-    wd_users: "{{ lookup('ansilab.warmdesk.user', 'alice', 'bob', 'carol',
+    wd_users: "{{ lookup('ansilabnl.warmdesk.user', 'alice', 'bob', 'carol',
                          url='https://warmdesk.example.com',
                          api_key=vault_api_key,
                          wantlist=true) }}"
@@ -107,7 +107,7 @@ EXAMPLES = r"""
 - name: Print email addresses for a list of users
   ansible.builtin.debug:
     msg: "{{ item.email }}"
-  loop: "{{ lookup('ansilab.warmdesk.user', team_members,
+  loop: "{{ lookup('ansilabnl.warmdesk.user', team_members,
                    url=warmdesk_url, api_key=warmdesk_key,
                    wantlist=true) }}"
   vars:
@@ -156,7 +156,7 @@ _list:
 
 from ansible.errors import AnsibleError
 from ansible.plugins.lookup import LookupBase
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
 )

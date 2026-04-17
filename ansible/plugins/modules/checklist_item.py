@@ -51,20 +51,20 @@ options:
     choices: [present, absent]
     default: present
 extends_documentation_fragment:
-  - ansilab.warmdesk.connection
+  - ansilabnl.warmdesk.connection
 notes:
   - Check mode is fully supported; no changes are made to the server.
   - If two items with identical body text exist on the same card (which the UI
     allows), only the first match is operated on. Use distinct body text to
     avoid ambiguity.
 seealso:
-  - module: ansilab.warmdesk.card
-  - module: ansilab.warmdesk.column
+  - module: ansilabnl.warmdesk.card
+  - module: ansilabnl.warmdesk.column
 '''
 
 EXAMPLES = r'''
 - name: Add an uncompleted checklist item to card EDA-42
-  ansilab.warmdesk.checklist_item:
+  ansilabnl.warmdesk.checklist_item:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -72,7 +72,7 @@ EXAMPLES = r'''
     body: "Write unit tests"
 
 - name: Add a pre-completed item (e.g. already done in a previous sprint)
-  ansilab.warmdesk.checklist_item:
+  ansilabnl.warmdesk.checklist_item:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -81,7 +81,7 @@ EXAMPLES = r'''
     is_completed: true
 
 - name: Mark an existing checklist item as completed
-  ansilab.warmdesk.checklist_item:
+  ansilabnl.warmdesk.checklist_item:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -90,7 +90,7 @@ EXAMPLES = r'''
     is_completed: true
 
 - name: Provision a full checklist from a variable
-  ansilab.warmdesk.checklist_item:
+  ansilabnl.warmdesk.checklist_item:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: ops-board
@@ -105,7 +105,7 @@ EXAMPLES = r'''
     - {body: "Notify stakeholders",   done: false}
 
 - name: Remove a checklist item
-  ansilab.warmdesk.checklist_item:
+  ansilabnl.warmdesk.checklist_item:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -114,7 +114,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Add item and capture result
-  ansilab.warmdesk.checklist_item:
+  ansilabnl.warmdesk.checklist_item:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_username: admin
     warmdesk_password: "{{ vault_admin_password }}"
@@ -165,12 +165,12 @@ checklist_item:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskAPIError,
     WarmDeskClient,
     warmdesk_argument_spec,
 )
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_resolve import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolve import (
     find_card_by_number,
 )
 

@@ -42,19 +42,19 @@ options:
     choices: [present, absent]
     default: present
 extends_documentation_fragment:
-  - ansilab.warmdesk.connection
+  - ansilabnl.warmdesk.connection
 notes:
   - Check mode is fully supported; no changes are made to the server.
   - Deleting a label does not remove it from cards that already carry it; the
     badge simply disappears from those cards.
 seealso:
-  - module: ansilab.warmdesk.card
-  - module: ansilab.warmdesk.column
+  - module: ansilabnl.warmdesk.card
+  - module: ansilabnl.warmdesk.column
 '''
 
 EXAMPLES = r'''
 - name: Ensure a "bug" label exists in red
-  ansilab.warmdesk.label:
+  ansilabnl.warmdesk.label:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -62,7 +62,7 @@ EXAMPLES = r'''
     color: "#E53935"
 
 - name: Create multiple labels from a variable list
-  ansilab.warmdesk.label:
+  ansilabnl.warmdesk.label:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -75,7 +75,7 @@ EXAMPLES = r'''
     - {name: wontfix,     color: "#757575"}
 
 - name: Rename the colour of the "urgent" label
-  ansilab.warmdesk.label:
+  ansilabnl.warmdesk.label:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -83,7 +83,7 @@ EXAMPLES = r'''
     color: "#B71C1C"
 
 - name: Remove a deprecated label
-  ansilab.warmdesk.label:
+  ansilabnl.warmdesk.label:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     project: my-project
@@ -91,7 +91,7 @@ EXAMPLES = r'''
     state: absent
 
 - name: Provision labels and capture results
-  ansilab.warmdesk.label:
+  ansilabnl.warmdesk.label:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_username: admin
     warmdesk_password: "{{ vault_admin_password }}"
@@ -138,7 +138,7 @@ label:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskAPIError,
     WarmDeskClient,
     warmdesk_argument_spec,

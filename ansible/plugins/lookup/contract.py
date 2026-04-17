@@ -91,7 +91,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Get the 2025 SLA contract for Acme Corp
   ansible.builtin.set_fact:
-    sla: "{{ lookup('ansilab.warmdesk.contract', 'SLA 2025',
+    sla: "{{ lookup('ansilabnl.warmdesk.contract', 'SLA 2025',
                     customer='Acme Corp',
                     url='https://warmdesk.example.com',
                     api_key=vault_api_key) }}"
@@ -107,7 +107,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Fetch all active contracts for Globex
   ansible.builtin.set_fact:
-    globex_contracts: "{{ lookup('ansilab.warmdesk.contract',
+    globex_contracts: "{{ lookup('ansilabnl.warmdesk.contract',
                                  'Support 2025', 'Development Q2',
                                  customer='Globex',
                                  url='https://warmdesk.example.com',
@@ -124,7 +124,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Look up contract by variable
   ansible.builtin.debug:
-    msg: "{{ lookup('ansilab.warmdesk.contract', contract_name,
+    msg: "{{ lookup('ansilabnl.warmdesk.contract', contract_name,
                    customer=client_name,
                    url=warmdesk_url, api_key=warmdesk_key) }}"
 """
@@ -168,11 +168,11 @@ _list:
 
 from ansible.errors import AnsibleError
 from ansible.plugins.lookup import LookupBase
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
 )
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_resolve import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolve import (
     resolve_customer_id,
 )
 

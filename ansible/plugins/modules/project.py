@@ -14,7 +14,7 @@ description:
   - Create, update, archive, unarchive, star, unstar, or delete WarmDesk projects.
   - Uses project C(name) as the idempotency key; the server-generated C(slug) is
     returned in the result and can be passed to other modules such as
-    M(ansilab.warmdesk.project_member).
+    M(ansilabnl.warmdesk.project_member).
   - Customer and contract associations are looked up by name; the numeric IDs are
     resolved automatically.
 notes:
@@ -23,9 +23,9 @@ notes:
   - Updating C(name) changes the project name but does B(not) change the existing
     server-generated slug.
   - Deleting a project is permanent and removes all columns, cards, and members.
-  - To manage project membership, use M(ansilab.warmdesk.project_member).
+  - To manage project membership, use M(ansilabnl.warmdesk.project_member).
 extends_documentation_fragment:
-  - ansilab.warmdesk.connection
+  - ansilabnl.warmdesk.connection
 options:
   name:
     description:
@@ -89,14 +89,14 @@ options:
 
 EXAMPLES = r'''
 - name: Create a minimal project
-  ansilab.warmdesk.project:
+  ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: Infrastructure
     state: present
 
 - name: Create a fully specified project
-  ansilab.warmdesk.project:
+  ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
     warmdesk_api_key: "{{ vault_wd_api_key }}"
     name: Edge Data Analytics
@@ -111,7 +111,7 @@ EXAMPLES = r'''
   register: project_result
 
 - name: Use the returned slug in a downstream task
-  ansilab.warmdesk.project_member:
+  ansilabnl.warmdesk.project_member:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     project: "{{ project_result.project.slug }}"
@@ -120,7 +120,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Archive a project
-  ansilab.warmdesk.project:
+  ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: Edge Data Analytics
@@ -128,7 +128,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Unarchive a project and clear its customer association
-  ansilab.warmdesk.project:
+  ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: Edge Data Analytics
@@ -137,7 +137,7 @@ EXAMPLES = r'''
     state: present
 
 - name: Ensure a project does not exist
-  ansilab.warmdesk.project:
+  ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: Old Project
@@ -217,12 +217,12 @@ project:
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskAPIError,
     WarmDeskClient,
     warmdesk_argument_spec,
 )
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_resolve import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolve import (
     resolve_customer_id,
     resolve_contract_id,
 )

@@ -80,7 +80,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Get project metadata
   ansible.builtin.set_fact:
-    project: "{{ lookup('ansilab.warmdesk.project', 'eda-00',
+    project: "{{ lookup('ansilabnl.warmdesk.project', 'eda-00',
                         url='https://warmdesk.example.com',
                         api_key=vault_api_key) }}"
 
@@ -93,7 +93,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Fetch all team projects
   ansible.builtin.set_fact:
-    projects: "{{ lookup('ansilab.warmdesk.project',
+    projects: "{{ lookup('ansilabnl.warmdesk.project',
                          'platform', 'eda-00', 'eda-01',
                          url='https://warmdesk.example.com',
                          api_key=vault_api_key,
@@ -109,7 +109,7 @@ EXAMPLES = r"""
 # ---------------------------------------------------------------------------
 - name: Look up a project by slug variable
   ansible.builtin.debug:
-    msg: "{{ lookup('ansilab.warmdesk.project', my_project_slug,
+    msg: "{{ lookup('ansilabnl.warmdesk.project', my_project_slug,
                    url=warmdesk_url, api_key=warmdesk_key) }}"
 """
 
@@ -161,7 +161,7 @@ _list:
 
 from ansible.errors import AnsibleError
 from ansible.plugins.lookup import LookupBase
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
 )

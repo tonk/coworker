@@ -31,7 +31,7 @@ notes:
     returned at creation time.
 
 extends_documentation_fragment:
-  - ansilab.warmdesk.auth
+  - ansilabnl.warmdesk.auth
 
 options:
   scope:
@@ -83,7 +83,7 @@ EXAMPLES = r"""
 # Create a personal API key and save the token to a variable
 # ---------------------------------------------------------------------------
 - name: Create personal API key for CI pipeline
-  ansilab.warmdesk.api_key:
+  ansilabnl.warmdesk.api_key:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_username: "{{ wd_admin_user }}"
     warmdesk_password: "{{ vault_admin_password }}"
@@ -102,7 +102,7 @@ EXAMPLES = r"""
 # Create a project-scoped API key for ticket automation
 # ---------------------------------------------------------------------------
 - name: Create project API key for ticket bot
-  ansilab.warmdesk.api_key:
+  ansilabnl.warmdesk.api_key:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_key }}"
     scope: project
@@ -123,7 +123,7 @@ EXAMPLES = r"""
 # Idempotent — second run does not change anything and api_key is absent
 # ---------------------------------------------------------------------------
 - name: Ensure project key exists (no-op if already present)
-  ansilab.warmdesk.api_key:
+  ansilabnl.warmdesk.api_key:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_key }}"
     scope: project
@@ -136,7 +136,7 @@ EXAMPLES = r"""
 # Revoke a personal key
 # ---------------------------------------------------------------------------
 - name: Revoke the old CI key
-  ansilab.warmdesk.api_key:
+  ansilabnl.warmdesk.api_key:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_key }}"
     scope: personal
@@ -147,7 +147,7 @@ EXAMPLES = r"""
 # Revoke a project-scoped key
 # ---------------------------------------------------------------------------
 - name: Revoke project key
-  ansilab.warmdesk.api_key:
+  ansilabnl.warmdesk.api_key:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_admin_key }}"
     scope: project
@@ -207,7 +207,7 @@ api_key:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible_collections.ansilab.warmdesk.plugins.module_utils.warmdesk_api import (
+from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
     WarmDeskClient,
     WarmDeskAPIError,
     warmdesk_argument_spec,
