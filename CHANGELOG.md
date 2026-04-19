@@ -2,6 +2,12 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.9 — 2026-04-19
+
+### Fixed
+- **Gin "trusted all proxies" warning** — `SetTrustedProxies(nil)` is now called at startup so Gin no longer trusts all proxy headers by default; set `["127.0.0.1"]` in code if WarmDesk sits behind a local reverse proxy and you need real client IPs from `X-Forwarded-For`
+- **Config file discovery accepts `.yml`** — when no explicit path is given (via `--config` or `CONFIG_FILE`), WarmDesk now tries `warmdesk.yaml` first and falls back to `warmdesk.yml`; previously only `.yaml` was recognised
+
 ## v0.7.8 — 2026-04-19
 
 ### Added

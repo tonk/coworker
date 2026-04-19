@@ -77,7 +77,11 @@ func loadFile(cfg *Config, flagPath string) {
 		path = os.Getenv("CONFIG_FILE")
 	}
 	if path == "" {
-		path = "warmdesk.yaml"
+		if _, err := os.Stat("warmdesk.yaml"); err == nil {
+			path = "warmdesk.yaml"
+		} else {
+			path = "warmdesk.yml"
+		}
 	}
 
 	data, err := os.ReadFile(path)

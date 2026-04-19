@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# Small program to build, seed, training seed, configure
+# and run WarmDesk.
+#
+# Just for development.
+#
 
 # Determine the program name and the 'running directory'
 IAM="${0##*/}"
@@ -10,7 +16,10 @@ cd ${CRD} || {
 }
 
 # Build all
-make clean all
+make clean all || {
+	echo "Building WarmDesk failed" >&2
+	exit 1
+}
 cd dist
 
 # Fill with demo data
@@ -19,18 +28,19 @@ cd dist
 ./warmdesk-training 4 Salami
 
 # Create simple config
-cat << '@EOF'
+cat << '@EOF' > warmdesk.yaml
 ---
+base_url: https://warmdesk.example.com
 port: "8080"
 db_driver: sqlite
 db_dsn: "./warmdesk.db"
 
 smtp:
-  host: ""             # e.g. mail.example.com or smtp.gmail.com
-  port: 587            # 587 for STARTTLS (recommended), 465 for SSL, 25 for plaintext
-  from: ""             # e.g. warmdesk@example.com
-  username: ""         # SMTP login (often the same as the from address)
-  password: ""         # SMTP password or app-specific password
+  host: "master.tonkersten.com"
+  port: 25
+  from: ""
+  username: ""
+  password: ""
 
 jwt_secret: "change-me-for-production"
 allowed_origins: "http://localhost:8080"

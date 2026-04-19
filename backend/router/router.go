@@ -14,6 +14,7 @@ import (
 
 func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, apiLog bool, uploadDir string) *gin.Engine {
 	r := gin.New()
+	r.SetTrustedProxies(nil) //nolint // nil = trust no proxy headers; set to []string{"127.0.0.1"} if behind a local reverse proxy
 	r.Use(gin.Recovery())
 	if apiLog {
 		r.Use(gin.Logger())

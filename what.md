@@ -333,3 +333,5 @@ Create an application that has all these features and requirements
 - Send all outbound emails as HTML with a shared branded template: blue header with company name and logo, content area, footer with WarmDesk icon, version, and instance URL; plain-text fallback included for all emails
 - Add dark-mode email support: prefers-color-scheme media queries keep the password-reset button and key elements readable in Apple Mail, iOS Mail, Samsung Mail, and Outlook for Mac in dark mode; border fallback for clients that strip background colours
 - Fix email footer showing vv0.7.7 (double v): strip leading v from version tag before rendering
+- Fix Gin "trusted all proxies" warning: call SetTrustedProxies(nil) at startup so proxy headers are not trusted by default
+- Config file auto-discovery accepts both .yaml and .yml extensions (warmdesk.yaml tried first, falls back to warmdesk.yml)
