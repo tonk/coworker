@@ -96,4 +96,16 @@ export const projectsApi = {
   listCardRefs:   (slug, cardId)        => client.get(`/projects/${slug}/cards/${cardId}/refs`),
   createCardRef:  (slug, cardId, data)  => client.post(`/projects/${slug}/cards/${cardId}/refs`, data),
   deleteCardRef:  (slug, cardId, refId) => client.delete(`/projects/${slug}/cards/${cardId}/refs/${refId}`),
+
+  // Sprints (Scrum)
+  listSprints:          (slug)                    => client.get(`/projects/${slug}/sprints`),
+  createSprint:         (slug, data)              => client.post(`/projects/${slug}/sprints`, data),
+  updateSprint:         (slug, sprintId, data)    => client.put(`/projects/${slug}/sprints/${sprintId}`, data),
+  deleteSprint:         (slug, sprintId)          => client.delete(`/projects/${slug}/sprints/${sprintId}`),
+  startSprint:          (slug, sprintId)          => client.post(`/projects/${slug}/sprints/${sprintId}/start`),
+  completeSprint:       (slug, sprintId)          => client.post(`/projects/${slug}/sprints/${sprintId}/complete`),
+  addCardToSprint:      (slug, sprintId, cardId)  => client.post(`/projects/${slug}/sprints/${sprintId}/cards/${cardId}`),
+  removeCardFromSprint: (slug, sprintId, cardId)  => client.delete(`/projects/${slug}/sprints/${sprintId}/cards/${cardId}`),
+  reorderSprintCards:   (slug, sprintId, items)   => client.patch(`/projects/${slug}/sprints/${sprintId}/cards/reorder`, items),
+  listBacklog:          (slug)                    => client.get(`/projects/${slug}/backlog`),
 }

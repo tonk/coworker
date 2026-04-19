@@ -13,6 +13,8 @@ const routes = [
   { path: '/projects/:slug/settings', name: 'project-settings', component: () => import('@/views/ProjectSettingsView.vue') },
   { path: '/projects/:slug/topics', name: 'topics', component: () => import('@/views/TopicsView.vue') },
   { path: '/projects/:slug/gantt', name: 'gantt', component: () => import('@/views/GanttView.vue') },
+  { path: '/projects/:slug/backlog', name: 'backlog', component: () => import('@/views/BacklogView.vue') },
+  { path: '/projects/:slug/sprint', name: 'sprint-board', component: () => import('@/views/SprintBoardView.vue') },
   { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue') },
   { path: '/chats', name: 'chats', component: () => import('@/views/DirectMessagesView.vue') },
   { path: '/messages', redirect: '/chats' },

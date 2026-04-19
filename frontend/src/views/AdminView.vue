@@ -654,6 +654,13 @@
       <label class="form-label">{{ $t('project.color') }}</label>
       <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px;width:80px" />
     </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('sprint.board_type') }}</label>
+      <select class="form-input" v-model="newProject.board_type" style="max-width:280px">
+        <option value="kanban">{{ $t('sprint.board_type_kanban') }}</option>
+        <option value="scrum">{{ $t('sprint.board_type_scrum') }}</option>
+      </select>
+    </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showCreateProject = false">{{ $t('common.cancel') }}</button>
       <button class="btn btn-primary" :disabled="!newProject.name.trim() || !newProject.key_prefix.trim()" @click="submitCreateProject">{{ $t('common.create') }}</button>
@@ -711,7 +718,7 @@ const editUser = ref(null)
 const editProject = ref(null)
 const showCreateUser = ref(false)
 const showCreateProject = ref(false)
-const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '' })
+const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban' })
 const prefixTouched = ref(false)
 
 // Mirror GenerateKeyPrefix from the backend so the field auto-fills as the user types.
@@ -1237,7 +1244,7 @@ async function submitCreateProject() {
     const { data } = await adminApi.createProject(newProject.value)
     projects.value.unshift(data)
     showCreateProject.value = false
-    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '' }
+    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban' }
     prefixTouched.value = false
     ui.success('Project created')
   } catch (e) {

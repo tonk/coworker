@@ -276,6 +276,20 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 			// Star / unstar project
 			projects.POST("/:projectSlug/star", handlers.StarProject)
 			projects.DELETE("/:projectSlug/star", handlers.UnstarProject)
+
+			// Sprints (Scrum)
+			projects.GET("/:projectSlug/sprints", handlers.ListSprints)
+			projects.POST("/:projectSlug/sprints", handlers.CreateSprint)
+			projects.PUT("/:projectSlug/sprints/:sprintId", handlers.UpdateSprint)
+			projects.DELETE("/:projectSlug/sprints/:sprintId", handlers.DeleteSprint)
+			projects.POST("/:projectSlug/sprints/:sprintId/start", handlers.StartSprint)
+			projects.POST("/:projectSlug/sprints/:sprintId/complete", handlers.CompleteSprint)
+			projects.POST("/:projectSlug/sprints/:sprintId/cards/:cardId", handlers.AddCardToSprint)
+			projects.DELETE("/:projectSlug/sprints/:sprintId/cards/:cardId", handlers.RemoveCardFromSprint)
+			projects.PATCH("/:projectSlug/sprints/:sprintId/cards/reorder", handlers.ReorderSprintCards)
+
+			// Backlog (Scrum)
+			projects.GET("/:projectSlug/backlog", handlers.ListBacklog)
 		}
 	}
 

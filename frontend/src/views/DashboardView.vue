@@ -79,6 +79,14 @@
           <label class="form-label">{{ $t('project.color') }}</label>
           <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px" />
         </div>
+        <div class="form-group">
+          <label class="form-label">{{ $t('sprint.board_type') }}</label>
+          <select class="form-input" v-model="newProject.board_type" style="max-width:300px">
+            <option value="kanban">{{ $t('sprint.board_type_kanban') }}</option>
+            <option value="scrum">{{ $t('sprint.board_type_scrum') }}</option>
+          </select>
+          <p style="font-size:12px;color:var(--color-text-muted);margin-top:4px">{{ $t('sprint.board_type_hint') }}</p>
+        </div>
       </form>
       <template #footer>
         <button class="btn btn-secondary" @click="showCreate = false">{{ $t('common.cancel') }}</button>
@@ -127,7 +135,7 @@ const filteredProjects = computed(() => {
 })
 
 const creating = ref(false)
-const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '' })
+const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban' })
 const prefixTouched = ref(false)
 
 function autoPrefix(name) {
@@ -179,7 +187,7 @@ async function handleCreate() {
   try {
     const project = await projectStore.createProject(newProject.value)
     showCreate.value = false
-    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '' }
+    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban' }
     prefixTouched.value = false
     router.push(`/projects/${project.slug}`)
   } catch (e) {

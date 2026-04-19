@@ -57,6 +57,15 @@ const (
 	// Server -> Client: git card links
 	TypeCardLinkCreated = "card.link.created"
 
+	// Server -> Client: sprints
+	TypeSprintCreated     = "sprint.created"
+	TypeSprintUpdated     = "sprint.updated"
+	TypeSprintDeleted     = "sprint.deleted"
+	TypeSprintStarted     = "sprint.started"
+	TypeSprintCompleted   = "sprint.completed"
+	TypeSprintCardAdded   = "sprint.card.added"
+	TypeSprintCardRemoved = "sprint.card.removed"
+
 	// System
 	TypePong  = "pong"
 	TypeError = "error"

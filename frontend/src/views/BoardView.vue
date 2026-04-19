@@ -11,6 +11,14 @@
         </RouterLink>
       </div>
       <div class="board-toolbar-right">
+        <template v-if="projectStore.currentProject?.board_type === 'scrum'">
+          <RouterLink :to="`/projects/${slug}/backlog`" class="btn btn-ghost btn-sm">
+            📋 {{ $t('sprint.backlog') }}
+          </RouterLink>
+          <RouterLink :to="`/projects/${slug}/sprint`" class="btn btn-ghost btn-sm">
+            🏃 {{ $t('sprint.board') }}
+          </RouterLink>
+        </template>
         <RouterLink :to="`/projects/${slug}/gantt`" class="btn btn-ghost btn-sm">
           📅 {{ $t('gantt.title') }}
         </RouterLink>
@@ -45,20 +53,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Add card modal -->
-    <BaseModal v-if="showAddCard" :title="$t('board.add_card')" @close="showAddCard = false">
-      <form @submit.prevent="submitAddCard">
-        <div class="form-group">
-          <label class="form-label">{{ $t('board.card_title') }}</label>
-          <input class="form-input" v-model="newCard.title" required autofocus />
-        </div>
-      </form>
-      <template #footer>
-        <button class="btn btn-secondary" @click="showAddCard = false">{{ $t('common.cancel') }}</button>
-        <button class="btn btn-primary" @click="submitAddCard">{{ $t('common.create') }}</button>
-      </template>
-    </BaseModal>
 
     <!-- Add column modal -->
     <BaseModal v-if="showAddColumn" :title="$t('board.add_column')" @close="showAddColumn = false">
@@ -117,11 +111,8 @@ const ui = useUIStore()
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
 
-const showAddCard = ref(false)
 const showAddColumn = ref(false)
 const selectedCard = ref(null)
-const addCardColumnId = ref(null)
-const newCard = ref({ title: '' })
 const newColumn = ref({ name: '', color: '#94a3b8' })
 const columnsEl = ref(null)
 let columnSortable = null
@@ -184,19 +175,7 @@ async function toggleStar() {
 }
 
 function openAddCard(columnId) {
-  addCardColumnId.value = columnId
-  newCard.value = { title: '' }
-  showAddCard.value = true
-}
-
-async function submitAddCard() {
-  if (!newCard.value.title) return
-  try {
-    await boardStore.createCard(addCardColumnId.value, newCard.value)
-    showAddCard.value = false
-  } catch (e) {
-    ui.error(e.response?.data?.error || 'Failed to create card')
-  }
+  selectedCard.value = { id: null, column_id: columnId, title: '' }
 }
 
 async function submitAddColumn() {

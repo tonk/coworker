@@ -4,6 +4,13 @@ Create an application that has all these features and requirements
 - Written in Golang, minumum version 1.25
 - Webbased
 - Kanban board
+- Scrum board
+  * Board type (Kanban or Scrum) is chosen at project creation and cannot be changed
+  * Scrum projects have a Backlog view (two-panel sprint planner with drag-and-drop, sprint CRUD, goal/date editing, velocity chart)
+  * Scrum projects have a Sprint Board view (filtered to active sprint cards)
+  * Sprint lifecycle: planning → active → completed
+  * Completing a sprint returns unfinished cards to the backlog
+  * Story points per card (admin toggle to enable)
 - Multi user
 - Multi project
 - Multi language support

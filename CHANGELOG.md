@@ -2,6 +2,16 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.0 — 2026-04-19
+
+### Added
+- **Scrum support** — projects now have a board type (Kanban or Scrum) set at creation time; Scrum projects unlock two new views: **Backlog** (two-panel sprint planner with drag-and-drop card assignment, sprint CRUD, goal and date editing, and a velocity chart of completed sprints) and **Sprint Board** (board view filtered to the cards in the active sprint); sprint lifecycle: planning → active → completed; completing a sprint returns unfinished cards to the backlog automatically; story points field on cards (enabled via Admin → Settings → Scrum Story Points); SP badge on card tiles and a done/total summary in the sprint board toolbar
+- **Direct add-card UX** — clicking **+ Add card** on a column now opens the full card detail form immediately (no intermediate title-only modal); only the fields that make sense before a card exists are shown (title, description, priority, dates, time, single assignee, story points); clicking **Create** saves the card and closes the panel
+- **Board type locked after creation** — board type (Kanban / Scrum) is chosen in the **New Project** dialog and cannot be changed later; the Project Settings general tab now shows it as a read-only badge
+
+### Changed
+- **Demo data** — seeder (`go run ./cmd/seed`) now creates five projects: three Kanban (Website Redesign, Mobile App v2, DevOps & Infrastructure) and two new ones — **Product Platform** (Scrum, prefix `PLT`) with a completed sprint, an active sprint, and a planning sprint fully populated with cards and story points; **Marketing Campaigns** (Kanban, prefix `MKT`) with cards across Ideas / Planned / In Progress / Published columns
+
 ## v0.7.12 — 2026-04-19
 
 ### Added

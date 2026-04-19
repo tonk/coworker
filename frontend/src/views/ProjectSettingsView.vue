@@ -42,6 +42,13 @@
               <option v-for="con in filteredContracts" :key="con.id" :value="con.id">{{ con.name }}</option>
             </select>
           </div>
+          <div class="form-group">
+            <label class="form-label">{{ $t('sprint.board_type') }}</label>
+            <div class="board-type-badge" :class="form.board_type">
+              {{ form.board_type === 'scrum' ? $t('sprint.board_type_scrum') : $t('sprint.board_type_kanban') }}
+            </div>
+            <p class="form-hint">{{ $t('sprint.board_type_locked_hint') }}</p>
+          </div>
           <button class="btn btn-primary" @click="saveGeneral">{{ $t('common.save') }}</button>
 
           <div class="danger-zone">
@@ -340,7 +347,7 @@ const invite = ref({ userIds: [], role: 'member' })
 const inviteSearch = ref('')
 const allUsers = ref([])
 const newLabel = ref({ name: '', color: '#6366f1' })
-const form = ref({ name: '', description: '', color: '', customer_id: null, contract_id: null })
+const form = ref({ name: '', description: '', color: '', customer_id: null, contract_id: null, board_type: 'kanban' })
 const customers = ref([])
 const allContracts = ref([])
 const filteredContracts = computed(() =>
@@ -384,7 +391,7 @@ const filteredInvitableUsers = computed(() => {
 onMounted(async () => {
   const data = await projectStore.fetchProject(slug.value)
   project.value = data
-  form.value = { name: data.name, description: data.description || '', color: data.color || '#6366f1', customer_id: data.customer_id || null, contract_id: data.contract_id || null }
+  form.value = { name: data.name, description: data.description || '', color: data.color || '#6366f1', customer_id: data.customer_id || null, contract_id: data.contract_id || null, board_type: data.board_type || 'kanban' }
   loadMembers()
   loadLabels()
   // Load customers and contracts for the dropdowns
@@ -659,4 +666,17 @@ function copyWebhookToken() {
 
 .webhook-docs { padding: 16px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); max-width: 640px; }
 .webhook-docs h4 { font-size: 13px; font-weight: 700; }
+
+.form-hint { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; }
+.board-type-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.board-type-badge.kanban { background: #dbeafe; color: #1e40af; }
+.board-type-badge.scrum  { background: #dcfce7; color: #166534; }
 </style>

@@ -2,6 +2,7 @@ import { ref, isRef, onUnmounted } from 'vue'
 import { useBoardStore } from '@/stores/board'
 import { useChatStore } from '@/stores/chat'
 import { useTopicsStore } from '@/stores/topics'
+import { useSprintStore } from '@/stores/sprint'
 import { getWsUrl } from '@/api/serverConfig'
 
 export function useWebSocket(projectSlugOrRef) {
@@ -14,6 +15,7 @@ export function useWebSocket(projectSlugOrRef) {
   const boardStore = useBoardStore()
   const chatStore = useChatStore()
   const topicsStore = useTopicsStore()
+  const sprintStore = useSprintStore()
 
   function connect() {
     const token = sessionStorage.getItem('access_token')
@@ -68,6 +70,8 @@ export function useWebSocket(projectSlugOrRef) {
 
     if (type.startsWith('board.')) {
       boardStore.handleWsEvent(type, payload)
+    } else if (type.startsWith('sprint.')) {
+      sprintStore.handleWsEvent(type, payload)
     } else if (type.startsWith('chat.')) {
       chatStore.handleWsEvent(type, payload)
     } else if (type.startsWith('topic.')) {

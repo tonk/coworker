@@ -47,50 +47,80 @@ func days(n int) *time.Time {
 // ─── demo data definitions ──────────────────────────────────────────────────
 
 type seedProject struct {
-	name    string
-	slug    string
-	prefix  string
-	color   string
-	desc    string
-	columns []string
-	labels  []struct{ name, color string }
+	name      string
+	slug      string
+	prefix    string
+	color     string
+	desc      string
+	boardType string // "kanban" (default) or "scrum"
+	columns   []string
+	labels    []struct{ name, color string }
 }
 
 var demoProjects = []seedProject{
 	{
-		name:   "Website Redesign",
-		slug:   "website-redesign",
-		prefix: "WEB",
-		color:  "#6366f1",
-		desc:   "Full redesign of the marketing website — new brand, new stack, new speed.",
-		columns: []string{"Backlog", "In Progress", "Review", "Done"},
+		name:      "Website Redesign",
+		slug:      "website-redesign",
+		prefix:    "WEB",
+		color:     "#6366f1",
+		boardType: "kanban",
+		desc:      "Full redesign of the marketing website — new brand, new stack, new speed.",
+		columns:   []string{"Backlog", "In Progress", "Review", "Done"},
 		labels: []struct{ name, color string }{
 			{"Bug", "#ef4444"}, {"Feature", "#3b82f6"},
 			{"Design", "#8b5cf6"}, {"Content", "#10b981"},
 		},
 	},
 	{
-		name:   "Mobile App v2",
-		slug:   "mobile-app-v2",
-		prefix: "MOB",
-		color:  "#f59e0b",
-		desc:   "Ground-up rewrite of the iOS and Android apps with a shared React Native core.",
-		columns: []string{"Ideas", "Development", "Testing", "Released"},
+		name:      "Mobile App v2",
+		slug:      "mobile-app-v2",
+		prefix:    "MOB",
+		color:     "#f59e0b",
+		boardType: "kanban",
+		desc:      "Ground-up rewrite of the iOS and Android apps with a shared React Native core.",
+		columns:   []string{"Ideas", "Development", "Testing", "Released"},
 		labels: []struct{ name, color string }{
 			{"Bug", "#ef4444"}, {"Enhancement", "#3b82f6"},
 			{"iOS", "#0ea5e9"}, {"Android", "#22c55e"},
 		},
 	},
 	{
-		name:   "DevOps & Infrastructure",
-		slug:   "devops-infra",
-		prefix: "INF",
-		color:  "#10b981",
-		desc:   "Kubernetes migration, monitoring, backups, and everything that keeps the lights on.",
-		columns: []string{"Todo", "In Progress", "Done"},
+		name:      "DevOps & Infrastructure",
+		slug:      "devops-infra",
+		prefix:    "INF",
+		color:     "#10b981",
+		boardType: "kanban",
+		desc:      "Kubernetes migration, monitoring, backups, and everything that keeps the lights on.",
+		columns:   []string{"Todo", "In Progress", "Done"},
 		labels: []struct{ name, color string }{
 			{"Critical", "#ef4444"}, {"Enhancement", "#3b82f6"},
 			{"Monitoring", "#f59e0b"}, {"Security", "#8b5cf6"},
+		},
+	},
+	{
+		name:      "Product Platform",
+		slug:      "product-platform",
+		prefix:    "PLT",
+		color:     "#8b5cf6",
+		boardType: "scrum",
+		desc:      "The core SaaS platform — built sprint by sprint with a cross-functional team.",
+		columns:   []string{"To Do", "In Progress", "In Review", "Done"},
+		labels: []struct{ name, color string }{
+			{"Bug", "#ef4444"}, {"Feature", "#3b82f6"},
+			{"Enhancement", "#f59e0b"}, {"Tech Debt", "#6b7280"},
+		},
+	},
+	{
+		name:      "Marketing Campaigns",
+		slug:      "marketing",
+		prefix:    "MKT",
+		color:     "#f43f5e",
+		boardType: "kanban",
+		desc:      "Campaign planning, content production, and launch coordination for the marketing team.",
+		columns:   []string{"Ideas", "Planned", "In Progress", "Published"},
+		labels: []struct{ name, color string }{
+			{"Campaign", "#f43f5e"}, {"Content", "#10b981"},
+			{"Social", "#0ea5e9"}, {"Email", "#f59e0b"},
 		},
 	},
 }
@@ -240,12 +270,24 @@ func main() {
 			{"marc", "owner"}, {"lisa", "admin"}, {"admin", "member"},
 			{"james", "member"}, {"raj", "member"}, {"viewer", "viewer"},
 		},
+		"product-platform": {
+			{"priya", "owner"}, {"sarah", "admin"}, {"james", "member"},
+			{"raj", "member"}, {"elena", "member"}, {"viewer", "viewer"},
+		},
+		"marketing": {
+			{"lisa", "owner"}, {"admin", "admin"}, {"sarah", "member"},
+			{"james", "member"}, {"viewer", "viewer"},
+		},
 	}
 
 	for _, sp := range demoProjects {
+		boardType := sp.boardType
+		if boardType == "" {
+			boardType = "kanban"
+		}
 		p := &models.Project{
 			Name: sp.name, Slug: sp.slug, KeyPrefix: sp.prefix,
-			Color: sp.color, Description: sp.desc,
+			Color: sp.color, Description: sp.desc, BoardType: boardType,
 			CreatedByID: users["admin"].ID,
 		}
 		must(db.Create(p).Error)
@@ -291,19 +333,25 @@ func main() {
 		user    string
 		project string
 	}{
-		// Admin has all three in the sidebar
+		// Admin has all projects in the sidebar
 		{"admin", "website-redesign"},
 		{"admin", "mobile-app-v2"},
 		{"admin", "devops-infra"},
-		// Sarah owns website-redesign, also follows mobile-app-v2
+		{"admin", "product-platform"},
+		{"admin", "marketing"},
+		// Sarah: website owner, follows mobile and product-platform
 		{"sarah", "website-redesign"},
 		{"sarah", "mobile-app-v2"},
-		// Marc owns mobile-app-v2, also follows devops-infra
+		{"sarah", "product-platform"},
+		// Marc: mobile owner, follows devops-infra
 		{"marc", "mobile-app-v2"},
 		{"marc", "devops-infra"},
-		// Lisa owns devops-infra, also follows website-redesign
+		// Lisa: devops owner, follows website-redesign and marketing
 		{"lisa", "devops-infra"},
 		{"lisa", "website-redesign"},
+		{"lisa", "marketing"},
+		// Priya: product-platform owner
+		{"priya", "product-platform"},
 	}
 
 	for _, r := range starredProjectRules {
@@ -313,31 +361,33 @@ func main() {
 			ProjectID: pd.project.ID,
 		}).Error)
 	}
-	// Tonk is a persistent user not in the users map — star all three projects
-	for _, slug := range []string{"website-redesign", "mobile-app-v2", "devops-infra"} {
+	// Tonk is a persistent user not in the users map — star all projects
+	for slug := range projects {
 		must(db.Create(&models.StarredProject{
 			UserID:    tonk.ID,
 			ProjectID: projects[slug].project.ID,
 		}).Error)
 	}
-	fmt.Printf("   Starred %d project–user pairs\n", len(starredProjectRules)+3)
+	fmt.Printf("   Starred %d project–user pairs\n", len(starredProjectRules)+len(projects))
 
 	// ── 3. Cards ──────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating cards…")
 
 	type cardSpec struct {
-		title    string
-		col      string
-		priority string
-		labels   []string
-		tags     []string
-		assignee string // user key or ""
+		title       string
+		col         string
+		priority    string
+		labels      []string
+		tags        []string
+		assignee    string // user key or ""
 		startInDays *int
 		dueInDays   *int
 		timeMin     int // time_spent_minutes
-		checklist []struct{ body string; done bool }
-		comments  []struct{ author string; body string }
-		subCards  []cardSpec
+		storyPoints int // 0 = not set
+		sprintName  string // sprint name to link this card to (scrum projects)
+		checklist   []struct{ body string; done bool }
+		comments    []struct{ author string; body string }
+		subCards    []cardSpec
 	}
 
 	webCards := []cardSpec{
@@ -588,10 +638,136 @@ func main() {
 		},
 	}
 
+	pltCards := []cardSpec{
+		// Sprint 1 — Foundation (completed): all in Done
+		{title: "Set up monorepo and CI/CD pipeline", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 240,
+			storyPoints: 3, sprintName: "Sprint 1 — Foundation",
+			startInDays: ptr(-28), dueInDays: ptr(-21)},
+		{title: "Design system and component library", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "sarah", timeMin: 480,
+			storyPoints: 5, sprintName: "Sprint 1 — Foundation",
+			startInDays: ptr(-27), dueInDays: ptr(-20)},
+		{title: "User registration and login flow", col: "Done", priority: "critical",
+			labels: []string{"Feature"}, assignee: "priya", timeMin: 360,
+			storyPoints: 5, sprintName: "Sprint 1 — Foundation",
+			startInDays: ptr(-26), dueInDays: ptr(-19),
+			comments: []struct{ author string; body string }{
+				{"sarah", "Let's go with JWT + refresh tokens from the start — much easier to scale later."},
+				{"priya", "Agreed. Done. Refresh token is stored httpOnly to prevent XSS."},
+			}},
+		{title: "Database schema v1 with migrations", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 180,
+			storyPoints: 3, sprintName: "Sprint 1 — Foundation",
+			startInDays: ptr(-25), dueInDays: ptr(-18)},
+		{title: "Deployment to staging (Docker + nginx)", col: "Done", priority: "medium",
+			labels: []string{"Feature"}, assignee: "james", timeMin: 120,
+			storyPoints: 2, sprintName: "Sprint 1 — Foundation",
+			startInDays: ptr(-24), dueInDays: ptr(-17)},
+
+		// Sprint 2 — Core Features (active): In Progress / In Review
+		{title: "User dashboard overview screen", col: "In Review", priority: "high",
+			labels: []string{"Feature"}, assignee: "sarah", timeMin: 300,
+			storyPoints: 5, sprintName: "Sprint 2 — Core Features",
+			startInDays: ptr(-13), dueInDays: ptr(1),
+			checklist: []struct{ body string; done bool }{
+				{"Design approved in Figma", true},
+				{"API endpoints wired up", true},
+				{"Responsive layout", true},
+				{"Unit tests written", false},
+			}},
+		{title: "Email notification service", col: "In Progress", priority: "medium",
+			labels: []string{"Feature"}, assignee: "james", timeMin: 120,
+			storyPoints: 3, sprintName: "Sprint 2 — Core Features",
+			startInDays: ptr(-10), dueInDays: ptr(3)},
+		{title: "Full-text search endpoint", col: "In Progress", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 180,
+			storyPoints: 5, sprintName: "Sprint 2 — Core Features",
+			startInDays: ptr(-9), dueInDays: ptr(4)},
+		{title: "Role-based access control (RBAC)", col: "In Review", priority: "high",
+			labels: []string{"Feature"}, assignee: "priya", timeMin: 240,
+			storyPoints: 3, sprintName: "Sprint 2 — Core Features",
+			startInDays: ptr(-12), dueInDays: ptr(2),
+			comments: []struct{ author string; body string }{
+				{"elena", "PR looks good overall — one concern about the middleware order. Discussed in PR comments."},
+				{"priya", "Fixed! Ready for re-review."},
+			}},
+		{title: "API rate limiting middleware", col: "In Progress", priority: "medium",
+			labels: []string{"Enhancement"}, assignee: "james", timeMin: 60,
+			storyPoints: 2, sprintName: "Sprint 2 — Core Features",
+			startInDays: ptr(-5), dueInDays: ptr(6)},
+
+		// Sprint 3 — Polish (planning): all in To Do
+		{title: "Stripe payment integration", col: "To Do", priority: "critical",
+			labels: []string{"Feature"}, storyPoints: 8, sprintName: "Sprint 3 — Polish & Launch",
+			dueInDays: ptr(21)},
+		{title: "Analytics event tracking", col: "To Do", priority: "high",
+			labels: []string{"Feature"}, storyPoints: 5, sprintName: "Sprint 3 — Polish & Launch"},
+		{title: "Performance audit and optimizations", col: "To Do", priority: "medium",
+			labels: []string{"Tech Debt"}, storyPoints: 3, sprintName: "Sprint 3 — Polish & Launch"},
+		{title: "Launch checklist and public docs", col: "To Do", priority: "medium",
+			labels: []string{"Feature"}, storyPoints: 2, sprintName: "Sprint 3 — Polish & Launch"},
+
+		// Backlog (no sprint)
+		{title: "Multi-language support (i18n)", col: "To Do", priority: "low",
+			labels: []string{"Enhancement"}, tags: []string{"i18n", "ux"}},
+		{title: "Mobile app wrapper (Capacitor)", col: "To Do", priority: "low",
+			labels: []string{"Feature"}, tags: []string{"mobile"}},
+		{title: "Fix sorting bug on dashboard table", col: "To Do", priority: "high",
+			labels: []string{"Bug"}},
+	}
+
+	mktCards := []cardSpec{
+		// Ideas
+		{title: "Summer product launch campaign", col: "Ideas", priority: "high",
+			labels: []string{"Campaign"}, tags: []string{"launch", "summer"}},
+		{title: "Customer testimonial video series", col: "Ideas", priority: "medium",
+			labels: []string{"Content"}},
+		// Planned
+		{title: "Q2 newsletter redesign", col: "Planned", priority: "high",
+			labels: []string{"Email"}, assignee: "lisa",
+			startInDays: ptr(3), dueInDays: ptr(14)},
+		{title: "Influencer partnership outreach", col: "Planned", priority: "medium",
+			labels: []string{"Campaign"}, assignee: "james",
+			startInDays: ptr(5), dueInDays: ptr(21)},
+		// In Progress
+		{title: "Blog: 10 productivity tips for remote teams", col: "In Progress", priority: "medium",
+			labels: []string{"Content"}, assignee: "sarah", timeMin: 90,
+			startInDays: ptr(-5), dueInDays: ptr(3),
+			comments: []struct{ author string; body string }{
+				{"lisa", "Can you work in a mention of our new features in tips 7 and 10?"},
+				{"sarah", "On it — draft ready for review tomorrow."},
+			}},
+		{title: "LinkedIn ad campaign — EMEA region", col: "In Progress", priority: "high",
+			labels: []string{"Campaign"}, assignee: "james", timeMin: 120,
+			startInDays: ptr(-7), dueInDays: ptr(2)},
+		{title: "Trade show booth materials", col: "In Progress", priority: "critical",
+			labels: []string{"Campaign"}, assignee: "lisa", timeMin: 180,
+			startInDays: ptr(-3), dueInDays: ptr(3),
+			checklist: []struct{ body string; done bool }{
+				{"Banner design approved", true},
+				{"Flyers printed", false},
+				{"Demo laptop prepared", false},
+				{"Shipping arranged", false},
+			}},
+		// Published
+		{title: "Q1 newsletter — Spring edition", col: "Published", priority: "medium",
+			labels: []string{"Email"}, assignee: "lisa", timeMin: 120,
+			startInDays: ptr(-20), dueInDays: ptr(-12)},
+		{title: "Product Hunt launch announcement", col: "Published", priority: "high",
+			labels: []string{"Campaign"}, assignee: "admin", timeMin: 60,
+			startInDays: ptr(-30), dueInDays: ptr(-25)},
+		{title: "Year in review blog post", col: "Published", priority: "low",
+			labels: []string{"Content"}, assignee: "sarah", timeMin: 150,
+			startInDays: ptr(-45), dueInDays: ptr(-38)},
+	}
+
 	projectCards := map[string][]cardSpec{
-		"website-redesign": webCards,
-		"mobile-app-v2":    mobCards,
-		"devops-infra":     infCards,
+		"website-redesign":  webCards,
+		"mobile-app-v2":     mobCards,
+		"devops-infra":      infCards,
+		"product-platform":  pltCards,
+		"marketing":         mktCards,
 	}
 
 	createdCards := map[string]*models.Card{} // key: "slug/title"
@@ -629,6 +805,11 @@ func main() {
 				dueDate = days(*spec.dueInDays)
 			}
 
+			var sp *int
+			if spec.storyPoints > 0 {
+				v := spec.storyPoints
+				sp = &v
+			}
 			card := &models.Card{
 				ColumnID:         col.ID,
 				ProjectID:        pd.project.ID,
@@ -641,6 +822,7 @@ func main() {
 				StartDate:        startDate,
 				DueDate:          dueDate,
 				TimeSpentMinutes: spec.timeMin,
+				StoryPoints:      sp,
 			}
 			must(db.Create(card).Error)
 			createdCards[slug+"/"+spec.title] = card
@@ -721,7 +903,95 @@ func main() {
 	}
 	fmt.Printf("   Created %d cards\n", totalCards)
 
-	// ── 3b. Card cross-references ─────────────────────────────────────────────
+	// ── 3b. Sprints (scrum projects) ─────────────────────────────────────────
+	fmt.Println("→ Creating sprints for scrum projects…")
+
+	type sprintSpec struct {
+		name      string
+		goal      string
+		status    string // "planning" | "active" | "completed"
+		startDays int
+		endDays   int
+		hasDate   bool
+	}
+
+	scrumSprints := map[string][]sprintSpec{
+		"product-platform": {
+			{
+				name: "Sprint 1 — Foundation", status: "completed",
+				goal:      "Establish the core codebase, CI/CD pipeline, and authentication layer.",
+				startDays: -28, endDays: -14, hasDate: true,
+			},
+			{
+				name: "Sprint 2 — Core Features", status: "active",
+				goal:      "Ship user dashboard, email notifications, search, and RBAC.",
+				startDays: -14, endDays: 7, hasDate: true,
+			},
+			{
+				name: "Sprint 3 — Polish & Launch", status: "planning",
+				goal:      "Payment integration, analytics, performance, and public launch.",
+				hasDate:   false,
+			},
+		},
+	}
+
+	// Build a lookup: project slug + card title → card ID
+	type sprintCardRef struct {
+		sprintName string
+		cardID     uint
+	}
+	sprintCardRefs := map[string][]sprintCardRef{} // key: project slug
+
+	for slug, specs := range projectCards {
+		for _, spec := range specs {
+			if spec.sprintName == "" {
+				continue
+			}
+			key := slug + "/" + spec.title
+			if c, ok := createdCards[key]; ok {
+				sprintCardRefs[slug] = append(sprintCardRefs[slug], sprintCardRef{
+					sprintName: spec.sprintName,
+					cardID:     c.ID,
+				})
+			}
+		}
+	}
+
+	totalSprints := 0
+	for slug, sprints := range scrumSprints {
+		pd := projects[slug]
+		for _, ss := range sprints {
+			sprint := &models.Sprint{
+				ProjectID: pd.project.ID,
+				Name:      ss.name,
+				Goal:      ss.goal,
+				Status:    ss.status,
+			}
+			if ss.hasDate {
+				start := time.Now().UTC().AddDate(0, 0, ss.startDays).Truncate(24 * time.Hour)
+				end := time.Now().UTC().AddDate(0, 0, ss.endDays).Truncate(24 * time.Hour)
+				sprint.StartDate = &start
+				sprint.EndDate = &end
+			}
+			must(db.Create(sprint).Error)
+
+			// Link cards to this sprint
+			for i, ref := range sprintCardRefs[slug] {
+				if ref.sprintName != ss.name {
+					continue
+				}
+				must(db.Create(&models.SprintCard{
+					SprintID: sprint.ID,
+					CardID:   ref.cardID,
+					Position: float64((i + 1) * 1000),
+				}).Error)
+			}
+			totalSprints++
+		}
+	}
+	fmt.Printf("   Created %d sprints\n", totalSprints)
+
+	// ── 3c. Card cross-references ─────────────────────────────────────────────
 	fmt.Println("→ Creating card cross-references…")
 
 	cardLinks := [][2]string{
@@ -1276,10 +1546,11 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Println("  │ demo.viewer         │ Victor Viewer       │ viewer │")
 	fmt.Println("  └─────────────────────┴─────────────────────┴────────┘")
 	fmt.Println()
-	fmt.Printf("  Projects      : %d\n", len(demoProjects))
+	fmt.Printf("  Projects      : %d (%d kanban, %d scrum)\n", len(demoProjects), len(demoProjects)-1, 1)
 	fmt.Printf("  Cards         : %d\n", totalCards)
 	fmt.Printf("  Topics        : %d\n", totalTopics)
 	fmt.Printf("  Conversations : %d (%d messages)\n", totalConvs, totalConvMsgs)
+	fmt.Printf("  Sprints       : %d (Product Platform — 1 completed, 1 active, 1 planning)\n", totalSprints)
 	fmt.Printf("  Customers     : %d (Acme Corporation, Globex Systems, Initech Ltd)\n", len(demoCustomers))
 	fmt.Println()
 	fmt.Println("  Starred projects")
@@ -1311,7 +1582,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 // demo users and projects), then the users themselves.
 func removeDemoData(db *gorm.DB) {
 	demoUsernames := []string{"demo.admin", "demo.sarah", "demo.marc", "demo.lisa", "demo.viewer", "demo.priya", "demo.james", "demo.elena", "demo.raj"}
-	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra"}
+	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra", "product-platform", "marketing"}
 	demoCustomerNames := []string{"Acme Corporation", "Globex Systems", "Initech Ltd"}
 
 	// Collect user IDs
@@ -1327,12 +1598,21 @@ func removeDemoData(db *gorm.DB) {
 		var cardIDs []uint
 		db.Model(&models.Card{}).Where("project_id IN ?", projectIDs).Pluck("id", &cardIDs)
 
+		// Sprints
+		var sprintIDs []uint
+		db.Model(&models.Sprint{}).Where("project_id IN ?", projectIDs).Pluck("id", &sprintIDs)
+		if len(sprintIDs) > 0 {
+			db.Where("sprint_id IN ?", sprintIDs).Delete(&models.SprintCard{})
+			db.Unscoped().Where("id IN ?", sprintIDs).Delete(&models.Sprint{})
+		}
+
 		if len(cardIDs) > 0 {
 			db.Where("card_id IN ?", cardIDs).Delete(&models.CardComment{})
 			db.Where("card_id IN ?", cardIDs).Delete(&models.CardChecklistItem{})
 			db.Where("card_id IN ?", cardIDs).Delete(&models.CardTag{})
 			db.Exec("DELETE FROM card_labels WHERE card_id IN ?", cardIDs)
 			db.Exec("DELETE FROM card_assignees WHERE card_id IN ?", cardIDs)
+			db.Exec("DELETE FROM sprint_cards WHERE card_id IN ?", cardIDs)
 			db.Where("source_card_id IN ? OR target_card_id IN ?", cardIDs, cardIDs).Delete(&models.CardReference{})
 		}
 

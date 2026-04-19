@@ -1,10 +1,10 @@
 <template>
-  <BaseModal :title="$t('board.edit_card')" @close="handleClose" :resizable="true" style="--modal-width: 700px">
+  <BaseModal :title="isNew ? $t('board.add_card') : $t('board.edit_card')" @close="handleClose" :resizable="true" style="--modal-width: 700px">
     <div class="card-detail">
-      <div v-if="cardRef" class="card-ref-badge">{{ cardRef }}</div>
+      <div v-if="cardRef && !isNew" class="card-ref-badge">{{ cardRef }}</div>
       <div class="form-group">
         <label class="form-label">{{ $t('board.card_title') }}</label>
-        <input v-if="!locked" class="form-input" v-model="form.title" spellcheck="true" :lang="auth.user?.locale || 'en'" />
+        <input v-if="!locked" class="form-input" v-model="form.title" spellcheck="true" :lang="auth.user?.locale || 'en'" :autofocus="isNew" />
         <div v-else class="description-text">{{ form.title }}</div>
       </div>
 
@@ -89,7 +89,7 @@
         </select>
       </div>
 
-      <div class="form-group">
+      <div v-if="!isNew" class="form-group">
         <label class="form-label">{{ $t('board.assignees') }}</label>
         <div class="labels-picker">
           <span
@@ -102,7 +102,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div v-if="!isNew" class="form-group">
         <label class="form-label">{{ $t('board.labels') }}</label>
         <div class="labels-picker">
           <span
@@ -116,7 +116,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div v-if="!isNew" class="form-group">
         <label class="form-label">{{ $t('board.tags') }}</label>
         <div class="tags-editor">
           <div class="tags-list" v-if="card.tags?.length">
@@ -140,7 +140,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div v-if="!isNew" class="form-group">
         <label class="form-label">{{ $t('board.watchers') }}</label>
         <div class="labels-picker">
           <span
@@ -153,7 +153,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div v-if="!isNew" class="form-group">
         <label class="form-label">Attachments</label>
         <AttachmentList :attachments="attachments" :can-delete="true" @remove="deleteAttachment" />
         <div
@@ -172,7 +172,7 @@
       </div>
 
       <!-- Checklist -->
-      <div class="checklist-section">
+      <div v-if="!isNew" class="checklist-section">
         <div class="checklist-header">
           <h4>{{ $t('checklist.title') }}</h4>
           <span v-if="checklist.length" class="checklist-progress">
@@ -210,7 +210,7 @@
       </div>
 
       <!-- Sub-cards section (hidden from board; shown only here) -->
-      <div v-if="!card.parent_card_id" class="subcards-section">
+      <div v-if="!isNew && !card.parent_card_id" class="subcards-section">
         <div class="subcards-header">
           <h4>{{ $t('subcard.sub_cards') }}</h4>
           <span v-if="subCards.length" class="subcards-progress">
@@ -244,12 +244,12 @@
       </div>
 
       <!-- Parent card indicator -->
-      <div v-if="card.parent_card_id" class="parent-card-badge">
+      <div v-if="!isNew && card.parent_card_id" class="parent-card-badge">
         ↑ {{ $t('subcard.child_of') }} #{{ card.parent_card_id }}
       </div>
 
       <!-- Linked cards (cross-references) -->
-      <div class="linked-cards-section">
+      <div v-if="!isNew" class="linked-cards-section">
         <div class="linked-cards-header">
           <h4>{{ $t('card_ref.linked_cards') }}</h4>
           <span v-if="linkedCards.length" class="linked-cards-count">{{ linkedCards.length }}</span>
@@ -278,7 +278,7 @@
         </div>
       </div>
 
-      <div class="comments-section">
+      <div v-if="!isNew" class="comments-section">
         <h4>{{ $t('board.comments') }}</h4>
         <div class="comment-list">
           <div v-for="comment in card.comments" :key="comment.id" class="comment" :class="{ 'comment-reply': comment.body.trimStart().startsWith('>') }">
@@ -320,7 +320,7 @@
         </div>
       </div>
 
-      <div v-if="gitLinks.length" class="git-links-section">
+      <div v-if="!isNew && gitLinks.length" class="git-links-section">
         <h4>Git Links</h4>
         <div class="git-links-list">
           <div
@@ -349,7 +349,7 @@
       </div>
 
       <!-- Transfer card section -->
-      <div v-if="showTransferPanel" class="transfer-section">
+      <div v-if="!isNew && showTransferPanel" class="transfer-section">
         <h4>{{ $t('board.transfer_card') }}</h4>
         <div class="detail-row">
           <div class="form-group half">
@@ -374,7 +374,7 @@
         </div>
       </div>
 
-      <div v-if="history.length" class="history-section">
+      <div v-if="!isNew && history.length" class="history-section">
         <h4>{{ $t('board.column_history') }}</h4>
         <div class="history-list">
           <div v-for="h in history" :key="h.id" class="history-entry">
@@ -396,6 +396,10 @@
         <button class="btn btn-primary btn-sm" @click="save">{{ $t('common.save') }}</button>
         <button class="btn btn-danger btn-sm" @click="$emit('close')">{{ $t('board.discard') }}</button>
         <button class="btn btn-ghost btn-sm" @click="showCancelConfirm = false">{{ $t('common.cancel') }}</button>
+      </template>
+      <template v-else-if="isNew">
+        <button class="btn btn-secondary" @click="$emit('close')">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-primary" @click="save" :disabled="saving || !form.title.trim()">{{ saving ? $t('common.loading') : $t('common.create') }}</button>
       </template>
       <template v-else>
         <button class="btn btn-danger btn-sm" @click="confirmDelete">{{ $t('board.delete_card') }}</button>
@@ -471,6 +475,7 @@ const cardRef = computed(() => {
   const prefix = projectStore.currentProject?.key_prefix
   return prefix && props.card.card_number ? `${prefix}-${props.card.card_number}` : null
 })
+const isNew = computed(() => !props.card.id)
 const auth = useAuthStore()
 const { formatDateTime, formatDate, dateOnlyFormat } = useDateFormat()
 
@@ -776,6 +781,7 @@ async function openLink(url) {
 
 onMounted(async () => {
   document.addEventListener('keydown', onKeyDown)
+  if (isNew.value) return
   try {
     const [histRes, checkRes, linksRes] = await Promise.all([
       projectsApi.getCardHistory(props.projectSlug, props.card.id),
@@ -937,13 +943,18 @@ async function save() {
       time_spent_minutes: form.value.time_spent_minutes,
       story_points: form.value.story_points
     }
-    await boardStore.updateCardData(props.card.id, payload)
-    locked.value = true
-    if (newComment.value.trim()) await submitComment()
-    ui.success('Saved')
-    emit('close')
+    if (isNew.value) {
+      await boardStore.createCard(props.card.column_id, payload)
+      emit('close')
+    } else {
+      await boardStore.updateCardData(props.card.id, payload)
+      locked.value = true
+      if (newComment.value.trim()) await submitComment()
+      ui.success('Saved')
+      emit('close')
+    }
   } catch (e) {
-    ui.error('Failed to save')
+    ui.error(isNew.value ? 'Failed to create card' : 'Failed to save')
   } finally {
     saving.value = false
   }

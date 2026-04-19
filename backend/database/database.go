@@ -380,5 +380,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.CustomerFavorite{},
 		&models.CustomerAccess{},
 		&models.CardReference{},
+		&models.Sprint{},
+		&models.SprintCard{},
 	)
 }

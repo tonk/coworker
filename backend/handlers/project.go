@@ -143,6 +143,7 @@ func CreateProject(c *gin.Context) {
 		Description string `json:"description"`
 		Color       string `json:"color"`
 		KeyPrefix   string `json:"key_prefix"`
+		BoardType   string `json:"board_type"`
 		CustomerID  *uint  `json:"customer_id"`
 		ContractID  *uint  `json:"contract_id"`
 	}
@@ -167,12 +168,18 @@ func CreateProject(c *gin.Context) {
 		keyPrefix = services.GenerateKeyPrefix(req.Name)
 	}
 
+	boardType := req.BoardType
+	if boardType != "kanban" && boardType != "scrum" {
+		boardType = "kanban"
+	}
+
 	project := models.Project{
 		Name:        req.Name,
 		Description: req.Description,
 		Color:       req.Color,
 		Slug:        services.GenerateSlug(req.Name),
 		KeyPrefix:   keyPrefix,
+		BoardType:   boardType,
 		CreatedByID: userID,
 		CustomerID:  req.CustomerID,
 		ContractID:  req.ContractID,
@@ -310,6 +317,7 @@ func UpdateProject(c *gin.Context) {
 		Description string `json:"description"`
 		Color       string `json:"color"`
 		IsArchived  *bool  `json:"is_archived"`
+		BoardType   string `json:"board_type"`
 		CustomerID  *uint  `json:"customer_id"`
 		ContractID  *uint  `json:"contract_id"`
 	}
@@ -331,6 +339,7 @@ func UpdateProject(c *gin.Context) {
 	if req.IsArchived != nil {
 		updates["is_archived"] = *req.IsArchived
 	}
+	// board_type is immutable after project creation
 	// Always write customer_id and contract_id (nil clears the association)
 	updates["customer_id"] = req.CustomerID
 	updates["contract_id"] = req.ContractID
