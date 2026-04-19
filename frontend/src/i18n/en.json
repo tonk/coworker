@@ -318,6 +318,8 @@
     "backup_start_time": "Start time",
     "backup_download": "Download",
     "backup_schedule_save": "Save schedule",
+    "backup_email_enabled": "Send email notification after backup",
+    "backup_email_address": "Notification email address",
     "role_backup": "Backup"
   },
   "report": {

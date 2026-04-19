@@ -328,3 +328,8 @@ Create an application that has all these features and requirements
 - Fix desktop app .desktop file incomplete: add custom Tauri desktop template (warmdesk.desktop) with GenericName, Comment, Keywords, StartupNotify; wire shortDescription and category in tauri.conf.json so Categories and Comment are populated in the installed .desktop entry
 - Fix desktopTemplate placement in tauri.conf.json: must be under bundle.linux.deb and bundle.linux.rpm individually in Tauri 2, not bundle.linux directly
 - Fix desktop app category: "Office" is not in Tauri's accepted list; changed to "Productivity" (maps to Office; XDG category in the .desktop file)
+- Send an email notification after every backup (manual or scheduled): toggle and recipient address in Admin → Backup / Restore; email contains date/time, success/failure status, and a list of all available backups with sizes and dates
+- Add backup metrics to Prometheus endpoint: warmdesk_backup_last_run_timestamp_seconds, warmdesk_backup_last_success (1/0/−1), warmdesk_backup_files_total
+- Send all outbound emails as HTML with a shared branded template: blue header with company name and logo, content area, footer with WarmDesk icon, version, and instance URL; plain-text fallback included for all emails
+- Add dark-mode email support: prefers-color-scheme media queries keep the password-reset button and key elements readable in Apple Mail, iOS Mail, Samsung Mail, and Outlook for Mac in dark mode; border fallback for clients that strip background colours
+- Fix email footer showing vv0.7.7 (double v): strip leading v from version tag before rendering

@@ -17,6 +17,7 @@ import (
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/middleware"
+	"github.com/tonk/warmdesk/services"
 )
 
 var backupCfg *config.Config
@@ -35,22 +36,43 @@ func InitBackup(cfg *config.Config) {
 func AdminBackupDatabase(c *gin.Context) {
 	ts := time.Now().Format("20060102_1504")
 	filename := "warmdesk_db_" + ts
+	now := time.Now().UTC()
 
 	if err := os.MkdirAll(backupsDir, 0755); err != nil {
+		recordBackupResult(false, now)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create backups directory: " + err.Error()})
 		return
 	}
 
+	var finalFilename string
+	var backupErr error
 	switch backupCfg.DBDriver {
 	case "sqlite", "sqlite3", "":
-		adminBackupSQLite(c, filename)
+		finalFilename, backupErr = doBackupSQLite(filename)
 	case "postgres", "postgresql":
-		adminBackupPostgres(c, filename)
+		finalFilename, backupErr = doBackupPostgres(filename)
 	case "mysql":
-		adminBackupMySQL(c, filename)
+		finalFilename, backupErr = doBackupMySQL(filename)
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported database driver: " + backupCfg.DBDriver})
+		return
 	}
+
+	if backupErr != nil {
+		recordBackupResult(false, now)
+		sendBackupEmail(false, "", backupErr.Error(), now)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": backupErr.Error()})
+		return
+	}
+
+	recordBackupResult(true, now)
+	sendBackupEmail(true, finalFilename, "", now)
+	log.Printf("backup: created %s (user=%d, ip=%s)", finalFilename, middleware.GetUserID(c), c.ClientIP())
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "backup created",
+		"filename": finalFilename,
+		"path":     filepath.Join(backupsDir, finalFilename),
+	})
 }
 
 type BackupInfo struct {
@@ -172,68 +194,216 @@ func AdminDeleteBackup(c *gin.Context) {
 
 // ---- backup helpers ----
 
-func adminBackupSQLite(c *gin.Context, filename string) {
+func doBackupSQLite(filename string) (string, error) {
 	backupPath := filepath.Join(backupsDir, filename+".db")
-
 	// VACUUM INTO creates a clean, compacted copy atomically (SQLite ≥ 3.27).
 	sql := fmt.Sprintf("VACUUM INTO '%s'", strings.ReplaceAll(backupPath, "'", "''"))
 	if err := database.DB.Exec(sql).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "backup failed: " + err.Error()})
-		return
+		return "", fmt.Errorf("backup failed: %w", err)
 	}
-
-	log.Printf("backup: created %s (sqlite, user=%d, ip=%s)", filename+".db", middleware.GetUserID(c), c.ClientIP())
-	c.JSON(http.StatusOK, gin.H{
-		"message":  "backup created",
-		"filename": filename + ".db",
-		"path":     backupPath,
-	})
+	return filename + ".db", nil
 }
 
-func adminBackupPostgres(c *gin.Context, filename string) {
+func doBackupPostgres(filename string) (string, error) {
 	if _, err := exec.LookPath("pg_dump"); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "pg_dump not found in PATH"})
-		return
+		return "", fmt.Errorf("pg_dump not found in PATH")
 	}
-
 	backupPath := filepath.Join(backupsDir, filename+".sql")
 	// --clean --if-exists adds DROP statements so the dump is self-contained for restore.
 	cmd := exec.Command("pg_dump", "--clean", "--if-exists", "-f", backupPath, backupCfg.DBDSN) //nolint:gosec
 	if out, err := cmd.CombinedOutput(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "pg_dump failed: " + string(out)})
-		return
+		return "", fmt.Errorf("pg_dump failed: %s", out)
 	}
-
-	log.Printf("backup: created %s (postgres, user=%d, ip=%s)", filename+".sql", middleware.GetUserID(c), c.ClientIP())
-	c.JSON(http.StatusOK, gin.H{
-		"message":  "backup created",
-		"filename": filename + ".sql",
-		"path":     backupPath,
-	})
+	return filename + ".sql", nil
 }
 
-func adminBackupMySQL(c *gin.Context, filename string) {
+func doBackupMySQL(filename string) (string, error) {
 	if _, err := exec.LookPath("mysqldump"); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "mysqldump not found in PATH"})
-		return
+		return "", fmt.Errorf("mysqldump not found in PATH")
 	}
-
 	args := mysqlDumpArgs(backupCfg.DBDSN)
 	backupPath := filepath.Join(backupsDir, filename+".sql")
 	args = append([]string{"--result-file=" + backupPath}, args...)
-
 	cmd := exec.Command("mysqldump", args...) //nolint:gosec
 	if out, err := cmd.CombinedOutput(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "mysqldump failed: " + string(out)})
+		return "", fmt.Errorf("mysqldump failed: %s", out)
+	}
+	return filename + ".sql", nil
+}
+
+// recordBackupResult saves last-run timestamp and success flag to system settings.
+func recordBackupResult(success bool, t time.Time) {
+	saveSetting(settingBackupLastRun, t.Format(time.RFC3339))
+	if success {
+		saveSetting(settingBackupLastSuccess, "true")
+	} else {
+		saveSetting(settingBackupLastSuccess, "false")
+	}
+}
+
+// sendBackupEmail sends a backup notification email if the feature is enabled.
+// On success pass the created filename; on failure pass the error message via errMsg.
+func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
+	all := loadAllSettings()
+	if all[settingBackupEmailEnabled] != "true" {
+		return
+	}
+	to := all[settingBackupEmailAddress]
+	if to == "" {
+		return
+	}
+	emailSvc := services.GetEmailService()
+	if emailSvc == nil {
 		return
 	}
 
-	log.Printf("backup: created %s (mysql, user=%d, ip=%s)", filename+".sql", middleware.GetUserID(c), c.ClientIP())
-	c.JSON(http.StatusOK, gin.H{
-		"message":  "backup created",
-		"filename": filename + ".sql",
-		"path":     backupPath,
-	})
+	// Collect available backup files (newest first).
+	var backupFiles []BackupInfo
+	if entries, err := os.ReadDir(backupsDir); err == nil {
+		for _, e := range entries {
+			if e.IsDir() || !strings.HasPrefix(e.Name(), "warmdesk_db_") {
+				continue
+			}
+			info, _ := e.Info()
+			bi := BackupInfo{Filename: e.Name()}
+			if info != nil {
+				bi.Size = info.Size()
+				bi.ModifiedAt = info.ModTime().UTC().Format(time.RFC3339)
+			}
+			backupFiles = append(backupFiles, bi)
+		}
+		sort.Slice(backupFiles, func(i, j int) bool {
+			return backupFiles[i].Filename > backupFiles[j].Filename
+		})
+	}
+
+	_, companyName, _, _ := services.GetAppInfo()
+	if companyName == "" {
+		companyName = "WarmDesk"
+	}
+
+	subject := companyName + " — WarmDesk backup succeeded"
+	if !success {
+		subject = companyName + " — WarmDesk backup failed"
+	}
+
+	htmlBody := buildBackupEmailHTML(success, filename, errMsg, t, backupFiles)
+	textBody := buildBackupEmailText(success, filename, errMsg, t, companyName, backupFiles)
+
+	go emailSvc.SendHTML(to, subject, htmlBody, textBody)
+}
+
+func buildBackupEmailText(success bool, filename, errMsg string, t time.Time, companyName string, files []BackupInfo) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "%s — WarmDesk Backup Notification\n", companyName)
+	b.WriteString("========================================\n\n")
+	if success {
+		b.WriteString("Status:    SUCCESS\n")
+		fmt.Fprintf(&b, "Date/time: %s\n", t.Format("2006-01-02 15:04:05 UTC"))
+		fmt.Fprintf(&b, "File:      %s\n", filename)
+	} else {
+		b.WriteString("Status:    FAILED\n")
+		fmt.Fprintf(&b, "Date/time: %s\n", t.Format("2006-01-02 15:04:05 UTC"))
+		fmt.Fprintf(&b, "Error:     %s\n", errMsg)
+	}
+	b.WriteString("\nAvailable backups:\n")
+	if len(files) == 0 {
+		b.WriteString("  (none)\n")
+	} else {
+		for _, f := range files {
+			fmt.Fprintf(&b, "  %s  (%s)\n", f.Filename, formatEmailBytes(f.Size))
+		}
+	}
+	b.WriteString("\n-- Sent by WarmDesk\n")
+	return b.String()
+}
+
+func buildBackupEmailHTML(success bool, filename, errMsg string, t time.Time, files []BackupInfo) string {
+	statusColor := "#22863a"
+	statusBg := "#dcffe4"
+	statusText := "Backup Succeeded"
+	statusIcon := "&#10003;"
+	if !success {
+		statusColor = "#cb2431"
+		statusBg = "#ffdce0"
+		statusText = "Backup Failed"
+		statusIcon = "&#10007;"
+	}
+
+	var detailRows string
+	if success {
+		detailRows = fmt.Sprintf(
+			`<tr><td style="padding:6px 12px 6px 0;color:#666;white-space:nowrap;font-size:14px">Date / time</td>`+
+				`<td style="padding:6px 0;font-size:14px">%s</td></tr>`+
+				`<tr><td style="padding:6px 12px 6px 0;color:#666;white-space:nowrap;font-size:14px">File</td>`+
+				`<td style="padding:6px 0;font-size:14px;font-family:monospace">%s</td></tr>`,
+			t.Format("2006-01-02 15:04:05 UTC"), filename)
+	} else {
+		detailRows = fmt.Sprintf(
+			`<tr><td style="padding:6px 12px 6px 0;color:#666;white-space:nowrap;font-size:14px">Date / time</td>`+
+				`<td style="padding:6px 0;font-size:14px">%s</td></tr>`+
+				`<tr><td style="padding:6px 12px 6px 0;color:#666;white-space:nowrap;font-size:14px">Error</td>`+
+				`<td style="padding:6px 0;font-size:14px;color:#cb2431">%s</td></tr>`,
+			t.Format("2006-01-02 15:04:05 UTC"), errMsg)
+	}
+
+	var backupRows string
+	if len(files) == 0 {
+		backupRows = `<tr><td colspan="3" style="padding:8px;color:#888;font-size:13px">No backups on disk.</td></tr>`
+	} else {
+		for i, f := range files {
+			rowBg := "#ffffff"
+			if i%2 == 1 {
+				rowBg = "#f8f8f8"
+			}
+			backupRows += fmt.Sprintf(
+				`<tr style="background:%s">`+
+					`<td style="padding:6px 8px;font-family:monospace;font-size:12px">%s</td>`+
+					`<td style="padding:6px 8px;font-size:12px;color:#888;text-align:right">%s</td>`+
+					`<td style="padding:6px 8px;font-size:12px;color:#888">%s</td></tr>`,
+				rowBg, f.Filename, formatEmailBytes(f.Size), f.ModifiedAt,
+			)
+		}
+	}
+
+	bodyHTML := fmt.Sprintf(
+		// Status banner
+		`<tr><td style="background:%s;padding:14px 32px;text-align:center;border-bottom:1px solid rgba(0,0,0,.06)">`+
+			`<span style="color:%s;font-size:17px;font-weight:bold">%s &nbsp;%s</span>`+
+			`</td></tr>`+
+			// Detail table
+			`<tr><td style="padding:24px 32px 16px">`+
+			`<table cellpadding="0" cellspacing="0" width="100%%">%s</table>`+
+			`</td></tr>`+
+			// Backup list
+			`<tr><td style="padding:8px 32px 28px">`+
+			`<div style="font-size:14px;font-weight:bold;color:#333;margin-bottom:10px">Available backups</div>`+
+			`<table width="100%%" cellpadding="0" cellspacing="0" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden">`+
+			`<thead><tr style="background:#f5f5f5">`+
+			`<th style="padding:7px 8px;text-align:left;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0">Filename</th>`+
+			`<th style="padding:7px 8px;text-align:right;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0">Size</th>`+
+			`<th style="padding:7px 8px;text-align:left;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0">Date</th>`+
+			`</tr></thead><tbody>%s</tbody></table>`+
+			`</td></tr>`,
+		statusBg, statusColor, statusIcon, statusText,
+		detailRows,
+		backupRows,
+	)
+
+	return services.WrapHTML("Backup Notification", bodyHTML)
+}
+
+func formatEmailBytes(b int64) string {
+	switch {
+	case b >= 1<<30:
+		return fmt.Sprintf("%.1f GB", float64(b)/(1<<30))
+	case b >= 1<<20:
+		return fmt.Sprintf("%.1f MB", float64(b)/(1<<20))
+	case b >= 1<<10:
+		return fmt.Sprintf("%.1f KB", float64(b)/(1<<10))
+	default:
+		return fmt.Sprintf("%d B", b)
+	}
 }
 
 // ---- restore helpers ----
@@ -429,54 +599,38 @@ func performScheduledBackup() {
 	}
 	ts := time.Now().Format("20060102_1504")
 	filename := "warmdesk_db_" + ts
+	now := time.Now().UTC()
 
 	if err := os.MkdirAll(backupsDir, 0755); err != nil {
 		log.Printf("backup scheduler: cannot create backups dir: %v", err)
+		recordBackupResult(false, now)
+		sendBackupEmail(false, "", err.Error(), now)
 		return
 	}
 
 	var finalFilename string
-
+	var backupErr error
 	switch backupCfg.DBDriver {
 	case "sqlite", "sqlite3", "":
-		backupPath := filepath.Join(backupsDir, filename+".db")
-		sql := fmt.Sprintf("VACUUM INTO '%s'", strings.ReplaceAll(backupPath, "'", "''"))
-		if err := database.DB.Exec(sql).Error; err != nil {
-			log.Printf("backup scheduler: sqlite backup failed: %v", err)
-			return
-		}
-		finalFilename = filename + ".db"
+		finalFilename, backupErr = doBackupSQLite(filename)
 	case "postgres", "postgresql":
-		if _, err := exec.LookPath("pg_dump"); err != nil {
-			log.Printf("backup scheduler: pg_dump not found in PATH")
-			return
-		}
-		backupPath := filepath.Join(backupsDir, filename+".sql")
-		cmd := exec.Command("pg_dump", "--clean", "--if-exists", "-f", backupPath, backupCfg.DBDSN) //nolint:gosec
-		if out, err := cmd.CombinedOutput(); err != nil {
-			log.Printf("backup scheduler: pg_dump failed: %s", out)
-			return
-		}
-		finalFilename = filename + ".sql"
+		finalFilename, backupErr = doBackupPostgres(filename)
 	case "mysql":
-		if _, err := exec.LookPath("mysqldump"); err != nil {
-			log.Printf("backup scheduler: mysqldump not found in PATH")
-			return
-		}
-		backupPath := filepath.Join(backupsDir, filename+".sql")
-		args := append([]string{"--result-file=" + backupPath}, mysqlDumpArgs(backupCfg.DBDSN)...)
-		cmd := exec.Command("mysqldump", args...) //nolint:gosec
-		if out, err := cmd.CombinedOutput(); err != nil {
-			log.Printf("backup scheduler: mysqldump failed: %s", out)
-			return
-		}
-		finalFilename = filename + ".sql"
+		finalFilename, backupErr = doBackupMySQL(filename)
 	default:
 		log.Printf("backup scheduler: unsupported driver %s", backupCfg.DBDriver)
 		return
 	}
 
-	saveSetting(settingBackupLastRun, time.Now().UTC().Format(time.RFC3339))
+	if backupErr != nil {
+		log.Printf("backup scheduler: backup failed: %v", backupErr)
+		recordBackupResult(false, now)
+		sendBackupEmail(false, "", backupErr.Error(), now)
+		return
+	}
+
+	recordBackupResult(true, now)
+	sendBackupEmail(true, finalFilename, "", now)
 	log.Printf("backup scheduler: created %s", finalFilename)
 	pruneOldBackups()
 }

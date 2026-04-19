@@ -318,6 +318,8 @@
     "backup_start_time": "Hora de início",
     "backup_download": "Baixar",
     "backup_schedule_save": "Guardar agendamento",
+    "backup_email_enabled": "Enviar notificação por e-mail após cópia de segurança",
+    "backup_email_address": "Endereço de e-mail para notificações",
     "role_backup": "Cópia de segurança"
   },
   "report": {

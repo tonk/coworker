@@ -318,6 +318,8 @@
     "backup_start_time": "Starttidspunkt",
     "backup_download": "Download",
     "backup_schedule_save": "Gem tidsplan",
+    "backup_email_enabled": "Send e-mailbesked efter sikkerhedskopi",
+    "backup_email_address": "E-mailadresse til beskeder",
     "role_backup": "Sikkerhedskopi"
   },
   "report": {

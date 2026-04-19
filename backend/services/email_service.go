@@ -77,6 +77,41 @@ func (s *EmailService) Send(to, subject, body string) error {
 	return smtp.SendMail(addr, auth, from, []string{to}, []byte(msg))
 }
 
+// SendHTML sends a multipart/alternative email with both a plain-text fallback
+// and an HTML body. Clients that support HTML will render the HTML version.
+func (s *EmailService) SendHTML(to, subject, htmlBody, textBody string) error {
+	cfg := s.cfg()
+	if cfg.Host == "" {
+		return nil
+	}
+	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	from := cfg.From
+	if from == "" {
+		from = "warmdesk@localhost"
+	}
+
+	boundary := "==WarmDesk_boundary_42=="
+	var b strings.Builder
+	fmt.Fprintf(&b, "From: %s\r\n", from)
+	fmt.Fprintf(&b, "To: %s\r\n", to)
+	fmt.Fprintf(&b, "Subject: %s\r\n", subject)
+	fmt.Fprintf(&b, "MIME-Version: 1.0\r\n")
+	fmt.Fprintf(&b, "Content-Type: multipart/alternative; boundary=%q\r\n", boundary)
+	fmt.Fprintf(&b, "\r\n")
+	fmt.Fprintf(&b, "--%s\r\n", boundary)
+	fmt.Fprintf(&b, "Content-Type: text/plain; charset=UTF-8\r\n\r\n%s\r\n", textBody)
+	fmt.Fprintf(&b, "--%s\r\n", boundary)
+	fmt.Fprintf(&b, "Content-Type: text/html; charset=UTF-8\r\n\r\n%s\r\n", htmlBody)
+	fmt.Fprintf(&b, "--%s--\r\n", boundary)
+
+	var auth smtp.Auth
+	if cfg.Username != "" {
+		auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
+	}
+
+	return smtp.SendMail(addr, auth, from, []string{to}, []byte(b.String()))
+}
+
 // NotificationService sends in-app and email notifications.
 type NotificationService struct {
 	email *EmailService
@@ -140,8 +175,18 @@ func (ns *NotificationService) NotifyMentions(body string, senderID uint, contex
 		if !u.EmailNotifications {
 			continue
 		}
-		go ns.email.Send(u.Email, "You were mentioned in "+context,
-			fmt.Sprintf("You were mentioned by %s:\n\n%s", senderName, body))
+		subject := "You were mentioned in " + context
+		plainBody := fmt.Sprintf("You were mentioned by %s:\n\n%s", senderName, body)
+		htmlContent := fmt.Sprintf(
+			`<tr><td style="padding:28px 32px;font-size:15px;color:#333;line-height:1.6">`+
+				`<p style="margin:0 0 12px"><strong>%s</strong> mentioned you in <em>%s</em>:</p>`+
+				`<blockquote style="margin:0;padding:12px 16px;background:#f8f8f8;border-left:4px solid #1a5fb4;border-radius:4px;font-size:14px;color:#555">%s</blockquote>`+
+				`</td></tr>`,
+			senderName, context, plainBody,
+		)
+		go ns.email.SendHTML(u.Email, subject,
+			WrapHTML("Mention Notification", htmlContent),
+			WrapText("Mention Notification", plainBody))
 	}
 }
 
@@ -157,8 +202,17 @@ func (ns *NotificationService) NotifyCardAssignment(card models.Card, assignee m
 		return
 	}
 	subject := fmt.Sprintf("Card assigned: %s", card.Title)
-	body := fmt.Sprintf("%s assigned you to the card \"%s\".", assigner.DisplayName, card.Title)
-	go ns.email.Send(assignee.Email, subject, body)
+	plainBody := fmt.Sprintf("%s assigned you to the card \"%s\".", assigner.DisplayName, card.Title)
+	htmlContent := fmt.Sprintf(
+		`<tr><td style="padding:28px 32px;font-size:15px;color:#333;line-height:1.6">`+
+			`<p style="margin:0 0 8px"><strong>%s</strong> assigned you to a card:</p>`+
+			`<div style="padding:12px 16px;background:#f8f8f8;border-left:4px solid #1a5fb4;border-radius:4px;font-size:14px;font-weight:bold;color:#333">%s</div>`+
+			`</td></tr>`,
+		assigner.DisplayName, card.Title,
+	)
+	go ns.email.SendHTML(assignee.Email, subject,
+		WrapHTML("Card Assignment", htmlContent),
+		WrapText("Card Assignment", plainBody))
 }
 
 // NotifyNewDM sends email notifications to DM conversation members who are offline.
@@ -187,8 +241,17 @@ func (ns *NotificationService) NotifyNewDM(msg models.ConversationMessage, sende
 			preview = preview[:100] + "..."
 		}
 		preview = strings.TrimSpace(preview)
-		go ns.email.Send(u.Email,
-			fmt.Sprintf("New message from %s", sender.DisplayName),
-			fmt.Sprintf("%s sent you a message:\n\n%s", sender.DisplayName, preview))
+		subject := fmt.Sprintf("New message from %s", sender.DisplayName)
+		plainBody := fmt.Sprintf("%s sent you a message:\n\n%s", sender.DisplayName, preview)
+		htmlContent := fmt.Sprintf(
+			`<tr><td style="padding:28px 32px;font-size:15px;color:#333;line-height:1.6">`+
+				`<p style="margin:0 0 12px"><strong>%s</strong> sent you a message:</p>`+
+				`<blockquote style="margin:0;padding:12px 16px;background:#f8f8f8;border-left:4px solid #1a5fb4;border-radius:4px;font-size:14px;color:#555">%s</blockquote>`+
+				`</td></tr>`,
+			sender.DisplayName, preview,
+		)
+		go ns.email.SendHTML(u.Email, subject,
+			WrapHTML("New Message", htmlContent),
+			WrapText("New Message", plainBody))
 	}
 }

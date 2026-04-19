@@ -318,6 +318,8 @@
     "backup_start_time": "Begintijd",
     "backup_download": "Downloaden",
     "backup_schedule_save": "Schema opslaan",
+    "backup_email_enabled": "E-mailmelding sturen na back-up",
+    "backup_email_address": "E-mailadres voor meldingen",
     "role_backup": "Back-up"
   },
   "update": {

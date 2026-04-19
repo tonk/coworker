@@ -318,6 +318,8 @@
     "backup_start_time": "Startzeit",
     "backup_download": "Herunterladen",
     "backup_schedule_save": "Zeitplan speichern",
+    "backup_email_enabled": "E-Mail-Benachrichtigung nach Sicherung senden",
+    "backup_email_address": "Benachrichtigungs-E-Mail-Adresse",
     "role_backup": "Sicherung"
   },
   "update": {

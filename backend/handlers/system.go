@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/smtp"
 	"strconv"
 	"strings"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/models"
+	"github.com/tonk/warmdesk/services"
 )
 
 const (
@@ -42,6 +42,9 @@ const (
 	settingBackupStartTime        = "backup_start_time"
 	settingBackupLastRun          = "backup_last_run"
 	settingBackupKeep             = "backup_keep"
+	settingBackupEmailEnabled     = "backup_email_enabled"
+	settingBackupEmailAddress     = "backup_email_address"
+	settingBackupLastSuccess      = "backup_last_success"
 )
 
 // configuredBaseURL stores the value of base_url from the config file so
@@ -93,6 +96,9 @@ var systemSettingDefaults = map[string]string{
 	settingBackupStartTime:        "",
 	settingBackupLastRun:          "",
 	settingBackupKeep:             "10",
+	settingBackupEmailEnabled:     "false",
+	settingBackupEmailAddress:     "",
+	settingBackupLastSuccess:      "",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -116,6 +122,21 @@ func InitSystemDefaults(cfg *config.Config) {
 	if cfg.SMTP.Password != "" {
 		systemSettingDefaults[settingSMTPPassword] = cfg.SMTP.Password
 	}
+}
+
+// GetEmailBranding returns version, company name, company logo URL, and instance URL
+// for use in outbound emails. Registered as the appInfoReader in services at startup.
+func GetEmailBranding() (version, companyName, logoURL, instanceURL string) {
+	all := loadAllSettings()
+	name := all[settingCompanyName]
+	if name == "" {
+		name = "WarmDesk"
+	}
+	logo := ""
+	if all[settingCompanyLogo] != "" && configuredBaseURL != "" {
+		logo = strings.TrimRight(configuredBaseURL, "/") + all[settingCompanyLogo]
+	}
+	return serverVersion, name, logo, configuredBaseURL
 }
 
 // GetSMTPSettings returns the current SMTP configuration from the database.
@@ -200,6 +221,8 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		BackupSchedule         *string `json:"backup_schedule"`
 		BackupStartTime        *string `json:"backup_start_time"`
 		BackupKeep             *int    `json:"backup_keep"`
+		BackupEmailEnabled     *bool   `json:"backup_email_enabled"`
+		BackupEmailAddress     *string `json:"backup_email_address"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -314,6 +337,10 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		}
 		saveSetting(settingBackupKeep, fmt.Sprintf("%d", keep))
 	}
+	boolSetting(req.BackupEmailEnabled, settingBackupEmailEnabled)
+	if req.BackupEmailAddress != nil {
+		saveSetting(settingBackupEmailAddress, *req.BackupEmailAddress)
+	}
 
 	AdminGetSystemSettings(c)
 }
@@ -334,20 +361,22 @@ func AdminSendTestEmail(c *gin.Context) {
 		return
 	}
 
-	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
-	from := cfg.From
-	if from == "" {
-		from = "warmdesk@localhost"
+	emailSvc := services.GetEmailService()
+	if emailSvc == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "email service not initialised"})
+		return
 	}
-	body := "This is a test email from WarmDesk. Your SMTP configuration is working correctly."
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: WarmDesk SMTP test\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n%s",
-		from, req.To, body)
 
-	var auth smtp.Auth
-	if cfg.Username != "" {
-		auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
-	}
-	if err := smtp.SendMail(addr, auth, from, []string{req.To}, []byte(msg)); err != nil {
+	plainBody := "This is a test email from WarmDesk. Your SMTP configuration is working correctly."
+	htmlContent := `<tr><td style="padding:28px 32px;font-size:15px;color:#333;line-height:1.6;text-align:center">` +
+		`<p style="margin:0 0 16px;font-size:18px">&#10003; &nbsp;SMTP is configured correctly</p>` +
+		`<p style="margin:0;color:#666;font-size:14px">This is a test email from WarmDesk.<br>If you received this, your mail settings are working.</p>` +
+		`</td></tr>`
+
+	if err := emailSvc.SendHTML(req.To, "WarmDesk SMTP test",
+		services.WrapHTML("SMTP Test", htmlContent),
+		services.WrapText("SMTP Test", plainBody),
+	); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -395,6 +395,19 @@
               &nbsp;·&nbsp;
               {{ $t('admin.backup_next_run') }}: {{ backupNextRunDisplay }}
             </p>
+            <!-- Email notification -->
+            <div class="form-row" style="align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:12px">
+              <div class="form-group" style="flex:0 0 auto;padding-bottom:4px">
+                <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" v-model="systemSettings.backup_email_enabled" />
+                  {{ $t('admin.backup_email_enabled') }}
+                </label>
+              </div>
+              <div class="form-group" style="flex:1;min-width:220px" v-if="systemSettings.backup_email_enabled">
+                <label class="form-label">{{ $t('admin.backup_email_address') }}</label>
+                <input class="form-input" type="email" v-model="systemSettings.backup_email_address" :placeholder="$t('admin.backup_email_address')" />
+              </div>
+            </div>
           </div>
           <hr style="margin:0 0 20px" />
           <!-- Manual backup -->
@@ -771,6 +784,8 @@ const systemSettings = ref({
   backup_start_time: '',
   backup_keep: 10,
   backup_last_run: '',
+  backup_email_enabled: false,
+  backup_email_address: '',
 })
 // True when the server has a password saved (so we show a placeholder instead of the value)
 const smtpPasswordSet = ref(false)
@@ -861,6 +876,8 @@ async function loadSettings() {
     systemSettings.value.backup_start_time         = data.backup_start_time || ''
     systemSettings.value.backup_keep               = parseInt(data.backup_keep) || 10
     systemSettings.value.backup_last_run           = data.backup_last_run || ''
+    systemSettings.value.backup_email_enabled      = data.backup_email_enabled === 'true'
+    systemSettings.value.backup_email_address      = data.backup_email_address || ''
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to load settings')
   } finally {
@@ -927,6 +944,8 @@ async function saveBackupSchedule() {
       backup_schedule: systemSettings.value.backup_schedule,
       backup_start_time: systemSettings.value.backup_start_time,
       backup_keep: systemSettings.value.backup_keep,
+      backup_email_enabled: systemSettings.value.backup_email_enabled,
+      backup_email_address: systemSettings.value.backup_email_address,
     })
     ui.success('Backup schedule saved')
   } catch {

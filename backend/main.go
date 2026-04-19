@@ -76,6 +76,8 @@ func main() {
 	emailSvc := services.NewEmailService(cfg.SMTP)
 	// Allow the email service to read live SMTP settings from the DB after startup
 	services.SetSMTPConfigReader(handlers.GetSMTPSettings)
+	// Allow the email template system to read live branding/version/URL info
+	services.SetAppInfoReader(handlers.GetEmailBranding)
 	services.SetEmailService(emailSvc)
 	notifSvc := services.NewNotificationService(emailSvc)
 	handlers.InitNotifications(notifSvc)

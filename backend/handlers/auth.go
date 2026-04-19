@@ -562,16 +562,29 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 
 		resetURL := fmt.Sprintf("%s/reset-password?token=%s", baseURL(c), token)
 		subject := "Reset your WarmDesk password"
-		body := fmt.Sprintf(
+		plainBody := fmt.Sprintf(
 			"Hi %s,\n\nClick the link below to reset your WarmDesk password.\n"+
 				"The link is valid for one hour.\n\n%s\n\n"+
 				"If you did not request a password reset, ignore this email.",
 			user.DisplayName, resetURL,
 		)
+		htmlContent := fmt.Sprintf(
+			`<tr><td style="padding:28px 32px;font-size:15px;color:#333;line-height:1.6">`+
+				`<p style="margin:0 0 8px">Hi <strong>%s</strong>,</p>`+
+				`<p style="margin:0 0 20px;color:#555">Click the button below to reset your WarmDesk password. The link is valid for one hour.</p>`+
+				`<p style="margin:0 0 20px;text-align:center">`+
+				`<a href="%s" class="wd-btn" style="display:inline-block;padding:12px 28px;background:#1a5fb4;color:#ffffff;text-decoration:none;border-radius:6px;font-size:15px;font-weight:bold;border:2px solid #1a5fb4">Reset password</a>`+
+				`</p>`+
+				`<p style="margin:0;font-size:13px;color:#999">If you did not request a password reset, you can safely ignore this email.</p>`+
+				`</td></tr>`,
+			user.DisplayName, resetURL,
+		)
 
 		emailSvc := services.GetEmailService()
 		if emailSvc != nil {
-			_ = emailSvc.Send(user.Email, subject, body)
+			_ = emailSvc.SendHTML(user.Email, subject,
+				services.WrapHTML("Password Reset", htmlContent),
+				services.WrapText("Password Reset", plainBody))
 		}
 	}()
 

@@ -94,3 +94,16 @@
 - Allow external repo servers (Gitea, Forgejo, Github, Gitlab) to follow
   projects, so that the comments (with the Gitea issue tag) are also
   linked in the issue
+
+- ~~With the backup/restore function, add an option to send an email after
+  the backup is done. This has to have, of course, a tick-box to switch
+  this functionality on and off and a box to add the e-mail address
+  where the mails should be send.
+  This mail should contain:
+    - Date / time
+    - Backup successful or not
+    - List of all available backups~~ **Done**
+- ~~Also add to the backup, API metrics for:
+    - Date / time of last backup
+    - Backup successful or not
+    - List of all available backups~~ **Done**

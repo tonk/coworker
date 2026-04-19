@@ -318,6 +318,8 @@
     "backup_start_time": "Starttid",
     "backup_download": "Ladda ner",
     "backup_schedule_save": "Spara schema",
+    "backup_email_enabled": "Skicka e-postmeddelande efter säkerhetskopiering",
+    "backup_email_address": "E-postadress för aviseringar",
     "role_backup": "Backup"
   },
   "report": {

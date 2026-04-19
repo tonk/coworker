@@ -2,6 +2,17 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.8 — 2026-04-19
+
+### Added
+- **Backup email notifications** — Admin → Backup / Restore tab now has a toggle to send an email after every backup (manual or scheduled); configure a recipient address; the email includes date/time, success or failure status, and a list of all available backups with file sizes and dates
+- **Backup Prometheus metrics** — three new gauges on `GET /api/v1/metrics`: `warmdesk_backup_last_run_timestamp_seconds` (Unix timestamp of the last backup attempt), `warmdesk_backup_last_success` (1 = success, 0 = failure, −1 = never run), and `warmdesk_backup_files_total` (count of backup files currently on disk)
+- **HTML emails** — all outbound emails (backup notifications, @mention alerts, card assignments, direct message notifications, password reset, SMTP test) are now sent as `multipart/alternative` with a plain-text fallback and a styled HTML version; the HTML email uses a shared template with a blue header showing the company name and logo, a footer with the WarmDesk icon, version number, and instance URL
+- **Dark-mode email support** — HTML emails include `prefers-color-scheme: dark` media-query overrides so the password-reset button and other elements remain readable in Apple Mail, iOS Mail, Samsung Mail, and Outlook for Mac when the user has dark mode enabled; a visible border is added to the button as a fallback for clients that strip background colours entirely
+
+### Fixed
+- **Email footer double `v`** — version tag (e.g. `v0.7.7`) was displayed as `vv0.7.7`; leading `v` is now stripped before rendering
+
 ## v0.7.7 — 2026-04-17
 
 ### Fixed

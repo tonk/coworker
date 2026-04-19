@@ -3,7 +3,9 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/database"
@@ -52,6 +54,43 @@ func GetMetrics(c *gin.Context) {
 				p.Slug, col.Name, closed)
 		}
 	}
+
+	// warmdesk_backup_* metrics
+	all := loadAllSettings()
+
+	var lastRunTS float64
+	if lr := all[settingBackupLastRun]; lr != "" {
+		if t, err := time.Parse(time.RFC3339, lr); err == nil {
+			lastRunTS = float64(t.Unix())
+		}
+	}
+	lastSuccess := -1.0 // -1 = never run
+	if s := all[settingBackupLastSuccess]; s == "true" {
+		lastSuccess = 1
+	} else if s == "false" {
+		lastSuccess = 0
+	}
+
+	var backupFileCount int
+	if entries, err := os.ReadDir(backupsDir); err == nil {
+		for _, e := range entries {
+			if !e.IsDir() && strings.HasPrefix(e.Name(), "warmdesk_db_") {
+				backupFileCount++
+			}
+		}
+	}
+
+	fmt.Fprintf(&buf, "\n# HELP warmdesk_backup_last_run_timestamp_seconds Unix timestamp of the last backup attempt (0 if never)\n")
+	fmt.Fprintf(&buf, "# TYPE warmdesk_backup_last_run_timestamp_seconds gauge\n")
+	fmt.Fprintf(&buf, "warmdesk_backup_last_run_timestamp_seconds %g\n", lastRunTS)
+
+	fmt.Fprintf(&buf, "\n# HELP warmdesk_backup_last_success Last backup result: 1=success 0=failed -1=never run\n")
+	fmt.Fprintf(&buf, "# TYPE warmdesk_backup_last_success gauge\n")
+	fmt.Fprintf(&buf, "warmdesk_backup_last_success %g\n", lastSuccess)
+
+	fmt.Fprintf(&buf, "\n# HELP warmdesk_backup_files_total Number of backup files currently stored\n")
+	fmt.Fprintf(&buf, "# TYPE warmdesk_backup_files_total gauge\n")
+	fmt.Fprintf(&buf, "warmdesk_backup_files_total %d\n", backupFileCount)
 
 	c.Header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
 	c.String(http.StatusOK, buf.String())

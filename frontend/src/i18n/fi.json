@@ -318,6 +318,8 @@
     "backup_start_time": "Aloitusaika",
     "backup_download": "Lataa",
     "backup_schedule_save": "Tallenna aikataulu",
+    "backup_email_enabled": "Lähetä sähköposti-ilmoitus varmuuskopion jälkeen",
+    "backup_email_address": "Ilmoitusten sähköpostiosoite",
     "role_backup": "Varmuuskopio"
   },
   "report": {

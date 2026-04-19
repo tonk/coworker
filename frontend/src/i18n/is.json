@@ -318,6 +318,8 @@
     "backup_start_time": "Upphafsttími",
     "backup_download": "Hlaða niður",
     "backup_schedule_save": "Vista áætlun",
+    "backup_email_enabled": "Senda tölvupóstsskeyti eftir afrit",
+    "backup_email_address": "Netfang fyrir tilkynningar",
     "role_backup": "Afrit"
   },
   "report": {
