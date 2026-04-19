@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -132,11 +136,67 @@ func GetEmailBranding() (version, companyName, logoURL, instanceURL string) {
 	if name == "" {
 		name = "WarmDesk"
 	}
-	logo := ""
-	if all[settingCompanyLogo] != "" && configuredBaseURL != "" {
-		logo = strings.TrimRight(configuredBaseURL, "/") + all[settingCompanyLogo]
-	}
+	logo := logoAsDataURI(all[settingCompanyLogo])
 	return serverVersion, name, logo, configuredBaseURL
+}
+
+// logoAsDataURI fetches the company logo and returns it as a base64 data URI so
+// it is embedded directly in outbound emails (no external URL required).
+// Uploaded files are read from disk; external URLs are fetched via HTTP.
+func logoAsDataURI(raw string) string {
+	if raw == "" {
+		return ""
+	}
+	var data []byte
+	var mime string
+	if strings.HasPrefix(raw, "/uploads/") {
+		uploadDir := "./uploads"
+		if attachmentCfg != nil && attachmentCfg.UploadDir != "" {
+			uploadDir = attachmentCfg.UploadDir
+		}
+		storedName := strings.TrimPrefix(raw, "/uploads/")
+		var err error
+		data, err = os.ReadFile(filepath.Join(uploadDir, storedName))
+		if err != nil {
+			return ""
+		}
+		mime = mimeFromExt(filepath.Ext(storedName))
+	} else if strings.HasPrefix(raw, "http://") || strings.HasPrefix(raw, "https://") {
+		resp, err := http.Get(raw) //nolint:gosec
+		if err != nil || resp.StatusCode != http.StatusOK {
+			return raw // fall back to URL so the img src still has something
+		}
+		defer resp.Body.Close()
+		data, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return raw
+		}
+		mime = resp.Header.Get("Content-Type")
+		if i := strings.Index(mime, ";"); i != -1 {
+			mime = strings.TrimSpace(mime[:i])
+		}
+		if mime == "" {
+			mime = "image/png"
+		}
+	} else {
+		return ""
+	}
+	return "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(data)
+}
+
+func mimeFromExt(ext string) string {
+	switch strings.ToLower(ext) {
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".gif":
+		return "image/gif"
+	case ".svg":
+		return "image/svg+xml"
+	case ".webp":
+		return "image/webp"
+	default:
+		return "image/png"
+	}
 }
 
 // GetSMTPSettings returns the current SMTP configuration from the database.

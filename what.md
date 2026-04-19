@@ -335,3 +335,4 @@ Create an application that has all these features and requirements
 - Fix email footer showing vv0.7.7 (double v): strip leading v from version tag before rendering
 - Fix Gin "trusted all proxies" warning: call SetTrustedProxies(nil) at startup so proxy headers are not trusted by default
 - Config file auto-discovery accepts both .yaml and .yml extensions (warmdesk.yaml tried first, falls back to warmdesk.yml)
+- Embed company logo as base64 data URI in outbound emails: uploaded logos read from disk, external URLs fetched at send time; works without base_url and survives email clients that block remote images

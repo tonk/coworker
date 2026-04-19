@@ -2,6 +2,11 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.10 — 2026-04-19
+
+### Fixed
+- **Company logo embedded in emails** — the company logo is now inlined as a base64 data URI in all outbound emails (same technique as the WarmDesk footer icon); uploaded logos are read from disk, external URL logos are fetched at send time; no longer requires `base_url` to be configured and no longer broken by email clients that block remote images
+
 ## v0.7.9 — 2026-04-19
 
 ### Fixed
