@@ -107,3 +107,12 @@
     - Date / time of last backup
     - Backup successful or not
     - List of all available backups~~ **Done**
+
+- In the "Edit Sprint" card the date fields should follow the configured
+  the users date format setting.
+
+- The Admin panel -> Projects also shows all deleted projects and an
+  option to restore them. Would it be possible to remove them
+  completely, so add an extra option.
+  I can imagine that this will create problems, so investigate first
+  if problems could arise.
