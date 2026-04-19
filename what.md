@@ -336,3 +336,4 @@ Create an application that has all these features and requirements
 - Fix Gin "trusted all proxies" warning: call SetTrustedProxies(nil) at startup so proxy headers are not trusted by default
 - Config file auto-discovery accepts both .yaml and .yml extensions (warmdesk.yaml tried first, falls back to warmdesk.yml)
 - Embed company logo as base64 data URI in outbound emails: uploaded logos read from disk, external URLs fetched at send time; works without base_url and survives email clients that block remote images
+- Fix company logo not shown in emails when stored as a data URI: pass data: values through directly instead of discarding them

@@ -2,6 +2,11 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.11 — 2026-04-19
+
+### Fixed
+- **Company logo stored as data URI not shown in emails** — when the logo in Admin → Settings is pasted or saved as a `data:…` URI (rather than an uploaded file or external URL), it was silently discarded by the email branding logic; it is now passed through directly
+
 ## v0.7.10 — 2026-04-19
 
 ### Fixed

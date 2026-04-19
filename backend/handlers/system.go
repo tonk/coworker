@@ -147,6 +147,9 @@ func logoAsDataURI(raw string) string {
 	if raw == "" {
 		return ""
 	}
+	if strings.HasPrefix(raw, "data:") {
+		return raw
+	}
 	var data []byte
 	var mime string
 	if strings.HasPrefix(raw, "/uploads/") {
