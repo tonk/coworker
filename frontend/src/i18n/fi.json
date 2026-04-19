@@ -204,7 +204,8 @@
     "select_column": "Valitse sarake",
     "open_cards": "avointa korttia",
     "unsaved_changes": "Sinulla on tallentamattomia muutoksia.",
-    "discard": "Hylkää"
+    "discard": "Hylkää",
+    "story_points": "Tarinapisteet"
   },
   "chat": {
     "title": "Tiimichatti",
@@ -320,7 +321,9 @@
     "backup_schedule_save": "Tallenna aikataulu",
     "backup_email_enabled": "Lähetä sähköposti-ilmoitus varmuuskopion jälkeen",
     "backup_email_address": "Ilmoitusten sähköpostiosoite",
-    "role_backup": "Varmuuskopio"
+    "role_backup": "Varmuuskopio",
+    "scrum_storypoints_enabled": "Scrum-tarinapisteet",
+    "scrum_storypoints_hint": "Kun käytössä, jokaiselle kortille ilmestyy tarinapisteet-kenttä Scrum-arviointia varten."
   },
   "report": {
     "title": "Aikaraportti",

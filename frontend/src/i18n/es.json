@@ -204,7 +204,8 @@
     "select_column": "Seleccionar columna",
     "open_cards": "tarjetas abiertas",
     "unsaved_changes": "Tienes cambios sin guardar.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "story_points": "Puntos de historia"
   },
   "chat": {
     "title": "Chat del equipo",
@@ -320,7 +321,9 @@
     "backup_schedule_save": "Guardar programación",
     "backup_email_enabled": "Enviar notificación por correo tras la copia de seguridad",
     "backup_email_address": "Dirección de correo para notificaciones",
-    "role_backup": "Copia de seguridad"
+    "role_backup": "Copia de seguridad",
+    "scrum_storypoints_enabled": "Puntos de historia Scrum",
+    "scrum_storypoints_hint": "Cuando está activado, aparece un campo de puntos de historia en cada tarjeta para la estimación Scrum."
   },
   "update": {
     "available": "Hay una nueva versión de WarmDesk disponible: v{version}.",

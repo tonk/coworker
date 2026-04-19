@@ -204,7 +204,8 @@
     "select_column": "Seleziona colonna",
     "open_cards": "schede aperte",
     "unsaved_changes": "Hai modifiche non salvate.",
-    "discard": "Scarta"
+    "discard": "Scarta",
+    "story_points": "Punti storia"
   },
   "chat": {
     "title": "Chat del team",
@@ -320,7 +321,9 @@
     "backup_schedule_save": "Salva pianificazione",
     "backup_email_enabled": "Invia notifica email dopo il backup",
     "backup_email_address": "Indirizzo email per le notifiche",
-    "role_backup": "Backup"
+    "role_backup": "Backup",
+    "scrum_storypoints_enabled": "Punti storia Scrum",
+    "scrum_storypoints_hint": "Quando abilitato, un campo Punti storia appare su ogni scheda per la stima Scrum."
   },
   "report": {
     "title": "Report ore",

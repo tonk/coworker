@@ -40,6 +40,9 @@
     <div class="card-tags" v-if="card.tags?.length">
       <span v-for="tag in card.tags" :key="tag.id" class="card-tag">#{{ tag.name }}</span>
     </div>
+    <div v-if="systemStore.scrumStorypointsEnabled && card.story_points != null" class="card-sp-badge" :title="$t('board.story_points')">
+      {{ card.story_points }} SP
+    </div>
     <div class="card-footer" v-if="card.due_date || card.sub_card_count > 0">
       <span v-if="card.due_date" class="card-due" :class="{ overdue: isOverdue }">
         📅 {{ formatDate(card.due_date.slice(0, 10)) }}
@@ -56,12 +59,14 @@ import { computed } from 'vue'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
 import { useProjectStore } from '@/stores/project'
+import { useSystemStore } from '@/stores/system'
 
 const props = defineProps({ card: { type: Object, required: true } })
 defineEmits(['open'])
 
 const { formatDate } = useDateFormat()
 const projectStore = useProjectStore()
+const systemStore = useSystemStore()
 
 // Show multi-assignees if present, fall back to primary assignee_id field
 const allAssignees = computed(() => {
@@ -148,6 +153,16 @@ const isOverdue = computed(() => {
   margin-bottom: 4px;
 }
 .card-priority { margin-bottom: 6px; }
+.card-sp-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: 1px 7px;
+  margin-bottom: 6px;
+}
 .card-title {
   font-size: 13px;
   font-weight: 500;

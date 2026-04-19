@@ -2,6 +2,12 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.7.12 — 2026-04-19
+
+### Added
+- **Scrum Story Points** — new admin toggle (**Admin → Settings → Scrum Story Points**); when enabled, a Story Points number field appears on every card detail panel and a coloured SP badge is shown on the card tile on the board; the setting takes effect immediately for all open sessions without a page reload
+- **Customer filter on the project dashboard** — when projects span multiple customers, a customer selector appears in the dashboard header; choose a specific customer to show only their projects, or **All Customers** to see everything; drag-to-reorder is suppressed while a filter is active
+
 ## v0.7.11 — 2026-04-19
 
 ### Fixed

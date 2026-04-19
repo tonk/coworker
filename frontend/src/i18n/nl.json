@@ -204,7 +204,8 @@
     "select_column": "Selecteer kolom",
     "open_cards": "openstaande kaarten",
     "unsaved_changes": "U heeft onopgeslagen wijzigingen.",
-    "discard": "Verwijderen"
+    "discard": "Verwijderen",
+    "story_points": "Storypoints"
   },
   "chat": {
     "title": "Teamchat",
@@ -320,7 +321,9 @@
     "backup_schedule_save": "Schema opslaan",
     "backup_email_enabled": "E-mailmelding sturen na back-up",
     "backup_email_address": "E-mailadres voor meldingen",
-    "role_backup": "Back-up"
+    "role_backup": "Back-up",
+    "scrum_storypoints_enabled": "Scrum storypoints",
+    "scrum_storypoints_hint": "Als ingeschakeld, verschijnt een storypoints-veld op elke kaart voor Scrum-schatting."
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

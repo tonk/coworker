@@ -529,6 +529,17 @@ Content
 When off, the Register link disappears from the login page. Users can only be
 created by administrators via the admin panel.
 
+### Scrum Story Points
+
+**Admin → Settings → Scrum Story Points**
+
+When enabled, a **Story Points** number field appears on every card detail panel
+and a compact **SP badge** is shown on the card tile on the board. Users can
+enter any whole number; leaving the field empty means no estimate has been given.
+
+This setting takes effect immediately for all open sessions without a page
+reload.
+
 ### Global defaults (overridden per user)
 
 Admins set global defaults for:

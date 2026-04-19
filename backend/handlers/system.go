@@ -49,6 +49,7 @@ const (
 	settingBackupEmailEnabled     = "backup_email_enabled"
 	settingBackupEmailAddress     = "backup_email_address"
 	settingBackupLastSuccess      = "backup_last_success"
+	settingScrumStorypointsEnabled = "scrum_storypoints_enabled"
 )
 
 // configuredBaseURL stores the value of base_url from the config file so
@@ -100,9 +101,10 @@ var systemSettingDefaults = map[string]string{
 	settingBackupStartTime:        "",
 	settingBackupLastRun:          "",
 	settingBackupKeep:             "10",
-	settingBackupEmailEnabled:     "false",
-	settingBackupEmailAddress:     "",
-	settingBackupLastSuccess:      "",
+	settingBackupEmailEnabled:      "false",
+	settingBackupEmailAddress:      "",
+	settingBackupLastSuccess:       "",
+	settingScrumStorypointsEnabled: "false",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -239,8 +241,9 @@ func GetSystemSettings(c *gin.Context) {
 		"session_timeout_minutes":     timeoutMinutes,
 		"company_name":                all[settingCompanyName],
 		"company_logo":                all[settingCompanyLogo],
-		"mfa_required":                all[settingMFARequired] == "true",
-		"password_policy":             GetPasswordPolicy(),
+		"mfa_required":                 all[settingMFARequired] == "true",
+		"password_policy":              GetPasswordPolicy(),
+		"scrum_storypoints_enabled":    all[settingScrumStorypointsEnabled] == "true",
 	})
 }
 
@@ -284,8 +287,9 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		BackupSchedule         *string `json:"backup_schedule"`
 		BackupStartTime        *string `json:"backup_start_time"`
 		BackupKeep             *int    `json:"backup_keep"`
-		BackupEmailEnabled     *bool   `json:"backup_email_enabled"`
-		BackupEmailAddress     *string `json:"backup_email_address"`
+		BackupEmailEnabled          *bool   `json:"backup_email_enabled"`
+		BackupEmailAddress          *string `json:"backup_email_address"`
+		ScrumStorypointsEnabled     *bool   `json:"scrum_storypoints_enabled"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -404,6 +408,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	if req.BackupEmailAddress != nil {
 		saveSetting(settingBackupEmailAddress, *req.BackupEmailAddress)
 	}
+	boolSetting(req.ScrumStorypointsEnabled, settingScrumStorypointsEnabled)
 
 	AdminGetSystemSettings(c)
 }

@@ -3,7 +3,13 @@
       <div class="dashboard-container">
         <div class="dashboard-header">
           <h1>{{ $t('project.projects') }}</h1>
-          <button class="btn btn-primary" @click="showCreate = true">+ {{ $t('project.new_project') }}</button>
+          <div class="dashboard-header-controls">
+            <select v-if="customerOptions.length > 1" class="form-input customer-filter" v-model="selectedCustomer">
+              <option value="">{{ $t('customer.all_customers') }}</option>
+              <option v-for="c in customerOptions" :key="c.value" :value="c.value">{{ c.label }}</option>
+            </select>
+            <button class="btn btn-primary" @click="showCreate = true">+ {{ $t('project.new_project') }}</button>
+          </div>
         </div>
 
         <div v-if="projectStore.loading" class="loading-state">
@@ -16,13 +22,13 @@
 
         <div v-else class="projects-grid" ref="gridEl">
           <div
-            v-for="project in projectStore.projects"
+            v-for="project in filteredProjects"
             :key="project.id"
             class="project-card"
             :data-id="project.id"
             @click="router.push(`/projects/${project.slug}`)"
           >
-            <div v-if="isAdmin" class="drag-handle" title="Drag to reorder" @click.stop>⠿</div>
+            <div v-if="isAdmin && !selectedCustomer" class="drag-handle" title="Drag to reorder" @click.stop>⠿</div>
             <div class="project-color-bar" :style="{ background: project.color || '#6366f1' }"></div>
             <div class="project-card-body">
               <h3>{{ project.name }}</h3>
@@ -101,6 +107,25 @@ const gridEl = ref(null)
 let sortable = null
 
 const isAdmin = computed(() => auth.user?.global_role === 'admin')
+const selectedCustomer = ref('')
+
+const customerOptions = computed(() => {
+  const seen = new Map()
+  for (const p of projectStore.projects) {
+    if (p.customer && !seen.has(p.customer.id)) {
+      seen.set(p.customer.id, p.customer.name)
+    }
+  }
+  return Array.from(seen.entries())
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([id, name]) => ({ value: String(id), label: name }))
+})
+
+const filteredProjects = computed(() => {
+  if (!selectedCustomer.value) return projectStore.projects
+  return projectStore.projects.filter(p => String(p.customer?.id) === selectedCustomer.value)
+})
+
 const creating = ref(false)
 const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '' })
 const prefixTouched = ref(false)
@@ -170,6 +195,8 @@ async function handleCreate() {
 .dashboard-container { max-width: 1200px; margin: 0 auto; }
 .dashboard-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .dashboard-header h1 { font-size: 22px; font-weight: 700; }
+.dashboard-header-controls { display: flex; align-items: center; gap: 10px; }
+.customer-filter { width: auto; min-width: 160px; padding: 6px 10px; font-size: 13px; }
 
 .projects-grid {
   display: grid;

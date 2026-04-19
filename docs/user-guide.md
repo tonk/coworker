@@ -99,6 +99,14 @@ preference) themes. Change the theme in User Settings at any time.
 
 ## 3. Projects
 
+### Filtering projects by customer
+
+When your projects belong to multiple customers, a **customer selector** appears
+in the top-right of the dashboard (next to **+ New Project**). Choose a customer
+to show only their projects; choose **All Customers** to go back to the full
+list. The selector is hidden when all visible projects belong to a single
+customer.
+
 ### Creating a project
 
 Click **+ New Project** on the dashboard. Fill in:
@@ -217,6 +225,7 @@ Click a card to open its detail panel. The panel is resizable. Fields:
 | **Start date** | Optional start date; used by the Gantt chart |
 | **Due date** | Displayed in your configured date format. Type a date directly or click the calendar icon (📅) to open the native date picker. Clear the field to remove the due date. |
 | **Time Spent** | Hours and minutes; contributes to time reports |
+| **Story Points** | Scrum estimation value (whole number); only visible when an administrator has enabled **Scrum Story Points** in Admin → Settings |
 | **Assignees** | Multiple assignees — click a name to toggle |
 | **Labels** | Click a label chip to toggle; labels are project-specific |
 | **Tags** | Free-form hashtags; type and press Enter or comma |

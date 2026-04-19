@@ -40,6 +40,7 @@ type Card struct {
 	CreatedBy   User           `json:"created_by"`
 	CardNumber        int            `gorm:"default:0" json:"card_number"`
 	TimeSpentMinutes  int            `gorm:"default:0" json:"time_spent_minutes"`
+	StoryPoints       *int           `json:"story_points"`
 	Closed            bool           `gorm:"default:false" json:"closed"`
 	ParentCardID      *uint          `gorm:"index" json:"parent_card_id,omitempty"`
 	SubCardCount      int            `gorm:"-" json:"sub_card_count"`

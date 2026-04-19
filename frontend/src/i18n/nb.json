@@ -204,7 +204,8 @@
     "select_column": "Velg kolonne",
     "open_cards": "åpne kort",
     "unsaved_changes": "Du har ulagrede endringer.",
-    "discard": "Forkast"
+    "discard": "Forkast",
+    "story_points": "Story points"
   },
   "chat": {
     "title": "Teamchat",
@@ -320,7 +321,9 @@
     "backup_schedule_save": "Lagre tidsplan",
     "backup_email_enabled": "Send e-postvarsel etter sikkerhetskopiering",
     "backup_email_address": "E-postadresse for varsler",
-    "role_backup": "Sikkerhetskopi"
+    "role_backup": "Sikkerhetskopi",
+    "scrum_storypoints_enabled": "Scrum story points",
+    "scrum_storypoints_hint": "Når aktivert vises et story points-felt på hvert kort for Scrum-estimering."
   },
   "report": {
     "title": "Tidsrapport",

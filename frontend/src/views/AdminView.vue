@@ -149,6 +149,14 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
+              <label class="toggle-row">
+                <span>{{ $t('admin.scrum_storypoints_enabled') }}</span>
+                <input type="checkbox" v-model="systemSettings.scrum_storypoints_enabled" @change="saveGeneralSettings" />
+              </label>
+              <p class="form-hint">{{ $t('admin.scrum_storypoints_hint') }}</p>
+            </div>
+
+            <div class="form-group" style="max-width:400px">
               <label class="form-label">{{ $t('admin.session_timeout') }}</label>
               <div class="form-row" style="align-items:center;gap:8px;max-width:240px">
                 <input class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:100px" />
@@ -681,11 +689,13 @@ import { customersApi } from '@/api/customers'
 import { attachmentsApi } from '@/api/attachments'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import { useUIStore } from '@/stores/ui'
+import { useSystemStore } from '@/stores/system'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useDateFormat } from '@/composables/useDateFormat'
 
 const ui = useUIStore()
 const sidebarStore = useSidebarStore()
+const systemStore = useSystemStore()
 const { formatDateTime } = useDateFormat()
 const tab = ref('users')
 
@@ -759,6 +769,7 @@ function toggleCustomerAdmin(id, event) {
 const systemSettings = ref({
   registration_enabled: true,
   mfa_required: false,
+  scrum_storypoints_enabled: false,
   session_timeout_minutes: 60,
   default_date_time_format: 'YYYY-MM-DD HH:mm',
   default_timezone: 'UTC',
@@ -847,8 +858,9 @@ async function loadSettings() {
   settingsLoading = true
   try {
     const { data } = await adminApi.getSystemSettings()
-    systemSettings.value.registration_enabled    = data.registration_enabled !== 'false'
-    systemSettings.value.mfa_required             = data.mfa_required === 'true' || data.mfa_required === true
+    systemSettings.value.registration_enabled        = data.registration_enabled !== 'false'
+    systemSettings.value.mfa_required                = data.mfa_required === 'true' || data.mfa_required === true
+    systemSettings.value.scrum_storypoints_enabled   = data.scrum_storypoints_enabled === 'true' || data.scrum_storypoints_enabled === true
     systemSettings.value.session_timeout_minutes  = parseInt(data.session_timeout_minutes) || 0
     systemSettings.value.default_date_time_format = data.default_date_time_format || 'YYYY-MM-DD HH:mm'
     systemSettings.value.default_timezone         = data.default_timezone || 'UTC'
@@ -1037,18 +1049,20 @@ async function savePasswordPolicy() {
 async function saveGeneralSettings() {
   try {
     const payload = {
-      registration_enabled:     systemSettings.value.registration_enabled,
-      session_timeout_minutes:  systemSettings.value.session_timeout_minutes,
-      default_date_time_format: systemSettings.value.default_date_time_format,
-      default_timezone:         systemSettings.value.default_timezone,
-      default_theme:            systemSettings.value.default_theme,
-      default_font:             systemSettings.value.default_font,
-      default_font_size:        systemSettings.value.default_font_size,
-      default_locale:           systemSettings.value.default_locale,
-      default_columns:          systemSettings.value.default_columns,
-      default_labels:           systemSettings.value.default_labels,
+      registration_enabled:          systemSettings.value.registration_enabled,
+      scrum_storypoints_enabled:     systemSettings.value.scrum_storypoints_enabled,
+      session_timeout_minutes:       systemSettings.value.session_timeout_minutes,
+      default_date_time_format:      systemSettings.value.default_date_time_format,
+      default_timezone:              systemSettings.value.default_timezone,
+      default_theme:                 systemSettings.value.default_theme,
+      default_font:                  systemSettings.value.default_font,
+      default_font_size:             systemSettings.value.default_font_size,
+      default_locale:                systemSettings.value.default_locale,
+      default_columns:               systemSettings.value.default_columns,
+      default_labels:                systemSettings.value.default_labels,
     }
     await adminApi.updateSystemSettings(payload)
+    await systemStore.fetchSettings()
     ui.success('Settings saved')
   } catch {
     ui.error('Failed to save settings')

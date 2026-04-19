@@ -337,3 +337,5 @@ Create an application that has all these features and requirements
 - Config file auto-discovery accepts both .yaml and .yml extensions (warmdesk.yaml tried first, falls back to warmdesk.yml)
 - Embed company logo as base64 data URI in outbound emails: uploaded logos read from disk, external URLs fetched at send time; works without base_url and survives email clients that block remote images
 - Fix company logo not shown in emails when stored as a data URI: pass data: values through directly instead of discarding them
+- Add Scrum Story Points: admin toggle enables a story points field on every card detail and a SP badge on card tiles; takes effect immediately without a page reload
+- Add customer filter on the project dashboard: selector appears when projects span multiple customers; drag-to-reorder suppressed while filtered

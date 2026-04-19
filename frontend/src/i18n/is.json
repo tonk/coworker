@@ -204,7 +204,8 @@
     "select_column": "Velja dálk",
     "open_cards": "opin spjöld",
     "unsaved_changes": "Þú ert með óvistaðar breytingar.",
-    "discard": "Henda"
+    "discard": "Henda",
+    "story_points": "Sögu-stig"
   },
   "chat": {
     "title": "Liðsspjall",
@@ -320,7 +321,9 @@
     "backup_schedule_save": "Vista áætlun",
     "backup_email_enabled": "Senda tölvupóstsskeyti eftir afrit",
     "backup_email_address": "Netfang fyrir tilkynningar",
-    "role_backup": "Afrit"
+    "role_backup": "Afrit",
+    "scrum_storypoints_enabled": "Scrum sögu-stig",
+    "scrum_storypoints_hint": "Þegar virkjað birtist sögu-stig reitur á hverju korti fyrir Scrum mat."
   },
   "report": {
     "title": "Tímaskýrsla",

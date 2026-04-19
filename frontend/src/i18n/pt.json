@@ -204,7 +204,8 @@
     "select_column": "Selecionar coluna",
     "open_cards": "cartões abertos",
     "unsaved_changes": "Tem alterações não guardadas.",
-    "discard": "Descartar"
+    "discard": "Descartar",
+    "story_points": "Pontos de história"
   },
   "chat": {
     "title": "Chat da equipa",
@@ -320,7 +321,9 @@
     "backup_schedule_save": "Guardar agendamento",
     "backup_email_enabled": "Enviar notificação por e-mail após cópia de segurança",
     "backup_email_address": "Endereço de e-mail para notificações",
-    "role_backup": "Cópia de segurança"
+    "role_backup": "Cópia de segurança",
+    "scrum_storypoints_enabled": "Pontos de história Scrum",
+    "scrum_storypoints_hint": "Quando ativado, um campo de pontos de história aparece em cada cartão para estimativa Scrum."
   },
   "report": {
     "title": "Relatório de tempo",

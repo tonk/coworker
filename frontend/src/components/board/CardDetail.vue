@@ -75,6 +75,10 @@
             <span class="time-sep">{{ $t('board.time_minutes') }}</span>
           </div>
         </div>
+        <div v-if="systemStore.scrumStorypointsEnabled" class="form-group half">
+          <label class="form-label">{{ $t('board.story_points') }}</label>
+          <input class="form-input" type="number" min="0" step="1" v-model.number="form.story_points" style="width:90px" />
+        </div>
       </div>
 
       <div class="form-group">
@@ -441,6 +445,7 @@ import { useAuthStore } from '@/stores/auth'
 import { projectsApi } from '@/api/projects'
 import { attachmentsApi } from '@/api/attachments'
 import { useUIStore } from '@/stores/ui'
+import { useSystemStore } from '@/stores/system'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
 
@@ -458,6 +463,7 @@ const { t } = useI18n()
 const memberUsers = computed(() => props.members.map(m => m.user).filter(Boolean))
 
 const boardStore = useBoardStore()
+const systemStore = useSystemStore()
 const projectStore = useProjectStore()
 const ui = useUIStore()
 
@@ -798,7 +804,8 @@ const form = ref({
   start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
-  time_spent_minutes: props.card.time_spent_minutes || 0
+  time_spent_minutes: props.card.time_spent_minutes || 0,
+  story_points: props.card.story_points ?? null
 })
 
 // Snapshot for dirty-check (plain values, not reactive)
@@ -809,7 +816,8 @@ const _init = {
   start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
-  time_spent_minutes: props.card.time_spent_minutes || 0
+  time_spent_minutes: props.card.time_spent_minutes || 0,
+  story_points: props.card.story_points ?? null
 }
 const isDirty = computed(() =>
   newComment.value.trim() !== '' ||
@@ -819,7 +827,8 @@ const isDirty = computed(() =>
   form.value.start_date !== _init.start_date ||
   form.value.due_date !== _init.due_date ||
   form.value.assignee_id !== _init.assignee_id ||
-  form.value.time_spent_minutes !== _init.time_spent_minutes
+  form.value.time_spent_minutes !== _init.time_spent_minutes ||
+  form.value.story_points !== _init.story_points
 )
 
 const {
@@ -925,7 +934,8 @@ async function save() {
       start_date: form.value.start_date || null,
       due_date: form.value.due_date || null,
       assignee_id: form.value.assignee_id,
-      time_spent_minutes: form.value.time_spent_minutes
+      time_spent_minutes: form.value.time_spent_minutes,
+      story_points: form.value.story_points
     }
     await boardStore.updateCardData(props.card.id, payload)
     locked.value = true

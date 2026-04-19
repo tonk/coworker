@@ -5,6 +5,7 @@ import { setLocale } from '@/i18n'
 
 export const useSystemStore = defineStore('system', () => {
   const registrationEnabled = ref(true)
+  const scrumStorypointsEnabled = ref(false)
   const sessionTimeoutMinutes = ref(60)
   const defaults = ref({
     date_time_format: 'YYYY-MM-DD HH:mm',
@@ -19,6 +20,7 @@ export const useSystemStore = defineStore('system', () => {
     try {
       const { data } = await systemApi.getSettings()
       registrationEnabled.value = data.registration_enabled !== false
+      scrumStorypointsEnabled.value = data.scrum_storypoints_enabled === true
       sessionTimeoutMinutes.value = data.session_timeout_minutes || 0
       if (data.default_date_time_format) defaults.value.date_time_format = data.default_date_time_format
       if (data.default_timezone)         defaults.value.timezone         = data.default_timezone
@@ -33,5 +35,5 @@ export const useSystemStore = defineStore('system', () => {
     } catch {}
   }
 
-  return { registrationEnabled, sessionTimeoutMinutes, defaults, fetchSettings }
+  return { registrationEnabled, scrumStorypointsEnabled, sessionTimeoutMinutes, defaults, fetchSettings }
 })
