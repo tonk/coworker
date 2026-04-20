@@ -35,7 +35,7 @@
     </div>
 
     <!-- Message list -->
-    <div class="chat-messages" :class="'layout-' + layout" ref="messagesEl" @click="clearProjectChatUnread()">
+    <div class="chat-messages" :class="'layout-' + layout" ref="messagesEl" @click="onMessagesClick" @auxclick="handleCardRefClick">
       <button v-if="chatStore.hasMore && !chatStore.loading" class="load-more-btn" @click="loadMore">
         {{ $t('chat.load_more') }}
       </button>
@@ -174,8 +174,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
+import { renderMarkdown, useCardRef } from '@/composables/useCardRef'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
@@ -427,8 +426,11 @@ function autoResize(e) {
   el.style.height = Math.min(el.scrollHeight, 120) + 'px'
 }
 
-function renderMarkdown(text) {
-  return DOMPurify.sanitize(marked.parse(text || ''))
+const { handleCardRefClick } = useCardRef()
+
+function onMessagesClick(e) {
+  handleCardRefClick(e)
+  clearProjectChatUnread()
 }
 
 function getAvatar(user) {
@@ -655,6 +657,25 @@ function dayLabel(dateStr) {
 }
 
 .msg-deleted { font-style: italic; opacity: .6; }
+
+.msg-body :deep(.card-ref-link) {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: 4px;
+  padding: 1px 6px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.msg-body :deep(.card-ref-link:hover) { opacity: 0.8; }
+.bubble-own .msg-body :deep(.card-ref-link) {
+  color: var(--color-primary);
+  background: #fff;
+}
 
 .msg-body :deep(p) { margin: 0 0 4px; }
 .msg-body :deep(p:last-child) { margin-bottom: 0; }

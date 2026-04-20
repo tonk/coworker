@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -721,4 +722,39 @@ func UpdateAssignee(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "updated"})
+}
+
+// ResolveCardRef GET /api/v1/cards/resolve/:ref
+// Resolves a card reference like "PRJ-42" to its project slug and card ID.
+func ResolveCardRef(c *gin.Context) {
+	ref := c.Param("ref")
+	sep := strings.LastIndex(ref, "-")
+	if sep <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ref"})
+		return
+	}
+	prefix := strings.ToUpper(ref[:sep])
+	number, err := strconv.Atoi(ref[sep+1:])
+	if err != nil || number < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ref"})
+		return
+	}
+
+	var result struct {
+		ID          uint   `json:"id"`
+		CardNumber  int    `json:"card_number"`
+		KeyPrefix   string `json:"key_prefix"`
+		ProjectSlug string `json:"project_slug"`
+		Title       string `json:"title"`
+	}
+	if err := database.DB.
+		Table("cards").
+		Select("cards.id, cards.card_number, projects.key_prefix, projects.slug as project_slug, cards.title").
+		Joins("JOIN projects ON projects.id = cards.project_id").
+		Where("projects.key_prefix = ? AND cards.card_number = ? AND cards.deleted_at IS NULL", prefix, number).
+		Scan(&result).Error; err != nil || result.ID == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
+		return
+	}
+	c.JSON(http.StatusOK, result)
 }

@@ -2,6 +2,14 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.4 — 2026-04-20
+
+### Added
+- **Card references in chat** — typing `#PRJ-42` (key prefix + card number) in any chat message or DM renders an inline badge that links directly to that card; clicking navigates to the project board and opens the card detail panel; Ctrl+click or middle-click opens the card in a new browser tab; the backend resolves the reference via a new `GET /api/v1/cards/resolve/:ref` endpoint that looks up the card by key prefix and number
+
+### Fixed
+- **Tauri `.desktop` file missing Name and Comment** — `{{app_name}}` and `{{short_description}}` placeholders in the Tauri desktop template were not substituted by Tauri v2; values are now hardcoded directly in the template; `StartupWMClass`, `Categories`, and `Keywords` also corrected
+
 ## v0.8.3 — 2026-04-20
 
 ### Added

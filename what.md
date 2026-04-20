@@ -365,3 +365,5 @@ Create an application that has all these features and requirements
 - Paste images into chat: Ctrl+V in the compose textarea pastes clipboard images as pending attachments; local object-URL preview shown before send; works in DM view and project chat panel
 - Inline image display: attached images render at up to 520×480 px directly in the message; attachment URLs include ?token= so <img> tags authenticate without custom headers
 - Compose textarea retains keyboard focus after sending a message
+- Card references in chat: typing #PRJ-42 renders a clickable badge; click navigates to the card; Ctrl/middle-click opens a new tab; backend resolves prefix+number via GET /api/v1/cards/resolve/:ref
+- Fix Tauri .desktop file empty Name/Comment/StartupWMClass: Tauri v2 does not substitute {{app_name}} or {{short_description}} placeholders; values hardcoded in template

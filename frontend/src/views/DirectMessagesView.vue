@@ -248,7 +248,7 @@
         </div>
 
         <!-- Messages -->
-        <div class="dm-messages" :class="'layout-' + layout" ref="messagesEl">
+        <div class="dm-messages" :class="'layout-' + layout" ref="messagesEl" @click="handleCardRefClick" @auxclick="handleCardRefClick">
 
           <template v-for="(msg, i) in messages" :key="msg.id">
 
@@ -394,8 +394,7 @@ import { useChatLayout } from '@/composables/useChatLayout'
 import { useChatNotify } from '@/composables/useChatNotify'
 import { avatarUrl } from '@/composables/useAvatar'
 import { useCompose } from '@/composables/useCompose'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
+import { renderMarkdown, useCardRef } from '@/composables/useCardRef'
 import InlineEmojiPicker from '@/components/common/InlineEmojiPicker.vue'
 import MentionDropdown from '@/components/common/MentionDropdown.vue'
 import AttachmentList from '@/components/common/AttachmentList.vue'
@@ -943,9 +942,7 @@ function isSameGroup(msgs, i) {
   return new Date(curr.created_at) - new Date(prev.created_at) < 5 * 60 * 1000
 }
 
-function renderMarkdown(text) {
-  return DOMPurify.sanitize(marked.parse(text || ''))
-}
+const { handleCardRefClick } = useCardRef()
 
 function dayLabel(dateStr) {
   const d = new Date(dateStr)
@@ -1427,6 +1424,24 @@ function dayLabel(dateStr) {
 
 /* Markdown body inside bubbles */
 .msg-body { line-height: 1.5; }
+.msg-body :deep(.card-ref-link) {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: 4px;
+  padding: 1px 6px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.msg-body :deep(.card-ref-link:hover) { opacity: 0.8; }
+.bubble-own .msg-body :deep(.card-ref-link) {
+  color: var(--color-primary);
+  background: #fff;
+}
 .msg-body :deep(p) { margin: 0 0 4px; }
 .msg-body :deep(p:last-child) { margin-bottom: 0; }
 .msg-body :deep(strong) { font-weight: 700; }

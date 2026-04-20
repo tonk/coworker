@@ -132,6 +132,14 @@ async function loadBoard(projectSlug) {
   connect()
   await nextTick()
   initColumnSortable()
+  if (route.query.card) openCardById(Number(route.query.card))
+}
+
+async function openCardById(cardId) {
+  try {
+    const { data } = await projectsApi.getCard(slug.value, cardId)
+    selectedCard.value = data
+  } catch {}
 }
 
 onMounted(() => loadBoard(slug.value))

@@ -145,6 +145,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		// Global search
 		protected.GET("/search", handlers.GlobalSearch)
 
+		// Card reference resolver — resolves "PRJ-42" to project slug + card ID
+		protected.GET("/cards/resolve/:ref", handlers.ResolveCardRef)
+
 		// Reports
 		protected.GET("/reports/time", handlers.GetTimeReport)
 		protected.GET("/reports/time/pdf", handlers.GetTimeReportPDF)
