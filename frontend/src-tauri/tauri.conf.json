@@ -34,7 +34,7 @@
       "icons/icon.ico",
       "icons/icon.png"
     ],
-    "shortDescription": "Self-hosted Kanban boards, team chat, and time tracking",
+    "shortDescription": "Self-hosted Kanban and Scrum boards, team chat, and time tracking",
     "category": "Productivity",
     "linux": {
       "deb": {

@@ -1,13 +1,13 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name={{app_name}}
+Name=WarmDesk
 GenericName=Project Management
-Comment={{short_description}}
+Comment=Self-hosted Kanban and Scrum boards, team chat, and time tracking
 Exec={{exec}}
 Icon={{icon}}
-Categories={{categories}}
-Keywords=kanban;project;management;tasks;board;chat;
-StartupWMClass={{app_name}}
+Categories=Office;ProjectManagement;
+Keywords=kanban;scrum;project;management;tasks;board;chat;
+StartupWMClass=WarmDesk
 StartupNotify=true
 Terminal=false
