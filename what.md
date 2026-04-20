@@ -371,3 +371,6 @@ Create an application that has all these features and requirements
 - Board silently refreshes on WebSocket reconnect so cards created via API during a dropped connection appear automatically without a manual reload
 - Fix favicon: replace CoWorker indigo Kanban-columns icon with WarmDesk desk-and-cup motif in green brand colours
 - Prevent admin from deleting their own account: backend returns 403 and the Delete button is disabled in Admin → Users for the logged-in user's own row
+- Ansible collection: new api_key lookup plugin lists personal or project-scoped API keys enriched with username and display_name; filter by key name or return all
+- Hide Deactivate and Delete buttons for the logged-in admin's own row in Admin → Users (previously Delete was disabled but still visible; Deactivate was fully functional)
+- Swagger UI: /swagger and /swagger/ redirect to /swagger/index.html so typing index.html is no longer needed

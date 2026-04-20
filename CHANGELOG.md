@@ -2,6 +2,15 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.6 — 2026-04-20
+
+### Added
+- **`api_key` lookup in Ansible collection** — new `ansilabnl.warmdesk.api_key` lookup plugin lists personal or project-scoped API keys and enriches each result with `username` and `display_name` so you can see who owns each key; filter by key name via `_terms` or omit to return all keys
+
+### Fixed
+- **Admin Deactivate/Delete buttons visible for own account** — both buttons are now hidden (not just disabled) for the logged-in admin's own row in Admin → Users
+- **Swagger UI requires typing `index.html`** — `/swagger` and `/swagger/` now redirect to `/swagger/index.html`
+
 ## v0.8.5 — 2026-04-20
 
 ### Added
