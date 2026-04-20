@@ -20,6 +20,11 @@ const client = axios.create({
     // (reqwest) which sets its own UA; override it here so the server sees
     // a normal browser string instead.
     'User-Agent': navigator.userAgent,
+    // Let the backend distinguish desktop app requests from browser requests.
+    // Only set inside the Tauri runtime; absent = web browser.
+    ...(window.__TAURI_INTERNALS__ && {
+      'X-WarmDesk-Client': `tauri/${__APP_VERSION__}/${navigator.platform || 'unknown'}`,
+    }),
   },
   adapter: 'fetch',
 })

@@ -105,7 +105,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	if err := database.DB.Create(&user).Error; err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "unique") || strings.Contains(err.Error(), "Duplicate") {
-			authLog(c.ClientIP(), "register_failed", 0, "", "login="+req.Username+" reason=duplicate")
+			authLog(c, "register_failed", 0, "", "login="+req.Username+" reason=duplicate")
 			c.JSON(http.StatusConflict, gin.H{"error": "email or username already exists"})
 			return
 		}
@@ -118,7 +118,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	authLog(c.ClientIP(), "register_ok", user.ID, user.Username, "")
+	authLog(c, "register_ok", user.ID, user.Username, "")
 	c.JSON(http.StatusCreated, tokens)
 }
 
@@ -142,19 +142,19 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	var user models.User
 	login := strings.ToLower(req.Login)
 	if err := database.DB.Where("email = ? OR username = ?", login, req.Login).First(&user).Error; err != nil {
-		authLog(c.ClientIP(), "login_failed", 0, "", "login="+req.Login+" reason=unknown_user")
+		authLog(c, "login_failed", 0, "", "login="+req.Login+" reason=unknown_user")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
 
 	if !user.IsActive {
-		authLog(c.ClientIP(), "login_failed", user.ID, user.Username, "reason=account_deactivated")
+		authLog(c, "login_failed", user.ID, user.Username, "reason=account_deactivated")
 		c.JSON(http.StatusForbidden, gin.H{"error": "account deactivated"})
 		return
 	}
 
 	if !h.authSvc.CheckPassword(user.PasswordHash, req.Password) {
-		authLog(c.ClientIP(), "login_failed", user.ID, user.Username, "reason=wrong_password")
+		authLog(c, "login_failed", user.ID, user.Username, "reason=wrong_password")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
@@ -169,7 +169,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 			return
 		}
-		authLog(c.ClientIP(), "login_mfa_challenge", user.ID, user.Username, "")
+		authLog(c, "login_mfa_challenge", user.ID, user.Username, "")
 		c.JSON(http.StatusOK, gin.H{"mfa_required": true, "mfa_token": mfaToken})
 		return
 	}
@@ -180,7 +180,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	authLog(c.ClientIP(), "login_ok", user.ID, user.Username, "")
+	authLog(c, "login_ok", user.ID, user.Username, "")
 	resp := gin.H{
 		"access_token":  tokens.AccessToken,
 		"refresh_token": tokens.RefreshToken,
@@ -383,7 +383,7 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	}
 
 	if !h.authSvc.CheckPassword(user.PasswordHash, req.CurrentPassword) {
-		authLog(c.ClientIP(), "password_change_failed", user.ID, user.Username, "reason=wrong_current_password")
+		authLog(c, "password_change_failed", user.ID, user.Username, "reason=wrong_current_password")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "incorrect current password"})
 		return
 	}
@@ -400,7 +400,7 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	}
 
 	database.DB.Model(&user).Update("password_hash", hash)
-	authLog(c.ClientIP(), "password_changed", user.ID, user.Username, "")
+	authLog(c, "password_changed", user.ID, user.Username, "")
 	c.JSON(http.StatusOK, gin.H{"message": "password updated"})
 }
 
@@ -421,20 +421,20 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 	if err != nil || !claims.MFAPending {
 		// Use 400 so the axios 401 interceptor does not fire and redirect the user.
 		// The frontend shows an "expired session" message and resets to step 1.
-		authLog(c.ClientIP(), "mfa_verify_failed", 0, "", "reason=session_expired")
+		authLog(c, "mfa_verify_failed", 0, "", "reason=session_expired")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "mfa_session_expired"})
 		return
 	}
 
 	var user models.User
 	if err := database.DB.First(&user, claims.UserID).Error; err != nil {
-		authLog(c.ClientIP(), "mfa_verify_failed", claims.UserID, claims.Username, "reason=user_not_found")
+		authLog(c, "mfa_verify_failed", claims.UserID, claims.Username, "reason=user_not_found")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "mfa_session_expired"})
 		return
 	}
 
 	if !user.TOTPEnabled || !h.authSvc.VerifyTOTP(user.TOTPSecret, req.Code) {
-		authLog(c.ClientIP(), "mfa_verify_failed", user.ID, user.Username, "reason=invalid_code")
+		authLog(c, "mfa_verify_failed", user.ID, user.Username, "reason=invalid_code")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "invalid_code"})
 		return
 	}
@@ -444,7 +444,7 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	authLog(c.ClientIP(), "mfa_verify_ok", user.ID, user.Username, "")
+	authLog(c, "mfa_verify_ok", user.ID, user.Username, "")
 	c.JSON(http.StatusOK, tokens)
 }
 
@@ -500,13 +500,13 @@ func (h *AuthHandler) MFAEnable(c *gin.Context) {
 	}
 
 	if !h.authSvc.VerifyTOTP(user.TOTPSecret, req.Code) {
-		authLog(c.ClientIP(), "mfa_enable_failed", user.ID, user.Username, "reason=invalid_code")
+		authLog(c, "mfa_enable_failed", user.ID, user.Username, "reason=invalid_code")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid code"})
 		return
 	}
 
 	database.DB.Model(&user).Update("totp_enabled", true)
-	authLog(c.ClientIP(), "mfa_enabled", user.ID, user.Username, "")
+	authLog(c, "mfa_enabled", user.ID, user.Username, "")
 	c.JSON(http.StatusOK, gin.H{"message": "mfa enabled"})
 }
 
@@ -529,7 +529,7 @@ func (h *AuthHandler) MFADisable(c *gin.Context) {
 	}
 
 	if !h.authSvc.CheckPassword(user.PasswordHash, req.Password) {
-		authLog(c.ClientIP(), "mfa_disable_failed", user.ID, user.Username, "reason=wrong_password")
+		authLog(c, "mfa_disable_failed", user.ID, user.Username, "reason=wrong_password")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "incorrect password"})
 		return
 	}
@@ -538,7 +538,7 @@ func (h *AuthHandler) MFADisable(c *gin.Context) {
 		"totp_enabled": false,
 		"totp_secret":  "",
 	})
-	authLog(c.ClientIP(), "mfa_disabled", user.ID, user.Username, "")
+	authLog(c, "mfa_disabled", user.ID, user.Username, "")
 	c.JSON(http.StatusOK, gin.H{"message": "mfa disabled"})
 }
 
@@ -557,7 +557,8 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	}
 
 	ip := c.ClientIP()
-	authLog(ip, "password_reset_requested", 0, "", "email="+req.Email)
+	client := clientStr(c)
+	authLogRaw(ip, client, "password_reset_requested", 0, "", "email="+req.Email)
 	go func() {
 		var user models.User
 		if err := database.DB.Where("email = ?", strings.ToLower(req.Email)).First(&user).Error; err != nil {
@@ -605,7 +606,7 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 			_ = emailSvc.SendHTML(user.Email, subject,
 				services.WrapHTML("Password Reset", htmlContent),
 				services.WrapText("Password Reset", plainBody))
-			authLog(ip, "password_reset_email_sent", user.ID, user.Username, "")
+			authLogRaw(ip, client, "password_reset_email_sent", user.ID, user.Username, "")
 		}
 	}()
 
@@ -626,13 +627,13 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 
 	var user models.User
 	if err := database.DB.Where("password_reset_token = ?", req.Token).First(&user).Error; err != nil {
-		authLog(c.ClientIP(), "password_reset_failed", 0, "", "reason=invalid_token")
+		authLog(c, "password_reset_failed", 0, "", "reason=invalid_token")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired reset link"})
 		return
 	}
 
 	if user.PasswordResetExpiry == nil || time.Now().After(*user.PasswordResetExpiry) {
-		authLog(c.ClientIP(), "password_reset_failed", user.ID, user.Username, "reason=expired_token")
+		authLog(c, "password_reset_failed", user.ID, user.Username, "reason=expired_token")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid or expired reset link"})
 		return
 	}
@@ -654,22 +655,35 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		"password_reset_expiry": nil,
 	})
 
-	authLog(c.ClientIP(), "password_reset_ok", user.ID, user.Username, "")
+	authLog(c, "password_reset_ok", user.ID, user.Username, "")
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
 // authLog writes a structured audit log line for authentication events.
 // userID/username are omitted when they cannot be determined (e.g. unknown user).
-func authLog(ip, event string, userID uint, username, detail string) {
+func authLog(c *gin.Context, event string, userID uint, username, detail string) {
+	authLogRaw(c.ClientIP(), clientStr(c), event, userID, username, detail)
+}
+
+// authLogRaw is used when the gin.Context is no longer available (e.g. inside a goroutine).
+func authLogRaw(ip, client, event string, userID uint, username, detail string) {
 	extra := ""
 	if detail != "" {
 		extra = " " + detail
 	}
 	if userID != 0 {
-		log.Printf("auth: %s user=%d(%s)%s ip=%s", event, userID, username, extra, ip)
+		log.Printf("auth: %s user=%d(%s)%s ip=%s via=%s", event, userID, username, extra, ip, client)
 	} else {
-		log.Printf("auth: %s%s ip=%s", event, extra, ip)
+		log.Printf("auth: %s%s ip=%s via=%s", event, extra, ip, client)
 	}
+}
+
+// clientStr returns the value of X-WarmDesk-Client if present, otherwise "web".
+func clientStr(c *gin.Context) string {
+	if v := c.GetHeader("X-WarmDesk-Client"); v != "" {
+		return v
+	}
+	return "web"
 }
 
 func (h *AuthHandler) issueTokens(user models.User) (*tokenResponse, error) {
