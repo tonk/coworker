@@ -27,6 +27,8 @@ import { RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useSystemStore } from '@/stores/system'
 import { useUIStore } from '@/stores/ui'
+import { useNotificationsStore } from '@/stores/notifications'
+import { useProjectChatUnread } from '@/composables/useProjectChatUnread'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
@@ -38,6 +40,12 @@ import { getWsUrl } from '@/api/serverConfig'
 const auth = useAuthStore()
 const systemStore = useSystemStore()
 const ui = useUIStore()
+const notificationsStore = useNotificationsStore()
+const { projectChatUnread } = useProjectChatUnread()
+
+watch([() => notificationsStore.hasUnread, projectChatUnread], ([hasUnread, chatUnread]) => {
+  document.title = (hasUnread || chatUnread > 0) ? '● WarmDesk' : 'WarmDesk'
+})
 
 const { updateAvailable, latestVersion, releaseUrl, check: checkForUpdate } = useUpdateCheck()
 // Run once when the user is logged in

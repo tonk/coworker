@@ -358,7 +358,7 @@ func buildBackupEmailHTML(success bool, filename, errMsg string, t time.Time, fi
 			}
 			backupRows += fmt.Sprintf(
 				`<tr style="background:%s">`+
-					`<td style="padding:6px 8px;font-family:monospace;font-size:12px">%s</td>`+
+					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#333">%s</td>`+
 					`<td style="padding:6px 8px;font-size:12px;color:#888;text-align:right">%s</td>`+
 					`<td style="padding:6px 8px;font-size:12px;color:#888">%s</td></tr>`,
 				rowBg, f.Filename, formatEmailBytes(f.Size), f.ModifiedAt,

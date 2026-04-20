@@ -113,6 +113,7 @@
                 <td class="actions-cell">
                   <template v-if="showDeletedProjects">
                     <button class="btn btn-secondary btn-sm" @click="restoreProject(project)">{{ $t('admin.restore') }}</button>
+                    <button class="btn btn-danger btn-sm" @click="purgeProject(project)">{{ $t('admin.purge_project') }}</button>
                   </template>
                   <template v-else>
                     <button class="btn btn-secondary btn-sm" @click="openEditProject(project)">{{ $t('common.edit') }}</button>
@@ -690,6 +691,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { adminApi } from '@/api/admin'
 import { customersApi } from '@/api/customers'
@@ -700,6 +702,7 @@ import { useSystemStore } from '@/stores/system'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useDateFormat } from '@/composables/useDateFormat'
 
+const { t } = useI18n()
 const ui = useUIStore()
 const sidebarStore = useSidebarStore()
 const systemStore = useSystemStore()
@@ -851,6 +854,17 @@ async function restoreProject(project) {
     ui.success(`Project "${project.name}" restored`)
   } catch {
     ui.error('Failed to restore project')
+  }
+}
+
+async function purgeProject(project) {
+  if (!confirm(t('admin.purge_project_confirm', { name: project.name }))) return
+  try {
+    await adminApi.purgeProject(project.id)
+    projects.value = projects.value.filter(p => p.id !== project.id)
+    ui.success(t('admin.purge_project_success', { name: project.name }))
+  } catch {
+    ui.error('Failed to permanently delete project')
   }
 }
 

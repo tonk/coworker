@@ -12,13 +12,29 @@
         </div>
         <span>{{ $t('chat.title') }}</span>
       </div>
+      <div class="layout-picker">
+        <button v-for="l in ['bubble','comfortable','compact','cozy']" :key="l"
+          :class="['layout-btn', { active: layout === l }]"
+          @click="setLayout(l)" :title="l.charAt(0).toUpperCase() + l.slice(1)">
+          <svg v-if="l === 'bubble'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M3 9a2 2 0 0 1 2-2h14"/></svg>
+          <svg v-else-if="l === 'comfortable'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="6" x2="21" y2="6"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="12" x2="21" y2="12"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+          <svg v-else-if="l === 'compact'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="13" x2="21" y2="13"/><line x1="3" y1="17" x2="21" y2="17"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
+          <svg v-else-if="l === 'cozy'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
+        </button>
+        <button :class="['layout-btn', { active: notifyEnabled }]"
+          @click="toggleNotify"
+          :title="notifyEnabled ? 'Mute notifications' : 'Enable notifications'">
+          <svg v-if="notifyEnabled" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
       <button class="btn btn-ghost btn-sm close-btn" @click="$emit('close')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
 
     <!-- Message list -->
-    <div class="chat-messages" ref="messagesEl">
+    <div class="chat-messages" :class="'layout-' + layout" ref="messagesEl" @click="clearProjectChatUnread()">
       <button v-if="chatStore.hasMore && !chatStore.loading" class="load-more-btn" @click="loadMore">
         {{ $t('chat.load_more') }}
       </button>
@@ -49,7 +65,7 @@
           </div>
 
           <div class="msg-content">
-            <div class="msg-sender" v-if="msg.user_id !== authUser?.id || msg.is_bot">
+            <div class="msg-sender" v-if="layout !== 'bubble' || msg.user_id !== authUser?.id || msg.is_bot">
               {{ msg.is_bot ? msg.bot_name : (msg.user?.display_name || msg.user?.username) }}
               <span v-if="msg.is_bot" class="bot-badge">BOT</span>
             </div>
@@ -98,6 +114,13 @@
         <p>No messages yet. Start the conversation!</p>
       </div>
     </div>
+
+    <!-- New-message toast -->
+    <Transition name="chat-toast">
+      <div v-if="chatToast" class="chat-toast-popup" @click="chatToast = null">
+        <strong>{{ chatToast.sender }}</strong>: {{ chatToast.body }}
+      </div>
+    </Transition>
 
     <!-- Typing indicator -->
     <div v-if="otherTypingUsers.length" class="typing-indicator">
@@ -154,6 +177,9 @@ import DOMPurify from 'dompurify'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
+import { useChatLayout } from '@/composables/useChatLayout'
+import { useChatNotify } from '@/composables/useChatNotify'
+import { useProjectChatUnread } from '@/composables/useProjectChatUnread'
 import { avatarUrl } from '@/composables/useAvatar'
 import { attachmentsApi } from '@/api/attachments'
 import { projectsApi } from '@/api/projects'
@@ -178,6 +204,21 @@ const messagesEl = ref(null)
 const textareaEl = ref(null)
 const draft = ref('')
 const { formatTime } = useDateFormat()
+const { layout, setLayout } = useChatLayout()
+const { notifyEnabled, toggleNotify, desktopNotify } = useChatNotify()
+const { addProjectChatUnread, clearProjectChatUnread } = useProjectChatUnread()
+
+const chatToast = ref(null)
+let toastTimer = null
+
+function showChatToast(msg) {
+  clearTimeout(toastTimer)
+  const sender = msg.user?.display_name || msg.user?.username || 'Someone'
+  const body = (msg.body || '').replace(/```[\s\S]*?```|`[^`]+`/g, '[code]').slice(0, 90)
+  chatToast.value = { sender, body }
+  toastTimer = setTimeout(() => { chatToast.value = null }, 4500)
+  desktopNotify(sender, body)
+}
 
 // Edit state
 const editingId = ref(null)
@@ -277,7 +318,17 @@ onMounted(async () => {
   }
 })
 
-watch(() => chatStore.messages.length, () => nextTick(scrollToBottom))
+watch(() => chatStore.messages.length, (newLen, oldLen) => {
+  nextTick(scrollToBottom)
+  if (oldLen > 0 && newLen > oldLen && notifyEnabled.value) {
+    const newMsgs = chatStore.messages.slice(oldLen)
+    const fromOthers = newMsgs.filter(m => m.user_id !== authUser.value?.id && !m.is_bot)
+    if (fromOthers.length > 0) {
+      showChatToast(fromOthers[fromOthers.length - 1])
+      addProjectChatUnread()
+    }
+  }
+})
 watch(() => props.open, (val) => { if (val) nextTick(scrollToBottom) })
 
 function scrollToBottom() {
@@ -795,4 +846,126 @@ function dayLabel(dateStr) {
   0%, 60%, 100% { transform: translateY(0); opacity: .4; }
   30% { transform: translateY(-3px); opacity: 1; }
 }
+
+/* ── New-message toast ───────────────────────────────────── */
+.chat-toast-popup {
+  position: absolute;
+  bottom: 80px;
+  left: 12px;
+  right: 12px;
+  max-width: 340px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  cursor: pointer;
+  z-index: 20;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-toast-enter-from, .chat-toast-leave-to { opacity: 0; transform: translateY(8px); }
+.chat-toast-enter-active, .chat-toast-leave-active { transition: opacity .25s, transform .25s; }
+
+/* ── Layout picker ───────────────────────────────────────── */
+.layout-picker {
+  display: flex;
+  gap: 2px;
+  margin-right: 4px;
+}
+.layout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 3px 5px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: background .15s, color .15s;
+}
+.layout-btn:hover { background: var(--color-bg); color: var(--color-text); }
+.layout-btn.active { background: var(--color-primary); color: #fff; }
+
+/* ── Comfortable ─────────────────────────────────────────── */
+.layout-comfortable .msg-row.msg-own { flex-direction: row; }
+.layout-comfortable .msg-row.msg-own .msg-content { align-items: flex-start; }
+.layout-comfortable .bubble-own {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  border-bottom-left-radius: 4px;
+  color: var(--color-text);
+}
+.layout-comfortable .bubble-own .msg-body :deep(code) { background: rgba(0,0,0,.08); }
+
+/* ── Compact ─────────────────────────────────────────────── */
+.layout-compact .msg-avatar { display: none; }
+.layout-compact .msg-row { margin-bottom: 1px; align-items: baseline; }
+.layout-compact .msg-row.msg-own { flex-direction: row; }
+.layout-compact .msg-content {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 5px;
+  max-width: 100%;
+}
+.layout-compact .msg-row.msg-own .msg-content { align-items: baseline; }
+.layout-compact .msg-sender {
+  order: 1;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+.layout-compact .msg-sender::after { content: ':'; }
+.layout-compact .msg-bubble {
+  order: 2;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  color: var(--color-text) !important;
+  font-size: 12px;
+  max-width: none;
+}
+.layout-compact .msg-meta {
+  order: 0;
+  margin-top: 0;
+  padding: 0;
+  flex-shrink: 0;
+  min-width: 32px;
+}
+.layout-compact .msg-time { font-size: 10px; }
+.layout-compact .msg-action-btn { display: none; }
+
+/* ── Cozy ────────────────────────────────────────────────── */
+.layout-cozy .msg-row.msg-own {
+  flex-direction: row;
+  border-left: 3px solid var(--color-primary);
+  padding-left: 10px;
+  margin-left: -13px;
+  border-radius: 0 4px 4px 0;
+}
+.layout-cozy .msg-row.msg-own .msg-content { align-items: flex-start; }
+.layout-cozy .bubble-own {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 2px 0;
+  color: var(--color-text);
+}
+.layout-cozy .bubble-other {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 2px 0;
+}
+.layout-cozy .bubble-own .msg-body :deep(code),
+.layout-cozy .bubble-other .msg-body :deep(code) { background: rgba(0,0,0,.08); }
 </style>

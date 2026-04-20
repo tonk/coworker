@@ -198,6 +198,28 @@
               <template v-else>{{ memberList(activeConv) }}</template>
             </div>
           </div>
+          <!-- Layout picker -->
+          <div class="layout-picker">
+            <button v-for="l in ['bubble','comfortable','compact','cozy']" :key="l"
+              :class="['layout-btn', { active: layout === l }]"
+              @click="setLayout(l)" :title="l.charAt(0).toUpperCase() + l.slice(1)">
+              <!-- bubble -->
+              <svg v-if="l === 'bubble'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M3 9a2 2 0 0 1 2-2h14"/></svg>
+              <!-- comfortable -->
+              <svg v-else-if="l === 'comfortable'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="6" x2="21" y2="6"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="12" x2="21" y2="12"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+              <!-- compact -->
+              <svg v-else-if="l === 'compact'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="13" x2="21" y2="13"/><line x1="3" y1="17" x2="21" y2="17"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
+              <!-- cozy -->
+              <svg v-else-if="l === 'cozy'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
+            </button>
+            <!-- Bell: toggle new-message notifications -->
+            <button :class="['layout-btn', { active: notifyEnabled }]"
+              @click="toggleNotify"
+              :title="notifyEnabled ? 'Mute notifications' : 'Enable notifications'">
+              <svg v-if="notifyEnabled" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
           <!-- Add member button for group chats -->
           <button v-if="activeConv.is_group" class="add-member-btn" @click="showAddMember = !showAddMember" title="Add member">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
@@ -224,7 +246,7 @@
         </div>
 
         <!-- Messages -->
-        <div class="dm-messages" ref="messagesEl">
+        <div class="dm-messages" :class="'layout-' + layout" ref="messagesEl">
 
           <template v-for="(msg, i) in messages" :key="msg.id">
 
@@ -240,7 +262,7 @@
               </div>
 
               <div class="msg-content">
-                <div class="msg-sender" v-if="msg.sender_id !== auth.user?.id">
+                <div class="msg-sender" v-if="layout !== 'bubble' || msg.sender_id !== auth.user?.id">
                   {{ msg.sender?.display_name || msg.sender?.username }}
                 </div>
                 <!-- Edit mode -->
@@ -295,6 +317,13 @@
           </div>
 
         </div>
+
+        <!-- New-message toast -->
+        <Transition name="chat-toast">
+          <div v-if="chatToast" class="chat-toast-popup" @click="chatToast = null">
+            <strong>{{ chatToast.sender }}</strong>: {{ chatToast.body }}
+          </div>
+        </Transition>
 
         <!-- Compose -->
         <div class="dm-compose">
@@ -353,6 +382,8 @@ import { projectsApi } from '@/api/projects'
 import { attachmentsApi } from '@/api/attachments'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useDateFormat } from '@/composables/useDateFormat'
+import { useChatLayout } from '@/composables/useChatLayout'
+import { useChatNotify } from '@/composables/useChatNotify'
 import { avatarUrl } from '@/composables/useAvatar'
 import { useCompose } from '@/composables/useCompose'
 import { marked } from 'marked'
@@ -368,7 +399,24 @@ const { t } = useI18n()
 const auth = useAuthStore()
 const notificationsStore = useNotificationsStore()
 const { formatTime } = useDateFormat()
+const { layout, setLayout } = useChatLayout()
+const { notifyEnabled, toggleNotify, desktopNotify } = useChatNotify()
 const ui = useUIStore()
+
+// ── New-message toast ────────────────────────────────────────────────────────
+const chatToast = ref(null)
+let toastTimer = null
+
+function showDMToast(msg) {
+  clearTimeout(toastTimer)
+  const sender = msg.sender?.display_name || msg.sender?.username || 'Someone'
+  const body = (msg.body || '').replace(/```[\s\S]*?```|`[^`]+`/g, '[code]').slice(0, 90)
+  chatToast.value = { sender, body }
+  toastTimer = setTimeout(() => { chatToast.value = null }, 4500)
+  desktopNotify(sender, body)
+}
+
+let lastSeenMsgId = 0
 
 const conversations = ref([])
 const allUsers = ref([])
@@ -607,6 +655,7 @@ async function openConversation(conv) {
   activeConv.value = conv
   activeConvId.value = conv.id
   showAddMember.value = false
+  lastSeenMsgId = 0
   notificationsStore.markConvSeen(conv.id)
   // Stop polling the previous conversation
   clearInterval(pollTimer)
@@ -621,10 +670,19 @@ async function fetchMessages(initial = false) {
     const { data } = await messagesApi.getMessages(activeConvId.value)
     const incoming = data || []
     const atBottom = initial || isAtBottom()
+    if (incoming.length > 0) {
+      const maxId = Math.max(...incoming.map(m => m.id))
+      if (!initial && lastSeenMsgId > 0 && notifyEnabled.value) {
+        const newFromOthers = incoming.filter(m => m.id > lastSeenMsgId && m.sender_id !== auth.user?.id)
+        if (newFromOthers.length > 0) showDMToast(newFromOthers[newFromOthers.length - 1])
+      }
+      lastSeenMsgId = maxId
+    }
     messages.value = incoming
     if (atBottom) {
       await nextTick()
       scrollToBottom()
+      notificationsStore.markConvSeen(activeConvId.value)
     }
   } catch {
     if (initial) ui.error('Failed to load messages')
@@ -1169,6 +1227,7 @@ function dayLabel(dateStr) {
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  position: relative;
 }
 
 .dm-empty {
@@ -1322,7 +1381,7 @@ function dayLabel(dateStr) {
   font-size: 14px;
   line-height: 1.5;
   word-break: break-word;
-  max-width: 480px;
+  max-width: 100%;
 }
 .bubble-other {
   background: var(--color-bg);
@@ -1515,4 +1574,128 @@ function dayLabel(dateStr) {
 .emoji-trigger-btn:hover { opacity: 1; }
 
 .compose-outer { position: relative; }
+
+/* ── New-message toast ───────────────────────────────────── */
+.chat-toast-popup {
+  position: absolute;
+  bottom: 80px;
+  left: 20px;
+  right: 20px;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  cursor: pointer;
+  z-index: 20;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-toast-enter-from, .chat-toast-leave-to { opacity: 0; transform: translateY(8px); }
+.chat-toast-enter-active, .chat-toast-leave-active { transition: opacity .25s, transform .25s; }
+
+/* ── Layout picker ───────────────────────────────────────── */
+.layout-picker {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  margin-right: 8px;
+}
+.layout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 4px 6px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  transition: background .15s, color .15s;
+}
+.layout-btn:hover { background: var(--color-bg); color: var(--color-text); }
+.layout-btn.active { background: var(--color-primary); color: #fff; }
+
+/* ── Comfortable: Slack-style, all left, same bubble ──────── */
+.layout-comfortable .msg-row.msg-own { flex-direction: row; }
+.layout-comfortable .msg-row.msg-own .msg-content { align-items: flex-start; }
+.layout-comfortable .bubble-own {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
+  color: var(--color-text);
+}
+.layout-comfortable .bubble-own .msg-body :deep(code) { background: rgba(0,0,0,.08); }
+.layout-comfortable .bubble-own .msg-body :deep(pre) { background: rgba(0,0,0,.08); }
+
+/* ── Compact: IRC/terminal, no avatar, inline ────────────── */
+.layout-compact .msg-avatar { display: none; }
+.layout-compact .msg-row { margin-bottom: 1px; align-items: baseline; }
+.layout-compact .msg-row.msg-own { flex-direction: row; }
+.layout-compact .msg-content {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 5px;
+  max-width: 100%;
+}
+.layout-compact .msg-row.msg-own .msg-content { align-items: baseline; }
+.layout-compact .msg-sender {
+  order: 1;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+.layout-compact .msg-sender::after { content: ':'; }
+.layout-compact .msg-bubble {
+  order: 2;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  color: var(--color-text) !important;
+  font-size: 13px;
+  max-width: none;
+}
+.layout-compact .msg-meta {
+  order: 0;
+  margin-top: 0;
+  padding: 0;
+  flex-shrink: 0;
+  min-width: 36px;
+}
+.layout-compact .msg-time { font-size: 11px; }
+.layout-compact .msg-action-btn { display: none; }
+
+/* ── Cozy: document-style, left-border accent for own ────── */
+.layout-cozy .msg-row.msg-own {
+  flex-direction: row;
+  border-left: 3px solid var(--color-primary);
+  padding-left: 10px;
+  margin-left: -13px;
+  border-radius: 0 4px 4px 0;
+}
+.layout-cozy .msg-row.msg-own .msg-content { align-items: flex-start; }
+.layout-cozy .bubble-own {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 2px 0;
+  color: var(--color-text);
+}
+.layout-cozy .bubble-other {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 2px 0;
+}
+.layout-cozy .bubble-own .msg-body :deep(code),
+.layout-cozy .bubble-other .msg-body :deep(code) { background: rgba(0,0,0,.08); }
 </style>

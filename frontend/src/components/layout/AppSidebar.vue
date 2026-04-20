@@ -497,6 +497,7 @@ async function unfavorite(user) {
 }
 
 let pollInterval = null
+let unreadInterval = null
 
 onMounted(() => {
   sidebarStore.fetchStarred()
@@ -509,12 +510,15 @@ onMounted(() => {
   pollInterval = setInterval(() => {
     sidebarStore.fetchAllUsers()
     sidebarStore.fetchChatUsers()
+  }, 10_000)
+  unreadInterval = setInterval(() => {
     notificationsStore.checkUnread()
-  }, 30_000)
+  }, 5_000)
 })
 
 onUnmounted(() => {
   clearInterval(pollInterval)
+  clearInterval(unreadInterval)
   stopResize()
   // Clean up any in-progress pointer drags
   document.removeEventListener('pointermove', onSectionPointerMove)

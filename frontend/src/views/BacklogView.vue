@@ -225,11 +225,17 @@
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('sprint.start_date') }}</label>
-        <input type="date" class="form-input" v-model="sprintForm.startDate" />
+        <div style="position:relative;display:inline-block;width:100%">
+          <input type="text" class="form-input" v-model="displayStartDate" :placeholder="dateOnlyFormat()" @change="onTextStartDate" />
+          <input type="date" style="position:absolute;opacity:0;right:0;top:0;width:28px;height:100%;cursor:pointer" @change="onPickerStartDate" />
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('sprint.end_date') }}</label>
-        <input type="date" class="form-input" v-model="sprintForm.endDate" />
+        <div style="position:relative;display:inline-block;width:100%">
+          <input type="text" class="form-input" v-model="displayEndDate" :placeholder="dateOnlyFormat()" @change="onTextEndDate" />
+          <input type="date" style="position:absolute;opacity:0;right:0;top:0;width:28px;height:100%;cursor:pointer" @change="onPickerEndDate" />
+        </div>
       </div>
       <template #footer>
         <button class="btn btn-secondary" @click="closeSprintModal">{{ $t('common.cancel') }}</button>
@@ -251,6 +257,7 @@ import { useBoardStore } from '@/stores/board'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import { useWebSocket } from '@/composables/useWebSocket'
+import { useDateFormat } from '@/composables/useDateFormat'
 import { projectsApi } from '@/api/projects'
 import CardDetail from '@/components/board/CardDetail.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -265,12 +272,16 @@ const boardStore = useBoardStore()
 const ui = useUIStore()
 const auth = useAuthStore()
 
+const { formatDate, dateOnlyFormat } = useDateFormat()
+
 const view = ref('backlog')
 const selectedCard = ref(null)
 const projectMembers = ref([])
 const showCreateSprint = ref(false)
 const editingSprintId = ref(null)
 const sprintForm = ref({ name: '', goal: '', startDate: '', endDate: '' })
+const displayStartDate = ref('')
+const displayEndDate = ref('')
 
 const { connect, disconnect } = useWebSocket(slug)
 
@@ -316,7 +327,55 @@ onUnmounted(() => {
 
 function fmtDate(d) {
   if (!d) return '?'
-  return new Date(d).toLocaleDateString()
+  return formatDate(d)
+}
+
+function onPickerStartDate(e) {
+  sprintForm.value.startDate = e.target.value
+  displayStartDate.value = e.target.value ? formatDate(e.target.value) : ''
+}
+
+function onPickerEndDate(e) {
+  sprintForm.value.endDate = e.target.value
+  displayEndDate.value = e.target.value ? formatDate(e.target.value) : ''
+}
+
+function parseSprintDate(str) {
+  if (!str) return ''
+  const fmt = dateOnlyFormat()
+  const yPos = fmt.indexOf('YYYY')
+  const mPos = fmt.indexOf('MM')
+  const dPos = fmt.indexOf('DD')
+  if (yPos < 0 || mPos < 0 || dPos < 0) return ''
+  const y = parseInt(str.slice(yPos, yPos + 4))
+  const m = parseInt(str.slice(mPos, mPos + 2))
+  const d = parseInt(str.slice(dPos, dPos + 2))
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) return ''
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
+function onTextStartDate() {
+  const iso = parseSprintDate(displayStartDate.value)
+  if (iso) {
+    sprintForm.value.startDate = iso
+    displayStartDate.value = formatDate(iso)
+  } else if (!displayStartDate.value) {
+    sprintForm.value.startDate = ''
+  } else {
+    displayStartDate.value = sprintForm.value.startDate ? formatDate(sprintForm.value.startDate) : ''
+  }
+}
+
+function onTextEndDate() {
+  const iso = parseSprintDate(displayEndDate.value)
+  if (iso) {
+    sprintForm.value.endDate = iso
+    displayEndDate.value = formatDate(iso)
+  } else if (!displayEndDate.value) {
+    sprintForm.value.endDate = ''
+  } else {
+    displayEndDate.value = sprintForm.value.endDate ? formatDate(sprintForm.value.endDate) : ''
+  }
 }
 
 async function openCard(card) {
@@ -354,18 +413,19 @@ async function removeFromSprint(sprint, cardId) {
 
 function editSprint(sprint) {
   editingSprintId.value = sprint.id
-  sprintForm.value = {
-    name: sprint.name,
-    goal: sprint.goal || '',
-    startDate: sprint.start_date ? sprint.start_date.slice(0, 10) : '',
-    endDate: sprint.end_date ? sprint.end_date.slice(0, 10) : '',
-  }
+  const startIso = sprint.start_date ? sprint.start_date.slice(0, 10) : ''
+  const endIso = sprint.end_date ? sprint.end_date.slice(0, 10) : ''
+  sprintForm.value = { name: sprint.name, goal: sprint.goal || '', startDate: startIso, endDate: endIso }
+  displayStartDate.value = startIso ? formatDate(startIso) : ''
+  displayEndDate.value = endIso ? formatDate(endIso) : ''
 }
 
 function closeSprintModal() {
   showCreateSprint.value = false
   editingSprintId.value = null
   sprintForm.value = { name: '', goal: '', startDate: '', endDate: '' }
+  displayStartDate.value = ''
+  displayEndDate.value = ''
 }
 
 async function saveSprint() {

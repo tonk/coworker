@@ -346,3 +346,16 @@ Create an application that has all these features and requirements
 - Fix company logo not shown in emails when stored as a data URI: pass data: values through directly instead of discarding them
 - Add Scrum Story Points: admin toggle enables a story points field on every card detail and a SP badge on card tiles; takes effect immediately without a page reload
 - Add customer filter on the project dashboard: selector appears when projects span multiple customers; drag-to-reorder suppressed while filtered
+- Auth audit logging: login, logout, failed login, registration, password change/reset, MFA enable/disable/verify events written to server log with user ID, username, and client IP
+- Admin permanently delete project: hard-delete a soft-deleted project and all its data from Admin → Projects (deleted tab); safe — only available after soft-delete
+- Four selectable chat layouts (Bubble, Comfortable, Compact, Cozy) in project chat panel and DM view; choice persisted in localStorage
+- In-app new-message toast: dismissible pop-up in chat when a message arrives from someone else; controlled by bell toggle in chat header; persisted in localStorage
+- OS desktop notifications: native OS notification when a message arrives and the window is not focused; uses browser Notifications API; respects the bell toggle
+- Document-title unread indicator: tab title shows ● WarmDesk when there are unread messages, reverts when all read
+- Fix backup email filename invisible on light backgrounds (missing text colour on filename column)
+- Sprint date fields now respect user date format (overlay date-picker pattern)
+- Fix false-positive unread DM indicator on every login (conversations seeded to current updated_at on first load)
+- Fix unread dot reappearing for actively-read conversations (markConvSeen called on every poll when user is at bottom)
+- Fix Admin permanently delete button doing nothing (missing useI18n import in AdminView.vue)
+- Remove 480px max-width cap on DM message bubbles so wide content (ASCII tables, code) uses full available width
+- Sidebar unread check split to dedicated 5-second interval; presence/user-list poll remains at 10 seconds

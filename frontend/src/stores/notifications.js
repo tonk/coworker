@@ -25,6 +25,17 @@ export const useNotificationsStore = defineStore('notifications', () => {
     try {
       const { data } = await messagesApi.getConversations()
       conversations.value = data || []
+      // Seed a baseline for conversations never opened on this client so they
+      // don't permanently show as unread. Only messages arriving after this
+      // point will trigger the indicator.
+      let changed = false
+      for (const c of conversations.value) {
+        if (convLastSeen.value[c.id] == null) {
+          convLastSeen.value[c.id] = new Date(c.updated_at).getTime()
+          changed = true
+        }
+      }
+      if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(convLastSeen.value))
     } catch {}
   }
 

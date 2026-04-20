@@ -108,11 +108,11 @@
     - Backup successful or not
     - List of all available backups~~ **Done**
 
-- In the "Edit Sprint" card the date fields should follow the configured
-  the users date format setting.
+- ~~In the "Edit Sprint" card the date fields should follow the configured
+  the users date format setting.~~ **Done**
 
-- The Admin panel -> Projects also shows all deleted projects and an
+- ~~The Admin panel -> Projects also shows all deleted projects and an
   option to restore them. Would it be possible to remove them
   completely, so add an extra option.
   I can imagine that this will create problems, so investigate first
-  if problems could arise.
+  if problems could arise.~~ **Done — "Permanently Delete" button added next to Restore; purges all project data including cards, columns, labels, chat, sprints and their associations**

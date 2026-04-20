@@ -2,6 +2,27 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.1 — 2026-04-20
+
+### Added
+- **Auth audit logging** — login, logout, failed login, registration, password change, password reset (request + confirm), MFA enable/disable, and MFA verification are now written to the server log with the event, user ID, username, and originating IP address
+- **Permanently delete projects** — Admin → Projects (deleted tab) now has a **Permanently Delete** button next to Restore; hard-deletes the project and all dependent data (cards, columns, labels, sprints, topics, chat messages, attachments, API keys, etc.) in the correct dependency order; only available for already-soft-deleted projects
+- **Four chat layouts** — both the project chat panel and direct-message view now offer four selectable layouts via an icon picker in the chat header: **Bubble** (original WhatsApp-style), **Comfortable** (Slack-style, all messages left-aligned), **Compact** (IRC/terminal, no avatars, inline timestamp + name), and **Cozy** (document-style, no bubble background, own messages accented with a left border); choice is persisted in `localStorage` and shared across all chat views
+- **In-app new-message toast** — a dismissible pop-up slides up from the bottom of the chat area when a new message arrives from someone else; shows sender name and a plain-text preview (code blocks replaced with `[code]`); controlled by a bell toggle button in the chat header; setting is persisted in `localStorage`
+- **OS desktop notifications** — when the browser window is not focused, new messages trigger a native OS notification (browser Notifications API); permission is requested automatically on first load (or when the bell is enabled); respects the same bell toggle as the in-app toast; works in browser and Tauri desktop app
+- **Document-title unread indicator** — the browser tab / taskbar title shows `● WarmDesk` when there are unread direct messages or unread project chat messages, and reverts to `WarmDesk` when all are read
+
+### Fixed
+- **Backup email filename invisible on light backgrounds** — the filename column in backup notification emails had no explicit text colour, rendering as white-on-white in some email clients; now explicitly set to `#333`
+- **Sprint date fields respect user date format** — the start and end date inputs in the Backlog sprint editor now use the same overlay date-picker pattern as card due dates, displaying dates in the user's preferred format while storing ISO values internally
+- **False-positive unread DM indicator on login** — conversations that had never been opened on the current device defaulted their last-seen timestamp to epoch (1970), making every conversation appear unread on every login; they are now seeded to their current `updated_at` on first load so only genuinely new messages trigger the indicator
+- **Unread dot persists after reading messages** — when a new message arrived in an open conversation via the 5-second poll, the sidebar unread dot could reappear because `markConvSeen` was only called on conversation open, not on each poll; it is now also called whenever the user is scrolled to the bottom (i.e. reading the latest messages)
+- **Admin "Permanently Delete" button did nothing** — `useI18n` was never imported in `AdminView.vue`, causing a silent `ReferenceError` inside the confirm dialog before any action was taken
+
+### Changed
+- **Chat bubble max-width removed** — message bubbles in the DM view were capped at 480 px; the cap is removed so wide content (ASCII tables, long code lines) uses the full available width with horizontal scroll inside the bubble
+- **Sidebar unread check interval** — `checkUnread` now polls every 5 seconds (previously 30) via a dedicated interval, independent of the presence/user-list poll (which remains at 10 seconds); unread indicators now feel near-instant
+
 ## v0.8.0 — 2026-04-19
 
 ### Added

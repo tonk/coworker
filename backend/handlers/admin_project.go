@@ -141,3 +141,78 @@ func AdminDeleteProject(c *gin.Context) {
 	database.DB.Delete(&models.Project{}, id)
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
+
+// AdminPurgeProject permanently removes a soft-deleted project and all of its data.
+// Only projects already soft-deleted via AdminDeleteProject can be purged.
+func AdminPurgeProject(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	var project models.Project
+	if err := database.DB.Unscoped().Where("id = ? AND deleted_at IS NOT NULL", id).First(&project).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found or not deleted"})
+		return
+	}
+
+	db := database.DB
+
+	// Card-level associations
+	var cardIDs []uint
+	db.Unscoped().Model(&models.Card{}).Where("project_id = ?", id).Pluck("id", &cardIDs)
+	if len(cardIDs) > 0 {
+		var commentIDs []uint
+		db.Unscoped().Model(&models.CardComment{}).Where("card_id IN ?", cardIDs).Pluck("id", &commentIDs)
+		if len(commentIDs) > 0 {
+			db.Where("owner_type = 'card_comment' AND owner_id IN ?", commentIDs).Delete(&models.Attachment{})
+		}
+		db.Where("card_id IN ?", cardIDs).Delete(&models.CardChecklistItem{})
+		db.Unscoped().Where("card_id IN ?", cardIDs).Delete(&models.CardComment{})
+		db.Where("source_card_id IN ? OR target_card_id IN ?", cardIDs, cardIDs).Delete(&models.CardReference{})
+		db.Where("card_id IN ?", cardIDs).Delete(&models.CardHistory{})
+		db.Where("card_id IN ?", cardIDs).Delete(&models.CardAssignee{})
+		db.Where("card_id IN ?", cardIDs).Delete(&models.CardLabel{})
+		db.Exec("DELETE FROM card_watchers WHERE card_id IN ?", cardIDs)
+		db.Where("card_id IN ?", cardIDs).Delete(&models.CardTag{})
+		db.Where("card_id IN ?", cardIDs).Delete(&models.CardLink{})
+	}
+	db.Unscoped().Where("project_id = ?", id).Delete(&models.Card{})
+	db.Unscoped().Where("project_id = ?", id).Delete(&models.Column{})
+	db.Unscoped().Where("project_id = ?", id).Delete(&models.Label{})
+
+	// Topics and replies
+	var topicIDs []uint
+	db.Unscoped().Model(&models.Topic{}).Where("project_id = ?", id).Pluck("id", &topicIDs)
+	if len(topicIDs) > 0 {
+		db.Unscoped().Where("topic_id IN ?", topicIDs).Delete(&models.TopicReply{})
+	}
+	db.Unscoped().Where("project_id = ?", id).Delete(&models.Topic{})
+
+	// Chat messages, their reactions and attachments
+	var chatMsgIDs []uint
+	db.Model(&models.ChatMessage{}).Where("project_id = ?", id).Pluck("id", &chatMsgIDs)
+	if len(chatMsgIDs) > 0 {
+		db.Where("owner_type = 'chat_message' AND owner_id IN ?", chatMsgIDs).Delete(&models.MessageReaction{})
+		db.Where("owner_type = 'chat_message' AND owner_id IN ?", chatMsgIDs).Delete(&models.Attachment{})
+	}
+	db.Where("project_id = ?", id).Delete(&models.ChatMessage{})
+
+	db.Where("project_id = ?", id).Delete(&models.ProjectWebhook{})
+
+	// Sprints and their card assignments
+	var sprintIDs []uint
+	db.Unscoped().Model(&models.Sprint{}).Where("project_id = ?", id).Pluck("id", &sprintIDs)
+	if len(sprintIDs) > 0 {
+		db.Where("sprint_id IN ?", sprintIDs).Delete(&models.SprintCard{})
+	}
+	db.Unscoped().Where("project_id = ?", id).Delete(&models.Sprint{})
+
+	db.Where("project_id = ?", id).Delete(&models.APIKey{})
+	db.Where("project_id = ?", id).Delete(&models.StarredProject{})
+	db.Where("project_id = ?", id).Delete(&models.ProjectMember{})
+
+	db.Unscoped().Delete(&project)
+	c.JSON(http.StatusOK, gin.H{"message": "project permanently deleted"})
+}
