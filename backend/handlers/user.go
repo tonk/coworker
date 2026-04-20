@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/database"
+	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -155,6 +156,10 @@ func AdminDeleteUser(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	if uint(id) == middleware.GetUserID(c) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "cannot delete your own account"})
 		return
 	}
 	database.DB.Where("user_id = ?", id).Delete(&models.CustomerAccess{})

@@ -121,7 +121,19 @@ const projectMembers = ref([])
 
 const { connected, presenceUsers, connect, disconnect, send: wsSend } = useWebSocket(slug)
 
+// Track whether we've had the first successful connection for the current board.
+// On subsequent connections (reconnects), silently refresh to catch missed events.
+let wsConnectedOnce = false
+
+watch(connected, (isConnected) => {
+  if (isConnected) {
+    if (wsConnectedOnce) boardStore.silentRefresh(slug.value)
+    wsConnectedOnce = true
+  }
+})
+
 async function loadBoard(projectSlug) {
+  wsConnectedOnce = false
   selectedCard.value = null
   await Promise.all([
     boardStore.loadBoard(projectSlug),

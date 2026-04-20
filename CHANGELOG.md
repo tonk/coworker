@@ -2,6 +2,16 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.5 — 2026-04-20
+
+### Added
+- **`board_type` in Ansible collection** — the `ansilabnl.warmdesk.project` module now accepts a `board_type` parameter (`kanban` or `scrum`) at creation time; matches the API's immutability rule (silently ignored on update); collection bumped to v0.2.0
+
+### Fixed
+- **Board auto-refresh on WebSocket reconnect** — if the WebSocket dropped while the board was open (network hiccup, proxy timeout), the hub was torn down and any card created via the API during that window was silently lost; the board now performs a silent background refresh whenever the WebSocket reconnects, recovering any missed events without a visible reload
+- **WarmDesk favicon showed CoWorker branding** — `favicon.svg` used the indigo colour scheme and Kanban-columns icon inherited from CoWorker; replaced with the WarmDesk desk-and-cup motif using the green brand palette (`#1D9E75` background)
+- **Admin could delete their own account** — the `DELETE /api/v1/admin/users/:id` endpoint now returns `403 Forbidden` when the requesting admin targets their own user ID; the Delete button in Admin → Users is also disabled for the logged-in user's own row
+
 ## v0.8.4 — 2026-04-20
 
 ### Added

@@ -21,6 +21,14 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  async function silentRefresh(slug) {
+    const { data } = await projectsApi.get(slug)
+    columns.value = (data.columns || []).sort((a, b) => a.position - b.position).map(col => ({
+      ...col,
+      cards: (col.cards || []).sort((a, b) => a.position - b.position)
+    }))
+  }
+
   function reset() {
     columns.value = []
     projectSlug.value = null
@@ -129,7 +137,7 @@ export const useBoardStore = defineStore('board', () => {
 
   return {
     columns, loading, projectSlug,
-    loadBoard, reset,
+    loadBoard, silentRefresh, reset,
     addColumn, updateColumn, removeColumn, reorderColumns,
     addCard, updateCard, moveCard, removeCard,
     createColumn, createCard, deleteCard, updateCardData,

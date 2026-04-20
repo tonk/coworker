@@ -61,7 +61,7 @@
                   <button class="btn btn-secondary btn-sm" @click="toggleActive(user)">
                     {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
                   </button>
-                  <button class="btn btn-danger btn-sm" @click="deleteUser(user)">{{ $t('common.delete') }}</button>
+                  <button class="btn btn-danger btn-sm" @click="deleteUser(user)" :disabled="user.id === auth.user?.id">{{ $t('common.delete') }}</button>
                 </td>
               </tr>
             </tbody>
@@ -700,12 +700,14 @@ import { resolveAssetUrl } from '@/api/serverConfig'
 import { useUIStore } from '@/stores/ui'
 import { useSystemStore } from '@/stores/system'
 import { useSidebarStore } from '@/stores/sidebar'
+import { useAuthStore } from '@/stores/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
 
 const { t } = useI18n()
 const ui = useUIStore()
 const sidebarStore = useSidebarStore()
 const systemStore = useSystemStore()
+const auth = useAuthStore()
 const { formatDateTime } = useDateFormat()
 const tab = ref('users')
 

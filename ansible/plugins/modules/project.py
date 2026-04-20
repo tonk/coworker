@@ -42,6 +42,16 @@ options:
       - Hex color code for the project avatar (e.g. C(#3b82f6)). Must include
         the leading C(#). Ignored when C(state=absent).
     type: str
+  board_type:
+    description:
+      - Layout type for the project board.
+      - C(kanban) is a free-flowing column board; C(scrum) adds sprint and
+        story-point support.
+      - Can only be set at creation time; changing it on an existing project is
+        not supported by the API and will be silently ignored.
+      - Defaults to C(kanban) when omitted.
+    type: str
+    choices: [kanban, scrum]
   key_prefix:
     description:
       - Card number prefix (e.g. C(EDA) produces card references C(EDA-1),
@@ -136,6 +146,14 @@ EXAMPLES = r'''
     customer: ""
     state: present
 
+- name: Create a scrum project
+  ansilabnl.warmdesk.project:
+    warmdesk_url: https://desk.example.com
+    warmdesk_token: "{{ vault_wd_token }}"
+    name: Sprint Board
+    board_type: scrum
+    state: present
+
 - name: Ensure a project does not exist
   ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
@@ -177,6 +195,10 @@ project:
       description: Hex colour code.
       type: str
       sample: "#3b82f6"
+    board_type:
+      description: Board layout type — C(kanban) or C(scrum).
+      type: str
+      sample: kanban
     key_prefix:
       description: Card reference prefix.
       type: str
@@ -305,6 +327,7 @@ def run_module():
         name=dict(type='str', required=True),
         description=dict(type='str'),
         color=dict(type='str'),
+        board_type=dict(type='str', choices=['kanban', 'scrum']),
         key_prefix=dict(type='str'),
         customer=dict(type='str'),
         contract=dict(type='str'),
@@ -375,6 +398,8 @@ def run_module():
                 create_body['description'] = params['description']
             if params['color'] is not None:
                 create_body['color'] = params['color']
+            if params['board_type'] is not None:
+                create_body['board_type'] = params['board_type']
             if params['key_prefix'] is not None:
                 create_body['key_prefix'] = params['key_prefix']
             if customer_id is not _SENTINEL:

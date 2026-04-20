@@ -367,3 +367,7 @@ Create an application that has all these features and requirements
 - Compose textarea retains keyboard focus after sending a message
 - Card references in chat: typing #PRJ-42 renders a clickable badge; click navigates to the card; Ctrl/middle-click opens a new tab; backend resolves prefix+number via GET /api/v1/cards/resolve/:ref
 - Fix Tauri .desktop file empty Name/Comment/StartupWMClass: Tauri v2 does not substitute {{app_name}} or {{short_description}} placeholders; values hardcoded in template
+- Ansible collection project module supports board_type (kanban or scrum) at creation time; collection bumped to v0.2.0
+- Board silently refreshes on WebSocket reconnect so cards created via API during a dropped connection appear automatically without a manual reload
+- Fix favicon: replace CoWorker indigo Kanban-columns icon with WarmDesk desk-and-cup motif in green brand colours
+- Prevent admin from deleting their own account: backend returns 403 and the Delete button is disabled in Admin → Users for the logged-in user's own row
