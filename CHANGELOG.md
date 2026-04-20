@@ -2,6 +2,12 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.2 — 2026-04-20
+
+### Added
+- **Native desktop notifications** — the Tauri desktop app now uses `tauri-plugin-notification` for OS-level notifications (libnotify on Linux, system notifications on macOS/Windows); the browser build continues to use the Web Notifications API; both paths respect the bell toggle and only fire when the window is not focused
+- **`trusted_proxies` config setting** — comma-separated list of reverse-proxy IPs/CIDRs that WarmDesk should trust for the `X-Forwarded-For` header; when set, `c.ClientIP()` returns the real client IP instead of the proxy address, so auth log entries show the originating IP; configurable via `trusted_proxies:` in `warmdesk.yaml` or the `TRUSTED_PROXIES` environment variable; documented in `warmdesk.yaml.example`
+
 ## v0.8.1 — 2026-04-20
 
 ### Added

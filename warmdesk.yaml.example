@@ -64,6 +64,17 @@ jwt_secret: "change-me-for-production"
 # Comma-separated list of allowed CORS origins, or * for any
 allowed_origins: "http://localhost:8080"
 
+# Comma-separated list of trusted reverse-proxy IP addresses or CIDR ranges.
+# When set, Gin reads the real client IP from the X-Forwarded-For header sent
+# by these proxies (used in auth logs and rate limiting).
+# Leave empty (the default) to trust no proxy headers and always use the direct
+# TCP connection address.
+# Env var override: TRUSTED_PROXIES
+# Examples:
+#   trusted_proxies: "127.0.0.1"                 # local reverse proxy (nginx/Apache on same host)
+#   trusted_proxies: "127.0.0.1, 10.0.0.0/8"    # local proxy + internal network
+# trusted_proxies: ""
+
 # Path to the built frontend files (dist/web after running `make build`)
 # Leave empty during development (Vite dev server is used instead)
 web_dir: "dist/web"

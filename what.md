@@ -359,3 +359,5 @@ Create an application that has all these features and requirements
 - Fix Admin permanently delete button doing nothing (missing useI18n import in AdminView.vue)
 - Remove 480px max-width cap on DM message bubbles so wide content (ASCII tables, code) uses full available width
 - Sidebar unread check split to dedicated 5-second interval; presence/user-list poll remains at 10 seconds
+- Native desktop notifications in Tauri app via tauri-plugin-notification (libnotify on Linux); browser falls back to Web Notifications API
+- trusted_proxies config setting (TRUSTED_PROXIES env var): comma-separated IPs/CIDRs for reverse-proxy trust so auth logs show real client IPs; documented in warmdesk.yaml.example
