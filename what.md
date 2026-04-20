@@ -374,3 +374,4 @@ Create an application that has all these features and requirements
 - Ansible collection: new api_key lookup plugin lists personal or project-scoped API keys enriched with username and display_name; filter by key name or return all
 - Hide Deactivate and Delete buttons for the logged-in admin's own row in Admin → Users (previously Delete was disabled but still visible; Deactivate was fully functional)
 - Swagger UI: /swagger and /swagger/ redirect to /swagger/index.html so typing index.html is no longer needed
+- Fix Swagger startup panic: remove /swagger/ route that conflicted with Gin's /*any wildcard; gin-swagger handles the trailing-slash redirect internally

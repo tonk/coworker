@@ -26,9 +26,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 
 	v1 := r.Group("/api/v1")
 
-	// Swagger UI — redirect bare /swagger and /swagger/ to the index page
+	// Swagger UI — /swagger (no slash) redirects to index; /swagger/* handled by gin-swagger
 	r.GET("/swagger", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/swagger/index.html") })
-	r.GET("/swagger/", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/swagger/index.html") })
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Public endpoints

@@ -2,6 +2,11 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.7 — 2026-04-20
+
+### Fixed
+- **Swagger UI redirect caused startup panic** — the `/swagger/` route registered in v0.8.6 conflicted with Gin's `/*any` wildcard; removed the trailing-slash route (gin-swagger handles that redirect internally); `/swagger` → `/swagger/index.html` still works correctly
+
 ## v0.8.6 — 2026-04-20
 
 ### Added
