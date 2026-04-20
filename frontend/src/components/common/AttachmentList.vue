@@ -2,8 +2,8 @@
   <div v-if="attachments && attachments.length" class="attachment-list">
     <div v-for="a in attachments" :key="a.id" class="attachment-item">
       <template v-if="a.mime_type?.startsWith('image/')">
-        <a :href="attachmentsApi.url(a.id)" target="_blank" class="attachment-image-wrap">
-          <img :src="attachmentsApi.url(a.id)" :alt="a.filename" class="attachment-thumb" @error="e => e.target.style.display='none'" />
+        <a :href="a._previewUrl || attachmentsApi.url(a.id)" target="_blank" class="attachment-image-wrap">
+          <img :src="a._previewUrl || attachmentsApi.url(a.id)" :alt="a.filename" class="attachment-thumb" @error="e => e.target.style.display='none'" />
         </a>
       </template>
       <template v-else>
@@ -38,7 +38,7 @@ function formatSize(bytes) {
 <style scoped>
 .attachment-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 6px;
   margin-top: 6px;
 }
@@ -48,16 +48,19 @@ function formatSize(bytes) {
   align-items: center;
 }
 .attachment-image-wrap {
-  display: block;
+  display: inline-block;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--color-border);
+  max-width: 520px;
 }
 .attachment-thumb {
   display: block;
-  max-width: 180px;
-  max-height: 160px;
-  object-fit: cover;
+  width: 100%;
+  max-width: 520px;
+  max-height: 480px;
+  object-fit: contain;
+  background: var(--color-bg);
 }
 .attachment-file {
   display: flex;

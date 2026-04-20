@@ -13,13 +13,14 @@
         <span>{{ $t('chat.title') }}</span>
       </div>
       <div class="layout-picker">
-        <button v-for="l in ['bubble','comfortable','compact','cozy']" :key="l"
+        <button v-for="l in ['bubble','comfortable','compact','cozy','grouped']" :key="l"
           :class="['layout-btn', { active: layout === l }]"
           @click="setLayout(l)" :title="l.charAt(0).toUpperCase() + l.slice(1)">
           <svg v-if="l === 'bubble'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M3 9a2 2 0 0 1 2-2h14"/></svg>
           <svg v-else-if="l === 'comfortable'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="6" x2="21" y2="6"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="12" x2="21" y2="12"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
           <svg v-else-if="l === 'compact'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="13" x2="21" y2="13"/><line x1="3" y1="17" x2="21" y2="17"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
           <svg v-else-if="l === 'cozy'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
+          <svg v-else-if="l === 'grouped'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="3" cy="5" r="2.5" fill="currentColor" stroke="none"/><line x1="8" y1="4" x2="21" y2="4"/><line x1="8" y1="8" x2="17" y2="8"/><line x1="8" y1="12" x2="19" y2="12"/><circle cx="3" cy="18" r="2.5" fill="currentColor" stroke="none"/><line x1="8" y1="17" x2="21" y2="17"/><line x1="8" y1="21" x2="15" y2="21"/></svg>
         </button>
         <button :class="['layout-btn', { active: notifyEnabled }]"
           @click="toggleNotify"
@@ -158,6 +159,7 @@
             @keydown.enter.exact="onEnter"
             @keydown="onKeydown"
             @input="onInput"
+            @paste="onPaste"
           ></textarea>
           <button class="compose-send-btn" @click="sendMessage" :disabled="!draft.trim() && !pendingFiles.length" :title="$t('chat.send')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -354,6 +356,7 @@ async function sendMessage() {
     // For simplicity, upload files and associate after the WS message is created
     const filesToUpload = [...pendingFiles.value]
     pendingFiles.value = []
+    filesToUpload.forEach(pf => { if (pf._previewUrl) URL.revokeObjectURL(pf._previewUrl) })
     // Note: file upload for chat messages uses the chat REST endpoint
     // We upload after a brief delay to get the created message ID
     // This is a best-effort approach - files go as a separate message if no text
@@ -369,7 +372,7 @@ async function sendMessage() {
 
   draft.value = ''
   nextTick(() => {
-    if (textareaEl.value) textareaEl.value.style.height = 'auto'
+    if (textareaEl.value) { textareaEl.value.style.height = 'auto'; textareaEl.value.focus() }
   })
 }
 
@@ -380,12 +383,22 @@ function onFilesSelected(files) {
       filename: f.name,
       size_bytes: f.size,
       mime_type: f.type || 'application/octet-stream',
-      _file: f
+      _file: f,
+      _previewUrl: f.type?.startsWith('image/') ? URL.createObjectURL(f) : null,
     })
   }
 }
 
+function onPaste(e) {
+  const items = Array.from(e.clipboardData?.items || [])
+  const images = items.filter(it => it.kind === 'file' && it.type.startsWith('image/'))
+  if (!images.length) return
+  e.preventDefault()
+  onFilesSelected(images.map(it => it.getAsFile()).filter(Boolean))
+}
+
 function removePending(a) {
+  if (a._previewUrl) URL.revokeObjectURL(a._previewUrl)
   pendingFiles.value = pendingFiles.value.filter(p => p.id !== a.id)
 }
 

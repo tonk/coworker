@@ -2,6 +2,17 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.3 — 2026-04-20
+
+### Added
+- **Grouped chat layout** — a fifth chat layout (Discord/Mattermost-style) available in the layout picker of both the project chat panel and the DM view; consecutive messages from the same sender within a 5-minute window collapse so the avatar and name appear only on the first message of each group, giving a clean threaded feel
+- **Paste images into chat** — pressing Ctrl+V (or ⌘V) while the compose textarea is focused pastes any clipboard image directly as a pending attachment; the image previews immediately in the compose area using a local object URL, then uploads and appears inline in the chat when the message is sent; works in both the DM view and project chat panel
+
+### Fixed
+- **Inline image display** — attached images now render at full natural size (up to 520×480 px) directly in the chat message instead of showing as a small thumbnail or opaque chip; images in received messages load correctly via a `?token=` query-parameter added to attachment URLs so browser `<img>` tags can authenticate without custom headers
+- **Compose textarea loses focus after send** — keyboard focus now returns to the compose bar immediately after a message is sent, so the user can keep typing without clicking back in
+- **Wording** — README and `.desktop` files updated from "Kanban boards" to "Kanban and Scrum boards"
+
 ## v0.8.2 — 2026-04-20
 
 ### Added

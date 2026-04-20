@@ -18,6 +18,12 @@ func Auth(authSvc *services.AuthService) gin.HandlerFunc {
 	apiKeyAuth := APIKeyAuth()
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
+		// Also accept ?token= query param (needed for <img> tags which can't set headers)
+		if !strings.HasPrefix(header, "Bearer ") {
+			if t := c.Query("token"); t != "" {
+				header = "Bearer " + t
+			}
+		}
 		if strings.HasPrefix(header, "Bearer ") {
 			tokenStr := strings.TrimPrefix(header, "Bearer ")
 			claims, err := authSvc.ValidateToken(tokenStr)

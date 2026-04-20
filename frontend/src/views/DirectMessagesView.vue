@@ -200,7 +200,7 @@
           </div>
           <!-- Layout picker -->
           <div class="layout-picker">
-            <button v-for="l in ['bubble','comfortable','compact','cozy']" :key="l"
+            <button v-for="l in ['bubble','comfortable','compact','cozy','grouped']" :key="l"
               :class="['layout-btn', { active: layout === l }]"
               @click="setLayout(l)" :title="l.charAt(0).toUpperCase() + l.slice(1)">
               <!-- bubble -->
@@ -211,6 +211,8 @@
               <svg v-else-if="l === 'compact'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="13" x2="21" y2="13"/><line x1="3" y1="17" x2="21" y2="17"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
               <!-- cozy -->
               <svg v-else-if="l === 'cozy'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
+              <!-- grouped -->
+              <svg v-else-if="l === 'grouped'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="3" cy="5" r="2.5" fill="currentColor" stroke="none"/><line x1="8" y1="4" x2="21" y2="4"/><line x1="8" y1="8" x2="17" y2="8"/><line x1="8" y1="12" x2="19" y2="12"/><circle cx="3" cy="18" r="2.5" fill="currentColor" stroke="none"/><line x1="8" y1="17" x2="21" y2="17"/><line x1="8" y1="21" x2="15" y2="21"/></svg>
             </button>
             <!-- Bell: toggle new-message notifications -->
             <button :class="['layout-btn', { active: notifyEnabled }]"
@@ -254,7 +256,11 @@
               <span class="date-sep-label">{{ dayLabel(msg.created_at) }}</span>
             </div>
 
-            <div :class="['msg-row', { 'msg-own': msg.sender_id === auth.user?.id }]">
+            <div :class="['msg-row', {
+              'msg-own': msg.sender_id === auth.user?.id,
+              'group-start': layout === 'grouped' && !isSameGroup(messages, i),
+              'group-continue': layout === 'grouped' && isSameGroup(messages, i),
+            }]">
 
               <div class="msg-avatar" :style="avatarBg(msg.sender)">
                 <img v-if="getAvatar(msg.sender)" :src="getAvatar(msg.sender)" class="avatar-img" @error="e => e.target.style.display='none'" />
@@ -262,8 +268,9 @@
               </div>
 
               <div class="msg-content">
-                <div class="msg-sender" v-if="layout !== 'bubble' || msg.sender_id !== auth.user?.id">
+                <div class="msg-sender" v-if="layout === 'grouped' ? !isSameGroup(messages, i) : (layout !== 'bubble' || msg.sender_id !== auth.user?.id)">
                   {{ msg.sender?.display_name || msg.sender?.username }}
+                  <span v-if="layout === 'grouped'" class="msg-time-grouped">{{ formatTime(msg.created_at) }}</span>
                 </div>
                 <!-- Edit mode -->
                 <template v-if="editingMsgId === msg.id">
@@ -356,6 +363,7 @@
                 @keydown.enter.exact="onEnter"
                 @keydown="onKeydown"
                 @input="onInput"
+                @paste="onPaste"
               ></textarea>
               <button class="compose-send-btn" @click="send" :disabled="(!newMessage.trim() && !pendingFiles.length) || sending" :title="$t('chat.send')">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -710,6 +718,7 @@ async function send() {
     if (pendingFiles.value.length) {
       const filesToUpload = [...pendingFiles.value]
       pendingFiles.value = []
+      filesToUpload.forEach(pf => { if (pf._previewUrl) URL.revokeObjectURL(pf._previewUrl) })
       for (const pf of filesToUpload) {
         const fd = new FormData()
         fd.append('file', pf._file)
@@ -724,7 +733,7 @@ async function send() {
 
     messages.value.push(newMsg)
     newMessage.value = ''
-    if (textareaEl.value) textareaEl.value.style.height = 'auto'
+    if (textareaEl.value) { textareaEl.value.style.height = 'auto'; textareaEl.value.focus() }
     // Bump this conversation to the top
     const idx = conversations.value.findIndex(c => c.id === activeConv.value.id)
     if (idx > 0) {
@@ -785,12 +794,22 @@ function onFilesSelected(files) {
       filename: f.name,
       size_bytes: f.size,
       mime_type: f.type || 'application/octet-stream',
-      _file: f
+      _file: f,
+      _previewUrl: f.type?.startsWith('image/') ? URL.createObjectURL(f) : null,
     })
   }
 }
 
+function onPaste(e) {
+  const items = Array.from(e.clipboardData?.items || [])
+  const images = items.filter(it => it.kind === 'file' && it.type.startsWith('image/'))
+  if (!images.length) return
+  e.preventDefault()
+  onFilesSelected(images.map(it => it.getAsFile()).filter(Boolean))
+}
+
 function removePending(a) {
+  if (a._previewUrl) URL.revokeObjectURL(a._previewUrl)
   pendingFiles.value = pendingFiles.value.filter(p => p.id !== a.id)
 }
 
@@ -913,6 +932,15 @@ function isDifferentDay(msgs, index) {
   return curr.getFullYear() !== prev.getFullYear() ||
     curr.getMonth() !== prev.getMonth() ||
     curr.getDate() !== prev.getDate()
+}
+
+function isSameGroup(msgs, i) {
+  if (i === 0) return false
+  const curr = msgs[i]
+  const prev = msgs[i - 1]
+  if (curr.sender_id !== prev.sender_id) return false
+  if (isDifferentDay(msgs, i)) return false
+  return new Date(curr.created_at) - new Date(prev.created_at) < 5 * 60 * 1000
 }
 
 function renderMarkdown(text) {
@@ -1698,4 +1726,47 @@ function dayLabel(dateStr) {
 }
 .layout-cozy .bubble-own .msg-body :deep(code),
 .layout-cozy .bubble-other .msg-body :deep(code) { background: rgba(0,0,0,.08); }
+
+/* ── Grouped: Discord/Mattermost-style ───────────────────── */
+.layout-grouped .msg-row {
+  flex-direction: row !important;
+  align-items: flex-start;
+  margin-bottom: 0;
+  padding: 1px 0;
+}
+.layout-grouped .msg-row.msg-own .msg-content { align-items: flex-start; }
+.layout-grouped .msg-row.group-start { margin-top: 14px; }
+.layout-grouped .msg-row.group-continue .msg-avatar { visibility: hidden; }
+.layout-grouped .msg-avatar { align-self: flex-start; }
+.layout-grouped .msg-sender {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 2px;
+  padding: 0;
+}
+.msg-time-grouped {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.layout-grouped .msg-bubble {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 2px 0 !important;
+  color: var(--color-text) !important;
+  max-width: 100%;
+}
+.layout-grouped .msg-body :deep(pre) {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+.layout-grouped .msg-body :deep(code) { background: var(--color-bg); }
+.layout-grouped .msg-time { display: none; }
+.layout-grouped .msg-meta { margin-top: 0; }
 </style>

@@ -5,7 +5,7 @@
 
 # WarmDesk
 
-A self-hosted, multi-user project management tool with Kanban boards, real-time
+A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging, time tracking, and a ticket API.
 
 ## Build status
@@ -33,58 +33,6 @@ updated `what.md` and asked Claude Code to generate the app.
 | *Time report with PDF/Excel export* | *Admin panel — user management* |
 | ![Admin settings](screenshots/09-admin-settings.png) | ![User settings](screenshots/10-user-settings.png) |
 | *Admin settings* | *User settings* |
-
-## Features
-
-- **Customer / Contract / Project hierarchy** — customers are top-level entities; contracts sit under a customer; projects can be linked to a customer and optionally to a contract; manage from the Customers page or from Project Settings
-- **Customers sidebar** — starred customers listed in the sidebar with star/unstar toggle; dedicated Customers page (`/customers`) with grid view and full Customer detail page
-- **Sub-cards** — add child cards (one level deep) inside a parent card's detail view; hidden from the board; parent card shows a done/total progress pill; each sub-card has its own card number, assignees, labels, and comments
-- **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, start date, due dates, assignees, watchers, markdown descriptions and comments; configurable card prefix set at creation time (e.g. `PRJ`, `SHOP`, `API`) used in all card references like `PRJ-42`
-- **Scrum** — choose Kanban or Scrum when creating a project (immutable thereafter); Scrum projects add a **Backlog** view (two-panel sprint planner with drag-and-drop card assignment, sprint CRUD, goal and date editing, and a velocity SVG chart of completed sprints) and a **Sprint Board** view (board filtered to the active sprint's cards); sprint lifecycle: planning → active → completed; completing a sprint returns unfinished cards to the backlog; optional story-points field on cards (enabled in Admin → Settings)
-- **Gantt chart** — timeline view per project; cards with a start or due date appear as bars; click any bar to open the card detail; zoom between day, week, and month views
-- **Card sorting** — sort column cards by date, assignee, or priority (ascending / descending)
-- **Copy card** — duplicate a card within the same column with one click
-- **Transfer card** — copy or move a card to any other project you have access to; choose the destination project and column
-- **Close / reopen cards** — mark cards as closed; closed cards stay on the board with a strikethrough and muted style and can be reopened at any time
-- **Linked cards (cross-references)** — link any two cards across projects; linked cards appear in the card detail with their reference, title, current column, and open/closed status; remove a link at any time
-- **Comment replies** — reply to any comment; replies are visually indented
-- **Time tracking** — log hours and minutes spent directly on a card
-- **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
-- **Role-based access** — global roles (admin / user / viewer / metrics / backup) and per-project roles (owner / admin / member / viewer); project admins can manage columns
-- **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
-- **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management
-- **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
-- **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages
-- **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted); all sections are drag-to-reorder with custom order persisted in localStorage
-- **Dark / light / system theme** — defaults to light
-- **Accent colour** — per-user accent colour (blue, red, green, or orange) applied throughout the UI; saved as a user setting
-- **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français), Danish (Dansk), Swedish (Svenska), Norwegian (Norsk), Finnish (Suomi), Icelandic (Íslenska), Portuguese (Português), Italian (Italiano)
-- **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, password change
-- **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
-- **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
-- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create and restore database backups
-- **SMTP email** — configurable from the admin panel without a server restart; username and password are optional for relay servers
-- **Session timeout** — configurable idle timeout (default 60 minutes); set to 0 to disable
-- **Topics** — threaded discussions per project with markdown support and replies
-- **Checklists** — add checklist items to cards with completion tracking
-- **Multiple assignees** — assign more than one user to a card
-- **Watchers** — subscribe to card activity
-- **Favourite people** — mark users for quick access
-- **Time reports** — generate a time overview filtered by period (all / year / month / week), project, and one or more assignees; export to server-generated PDF (selectable font and output language, company logo, per-project subtotal badges) or Excel (XLSX); time displayed as H:MM
-- **Company branding** — set a company name and logo (JPG, PNG, GIF, WebP, or SVG) that appears on reports
-- **Configurable initial columns** — admin can define which columns are created when a new project is made (defaults to "Backlog")
-- **Ticket API** — create cards, add comments, and move cards via API key (for CI/CD pipelines and external integrations); API keys also work on all other authenticated endpoints
-- **Project-scoped API keys** — keys created in Project Settings are locked to that project; personal API keys in User Settings give full access across all projects
-- **Typing indicator** — animated indicator in project chat shows who is currently typing
-- **@mention autocomplete** — `@username` dropdown in project chat, card descriptions, and card comments
-- **Prometheus metrics** — `GET /api/v1/metrics` exposes project, column, and card counts plus backup status (`last_run_timestamp`, `last_success`, `files_total`); protected by the `metrics` role
-- **Database backup** — Admin → Backup / Restore tab; create timestamped backups stored in `./backups/`; list, restore (live, no restart needed for SQLite), download, and delete backups from the UI; built-in scheduler (every 6 h / 8 h / 12 h / 24 h) with configurable retention; optional email notification after every backup; automated backups via `POST /api/v1/backup` using a dedicated `backup` role service account
-- **Git integration** — connect GitHub, GitLab, Gitea, or Forgejo; commit/PR/issue events post to project chat and automatically link to cards when a card reference (e.g. `PRJ-42`) appears in the message or title; Forgejo events show the Forgejo logo
-- **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
-- **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast
-- **App zoom** — `Ctrl +` / `Ctrl -` to zoom in/out; `Ctrl 0` to reset; level persisted across sessions
-- **Desktop app** — native Tauri app for Linux (AppImage, .deb, .rpm), macOS (DMG), and Windows (installer); server URL configurable from the login page at any time; supports `--version` and `--maximized` CLI flags
-- **Project migration** — `warmdesk-export` and `warmdesk-import` standalone tools to migrate projects to/from Jira, Trello, OpenProject, or Ryver; column mapping via config file
 
 ## Quick Start
 
@@ -244,13 +192,67 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - PostgreSQL / MySQL setup
 - First admin account setup
 
+## Features
+
+- **Customer / Contract / Project hierarchy** — customers are top-level entities; contracts sit under a customer; projects can be linked to a customer and optionally to a contract; manage from the Customers page or from Project Settings
+- **Customers sidebar** — starred customers listed in the sidebar with star/unstar toggle; dedicated Customers page (`/customers`) with grid view and full Customer detail page
+- **Sub-cards** — add child cards (one level deep) inside a parent card's detail view; hidden from the board; parent card shows a done/total progress pill; each sub-card has its own card number, assignees, labels, and comments
+- **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, start date, due dates, assignees, watchers, markdown descriptions and comments; configurable card prefix set at creation time (e.g. `PRJ`, `SHOP`, `API`) used in all card references like `PRJ-42`
+- **Scrum** — choose Kanban or Scrum when creating a project (immutable thereafter); Scrum projects add a **Backlog** view (two-panel sprint planner with drag-and-drop card assignment, sprint CRUD, goal and date editing, and a velocity SVG chart of completed sprints) and a **Sprint Board** view (board filtered to the active sprint's cards); sprint lifecycle: planning → active → completed; completing a sprint returns unfinished cards to the backlog; optional story-points field on cards (enabled in Admin → Settings)
+- **Gantt chart** — timeline view per project; cards with a start or due date appear as bars; click any bar to open the card detail; zoom between day, week, and month views
+- **Card sorting** — sort column cards by date, assignee, or priority (ascending / descending)
+- **Copy card** — duplicate a card within the same column with one click
+- **Transfer card** — copy or move a card to any other project you have access to; choose the destination project and column
+- **Close / reopen cards** — mark cards as closed; closed cards stay on the board with a strikethrough and muted style and can be reopened at any time
+- **Linked cards (cross-references)** — link any two cards across projects; linked cards appear in the card detail with their reference, title, current column, and open/closed status; remove a link at any time
+- **Comment replies** — reply to any comment; replies are visually indented
+- **Time tracking** — log hours and minutes spent directly on a card
+- **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
+- **Role-based access** — global roles (admin / user / viewer / metrics / backup) and per-project roles (owner / admin / member / viewer); project admins can manage columns
+- **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
+- **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management
+- **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
+- **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages
+- **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted); all sections are drag-to-reorder with custom order persisted in localStorage
+- **Dark / light / system theme** — defaults to light
+- **Accent colour** — per-user accent colour (blue, red, green, or orange) applied throughout the UI; saved as a user setting
+- **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français), Danish (Dansk), Swedish (Svenska), Norwegian (Norsk), Finnish (Suomi), Icelandic (Íslenska), Portuguese (Português), Italian (Italiano)
+- **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, password change
+- **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
+- **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
+- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create and restore database backups
+- **SMTP email** — configurable from the admin panel without a server restart; username and password are optional for relay servers
+- **Session timeout** — configurable idle timeout (default 60 minutes); set to 0 to disable
+- **Topics** — threaded discussions per project with markdown support and replies
+- **Checklists** — add checklist items to cards with completion tracking
+- **Multiple assignees** — assign more than one user to a card
+- **Watchers** — subscribe to card activity
+- **Favourite people** — mark users for quick access
+- **Time reports** — generate a time overview filtered by period (all / year / month / week), project, and one or more assignees; export to server-generated PDF (selectable font and output language, company logo, per-project subtotal badges) or Excel (XLSX); time displayed as H:MM
+- **Company branding** — set a company name and logo (JPG, PNG, GIF, WebP, or SVG) that appears on reports
+- **Configurable initial columns** — admin can define which columns are created when a new project is made (defaults to "Backlog")
+- **Ticket API** — create cards, add comments, and move cards via API key (for CI/CD pipelines and external integrations); API keys also work on all other authenticated endpoints
+- **Project-scoped API keys** — keys created in Project Settings are locked to that project; personal API keys in User Settings give full access across all projects
+- **Typing indicator** — animated indicator in project chat shows who is currently typing
+- **@mention autocomplete** — `@username` dropdown in project chat, card descriptions, and card comments
+- **Prometheus metrics** — `GET /api/v1/metrics` exposes project, column, and card counts plus backup status (`last_run_timestamp`, `last_success`, `files_total`); protected by the `metrics` role
+- **Database backup** — Admin → Backup / Restore tab; create timestamped backups stored in `./backups/`; list, restore (live, no restart needed for SQLite), download, and delete backups from the UI; built-in scheduler (every 6 h / 8 h / 12 h / 24 h) with configurable retention; optional email notification after every backup; automated backups via `POST /api/v1/backup` using a dedicated `backup` role service account
+- **Git integration** — connect GitHub, GitLab, Gitea, or Forgejo; commit/PR/issue events post to project chat and automatically link to cards when a card reference (e.g. `PRJ-42`) appears in the message or title; Forgejo events show the Forgejo logo
+- **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
+- **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast
+- **App zoom** — `Ctrl +` / `Ctrl -` to zoom in/out; `Ctrl 0` to reset; level persisted across sessions
+- **Desktop app** — native Tauri app for Linux (AppImage, .deb, .rpm), macOS (DMG), and Windows (installer); server URL configurable from the login page at any time; supports `--version` and `--maximized` CLI flags
+- **Project migration** — `warmdesk-export` and `warmdesk-import` standalone tools to migrate projects to/from Jira, Trello, OpenProject, or Ryver; column mapping via config file
+
+
 ## Code Signing Policy
 
-Windows binaries released by WarmDesk are code-signed through the
+Windows binaries released by WarmDesk will code-signed through the
 [SignPath Foundation](https://signpath.org) free code-signing programme for
 open-source software.
 
-- Code signing for WarmDesk is provided by **SignPath.io** / **SignPath Foundation**.
+- Request for Open Source signing is still pending.
+- Code signing for WarmDesk will provided by **SignPath.io** / **SignPath Foundation**.
 - Team members involved in the signing process:
   - **Ton Kersten** — project maintainer and signing approver
 - No user data is collected or shared with any third party as part of the

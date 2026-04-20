@@ -361,3 +361,7 @@ Create an application that has all these features and requirements
 - Sidebar unread check split to dedicated 5-second interval; presence/user-list poll remains at 10 seconds
 - Native desktop notifications in Tauri app via tauri-plugin-notification (libnotify on Linux); browser falls back to Web Notifications API
 - trusted_proxies config setting (TRUSTED_PROXIES env var): comma-separated IPs/CIDRs for reverse-proxy trust so auth logs show real client IPs; documented in warmdesk.yaml.example
+- Grouped chat layout (fifth option alongside Bubble/Comfortable/Compact/Cozy): consecutive messages from the same sender within 5 minutes collapse avatar and name to first message only, Discord/Mattermost style
+- Paste images into chat: Ctrl+V in the compose textarea pastes clipboard images as pending attachments; local object-URL preview shown before send; works in DM view and project chat panel
+- Inline image display: attached images render at up to 520×480 px directly in the message; attachment URLs include ?token= so <img> tags authenticate without custom headers
+- Compose textarea retains keyboard focus after sending a message
