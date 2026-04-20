@@ -58,10 +58,12 @@
                 </td>
                 <td class="actions-cell">
                   <button class="btn btn-secondary btn-sm" @click="openEditUser(user)">{{ $t('common.edit') }}</button>
-                  <button class="btn btn-secondary btn-sm" @click="toggleActive(user)">
-                    {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
-                  </button>
-                  <button class="btn btn-danger btn-sm" @click="deleteUser(user)" :disabled="user.id === auth.user?.id">{{ $t('common.delete') }}</button>
+                  <template v-if="user.id !== auth.user?.id">
+                    <button class="btn btn-secondary btn-sm" @click="toggleActive(user)">
+                      {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
+                    </button>
+                    <button class="btn btn-danger btn-sm" @click="deleteUser(user)">{{ $t('common.delete') }}</button>
+                  </template>
                 </td>
               </tr>
             </tbody>
