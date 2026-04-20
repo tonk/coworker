@@ -18,7 +18,8 @@ type Config struct {
 	TLSCert        string `yaml:"tls_cert"`       // path to server TLS certificate; enables HTTPS when set together with tls_key
 	TLSKey         string `yaml:"tls_key"`        // path to server TLS private key
 	JWTSecret      string `yaml:"jwt_secret"`
-	AllowedOrigins string `yaml:"allowed_origins"`
+	AllowedOrigins  string `yaml:"allowed_origins"`
+	TrustedProxies  string `yaml:"trusted_proxies"` // comma-separated CIDRs/IPs; empty = trust no proxy headers
 	WebDir         string `yaml:"web_dir"`
 	RedisURL       string `yaml:"redis_url"` // optional — enables horizontal scaling
 	DefaultLocale  string `yaml:"default_locale"`
@@ -116,6 +117,9 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv("ALLOWED_ORIGINS"); v != "" {
 		cfg.AllowedOrigins = v
+	}
+	if v := os.Getenv("TRUSTED_PROXIES"); v != "" {
+		cfg.TrustedProxies = v
 	}
 	if v := os.Getenv("WEB_DIR"); v != "" {
 		cfg.WebDir = v

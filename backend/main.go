@@ -104,7 +104,13 @@ func main() {
 
 	authSvc := services.NewAuthService(cfg.JWTSecret)
 
-	r := router.Setup(authSvc, cfg.AllowedOrigins, cfg.WebDir, cfg.APILog, cfg.UploadDir)
+	var trustedProxies []string
+	for _, p := range strings.Split(cfg.TrustedProxies, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			trustedProxies = append(trustedProxies, p)
+		}
+	}
+	r := router.Setup(authSvc, cfg.AllowedOrigins, cfg.WebDir, cfg.APILog, cfg.UploadDir, trustedProxies)
 
 	addr := ":" + cfg.Port
 	if cfg.TLSCert != "" && cfg.TLSKey != "" {

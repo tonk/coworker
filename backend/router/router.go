@@ -12,9 +12,9 @@ import (
 	"github.com/tonk/warmdesk/services"
 )
 
-func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, apiLog bool, uploadDir string) *gin.Engine {
+func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, apiLog bool, uploadDir string, trustedProxies []string) *gin.Engine {
 	r := gin.New()
-	r.SetTrustedProxies(nil) //nolint // nil = trust no proxy headers; set to []string{"127.0.0.1"} if behind a local reverse proxy
+	r.SetTrustedProxies(trustedProxies) //nolint
 	r.Use(gin.Recovery())
 	if apiLog {
 		r.Use(gin.Logger())
