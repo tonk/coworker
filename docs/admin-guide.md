@@ -350,6 +350,40 @@ The `metrics` role is intended for Prometheus scraper accounts. Create a dedicat
 
 The `backup` role is intended for automated backup scripts and cron jobs. See [section 15](#15-backup-and-recovery) for setup instructions.
 
+### Groups
+
+Groups let you manage project and customer access for a set of users in one place instead of assigning each user individually.
+
+| Action | Where |
+|--------|-------|
+| Create a group | Admin → Groups → Create Group |
+| Edit name / description | Admin → Groups → (click group) |
+| Add / remove members | Admin → Groups → (click group) → Members tab |
+| Grant project access | Admin → Groups → (click group) → Project Access tab |
+| Grant customer access | Admin → Groups → (click group) → Customer Access tab |
+| Delete a group | Admin → Groups → (click group) → Delete |
+
+**How group access works**
+
+Group access is **additive**: a user's effective role on a project or customer is the highest role they hold, whether that comes from a direct assignment or from any group they belong to. Removing a user from a group immediately revokes any access they received exclusively through that group.
+
+Global admins bypass all access checks and are unaffected by group assignments.
+
+**Project roles via group**
+
+| Role | Effect |
+|------|--------|
+| `viewer` | Read-only access to the project board and cards |
+| `member` | Can create and edit cards, post comments |
+| `owner` | Full project permissions including settings and member management |
+
+**Customer roles via group**
+
+| Role | Effect |
+|------|--------|
+| `member` | Can view the customer and its contracts |
+| `admin` | Can edit the customer, create/edit contracts, manage members |
+
 ### Customer access control
 
 Non-admin users only see the customers they are **explicitly assigned to**. A
@@ -815,6 +849,7 @@ cd dist
 - Threaded topics per project
 - 4 direct message conversations and 1 group chat with realistic history
 - 3 customers (Acme Corporation, Globex Systems, Initech Ltd) with contracts linked to projects
+- 3 groups: Frontend Team, DevOps Team, Acme Stakeholders (with members and project/customer access pre-configured)
 - Starred projects pre-set for each demo user (e.g. admin has all three; owners have their own project plus one adjacent)
 - Starred customers pre-set (Acme starred for admin, sarah, marc; Globex for marc, lisa)
 

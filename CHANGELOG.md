@@ -2,6 +2,17 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.9 — 2026-04-21
+
+### Added
+- **User groups** — admins can create named groups (`Admin → Groups`) and assign members, project roles, and customer roles to a group; group access is additive: a user gains the highest role they hold either directly or through any group they belong to
+- **`Admin → Groups` tab** — full CRUD for groups in the Admin panel (positioned after Users); each group detail panel shows members, project access, and customer access with add/remove controls
+- **Demo seeder groups** — `warmdesk-seed` now creates three demo groups: _Frontend Team_ (sarah, marc, priya, james; access to Website Redesign, Mobile App v2, Marketing), _DevOps Team_ (marc, lisa, raj; access to DevOps & Infra, Product Platform), and _Acme Stakeholders_ (admin, sarah, marc; viewer access to Acme Corporation)
+- **Ansible `ansilabnl.warmdesk.group` module** — manage groups, members, project access, and customer access idempotently; supports declarative reconciliation (provide full desired lists to add/remove in one pass) and check mode; collection bumped to v0.3.0
+
+### Fixed
+- **Group members not persisted** — `AdminAddGroupMember` (and Project/Customer variants) used GORM `FirstOrCreate` on composite-primary-key models without an auto-increment ID, which silently failed to create the row; replaced with an explicit `Count` + `Create` pattern
+
 ## v0.8.7 — 2026-04-20
 
 ### Fixed
