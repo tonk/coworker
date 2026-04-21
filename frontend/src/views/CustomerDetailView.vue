@@ -140,16 +140,29 @@
         </div>
 
         <!-- Groups with access -->
-        <div v-if="customerGroups.length" style="margin-top:20px">
+        <div style="margin-top:20px">
           <h3 style="font-size:13px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">
             {{ $t('groups.groups_with_access') }}
           </h3>
+          <div v-if="!customerGroups.length" style="color:var(--color-text-muted);font-size:13px;margin-bottom:10px">{{ $t('groups.no_group_access') }}</div>
           <div v-for="g in customerGroups" :key="g.group_id" class="member-row" style="align-items:center">
             <div class="member-info">
               <span class="member-name">{{ g.group.name }}</span>
               <span class="member-email">{{ g.members.map(m => m.user.display_name || m.user.username).join(', ') || '—' }}</span>
             </div>
             <span :class="['role-badge', g.role === 'admin' ? 'role-admin' : 'role-member']">{{ g.role }}</span>
+            <button v-if="auth.isAdmin" class="icon-btn icon-danger" style="margin-left:8px" @click="removeGroupFromCustomer(g.group_id)" title="Remove">✕</button>
+          </div>
+          <div v-if="auth.isAdmin" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
+            <select class="form-input" v-model="addGroupId" style="flex:1;min-width:160px">
+              <option value="">— {{ $t('groups.add_customer') }} —</option>
+              <option v-for="g in groupsNotOnCustomer" :key="g.id" :value="g.id">{{ g.name }}</option>
+            </select>
+            <select class="form-input" v-model="addGroupRole" style="width:110px">
+              <option value="member">{{ $t('customer.role_member') }}</option>
+              <option value="admin">{{ $t('customer.role_admin') }}</option>
+            </select>
+            <button class="btn btn-primary btn-sm" :disabled="!addGroupId" @click="addGroupToCustomer">{{ $t('common.add') }}</button>
           </div>
         </div>
       </section>
@@ -328,6 +341,16 @@ const authUserId = computed(() => auth.user?.id)
 // ── Member management ──────────────────────────────────────────────────────
 const members = ref([])
 const customerGroups = ref([])
+const allGroups = ref([])
+let allGroupsLoaded = false
+const addGroupId = ref('')
+const addGroupRole = ref('member')
+
+const groupsNotOnCustomer = computed(() => {
+  const assigned = new Set(customerGroups.value.map(g => g.group_id))
+  return allGroups.value.filter(g => !assigned.has(g.id))
+})
+
 const showAddMember = ref(false)
 const allUsers = ref([])
 let allUsersLoaded = false
@@ -355,6 +378,34 @@ async function loadMembers() {
     const { data } = await groupsApi.listCustomerGroups(custId.value)
     customerGroups.value = data || []
   } catch {}
+  if (auth.isAdmin && !allGroupsLoaded) {
+    try {
+      const { data } = await groupsApi.list()
+      allGroups.value = data || []
+      allGroupsLoaded = true
+    } catch {}
+  }
+}
+
+async function addGroupToCustomer() {
+  if (!addGroupId.value) return
+  try {
+    await groupsApi.setCustomerAccess(addGroupId.value, custId.value, addGroupRole.value)
+    const { data } = await groupsApi.listCustomerGroups(custId.value)
+    customerGroups.value = data || []
+    addGroupId.value = ''
+  } catch {
+    ui.error('Failed to add group')
+  }
+}
+
+async function removeGroupFromCustomer(groupId) {
+  try {
+    await groupsApi.removeCustomerAccess(groupId, custId.value)
+    customerGroups.value = customerGroups.value.filter(g => g.group_id !== groupId)
+  } catch {
+    ui.error('Failed to remove group')
+  }
 }
 
 async function openAddMember() {

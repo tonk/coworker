@@ -91,13 +91,14 @@
           <!-- Groups with access -->
           <div style="margin-top:28px">
             <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em">{{ $t('groups.groups_with_access') }}</h3>
-            <div v-if="!projectGroups.length" style="color:var(--color-text-muted);font-size:13px">{{ $t('groups.no_group_access') }}</div>
-            <table v-else class="data-table">
+            <div v-if="!projectGroups.length" style="color:var(--color-text-muted);font-size:13px;margin-bottom:10px">{{ $t('groups.no_group_access') }}</div>
+            <table v-else class="data-table" style="margin-bottom:12px">
               <thead>
                 <tr>
                   <th>{{ $t('groups.name') }}</th>
                   <th>{{ $t('project.role') }}</th>
                   <th>{{ $t('groups.members') }}</th>
+                  <th v-if="auth.isAdmin"></th>
                 </tr>
               </thead>
               <tbody>
@@ -107,9 +108,24 @@
                   <td style="color:var(--color-text-muted);font-size:12px">
                     {{ g.members.map(m => m.user.display_name || m.user.username).join(', ') || '—' }}
                   </td>
+                  <td v-if="auth.isAdmin">
+                    <button class="btn btn-danger btn-sm" @click="removeGroupFromProject(g.group_id)">✕</button>
+                  </td>
                 </tr>
               </tbody>
             </table>
+            <div v-if="auth.isAdmin" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select class="form-input" v-model="addGroupId" style="flex:1;min-width:160px">
+                <option value="">— {{ $t('groups.add_project') }} —</option>
+                <option v-for="g in groupsNotOnProject" :key="g.id" :value="g.id">{{ g.name }}</option>
+              </select>
+              <select class="form-input" v-model="addGroupRole" style="width:110px">
+                <option value="viewer">{{ $t('project.roles.viewer') }}</option>
+                <option value="member">{{ $t('project.roles.member') }}</option>
+                <option value="owner">{{ $t('project.roles.owner') }}</option>
+              </select>
+              <button class="btn btn-primary btn-sm" :disabled="!addGroupId" @click="addGroupToProject">{{ $t('common.add') }}</button>
+            </div>
           </div>
         </div>
 
@@ -347,6 +363,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useProjectStore } from '@/stores/project'
 import { useUIStore } from '@/stores/ui'
+import { useAuthStore } from '@/stores/auth'
 import { projectsApi } from '@/api/projects'
 import { groupsApi } from '@/api/groups'
 import { authApi } from '@/api/auth'
@@ -361,12 +378,22 @@ const router = useRouter()
 const slug = computed(() => route.params.slug)
 const projectStore = useProjectStore()
 const ui = useUIStore()
+const auth = useAuthStore()
 
 const tab = ref('general')
 const project = ref(null)
 const members = ref([])
 const projectGroups = ref([])
+const allGroups = ref([])
+let allGroupsLoaded = false
+const addGroupId = ref('')
+const addGroupRole = ref('member')
 const labels = ref([])
+
+const groupsNotOnProject = computed(() => {
+  const assigned = new Set(projectGroups.value.map(g => g.group_id))
+  return allGroups.value.filter(g => !assigned.has(g.id))
+})
 const showInvite = ref(false)
 const showAddLabel = ref(false)
 const invite = ref({ userIds: [], role: 'member' })
@@ -444,6 +471,34 @@ async function loadMembers() {
     const { data: groups } = await groupsApi.listProjectGroups(slug.value)
     projectGroups.value = groups || []
   } catch {}
+  if (auth.isAdmin && !allGroupsLoaded) {
+    try {
+      const { data: all } = await groupsApi.list()
+      allGroups.value = all || []
+      allGroupsLoaded = true
+    } catch {}
+  }
+}
+
+async function addGroupToProject() {
+  if (!addGroupId.value) return
+  try {
+    await groupsApi.setProjectAccess(addGroupId.value, project.value.id, addGroupRole.value)
+    const { data } = await groupsApi.listProjectGroups(slug.value)
+    projectGroups.value = data || []
+    addGroupId.value = ''
+  } catch {
+    ui.error('Failed to add group')
+  }
+}
+
+async function removeGroupFromProject(groupId) {
+  try {
+    await groupsApi.removeProjectAccess(groupId, project.value.id)
+    projectGroups.value = projectGroups.value.filter(g => g.group_id !== groupId)
+  } catch {
+    ui.error('Failed to remove group')
+  }
 }
 
 async function loadLabels() {
