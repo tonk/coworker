@@ -87,6 +87,30 @@
               </tr>
             </tbody>
           </table>
+
+          <!-- Groups with access -->
+          <div style="margin-top:28px">
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em">{{ $t('groups.groups_with_access') }}</h3>
+            <div v-if="!projectGroups.length" style="color:var(--color-text-muted);font-size:13px">{{ $t('groups.no_group_access') }}</div>
+            <table v-else class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ $t('groups.name') }}</th>
+                  <th>{{ $t('project.role') }}</th>
+                  <th>{{ $t('groups.members') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="g in projectGroups" :key="g.group_id">
+                  <td><strong>{{ g.group.name }}</strong></td>
+                  <td>{{ g.role }}</td>
+                  <td style="color:var(--color-text-muted);font-size:12px">
+                    {{ g.members.map(m => m.user.display_name || m.user.username).join(', ') || '—' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <!-- API Keys Tab -->
@@ -324,6 +348,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import { useProjectStore } from '@/stores/project'
 import { useUIStore } from '@/stores/ui'
 import { projectsApi } from '@/api/projects'
+import { groupsApi } from '@/api/groups'
 import { authApi } from '@/api/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
 import client from '@/api/client'
@@ -340,6 +365,7 @@ const ui = useUIStore()
 const tab = ref('general')
 const project = ref(null)
 const members = ref([])
+const projectGroups = ref([])
 const labels = ref([])
 const showInvite = ref(false)
 const showAddLabel = ref(false)
@@ -414,6 +440,10 @@ onMounted(async () => {
 async function loadMembers() {
   const { data } = await projectsApi.listMembers(slug.value)
   members.value = data
+  try {
+    const { data: groups } = await groupsApi.listProjectGroups(slug.value)
+    projectGroups.value = groups || []
+  } catch {}
 }
 
 async function loadLabels() {

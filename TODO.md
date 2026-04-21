@@ -91,9 +91,32 @@
 
 - ~~Implement a Gantt chart per project~~ **Done in v0.6.0**
 
-- Allow external repo servers (Gitea, Forgejo, Github, Gitlab) to follow
-  projects, so that the comments (with the Gitea issue tag) are also
-  linked in the issue
+- ~~Change the Github workflow to produce a single binary server,
+  `warmdesk`, without the `web` directory.~~ **Done — both build-server.yml and release.yml now embed the frontend with `-tags embed`; no web/ directory shipped**
+
+- ~~Move creation of Customers to the "Admin Panel", just after groups
+  No more creation of customers in the sidebar. So, only Admins can
+  create new customers.
+  The contracts move with this as well~~ **Done — Admin Panel now has a Customers tab (after Groups); customer creation restricted to admins only**
+
+- ~~Project Settings -> Members: Also show the assigned groups and their
+  Role~~ **Done — groups with access shown below direct members in Project Settings → Members**
+
+- ~~Customer Settings -> Members: Also show the assigned groups and their
+  Role~~ **Done — groups with access shown below direct members in Customer Detail → Members**
+
+- Pasting a picture in the chat, in the client (Linux) doesn't work
+  It does in the web interface.
+  When I paste it in the web interface, it is displayed in the client.
+
+- When pasting or typing a URL in the chat, generate a preview, if the
+  site can be reached.
+
+- Enable syntax highlighting in the chat, when code is entered.
+
+- In the chat fix code colors, as they look bad, right now (weird
+  background on the text). This happens in `Bubble`, `Comfortable` and
+  `Cozy`.
 
 - ~~With the backup/restore function, add an option to send an email after
   the backup is done. This has to have, of course, a tick-box to switch
@@ -103,6 +126,7 @@
     - Date / time
     - Backup successful or not
     - List of all available backups~~ **Done**
+
 - ~~Also add to the backup, API metrics for:
     - Date / time of last backup
     - Backup successful or not

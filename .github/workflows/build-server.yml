@@ -41,6 +41,11 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm ci && npm run build
 
+      - name: Embed frontend into binary
+        run: |
+          mkdir -p backend/staticweb/files
+          cp -r frontend/dist/. backend/staticweb/files/
+
       - name: Build backend (linux/amd64)
         env:
           CGO_ENABLED: 0
@@ -50,7 +55,7 @@ jobs:
           SHA=$(git rev-parse --short HEAD)
           mkdir -p dist-amd64
           cd backend
-          go build -ldflags="-s -w -X main.version=dev-${SHA}" -o ../dist-amd64/warmdesk .
+          go build -tags embed -ldflags="-s -w -X main.version=dev-${SHA}" -o ../dist-amd64/warmdesk .
           go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-seed ./cmd/seed
           go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-export ./cmd/export
           go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-import ./cmd/importer
@@ -65,7 +70,7 @@ jobs:
           SHA=$(git rev-parse --short HEAD)
           mkdir -p dist-arm64
           cd backend
-          go build -ldflags="-s -w -X main.version=dev-${SHA}" -o ../dist-arm64/warmdesk .
+          go build -tags embed -ldflags="-s -w -X main.version=dev-${SHA}" -o ../dist-arm64/warmdesk .
           go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-seed ./cmd/seed
           go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-export ./cmd/export
           go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-import ./cmd/importer
@@ -74,8 +79,7 @@ jobs:
       - name: Assemble distributions
         run: |
           for ARCH in amd64 arm64; do
-            mkdir -p dist-${ARCH}/web
-            cp -r frontend/dist/. dist-${ARCH}/web/
+            mkdir -p dist-${ARCH}
             cp warmdesk.yaml.example dist-${ARCH}/warmdesk.yaml.example
             cp warmdesk-migrate.yaml.example dist-${ARCH}/warmdesk-migrate.yaml.example
             cp -r deploy dist-${ARCH}/deploy

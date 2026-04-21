@@ -138,6 +138,20 @@
             </div>
           </div>
         </div>
+
+        <!-- Groups with access -->
+        <div v-if="customerGroups.length" style="margin-top:20px">
+          <h3 style="font-size:13px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">
+            {{ $t('groups.groups_with_access') }}
+          </h3>
+          <div v-for="g in customerGroups" :key="g.group_id" class="member-row" style="align-items:center">
+            <div class="member-info">
+              <span class="member-name">{{ g.group.name }}</span>
+              <span class="member-email">{{ g.members.map(m => m.user.display_name || m.user.username).join(', ') || '—' }}</span>
+            </div>
+            <span :class="['role-badge', g.role === 'admin' ? 'role-admin' : 'role-member']">{{ g.role }}</span>
+          </div>
+        </div>
       </section>
 
     </template>
@@ -246,6 +260,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useCustomersStore } from '@/stores/customers'
 import { useUIStore } from '@/stores/ui'
 import { customersApi } from '@/api/customers'
+import { groupsApi } from '@/api/groups'
 import { attachmentsApi } from '@/api/attachments'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -312,6 +327,7 @@ const authUserId = computed(() => auth.user?.id)
 
 // ── Member management ──────────────────────────────────────────────────────
 const members = ref([])
+const customerGroups = ref([])
 const showAddMember = ref(false)
 const allUsers = ref([])
 let allUsersLoaded = false
@@ -334,6 +350,10 @@ async function loadMembers() {
   try {
     const { data } = await customersApi.listMembers(custId.value)
     members.value = data || []
+  } catch {}
+  try {
+    const { data } = await groupsApi.listCustomerGroups(custId.value)
+    customerGroups.value = data || []
   } catch {}
 }
 

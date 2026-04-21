@@ -79,9 +79,7 @@ const form = ref({ name: '', description: '', logo_url: '' })
 
 const customers = computed(() => custStore.customers)
 
-// Users who are admins or have any project-owner/admin role can manage customers.
-// We determine this from the JWT global role; server enforces the owner check.
-const canManage = computed(() => auth.isAdmin || auth.user?.global_role === 'user')
+const canManage = computed(() => auth.isAdmin)
 
 onMounted(async () => {
   await custStore.fetchCustomers()

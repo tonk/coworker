@@ -6,6 +6,7 @@
         <div class="tabs">
           <button :class="['tab', { active: tab === 'users' }]" @click="tab = 'users'">{{ $t('admin.users') }}</button>
           <button :class="['tab', { active: tab === 'groups' }]" @click="tab = 'groups'; loadGroups()">{{ $t('groups.title') }}</button>
+          <button :class="['tab', { active: tab === 'customers' }]" @click="tab = 'customers'; loadAdminCustomers()">{{ $t('customer.customers') }}</button>
           <button :class="['tab', { active: tab === 'projects' }]" @click="tab = 'projects'; loadProjects()">{{ $t('admin.projects') }}</button>
           <button :class="['tab', { active: tab === 'settings' }]" @click="tab = 'settings'; loadSettings()">{{ $t('admin.settings') }}</button>
           <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()">{{ $t('admin.backup_tab') }}</button>
@@ -172,6 +173,45 @@
               </tr>
               <tr v-if="!groups.length">
                 <td colspan="5" style="text-align:center;color:var(--color-text-muted)">{{ $t('groups.no_groups') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Customers tab -->
+        <div v-if="tab === 'customers'">
+          <div class="tab-toolbar">
+            <button class="btn btn-primary btn-sm" @click="showCreateCustomer = true">+ {{ $t('customer.new_customer') }}</button>
+          </div>
+          <div v-if="loadingCustomers" class="loading-state">
+            <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
+          </div>
+          <table v-else class="data-table">
+            <thead>
+              <tr>
+                <th>{{ $t('customer.name') }}</th>
+                <th>{{ $t('contract.contracts') }}</th>
+                <th>{{ $t('customer.projects') }}</th>
+                <th>{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="c in adminCustomers" :key="c.id">
+                <td>
+                  <RouterLink :to="`/customers/${c.id}`" style="font-weight:600">{{ c.name }}</RouterLink>
+                  <div v-if="c.description" style="font-size:12px;color:var(--color-text-muted)">{{ c.description }}</div>
+                </td>
+                <td>{{ c.contract_count }}</td>
+                <td>{{ c.project_count }}</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn btn-secondary btn-sm" @click="openEditCustomer(c)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-danger btn-sm" @click="deleteAdminCustomer(c)">{{ $t('common.delete') }}</button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="!adminCustomers.length">
+                <td colspan="4" style="text-align:center;color:var(--color-text-muted)">{{ $t('customer.no_customers') }}</td>
               </tr>
             </tbody>
           </table>
@@ -850,11 +890,38 @@
       <button class="btn btn-secondary" @click="activeGroup = null">{{ $t('common.close') }}</button>
     </template>
   </BaseModal>
+
+  <!-- Create / edit customer modal -->
+  <BaseModal
+    v-if="showCreateCustomer || editingCustomer"
+    :title="editingCustomer ? $t('customer.edit') : $t('customer.new_customer')"
+    @close="showCreateCustomer = false; editingCustomer = null"
+  >
+    <div class="form-group">
+      <label class="form-label">{{ $t('customer.name') }}</label>
+      <input class="form-input" v-model="customerForm.name" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('customer.description') }}</label>
+      <textarea class="form-input" v-model="customerForm.description" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('customer.logo_url') }}</label>
+      <input class="form-input" v-model="customerForm.logo_url" placeholder="https://..." />
+    </div>
+    <template #footer>
+      <button class="btn btn-secondary" @click="showCreateCustomer = false; editingCustomer = null">{{ $t('common.cancel') }}</button>
+      <button class="btn btn-primary" :disabled="!customerForm.name.trim()" @click="editingCustomer ? saveEditCustomer() : submitCreateCustomer()">
+        {{ editingCustomer ? $t('common.save') : $t('common.create') }}
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { adminApi } from '@/api/admin'
 import { groupsApi } from '@/api/groups'
@@ -936,6 +1003,14 @@ const usersNotInGroup = computed(() => {
   const inGroup = new Set(groupDetail.value.members.map(m => m.user_id))
   return users.value.filter(u => !inGroup.has(u.id))
 })
+
+// ─── Customers ────────────────────────────────────────────────────────────────
+const adminCustomers = ref([])
+const loadingCustomers = ref(false)
+const showCreateCustomer = ref(false)
+const editingCustomer = ref(null)
+const customerForm = ref({ name: '', description: '', logo_url: '' })
+let adminCustomersLoaded = false
 
 async function loadGroups() {
   loadingGroups.value = true
@@ -1663,6 +1738,65 @@ async function deleteProject(project) {
     ui.success('Project deleted')
   } catch {
     ui.error('Failed to delete project')
+  }
+}
+
+async function loadAdminCustomers() {
+  if (adminCustomersLoaded) return
+  loadingCustomers.value = true
+  try {
+    const { data } = await customersApi.list()
+    adminCustomers.value = data || []
+    adminCustomersLoaded = true
+  } catch {
+    ui.error('Failed to load customers')
+  } finally {
+    loadingCustomers.value = false
+  }
+}
+
+async function submitCreateCustomer() {
+  try {
+    const { data } = await customersApi.create({
+      name: customerForm.value.name.trim(),
+      description: customerForm.value.description,
+      logo_url: customerForm.value.logo_url,
+    })
+    adminCustomers.value.push(data)
+    showCreateCustomer.value = false
+    customerForm.value = { name: '', description: '', logo_url: '' }
+    ui.success('Customer created')
+  } catch (e) {
+    ui.error(e?.response?.data?.error || 'Failed to create customer')
+  }
+}
+
+function openEditCustomer(c) {
+  editingCustomer.value = { ...c }
+  customerForm.value = { name: c.name, description: c.description || '', logo_url: c.logo_url || '' }
+}
+
+async function saveEditCustomer() {
+  try {
+    const { data } = await customersApi.update(editingCustomer.value.id, customerForm.value)
+    const idx = adminCustomers.value.findIndex(c => c.id === editingCustomer.value.id)
+    if (idx >= 0) adminCustomers.value[idx] = data
+    editingCustomer.value = null
+    customerForm.value = { name: '', description: '', logo_url: '' }
+    ui.success('Customer updated')
+  } catch {
+    ui.error('Failed to update customer')
+  }
+}
+
+async function deleteAdminCustomer(c) {
+  if (!confirm(`Delete customer "${c.name}"? All linked projects will be detached.`)) return
+  try {
+    await customersApi.delete(c.id)
+    adminCustomers.value = adminCustomers.value.filter(ac => ac.id !== c.id)
+    ui.success('Customer deleted')
+  } catch {
+    ui.error('Failed to delete customer')
   }
 }
 </script>

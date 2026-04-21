@@ -291,6 +291,16 @@ func main() {
 		fmt.Printf("  [%02d] %-10s  pw=%-14s  customer=%q\n",
 			i, username, password, customerName)
 		created++
+
+		// 9. Create group "Holy Grail <XX>", add the user, and assign to the project.
+		g := &models.UserGroup{Name: fmt.Sprintf("Holy Grail %s", suffix)}
+		must(db.Create(g).Error)
+		must(db.Create(&models.GroupMember{GroupID: g.ID, UserID: user.ID}).Error)
+		must(db.Create(&models.GroupProjectAccess{
+			GroupID:   g.ID,
+			ProjectID: project.ID,
+			Role:      "member",
+		}).Error)
 	}
 
 	fmt.Println()
@@ -372,6 +382,19 @@ func removeTrainingData(db *gorm.DB) {
 		db.Where("customer_id IN ?", custIDs).Delete(&models.Contract{})
 		db.Where("id IN ?", custIDs).Delete(&models.Customer{})
 		fmt.Printf("  Removed %d customer(s) and contract(s)\n", len(custIDs))
+	}
+
+	// Groups matching "Holy Grail <XX>".
+	var groupIDs []uint
+	db.Model(&models.UserGroup{}).
+		Where("name LIKE ? AND LENGTH(name) = ?", "Holy Grail "+"__", len("Holy Grail ")+2).
+		Pluck("id", &groupIDs)
+	if len(groupIDs) > 0 {
+		db.Where("group_id IN ?", groupIDs).Delete(&models.GroupMember{})
+		db.Where("group_id IN ?", groupIDs).Delete(&models.GroupProjectAccess{})
+		db.Where("group_id IN ?", groupIDs).Delete(&models.GroupCustomerAccess{})
+		db.Unscoped().Where("id IN ?", groupIDs).Delete(&models.UserGroup{})
+		fmt.Printf("  Removed %d training group(s)\n", len(groupIDs))
 	}
 
 	// Users.
