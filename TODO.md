@@ -105,18 +105,18 @@
 - ~~Customer Settings -> Members: Also show the assigned groups and their
   Role~~ **Done — groups with access shown below direct members in Customer Detail → Members**
 
-- Pasting a picture in the chat, in the client (Linux) doesn't work
+- ~~Pasting a picture in the chat, in the client (Linux) doesn't work
   It does in the web interface.
-  When I paste it in the web interface, it is displayed in the client.
+  When I paste it in the web interface, it is displayed in the client.~~ **Done in v0.8.10**
 
-- When pasting or typing a URL in the chat, generate a preview, if the
-  site can be reached.
+- ~~When pasting or typing a URL in the chat, generate a preview, if the
+  site can be reached.~~ **Done in v0.8.10**
 
-- Enable syntax highlighting in the chat, when code is entered.
+- ~~Enable syntax highlighting in the chat, when code is entered.~~ **Done in v0.8.10**
 
-- In the chat fix code colors, as they look bad, right now (weird
+- ~~In the chat fix code colors, as they look bad, right now (weird
   background on the text). This happens in `Bubble`, `Comfortable` and
-  `Cozy`.
+  `Cozy`.~~ **Done in v0.8.10**
 
 - ~~With the backup/restore function, add an option to send an email after
   the backup is done. This has to have, of course, a tick-box to switch
