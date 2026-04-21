@@ -1526,7 +1526,80 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d customers with contracts\n", len(demoCustomers))
 
-	// ── 7. Summary ────────────────────────────────────────────────────────────
+	// ── 7. Groups ─────────────────────────────────────────────────────────────
+	fmt.Println("→ Creating groups…")
+
+	type groupProjectSpec struct{ slug, role string }
+	type groupCustomerSpec struct{ name, role string }
+	type groupSpec struct {
+		name        string
+		description string
+		members     []string // user keys
+		projects    []groupProjectSpec
+		customers   []groupCustomerSpec
+	}
+
+	demoGroupSpecs := []groupSpec{
+		{
+			name:        "Frontend Team",
+			description: "Web and mobile designers and developers.",
+			members:     []string{"sarah", "marc", "priya", "james"},
+			projects: []groupProjectSpec{
+				{"website-redesign", "member"},
+				{"mobile-app-v2", "member"},
+				{"marketing", "viewer"},
+			},
+		},
+		{
+			name:        "DevOps Team",
+			description: "Infrastructure engineers and site reliability engineers.",
+			members:     []string{"marc", "lisa", "raj"},
+			projects: []groupProjectSpec{
+				{"devops-infra", "owner"},
+				{"product-platform", "member"},
+			},
+		},
+		{
+			name:        "Acme Stakeholders",
+			description: "Client-facing team for the Acme Corporation account.",
+			members:     []string{"admin", "sarah", "marc"},
+			customers: []groupCustomerSpec{
+				{"Acme Corporation", "viewer"},
+			},
+		},
+	}
+
+	for _, gs := range demoGroupSpecs {
+		g := &models.UserGroup{Name: gs.name, Description: gs.description}
+		must(db.Create(g).Error)
+		for _, key := range gs.members {
+			if u, ok := users[key]; ok {
+				must(db.Create(&models.GroupMember{GroupID: g.ID, UserID: u.ID}).Error)
+			}
+		}
+		for _, pa := range gs.projects {
+			if pd, ok := projects[pa.slug]; ok {
+				must(db.Create(&models.GroupProjectAccess{
+					GroupID:   g.ID,
+					ProjectID: pd.project.ID,
+					Role:      pa.role,
+				}).Error)
+			}
+		}
+		for _, ca := range gs.customers {
+			var cust models.Customer
+			if db.Where("name = ?", ca.name).First(&cust).Error == nil {
+				must(db.Create(&models.GroupCustomerAccess{
+					GroupID:    g.ID,
+					CustomerID: cust.ID,
+					Role:       ca.role,
+				}).Error)
+			}
+		}
+	}
+	fmt.Printf("   Created %d groups\n", len(demoGroupSpecs))
+
+	// ── 8. Summary ────────────────────────────────────────────────────────────
 	fmt.Println()
 	fmt.Println("✅ Demo data seeded successfully!")
 	fmt.Println()
@@ -1552,6 +1625,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Printf("  Conversations : %d (%d messages)\n", totalConvs, totalConvMsgs)
 	fmt.Printf("  Sprints       : %d (Product Platform — 1 completed, 1 active, 1 planning)\n", totalSprints)
 	fmt.Printf("  Customers     : %d (Acme Corporation, Globex Systems, Initech Ltd)\n", len(demoCustomers))
+	fmt.Printf("  Groups        : %d (Frontend Team, DevOps Team, Acme Stakeholders)\n", len(demoGroupSpecs))
 	fmt.Println()
 	fmt.Println("  Starred projects")
 	fmt.Println("  ┌─────────────────────┬──────────────────────────────────────────────────────────────┐")
@@ -1644,6 +1718,17 @@ func removeDemoData(db *gorm.DB) {
 			db.Unscoped().Where("id IN ?", convIDs).Delete(&models.Conversation{})
 		}
 		db.Unscoped().Where("id IN ?", userIDs).Delete(&models.User{})
+	}
+
+	// Groups
+	demoGroupNames := []string{"Frontend Team", "DevOps Team", "Acme Stakeholders"}
+	var groupIDs []uint
+	db.Model(&models.UserGroup{}).Where("name IN ?", demoGroupNames).Pluck("id", &groupIDs)
+	if len(groupIDs) > 0 {
+		db.Where("group_id IN ?", groupIDs).Delete(&models.GroupMember{})
+		db.Where("group_id IN ?", groupIDs).Delete(&models.GroupProjectAccess{})
+		db.Where("group_id IN ?", groupIDs).Delete(&models.GroupCustomerAccess{})
+		db.Where("id IN ?", groupIDs).Delete(&models.UserGroup{})
 	}
 
 	// Customers and contracts

@@ -44,6 +44,7 @@ Only one authentication method should be used at a time.
 | `ansilabnl.warmdesk.customer` | Manage customers |
 | `ansilabnl.warmdesk.customer_member` | Manage customer access and roles |
 | `ansilabnl.warmdesk.contract` | Manage contracts for a customer |
+| `ansilabnl.warmdesk.group` | Manage user groups and their project/customer access (admin only) |
 | `ansilabnl.warmdesk.webhook` | Manage webhooks |
 | `ansilabnl.warmdesk.system_settings` | Manage global system settings (admin only) |
 

@@ -39,9 +39,31 @@ func GetMemberRole(projectID, userID uint) string {
 	return member.Role
 }
 
+// GetGroupProjectRole returns the highest role any of the user's groups grant
+// on the given project, or "" if no group access exists.
+func GetGroupProjectRole(projectID, userID uint) string {
+	type row struct{ Role string }
+	var rows []row
+	database.DB.Raw(`
+		SELECT gpa.role FROM group_project_accesses gpa
+		JOIN group_members gm ON gm.group_id = gpa.group_id
+		WHERE gpa.project_id = ? AND gm.user_id = ?`,
+		projectID, userID).Scan(&rows)
+	best := 0
+	bestRole := ""
+	for _, r := range rows {
+		if roleRank[r.Role] > best {
+			best = roleRank[r.Role]
+			bestRole = r.Role
+		}
+	}
+	return bestRole
+}
+
 // RequireProjectRole checks the user has at least minRole in the project.
 // Global admins pass unconditionally. Global viewers get implicit viewer-level
 // access to every project (read-only), but are blocked on write operations.
+// Group-based access is considered after direct membership.
 func RequireProjectRole(projectID, userID uint, globalRole, minRole string) error {
 	if globalRole == "admin" {
 		return nil
@@ -52,11 +74,13 @@ func RequireProjectRole(projectID, userID uint, globalRole, minRole string) erro
 		}
 		return ErrForbidden
 	}
-	role := GetMemberRole(projectID, userID)
-	if roleRank[role] < roleRank[minRole] {
-		return ErrForbidden
+	if roleRank[GetMemberRole(projectID, userID)] >= roleRank[minRole] {
+		return nil
 	}
-	return nil
+	if roleRank[GetGroupProjectRole(projectID, userID)] >= roleRank[minRole] {
+		return nil
+	}
+	return ErrForbidden
 }
 
 // GenerateSlug creates a URL-safe slug from a name and ensures uniqueness.

@@ -5,6 +5,7 @@
 
         <div class="tabs">
           <button :class="['tab', { active: tab === 'users' }]" @click="tab = 'users'">{{ $t('admin.users') }}</button>
+          <button :class="['tab', { active: tab === 'groups' }]" @click="tab = 'groups'; loadGroups()">{{ $t('groups.title') }}</button>
           <button :class="['tab', { active: tab === 'projects' }]" @click="tab = 'projects'; loadProjects()">{{ $t('admin.projects') }}</button>
           <button :class="['tab', { active: tab === 'settings' }]" @click="tab = 'settings'; loadSettings()">{{ $t('admin.settings') }}</button>
           <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()">{{ $t('admin.backup_tab') }}</button>
@@ -129,6 +130,48 @@
                   </template>
                   </div>
                 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Groups tab -->
+        <div v-if="tab === 'groups'">
+          <div class="tab-toolbar">
+            <button class="btn btn-primary btn-sm" @click="openCreateGroup">+ {{ $t('groups.create') }}</button>
+          </div>
+          <div v-if="loadingGroups" class="loading-state">
+            <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
+          </div>
+          <table v-else class="data-table">
+            <thead>
+              <tr>
+                <th>{{ $t('groups.name') }}</th>
+                <th>{{ $t('groups.members') }}</th>
+                <th>{{ $t('admin.projects') }}</th>
+                <th>{{ $t('customer.title') }}</th>
+                <th>{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="g in groups" :key="g.id">
+                <td>
+                  <strong>{{ g.name }}</strong>
+                  <div v-if="g.description" style="font-size:12px;color:var(--color-text-muted)">{{ g.description }}</div>
+                </td>
+                <td>{{ g.member_count }}</td>
+                <td>{{ g.project_count }}</td>
+                <td>{{ g.customer_count }}</td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn btn-secondary btn-sm" @click="openEditGroup(g)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-secondary btn-sm" @click="openGroupDetail(g)">{{ $t('groups.members') }}</button>
+                    <button class="btn btn-danger btn-sm" @click="deleteGroup(g)">{{ $t('common.delete') }}</button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="!groups.length">
+                <td colspan="5" style="text-align:center;color:var(--color-text-muted)">{{ $t('groups.no_groups') }}</td>
               </tr>
             </tbody>
           </table>
@@ -693,6 +736,120 @@
         <button class="btn btn-primary" @click="saveEditProject">{{ $t('common.save') }}</button>
       </template>
   </BaseModal>
+
+  <!-- Create / Edit group modal -->
+  <BaseModal v-if="showGroupForm" :title="editingGroup ? $t('groups.edit') : $t('groups.create')" @close="showGroupForm = false">
+    <div class="form-group">
+      <label class="form-label">{{ $t('groups.name') }}</label>
+      <input class="form-input" v-model="groupForm.name" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('groups.description') }}</label>
+      <textarea class="form-input" v-model="groupForm.description" rows="3"></textarea>
+    </div>
+    <template #footer>
+      <button class="btn btn-secondary" @click="showGroupForm = false">{{ $t('common.cancel') }}</button>
+      <button class="btn btn-primary" @click="saveGroup">{{ $t('common.save') }}</button>
+    </template>
+  </BaseModal>
+
+  <!-- Group detail modal: members + access -->
+  <BaseModal v-if="activeGroup" :title="activeGroup.name" @close="activeGroup = null" style="--modal-width:700px">
+    <div v-if="loadingGroupDetail" class="loading-state" style="padding:40px">
+      <div class="spinner" style="width:28px;height:28px;border-width:3px"></div>
+    </div>
+    <div v-else-if="groupDetail">
+      <!-- Members -->
+      <h3 style="margin:0 0 8px">{{ $t('groups.members') }}</h3>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <select class="form-input" v-model="groupAddUserId" style="flex:1">
+          <option value="">— {{ $t('groups.add_member') }} —</option>
+          <option v-for="u in usersNotInGroup" :key="u.id" :value="u.id">
+            {{ u.display_name || u.username }} ({{ u.email }})
+          </option>
+        </select>
+        <button class="btn btn-primary btn-sm" :disabled="!groupAddUserId" @click="addGroupMember">{{ $t('common.add') }}</button>
+      </div>
+      <div v-if="!groupDetail.members.length" class="empty-hint">{{ $t('groups.no_members') }}</div>
+      <div v-else class="members-list" style="margin-bottom:16px">
+        <div v-for="m in groupDetail.members" :key="m.user_id" class="member-row">
+          <img :src="m.user.gravatar_url" class="member-avatar" alt="" />
+          <div class="member-info">
+            <span class="member-name">{{ m.user.display_name || m.user.username }}</span>
+            <span class="member-email">{{ m.user.email }}</span>
+          </div>
+          <button class="icon-btn icon-danger" @click="removeGroupMember(m.user_id)" title="Remove">✕</button>
+        </div>
+      </div>
+
+      <!-- Project access -->
+      <h3 style="margin:0 0 8px">{{ $t('groups.project_access') }}</h3>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <select class="form-input" v-model="groupAddProjectId" style="flex:1">
+          <option value="">— {{ $t('groups.add_project') }} —</option>
+          <option v-for="p in allProjects" :key="p.id" :value="p.id">{{ p.name }}</option>
+        </select>
+        <select class="form-input" v-model="groupAddProjectRole" style="width:110px">
+          <option value="viewer">{{ $t('project.roles.viewer') }}</option>
+          <option value="member">{{ $t('project.roles.member') }}</option>
+          <option value="owner">{{ $t('project.roles.owner') }}</option>
+        </select>
+        <button class="btn btn-primary btn-sm" :disabled="!groupAddProjectId" @click="addGroupProjectAccess">{{ $t('common.add') }}</button>
+      </div>
+      <div v-if="!groupDetail.project_access.length" class="empty-hint">{{ $t('groups.no_project_access') }}</div>
+      <table v-else class="data-table" style="margin-bottom:16px">
+        <thead><tr><th>{{ $t('project.project') }}</th><th>{{ $t('groups.role') }}</th><th></th></tr></thead>
+        <tbody>
+          <tr v-for="pa in groupDetail.project_access" :key="pa.project_id">
+            <td>{{ pa.project.name }}</td>
+            <td>
+              <select class="role-select" :value="pa.role" @change="updateGroupProjectRole(pa, $event.target.value)">
+                <option value="viewer">{{ $t('project.roles.viewer') }}</option>
+                <option value="member">{{ $t('project.roles.member') }}</option>
+                <option value="owner">{{ $t('project.roles.owner') }}</option>
+              </select>
+            </td>
+            <td><button class="icon-btn icon-danger" @click="removeGroupProjectAccess(pa)">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Customer access -->
+      <h3 style="margin:0 0 8px">{{ $t('groups.customer_access') }}</h3>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <select class="form-input" v-model="groupAddCustomerId" style="flex:1">
+          <option value="">— {{ $t('groups.add_customer') }} —</option>
+          <option v-for="cu in allCustomers" :key="cu.id" :value="cu.id">{{ cu.name }}</option>
+        </select>
+        <select class="form-input" v-model="groupAddCustomerRole" style="width:110px">
+          <option value="viewer">{{ $t('project.roles.viewer') }}</option>
+          <option value="member">{{ $t('project.roles.member') }}</option>
+          <option value="owner">{{ $t('project.roles.owner') }}</option>
+        </select>
+        <button class="btn btn-primary btn-sm" :disabled="!groupAddCustomerId" @click="addGroupCustomerAccess">{{ $t('common.add') }}</button>
+      </div>
+      <div v-if="!groupDetail.customer_access.length" class="empty-hint">{{ $t('groups.no_customer_access') }}</div>
+      <table v-else class="data-table">
+        <thead><tr><th>{{ $t('customer.title') }}</th><th>{{ $t('groups.role') }}</th><th></th></tr></thead>
+        <tbody>
+          <tr v-for="ca in groupDetail.customer_access" :key="ca.customer_id">
+            <td>{{ ca.customer.name }}</td>
+            <td>
+              <select class="role-select" :value="ca.role" @change="updateGroupCustomerRole(ca, $event.target.value)">
+                <option value="viewer">{{ $t('project.roles.viewer') }}</option>
+                <option value="member">{{ $t('project.roles.member') }}</option>
+                <option value="owner">{{ $t('project.roles.owner') }}</option>
+              </select>
+            </td>
+            <td><button class="icon-btn icon-danger" @click="removeGroupCustomerAccess(ca)">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <template #footer>
+      <button class="btn btn-secondary" @click="activeGroup = null">{{ $t('common.close') }}</button>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup>
@@ -700,6 +857,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { adminApi } from '@/api/admin'
+import { groupsApi } from '@/api/groups'
 import { customersApi } from '@/api/customers'
 import { attachmentsApi } from '@/api/attachments'
 import { resolveAssetUrl } from '@/api/serverConfig'
@@ -754,6 +912,198 @@ const userCustomerAdminIds = ref([])
 
 const allCustomers = ref([])
 let customersLoaded = false
+
+// ─── Groups ───────────────────────────────────────────────────────────────────
+const groups = ref([])
+const loadingGroups = ref(false)
+const showGroupForm = ref(false)
+const editingGroup = ref(null)
+const groupForm = ref({ name: '', description: '' })
+const activeGroup = ref(null)
+const groupDetail = ref(null)
+const loadingGroupDetail = ref(false)
+const groupAddUserId = ref('')
+const groupAddProjectId = ref('')
+const groupAddProjectRole = ref('member')
+const groupAddCustomerId = ref('')
+const groupAddCustomerRole = ref('member')
+
+const allProjects = ref([])
+let projectsListLoaded = false
+
+const usersNotInGroup = computed(() => {
+  if (!groupDetail.value) return users.value
+  const inGroup = new Set(groupDetail.value.members.map(m => m.user_id))
+  return users.value.filter(u => !inGroup.has(u.id))
+})
+
+async function loadGroups() {
+  loadingGroups.value = true
+  try {
+    const { data } = await groupsApi.list()
+    groups.value = data || []
+  } finally {
+    loadingGroups.value = false
+  }
+}
+
+async function loadAllProjects() {
+  if (projectsListLoaded) return
+  try {
+    const { data } = await adminApi.listProjects()
+    allProjects.value = data || []
+    projectsListLoaded = true
+  } catch {}
+}
+
+function openCreateGroup() {
+  editingGroup.value = null
+  groupForm.value = { name: '', description: '' }
+  showGroupForm.value = true
+}
+
+function openEditGroup(g) {
+  editingGroup.value = g
+  groupForm.value = { name: g.name, description: g.description || '' }
+  showGroupForm.value = true
+}
+
+async function saveGroup() {
+  try {
+    if (editingGroup.value) {
+      await groupsApi.update(editingGroup.value.id, groupForm.value)
+      ui.success(t('common.saved'))
+    } else {
+      await groupsApi.create(groupForm.value)
+      ui.success(t('common.saved'))
+    }
+    showGroupForm.value = false
+    await loadGroups()
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function deleteGroup(g) {
+  if (!confirm(t('groups.delete_confirm'))) return
+  try {
+    await groupsApi.delete(g.id)
+    groups.value = groups.value.filter(x => x.id !== g.id)
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function openGroupDetail(g) {
+  activeGroup.value = g
+  groupDetail.value = null
+  groupAddUserId.value = ''
+  groupAddProjectId.value = ''
+  groupAddProjectRole.value = 'member'
+  groupAddCustomerId.value = ''
+  groupAddCustomerRole.value = 'member'
+  loadingGroupDetail.value = true
+  try {
+    await Promise.all([loadAllCustomers(), loadAllProjects()])
+    const { data } = await groupsApi.get(g.id)
+    groupDetail.value = data
+  } catch {
+    ui.error(t('common.error'))
+    activeGroup.value = null
+  } finally {
+    loadingGroupDetail.value = false
+  }
+}
+
+async function addGroupMember() {
+  if (!groupAddUserId.value) return
+  try {
+    await groupsApi.addMember(activeGroup.value.id, groupAddUserId.value)
+    const { data } = await groupsApi.get(activeGroup.value.id)
+    groupDetail.value = data
+    groupAddUserId.value = ''
+    await loadGroups()
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function removeGroupMember(userId) {
+  try {
+    await groupsApi.removeMember(activeGroup.value.id, userId)
+    const { data } = await groupsApi.get(activeGroup.value.id)
+    groupDetail.value = data
+    await loadGroups()
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function addGroupProjectAccess() {
+  if (!groupAddProjectId.value) return
+  try {
+    await groupsApi.setProjectAccess(activeGroup.value.id, groupAddProjectId.value, groupAddProjectRole.value)
+    const { data } = await groupsApi.get(activeGroup.value.id)
+    groupDetail.value = data
+    groupAddProjectId.value = ''
+    await loadGroups()
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function updateGroupProjectRole(pa, role) {
+  try {
+    await groupsApi.setProjectAccess(activeGroup.value.id, pa.project_id, role)
+    pa.role = role
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function removeGroupProjectAccess(pa) {
+  try {
+    await groupsApi.removeProjectAccess(activeGroup.value.id, pa.project_id)
+    const { data } = await groupsApi.get(activeGroup.value.id)
+    groupDetail.value = data
+    await loadGroups()
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function addGroupCustomerAccess() {
+  if (!groupAddCustomerId.value) return
+  try {
+    await groupsApi.setCustomerAccess(activeGroup.value.id, groupAddCustomerId.value, groupAddCustomerRole.value)
+    const { data } = await groupsApi.get(activeGroup.value.id)
+    groupDetail.value = data
+    groupAddCustomerId.value = ''
+    await loadGroups()
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function updateGroupCustomerRole(ca, role) {
+  try {
+    await groupsApi.setCustomerAccess(activeGroup.value.id, ca.customer_id, role)
+    ca.role = role
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
+async function removeGroupCustomerAccess(ca) {
+  try {
+    await groupsApi.removeCustomerAccess(activeGroup.value.id, ca.customer_id)
+    const { data } = await groupsApi.get(activeGroup.value.id)
+    groupDetail.value = data
+    await loadGroups()
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
 
 async function loadAllCustomers() {
   if (customersLoaded) return

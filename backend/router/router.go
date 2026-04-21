@@ -94,6 +94,19 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.POST("/system/backups/restore", handlers.AdminRestoreBackup)
 			admin.GET("/system/backups/:filename", handlers.AdminDownloadBackup)
 			admin.DELETE("/system/backups/:filename", handlers.AdminDeleteBackup)
+
+			// Groups (admin-only CRUD + access management)
+			admin.GET("/groups", handlers.AdminListGroups)
+			admin.POST("/groups", handlers.AdminCreateGroup)
+			admin.GET("/groups/:groupId", handlers.AdminGetGroup)
+			admin.PATCH("/groups/:groupId", handlers.AdminUpdateGroup)
+			admin.DELETE("/groups/:groupId", handlers.AdminDeleteGroup)
+			admin.POST("/groups/:groupId/members", handlers.AdminAddGroupMember)
+			admin.DELETE("/groups/:groupId/members/:userId", handlers.AdminRemoveGroupMember)
+			admin.PUT("/groups/:groupId/projects/:projectId", handlers.AdminSetGroupProjectAccess)
+			admin.DELETE("/groups/:groupId/projects/:projectId", handlers.AdminRemoveGroupProjectAccess)
+			admin.PUT("/groups/:groupId/customers/:customerId", handlers.AdminSetGroupCustomerAccess)
+			admin.DELETE("/groups/:groupId/customers/:customerId", handlers.AdminRemoveGroupCustomerAccess)
 		}
 
 		// Users (for direct messages / user lookup)
@@ -126,6 +139,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			customers.DELETE("/:customerId/contracts/:contractId", handlers.DeleteContract)
 			customers.GET("/:customerId/members", handlers.ListCustomerMembers)
 			customers.PUT("/:customerId/members", handlers.SetCustomerMembers)
+			// Group membership management delegated to customer owners
+			customers.GET("/:customerId/groups", handlers.ListCustomerGroups)
+			customers.POST("/:customerId/groups/:groupId/members", handlers.CustomerAddGroupMember)
+			customers.DELETE("/:customerId/groups/:groupId/members/:userId", handlers.CustomerRemoveGroupMember)
 		}
 
 		// Direct messages (legacy 1-on-1)
@@ -190,6 +207,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			projects.GET("/:projectSlug/members", handlers.ListMembers)
 			projects.POST("/:projectSlug/members", handlers.InviteMember)
 			projects.PUT("/:projectSlug/members/:userId/role", handlers.UpdateMemberRole)
+			// Group membership management delegated to project owners
+			projects.GET("/:projectSlug/groups", handlers.ListProjectGroups)
+			projects.POST("/:projectSlug/groups/:groupId/members", handlers.ProjectAddGroupMember)
+			projects.DELETE("/:projectSlug/groups/:groupId/members/:userId", handlers.ProjectRemoveGroupMember)
 			projects.DELETE("/:projectSlug/members/:userId", handlers.RemoveMember)
 
 			// Labels

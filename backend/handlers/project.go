@@ -104,14 +104,38 @@ func ListProjects(c *gin.Context) {
 	var members []models.ProjectMember
 	database.DB.Preload("Project.Customer").Preload("Project.Contract").Where("user_id = ?", userID).Find(&members)
 
+	seen := make(map[uint]struct{})
 	projects := make([]models.Project, 0, len(members))
 	for _, m := range members {
 		if m.Project.DeletedAt.Valid {
 			continue
 		}
+		seen[m.Project.ID] = struct{}{}
 		projects = append(projects, m.Project)
 	}
-	// Sort by position then id
+
+	// Also include projects accessible via group membership
+	var gpRows []struct{ ProjectID uint }
+	database.DB.Raw(`
+		SELECT DISTINCT gpa.project_id
+		FROM group_project_accesses gpa
+		JOIN group_members gm ON gm.group_id = gpa.group_id
+		WHERE gm.user_id = ?`, userID).Scan(&gpRows)
+	if len(gpRows) > 0 {
+		extra := make([]uint, 0, len(gpRows))
+		for _, r := range gpRows {
+			if _, ok := seen[r.ProjectID]; !ok {
+				extra = append(extra, r.ProjectID)
+			}
+		}
+		if len(extra) > 0 {
+			var gProjects []models.Project
+			database.DB.Preload("Customer").Preload("Contract").
+				Where("id IN ? AND deleted_at IS NULL", extra).Find(&gProjects)
+			projects = append(projects, gProjects...)
+		}
+	}
+
 	slices.SortFunc(projects, func(a, b models.Project) int {
 		if n := cmp.Compare(a.Position, b.Position); n != 0 {
 			return n

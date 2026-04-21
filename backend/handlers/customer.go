@@ -11,17 +11,66 @@ import (
 	"github.com/tonk/warmdesk/models"
 )
 
-// canManageCustomer returns true for global admins and for users who hold
-// the "admin" role in CustomerAccess for this specific customer.
+// customerRoleRank maps customer/group roles to a comparable integer.
+func customerRoleRank(role string) int {
+	switch role {
+	case "viewer":
+		return 1
+	case "member":
+		return 2
+	case "admin", "owner":
+		return 3
+	default:
+		return 0
+	}
+}
+
+// getAccessibleCustomerRoles returns a map of customerID → effective role for
+// the given user, combining direct CustomerAccess rows with group-based access.
+func getAccessibleCustomerRoles(userID uint) map[uint]string {
+	roles := make(map[uint]string)
+	var direct []models.CustomerAccess
+	database.DB.Where("user_id = ?", userID).Find(&direct)
+	for _, a := range direct {
+		roles[a.CustomerID] = a.Role
+	}
+	type gaRow struct {
+		CustomerID uint
+		Role       string
+	}
+	var groupRows []gaRow
+	database.DB.Raw(`
+		SELECT gca.customer_id, gca.role
+		FROM group_customer_accesses gca
+		JOIN group_members gm ON gm.group_id = gca.group_id
+		WHERE gm.user_id = ?`, userID).Scan(&groupRows)
+	for _, ga := range groupRows {
+		if customerRoleRank(ga.Role) > customerRoleRank(roles[ga.CustomerID]) {
+			roles[ga.CustomerID] = ga.Role
+		}
+	}
+	return roles
+}
+
+// canManageCustomer returns true for global admins, users with direct "admin"
+// CustomerAccess, or users whose group has "owner" access to the customer.
 func canManageCustomer(c *gin.Context, customerID uint) bool {
 	if middleware.GetGlobalRole(c) == "admin" {
 		return true
 	}
+	userID := middleware.GetUserID(c)
 	var count int64
 	database.DB.Model(&models.CustomerAccess{}).
-		Where("user_id = ? AND customer_id = ? AND role = 'admin'",
-			middleware.GetUserID(c), customerID).
+		Where("user_id = ? AND customer_id = ? AND role = 'admin'", userID, customerID).
 		Count(&count)
+	if count > 0 {
+		return true
+	}
+	database.DB.Raw(`
+		SELECT COUNT(*) FROM group_customer_accesses gca
+		JOIN group_members gm ON gm.group_id = gca.group_id
+		WHERE gca.customer_id = ? AND gm.user_id = ? AND gca.role = 'owner'`,
+		customerID, userID).Scan(&count)
 	return count > 0
 }
 
@@ -43,16 +92,11 @@ func ListCustomers(c *gin.Context) {
 	var customers []models.Customer
 	database.DB.Order("position asc, id asc").Find(&customers)
 
-	// myRoles maps customerID → role for the current user.
-	// We use this both to filter the list and to populate MyRole.
+	// myRoles maps customerID → effective role (direct or via group) for the current user.
 	myRoles := make(map[uint]string)
 	if !isAdmin {
-		var access []models.CustomerAccess
-		database.DB.Where("user_id = ?", userID).Find(&access)
-		for _, a := range access {
-			myRoles[a.CustomerID] = a.Role
-		}
-		// Non-admins only see customers they are explicitly assigned to.
+		myRoles = getAccessibleCustomerRoles(userID)
+		// Non-admins only see customers they have access to.
 		filtered := customers[:0]
 		for _, cu := range customers {
 			if _, ok := myRoles[cu.ID]; ok {
@@ -119,10 +163,8 @@ func GetCustomer(c *gin.Context) {
 	}
 
 	if middleware.GetGlobalRole(c) != "admin" {
-		var match int64
-		database.DB.Model(&models.CustomerAccess{}).
-			Where("user_id = ? AND customer_id = ?", userID, cust.ID).Count(&match)
-		if match == 0 {
+		accessible := getAccessibleCustomerRoles(userID)
+		if _, ok := accessible[cust.ID]; !ok {
 			c.JSON(http.StatusNotFound, gin.H{"error": "customer not found"})
 			return
 		}
@@ -139,10 +181,7 @@ func GetCustomer(c *gin.Context) {
 	if middleware.GetGlobalRole(c) == "admin" {
 		myRole = "admin"
 	} else {
-		var acc models.CustomerAccess
-		if database.DB.Where("user_id = ? AND customer_id = ?", userID, cust.ID).First(&acc).Error == nil {
-			myRole = acc.Role
-		}
+		myRole = getAccessibleCustomerRoles(userID)[cust.ID]
 	}
 	custItem := CustomerListItem{Customer: cust, IsFavorite: isFav, ProjectCount: pCount, ContractCount: cCount, MyRole: myRole}
 
@@ -254,10 +293,11 @@ func DeleteCustomer(c *gin.Context) {
 		return
 	}
 	database.DB.Model(&models.Project{}).Where("customer_id = ?", cust.ID).
-		Updates(map[string]interface{}{"customer_id": nil, "contract_id": nil})
+		Updates(map[string]any{"customer_id": nil, "contract_id": nil})
 	database.DB.Where("customer_id = ?", cust.ID).Delete(&models.Contract{})
 	database.DB.Where("customer_id = ?", cust.ID).Delete(&models.CustomerFavorite{})
 	database.DB.Where("customer_id = ?", cust.ID).Delete(&models.CustomerAccess{})
+	database.DB.Where("customer_id = ?", cust.ID).Delete(&models.GroupCustomerAccess{})
 	database.DB.Delete(&cust)
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }

@@ -558,5 +558,31 @@
     "board_type_scrum": "Scrum",
     "board_type_hint": "Kanban: continuous flow. Scrum: sprint-based with backlog, sprint planning, and velocity chart.",
     "board_type_locked_hint": "Board type is fixed at project creation and cannot be changed afterwards."
+  },
+  "groups": {
+    "title": "Groupes",
+    "create": "Créer un groupe",
+    "edit": "Modifier le groupe",
+    "delete": "Supprimer le groupe",
+    "delete_confirm": "Supprimer ce groupe ? Les membres perdront l'accès accordé via ce groupe.",
+    "name": "Nom du groupe",
+    "description": "Description",
+    "members": "Membres",
+    "no_members": "Aucun membre dans ce groupe.",
+    "add_member": "Ajouter un membre",
+    "remove_member": "Retirer",
+    "project_access": "Accès aux projets",
+    "no_project_access": "Aucun accès aux projets assigné.",
+    "add_project": "Ajouter un projet",
+    "customer_access": "Accès aux clients",
+    "no_customer_access": "Aucun accès aux clients assigné.",
+    "add_customer": "Ajouter un client",
+    "role": "Rôle",
+    "no_groups": "Aucun groupe pour l'instant.",
+    "groups_with_access": "Groupes avec accès",
+    "no_group_access": "Aucun groupe n'a accès à cette ressource.",
+    "member_count": "{count} membres",
+    "project_count": "{count} projets",
+    "customer_count": "{count} clients"
   }
 }
