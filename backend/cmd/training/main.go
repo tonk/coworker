@@ -44,8 +44,8 @@ import (
 const (
 	usernamePrefix = "guru"                // guru00, guru01, …
 	emailDomain    = "@ansiblelab.nl"      // Standard email domain
-	customerPrefix = "Ansible Laboratory " // + XX  →  "Ansible Laboratory 00"
-	contractPrefix = "Training "           // + XX  →  "Training 00"
+	customerPrefix = "Holy Grail Quests "  // + XX  →  "Holy Grail Quests 00"
+	contractPrefix = "Grail Finding "      // + XX  →  "Grail Finding 00"
 	projectPrefix  = "EDA "                // + XX  →  "EDA 00"
 	projectSlugPfx = "eda-"                // + XX  →  "eda-00"
 	projectKeyPfx  = "EDA"
@@ -292,8 +292,8 @@ func main() {
 			i, username, password, customerName)
 		created++
 
-		// 9. Create group "Holy Grail <XX>", add the user, and assign to the project.
-		g := &models.UserGroup{Name: fmt.Sprintf("Holy Grail %s", suffix)}
+		// 9. Create group "Shrubbery Bringing <XX>", add the user, and assign to the project.
+		g := &models.UserGroup{Name: fmt.Sprintf("Shrubbery Bringing %s", suffix)}
 		must(db.Create(g).Error)
 		must(db.Create(&models.GroupMember{GroupID: g.ID, UserID: user.ID}).Error)
 		must(db.Create(&models.GroupProjectAccess{

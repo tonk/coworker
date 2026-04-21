@@ -288,6 +288,7 @@
                     <span v-if="msg.is_edited && !msg.is_deleted" class="msg-edited"> · {{ $t('chat.edited') }}</span>
                   </div>
                   <AttachmentList v-if="!msg.is_deleted" :attachments="msg.attachments" />
+                  <LinkPreviewCard v-if="!msg.is_deleted && firstUrl(msg.body)" :url="firstUrl(msg.body)" />
                   <MessageReactions
                     v-if="!msg.is_deleted"
                     :reactions="msg.reactions"
@@ -394,12 +395,13 @@ import { useChatLayout } from '@/composables/useChatLayout'
 import { useChatNotify } from '@/composables/useChatNotify'
 import { avatarUrl } from '@/composables/useAvatar'
 import { useCompose } from '@/composables/useCompose'
-import { renderMarkdown, useCardRef } from '@/composables/useCardRef'
+import { renderMarkdown, firstUrl, useCardRef } from '@/composables/useCardRef'
 import InlineEmojiPicker from '@/components/common/InlineEmojiPicker.vue'
 import MentionDropdown from '@/components/common/MentionDropdown.vue'
 import AttachmentList from '@/components/common/AttachmentList.vue'
 import FileUploadButton from '@/components/common/FileUploadButton.vue'
 import MessageReactions from '@/components/common/MessageReactions.vue'
+import LinkPreviewCard from '@/components/chat/LinkPreviewCard.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -799,12 +801,30 @@ function onFilesSelected(files) {
   }
 }
 
-function onPaste(e) {
+async function onPaste(e) {
   const items = Array.from(e.clipboardData?.items || [])
   const images = items.filter(it => it.kind === 'file' && it.type.startsWith('image/'))
-  if (!images.length) return
-  e.preventDefault()
-  onFilesSelected(images.map(it => it.getAsFile()).filter(Boolean))
+  if (images.length) {
+    e.preventDefault()
+    onFilesSelected(images.map(it => it.getAsFile()).filter(Boolean))
+    return
+  }
+  if (window.__TAURI_INTERNALS__ && navigator.clipboard?.read) {
+    try {
+      const clipItems = await navigator.clipboard.read()
+      const files = []
+      for (const item of clipItems) {
+        for (const type of item.types) {
+          if (type.startsWith('image/')) {
+            const blob = await item.getType(type)
+            const ext = type.split('/')[1]?.split('+')[0] || 'png'
+            files.push(new File([blob], `paste.${ext}`, { type }))
+          }
+        }
+      }
+      if (files.length) { e.preventDefault(); onFilesSelected(files) }
+    } catch {}
+  }
 }
 
 function removePending(a) {

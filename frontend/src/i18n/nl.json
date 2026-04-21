@@ -436,11 +436,11 @@
     "team_members_count": "{count} leden"
   },
   "sidebar": {
-    "starred": "Gemarkeerde projecten",
+    "starred": "Favoriete projecten",
     "no_starred": "Geen gemarkeerde projecten",
     "all_projects": "Alle projecten",
     "no_projects": "Geen projecten",
-    "favorites": "Favorieten",
+    "favorites": "Favoriete mensen",
     "no_favorites": "Nog geen favorieten",
     "favorite": "Toevoegen aan favorieten",
     "unfavorite": "Verwijderen uit favorieten",
@@ -450,7 +450,7 @@
     "offline": "Offline",
     "all_chats": "Alle chats…",
     "unread_messages": "Ongelezen berichten",
-    "customers": "Klanten",
+    "customers": "Favoriete klanten",
     "no_customers": "Geen gemarkeerde klanten"
   },
   "apikeys": {

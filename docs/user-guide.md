@@ -63,11 +63,12 @@ contains:
 
 | Section | Contents |
 |---------|----------|
-| **Starred Projects** | Your pinned projects — drag to reorder |
+| **Favorite Projects** | Your pinned projects — drag to reorder |
 | **Projects** | All projects you belong to; starred ones appear at the top with a star icon |
-| **Starred Customers** | Customers you have starred — drag to reorder; click ★ to unstar |
+| **Favorite Customers** | Customers you have starred — drag to reorder; click ★ to unstar |
 | **All Customers** | Customers you have been assigned to, with starred ones shown first |
-| **Online Users** | Users currently connected; click a name to open a direct message |
+| **Favorite People** | Users you have marked as favourite — drag to reorder |
+| **People** | Users currently connected; click a name to open a direct message |
 | **Chats** | Your 8 most recent conversations with unread indicators |
 
 All sections are drag-to-reorder (grab the ⠿ handle on the section header). Drag the inner edge of the sidebar to resize it — width and section order are persisted in your browser.
@@ -137,7 +138,7 @@ Global administrators can do everything regardless of project role.
 ### Starring a project
 
 Click the star icon next to a project name in the sidebar or on the project
-board to pin it to the **Starred Projects** section. Click again to unstar.
+board to pin it to the **Favorite Projects** section. Click again to unstar.
 
 ### Project settings
 
@@ -360,9 +361,17 @@ its replies by clicking the ✏ or × icons.
 ### Project chat
 
 Each project has a dedicated **Chat** page accessible from the project
-navigation. Messages support Markdown, emoji (picker available), @mentions,
-file attachments, and emoji reactions. Click any emoji reaction to toggle your
-own reaction.
+navigation. Messages support:
+
+- **Markdown** — bold, italic, lists, headings, and inline code
+- **Syntax-highlighted code blocks** — fenced blocks (` ```python ... ``` `) are highlighted automatically; dark mode uses a dark code theme
+- **URL link previews** — the first URL in a message automatically fetches a title, description, and thumbnail from the linked page
+- **Emoji picker** — click the 😊 button in the compose bar
+- **@mentions** — type `@` to see a dropdown of project members
+- **File and image attachments** — click the attachment button or drag files onto the compose area; paste an image directly from the clipboard (Ctrl+V / ⌘V) to attach it without saving to disk first
+- **Emoji reactions** — hover a message and click the 😊 button; click an existing reaction badge to toggle
+
+Click any emoji reaction to toggle your own reaction.
 
 ### Direct messages
 
@@ -492,7 +501,7 @@ to assign you to the relevant customers.
 ### Starring a customer
 
 On the Customers page or in the customer detail, click the ★ icon to star a
-customer. Starred customers appear in the **Starred Customers** sidebar section
+customer. Starred customers appear in the **Favorite Customers** sidebar section
 for quick access. Click ★ again to unstar.
 
 ### Customer detail

@@ -468,13 +468,13 @@
     "team_members_count": "{count} medlemmar"
   },
   "sidebar": {
-    "starred": "Stjärnmärkta projekt",
+    "starred": "Favoritprojekt",
     "no_starred": "Inga stjärnmärkta projekt",
     "all_projects": "Alla projekt",
     "no_projects": "Inga projekt",
-    "customers": "Kunder",
+    "customers": "Favoritkunder",
     "no_customers": "Inga stjärnmärkta kunder",
-    "favorites": "Favoriter",
+    "favorites": "Favoritpersoner",
     "no_favorites": "Inga favoriter ännu",
     "favorite": "Lägg till i favoriter",
     "unfavorite": "Ta bort från favoriter",

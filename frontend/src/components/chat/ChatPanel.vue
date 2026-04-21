@@ -86,6 +86,7 @@
                 <div v-else class="msg-body" v-html="renderMarkdown(msg.body)"></div>
               </div>
               <AttachmentList v-if="!msg.is_deleted" :attachments="msg.attachments" />
+              <LinkPreviewCard v-if="!msg.is_deleted && firstUrl(msg.body)" :url="firstUrl(msg.body)" />
               <MessageReactions
                 v-if="!msg.is_deleted && !msg.is_bot"
                 :reactions="msg.reactions"
@@ -174,7 +175,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick, onUnmounted } from 'vue'
-import { renderMarkdown, useCardRef } from '@/composables/useCardRef'
+import { renderMarkdown, firstUrl, useCardRef } from '@/composables/useCardRef'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
@@ -190,6 +191,7 @@ import FileUploadButton from '@/components/common/FileUploadButton.vue'
 import MessageReactions from '@/components/common/MessageReactions.vue'
 import InlineEmojiPicker from '@/components/common/InlineEmojiPicker.vue'
 import MentionDropdown from '@/components/common/MentionDropdown.vue'
+import LinkPreviewCard from '@/components/chat/LinkPreviewCard.vue'
 
 const props = defineProps({
   open: Boolean,
@@ -388,12 +390,34 @@ function onFilesSelected(files) {
   }
 }
 
-function onPaste(e) {
+async function onPaste(e) {
   const items = Array.from(e.clipboardData?.items || [])
   const images = items.filter(it => it.kind === 'file' && it.type.startsWith('image/'))
-  if (!images.length) return
-  e.preventDefault()
-  onFilesSelected(images.map(it => it.getAsFile()).filter(Boolean))
+  if (images.length) {
+    e.preventDefault()
+    onFilesSelected(images.map(it => it.getAsFile()).filter(Boolean))
+    return
+  }
+  // Tauri/Linux WebKitGTK fallback: clipboardData.items may be empty for images
+  if (window.__TAURI_INTERNALS__ && navigator.clipboard?.read) {
+    try {
+      const clipItems = await navigator.clipboard.read()
+      const files = []
+      for (const item of clipItems) {
+        for (const type of item.types) {
+          if (type.startsWith('image/')) {
+            const blob = await item.getType(type)
+            const ext = type.split('/')[1]?.split('+')[0] || 'png'
+            files.push(new File([blob], `paste.${ext}`, { type }))
+          }
+        }
+      }
+      if (files.length) {
+        e.preventDefault()
+        onFilesSelected(files)
+      }
+    } catch {}
+  }
 }
 
 function removePending(a) {
@@ -680,13 +704,24 @@ function dayLabel(dateStr) {
 .msg-body :deep(p) { margin: 0 0 4px; }
 .msg-body :deep(p:last-child) { margin-bottom: 0; }
 .msg-body :deep(code) {
-  background: rgba(0,0,0,.1);
+  background: rgba(0,0,0,.08);
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 12px;
+  font-family: ui-monospace, monospace;
 }
-.bubble-own .msg-body :deep(code) { background: rgba(255,255,255,.2); }
-.msg-body :deep(pre) { margin: 4px 0; }
+.bubble-own .msg-body :deep(code) { background: rgba(0,0,0,.15); }
+.msg-body :deep(pre) {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  margin: 6px 0;
+  font-size: 12px;
+}
+.bubble-own .msg-body :deep(pre) { background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.2); }
+.msg-body :deep(pre code) { background: none; padding: 0; border-radius: 0; font-size: inherit; }
 .msg-body :deep(a) { color: inherit; text-decoration: underline; }
 
 .msg-meta {

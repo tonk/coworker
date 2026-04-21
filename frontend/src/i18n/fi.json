@@ -468,13 +468,13 @@
     "team_members_count": "{count} jäsentä"
   },
   "sidebar": {
-    "starred": "Tähdistetyt projektit",
+    "starred": "Suosikkiprojektit",
     "no_starred": "Ei tähdistettyjä projekteja",
     "all_projects": "Kaikki projektit",
     "no_projects": "Ei projekteja",
-    "customers": "Asiakkaat",
+    "customers": "Suosikkiasiakkaat",
     "no_customers": "Ei tähdistettyjä asiakkaita",
-    "favorites": "Suosikit",
+    "favorites": "Suosikkihenkilöt",
     "no_favorites": "Ei suosikkeja vielä",
     "favorite": "Lisää suosikkeihin",
     "unfavorite": "Poista suosikeista",

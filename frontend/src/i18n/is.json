@@ -468,13 +468,13 @@
     "team_members_count": "{count} meðlimir"
   },
   "sidebar": {
-    "starred": "Stjörnumerktar verkefni",
+    "starred": "Uppáhalds verkefni",
     "no_starred": "Engin stjörnumerktar verkefni",
     "all_projects": "Öll verkefni",
     "no_projects": "Engin verkefni",
-    "customers": "Viðskiptavinir",
+    "customers": "Uppáhalds viðskiptavinir",
     "no_customers": "Engir stjörnumerktur viðskiptavinir",
-    "favorites": "Uppáhalds",
+    "favorites": "Uppáhalds fólk",
     "no_favorites": "Engin uppáhalds enn",
     "favorite": "Bæta í uppáhalds",
     "unfavorite": "Fjarlægja úr uppáhalds",

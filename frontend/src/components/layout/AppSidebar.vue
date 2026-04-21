@@ -101,7 +101,6 @@
             <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :title="$t('customer.unstar')">★</button>
           </RouterLink>
         </nav>
-        <RouterLink to="/customers" class="sidebar-link sidebar-link-all">{{ $t('customer.customers') }}…</RouterLink>
       </div>
     </section>
 

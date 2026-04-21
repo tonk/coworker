@@ -2,6 +2,20 @@
 
 All notable changes to WarmDesk are documented here.
 
+## v0.8.10 — 2026-04-21
+
+### Added
+- **URL link previews in chat** — the first URL in any chat or DM message automatically fetches Open Graph metadata (title, description, thumbnail, site name) and renders a compact preview card below the message; previews are cached per session so repeated URLs cost only one request; the backend endpoint includes SSRF protection (private IP ranges and hostnames are blocked, 5 s timeout, 64 KB response limit)
+- **Syntax highlighting in chat** — fenced code blocks (` ```lang ... ``` `) in chat messages and DMs are now highlighted using highlight.js; supported languages include Bash, CSS, Go, INI/TOML, JavaScript/TypeScript, JSON, Python, Rust, SQL, XML/HTML, and YAML; dark mode uses a matching dark code theme
+
+### Fixed
+- **Dark-mode code blocks unreadable** — inline `code` elements used `rgba(0,0,0,.08)` which is near-invisible on the dark background; code block `pre` used `--color-bg` (`#0f172a`) which mismatched the highlight.js dark theme background (`#1e2130`); both are now corrected with explicit dark-mode overrides
+- **Paste images on Linux/Tauri** — `e.clipboardData.items` is empty in WebKitGTK (Linux desktop app); the paste handler in both project chat and DMs now falls back to `navigator.clipboard.read()` when running inside Tauri, so Ctrl+V image paste works on Linux
+
+### Changed
+- **Sidebar section labels renamed** for consistency: "Starred Projects" → "Favorite Projects", "Customers" (starred) → "Favorite Customers", "Favorites" (people) → "Favorite People"
+- **Customer creation moved to Admin Panel** — the "Customers…" shortcut link in the sidebar is removed; customers are now created exclusively via **Admin → Customers**
+
 ## v0.8.9 — 2026-04-21
 
 ### Added

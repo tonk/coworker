@@ -468,13 +468,13 @@
     "team_members_count": "{count} membros"
   },
   "sidebar": {
-    "starred": "Projetos marcados",
+    "starred": "Projetos favoritos",
     "no_starred": "Nenhum projeto marcado",
     "all_projects": "Todos os projetos",
     "no_projects": "Nenhum projeto",
-    "customers": "Clientes",
+    "customers": "Clientes favoritos",
     "no_customers": "Nenhum cliente marcado",
-    "favorites": "Favoritos",
+    "favorites": "Pessoas favoritas",
     "no_favorites": "Ainda não há favoritos",
     "favorite": "Adicionar aos favoritos",
     "unfavorite": "Remover dos favoritos",

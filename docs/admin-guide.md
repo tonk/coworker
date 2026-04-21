@@ -432,6 +432,18 @@ Metrics exposed:
 | `warmdesk_columns_total` | `project`, `project_name` | Column count per project |
 | `warmdesk_cards_total` | `project`, `column`, `status` | Card count per column; `status` is `open` or `closed` |
 
+### Customers
+
+Admins create and manage customer organisations via **Admin → Customers**.
+
+| Action | Where |
+|--------|-------|
+| Create a customer | Admin → Customers → Create Customer |
+| Edit name / description / logo | Admin → Customers → (click Edit) |
+| Delete a customer | Admin → Customers → (click Delete) |
+
+Customer access (which users or groups can see a customer) is managed separately under **Admin → Users** and **Admin → Groups** — see [Customer access control](#customer-access-control) below.
+
 ### Projects
 
 Admins can create, rename, archive, and delete any project regardless of
@@ -850,8 +862,8 @@ cd dist
 - 4 direct message conversations and 1 group chat with realistic history
 - 3 customers (Acme Corporation, Globex Systems, Initech Ltd) with contracts linked to projects
 - 3 groups: Frontend Team, DevOps Team, Acme Stakeholders (with members and project/customer access pre-configured)
-- Starred projects pre-set for each demo user (e.g. admin has all three; owners have their own project plus one adjacent)
-- Starred customers pre-set (Acme starred for admin, sarah, marc; Globex for marc, lisa)
+- Favorite projects pre-set for each demo user (e.g. admin has all three; owners have their own project plus one adjacent)
+- Favorite customers pre-set (Acme starred for admin, sarah, marc; Globex for marc, lisa)
 
 ### Training seeder
 

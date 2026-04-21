@@ -275,3 +275,45 @@ input, textarea, select {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Syntax highlighting (highlight.js) — dark-mode overrides ──────────────── */
+[data-theme="dark"] .hljs {
+  background: #1e2130;
+  color: #abb2bf;
+}
+[data-theme="dark"] .hljs-keyword,
+[data-theme="dark"] .hljs-selector-tag,
+[data-theme="dark"] .hljs-built_in { color: #c678dd; }
+[data-theme="dark"] .hljs-string,
+[data-theme="dark"] .hljs-attr { color: #98c379; }
+[data-theme="dark"] .hljs-number,
+[data-theme="dark"] .hljs-literal { color: #d19a66; }
+[data-theme="dark"] .hljs-comment { color: #5c6370; font-style: italic; }
+[data-theme="dark"] .hljs-type,
+[data-theme="dark"] .hljs-class,
+[data-theme="dark"] .hljs-title { color: #e5c07b; }
+[data-theme="dark"] .hljs-variable,
+[data-theme="dark"] .hljs-params { color: #e06c75; }
+[data-theme="dark"] .hljs-function { color: #61afef; }
+
+/* ── Chat code blocks — dark-mode fixes ────────────────────────────────────── */
+/* Inline code: rgba(0,0,0,.08) is near-invisible on dark backgrounds */
+[data-theme="dark"] .msg-body code {
+  background: rgba(255,255,255,.12);
+  color: #abb2bf;
+}
+/* Pre blocks: align background with hljs theme instead of --color-bg (#0f172a) */
+[data-theme="dark"] .msg-body pre {
+  background: #1e2130;
+  border-color: rgba(255,255,255,.08);
+}
+/* Own-bubble pre was rgba(0,0,0,.18) — even darker in dark mode */
+[data-theme="dark"] .bubble-own .msg-body pre {
+  background: #1e2130;
+  border-color: rgba(255,255,255,.08);
+}
+/* pre code must stay transparent so hljs background shows */
+[data-theme="dark"] .msg-body pre code {
+  background: none;
+  color: inherit;
+}

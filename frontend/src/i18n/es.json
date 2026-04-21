@@ -436,11 +436,11 @@
     "team_members_count": "{count} miembros"
   },
   "sidebar": {
-    "starred": "Proyectos destacados",
+    "starred": "Proyectos favoritos",
     "no_starred": "Sin proyectos destacados",
     "all_projects": "Todos los proyectos",
     "no_projects": "Sin proyectos",
-    "favorites": "Favoritos",
+    "favorites": "Personas favoritas",
     "no_favorites": "Aún sin favoritos",
     "favorite": "Agregar a favoritos",
     "unfavorite": "Quitar de favoritos",
@@ -450,7 +450,7 @@
     "offline": "Desconectado",
     "all_chats": "Todos los chats…",
     "unread_messages": "Mensajes no leídos",
-    "customers": "Clientes",
+    "customers": "Clientes favoritos",
     "no_customers": "No hay clientes marcados"
   },
   "apikeys": {

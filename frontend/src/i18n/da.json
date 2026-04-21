@@ -468,13 +468,13 @@
     "team_members_count": "{count} medlemmer"
   },
   "sidebar": {
-    "starred": "Markerede projekter",
+    "starred": "Favoritprojekter",
     "no_starred": "Ingen markerede projekter",
     "all_projects": "Alle projekter",
     "no_projects": "Ingen projekter",
-    "customers": "Kunder",
+    "customers": "Favoritkunder",
     "no_customers": "Ingen markerede kunder",
-    "favorites": "Favoritter",
+    "favorites": "Favoritpersoner",
     "no_favorites": "Ingen favoritter endnu",
     "favorite": "Tilføj til favoritter",
     "unfavorite": "Fjern fra favoritter",
