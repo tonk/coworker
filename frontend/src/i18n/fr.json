@@ -577,6 +577,7 @@
     "customer_access": "Accès aux clients",
     "no_customer_access": "Aucun accès aux clients assigné.",
     "add_customer": "Ajouter un client",
+    "add_group": "Ajouter un groupe",
     "role": "Rôle",
     "no_groups": "Aucun groupe pour l'instant.",
     "groups_with_access": "Groupes avec accès",

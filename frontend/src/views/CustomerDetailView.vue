@@ -155,7 +155,7 @@
           </div>
           <div v-if="auth.isAdmin" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
             <select class="form-input" v-model="addGroupId" style="flex:1;min-width:160px">
-              <option value="">— {{ $t('groups.add_customer') }} —</option>
+              <option value="">— {{ $t('groups.add_group') }} —</option>
               <option v-for="g in groupsNotOnCustomer" :key="g.id" :value="g.id">{{ g.name }}</option>
             </select>
             <select class="form-input" v-model="addGroupRole" style="width:110px">

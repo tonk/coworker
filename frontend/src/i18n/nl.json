@@ -577,6 +577,7 @@
     "customer_access": "Klanttoegang",
     "no_customer_access": "Geen klanttoegang toegewezen.",
     "add_customer": "Klant toevoegen",
+    "add_group": "Groep toevoegen",
     "role": "Rol",
     "no_groups": "Nog geen groepen.",
     "groups_with_access": "Groepen met toegang",

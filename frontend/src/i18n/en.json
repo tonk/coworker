@@ -577,6 +577,7 @@
     "customer_access": "Customer Access",
     "no_customer_access": "No customer access assigned.",
     "add_customer": "Add Customer",
+    "add_group": "Add Group",
     "role": "Role",
     "no_groups": "No groups yet.",
     "groups_with_access": "Groups with Access",
