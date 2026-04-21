@@ -4,12 +4,12 @@ BACKEND  := backend
 FRONTEND := frontend
 VERSION  := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
 ARCHIVE  := warmdesk-$(VERSION).tar.gz
-.PHONY: all build build-frontend build-backend clean dev-backend dev-frontend run package stamp-desktop-version appimage deb rpm dmg windows-installer windows-portable
+.PHONY: all build build-frontend embed-web build-backend clean dev-backend dev-frontend run package stamp-desktop-version appimage deb rpm dmg windows-installer windows-portable
 
 # Build everything into dist/
 all: build
 
-build: build-frontend build-backend
+build: build-frontend embed-web build-backend
 	@cp warmdesk.yaml.example $(DIST_DIR)/warmdesk.yaml.example
 	@cp warmdesk-migrate.yaml.example $(DIST_DIR)/warmdesk-migrate.yaml.example
 	@cp -r deploy $(DIST_DIR)/deploy
@@ -21,13 +21,18 @@ build: build-frontend build-backend
 build-frontend:
 	@echo "Building frontend..."
 	cd $(FRONTEND) && npm install && npm run build
-	mkdir -p $(DIST_DIR)/web
-	cp -r $(FRONTEND)/dist/. $(DIST_DIR)/web/
+
+# Copy the Vite build output into the embed source directory so go build -tags embed
+# picks it up and bakes the frontend into the warmdesk binary.
+embed-web:
+	@echo "Embedding web files into binary..."
+	@find $(BACKEND)/staticweb/files -mindepth 1 -not -name 'placeholder' -delete 2>/dev/null || true
+	cp -r $(FRONTEND)/dist/. $(BACKEND)/staticweb/files/
 
 build-backend:
 	@echo "Building backend..."
 	mkdir -p $(DIST_DIR)
-	cd $(BACKEND) && go build -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_DIR)/$(BINARY) .
+	cd $(BACKEND) && go build -tags embed -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_DIR)/$(BINARY) .
 	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-seed ./cmd/seed
 	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-export ./cmd/export
 	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-import ./cmd/importer
@@ -114,6 +119,6 @@ clean:
 	rm -rf $(DIST_DIR) warmdesk-*.tar.gz
 	rm -rf $(FRONTEND)/dist $(FRONTEND)/src-tauri/target
 
-# Build and run production binary locally
+# Build and run production binary locally (web UI is embedded in the binary)
 run: build
-	cd $(DIST_DIR) && WEB_DIR=./web ./$(BINARY)
+	cd $(DIST_DIR) && ./$(BINARY)

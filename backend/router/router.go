@@ -1,6 +1,8 @@
 package router
 
 import (
+	"io"
+	"io/fs"
 	"net/http"
 	"strings"
 
@@ -12,7 +14,7 @@ import (
 	"github.com/tonk/warmdesk/services"
 )
 
-func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, apiLog bool, uploadDir string, trustedProxies []string) *gin.Engine {
+func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, apiLog bool, uploadDir string, trustedProxies []string) *gin.Engine {
 	r := gin.New()
 	r.SetTrustedProxies(trustedProxies) //nolint
 	r.Use(gin.Recovery())
@@ -322,19 +324,36 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webDir string, 
 		r.Static("/uploads", uploadDir)
 	}
 
-	// Serve frontend SPA from webDir when configured
-	if webDir != "" {
-		r.Static("/assets", webDir+"/assets")
-		r.StaticFile("/favicon.ico", webDir+"/favicon.ico")
-		r.StaticFile("/favicon.svg", webDir+"/favicon.svg")
-		r.StaticFile("/logo.svg", webDir+"/logo.svg")
-		r.StaticFile("/logo-full.svg", webDir+"/logo-full.svg")
+	// Serve frontend SPA from embedded or filesystem webFS when available
+	if webFS != nil {
+		fileServer := http.FileServer(http.FS(webFS))
+		r.GET("/assets/*filepath", gin.WrapH(fileServer))
+		r.GET("/fonts/*filepath", gin.WrapH(fileServer))
 		r.NoRoute(func(c *gin.Context) {
 			if strings.HasPrefix(c.Request.URL.Path, "/api") {
 				c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 				return
 			}
-			c.File(webDir + "/index.html")
+			// Serve matching static file from web root; fall back to index.html for SPA routes
+			path := strings.TrimPrefix(c.Request.URL.Path, "/")
+			if path != "" {
+				if f, err := webFS.Open(path); err == nil {
+					if st, err := f.Stat(); err == nil && !st.IsDir() {
+						f.Close()
+						fileServer.ServeHTTP(c.Writer, c.Request)
+						return
+					}
+					f.Close()
+				}
+			}
+			f, err := webFS.Open("index.html")
+			if err != nil {
+				c.JSON(http.StatusServiceUnavailable, gin.H{"error": "frontend not available"})
+				return
+			}
+			defer f.Close()
+			data, _ := io.ReadAll(f)
+			c.Data(http.StatusOK, "text/html; charset=utf-8", data)
 		})
 	}
 

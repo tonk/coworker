@@ -26,6 +26,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"strings"
@@ -37,6 +38,7 @@ import (
 	"github.com/tonk/warmdesk/handlers"
 	"github.com/tonk/warmdesk/router"
 	"github.com/tonk/warmdesk/services"
+	"github.com/tonk/warmdesk/staticweb"
 	"github.com/tonk/warmdesk/ws"
 )
 
@@ -110,7 +112,13 @@ func main() {
 			trustedProxies = append(trustedProxies, p)
 		}
 	}
-	r := router.Setup(authSvc, cfg.AllowedOrigins, cfg.WebDir, cfg.APILog, cfg.UploadDir, trustedProxies)
+	var webFS fs.FS
+	if cfg.WebDir != "" {
+		webFS = os.DirFS(cfg.WebDir)
+	} else {
+		webFS = staticweb.FS
+	}
+	r := router.Setup(authSvc, cfg.AllowedOrigins, webFS, cfg.APILog, cfg.UploadDir, trustedProxies)
 
 	addr := ":" + cfg.Port
 	if cfg.TLSCert != "" && cfg.TLSKey != "" {

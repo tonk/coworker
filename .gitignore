@@ -8,6 +8,10 @@ warmdesk.db
 warmdesk-*.tar.gz
 ansible/*.tar.gz
 
+# ── Embedded web files (populated by embed-web Makefile target, not tracked) ─
+backend/staticweb/files/*
+!backend/staticweb/files/placeholder
+
 # ── Go ───────────────────────────────────────────────────────────────────────
 *.exe
 *.exe~
