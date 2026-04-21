@@ -20,9 +20,9 @@ make clean all || {
 	echo "Building WarmDesk failed" >&2
 	exit 1
 }
-cd dist
 
 # Fill with demo data
+cd dist
 ./warmdesk-seed --reset
 ./warmdesk-training --reset
 ./warmdesk-training 4 Salami
@@ -44,7 +44,7 @@ smtp:
 
 jwt_secret: "change-me-for-production"
 allowed_origins: "http://localhost:8080"
-web_dir: "web"
+#web_dir: "web"
 
 # All logging in debug mode
 gin_mode: "debug"

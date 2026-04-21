@@ -56,14 +56,16 @@
                   </span>
                   <span v-if="user.totp_enabled" class="badge badge-mfa" :title="$t('mfa.title')">MFA</span>
                 </td>
-                <td class="actions-cell">
-                  <button class="btn btn-secondary btn-sm" @click="openEditUser(user)">{{ $t('common.edit') }}</button>
-                  <template v-if="user.id !== auth.user?.id">
-                    <button class="btn btn-secondary btn-sm" @click="toggleActive(user)">
-                      {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
-                    </button>
-                    <button class="btn btn-danger btn-sm" @click="deleteUser(user)">{{ $t('common.delete') }}</button>
-                  </template>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn btn-secondary btn-sm" @click="openEditUser(user)">{{ $t('common.edit') }}</button>
+                    <template v-if="user.id !== auth.user?.id">
+                      <button class="btn btn-secondary btn-sm" @click="toggleActive(user)">
+                        {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
+                      </button>
+                      <button class="btn btn-danger btn-sm" @click="deleteUser(user)">{{ $t('common.delete') }}</button>
+                    </template>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -112,7 +114,8 @@
                 <td>
                   <span class="open-cards-count">{{ project.open_card_count }}</span>
                 </td>
-                <td class="actions-cell">
+                <td>
+                  <div class="actions-cell">
                   <template v-if="showDeletedProjects">
                     <button class="btn btn-secondary btn-sm" @click="restoreProject(project)">{{ $t('admin.restore') }}</button>
                     <button class="btn btn-danger btn-sm" @click="purgeProject(project)">{{ $t('admin.purge_project') }}</button>
@@ -124,6 +127,7 @@
                     </button>
                     <button class="btn btn-danger btn-sm" @click="deleteProject(project)">{{ $t('common.delete') }}</button>
                   </template>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -1333,7 +1337,7 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
 
 .data-table { width: 100%; border-collapse: collapse; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
-.data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--color-border); font-size: 13px; }
+.data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--color-border); font-size: 13px; vertical-align: middle; }
 .data-table th { font-weight: 600; color: var(--color-text-muted); font-size: 12px; background: var(--color-bg); }
 .data-table small { color: var(--color-text-muted); font-size: 11px; }
 .email { color: var(--color-text-muted); }

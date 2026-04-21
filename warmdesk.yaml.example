@@ -75,9 +75,10 @@ allowed_origins: "http://localhost:8080"
 #   trusted_proxies: "127.0.0.1, 10.0.0.0/8"    # local proxy + internal network
 # trusted_proxies: ""
 
-# Path to the built frontend files (dist/web after running `make build`)
-# Leave empty during development (Vite dev server is used instead)
-web_dir: "dist/web"
+# Override path for the frontend files. The web UI is embedded in the binary
+# by default, so this is only needed to serve a custom or updated frontend
+# without rebuilding the binary. Leave empty (or omit) to use the embedded UI.
+# web_dir: ""
 
 # Redis URL for horizontal scaling (optional).
 # When set, WebSocket broadcasts are routed through Redis pub/sub so all

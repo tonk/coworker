@@ -114,7 +114,12 @@ func main() {
 	}
 	var webFS fs.FS
 	if cfg.WebDir != "" {
-		webFS = os.DirFS(cfg.WebDir)
+		if _, err := os.Stat(cfg.WebDir); err == nil {
+			webFS = os.DirFS(cfg.WebDir)
+		} else {
+			log.Printf("web_dir %q not found, falling back to embedded frontend", cfg.WebDir)
+			webFS = staticweb.FS
+		}
 	} else {
 		webFS = staticweb.FS
 	}
