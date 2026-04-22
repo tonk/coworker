@@ -144,7 +144,19 @@
 - In the client, when a new chat arrives and the client doesn't have
   focus, show a notification that a new message has arrived (through the
   OS notification system, if possible)
-  This works in the browser
 
-- In the chat and edit boxes, if typing a ':' show a popup with emojies
-  and let the user pick one, or continue typing.
+- In the chat and edit boxes, if typing a ':a,' show a popup with
+  emojies and let the user pick one, or continue typing.
+
+- In the "Edit User" box, show the users avatar at the top left corner.
+
+- In the chat, currently the avatar is just below the message. Place it
+  to the left, or above the message.
+
+- In the "Invite Member" form of a project, change the initial blob to
+  the users avatar. Also show the members avatar next to their name in
+  the members list.
+
+- In the Admin -> Users list, also show the users avatar.
+
+- In the Admin -> Customers list, also show the customers avatar.

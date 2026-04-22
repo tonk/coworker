@@ -211,7 +211,7 @@ func main() {
 			FirstName:          thisName.FirstName,
 			LastName:           thisName.LastName + " - " + suffix,
 			DisplayName:        thisName.FirstName + " " + thisName.LastName + " - " + suffix,
-			AvatarURL:          fmt.Sprintf("https://api.dicebear.com/9.x/avataaars/svg?seed=%s", username),
+			AvatarURL:          fmt.Sprintf("https://api.dicebear.com/9.x/avataaars/svg?seed=%s", thisName.FirstName),
 			IsActive:           true,
 			EmailNotifications: false,
 		}

@@ -1427,7 +1427,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				{"tonk", "Nice helper — consider this variant that notifies when expired:\n```go\nfunc NotifyIfExpired(expiry time.Time, userID int) {\n\tif InviteExpired(expiry) {\n\t\t// send notification to userID\n\t}\n}\n```", 25*time.Hour + 10*time.Minute},
 				// Priya shares repo link for preview
 				{"priya", "Also — here's the repo if you want to inspect the code: https://github.com/tonk/warmdesk.git", 25*time.Hour + 5*time.Minute},
-				{"priya", "Perfect, thanks. Also — if you have a minute later, could you glance at the accessibility labels? Want to make sure we're shipping inclusive defaults.", 25*time.Hour},
+				{"priya", "Perfect, thanks. Also — if you have a minute later, could you glance at the accessibility labels? Want to make sure we're shipping inclusive defaults.", 25 * time.Hour},
 				{"tonk", "Absolutely. I'll take a look after lunch. Great work on this, Priya — really great to see this land. 🙌", 24*time.Hour + 50*time.Minute},
 			},
 		},
@@ -1517,8 +1517,9 @@ Pagerduty schedules will be updated to match this by Friday.`,
 
 	demoCustomers := []customerSpec{
 		{
-			name: "Acme Corporation",
-			desc: "Long-running client delivering internal tooling and web platforms.",
+			name:    "Acme Corporation",
+			desc:    "Long-running client delivering internal tooling and web platforms.",
+			logoURL: "https://api.dicebear.com/9.x/identicon/svg?seed=Acme",
 			contracts: []contractSpec{
 				{
 					name:      "Phase 1 — Marketing Site",
@@ -1537,8 +1538,9 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			},
 		},
 		{
-			name: "Globex Systems",
-			desc: "Infrastructure-heavy client focused on cloud reliability and security.",
+			name:    "Globex Systems",
+			desc:    "Infrastructure-heavy client focused on cloud reliability and security.",
+			logoURL: "https://api.dicebear.com/9.x/identicon/svg?seed=Globex",
 			contracts: []contractSpec{
 				{
 					name:      "Managed DevOps 2025",
@@ -1552,6 +1554,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{
 			name:     "Initech Ltd",
 			desc:     "Prospective client — evaluation phase, no active contract yet.",
+			logoURL:  "https://api.dicebear.com/9.x/identicon/svg?seed=Initech",
 			projects: []string{}, // no projects yet
 		},
 	}
