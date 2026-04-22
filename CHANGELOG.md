@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.8.11 — 2026-04-22
+
+### Added
+- Desktop notifications for direct messages and unread counts.
+- Inline emoji picker triggered by ':' in the compose textarea, with initial-search support for fast emoji insertion.
+- Demo seeder: detailed summary box listing projects, conversations, customers, and groups.
+
+### Fixed
+- Restore syntax token colors inside chat code blocks while removing per-line highlights so tokens keep color without boxed backgrounds.
+- Fix color and avatar-size issues in chat messages.
+
+### Changed
+- Code block styling: uniform background across tokens, darker bubble tint for readability, and white background for own bubbles to improve contrast.
+- Removed per-token background highlights to avoid line-highlighting; tokens now inherit color only.
+- Updated TODO list.
+
 All notable changes to WarmDesk are documented here.
 
 ## v0.8.10 — 2026-04-21
