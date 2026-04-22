@@ -134,7 +134,7 @@
     <div class="chat-compose">
       <AttachmentList v-if="pendingFiles.length" :attachments="pendingFiles" :can-delete="true" @remove="removePending" />
       <div class="compose-outer" style="position:relative">
-        <InlineEmojiPicker v-if="emojiOpen" @pick="onEmojiPick" @close="emojiOpen = false" />
+        <InlineEmojiPicker v-if="emojiOpen" :initial-search="emojiQuery || ''" @pick="onEmojiPick" @close="emojiOpen = false" />
         <MentionDropdown
           v-if="mentionUsers.length"
           :users="mentionUsers"
@@ -234,11 +234,16 @@ const pendingFiles = ref([]) // [{name, size, mime_type, _file}]
 const emojiOpen = ref(false)
 const projectUsers = ref([])
 
-const { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydown, pickMention } = useCompose({
+const { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydown, pickMention, emojiQuery } = useCompose({
   textareaEl,
   getValue: () => draft.value,
   setValue: (v) => { draft.value = v },
   users: projectUsers,
+})
+
+// Open emoji picker when emojiQuery becomes active
+watch(emojiQuery, (q) => {
+  if (q !== null) emojiOpen.value = true
 })
 
 function onEmojiPick(emoji) {

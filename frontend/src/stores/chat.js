@@ -1,12 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { projectsApi } from '@/api/projects'
+import { useChatNotify } from '@/composables/useChatNotify'
+import { useAuthStore } from '@/stores/auth'
+import { useProjectChatUnread } from '@/composables/useProjectChatUnread'
 
 export const useChatStore = defineStore('chat', () => {
   const messages = ref([])
   const loading = ref(false)
   const hasMore = ref(true)
   const typingUsers = ref([])   // [{user_id, username, display_name, _timer}]
+
+  // Composables / other stores used for notifications
+  const { desktopNotify, notifyEnabled } = useChatNotify()
+  const auth = useAuthStore()
+  const { addProjectChatUnread } = useProjectChatUnread()
 
   function setTyping(user) {
     const existing = typingUsers.value.find(u => u.user_id === user.user_id)
@@ -69,7 +77,22 @@ export const useChatStore = defineStore('chat', () => {
 
   function handleWsEvent(type, payload) {
     switch (type) {
-      case 'chat.message.created': addMessage(payload); break
+      case 'chat.message.created':
+        addMessage(payload)
+        // Global desktop notification when client unfocused
+        try {
+          if (notifyEnabled.value && !document.hasFocus()) {
+            const fromOthers = payload.user_id !== auth.user?.id && !payload.is_bot
+            if (fromOthers) {
+              const sender = (payload.user && (payload.user.display_name || payload.user.username)) || 'Someone'
+              const body = (payload.body || '').replace(/```[\s\S]*?```|`[^`]+`/g, '[code]').slice(0, 90)
+              desktopNotify(sender, body)
+              // increment global unread counter
+              addProjectChatUnread()
+            }
+          }
+        } catch (e) {}
+        break
       case 'chat.message.updated': updateMessage(payload); break
       case 'chat.message.deleted': removeMessage(payload); break
       case 'chat.reaction.updated': updateReactions(payload.message_id, payload.reactions); break

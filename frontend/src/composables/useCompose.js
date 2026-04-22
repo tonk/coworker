@@ -18,6 +18,10 @@ export function useCompose({ textareaEl, getValue, setValue, users }) {
   const mentionStart = ref(0)      // character offset of the leading @
   const mentionIndex = ref(0)      // keyboard-highlighted row
 
+  // Emoji-by-name query (e.g. :smile)
+  const emojiQuery = ref(null)     // null = no active emoji query; string = partial after :
+  const emojiStart = ref(0)
+
   const mentionUsers = computed(() => {
     if (mentionQuery.value === null) return []
     const q = (mentionQuery.value || '').toLowerCase()
@@ -60,6 +64,7 @@ export function useCompose({ textareaEl, getValue, setValue, users }) {
         el.focus()
       })
       mentionQuery.value = null
+      emojiQuery.value = null
       return
     }
 
@@ -69,34 +74,59 @@ export function useCompose({ textareaEl, getValue, setValue, users }) {
       mentionQuery.value = m[1]
       mentionStart.value = pos - m[0].length
       mentionIndex.value = 0
+      emojiQuery.value = null
+      return
     } else {
       mentionQuery.value = null
+    }
+
+    // Emoji-name detection (start with ':' and then letters/numbers/_+-)
+    const em = before.match(/:([a-z0-9_+\-]*)$/i)
+    if (em) {
+      emojiQuery.value = em[1]
+      emojiStart.value = pos - em[0].length
+    } else {
+      emojiQuery.value = null
     }
   }
 
   // Call this from the textarea's @keydown handler (before default handling)
   // Returns true if the key was consumed (caller should suppress default + stop).
   function onTextareaKeydown(e) {
-    if (mentionQuery.value === null || !mentionUsers.value.length) return false
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      mentionIndex.value = (mentionIndex.value + 1) % mentionUsers.value.length
-      return true
+    // Mention navigation
+    if (mentionQuery.value !== null && mentionUsers.value.length) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        mentionIndex.value = (mentionIndex.value + 1) % mentionUsers.value.length
+        return true
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        mentionIndex.value = (mentionIndex.value - 1 + mentionUsers.value.length) % mentionUsers.value.length
+        return true
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault()
+        pickMention(mentionUsers.value[mentionIndex.value])
+        return true
+      }
+      if (e.key === 'Escape') {
+        mentionQuery.value = null
+        return true
+      }
+      return false
     }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      mentionIndex.value = (mentionIndex.value - 1 + mentionUsers.value.length) % mentionUsers.value.length
-      return true
+
+    // Emoji query keyboard handling: Escape closes, Enter/Tab do nothing here
+    if (emojiQuery.value !== null) {
+      if (e.key === 'Escape') {
+        emojiQuery.value = null
+        return true
+      }
+      // Let Enter/Tab insert normally — selection from picker is via mouse for now
+      return false
     }
-    if (e.key === 'Enter' || e.key === 'Tab') {
-      e.preventDefault()
-      pickMention(mentionUsers.value[mentionIndex.value])
-      return true
-    }
-    if (e.key === 'Escape') {
-      mentionQuery.value = null
-      return true
-    }
+
     return false
   }
 
@@ -115,5 +145,5 @@ export function useCompose({ textareaEl, getValue, setValue, users }) {
     })
   }
 
-  return { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydown, pickMention }
+  return { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydown, pickMention, emojiQuery }
 }

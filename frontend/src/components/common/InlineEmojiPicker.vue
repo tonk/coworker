@@ -32,11 +32,12 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
+const props = defineProps({ initialSearch: { type: String, default: '' } })
 const emit = defineEmits(['pick', 'close'])
 
 const panelEl = ref(null)
 const searchEl = ref(null)
-const search = ref('')
+const search = ref(props.initialSearch || '')
 const activeCat = ref('Smileys')
 
 const CATEGORIES = [
