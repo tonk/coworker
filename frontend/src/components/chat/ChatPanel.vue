@@ -725,7 +725,7 @@ function dayLabel(dateStr) {
   margin: 6px 0;
   font-size: 12px;
 }
-.bubble-own .msg-body :deep(pre) { background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.2); }
+.bubble-own .msg-body :deep(pre) { background: #ffffff; color: var(--color-text, #111); border-color: rgba(0,0,0,.2); }
 .msg-body :deep(pre code) { background: transparent !important; padding: 0; border-radius: 0; font-size: inherit; }
 /* Prevent per-token/line backgrounds from hljs tokens — make block uniform */
 .msg-body :deep(pre) :deep(*) { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
