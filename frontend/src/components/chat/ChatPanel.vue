@@ -725,7 +725,26 @@ function dayLabel(dateStr) {
   margin: 6px 0;
   font-size: 12px;
 }
-.bubble-own .msg-body :deep(pre) { background: #dfe8ff !important; color: var(--color-text, #111) !important; border-color: rgba(0,0,0,.12) !important; box-shadow: none !important; padding: 10px 12px; border-radius: 8px; }
+.bubble-own .msg-body :deep(pre) {
+  background: #ffffff !important;
+  color: #0b1220 !important;
+  border-color: rgba(0,0,0,0.12) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
+  overflow-x: auto;
+}
+
+/* Ensure tokens are visible and don't get dimmed inside own-bubble code blocks */
+.bubble-own .msg-body :deep(pre) .hljs,
+.bubble-own .msg-body :deep(pre) .hljs * {
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
 .msg-body :deep(pre code) { background: transparent !important; padding: 0; border-radius: 0; font-size: inherit; }
 /* Prevent per-token/line backgrounds from hljs tokens — make block uniform */
 .msg-body :deep(pre) :deep(*) { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }

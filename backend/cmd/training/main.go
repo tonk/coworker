@@ -42,13 +42,13 @@ import (
 // ─── configuration ───────────────────────────────────────────────────────────
 
 const (
-	usernamePrefix = "guru"                // guru00, guru01, …
-	emailDomain    = "@ansiblelab.nl"      // Standard email domain
-	customerPrefix = "Holy Grail Quests "  // + XX  →  "Holy Grail Quests 00"
-	contractPrefix = "Grail Finding "      // + XX  →  "Grail Finding 00"
-	projectPrefix  = "EDA "                // + XX  →  "EDA 00"
-	projectSlugPfx = "eda-"                // + XX  →  "eda-00"
-	projectKeyPfx  = "EDA"
+	usernamePrefix = "guru"                  // guru00, guru01, …
+	emailDomain    = "@ansiblelab.nl"        // Standard email domain
+	customerPrefix = "Round Table Knights "  // + XX  →  "Round Table Knights 00"
+	contractPrefix = "Holy Grail Quests "    // + XX  →  "Holy Grail Quests 00"
+	projectPrefix  = "Grail Finding "        // + XX  →  "Grail Finding 00"
+	projectSlugPfx = "gf-"                   // + XX  →  "gf-00"
+	projectKeyPfx  = "GF"
 	projectColor   = "#6366f1"
 )
 
@@ -63,6 +63,8 @@ var characters = []Character{
 	{FirstName: "Bedivere", LastName: "The Wise"},
 	{FirstName: "Brother", LastName: "Maynard"},
 	{FirstName: "Dennis", LastName: "The Peasant"},
+	{FirstName: "Frank", LastName: "The Famous Historian"},
+	{FirstName: "French", LastName: "Taunter"},
 	{FirstName: "Galahad", LastName: "The Pure"},
 	{FirstName: "Lancelot", LastName: "The Brave"},
 	{FirstName: "Prince", LastName: "Herbert"},
@@ -70,6 +72,7 @@ var characters = []Character{
 	{FirstName: "Roger", LastName: "The Shrubber"},
 	{FirstName: "Sir", LastName: "Bedevere"},
 	{FirstName: "Sir", LastName: "Ector"},
+	{FirstName: "Sir", LastName: "Gawain"},
 	{FirstName: "The Black", LastName: "Knight"},
 	{FirstName: "The Bridge", LastName: "Keeper"},
 	{FirstName: "The French", LastName: "Taunter"},

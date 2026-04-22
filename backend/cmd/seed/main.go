@@ -187,61 +187,71 @@ func main() {
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "admin",
 			FirstName: "Alex", LastName: "Admin", DisplayName: "Alex Admin",
 			IsActive: true, EmailNotifications: true,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=admin",
 		},
 		"sarah": {
 			Email: "sarah@demo.example", Username: "demo.sarah",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "user",
 			FirstName: "Sarah", LastName: "Chen", DisplayName: "Sarah Chen",
 			IsActive: true, EmailNotifications: true,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=sarah",
 		},
 		"marc": {
 			Email: "marc@demo.example", Username: "demo.marc",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "user",
 			FirstName: "Marc", LastName: "Dubois", DisplayName: "Marc Dubois",
 			IsActive: true, EmailNotifications: true,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=marc",
 		},
 		"lisa": {
 			Email: "lisa@demo.example", Username: "demo.lisa",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "user",
 			FirstName: "Lisa", LastName: "Park", DisplayName: "Lisa Park",
 			IsActive: true, EmailNotifications: true,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=lisa",
 		},
-		"viewer": {
-			Email: "viewer@demo.example", Username: "demo.viewer",
-			PasswordHash: hashPassword("demo1234"), GlobalRole: "viewer",
-			FirstName: "Victor", LastName: "Viewer", DisplayName: "Victor Viewer",
-			IsActive: true, EmailNotifications: false,
-		},
-		// Additional demo users
 		"priya": {
 			Email: "priya@demo.example", Username: "demo.priya",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "user",
 			FirstName: "Priya", LastName: "Nair", DisplayName: "Priya Nair",
 			IsActive: true, EmailNotifications: true,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=priya",
 		},
 		"james": {
 			Email: "james@demo.example", Username: "demo.james",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "user",
 			FirstName: "James", LastName: "O'Brien", DisplayName: "James O'Brien",
 			IsActive: true, EmailNotifications: true,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=james",
 		},
 		"elena": {
 			Email: "elena@demo.example", Username: "demo.elena",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "user",
 			FirstName: "Elena", LastName: "Kovač", DisplayName: "Elena Kovač",
 			IsActive: true, EmailNotifications: true,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=elena",
 		},
 		"raj": {
 			Email: "raj@demo.example", Username: "demo.raj",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "user",
 			FirstName: "Raj", LastName: "Sharma", DisplayName: "Raj Sharma",
 			IsActive: true, EmailNotifications: false,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=raj",
+		},
+		"viewer": {
+			Email: "viewer@demo.example", Username: "demo.viewer",
+			PasswordHash: hashPassword("demo1234"), GlobalRole: "viewer",
+			FirstName: "Victor", LastName: "Viewer", DisplayName: "Victor Viewer",
+			IsActive: true, EmailNotifications: false,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=viewer",
 		},
 	}
 
 	for _, u := range users {
 		must(db.Create(u).Error)
 	}
+	// Include the real system admin in the lookup map so seed code can reference 'tonk' in convs
+	users["tonk"] = &tonk
 	fmt.Printf("   Created %d demo users (password for all: demo1234)\n", len(users))
 
 	// ── 2. Projects + columns + labels + members ──────────────────────────────
@@ -1405,6 +1415,23 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				{"marc", "Done. Cards INF-22 and INF-23. Should have patches deployed by tomorrow.", 2*24*time.Hour - 20*time.Minute},
 			},
 		},
+		// 1-on-1: Tonk ↔ Priya (friendly)
+		{
+			members: []string{"tonk", "priya"},
+			messages: []msgSpec{
+				{"tonk", "Morning Priya — just wanted to say your demo yesterday was brilliant. The new onboarding flow is so much clearer now.", 26 * time.Hour},
+				{"priya", "Thanks Ton! Really appreciate that — the team had great feedback. I cleaned up the edge-case on the invite link you mentioned.", 25*time.Hour + 40*time.Minute},
+				// Priya shares a small Go helper
+				{"priya", "FYI — here's the invite expiry helper I used:\n```go\nfunc InviteExpired(expiry time.Time) bool {\n\treturn time.Now().After(expiry)\n}\n```", 25*time.Hour + 30*time.Minute},
+				// Tonk responds with a follow-up snippet
+				{"tonk", "Nice helper — consider this variant that notifies when expired:\n```go\nfunc NotifyIfExpired(expiry time.Time, userID int) {\n\tif InviteExpired(expiry) {\n\t\t// send notification to userID\n\t}\n}\n```", 25*time.Hour + 10*time.Minute},
+				// Priya shares repo link for preview
+				{"priya", "Also — here's the repo if you want to inspect the code: https://github.com/tonk/warmdesk.git", 25*time.Hour + 5*time.Minute},
+				{"priya", "Perfect, thanks. Also — if you have a minute later, could you glance at the accessibility labels? Want to make sure we're shipping inclusive defaults.", 25*time.Hour},
+				{"tonk", "Absolutely. I'll take a look after lunch. Great work on this, Priya — really great to see this land. 🙌", 24*time.Hour + 50*time.Minute},
+			},
+		},
+
 		// Group chat: Website Redesign team
 		{
 			members: []string{"admin", "sarah", "marc"},
@@ -1766,6 +1793,11 @@ Pagerduty schedules will be updated to match this by Friday.`,
 
 	fmt.Println()
 	fmt.Println("  Start the server and log in at http://localhost:8080")
+	fmt.Println()
+	fmt.Println("  Repository: https://github.com/tonk/warmdesk.git")
+	fmt.Println("  Preview:")
+	fmt.Println("    A self-hosted, multi-user project management tool with Kanban and Scrum boards,")
+	fmt.Println("    real-time collaboration, direct messaging, time tracking, and a ticket API.")
 }
 
 // joinNames helper prints a comma-separated list or '-' when empty
