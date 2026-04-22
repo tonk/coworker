@@ -330,10 +330,9 @@ pre,
   color: var(--color-code-text, #0b1220) !important;
 }
 
-/* Force highlight.js token spans to inherit color and not add backgrounds */
+/* Allow highlight.js token colors while removing token backgrounds */
 .msg-body pre .hljs,
 .msg-body pre .hljs * {
-  color: inherit !important;
   background: transparent !important;
   box-shadow: none !important;
 }
