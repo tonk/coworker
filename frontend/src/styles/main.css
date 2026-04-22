@@ -309,6 +309,33 @@ code.hljs { padding: 3px 5px; }
 .hljs-addition { color: #22863a; background-color: #f0fff4; }
 .hljs-deletion { color: #b31d28; background-color: #ffeef0; }
 
+/* Make code blocks uniform and slightly tinted. Applies globally to message/code areas. */
+pre,
+.msg-body :deep(pre),
+.comment-text :deep(pre),
+.card-detail :deep(pre) {
+  background: var(--color-code-bg, rgba(0,0,0,0.04));
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  margin: 6px 0;
+  font-size: 12px;
+}
+
+/* Dark mode override */
+[data-theme="dark"] pre,
+[data-theme="dark"] .msg-body :deep(pre),
+[data-theme="dark"] .comment-text :deep(pre),
+[data-theme="dark"] .card-detail :deep(pre) {
+  background: rgba(0,0,0,0.18);
+}
+
+/* Prevent per-token/line backgrounds from hljs tokens — make block uniform */
+pre * { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
+.msg-body :deep(pre .hljs-addition),
+.msg-body :deep(pre .hljs-deletion) { background: transparent !important; }
+
 /* ── dark mode ── */
 [data-theme="dark"] .hljs { color: #abb2bf; background: transparent; }
 [data-theme="dark"] .hljs-keyword,
