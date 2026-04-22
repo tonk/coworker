@@ -1893,4 +1893,11 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 }
 .admin-toggle.is-admin { background: rgba(0,0,0,0.25); }
 .admin-toggle:hover { background: rgba(0,0,0,0.2); }
+
+.members-list { display: flex; flex-direction: column; gap: 4px; }
+.member-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--color-bg); }
+.member-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.member-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.member-name { font-size: 13px; font-weight: 500; color: var(--color-text); }
+.member-email { font-size: 11px; color: var(--color-text-muted); }
 </style>

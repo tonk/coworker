@@ -721,7 +721,9 @@ function dayLabel(dateStr) {
   font-size: 12px;
 }
 .bubble-own .msg-body :deep(pre) { background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.2); }
-.msg-body :deep(pre code) { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+.msg-body :deep(pre code) { background: transparent !important; padding: 0; border-radius: 0; font-size: inherit; }
+.msg-body :deep(pre .hljs-addition),
+.msg-body :deep(pre .hljs-deletion) { background: none; }
 .msg-body :deep(a) { color: inherit; text-decoration: underline; }
 
 .msg-meta {

@@ -276,44 +276,84 @@ input, textarea, select {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Syntax highlighting (highlight.js) — dark-mode overrides ──────────────── */
-[data-theme="dark"] .hljs {
-  background: #1e2130;
-  color: #abb2bf;
-}
+/* ── Syntax highlighting (highlight.js) ─────────────────────────────────────
+   Full dual-mode theme — no external hljs CSS is imported.
+   Light mode (no data-theme attribute): GitHub Light palette.
+   Dark mode ([data-theme="dark"]): One Dark palette.
+   The pre code.hljs element always uses transparent background so the <pre>
+   container colour shows through uniformly with no per-line brightness diff.
+────────────────────────────────────────────────────────────────────────────── */
+
+/* shared block layout from highlight.js base CSS */
+pre code.hljs { display: block; overflow-x: auto; padding: 0; }
+code.hljs { padding: 3px 5px; }
+
+/* ── light mode ── */
+.hljs { color: #24292e; background: transparent; }
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,
+.hljs-template-variable,.hljs-type,.hljs-variable.language_ { color: #d73a49; }
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,
+.hljs-title.function_ { color: #6f42c1; }
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,
+.hljs-operator,.hljs-selector-attr,.hljs-selector-class,
+.hljs-selector-id,.hljs-variable { color: #005cc5; }
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string { color: #032f62; }
+.hljs-built_in,.hljs-symbol { color: #e36209; }
+.hljs-code,.hljs-comment,.hljs-formula { color: #6a737d; font-style: italic; }
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag { color: #22863a; }
+.hljs-subst { color: #24292e; }
+.hljs-section { color: #005cc5; font-weight: 700; }
+.hljs-bullet { color: #735c0f; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 700; }
+.hljs-addition { color: #22863a; background-color: #f0fff4; }
+.hljs-deletion { color: #b31d28; background-color: #ffeef0; }
+
+/* ── dark mode ── */
+[data-theme="dark"] .hljs { color: #abb2bf; background: transparent; }
 [data-theme="dark"] .hljs-keyword,
 [data-theme="dark"] .hljs-selector-tag,
-[data-theme="dark"] .hljs-built_in { color: #c678dd; }
+[data-theme="dark"] .hljs-template-tag,
+[data-theme="dark"] .hljs-template-variable,
+[data-theme="dark"] .hljs-type,
+[data-theme="dark"] .hljs-variable.language_ { color: #c678dd; }
+[data-theme="dark"] .hljs-title,
+[data-theme="dark"] .hljs-title.class_,
+[data-theme="dark"] .hljs-title.class_.inherited__,
+[data-theme="dark"] .hljs-title.function_ { color: #e5c07b; }
+[data-theme="dark"] .hljs-attr,
+[data-theme="dark"] .hljs-attribute,
+[data-theme="dark"] .hljs-literal,
+[data-theme="dark"] .hljs-meta,
+[data-theme="dark"] .hljs-number,
+[data-theme="dark"] .hljs-operator,
+[data-theme="dark"] .hljs-selector-attr,
+[data-theme="dark"] .hljs-selector-class,
+[data-theme="dark"] .hljs-selector-id,
+[data-theme="dark"] .hljs-variable { color: #d19a66; }
+[data-theme="dark"] .hljs-meta .hljs-string,
+[data-theme="dark"] .hljs-regexp,
 [data-theme="dark"] .hljs-string,
 [data-theme="dark"] .hljs-attr { color: #98c379; }
-[data-theme="dark"] .hljs-number,
-[data-theme="dark"] .hljs-literal { color: #d19a66; }
-[data-theme="dark"] .hljs-comment { color: #5c6370; font-style: italic; }
-[data-theme="dark"] .hljs-type,
-[data-theme="dark"] .hljs-class,
-[data-theme="dark"] .hljs-title { color: #e5c07b; }
-[data-theme="dark"] .hljs-variable,
-[data-theme="dark"] .hljs-params { color: #e06c75; }
+[data-theme="dark"] .hljs-built_in,
+[data-theme="dark"] .hljs-symbol { color: #61afef; }
+[data-theme="dark"] .hljs-code,
+[data-theme="dark"] .hljs-comment,
+[data-theme="dark"] .hljs-formula { color: #5c6370; font-style: italic; }
+[data-theme="dark"] .hljs-name,
+[data-theme="dark"] .hljs-quote,
+[data-theme="dark"] .hljs-selector-pseudo,
+[data-theme="dark"] .hljs-selector-tag { color: #e06c75; }
+[data-theme="dark"] .hljs-subst { color: #abb2bf; }
+[data-theme="dark"] .hljs-section { color: #61afef; font-weight: 700; }
+[data-theme="dark"] .hljs-bullet { color: #98c379; }
 [data-theme="dark"] .hljs-function { color: #61afef; }
+[data-theme="dark"] .hljs-addition { color: #98c379; background-color: #1e3a29; }
+[data-theme="dark"] .hljs-deletion { color: #e06c75; background-color: #3a1e1e; }
 
-/* ── Chat code blocks — dark-mode fixes ────────────────────────────────────── */
-/* Inline code: rgba(0,0,0,.08) is near-invisible on dark backgrounds */
-[data-theme="dark"] .msg-body code {
+/* ── Chat/card inline code — dark-mode tint ─────────────────────────────────── */
+[data-theme="dark"] .msg-body code,
+[data-theme="dark"] .comment-text code {
   background: rgba(255,255,255,.12);
   color: #abb2bf;
-}
-/* Pre blocks: align background with hljs theme instead of --color-bg (#0f172a) */
-[data-theme="dark"] .msg-body pre {
-  background: #1e2130;
-  border-color: rgba(255,255,255,.08);
-}
-/* Own-bubble pre was rgba(0,0,0,.18) — even darker in dark mode */
-[data-theme="dark"] .bubble-own .msg-body pre {
-  background: #1e2130;
-  border-color: rgba(255,255,255,.08);
-}
-/* pre code must stay transparent so hljs background shows */
-[data-theme="dark"] .msg-body pre code {
-  background: none;
-  color: inherit;
 }
