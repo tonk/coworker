@@ -382,12 +382,18 @@ func main() {
 		assignee    string // user key or ""
 		startInDays *int
 		dueInDays   *int
-		timeMin     int // time_spent_minutes
-		storyPoints int // 0 = not set
+		timeMin     int    // time_spent_minutes
+		storyPoints int    // 0 = not set
 		sprintName  string // sprint name to link this card to (scrum projects)
-		checklist   []struct{ body string; done bool }
-		comments    []struct{ author string; body string }
-		subCards    []cardSpec
+		checklist   []struct {
+			body string
+			done bool
+		}
+		comments []struct {
+			author string
+			body   string
+		}
+		subCards []cardSpec
 	}
 
 	webCards := []cardSpec{
@@ -412,13 +418,19 @@ func main() {
 			title: "Implement dark mode toggle", col: "In Progress",
 			priority: "medium", labels: []string{"Feature", "Design"},
 			assignee: "sarah", timeMin: 180, startInDays: ptr(-3), dueInDays: ptr(5),
-			checklist: []struct{ body string; done bool }{
+			checklist: []struct {
+				body string
+				done bool
+			}{
 				{"Research CSS variables approach", true},
 				{"Implement toggle button in header", true},
 				{"Persist preference to localStorage", false},
 				{"Test on Safari and Firefox", false},
 			},
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"marc", "I suggest using `prefers-color-scheme` as the initial default — saves a flash of wrong theme on first load."},
 				{"sarah", "Good call! Adding that to the checklist."},
 			},
@@ -433,7 +445,10 @@ func main() {
 			title: "Fix mobile navigation overflow on small screens", col: "In Progress",
 			priority: "high", labels: []string{"Bug"},
 			assignee: "marc", timeMin: 90, startInDays: ptr(0), dueInDays: ptr(2),
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"sarah", "Reproduced on iPhone SE (375 px). The hamburger menu clips behind the logo."},
 				{"marc", "On it — looks like `overflow: hidden` is missing on the nav container."},
 			},
@@ -448,7 +463,10 @@ func main() {
 			title: "Optimise image loading with lazy + WebP", col: "Review",
 			priority: "medium", labels: []string{"Feature"},
 			assignee: "sarah", timeMin: 240, startInDays: ptr(-5), dueInDays: ptr(1),
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"marc", "LCP went from 3.8 s to 1.2 s in local tests — great improvement!"},
 				{"sarah", "Waiting for sign-off on the WebP fallback strategy for older browsers."},
 			},
@@ -502,14 +520,20 @@ func main() {
 			title: "User profile screen", col: "Development",
 			priority: "high", labels: []string{"Enhancement", "iOS", "Android"},
 			assignee: "sarah", timeMin: 300, startInDays: ptr(-7), dueInDays: ptr(7),
-			checklist: []struct{ body string; done bool }{
+			checklist: []struct {
+				body string
+				done bool
+			}{
 				{"Approve design mockup", true},
 				{"Build form components", true},
 				{"Connect to profile API", true},
 				{"Add avatar upload", false},
 				{"Write E2E tests", false},
 			},
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"marc", "The avatar cropper might need a third-party library — I found `react-easy-crop`, looks solid."},
 				{"sarah", "Added to the checklist. Let's decide before Thursday."},
 				{"lisa", "I can test on Android once the form components are done."},
@@ -536,7 +560,10 @@ func main() {
 			title: "App crashes on empty conversation list", col: "Development",
 			priority: "critical", labels: []string{"Bug"},
 			assignee: "marc", timeMin: 45, startInDays: ptr(0), dueInDays: ptr(1),
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"lisa", "Stack trace attached. Null check missing in `ConversationListScreen.tsx` line 42."},
 				{"marc", "Fix is one line — pushing a hotfix build now."},
 			},
@@ -551,7 +578,10 @@ func main() {
 			title: "Performance profiling on low-end Android devices", col: "Testing",
 			priority: "medium", labels: []string{"Enhancement", "Android"},
 			assignee: "sarah", timeMin: 150, startInDays: ptr(-3), dueInDays: ptr(7),
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"marc", "Focus on the feed screen — renders ~200 items without virtualisation right now."},
 			},
 		},
@@ -574,7 +604,10 @@ func main() {
 			title: "Set up Kubernetes cluster on cloud provider", col: "Todo",
 			priority: "high", labels: []string{"Enhancement"},
 			startInDays: ptr(3), dueInDays: ptr(21),
-			checklist: []struct{ body string; done bool }{
+			checklist: []struct {
+				body string
+				done bool
+			}{
 				{"Choose cloud provider (GKE / EKS / AKS)", false},
 				{"Design namespace and RBAC structure", false},
 				{"Configure networking and ingress", false},
@@ -604,7 +637,10 @@ func main() {
 			title: "Migrate primary database to PostgreSQL", col: "In Progress",
 			priority: "high", labels: []string{"Enhancement"},
 			assignee: "marc", timeMin: 480, startInDays: ptr(-10), dueInDays: ptr(4),
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"admin", "Remember to keep the SQLite DB as a read-only fallback for at least two weeks after cutover."},
 				{"marc", "Agreed. I've scripted the data export — schema diff is smaller than expected."},
 				{"lisa", "I'll keep an eye on slow-query logs during the transition."},
@@ -652,7 +688,10 @@ func main() {
 			labels: []string{"Feature"}, assignee: "priya", timeMin: 360,
 			storyPoints: 5, sprintName: "Sprint 1 — Foundation",
 			startInDays: ptr(-26), dueInDays: ptr(-19),
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"sarah", "Let's go with JWT + refresh tokens from the start — much easier to scale later."},
 				{"priya", "Agreed. Done. Refresh token is stored httpOnly to prevent XSS."},
 			}},
@@ -670,7 +709,10 @@ func main() {
 			labels: []string{"Feature"}, assignee: "sarah", timeMin: 300,
 			storyPoints: 5, sprintName: "Sprint 2 — Core Features",
 			startInDays: ptr(-13), dueInDays: ptr(1),
-			checklist: []struct{ body string; done bool }{
+			checklist: []struct {
+				body string
+				done bool
+			}{
 				{"Design approved in Figma", true},
 				{"API endpoints wired up", true},
 				{"Responsive layout", true},
@@ -688,7 +730,10 @@ func main() {
 			labels: []string{"Feature"}, assignee: "priya", timeMin: 240,
 			storyPoints: 3, sprintName: "Sprint 2 — Core Features",
 			startInDays: ptr(-12), dueInDays: ptr(2),
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"elena", "PR looks good overall — one concern about the middleware order. Discussed in PR comments."},
 				{"priya", "Fixed! Ready for re-review."},
 			}},
@@ -734,7 +779,10 @@ func main() {
 		{title: "Blog: 10 productivity tips for remote teams", col: "In Progress", priority: "medium",
 			labels: []string{"Content"}, assignee: "sarah", timeMin: 90,
 			startInDays: ptr(-5), dueInDays: ptr(3),
-			comments: []struct{ author string; body string }{
+			comments: []struct {
+				author string
+				body   string
+			}{
 				{"lisa", "Can you work in a mention of our new features in tips 7 and 10?"},
 				{"sarah", "On it — draft ready for review tomorrow."},
 			}},
@@ -744,7 +792,10 @@ func main() {
 		{title: "Trade show booth materials", col: "In Progress", priority: "critical",
 			labels: []string{"Campaign"}, assignee: "lisa", timeMin: 180,
 			startInDays: ptr(-3), dueInDays: ptr(3),
-			checklist: []struct{ body string; done bool }{
+			checklist: []struct {
+				body string
+				done bool
+			}{
 				{"Banner design approved", true},
 				{"Flyers printed", false},
 				{"Demo laptop prepared", false},
@@ -763,11 +814,11 @@ func main() {
 	}
 
 	projectCards := map[string][]cardSpec{
-		"website-redesign":  webCards,
-		"mobile-app-v2":     mobCards,
-		"devops-infra":      infCards,
-		"product-platform":  pltCards,
-		"marketing":         mktCards,
+		"website-redesign": webCards,
+		"mobile-app-v2":    mobCards,
+		"devops-infra":     infCards,
+		"product-platform": pltCards,
+		"marketing":        mktCards,
 	}
 
 	createdCards := map[string]*models.Card{} // key: "slug/title"
@@ -929,8 +980,8 @@ func main() {
 			},
 			{
 				name: "Sprint 3 — Polish & Launch", status: "planning",
-				goal:      "Payment integration, analytics, performance, and public launch.",
-				hasDate:   false,
+				goal:    "Payment integration, analytics, performance, and public launch.",
+				hasDate: false,
 			},
 		},
 	}
@@ -1357,8 +1408,8 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		// Group chat: Website Redesign team
 		{
 			members: []string{"admin", "sarah", "marc"},
-			isGroup:  true,
-			name:     "Website Redesign Team",
+			isGroup: true,
+			name:    "Website Redesign Team",
 			messages: []msgSpec{
 				{"admin", "Morning everyone! Quick sync on the redesign — where are we blocking?", 3 * 24 * time.Hour},
 				{"sarah", "The image optimisation PR is in review and should be merged today. LCP is looking great 🚀", 3*24*time.Hour - 15*time.Minute},
@@ -1425,8 +1476,8 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	type contractSpec struct {
 		name      string
 		desc      string
-		startDays int  // relative to today
-		endDays   int  // 0 = no end date
+		startDays int      // relative to today
+		endDays   int      // 0 = no end date
 		projects  []string // project slugs to link
 	}
 	type customerSpec struct {
@@ -1649,11 +1700,88 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Println("  │ demo.lisa           │ Globex Systems                                               │")
 	fmt.Println("  └─────────────────────┴──────────────────────────────────────────────────────────────┘")
 	fmt.Println()
+	// Additional dynamic summary box
+	fmt.Println()
+	fmt.Println("  Detailed summary:")
+
+	// Projects (name + type)
+	var projectsList []models.Project
+	if err := db.Find(&projectsList).Error; err == nil && len(projectsList) > 0 {
+		fmt.Println()
+		fmt.Println("  Projects:")
+		for _, p := range projectsList {
+			bt := p.BoardType
+			if bt == "" {
+				bt = "kanban"
+			}
+			fmt.Printf("    - %s (%s)\n", p.Name, bt)
+		}
+	}
+
+	// Conversations (who <-> who or group members)
+	var convs []models.Conversation
+	if err := db.Preload("Members.User").Find(&convs).Error; err == nil && len(convs) > 0 {
+		fmt.Println()
+		fmt.Println("  Conversations:")
+		for _, c := range convs {
+			var names []string
+			for _, m := range c.Members {
+				if m.User.DisplayName != "" {
+					names = append(names, m.User.DisplayName)
+				} else {
+					names = append(names, m.User.Username)
+				}
+			}
+			if len(names) == 2 && !c.IsGroup {
+				fmt.Printf("    - %s <-> %s\n", names[0], names[1])
+			} else if c.Name != "" {
+				fmt.Printf("    - %s (group: %s)\n", c.Name, joinNames(names))
+			} else {
+				fmt.Printf("    - Group (%d): %s\n", len(names), joinNames(names))
+			}
+		}
+	}
+
+	// Customers
+	var custs []models.Customer
+	if err := db.Find(&custs).Error; err == nil && len(custs) > 0 {
+		fmt.Println()
+		fmt.Println("  Customers:")
+		for _, c := range custs {
+			fmt.Printf("    - %s\n", c.Name)
+		}
+	}
+
+	// Groups and members
+	var groups []models.UserGroup
+	if err := db.Find(&groups).Error; err == nil && len(groups) > 0 {
+		fmt.Println()
+		fmt.Println("  Groups:")
+		for _, g := range groups {
+			var memberNames []string
+			db.Table("users").Select("users.display_name").Joins("join group_members gm on gm.user_id = users.id").Where("gm.group_id = ?", g.ID).Pluck("display_name", &memberNames)
+			fmt.Printf("    - %s: %s\n", g.Name, joinNames(memberNames))
+		}
+	}
+
+	fmt.Println()
 	fmt.Println("  Start the server and log in at http://localhost:8080")
 }
 
+// joinNames helper prints a comma-separated list or '-' when empty
+func joinNames(arr []string) string {
+	if len(arr) == 0 {
+		return "-"
+	}
+	s := arr[0]
+	for i := 1; i < len(arr); i++ {
+		s += ", " + arr[i]
+	}
+	return s
+}
+
 // removeDemoData deletes all records created by the seed (identified by the
-// demo users and projects), then the users themselves.
+// demo users and projects), then the users themselves,
 func removeDemoData(db *gorm.DB) {
 	demoUsernames := []string{"demo.admin", "demo.sarah", "demo.marc", "demo.lisa", "demo.viewer", "demo.priya", "demo.james", "demo.elena", "demo.raj"}
 	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra", "product-platform", "marketing"}
