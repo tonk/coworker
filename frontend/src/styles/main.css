@@ -323,6 +323,21 @@ pre,
   font-size: 12px;
 }
 
+/* Ensure high-contrast text inside code blocks in message contexts */
+.msg-body pre,
+.comment-text pre,
+.card-detail pre {
+  color: var(--color-code-text, #0b1220) !important;
+}
+
+/* Force highlight.js token spans to inherit color and not add backgrounds */
+.msg-body pre .hljs,
+.msg-body pre .hljs * {
+  color: inherit !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 /* Dark mode override */
 [data-theme="dark"] pre,
 [data-theme="dark"] .msg-body :deep(pre),
