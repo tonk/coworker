@@ -56,7 +56,7 @@ Open **http://localhost:5173** in your browser.
 ```bash
 make build
 cd dist
-WEB_DIR=./web ./warmdesk
+./warmdesk
 ```
 
 Open **http://localhost:8080**.
@@ -247,7 +247,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 
 ## Code Signing Policy
 
-Windows binaries released by WarmDesk will code-signed through the
+Windows binaries released by WarmDesk will be code-signed through the
 [SignPath Foundation](https://signpath.org) free code-signing programme for
 open-source software.
 
