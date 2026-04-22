@@ -1483,6 +1483,9 @@ function dayLabel(dateStr) {
 }
 .bubble-own .msg-body :deep(pre) { background: rgba(255,255,255,.15); }
 .msg-body :deep(pre code) { background: none; padding: 0; font-size: 12px; }
+/* Prevent per-token/line backgrounds inside code blocks */
+.msg-body :deep(pre) :deep(*) { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
+.msg-body :deep(pre .hljs-addition), .msg-body :deep(pre .hljs-deletion) { background: transparent !important; }
 .msg-body :deep(ul), .msg-body :deep(ol) { margin: 4px 0; padding-left: 18px; }
 .msg-body :deep(li) { margin: 2px 0; }
 .msg-body :deep(blockquote) {

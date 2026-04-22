@@ -727,8 +727,10 @@ function dayLabel(dateStr) {
 }
 .bubble-own .msg-body :deep(pre) { background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.2); }
 .msg-body :deep(pre code) { background: transparent !important; padding: 0; border-radius: 0; font-size: inherit; }
+/* Prevent per-token/line backgrounds from hljs tokens — make block uniform */
+.msg-body :deep(pre) :deep(*) { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
 .msg-body :deep(pre .hljs-addition),
-.msg-body :deep(pre .hljs-deletion) { background: none; }
+.msg-body :deep(pre .hljs-deletion) { background: transparent !important; }
 .msg-body :deep(a) { color: inherit; text-decoration: underline; }
 
 .msg-meta {
