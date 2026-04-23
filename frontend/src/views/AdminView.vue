@@ -25,6 +25,7 @@
           <table v-else class="data-table">
             <thead>
               <tr>
+                <th style="width: 48px;"></th>
                 <th>{{ $t('admin.user') }}</th>
                 <th>{{ $t('admin.global_role') }}</th>
                 <th>{{ $t('admin.last_login') }}</th>
@@ -34,6 +35,12 @@
             </thead>
             <tbody>
               <tr v-for="user in users" :key="user.id">
+                <td>
+                  <div class="member-avatar-wrap">
+                    <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" class="member-avatar" alt="" />
+                    <span v-else class="member-avatar-initials" :style="getAvatarColor(user)">{{ getInitials(user) }}</span>
+                  </div>
+                </td>
                 <td>
                   <strong>{{ user.display_name || user.username }}</strong>
                   <br>
@@ -189,6 +196,7 @@
           <table v-else class="data-table">
             <thead>
               <tr>
+                <th style="width: 48px;"></th>
                 <th>{{ $t('customer.name') }}</th>
                 <th>{{ $t('contract.contracts') }}</th>
                 <th>{{ $t('customer.projects') }}</th>
@@ -197,6 +205,12 @@
             </thead>
             <tbody>
               <tr v-for="c in adminCustomers" :key="c.id">
+                <td>
+                  <div class="customer-avatar-container">
+                    <img v-if="c.logo_url" :src="resolveAssetUrl(c.logo_url)" class="customer-avatar" alt="" />
+                    <div v-else class="customer-avatar-placeholder">{{ c.name.charAt(0) }}</div>
+                  </div>
+                </td>
                 <td>
                   <RouterLink :to="`/customers/${c.id}`" style="font-weight:600">{{ c.name }}</RouterLink>
                   <div v-if="c.description" style="font-size:12px;color:var(--color-text-muted)">{{ c.description }}</div>
@@ -211,7 +225,7 @@
                 </td>
               </tr>
               <tr v-if="!adminCustomers.length">
-                <td colspan="4" style="text-align:center;color:var(--color-text-muted)">{{ $t('customer.no_customers') }}</td>
+                <td colspan="5" style="text-align:center;color:var(--color-text-muted)">{{ $t('customer.no_customers') }}</td>
               </tr>
             </tbody>
           </table>
@@ -475,9 +489,16 @@
                   <option value="24h">{{ $t('admin.backup_schedule_24h') }}</option>
                 </select>
               </div>
-              <div class="form-group" style="flex:0 0 130px" v-if="systemSettings.backup_schedule !== 'disabled'">
+              <div class="form-group" style="flex:0 0 160px" v-if="systemSettings.backup_schedule !== 'disabled'">
                 <label class="form-label">{{ $t('admin.backup_start_time') }}</label>
-                <input class="form-input" type="time" v-model="systemSettings.backup_start_time" />
+                <input
+                  class="form-input"
+                  type="text"
+                  v-model="backupStartTimeDisplay"
+                  :placeholder="backupTimePlaceholder"
+                  @blur="onBackupStartTimeBlur"
+                  @keydown.enter.prevent="onBackupStartTimeBlur"
+                />
               </div>
               <div class="form-group" style="flex:0 0 120px">
                 <label class="form-label">{{ $t('admin.backup_keep_label') }}</label>
@@ -623,14 +644,22 @@
 
   <!-- Edit User Modal -->
     <BaseModal v-if="editUser" :title="$t('admin.edit_user')" :resizable="true" @close="editUser = null">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">{{ $t('settings.first_name') }}</label>
-          <input class="form-input" v-model="editUser.first_name" />
+      <div style="display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start;">
+        <div class="member-avatar-wrap" style="width: 64px; height: 64px;">
+          <img v-if="getUserAvatar(editUser)" :src="getUserAvatar(editUser)" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 1px solid var(--color-border); flex-shrink: 0;" alt="" />
+          <span v-else class="member-avatar-initials" style="width: 64px; height: 64px; font-size: 20px;" :style="getAvatarColor(editUser)">{{ getInitials(editUser) }}</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">{{ $t('settings.last_name') }}</label>
-          <input class="form-input" v-model="editUser.last_name" />
+        <div style="flex: 1;">
+          <div class="form-row" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label class="form-label">{{ $t('settings.first_name') }}</label>
+              <input class="form-input" v-model="editUser.first_name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">{{ $t('settings.last_name') }}</label>
+              <input class="form-input" v-model="editUser.last_name" />
+            </div>
+          </div>
         </div>
       </div>
       <div class="form-group">
@@ -813,7 +842,10 @@
       <div v-if="!groupDetail.members.length" class="empty-hint">{{ $t('groups.no_members') }}</div>
       <div v-else class="members-list" style="margin-bottom:16px">
         <div v-for="m in groupDetail.members" :key="m.user_id" class="member-row">
-          <img :src="m.user.gravatar_url" class="member-avatar" alt="" />
+          <div class="member-avatar-wrap">
+            <img v-if="getUserAvatar(m.user)" :src="getUserAvatar(m.user)" class="member-avatar" alt="" />
+            <span v-else class="member-avatar-initials" :style="getAvatarColor(m.user)">{{ getInitials(m.user) }}</span>
+          </div>
           <div class="member-info">
             <span class="member-name">{{ m.user.display_name || m.user.username }}</span>
             <span class="member-email">{{ m.user.email }}</span>
@@ -967,6 +999,21 @@ function autoPrefix(name) {
   }
   while (r.length < 3) r += 'X'
   return r.slice(0, 3)
+}
+
+function getUserAvatar(user) {
+  if (!user) return null
+  return resolveAssetUrl(user.avatar_url || user.gravatar_url)
+}
+
+function getInitials(user) {
+  return (user.display_name || user.username || '?').slice(0, 2).toUpperCase()
+}
+
+function getAvatarColor(user) {
+  const colors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444"]
+  const charCode = (user?.username?.charCodeAt(0) || 0)
+  return { background: colors[charCode % colors.length] }
 }
 
 watch(() => newProject.value.name, (name) => {
@@ -1383,6 +1430,64 @@ async function saveBrandingSettings() {
 const backingUp = ref(false)
 const backups = ref([])
 const restoringBackup = ref(null)
+const backupStartTimeDisplay = ref('')
+
+const prefers12HourTime = computed(() => {
+  const fmt = auth.user?.date_time_format || systemStore.defaults.date_time_format || 'YYYY-MM-DD HH:mm'
+  return fmt.includes('hh') && fmt.includes('a')
+})
+
+const backupTimePlaceholder = computed(() => (prefers12HourTime.value ? 'hh:mm am' : 'HH:mm'))
+
+function formatBackupStartTime(raw) {
+  if (!raw) return ''
+  const [hhStr, mmStr] = raw.split(':')
+  const hh = Number(hhStr)
+  const mm = Number(mmStr)
+  if (!Number.isInteger(hh) || !Number.isInteger(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) return ''
+  if (!prefers12HourTime.value) return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+  const suffix = hh < 12 ? 'am' : 'pm'
+  const h12 = hh % 12 || 12
+  return `${String(h12).padStart(2, '0')}:${String(mm).padStart(2, '0')} ${suffix}`
+}
+
+function parseBackupStartTime(input) {
+  const val = (input || '').trim()
+  if (!val) return ''
+
+  if (prefers12HourTime.value) {
+    const m = val.match(/^(\d{1,2}):(\d{2})\s*([ap]m)$/i)
+    if (!m) return null
+    let hh = Number(m[1])
+    const mm = Number(m[2])
+    const mer = m[3].toLowerCase()
+    if (!Number.isInteger(hh) || !Number.isInteger(mm) || hh < 1 || hh > 12 || mm < 0 || mm > 59) return null
+    if (mer === 'am') hh = hh === 12 ? 0 : hh
+    if (mer === 'pm') hh = hh === 12 ? 12 : hh + 12
+    return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+  }
+
+  const m = val.match(/^(\d{1,2}):(\d{2})$/)
+  if (!m) return null
+  const hh = Number(m[1])
+  const mm = Number(m[2])
+  if (!Number.isInteger(hh) || !Number.isInteger(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) return null
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+}
+
+function onBackupStartTimeBlur() {
+  const parsed = parseBackupStartTime(backupStartTimeDisplay.value)
+  if (parsed === null) {
+    backupStartTimeDisplay.value = formatBackupStartTime(systemSettings.value.backup_start_time)
+    return
+  }
+  systemSettings.value.backup_start_time = parsed
+  backupStartTimeDisplay.value = formatBackupStartTime(parsed)
+}
+
+watch([() => systemSettings.value.backup_start_time, prefers12HourTime], () => {
+  backupStartTimeDisplay.value = formatBackupStartTime(systemSettings.value.backup_start_time)
+}, { immediate: true })
 
 const backupNextRunDisplay = computed(() => {
   const hours = { '6h': 6, '8h': 8, '12h': 12, '24h': 24 }[systemSettings.value.backup_schedule]
@@ -1897,7 +2002,31 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .members-list { display: flex; flex-direction: column; gap: 4px; }
 .member-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: var(--radius-sm); background: var(--color-bg); }
 .member-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.member-avatar-wrap { width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.member-avatar-initials { width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 10px; font-weight: 600; }
 .member-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .member-name { font-size: 13px; font-weight: 500; color: var(--color-text); }
 .member-email { font-size: 11px; color: var(--color-text-muted); }
+
+.customer-avatar-container { display: flex; align-items: center; justify-content: center; }
+.customer-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+}
+.customer-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
 </style>

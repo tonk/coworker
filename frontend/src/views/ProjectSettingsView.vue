@@ -65,14 +65,25 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Member</th>
                 <th>{{ $t('project.role') }}</th>
                 <th>{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="m in members" :key="m.id">
-                <td>{{ m.user.display_name || m.user.username }}<br><small>{{ m.user.email }}</small></td>
+                <td>
+                  <div class="member-info-cell">
+                    <div class="member-avatar-wrap">
+                      <img v-if="getUserAvatar(m.user)" :src="getUserAvatar(m.user)" class="member-avatar-img" />
+                      <span v-else class="member-avatar-initials" :style="getAvatarColor(m.user)">{{ getInitials(m.user) }}</span>
+                    </div>
+                    <div>
+                      <div class="member-display-name">{{ m.user.display_name || m.user.username }}</div>
+                      <small class="member-email-sub">{{ m.user.email }}</small>
+                    </div>
+                  </div>
+                </td>
                 <td>
                   <select class="form-input" style="width:auto" v-model="m.role" @change="updateRole(m)">
                     <option value="owner">{{ $t('project.roles.owner') }}</option>
@@ -316,7 +327,10 @@
             class="invite-user-row"
           >
             <input type="checkbox" :value="u.id" v-model="invite.userIds" class="invite-checkbox" />
-            <span class="invite-avatar">{{ (u.display_name || u.username).slice(0, 2).toUpperCase() }}</span>
+            <div class="invite-avatar">
+              <img v-if="getUserAvatar(u)" :src="getUserAvatar(u)" class="invite-avatar-img" />
+              <template v-else>{{ getInitials(u) }}</template>
+            </div>
             <span class="invite-name">{{ u.display_name || u.username }}</span>
             <span class="invite-email">{{ u.email }}</span>
           </label>
@@ -424,6 +438,24 @@ const newWebhookName = ref('')
 const newWebhookType = ref('generic')
 const createdWebhookToken = ref('')
 const baseUrl = computed(() => getServerUrl() || window.location.origin)
+
+function getUserAvatar(user) {
+  if (!user) return null
+  const url = user.avatar_url || user.gravatar_url
+  if (!url) return null
+  if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url
+  return `${baseUrl.value}${url}`
+}
+
+function getInitials(user) {
+  return (user.display_name || user.username || '?').slice(0, 2).toUpperCase()
+}
+
+function getAvatarColor(user) {
+  const colors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444"]
+  const charCode = (user?.username?.charCodeAt(0) || 0)
+  return { background: colors[charCode % colors.length] }
+}
 
 // Users not yet in the project
 const invitableUsers = computed(() => {
@@ -715,8 +747,6 @@ function copyWebhookToken() {
 .invite-user-row:not(:last-child) { border-bottom: 1px solid var(--color-border); }
 .invite-user-row:hover { background: var(--color-bg); }
 
-.invite-checkbox { flex-shrink: 0; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer; }
-
 .invite-avatar {
   width: 28px;
   height: 28px;
@@ -729,11 +759,22 @@ function copyWebhookToken() {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
+.invite-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+.invite-checkbox { flex-shrink: 0; width: 15px; height: 15px; accent-color: var(--color-primary); cursor: pointer; } /* Kept checkbox styling */
 
 .invite-name { font-size: 13px; font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .invite-email { font-size: 11px; color: var(--color-text-muted); white-space: nowrap; }
 .invite-empty { padding: 16px; text-align: center; color: var(--color-text-muted); font-size: 13px; }
+
+.member-info-cell { display: flex; align-items: center; gap: 12px; }
+.member-avatar-wrap { width: 32px; height: 32px; flex-shrink: 0; }
+.member-avatar-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.member-avatar-initials { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 600; }
+.member-display-name { font-weight: 500; line-height: 1.2; }
+.member-email-sub { color: var(--color-text-muted); font-size: 11px; }
 
 .invite-selected-count {
   margin-top: 6px;

@@ -274,7 +274,17 @@
                 </div>
                 <!-- Edit mode -->
                 <template v-if="editingMsgId === msg.id">
-                  <textarea class="edit-textarea" v-model="editBody" rows="2" spellcheck="true" :lang="auth.user?.locale || 'en'" @keydown.enter.exact.prevent="saveEdit(msg)" @keydown.escape="editingMsgId = null"></textarea>
+                  <div class="edit-textarea-wrap" style="position:relative; width: 100%;">
+                    <InlineEmojiPicker v-if="editEmojiOpen" :initial-search="editEmojiQuery || ''" @pick="onEditEmojiPick" @close="editEmojiOpen = false" />
+                    <MentionDropdown
+                      v-if="editMentionUsers.length"
+                      :users="editMentionUsers"
+                      :active-index="editMentionIndex"
+                      @pick="pickEditMention"
+                      @update:activeIndex="editMentionIndex = $event"
+                    />
+                    <textarea class="edit-textarea" v-model="editBody" rows="2" ref="editTextareaEl" spellcheck="true" :lang="auth.user?.locale || 'en'" @keydown.enter.exact="onEditEnter($event, msg)" @keydown="onEditKeydown" @input="onEditInput"></textarea>
+                  </div>
                   <div class="edit-actions">
                     <button class="btn btn-primary btn-sm" @click="saveEdit(msg)">Save</button>
                     <button class="btn btn-ghost btn-sm" @click="editingMsgId = null">Cancel</button>
@@ -337,7 +347,7 @@
         <div class="dm-compose">
           <AttachmentList v-if="pendingFiles.length" :attachments="pendingFiles" :can-delete="true" @remove="removePending" />
           <div class="compose-outer" style="position:relative">
-            <InlineEmojiPicker v-if="emojiOpen" @pick="onEmojiPick" @close="emojiOpen = false" />
+            <InlineEmojiPicker v-if="emojiOpen" :initial-search="emojiQuery || ''" @pick="onEmojiPick" @close="emojiOpen = false" />
             <MentionDropdown
               v-if="mentionUsers.length"
               :users="mentionUsers"
@@ -450,7 +460,7 @@ let pollTimer = null
 // Emoji + mention
 const emojiOpen = ref(false)
 
-const { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydown, pickMention } = useCompose({
+const { mentionUsers, mentionIndex, onTextareaInput, onTextareaKeydown, pickMention, emojiQuery, pickEmoji } = useCompose({
   textareaEl,
   getValue: () => newMessage.value,
   setValue: (v) => { newMessage.value = v },
@@ -458,9 +468,13 @@ const { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydo
 })
 
 function onEmojiPick(emoji) {
-  insertText(emoji)
+  pickEmoji(emoji)
   emojiOpen.value = false
 }
+
+watch(emojiQuery, (q) => {
+  emojiOpen.value = q !== null
+})
 
 function onInput(e) {
   autoResize(e)
@@ -468,7 +482,7 @@ function onInput(e) {
 }
 
 function onEnter(e) {
-  if (mentionUsers.value.length) {
+  if (mentionUsers.value.length || emojiOpen.value) {
     onTextareaKeydown(e)
   } else {
     e.preventDefault()
@@ -477,12 +491,66 @@ function onEnter(e) {
 }
 
 function onKeydown(e) {
+  if (e.key === 'Escape' && (mentionUsers.value.length || emojiOpen.value)) {
+    onTextareaKeydown(e)
+    return
+  }
   if (e.key !== 'Enter') onTextareaKeydown(e)
 }
 
 // Edit state
 const editingMsgId = ref(null)
 const editBody = ref('')
+const editTextareaEl = ref(null)
+const editEmojiOpen = ref(false)
+const {
+  mentionUsers: editMentionUsers,
+  mentionIndex: editMentionIndex,
+  onTextareaInput: onEditTextareaInput,
+  onTextareaKeydown: onEditTextareaKeydown,
+  pickMention: pickEditMention,
+  emojiQuery: editEmojiQuery,
+  pickEmoji: pickEditEmoji,
+} = useCompose({
+  textareaEl: editTextareaEl,
+  getValue: () => editBody.value,
+  setValue: (v) => { editBody.value = v },
+  users: allUsers,
+})
+
+watch(editEmojiQuery, (q) => {
+  editEmojiOpen.value = q !== null
+})
+
+function onEditEmojiPick(emoji) {
+  pickEditEmoji(emoji)
+  editEmojiOpen.value = false
+}
+
+function onEditInput() {
+  onEditTextareaInput()
+}
+
+function onEditEnter(e, msg) {
+  if (editMentionUsers.value.length || editEmojiOpen.value) {
+    onEditTextareaKeydown(e)
+  } else {
+    e.preventDefault()
+    saveEdit(msg)
+  }
+}
+
+function onEditKeydown(e) {
+  if (e.key === 'Escape') {
+    if (editMentionUsers.value.length || editEmojiOpen.value) {
+      onEditTextareaKeydown(e)
+    } else {
+      editingMsgId.value = null
+    }
+    return
+  }
+  if (e.key !== 'Enter') onEditTextareaKeydown(e)
+}
 
 // Pending file attachments
 const pendingFiles = ref([])
@@ -1386,7 +1454,7 @@ function dayLabel(dateStr) {
 /* Message rows */
 .msg-row {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 8px;
   margin-bottom: 4px;
 }

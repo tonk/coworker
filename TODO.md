@@ -133,7 +133,7 @@
     - List of all available backups~~ **Done**
 
 - ~~In the "Edit Sprint" card the date fields should follow the configured
-  the users date format setting.~~ **Done**
+    the users date format setting.~~ **Done**
 
 - ~~The Admin panel -> Projects also shows all deleted projects and an
   option to restore them. Would it be possible to remove them
@@ -145,18 +145,23 @@
   focus, show a notification that a new message has arrived (through the
   OS notification system, if possible)
 
-- In the chat and edit boxes, if typing a ':a,' show a popup with
-  emojies and let the user pick one, or continue typing.
+- ~~In the chat and edit boxes, if typing a ':' show a popup with
+  emojis and let the user pick one, or continue typing.~~ **Done in v0.8.11**
 
-- In the "Edit User" box, show the users avatar at the top left corner.
+- In the chat, when I type, or select, an emoji, it is displayed
+  differently in the chat history.
 
-- In the chat, currently the avatar is just below the message. Place it
-  to the left, or above the message.
+- The backup scheduler "Start time" should follow configured date/time
+  formats
 
-- In the "Invite Member" form of a project, change the initial blob to
+- ~~In the "Edit User" box, show the users avatar at the top left corner.~~ **Done in v0.8.11**
+
+- ~~In the chat, currently the avatar is just below the message. Place it to the left, or above the message.~~ **Done in v0.8.11**
+
+- ~~In the "Invite Member" form of a project, change the initials blob to
   the users avatar. Also show the members avatar next to their name in
-  the members list.
+  the members list.~~ **Done in v0.8.11**
 
-- In the Admin -> Users list, also show the users avatar.
+- ~~In the Admin -> Users list, also show the users avatar.~~ **Done in v0.8.11**
 
-- In the Admin -> Customers list, also show the customers avatar.
+- ~~In the Admin -> Customers list, also show the customers avatar.~~ **Done in v0.8.11**

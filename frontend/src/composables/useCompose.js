@@ -145,5 +145,27 @@ export function useCompose({ textareaEl, getValue, setValue, users }) {
     })
   }
 
-  return { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydown, pickMention, emojiQuery }
+  function pickEmoji(emoji) {
+    const el = textareaEl.value
+    const val = getValue()
+    const pos = el?.selectionStart ?? val.length
+
+    if (emojiQuery.value !== null) {
+      const insert = emoji + ' '
+      setValue(val.slice(0, emojiStart.value) + insert + val.slice(pos))
+      emojiQuery.value = null
+      nextTick(() => {
+        if (el) {
+          const nextPos = emojiStart.value + [...insert].length
+          el.selectionStart = el.selectionEnd = nextPos
+          el.focus()
+        }
+      })
+      return
+    }
+
+    insertText(emoji)
+  }
+
+  return { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydown, pickMention, emojiQuery, pickEmoji }
 }

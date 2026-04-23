@@ -1519,7 +1519,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{
 			name:    "Acme Corporation",
 			desc:    "Long-running client delivering internal tooling and web platforms.",
-			logoURL: "https://api.dicebear.com/9.x/identicon/svg?seed=Acme",
+			logoURL: "https://api.dicebear.com/9.x/shapes/svg?seed=Acme-Corp&backgroundColor=ecfeff,bfdbfe,e9d5ff",
 			contracts: []contractSpec{
 				{
 					name:      "Phase 1 — Marketing Site",
@@ -1540,7 +1540,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{
 			name:    "Globex Systems",
 			desc:    "Infrastructure-heavy client focused on cloud reliability and security.",
-			logoURL: "https://api.dicebear.com/9.x/identicon/svg?seed=Globex",
+			logoURL: "https://api.dicebear.com/9.x/shapes/svg?seed=Globex-Systems&backgroundColor=fef3c7,fde68a,fee2e2",
 			contracts: []contractSpec{
 				{
 					name:      "Managed DevOps 2025",
@@ -1554,7 +1554,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{
 			name:     "Initech Ltd",
 			desc:     "Prospective client — evaluation phase, no active contract yet.",
-			logoURL:  "https://api.dicebear.com/9.x/identicon/svg?seed=Initech",
+			logoURL:  "https://api.dicebear.com/9.x/shapes/svg?seed=Initech-Ltd&backgroundColor=d1fae5,ddd6fe,fce7f3",
 			projects: []string{}, // no projects yet
 		},
 	}

@@ -188,6 +188,10 @@ func main() {
 			}
 			var existingCustomer models.Customer
 			if db.Where("name = ?", customerName).First(&existingCustomer).Error == nil {
+				if existingCustomer.LogoURL == "" {
+					db.Model(&existingCustomer).Update("logo_url",
+						fmt.Sprintf("https://api.dicebear.com/9.x/shapes/svg?seed=%s&backgroundColor=dbeafe,e9d5ff,dcfce7", customerName))
+				}
 				ensureAccess(db, existing.ID, existingCustomer.ID, "member", username, i)
 				if trainerID != 0 && trainerID != existing.ID {
 					ensureAccess(db, trainerID, existingCustomer.ID, "admin", usernamePrefix+"00", i)
@@ -223,7 +227,8 @@ func main() {
 
 		// 2. Customer
 		customer := models.Customer{
-			Name: customerName,
+			Name:    customerName,
+			LogoURL: fmt.Sprintf("https://api.dicebear.com/9.x/shapes/svg?seed=%s&backgroundColor=dbeafe,e9d5ff,dcfce7", customerName),
 		}
 		must(db.Create(&customer).Error)
 

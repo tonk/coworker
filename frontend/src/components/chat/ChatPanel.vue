@@ -73,7 +73,27 @@
 
             <!-- Edit mode -->
             <template v-if="editingId === msg.id">
-              <textarea class="edit-textarea" v-model="editBody" rows="2" spellcheck="true" :lang="auth.user?.locale || 'en'" @keydown.enter.exact.prevent="saveEdit(msg)" @keydown.escape="editingId = null"></textarea>
+              <div class="edit-textarea-wrap" style="position:relative; width: 100%;">
+                <InlineEmojiPicker v-if="editEmojiOpen" :initial-search="editEmojiQuery || ''" @pick="onEditEmojiPick" @close="editEmojiOpen = false" />
+                <MentionDropdown
+                  v-if="editMentionUsers.length"
+                  :users="editMentionUsers"
+                  :active-index="editMentionIndex"
+                  @pick="pickEditMention"
+                  @update:activeIndex="editMentionIndex = $event"
+                />
+                <textarea
+                  ref="editTextareaEl"
+                  class="edit-textarea"
+                  v-model="editBody"
+                  rows="2"
+                  spellcheck="true"
+                  :lang="auth.user?.locale || 'en'"
+                  @keydown.enter.exact="onEditEnter($event, msg)"
+                  @keydown="onEditKeydown"
+                  @input="onEditInput"
+                ></textarea>
+              </div>
               <div class="edit-actions">
                 <button class="btn btn-primary btn-sm" @click="saveEdit(msg)">Save</button>
                 <button class="btn btn-ghost btn-sm" @click="editingId = null">Cancel</button>
@@ -226,6 +246,39 @@ function showChatToast(msg) {
 // Edit state
 const editingId = ref(null)
 const editBody = ref('')
+const editTextareaEl = ref(null)
+const editEmojiOpen = ref(false)
+
+const {
+  mentionUsers: editMentionUsers,
+  mentionIndex: editMentionIndex,
+  pickEmoji: pickEditEmoji,
+  onTextareaInput: onEditTextareaInput,
+  onTextareaKeydown: onEditTextareaKeydown,
+  pickMention: pickEditMention,
+  emojiQuery: editEmojiQuery
+} = useCompose({
+  textareaEl: editTextareaEl,
+  getValue: () => editBody.value,
+  setValue: (v) => { editBody.value = v },
+  users: projectUsers,
+  triggers: ['@', ':']
+})
+
+watch(editEmojiQuery, (q) => {
+  if (q !== null) editEmojiOpen.value = true
+  else editEmojiOpen.value = false
+})
+
+function onEditEmojiPick(emoji) {
+  pickEditEmoji(emoji)
+  editEmojiOpen.value = false
+}
+
+function onEditInput(e) {
+  autoResize(e)
+  onEditTextareaInput()
+}
 
 // Pending file attachments
 const pendingFiles = ref([]) // [{name, size, mime_type, _file}]
@@ -234,20 +287,22 @@ const pendingFiles = ref([]) // [{name, size, mime_type, _file}]
 const emojiOpen = ref(false)
 const projectUsers = ref([])
 
-const { mentionUsers, mentionIndex, insertText, onTextareaInput, onTextareaKeydown, pickMention, emojiQuery } = useCompose({
+const { mentionUsers, mentionIndex, pickEmoji, onTextareaInput, onTextareaKeydown, pickMention, emojiQuery } = useCompose({
   textareaEl,
   getValue: () => draft.value,
   setValue: (v) => { draft.value = v },
   users: projectUsers,
+  triggers: ['@', ':']
 })
 
 // Open emoji picker when emojiQuery becomes active
 watch(emojiQuery, (q) => {
   if (q !== null) emojiOpen.value = true
+  else emojiOpen.value = false
 })
 
 function onEmojiPick(emoji) {
-  insertText(emoji)
+  pickEmoji(emoji)
   emojiOpen.value = false
 }
 
@@ -278,7 +333,7 @@ function onInput(e) {
 }
 
 function onEnter(e) {
-  if (mentionUsers.value.length) {
+  if (mentionUsers.value.length || emojiOpen.value) {
     onTextareaKeydown(e)
   } else {
     e.preventDefault()
@@ -286,8 +341,33 @@ function onEnter(e) {
   }
 }
 
+function onEditEnter(e, msg) {
+  if (editMentionUsers.value.length || editEmojiOpen.value) {
+    onEditTextareaKeydown(e)
+  } else {
+    e.preventDefault()
+    saveEdit(msg)
+  }
+}
+
 function onKeydown(e) {
+  if (e.key === 'Escape' && (mentionUsers.value.length || emojiOpen.value)) {
+    onTextareaKeydown(e)
+    return
+  }
   if (e.key !== 'Enter') onTextareaKeydown(e)
+}
+
+function onEditKeydown(e) {
+  if (e.key === 'Escape') {
+    if (editMentionUsers.value.length || editEmojiOpen.value) {
+      onEditTextareaKeydown(e)
+    } else {
+      editingId.value = null
+    }
+    return
+  }
+  if (e.key !== 'Enter') onEditTextareaKeydown(e)
 }
 
 // ── Resize logic ───────────────────────────────────────────
@@ -433,6 +513,12 @@ function removePending(a) {
 function startEdit(msg) {
   editingId.value = msg.id
   editBody.value = msg.body
+  nextTick(() => {
+    if (editTextareaEl.value) {
+      editTextareaEl.value.focus()
+      autoResize({ target: editTextareaEl.value })
+    }
+  })
 }
 
 function saveEdit(msg) {

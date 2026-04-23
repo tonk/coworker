@@ -1,11 +1,20 @@
 # Changelog
 
+## v0.8.12 — 2026-04-23
+
+### Added
+- **Emoji autocomplete in edit mode** — the inline emoji picker (triggered by `:`) now works when editing existing messages, matching the behavior of the main chat compose area.
+
 ## v0.8.11 — 2026-04-22
 
 ### Added
 - Desktop notifications for direct messages and unread counts.
 - Inline emoji picker triggered by ':' in the compose textarea, with initial-search support for fast emoji insertion.
 - Demo seeder: detailed summary box listing projects, conversations, customers, and groups.
+- **Customer avatars in Admin** — customer avatars are now displayed in the Admin → Customers list view for better visual identification.
+- **User avatars in Admin** — user avatars (Gravatar) are now displayed in the Admin → Users list view.
+- **User avatar in Edit User modal** — the user's avatar is now shown at the top left of the Edit User dialog for a better overview.
+- **Chat avatar placement** — user avatars in the chat are now positioned at the top-left (or top-right for own messages) of the message bubble.
 
 ### Fixed
 - Restore syntax token colors inside chat code blocks while removing per-line highlights so tokens keep color without boxed backgrounds.

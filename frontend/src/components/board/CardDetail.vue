@@ -13,6 +13,7 @@
         <div v-if="!locked" style="position:relative">
           <MentionDropdown v-if="descMentionUsers.length" :users="descMentionUsers" :active-index="descMentionIndex"
             @pick="descPickMention" @update:activeIndex="descMentionIndex = $event" />
+          <InlineEmojiPicker v-if="descEmojiOpen" :initial-search="descEmojiQuery || ''" @pick="onDescEmojiPick" @close="descEmojiOpen = false" />
           <textarea class="form-input description-textarea" v-model="form.description"
                     ref="descTextareaEl"
                     spellcheck="true" :lang="auth.user?.locale || 'en'"
@@ -302,6 +303,7 @@
           <div style="position:relative">
             <MentionDropdown v-if="commentMentionUsers.length" :users="commentMentionUsers" :active-index="commentMentionIndex"
               @pick="commentPickMention" @update:activeIndex="commentMentionIndex = $event" />
+            <InlineEmojiPicker v-if="commentEmojiOpen" :initial-search="commentEmojiQuery || ''" @pick="onCommentEmojiPick" @close="commentEmojiOpen = false" />
             <textarea
               class="form-input comment-textarea"
               v-model="newComment"
@@ -434,13 +436,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import BaseModal from '@/components/common/BaseModal.vue'
 import AttachmentList from '@/components/common/AttachmentList.vue'
 import MentionDropdown from '@/components/common/MentionDropdown.vue'
+import InlineEmojiPicker from '@/components/common/InlineEmojiPicker.vue'
 import CardDetail from '@/components/board/CardDetail.vue'
 import { useCompose } from '@/composables/useCompose'
 import { useBoardStore } from '@/stores/board'
@@ -839,7 +842,7 @@ const isDirty = computed(() =>
 
 const {
   mentionUsers: descMentionUsers, mentionIndex: descMentionIndex,
-  onTextareaInput: descOnInput, onTextareaKeydown: descOnKeydown, pickMention: descPickMention
+  onTextareaInput: descOnInput, onTextareaKeydown: descOnKeydown, pickMention: descPickMention, emojiQuery: descEmojiQuery, pickEmoji: pickDescEmoji
 } = useCompose({
   textareaEl: descTextareaEl,
   getValue: () => form.value.description,
@@ -849,13 +852,29 @@ const {
 
 const {
   mentionUsers: commentMentionUsers, mentionIndex: commentMentionIndex,
-  onTextareaInput: commentOnInput, onTextareaKeydown: commentOnKeydown, pickMention: commentPickMention
+  onTextareaInput: commentOnInput, onTextareaKeydown: commentOnKeydown, pickMention: commentPickMention, emojiQuery: commentEmojiQuery, pickEmoji: pickCommentEmoji
 } = useCompose({
   textareaEl: commentTextareaEl,
   getValue: () => newComment.value,
   setValue: (v) => { newComment.value = v },
   users: memberUsers
 })
+
+const descEmojiOpen = ref(false)
+const commentEmojiOpen = ref(false)
+
+watch(descEmojiQuery, (q) => { descEmojiOpen.value = q !== null })
+watch(commentEmojiQuery, (q) => { commentEmojiOpen.value = q !== null })
+
+function onDescEmojiPick(emoji) {
+  pickDescEmoji(emoji)
+  descEmojiOpen.value = false
+}
+
+function onCommentEmojiPick(emoji) {
+  pickCommentEmoji(emoji)
+  commentEmojiOpen.value = false
+}
 
 const displayStartDate = ref(form.value.start_date ? formatDate(form.value.start_date) : '')
 

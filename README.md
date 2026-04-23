@@ -175,6 +175,38 @@ Import from or export to Jira, Trello, OpenProject, or Ryver using the standalon
 
 Both tools support `--dry-run`. Missing credentials are prompted interactively. See `warmdesk-migrate.yaml.example` for full configuration options including column mapping.
 
+## Ansible Collection
+
+WarmDesk includes an Ansible collection to automate the management of users, projects, customers, and more via the REST API. The collection source is located in the `ansible/` directory.
+
+### Installation
+
+You can install the collection locally from the repository:
+
+```bash
+ansible-galaxy collection install ansible/
+```
+
+Or you can install the published version from the Ansible Galaxy
+
+```bash
+ansible-galaxy collection install ansiblabnl.warmdesk
+```
+
+### Available Modules
+
+- `ansilabnl.warmdesk.user`: Manage users, passwords, and global/customer roles.
+- `ansilabnl.warmdesk.project`: Create and update projects (Kanban/Scrum) and prefixes.
+- `ansilabnl.warmdesk.group`: Manage user groups and their project/customer access.
+- `ansilabnl.warmdesk.customer_member`: Manage membership and roles within a customer.
+
+### Available Plugins
+
+- **Inventory**: `ansilabnl.warmdesk.warmdesk` — Dynamic inventory from project members.
+- **Lookup**: `ansilabnl.warmdesk.project` — Fetch project metadata by slug.
+- **Lookup**: `ansilabnl.warmdesk.card` — Look up card details by reference (e.g. `PRJ-42`).
+- **Lookup**: `ansilabnl.warmdesk.api_key` — List personal or project-scoped API keys.
+
 ## Documentation
 
 | Document | Contents |

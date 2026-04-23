@@ -14,7 +14,9 @@
     <!-- Emoji picker — anchored to the emoji toolbar button -->
     <InlineEmojiPicker
       v-if="emojiOpen"
-      class="editor-emoji-picker"
+      :initial-search="emojiQuery || ''"
+      :style="emojiStart ? emojiPos : {}"
+      :class="['editor-emoji-picker', { 'is-autocomplete': emojiStart }]"
       @pick="onEmojiPick"
       @close="emojiOpen = false"
     />
@@ -44,12 +46,20 @@ let mde = null
 
 // ── Emoji ─────────────────────────────────────────────────────────────────────
 const emojiOpen = ref(false)
+const emojiQuery = ref(null)
+const emojiStart = ref(null)
+const emojiPos   = ref({ top: '0px', left: '0px' })
 
 function onEmojiPick(emoji) {
   if (!mde) return
-  mde.codemirror.replaceSelection(emoji)
+  if (emojiStart.value) {
+    mde.codemirror.replaceRange(emoji, emojiStart.value, mde.codemirror.getCursor())
+  } else {
+    mde.codemirror.replaceSelection(emoji)
+  }
   mde.codemirror.focus()
   emojiOpen.value = false
+  emojiQuery.value = null
 }
 
 // ── Mention state ─────────────────────────────────────────────────────────────
@@ -67,23 +77,38 @@ const mentionUsers = computed(() => {
   ).slice(0, 8)
 })
 
-function detectMention() {
+function detectTriggers() {
   if (!mde) return
   const cm     = mde.codemirror
   const cursor = cm.getCursor()
   const line   = cm.getLine(cursor.line)
   const before = line.slice(0, cursor.ch)
-  const m      = before.match(/@(\w*)$/)
-  if (m) {
-    mentionQuery.value = m[1]
-    mentionStart.value = { line: cursor.line, ch: cursor.ch - m[0].length }
+
+  const mentionMatch = before.match(/(^|\s)@(\w*)$/)
+  const emojiMatch   = before.match(/(^|\s):(\w*)$/)
+
+  if (mentionMatch) {
+    mentionQuery.value = mentionMatch[2]
+    const offset = mentionMatch[1].length
+    mentionStart.value = { line: cursor.line, ch: cursor.ch - mentionMatch[0].length + offset }
     mentionIndex.value = 0
-    // Use viewport coords + position:fixed so the dropdown renders correctly
-    // regardless of toolbar height, modal scroll, or overflow clipping.
     const coords = cm.cursorCoords(true, 'window')
     mentionPos.value = { top: (coords.bottom + 4) + 'px', left: coords.left + 'px' }
+    emojiQuery.value = null
+    emojiStart.value = null
+  } else if (emojiMatch) {
+    emojiQuery.value = emojiMatch[2]
+    const offset = emojiMatch[1].length
+    emojiStart.value = { line: cursor.line, ch: cursor.ch - emojiMatch[0].length + offset }
+    const coords = cm.cursorCoords(true, 'window')
+    emojiPos.value = { top: (coords.bottom + 4) + 'px', left: coords.left + 'px' }
+    emojiOpen.value = true
+    mentionQuery.value = null
+    mentionStart.value = null
   } else {
     mentionQuery.value = null
+    emojiQuery.value = null
+    if (!emojiMatch && emojiStart.value) emojiOpen.value = false
   }
 }
 
@@ -97,18 +122,24 @@ function editorPickMention(user) {
 }
 
 function handleCmKeydown(cm, e) {
-  if (mentionQuery.value === null || !mentionUsers.value.length) return
-  if (e.key === 'ArrowDown') {
-    e.preventDefault()
-    mentionIndex.value = (mentionIndex.value + 1) % mentionUsers.value.length
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault()
-    mentionIndex.value = (mentionIndex.value - 1 + mentionUsers.value.length) % mentionUsers.value.length
-  } else if (e.key === 'Enter' || e.key === 'Tab') {
-    e.preventDefault()
-    editorPickMention(mentionUsers.value[mentionIndex.value])
-  } else if (e.key === 'Escape') {
-    mentionQuery.value = null
+  if (mentionQuery.value !== null && mentionUsers.value.length) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      mentionIndex.value = (mentionIndex.value + 1) % mentionUsers.value.length
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      mentionIndex.value = (mentionIndex.value - 1 + mentionUsers.value.length) % mentionUsers.value.length
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault()
+      editorPickMention(mentionUsers.value[mentionIndex.value])
+    } else if (e.key === 'Escape') {
+      mentionQuery.value = null
+    }
+  } else if (emojiQuery.value !== null && emojiOpen.value) {
+    if (e.key === 'Escape') {
+      emojiOpen.value = false
+      emojiQuery.value = null
+    }
   }
 }
 
@@ -129,7 +160,7 @@ onMounted(() => {
       'link', 'image', '|',
       {
         name: 'emoji',
-        action: () => { emojiOpen.value = !emojiOpen.value },
+        action: () => { emojiOpen.value = !emojiOpen.value; emojiStart.value = null },
         className: 'emoji-toolbar-btn',
         title: 'Emoji',
         text: '😊',
@@ -160,10 +191,10 @@ onMounted(() => {
       }
     }
     emit('update:modelValue', mde.value())
-    detectMention()
+    detectTriggers()
   })
 
-  mde.codemirror.on('cursorActivity', detectMention)
+  mde.codemirror.on('cursorActivity', detectTriggers)
   mde.codemirror.on('keydown', handleCmKeydown)
 })
 
@@ -173,7 +204,7 @@ watch(() => props.modelValue, (val) => {
 
 onBeforeUnmount(() => {
   mde?.codemirror.off('change')
-  mde?.codemirror.off('cursorActivity', detectMention)
+  mde?.codemirror.off('cursorActivity', detectTriggers)
   mde?.codemirror.off('keydown', handleCmKeydown)
   mde?.cleanup()      // removes EasyMDE's document-level keydown listener
   mde?.toTextArea()
@@ -202,7 +233,6 @@ onBeforeUnmount(() => {
   z-index: 1100;
 }
 
-/* Anchor the emoji picker to the top-right area of the editor wrapper, near toolbar */
 .editor-emoji-picker {
   position: absolute !important;
   top: 36px;   /* just below the toolbar */
@@ -210,5 +240,17 @@ onBeforeUnmount(() => {
   bottom: auto !important;
   left: auto !important;
   z-index: 500;
+}
+
+/* When triggered by ':' autocomplete, follow the cursor coordinates */
+.editor-emoji-picker.is-autocomplete {
+  position: fixed !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 1100;
+  /* Reset any absolute offsets if necessary, though style binding will override top/left */
+  margin: 0;
 }
 </style>
