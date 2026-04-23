@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.8.14 — 2026-04-23
+
+### Changed
+- **Hover reaction toolbar** — incoming/group messages in project chat and DMs now show quick reaction buttons on hover plus a `+` action that opens the full inline emoji picker.
+- **Quick-reaction configuration** — hover quick reactions are now sourced from one shared frontend constant (`QUICK_REACTION_EMOJIS`) to keep project chat and DM behavior in sync.
+- **User docs and screenshots refreshed** — chat reaction documentation now reflects the hover toolbar + full picker flow, with updated screenshots in both the User Guide and README.
+
+### Fixed
+- **Reaction emoji whitelist mismatch** — backend reaction validation now allows the newly exposed quick reactions (`🤣`, `✅`, `❌`, `🤘`) so all hover-toolbar emojis can be selected successfully.
+
 ## v0.8.13 — 2026-04-23
 
 ### Added

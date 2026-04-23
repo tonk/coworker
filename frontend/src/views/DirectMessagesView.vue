@@ -1,4 +1,4 @@
-<template>
+    <template>
   <div class="dm-layout">
 
     <!-- ── Sidebar ──────────────────────────────────────── -->
@@ -260,7 +260,10 @@
               'msg-own': msg.sender_id === auth.user?.id,
               'group-start': layout === 'grouped' && !isSameGroup(messages, i),
               'group-continue': layout === 'grouped' && isSameGroup(messages, i),
-            }]">
+            }]"
+              @mouseenter="hoveredReactionMessageId = msg.id"
+              @mouseleave="onMessageHoverLeave(msg.id)"
+            >
 
               <div class="msg-avatar" :style="avatarBg(msg.sender)">
                 <img v-if="getAvatar(msg.sender)" :src="getAvatar(msg.sender)" class="avatar-img" @error="e => e.target.style.display='none'" />
@@ -298,6 +301,40 @@
                 </template>
 
                 <template v-else>
+                  <div
+                    v-if="canUseHoverReactions(msg)"
+                    class="msg-hover-actions"
+                    :class="{ visible: isHoverReactionsVisible(msg.id) }"
+                  >
+                    <button
+                      v-for="emoji in quickReactionEmojis"
+                      :key="`${msg.id}-${emoji}`"
+                      class="msg-hover-emoji-btn"
+                      type="button"
+                      @click.stop="toggleConvReaction(msg, emoji)"
+                    >
+                      {{ emoji }}
+                    </button>
+                    <button
+                      class="msg-hover-more-btn"
+                      type="button"
+                      title="More reactions"
+                      @click.stop="toggleReactionPicker(msg.id)"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                      </svg>
+                    </button>
+                    <InlineEmojiPicker
+                      v-if="reactionPickerMessageId === msg.id"
+                      :initial-search="''"
+                      @pick="(emoji) => onHoverReactionPick(msg, emoji)"
+                      @escape="reactionPickerMessageId = null"
+                      @close="reactionPickerMessageId = null"
+                    />
+                  </div>
                   <div :class="['msg-bubble', msg.sender_id === auth.user?.id ? 'bubble-own' : 'bubble-other']">
                     <span v-if="msg.is_deleted" class="msg-deleted">{{ $t('chat.deleted') }}</span>
                     <div v-else class="msg-body" v-html="renderMarkdown(msg.body)"></div>
@@ -417,6 +454,7 @@ import { useChatLayout } from '@/composables/useChatLayout'
 import { useChatNotify } from '@/composables/useChatNotify'
 import { avatarUrl } from '@/composables/useAvatar'
 import { useCompose } from '@/composables/useCompose'
+import { QUICK_REACTION_EMOJIS } from '@/utils/emoticons'
 import { renderMarkdown, firstUrl, useCardRef } from '@/composables/useCardRef'
 import InlineEmojiPicker from '@/components/common/InlineEmojiPicker.vue'
 import MentionDropdown from '@/components/common/MentionDropdown.vue'
@@ -437,6 +475,9 @@ const ui = useUIStore()
 // ── New-message toast ────────────────────────────────────────────────────────
 const chatToast = ref(null)
 let toastTimer = null
+const quickReactionEmojis = QUICK_REACTION_EMOJIS
+const hoveredReactionMessageId = ref(null)
+const reactionPickerMessageId = ref(null)
 
 function showDMToast(msg) {
   if (!shouldNotifyNow()) return
@@ -879,6 +920,28 @@ async function toggleConvReaction(msg, emoji) {
     const { data } = await messagesApi.toggleConvReaction(activeConv.value.id, msg.id, emoji)
     msg.reactions = data.reactions
   } catch {}
+}
+
+function canUseHoverReactions(msg) {
+  return msg.sender_id !== auth.user?.id && !msg.is_deleted
+}
+
+function isHoverReactionsVisible(messageId) {
+  return hoveredReactionMessageId.value === messageId || reactionPickerMessageId.value === messageId
+}
+
+function toggleReactionPicker(messageId) {
+  hoveredReactionMessageId.value = messageId
+  reactionPickerMessageId.value = reactionPickerMessageId.value === messageId ? null : messageId
+}
+
+async function onHoverReactionPick(msg, emoji) {
+  await toggleConvReaction(msg, emoji)
+  reactionPickerMessageId.value = null
+}
+
+function onMessageHoverLeave(messageId) {
+  if (reactionPickerMessageId.value !== messageId) hoveredReactionMessageId.value = null
 }
 
 function onFilesSelected(files) {
@@ -1502,6 +1565,7 @@ function dayLabel(dateStr) {
   display: flex;
   flex-direction: column;
   max-width: calc(100% - 48px);
+  position: relative;
 }
 .msg-row.msg-own .msg-content { align-items: flex-end; }
 
@@ -1630,6 +1694,48 @@ function dayLabel(dateStr) {
 .msg-body :deep(h1), .msg-body :deep(h2), .msg-body :deep(h3) { font-size: 1em; font-weight: 700; margin: 4px 0; }
 .msg-body :deep(hr) { border: none; border-top: 1px solid rgba(0,0,0,.15); margin: 6px 0; }
 .bubble-own .msg-body :deep(hr) { border-top-color: rgba(255,255,255,.3); }
+
+.msg-hover-actions {
+  position: absolute;
+  top: -18px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 5px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition: opacity .15s, transform .15s;
+  z-index: 30;
+}
+.msg-hover-actions.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.msg-hover-emoji-btn,
+.msg-hover-more-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+}
+.msg-hover-emoji-btn:hover,
+.msg-hover-more-btn:hover {
+  background: var(--color-bg);
+}
+.msg-hover-emoji-btn { font-size: 14px; }
 
 .msg-time {
   font-size: 10px;

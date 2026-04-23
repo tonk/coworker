@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging, time tracking, and a ticket API.
 
-## Latest release (v0.8.13)
+## Latest release (v0.8.14)
 
-- Project and group avatars (with upload/clear support) now appear across project views, admin screens, and sidebar lists.
-- Breadcrumb navigation (with back/forward) is available at the top of the app and can be toggled per user in settings.
-- Chat compose supports full `:shortcode:` emoji aliases (via `gemoji`), and the emoji picker now has improved keyboard behavior (`Enter` picks a single remaining result, `Escape` closes and refocuses the input).
+- Hover reactions in project chat and DMs now show quick actions directly on incoming/group messages, plus a `+` button for the full emoji picker.
+- Quick reaction emojis are centrally configured and now include `👍 👎 😂 🤣 ✅ ❌ 🤘`.
+- Chat reaction docs and screenshots were refreshed in both the user guide and README.
 
 ## Build status
 
@@ -39,6 +39,8 @@ updated `what.md` and asked Claude Code to generate the app.
 | *Time report with PDF/Excel export* | *Admin panel — user management* |
 | ![Admin settings](screenshots/09-admin-settings.png) | ![User settings](screenshots/10-user-settings.png) |
 | *Admin settings* | *User settings* |
+| ![Chat reaction hover](screenshots/11-chat-reaction-hover.png) | ![Chat reaction selected](screenshots/12-chat-reaction-selected.png) |
+| *Chat hover quick reactions + full picker* | *Selected reaction shown on message* |
 
 ## Quick Start
 

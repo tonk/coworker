@@ -40,6 +40,9 @@ export const EMOTICONS = [
   ["<3",   "❤️"],
 ]
 
+// Shared quick-reaction defaults for chat hover toolbars.
+export const QUICK_REACTION_EMOJIS = ['👍', '👎', '😂', '🤣', '✅', '❌', '🤘']
+
 // Full GitHub-style :shortcode: support via gemoji.
 // We also add underscore-less aliases (e.g. :fingerscrossed:) for convenience.
 export const EMOJI_SHORTCODES = Object.create(null)

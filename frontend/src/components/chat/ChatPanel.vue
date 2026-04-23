@@ -51,7 +51,11 @@
         </div>
 
         <!-- Message row -->
-        <div :class="['msg-row', { 'msg-own': msg.user_id === authUser?.id && !msg.is_bot }]">
+        <div
+          :class="['msg-row', { 'msg-own': msg.user_id === authUser?.id && !msg.is_bot }]"
+          @mouseenter="hoveredReactionMessageId = msg.id"
+          @mouseleave="onMessageHoverLeave(msg.id)"
+        >
 
           <div class="msg-avatar">
             <img
@@ -107,6 +111,40 @@
             </template>
 
             <template v-else>
+              <div
+                v-if="canUseHoverReactions(msg)"
+                class="msg-hover-actions"
+                :class="{ visible: isHoverReactionsVisible(msg.id) }"
+              >
+                <button
+                  v-for="emoji in quickReactionEmojis"
+                  :key="`${msg.id}-${emoji}`"
+                  class="msg-hover-emoji-btn"
+                  type="button"
+                  @click.stop="toggleReaction(msg, emoji)"
+                >
+                  {{ emoji }}
+                </button>
+                <button
+                  class="msg-hover-more-btn"
+                  type="button"
+                  title="More reactions"
+                  @click.stop="toggleReactionPicker(msg.id)"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
+                  </svg>
+                </button>
+                <InlineEmojiPicker
+                  v-if="reactionPickerMessageId === msg.id"
+                  :initial-search="''"
+                  @pick="(emoji) => onHoverReactionPick(msg, emoji)"
+                  @escape="reactionPickerMessageId = null"
+                  @close="reactionPickerMessageId = null"
+                />
+              </div>
               <div :class="['msg-bubble', msg.user_id === authUser?.id && !msg.is_bot ? 'bubble-own' : 'bubble-other']">
                 <div v-if="msg.is_deleted" class="msg-deleted">{{ $t('chat.deleted') }}</div>
                 <div v-else class="msg-body" v-html="renderMarkdown(msg.body)"></div>
@@ -218,6 +256,7 @@ import { avatarUrl } from '@/composables/useAvatar'
 import { attachmentsApi } from '@/api/attachments'
 import { projectsApi } from '@/api/projects'
 import { useCompose } from '@/composables/useCompose'
+import { QUICK_REACTION_EMOJIS } from '@/utils/emoticons'
 import AttachmentList from '@/components/common/AttachmentList.vue'
 import FileUploadButton from '@/components/common/FileUploadButton.vue'
 import MessageReactions from '@/components/common/MessageReactions.vue'
@@ -245,6 +284,9 @@ const { addProjectChatUnread, clearProjectChatUnread } = useProjectChatUnread()
 
 const chatToast = ref(null)
 let toastTimer = null
+const quickReactionEmojis = QUICK_REACTION_EMOJIS
+const hoveredReactionMessageId = ref(null)
+const reactionPickerMessageId = ref(null)
 
 function showChatToast(msg) {
   if (!shouldNotifyNow()) return
@@ -558,6 +600,28 @@ async function toggleReaction(msg, emoji) {
   } catch {}
 }
 
+function canUseHoverReactions(msg) {
+  return msg.user_id !== authUser.value?.id && !msg.is_deleted && !msg.is_bot
+}
+
+function isHoverReactionsVisible(messageId) {
+  return hoveredReactionMessageId.value === messageId || reactionPickerMessageId.value === messageId
+}
+
+function toggleReactionPicker(messageId) {
+  hoveredReactionMessageId.value = messageId
+  reactionPickerMessageId.value = reactionPickerMessageId.value === messageId ? null : messageId
+}
+
+async function onHoverReactionPick(msg, emoji) {
+  await toggleReaction(msg, emoji)
+  reactionPickerMessageId.value = null
+}
+
+function onMessageHoverLeave(messageId) {
+  if (reactionPickerMessageId.value !== messageId) hoveredReactionMessageId.value = null
+}
+
 function autoResize(e) {
   const el = e.target
   el.style.height = 'auto'
@@ -751,6 +815,7 @@ function dayLabel(dateStr) {
   display: flex;
   flex-direction: column;
   max-width: calc(100% - 46px);
+  position: relative;
 }
 .msg-row.msg-own .msg-content { align-items: flex-end; }
 
@@ -881,6 +946,48 @@ function dayLabel(dateStr) {
 .msg-body :deep(pre .hljs-addition),
 .msg-body :deep(pre .hljs-deletion) { background: transparent !important; }
 .msg-body :deep(a) { color: inherit; text-decoration: underline; }
+
+.msg-hover-actions {
+  position: absolute;
+  top: -18px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 5px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition: opacity .15s, transform .15s;
+  z-index: 30;
+}
+.msg-hover-actions.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.msg-hover-emoji-btn,
+.msg-hover-more-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+}
+.msg-hover-emoji-btn:hover,
+.msg-hover-more-btn:hover {
+  background: var(--color-bg);
+}
+.msg-hover-emoji-btn { font-size: 14px; }
 
 .msg-meta {
   display: flex;

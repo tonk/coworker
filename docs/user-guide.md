@@ -369,7 +369,7 @@ navigation. Messages support:
 - **Emoji picker** — click the 😊 button in the compose bar
 - **@mentions** — type `@` to see a dropdown of project members
 - **File and image attachments** — click the attachment button or drag files onto the compose area; paste an image directly from the clipboard (Ctrl+V / ⌘V) to attach it without saving to disk first
-- **Emoji reactions** — hover a message and click the 😊 button; click an existing reaction badge to toggle
+- **Emoji reactions** — hover an incoming/group message to see quick reactions (`👍 👎 😂 🤣 ✅ ❌ 🤘`) plus a `+` button for the full emoji picker; click an existing reaction badge to toggle
 
 Click any emoji reaction to toggle your own reaction.
 
@@ -403,9 +403,14 @@ any conversation has unread messages.
 
 ### Emoji reactions
 
-Hover over any message and click the 😊 button to open the emoji picker, then
-click an emoji to react. Click an existing reaction badge to toggle your own
-reaction on or off.
+Hover over any incoming/group message to show quick reaction buttons and a `+`
+button. Click a quick emoji to react immediately, or click `+` to open the full
+emoji picker. Click an existing reaction badge to toggle your own reaction on
+or off.
+
+| Hover quick reactions | Selected reaction |
+|---|---|
+| ![Chat reaction hover toolbar](../screenshots/11-chat-reaction-hover.png) | ![Chat reaction selected](../screenshots/12-chat-reaction-selected.png) |
 
 ---
 

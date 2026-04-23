@@ -13,7 +13,16 @@ import (
 )
 
 var validEmojis = map[string]bool{
-	"👍": true, "❤️": true, "😂": true, "😮": true, "😢": true, "👎": true,
+	"👍": true,
+	"👎": true,
+	"😂": true,
+	"🤣": true,
+	"✅": true,
+	"❌": true,
+	"🤘": true,
+	"❤️": true,
+	"😮": true,
+	"😢": true,
 }
 
 // LoadReactionSummaries fetches reactions for a set of owner IDs and returns grouped summaries.
