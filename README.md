@@ -61,6 +61,33 @@ cd dist
 
 Open **http://localhost:8080**.
 
+### Desktop CLI
+
+The desktop client supports a few startup flags:
+
+```bash
+# Show help
+./warmdesk --help
+
+# Print client version
+./warmdesk --version
+
+# Start maximized
+./warmdesk --maximized
+
+# Override server URL for this launch only (not saved)
+./warmdesk --url=http://localhost:8080
+# or:
+./warmdesk --url http://localhost:8080
+```
+
+Windows examples:
+
+```powershell
+warmdesk.exe --help
+warmdesk.exe --url=http://localhost:8080
+```
+
 ### Load demo data
 
 A seed tool is included in the distribution to populate the database with
@@ -273,7 +300,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
 - **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast
 - **App zoom** — `Ctrl +` / `Ctrl -` to zoom in/out; `Ctrl 0` to reset; level persisted across sessions
-- **Desktop app** — native Tauri app for Linux (AppImage, .deb, .rpm), macOS (DMG), and Windows (installer); server URL configurable from the login page at any time; supports `--version` and `--maximized` CLI flags
+- **Desktop app** — native Tauri app for Linux (AppImage, .deb, .rpm), macOS (DMG), and Windows (installer); server URL configurable from the login page at any time; supports `--help`, `--version`, `--maximized`, and runtime-only `--url=<http(s)://...>` CLI flags
 - **Project migration** — `warmdesk-export` and `warmdesk-import` standalone tools to migrate projects to/from Jira, Trello, OpenProject, or Ryver; column mapping via config file
 
 

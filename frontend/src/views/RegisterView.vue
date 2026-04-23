@@ -23,6 +23,7 @@
           <input class="form-input" type="password" v-model="form.password" required minlength="8" />
         </div>
         <p v-if="error" class="auth-error">{{ error }}</p>
+        <p v-if="serverReachabilityError" class="auth-warning">{{ serverReachabilityError }}</p>
         <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
           <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
           {{ $t('auth.register') }}
@@ -40,21 +41,32 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { getServerUrl } from '@/api/serverConfig'
 
 const auth = useAuthStore()
 const router = useRouter()
 const form = ref({ email: '', username: '', display_name: '', password: '' })
 const error = ref('')
+const serverReachabilityError = ref('')
 const loading = ref(false)
+const isTauri = !!window.__TAURI_INTERNALS__
 
 async function handleSubmit() {
   error.value = ''
+  serverReachabilityError.value = ''
   loading.value = true
   try {
     await auth.register(form.value)
     router.push('/')
   } catch (e) {
-    error.value = e.response?.data?.error || 'Registration failed'
+    const msg = e.response?.data?.error || 'Registration failed'
+    const unreachable =
+      !e.response &&
+      /network|fetch|timeout|scope|not allowed|failed/i.test(msg)
+    if (isTauri && unreachable) {
+      serverReachabilityError.value = 'Could not reach server. Check the URL and network connection.'
+    }
+    error.value = isTauri ? `${msg} (server: ${getServerUrl() || '(empty)'})` : msg
   } finally {
     loading.value = false
   }
@@ -82,5 +94,6 @@ async function handleSubmit() {
 .auth-logo { font-size: 24px; font-weight: 800; color: var(--color-primary); text-align: center; margin-bottom: 8px; }
 .auth-title { font-size: 18px; font-weight: 600; text-align: center; margin-bottom: 28px; }
 .auth-error { color: var(--color-danger); font-size: 13px; margin-bottom: 12px; }
+.auth-warning { color: var(--color-danger); font-size: 12px; margin-bottom: 12px; }
 .auth-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--color-text-muted); }
 </style>

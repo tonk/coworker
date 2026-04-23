@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import { i18n } from './i18n'
 import { useSystemStore } from '@/stores/system'
+import { setRuntimeServerUrl } from '@/api/serverConfig'
 import './styles/main.css'
 import '@fontsource/inter/400.css'
 import '@fontsource/inter/500.css'
@@ -28,8 +29,20 @@ import '@fontsource/source-code-pro/600.css'
 // ES module bundle loads so Axios captures it at import time.
 async function init() {
   if (window.__TAURI_INTERNALS__) {
-    const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http')
-    window.__tauriFetch = tauriFetch
+    const httpPlugin = await import('@tauri-apps/plugin-http')
+    const tauriFetch =
+      httpPlugin.fetch ||
+      httpPlugin.default?.fetch ||
+      httpPlugin.default
+    if (typeof tauriFetch === 'function') {
+      window.__tauriFetch = tauriFetch
+    } else {
+      console.error('[WarmDesk] tauri-plugin-http fetch not available', Object.keys(httpPlugin || {}))
+    }
+    try {
+      const runtimeServerUrl = await window.__TAURI_INTERNALS__.invoke('runtime_server_url')
+      if (runtimeServerUrl) setRuntimeServerUrl(String(runtimeServerUrl))
+    } catch {}
   }
 
   const app = createApp(App)

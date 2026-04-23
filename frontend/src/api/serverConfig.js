@@ -1,7 +1,14 @@
 const KEY = 'warmdesk_server_url'
+const RUNTIME_KEY = 'warmdesk_runtime_server_url'
 
 export function getServerUrl() {
-  return localStorage.getItem(KEY) || ''
+  const runtimeOverride = typeof window !== 'undefined'
+    ? window.__WARMDESK_RUNTIME_SERVER_URL__
+    : ''
+  const runtimeSession = typeof window !== 'undefined'
+    ? sessionStorage.getItem(RUNTIME_KEY)
+    : ''
+  return runtimeOverride || runtimeSession || localStorage.getItem(KEY) || ''
 }
 
 export function setServerUrl(url) {
@@ -11,6 +18,15 @@ export function setServerUrl(url) {
 
 export function clearServerUrl() {
   localStorage.removeItem(KEY)
+}
+
+export function setRuntimeServerUrl(url) {
+  const normalized = (url || '').trim().replace(/\/+$/, '')
+  if (!normalized) return
+  if (typeof window !== 'undefined') {
+    window.__WARMDESK_RUNTIME_SERVER_URL__ = normalized
+    sessionStorage.setItem(RUNTIME_KEY, normalized)
+  }
 }
 
 export function isServerConfigured() {

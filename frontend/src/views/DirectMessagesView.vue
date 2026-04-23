@@ -376,7 +376,7 @@
                 @input="onInput"
                 @paste="onPaste"
               ></textarea>
-              <button class="compose-send-btn" @click="send" :disabled="(!newMessage.trim() && !pendingFiles.length) || sending" :title="$t('chat.send')">
+              <button class="compose-send-btn" @mousedown.prevent @click="send" :disabled="(!newMessage.trim() && !pendingFiles.length) || sending" :title="$t('chat.send')">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               </button>
             </div>
@@ -419,7 +419,7 @@ const auth = useAuthStore()
 const notificationsStore = useNotificationsStore()
 const { formatTime } = useDateFormat()
 const { layout, setLayout } = useChatLayout()
-const { notifyEnabled, toggleNotify, desktopNotify } = useChatNotify()
+const { notifyEnabled, toggleNotify, desktopNotify, shouldNotifyNow } = useChatNotify()
 const ui = useUIStore()
 
 // ── New-message toast ────────────────────────────────────────────────────────
@@ -427,6 +427,7 @@ const chatToast = ref(null)
 let toastTimer = null
 
 function showDMToast(msg) {
+  if (!shouldNotifyNow()) return
   clearTimeout(toastTimer)
   const sender = msg.sender?.display_name || msg.sender?.username || 'Someone'
   const body = (msg.body || '').replace(/```[\s\S]*?```|`[^`]+`/g, '[code]').slice(0, 90)
@@ -749,7 +750,7 @@ async function fetchMessages(initial = false) {
     const atBottom = initial || isAtBottom()
     if (incoming.length > 0) {
       const maxId = Math.max(...incoming.map(m => m.id))
-      if (!initial && lastSeenMsgId > 0 && notifyEnabled.value) {
+      if (!initial && lastSeenMsgId > 0 && notifyEnabled.value && shouldNotifyNow()) {
         const newFromOthers = incoming.filter(m => m.id > lastSeenMsgId && m.sender_id !== auth.user?.id)
         if (newFromOthers.length > 0) showDMToast(newFromOthers[newFromOthers.length - 1])
       }
@@ -802,7 +803,7 @@ async function send() {
 
     messages.value.push(newMsg)
     newMessage.value = ''
-    if (textareaEl.value) { textareaEl.value.style.height = 'auto'; textareaEl.value.focus() }
+    if (textareaEl.value) textareaEl.value.style.height = 'auto'
     // Bump this conversation to the top
     const idx = conversations.value.findIndex(c => c.id === activeConv.value.id)
     if (idx > 0) {
@@ -819,6 +820,8 @@ async function send() {
     ui.error(e.response?.data?.error || 'Failed to send message')
   } finally {
     sending.value = false
+    await nextTick()
+    if (textareaEl.value) textareaEl.value.focus()
   }
 }
 
@@ -1542,7 +1545,11 @@ function dayLabel(dateStr) {
   border-radius: 4px;
   padding: 1px 5px;
 }
-.bubble-own .msg-body :deep(code) { background: rgba(255,255,255,.2); }
+.bubble-own .msg-body :deep(code) {
+  background: rgba(255,255,255,0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.28);
+}
 .msg-body :deep(pre) {
   background: rgba(0,0,0,.15);
   border-radius: 8px;
@@ -1550,7 +1557,40 @@ function dayLabel(dateStr) {
   overflow-x: auto;
   margin: 6px 0;
 }
-.bubble-own .msg-body :deep(pre) { background: rgba(255,255,255,.15); }
+.bubble-own .msg-body :deep(pre) {
+  background: #ffffff !important;
+  color: #0b1220 !important;
+  border: 1px solid rgba(0,0,0,0.12) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;
+  overflow-x: auto;
+}
+.bubble-own .msg-body :deep(pre) .hljs,
+.bubble-own .msg-body :deep(pre) .hljs * {
+  background: transparent !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+.bubble-own .msg-body :deep(pre) .hljs { color: #0f172a !important; }
+.bubble-own .msg-body :deep(pre) .hljs-comment,
+.bubble-own .msg-body :deep(pre) .hljs-quote { color: #64748b !important; font-style: italic; }
+.bubble-own .msg-body :deep(pre) .hljs-keyword,
+.bubble-own .msg-body :deep(pre) .hljs-selector-tag,
+.bubble-own .msg-body :deep(pre) .hljs-literal,
+.bubble-own .msg-body :deep(pre) .hljs-type { color: #7c3aed !important; }
+.bubble-own .msg-body :deep(pre) .hljs-string,
+.bubble-own .msg-body :deep(pre) .hljs-doctag,
+.bubble-own .msg-body :deep(pre) .hljs-regexp { color: #15803d !important; }
+.bubble-own .msg-body :deep(pre) .hljs-number,
+.bubble-own .msg-body :deep(pre) .hljs-symbol,
+.bubble-own .msg-body :deep(pre) .hljs-bullet { color: #1d4ed8 !important; }
+.bubble-own .msg-body :deep(pre) .hljs-title,
+.bubble-own .msg-body :deep(pre) .hljs-section,
+.bubble-own .msg-body :deep(pre) .hljs-function .hljs-title { color: #0f766e !important; }
 .msg-body :deep(pre code) { background: none; padding: 0; font-size: 12px; }
 /* Prevent per-token/line backgrounds inside code blocks */
 .msg-body :deep(pre) :deep(*) { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }

@@ -12,7 +12,7 @@ export const useChatStore = defineStore('chat', () => {
   const typingUsers = ref([])   // [{user_id, username, display_name, _timer}]
 
   // Composables / other stores used for notifications
-  const { desktopNotify, notifyEnabled } = useChatNotify()
+  const { desktopNotify, notifyEnabled, shouldNotifyNow } = useChatNotify()
   const auth = useAuthStore()
   const { addProjectChatUnread } = useProjectChatUnread()
 
@@ -81,7 +81,7 @@ export const useChatStore = defineStore('chat', () => {
         addMessage(payload)
         // Global desktop notification when client unfocused
         try {
-          if (notifyEnabled.value && !document.hasFocus()) {
+          if (notifyEnabled.value && shouldNotifyNow()) {
             const fromOthers = payload.user_id !== auth.user?.id && !payload.is_bot
             if (fromOthers) {
               const sender = (payload.user && (payload.user.display_name || payload.user.username)) || 'Someone'

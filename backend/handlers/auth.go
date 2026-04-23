@@ -54,17 +54,21 @@ type tokenResponse struct {
 // @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	if !IsRegistrationEnabled() {
+		authLog(c, "register_failed", 0, "", "reason=registration_disabled host="+c.Request.Host)
 		c.JSON(http.StatusForbidden, gin.H{"error": "registration is disabled"})
 		return
 	}
 
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		authLog(c, "register_failed", 0, "", "reason=bad_payload host="+c.Request.Host)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	authLog(c, "register_attempt", 0, "", "email="+req.Email+" username="+req.Username+" host="+c.Request.Host)
 
 	if msg := ValidatePasswordPolicy(req.Password); msg != "" {
+		authLog(c, "register_failed", 0, "", "username="+req.Username+" reason=password_policy")
 		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
 		return
 	}
@@ -105,10 +109,11 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	if err := database.DB.Create(&user).Error; err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "unique") || strings.Contains(err.Error(), "Duplicate") {
-			authLog(c, "register_failed", 0, "", "login="+req.Username+" reason=duplicate")
+			authLog(c, "register_failed", 0, "", "username="+req.Username+" reason=duplicate")
 			c.JSON(http.StatusConflict, gin.H{"error": "email or username already exists"})
 			return
 		}
+		authLog(c, "register_failed", 0, "", "username="+req.Username+" reason=internal_error")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
@@ -135,9 +140,11 @@ func (h *AuthHandler) Register(c *gin.Context) {
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		authLog(c, "login_failed", 0, "", "reason=bad_payload")
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	authLog(c, "login_attempt", 0, "", "login="+req.Login+" host="+c.Request.Host)
 
 	var user models.User
 	login := strings.ToLower(req.Login)

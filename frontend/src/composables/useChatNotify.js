@@ -34,7 +34,7 @@ function toggle() {
 
 function desktopNotify(title, body) {
   if (!enabled.value) return
-  if (document.hasFocus()) return
+  if (!shouldNotifyNow()) return
   if (isTauri) {
     tauriSend?.({ title, body })
     return
@@ -43,6 +43,13 @@ function desktopNotify(title, body) {
   new Notification(title, { body, icon: '/favicon.ico' })
 }
 
+function shouldNotifyNow() {
+  // Only notify when the app is not the active foreground window/tab.
+  if (typeof document === 'undefined') return false
+  if (document.visibilityState === 'hidden') return true
+  return !document.hasFocus()
+}
+
 export function useChatNotify() {
-  return { notifyEnabled: enabled, toggleNotify: toggle, desktopNotify }
+  return { notifyEnabled: enabled, toggleNotify: toggle, desktopNotify, shouldNotifyNow }
 }

@@ -182,7 +182,7 @@
             @input="onInput"
             @paste="onPaste"
           ></textarea>
-          <button class="compose-send-btn" @click="sendMessage" :disabled="!draft.trim() && !pendingFiles.length" :title="$t('chat.send')">
+          <button class="compose-send-btn" @mousedown.prevent @click="sendMessage" :disabled="!draft.trim() && !pendingFiles.length" :title="$t('chat.send')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
@@ -228,13 +228,14 @@ const textareaEl = ref(null)
 const draft = ref('')
 const { formatTime } = useDateFormat()
 const { layout, setLayout } = useChatLayout()
-const { notifyEnabled, toggleNotify, desktopNotify } = useChatNotify()
+const { notifyEnabled, toggleNotify, desktopNotify, shouldNotifyNow } = useChatNotify()
 const { addProjectChatUnread, clearProjectChatUnread } = useProjectChatUnread()
 
 const chatToast = ref(null)
 let toastTimer = null
 
 function showChatToast(msg) {
+  if (!shouldNotifyNow()) return
   clearTimeout(toastTimer)
   const sender = msg.user?.display_name || msg.user?.username || 'Someone'
   const body = (msg.body || '').replace(/```[\s\S]*?```|`[^`]+`/g, '[code]').slice(0, 90)
@@ -408,7 +409,7 @@ onMounted(async () => {
 
 watch(() => chatStore.messages.length, (newLen, oldLen) => {
   nextTick(scrollToBottom)
-  if (oldLen > 0 && newLen > oldLen && notifyEnabled.value) {
+  if (oldLen > 0 && newLen > oldLen && notifyEnabled.value && shouldNotifyNow()) {
     const newMsgs = chatStore.messages.slice(oldLen)
     const fromOthers = newMsgs.filter(m => m.user_id !== authUser.value?.id && !m.is_bot)
     if (fromOthers.length > 0) {
@@ -802,7 +803,11 @@ function dayLabel(dateStr) {
   font-size: 12px;
   font-family: ui-monospace, monospace;
 }
-.bubble-own .msg-body :deep(code) { background: rgba(0,0,0,.15); }
+.bubble-own .msg-body :deep(code) {
+  background: rgba(255,255,255,0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.28);
+}
 .msg-body :deep(pre) {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
@@ -824,7 +829,7 @@ function dayLabel(dateStr) {
   overflow-x: auto;
 }
 
-/* Ensure tokens are visible and don't get dimmed inside own-bubble code blocks */
+/* Own-bubble fenced code: enforce strong contrast regardless of hljs theme. */
 .bubble-own .msg-body :deep(pre) .hljs,
 .bubble-own .msg-body :deep(pre) .hljs * {
   background: transparent !important;
@@ -832,6 +837,22 @@ function dayLabel(dateStr) {
   opacity: 1 !important;
   text-shadow: none !important;
 }
+.bubble-own .msg-body :deep(pre) .hljs { color: #0f172a !important; }
+.bubble-own .msg-body :deep(pre) .hljs-comment,
+.bubble-own .msg-body :deep(pre) .hljs-quote { color: #64748b !important; font-style: italic; }
+.bubble-own .msg-body :deep(pre) .hljs-keyword,
+.bubble-own .msg-body :deep(pre) .hljs-selector-tag,
+.bubble-own .msg-body :deep(pre) .hljs-literal,
+.bubble-own .msg-body :deep(pre) .hljs-type { color: #7c3aed !important; }
+.bubble-own .msg-body :deep(pre) .hljs-string,
+.bubble-own .msg-body :deep(pre) .hljs-doctag,
+.bubble-own .msg-body :deep(pre) .hljs-regexp { color: #15803d !important; }
+.bubble-own .msg-body :deep(pre) .hljs-number,
+.bubble-own .msg-body :deep(pre) .hljs-symbol,
+.bubble-own .msg-body :deep(pre) .hljs-bullet { color: #1d4ed8 !important; }
+.bubble-own .msg-body :deep(pre) .hljs-title,
+.bubble-own .msg-body :deep(pre) .hljs-section,
+.bubble-own .msg-body :deep(pre) .hljs-function .hljs-title { color: #0f766e !important; }
 .msg-body :deep(pre code) { background: transparent !important; padding: 0; border-radius: 0; font-size: inherit; }
 /* Prevent per-token/line backgrounds from hljs tokens — make block uniform */
 .msg-body :deep(pre) :deep(*) { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }

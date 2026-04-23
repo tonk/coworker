@@ -4,6 +4,11 @@
 
 ### Added
 - **Emoji autocomplete in edit mode** — the inline emoji picker (triggered by `:`) now works when editing existing messages, matching the behavior of the main chat compose area.
+- **Desktop app URL override flag** — the Tauri client now accepts `--url=<http(s)://host:port>` (or `--url <...>`) to override the configured server URL for the current launch only; the override is runtime-only and is not persisted to local storage.
+- **Desktop CLI help output** — `--help` / `-h` now prints supported startup flags (`--help`, `--version`, `--maximized`, and `--url`).
+
+### Changed
+- **Unfocused-message notifications** — chat and direct-message notification checks now use both focus and visibility state, so OS notifications trigger more reliably when the desktop client is backgrounded/minimized.
 
 ## v0.8.11 — 2026-04-22
 

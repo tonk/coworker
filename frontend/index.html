@@ -18,18 +18,38 @@
     <script>
       ;(function () {
         var _native = window.fetch.bind(window)
-        window.fetch = function warmDeskFetch (input, init) {
+        window.fetch = async function warmDeskFetch (input, init) {
           // Only route actual HTTP/HTTPS requests through tauri-plugin-http.
           // Requests to tauri:// or other schemes (internal WebKit resource
           // loads) must use the native fetch or WebKit will hang/blank.
           if (window.__tauriFetch) {
-            var url = typeof input === 'string' ? input
+            var url = typeof input === 'string'
+              ? input
               : (input && input.url) ? input.url : String(input)
             if (url.startsWith('http://') || url.startsWith('https://')) {
-              return window.__tauriFetch.apply(this, arguments)
+              // tauri-plugin-http expects (url, init). Some libraries (Axios
+              // fetch adapter) pass a Request object, which we normalize here.
+              if (input instanceof Request) {
+                var req = input
+                var normalizedInit = Object.assign({
+                  method: req.method,
+                  headers: Object.fromEntries(req.headers.entries()),
+                }, init || {})
+                if (
+                  normalizedInit.body == null &&
+                  req.method !== 'GET' &&
+                  req.method !== 'HEAD'
+                ) {
+                  try {
+                    normalizedInit.body = await req.clone().text()
+                  } catch (_) {}
+                }
+                return window.__tauriFetch(req.url, normalizedInit)
+              }
+              return window.__tauriFetch(url, init)
             }
           }
-          return _native.apply(this, arguments)
+          return _native(input, init)
         }
       })()
     </script>

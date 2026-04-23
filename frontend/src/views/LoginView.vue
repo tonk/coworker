@@ -42,6 +42,9 @@
           <span class="auth-server-url">{{ currentServer }}</span>
           <RouterLink to="/connect" class="auth-server-change">Change</RouterLink>
         </div>
+        <div v-if="isTauri && serverReachabilityError" class="auth-server-warning">
+          {{ serverReachabilityError }}
+        </div>
       </template>
 
       <!-- Step 2: TOTP code -->
@@ -98,8 +101,24 @@ const loading = ref(false)
 const registrationEnabled = ref(true)
 const isTauri = !!window.__TAURI_INTERNALS__
 const currentServer = getServerUrl()
+const serverReachabilityError = ref('')
 
 onMounted(async () => {
+  if (isTauri) {
+    if (currentServer) {
+      try {
+        const res = await window.__tauriFetch(`${currentServer}/api/v1/version`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+        })
+        if (!res.ok) {
+          serverReachabilityError.value = `Could not reach server (${res.status}). Check the URL and try again.`
+        }
+      } catch (e) {
+        serverReachabilityError.value = 'Could not reach server. Check the URL and network connection.'
+      }
+    }
+  }
   try {
     const { data } = await systemApi.getSettings()
     registrationEnabled.value = data.registration_enabled
@@ -121,7 +140,16 @@ async function handleSubmit() {
     const data = e.response?.data
     const serverMsg = data?.error
       ?? (typeof data === 'string' ? (() => { try { return JSON.parse(data).error } catch { return data } })() : null)
-    error.value = serverMsg || e.message || 'Login failed'
+    const msg = serverMsg || e.message || 'Login failed'
+    const unreachable =
+      !e.response &&
+      /network|fetch|timeout|scope|not allowed|failed/i.test(msg)
+    if (isTauri && unreachable) {
+      serverReachabilityError.value = 'Could not reach server. Check the URL and network connection.'
+    }
+    error.value = isTauri
+      ? `${msg} (server: ${getServerUrl() || '(empty)'})`
+      : msg
   } finally {
     loading.value = false
   }
@@ -215,6 +243,14 @@ async function handleMFASubmit() {
 
 .auth-server-change:hover {
   text-decoration: underline;
+}
+
+.auth-server-warning {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--color-danger);
+  text-align: center;
+  word-break: break-all;
 }
 
 .auth-version {

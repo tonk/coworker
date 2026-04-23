@@ -2,12 +2,19 @@
 pub fn run() {
     let args: Vec<String> = std::env::args().collect();
 
+    if args.iter().any(|a| a == "--help" || a == "-h") {
+        print_help();
+        std::process::exit(0);
+    }
+
     if args.iter().any(|a| a == "--version" || a == "-V") {
         println!("WarmDesk {}", env!("CARGO_PKG_VERSION"));
         std::process::exit(0);
     }
 
     let maximized = args.iter().any(|a| a == "--maximized");
+    let runtime_server_url_override = parse_server_url_override(&args);
+    let runtime_server_url_for_page_load = runtime_server_url_override.clone();
 
     // On Linux, WebKitGTK's DMA-BUF renderer silently fails on many GPU
     // configurations (integrated GPUs, NVIDIA, VMs, some Wayland compositors),
@@ -34,8 +41,34 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        .manage(RuntimeSettings {
+            runtime_server_url: runtime_server_url_override.clone(),
+        })
+        .invoke_handler(tauri::generate_handler![runtime_server_url])
+        .on_page_load(move |window, _payload| {
+            if let Some(url) = &runtime_server_url_for_page_load {
+                // Ensure the override is present in every page context.
+                if let Ok(js_url) = serde_json::to_string(url) {
+                    let _ = window.eval(&format!(
+                        "window.__WARMDESK_RUNTIME_SERVER_URL__ = {}; sessionStorage.setItem('warmdesk_runtime_server_url', {});",
+                        js_url, js_url
+                    ));
+                }
+            }
+        })
         .setup(move |app| {
             if let Some(win) = tauri::Manager::get_webview_window(app, "main") {
+                if let Some(url) = &runtime_server_url_override {
+                    // Inject the runtime-only URL override before the frontend
+                    // performs its first route guard/API base resolution.
+                    if let Ok(js_url) = serde_json::to_string(url) {
+                        let _ = win.eval(&format!(
+                            "window.__WARMDESK_RUNTIME_SERVER_URL__ = {}; sessionStorage.setItem('warmdesk_runtime_server_url', {});",
+                            js_url, js_url
+                        ));
+                    }
+                }
+
                 if maximized {
                     win.maximize()?;
                 }
@@ -78,4 +111,51 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running WarmDesk");
+}
+
+#[derive(Clone)]
+struct RuntimeSettings {
+    runtime_server_url: Option<String>,
+}
+
+#[tauri::command]
+fn runtime_server_url(state: tauri::State<'_, RuntimeSettings>) -> Option<String> {
+    state.runtime_server_url.clone()
+}
+
+fn parse_server_url_override(args: &[String]) -> Option<String> {
+    // Supported forms:
+    //   --url=http://localhost:8080
+    //   --url http://localhost:8080
+    let mut i = 0usize;
+    while i < args.len() {
+        let arg = &args[i];
+        if let Some(raw) = arg.strip_prefix("--url=") {
+            return normalize_server_url(raw);
+        }
+        if arg == "--url" {
+            if let Some(next) = args.get(i + 1) {
+                return normalize_server_url(next);
+            }
+            return None;
+        }
+        i += 1;
+    }
+    None
+}
+
+fn normalize_server_url(raw: &str) -> Option<String> {
+    let trimmed = raw.trim().trim_end_matches('/').to_string();
+    if trimmed.starts_with("http://") || trimmed.starts_with("https://") {
+        Some(trimmed)
+    } else {
+        None
+    }
+}
+
+fn print_help() {
+    println!(
+        "WarmDesk {}\n\nUsage:\n  warmdesk [OPTIONS]\n\nOptions:\n  -h, --help                   Show this help and exit\n  -V, --version                Show version and exit\n      --maximized              Start with the main window maximized\n      --url <URL>              Override server URL for this launch only\n      --url=<URL>              Same as above\n\nNotes:\n  - URL override is runtime-only and is not saved to settings.\n  - URL must start with http:// or https://",
+        env!("CARGO_PKG_VERSION")
+    );
 }

@@ -141,9 +141,9 @@
   I can imagine that this will create problems, so investigate first
   if problems could arise.~~ **Done — "Permanently Delete" button added next to Restore; purges all project data including cards, columns, labels, chat, sprints and their associations**
 
-- In the client, when a new chat arrives and the client doesn't have
+- ~~In the client, when a new chat arrives and the client doesn't have
   focus, show a notification that a new message has arrived (through the
-  OS notification system, if possible)
+  OS notification system, if possible)~~ **Done in v0.8.12**
 
 - ~~In the chat and edit boxes, if typing a ':' show a popup with
   emojis and let the user pick one, or continue typing.~~ **Done in v0.8.11**
