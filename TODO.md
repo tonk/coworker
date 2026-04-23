@@ -148,11 +148,11 @@
 - ~~In the chat and edit boxes, if typing a ':' show a popup with
   emojis and let the user pick one, or continue typing.~~ **Done in v0.8.11**
 
-- In the chat, when I type, or select, an emoji, it is displayed
-  differently in the chat history.
+- ~~In the chat, when I type, or select, an emoji, it is displayed
+  differently in the chat history.~~ **Done in v0.8.11**
 
-- The backup scheduler "Start time" should follow configured date/time
-  formats
+- ~~The backup scheduler "Start time" should follow configured date/time
+  formats~~ **Done in v0.8.11**
 
 - ~~In the "Edit User" box, show the users avatar at the top left corner.~~ **Done in v0.8.11**
 

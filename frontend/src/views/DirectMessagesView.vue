@@ -1495,6 +1495,7 @@ function dayLabel(dateStr) {
   line-height: 1.5;
   word-break: break-word;
   max-width: 100%;
+  font-variant-emoji: emoji;
 }
 .bubble-other {
   background: var(--color-bg);

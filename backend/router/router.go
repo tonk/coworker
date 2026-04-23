@@ -364,6 +364,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				if f, err := webFS.Open(path); err == nil {
 					if st, err := f.Stat(); err == nil && !st.IsDir() {
 						f.Close()
+						if strings.HasSuffix(path, ".html") {
+							c.Header("Cache-Control", "no-store")
+						}
 						fileServer.ServeHTTP(c.Writer, c.Request)
 						return
 					}
@@ -377,6 +380,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			}
 			defer f.Close()
 			data, _ := io.ReadAll(f)
+			c.Header("Cache-Control", "no-store")
 			c.Data(http.StatusOK, "text/html; charset=utf-8", data)
 		})
 	}

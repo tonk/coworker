@@ -758,6 +758,7 @@ function dayLabel(dateStr) {
   font-size: 13px;
   line-height: 1.5;
   word-break: break-word;
+  font-variant-emoji: emoji;
 }
 .bubble-other {
   background: var(--color-bg);

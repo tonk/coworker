@@ -1,28 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { isServerConfigured } from '@/api/serverConfig'
-import DirectMessagesView from '@/views/DirectMessagesView.vue'
+import { lazyWithReload } from '@/router/lazyWithReload'
 
 const routes = [
-  { path: '/connect', name: 'connect', component: () => import('@/views/ConnectView.vue'), meta: { public: true, serverIndependent: true } },
-  { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { public: true } },
-  { path: '/register', name: 'register', component: () => import('@/views/RegisterView.vue'), meta: { public: true } },
-  { path: '/forgot-password', name: 'forgot-password', component: () => import('@/views/ForgotPasswordView.vue'), meta: { public: true } },
-  { path: '/reset-password', name: 'reset-password', component: () => import('@/views/ResetPasswordView.vue'), meta: { public: true } },
-  { path: '/', name: 'dashboard', component: () => import('@/views/DashboardView.vue') },
-  { path: '/projects/:slug', name: 'board', component: () => import('@/views/BoardView.vue') },
-  { path: '/projects/:slug/settings', name: 'project-settings', component: () => import('@/views/ProjectSettingsView.vue') },
-  { path: '/projects/:slug/topics', name: 'topics', component: () => import('@/views/TopicsView.vue') },
-  { path: '/projects/:slug/gantt', name: 'gantt', component: () => import('@/views/GanttView.vue') },
-  { path: '/projects/:slug/backlog', name: 'backlog', component: () => import('@/views/BacklogView.vue') },
-  { path: '/projects/:slug/sprint', name: 'sprint-board', component: () => import('@/views/SprintBoardView.vue') },
-  { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue') },
-  { path: '/chats', name: 'chats', component: DirectMessagesView },
+  { path: '/connect', name: 'connect', component: lazyWithReload(() => import('@/views/ConnectView.vue')), meta: { public: true, serverIndependent: true } },
+  { path: '/login', name: 'login', component: lazyWithReload(() => import('@/views/LoginView.vue')), meta: { public: true } },
+  { path: '/register', name: 'register', component: lazyWithReload(() => import('@/views/RegisterView.vue')), meta: { public: true } },
+  { path: '/forgot-password', name: 'forgot-password', component: lazyWithReload(() => import('@/views/ForgotPasswordView.vue')), meta: { public: true } },
+  { path: '/reset-password', name: 'reset-password', component: lazyWithReload(() => import('@/views/ResetPasswordView.vue')), meta: { public: true } },
+  { path: '/', name: 'dashboard', component: lazyWithReload(() => import('@/views/DashboardView.vue')) },
+  { path: '/projects/:slug', name: 'board', component: lazyWithReload(() => import('@/views/BoardView.vue')) },
+  { path: '/projects/:slug/settings', name: 'project-settings', component: lazyWithReload(() => import('@/views/ProjectSettingsView.vue')) },
+  { path: '/projects/:slug/topics', name: 'topics', component: lazyWithReload(() => import('@/views/TopicsView.vue')) },
+  { path: '/projects/:slug/gantt', name: 'gantt', component: lazyWithReload(() => import('@/views/GanttView.vue')) },
+  { path: '/projects/:slug/backlog', name: 'backlog', component: lazyWithReload(() => import('@/views/BacklogView.vue')) },
+  { path: '/projects/:slug/sprint', name: 'sprint-board', component: lazyWithReload(() => import('@/views/SprintBoardView.vue')) },
+  { path: '/settings', name: 'settings', component: lazyWithReload(() => import('@/views/SettingsView.vue')) },
+  { path: '/chats', name: 'chats', component: lazyWithReload(() => import('@/views/DirectMessagesView.vue')) },
   { path: '/messages', redirect: '/chats' },
-  { path: '/admin', name: 'admin', component: () => import('@/views/AdminView.vue'), meta: { adminOnly: true } },
-  { path: '/reports', name: 'reports', component: () => import('@/views/ReportView.vue'), meta: { reportsOnly: true } },
-  { path: '/customers', name: 'customers', component: () => import('@/views/CustomersView.vue') },
-  { path: '/customers/:id', name: 'customer-detail', component: () => import('@/views/CustomerDetailView.vue') },
+  { path: '/admin', name: 'admin', component: lazyWithReload(() => import('@/views/AdminView.vue')), meta: { adminOnly: true } },
+  { path: '/reports', name: 'reports', component: lazyWithReload(() => import('@/views/ReportView.vue')), meta: { reportsOnly: true } },
+  { path: '/customers', name: 'customers', component: lazyWithReload(() => import('@/views/CustomersView.vue')) },
+  { path: '/customers/:id', name: 'customer-detail', component: lazyWithReload(() => import('@/views/CustomerDetailView.vue')) },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 

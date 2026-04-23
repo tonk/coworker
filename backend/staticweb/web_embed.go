@@ -7,7 +7,7 @@ import (
 	"io/fs"
 )
 
-//go:embed files
+//go:embed all:files
 var embedFS embed.FS
 
 // FS is the embedded frontend build, rooted at the files/ directory.

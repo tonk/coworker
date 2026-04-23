@@ -26,8 +26,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"errors"
 	"io/fs"
 	"log"
+	"mime"
 	"os"
 	"strings"
 
@@ -44,6 +46,36 @@ import (
 
 // version is set at build time via -ldflags "-X main.version=<tag>".
 var version = "dev"
+
+func init() {
+	// Ensure module/script assets are served with browser-accepted MIME types.
+	_ = mime.AddExtensionType(".js", "text/javascript; charset=utf-8")
+	_ = mime.AddExtensionType(".mjs", "text/javascript; charset=utf-8")
+	_ = mime.AddExtensionType(".css", "text/css; charset=utf-8")
+	_ = mime.AddExtensionType(".json", "application/json; charset=utf-8")
+	_ = mime.AddExtensionType(".map", "application/json; charset=utf-8")
+}
+
+type overlayFS struct {
+	primary  fs.FS
+	fallback fs.FS
+}
+
+func (o overlayFS) Open(name string) (fs.File, error) {
+	if o.primary != nil {
+		f, err := o.primary.Open(name)
+		if err == nil {
+			return f, nil
+		}
+		if !errors.Is(err, fs.ErrNotExist) {
+			return nil, err
+		}
+	}
+	if o.fallback != nil {
+		return o.fallback.Open(name)
+	}
+	return nil, fs.ErrNotExist
+}
 
 func main() {
 	configFile := flag.String("config", "", "path to config file (overrides CONFIG_FILE env var)")
@@ -115,7 +147,14 @@ func main() {
 	var webFS fs.FS
 	if cfg.WebDir != "" {
 		if _, err := os.Stat(cfg.WebDir); err == nil {
-			webFS = os.DirFS(cfg.WebDir)
+			primary := os.DirFS(cfg.WebDir)
+			if staticweb.FS != nil {
+				// Serve from configured web_dir first, but fall back to embedded
+				// assets for any missing chunk to avoid hard failures after updates.
+				webFS = overlayFS{primary: primary, fallback: staticweb.FS}
+			} else {
+				webFS = primary
+			}
 		} else {
 			log.Printf("web_dir %q not found, falling back to embedded frontend", cfg.WebDir)
 			webFS = staticweb.FS
