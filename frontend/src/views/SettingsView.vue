@@ -125,6 +125,13 @@
               </select>
             </div>
             <div class="form-group">
+              <label class="form-label">Navigation</label>
+              <label class="toggle-label">
+                <input type="checkbox" v-model="form.show_breadcrumbs" />
+                <span>Show breadcrumbs at the top</span>
+              </label>
+            </div>
+            <div class="form-group">
               <label class="form-label">Email Notifications</label>
               <label class="toggle-label">
                 <input type="checkbox" v-model="form.email_notifications" />
@@ -323,6 +330,7 @@ const form = ref({
   font: 'system',
   font_size: '14',
   sidebar_position: 'left',
+  show_breadcrumbs: true,
   email_notifications: true
 })
 
@@ -388,6 +396,7 @@ onMounted(async () => {
       font: u.font || 'system',
       font_size: u.font_size || '14',
       sidebar_position: u.sidebar_position || 'left',
+      show_breadcrumbs: u.show_breadcrumbs !== undefined ? u.show_breadcrumbs : true,
       email_notifications: u.email_notifications !== undefined ? u.email_notifications : true
     }
   }
@@ -415,6 +424,7 @@ async function saveProfile() {
       font: form.value.font,
       font_size: form.value.font_size,
       sidebar_position: form.value.sidebar_position,
+      show_breadcrumbs: form.value.show_breadcrumbs,
       email_notifications: form.value.email_notifications
     })
     applyUserPreferences(auth.user)

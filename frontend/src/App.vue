@@ -2,6 +2,18 @@
   <div v-if="auth.isLoggedIn" class="app-shell">
     <UpdateBanner v-if="updateAvailable" :latest-version="latestVersion" :release-url="releaseUrl" />
     <AppHeader class="app-shell-header" />
+    <nav v-if="showBreadcrumbs" class="app-breadcrumbs" aria-label="Breadcrumb">
+      <button class="crumb-nav-btn" @click="goBack" :disabled="!canGoBack" title="Back">←</button>
+      <button class="crumb-nav-btn" @click="goForward" title="Forward">→</button>
+      <RouterLink to="/" class="crumb-link">Home</RouterLink>
+      <template v-for="(crumb, idx) in routeCrumbs" :key="crumb.to || `${crumb.label}-${idx}`">
+        <span class="crumb-sep">›</span>
+        <RouterLink v-if="crumb.to && idx < routeCrumbs.length - 1" :to="crumb.to" class="crumb-link">
+          {{ crumb.label }}
+        </RouterLink>
+        <span v-else class="crumb-current">{{ crumb.label }}</span>
+      </template>
+    </nav>
     <div class="app-shell-body" :class="sidebarPos === 'right' ? 'sidebar-right' : 'sidebar-left'">
       <AppSidebar />
       <div class="app-shell-content">
@@ -23,7 +35,7 @@ import client from '@/api/client'
 
 const appVersion = __APP_VERSION__
 const serverVersion = ref('')
-import { RouterView } from 'vue-router'
+import { RouterView, RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useSystemStore } from '@/stores/system'
 import { useUIStore } from '@/stores/ui'
@@ -42,6 +54,54 @@ const systemStore = useSystemStore()
 const ui = useUIStore()
 const notificationsStore = useNotificationsStore()
 const { projectChatUnread } = useProjectChatUnread()
+const route = useRoute()
+const router = useRouter()
+
+const canGoBack = computed(() => window.history.length > 1)
+
+function goBack() {
+  if (canGoBack.value) router.back()
+}
+
+function goForward() {
+  router.forward()
+}
+
+const nameLabels = {
+  board: 'Board',
+  'project-settings': 'Settings',
+  topics: 'Topics',
+  gantt: 'Gantt',
+  backlog: 'Backlog',
+  'sprint-board': 'Sprint',
+  customers: 'Customers',
+  'customer-detail': 'Customer',
+  chats: 'Chats',
+  admin: 'Admin',
+  reports: 'Reports',
+  settings: 'Settings',
+}
+
+const routeCrumbs = computed(() => {
+  if (route.path === '/') return []
+  const parts = route.path.split('/').filter(Boolean)
+  return parts.map((part, idx) => {
+    const to = '/' + parts.slice(0, idx + 1).join('/')
+    let label = part
+    if (idx === parts.length - 1 && route.name && nameLabels[route.name]) {
+      label = nameLabels[route.name]
+    } else if (part === 'projects') {
+      label = 'Projects'
+    } else if (part === 'customers') {
+      label = 'Customers'
+    } else if (part === 'chats') {
+      label = 'Chats'
+    } else {
+      label = decodeURIComponent(part)
+    }
+    return { to, label }
+  })
+})
 
 watch([() => notificationsStore.hasUnread, projectChatUnread], ([hasUnread, chatUnread]) => {
   document.title = (hasUnread || chatUnread > 0) ? '● WarmDesk' : 'WarmDesk'
@@ -57,6 +117,10 @@ watch(() => auth.isLoggedIn, (loggedIn) => {
 }, { immediate: true })
 
 const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.getItem('sidebar_position') || 'left')
+const showBreadcrumbs = computed(() => {
+  if (auth.user?.show_breadcrumbs !== undefined) return !!auth.user.show_breadcrumbs
+  return localStorage.getItem('show_breadcrumbs') !== 'false'
+})
 
 const userFullName = computed(() => {
   const u = auth.user
@@ -231,6 +295,39 @@ onUnmounted(() => {
   display: flex;
   overflow: hidden;
 }
+
+.app-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.crumb-nav-btn {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.crumb-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.crumb-link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+.crumb-link:hover { color: var(--color-text); text-decoration: underline; }
+.crumb-sep { opacity: 0.7; }
+.crumb-current { color: var(--color-text); font-weight: 600; }
 
 .app-shell-body.sidebar-right {
   flex-direction: row-reverse;

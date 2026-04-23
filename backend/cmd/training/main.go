@@ -42,12 +42,12 @@ import (
 // ─── configuration ───────────────────────────────────────────────────────────
 
 const (
-	usernamePrefix = "guru"                  // guru00, guru01, …
-	emailDomain    = "@ansiblelab.nl"        // Standard email domain
-	customerPrefix = "Round Table Knights "  // + XX  →  "Round Table Knights 00"
-	contractPrefix = "Holy Grail Quests "    // + XX  →  "Holy Grail Quests 00"
-	projectPrefix  = "Grail Finding "        // + XX  →  "Grail Finding 00"
-	projectSlugPfx = "gf-"                   // + XX  →  "gf-00"
+	usernamePrefix = "guru"                 // guru00, guru01, …
+	emailDomain    = "@ansiblelab.nl"       // Standard email domain
+	customerPrefix = "Round Table Knights " // + XX  →  "Round Table Knights 00"
+	contractPrefix = "Holy Grail Quests "   // + XX  →  "Holy Grail Quests 00"
+	projectPrefix  = "Grail Finding "       // + XX  →  "Grail Finding 00"
+	projectSlugPfx = "gf-"                  // + XX  →  "gf-00"
 	projectKeyPfx  = "GF"
 	projectColor   = "#6366f1"
 )
@@ -79,10 +79,11 @@ var characters = []Character{
 	{FirstName: "The Green", LastName: "Knight"},
 	{FirstName: "Tim", LastName: "The Enchanter"},
 }
+
 // Define the trainer, as they are King
 var guru00 = Character{
 	FirstName: "King",
-	LastName: "Arthur",
+	LastName:  "Arthur",
 }
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -174,6 +175,7 @@ func main() {
 		contractName := contractPrefix + suffix
 		projectName := projectPrefix + suffix
 		projectSlug := projectSlugPfx + suffix
+		groupName := fmt.Sprintf("Shrubbery Bringing %s", suffix)
 
 		// Idempotency: skip full creation if this slot already exists, but still
 		// ensure CustomerAccess rows are present for both the user and the trainer.
@@ -196,6 +198,14 @@ func main() {
 				if trainerID != 0 && trainerID != existing.ID {
 					ensureAccess(db, trainerID, existingCustomer.ID, "admin", usernamePrefix+"00", i)
 				}
+			}
+			var existingProject models.Project
+			if db.Where("slug = ?", projectSlug).First(&existingProject).Error == nil && existingProject.Avatar == "" {
+				db.Model(&existingProject).Update("avatar", projectAvatarURL(projectName))
+			}
+			var existingGroup models.UserGroup
+			if db.Where("name = ?", groupName).First(&existingGroup).Error == nil && existingGroup.Avatar == "" {
+				db.Model(&existingGroup).Update("avatar", groupAvatarURL(groupName))
 			}
 			fmt.Printf("  [%02d] %s already exists — skipping\n", i, username)
 			skipped++
@@ -246,6 +256,7 @@ func main() {
 			Slug:        projectSlug,
 			KeyPrefix:   projectKeyPfx + suffix,
 			Color:       projectColor,
+			Avatar:      projectAvatarURL(projectName),
 			CreatedByID: user.ID,
 			CustomerID:  &customer.ID,
 			ContractID:  &contract.ID,
@@ -301,7 +312,7 @@ func main() {
 		created++
 
 		// 9. Create group "Shrubbery Bringing <XX>", add the user, and assign to the project.
-		g := &models.UserGroup{Name: fmt.Sprintf("Shrubbery Bringing %s", suffix)}
+		g := &models.UserGroup{Name: groupName, Avatar: groupAvatarURL(groupName)}
 		must(db.Create(g).Error)
 		must(db.Create(&models.GroupMember{GroupID: g.ID, UserID: user.ID}).Error)
 		must(db.Create(&models.GroupProjectAccess{
@@ -329,6 +340,14 @@ func ensureAccess(db *gorm.DB, userID, customerID uint, role, username string, s
 		}).Error)
 		fmt.Printf("  [%02d] %s — added missing customer access\n", slot, username)
 	}
+}
+
+func projectAvatarURL(projectName string) string {
+	return fmt.Sprintf("https://api.dicebear.com/9.x/shapes/svg?seed=%s&backgroundColor=dbeafe,e9d5ff,dcfce7", projectName)
+}
+
+func groupAvatarURL(groupName string) string {
+	return fmt.Sprintf("https://api.dicebear.com/9.x/shapes/svg?seed=%s&backgroundColor=fef3c7,fee2e2,e9d5ff", groupName)
 }
 
 // ─── reset ────────────────────────────────────────────────────────────────────

@@ -107,8 +107,13 @@
             <tbody>
               <tr v-for="project in projects" :key="project.id">
                 <td>
-                  <strong>{{ project.name }}</strong>
-                  <br><small>{{ project.slug }} &middot; <code>{{ project.key_prefix }}</code></small>
+                  <div class="entity-cell">
+                    <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="entity-avatar" alt="" />
+                    <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
+                    <strong>{{ project.name }}</strong>
+                  </div>
+                  <br>
+                  <small>{{ project.slug }} &middot; <code>{{ project.key_prefix }}</code></small>
                   <br><small>{{ project.description }}</small>
                 </td>
                 <td>
@@ -164,7 +169,10 @@
             <tbody>
               <tr v-for="g in groups" :key="g.id">
                 <td>
-                  <strong>{{ g.name }}</strong>
+                  <div class="entity-cell">
+                    <img v-if="groupAvatar(g)" :src="groupAvatar(g)" class="entity-avatar" alt="" />
+                    <strong>{{ g.name }}</strong>
+                  </div>
                   <div v-if="g.description" style="font-size:12px;color:var(--color-text-muted)">{{ g.description }}</div>
                 </td>
                 <td>{{ g.member_count }}</td>
@@ -774,6 +782,15 @@
       <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px;width:80px" />
     </div>
     <div class="form-group">
+      <label class="form-label">Avatar</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="form-input" v-model="newProject.avatar" placeholder="https://... or /uploads/..." />
+        <button type="button" class="btn btn-secondary btn-sm" @click="$refs.newProjectAvatarInput.click()">Upload</button>
+        <button v-if="newProject.avatar" type="button" class="btn btn-danger btn-sm" @click="newProject.avatar = ''">Clear</button>
+      </div>
+      <input ref="newProjectAvatarInput" type="file" accept="image/*" style="display:none" @change="onNewProjectAvatarSelected" />
+    </div>
+    <div class="form-group">
       <label class="form-label">{{ $t('sprint.board_type') }}</label>
       <select class="form-input" v-model="newProject.board_type" style="max-width:280px">
         <option value="kanban">{{ $t('sprint.board_type_kanban') }}</option>
@@ -800,6 +817,15 @@
         <label class="form-label">{{ $t('project.color') }}</label>
         <input type="color" class="form-input" v-model="editProject.color" style="height:40px;padding:4px" />
       </div>
+      <div class="form-group">
+        <label class="form-label">Avatar</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" v-model="editProject.avatar" placeholder="https://... or /uploads/..." />
+          <button type="button" class="btn btn-secondary btn-sm" @click="$refs.editProjectAvatarInput.click()">Upload</button>
+          <button v-if="editProject.avatar" type="button" class="btn btn-danger btn-sm" @click="editProject.avatar = ''">Clear</button>
+        </div>
+        <input ref="editProjectAvatarInput" type="file" accept="image/*" style="display:none" @change="onEditProjectAvatarSelected" />
+      </div>
       <template #footer>
         <button class="btn btn-secondary" @click="editProject = null">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="saveEditProject">{{ $t('common.save') }}</button>
@@ -815,6 +841,15 @@
     <div class="form-group">
       <label class="form-label">{{ $t('groups.description') }}</label>
       <textarea class="form-input" v-model="groupForm.description" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Avatar</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="form-input" v-model="groupForm.avatar" placeholder="https://... or /uploads/..." />
+        <button type="button" class="btn btn-secondary btn-sm" @click="$refs.groupAvatarInput.click()">Upload</button>
+        <button v-if="groupForm.avatar" type="button" class="btn btn-danger btn-sm" @click="groupForm.avatar = ''">Clear</button>
+      </div>
+      <input ref="groupAvatarInput" type="file" accept="image/*" style="display:none" @change="onGroupAvatarSelected" />
     </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showGroupForm = false">{{ $t('common.cancel') }}</button>
@@ -986,7 +1021,7 @@ const editUser = ref(null)
 const editProject = ref(null)
 const showCreateUser = ref(false)
 const showCreateProject = ref(false)
-const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban' })
+const newProject = ref({ name: '', description: '', color: '#6366f1', avatar: '', key_prefix: '', board_type: 'kanban' })
 const prefixTouched = ref(false)
 
 // Mirror GenerateKeyPrefix from the backend so the field auto-fills as the user types.
@@ -1032,7 +1067,7 @@ const groups = ref([])
 const loadingGroups = ref(false)
 const showGroupForm = ref(false)
 const editingGroup = ref(null)
-const groupForm = ref({ name: '', description: '' })
+const groupForm = ref({ name: '', description: '', avatar: '' })
 const activeGroup = ref(null)
 const groupDetail = ref(null)
 const loadingGroupDetail = ref(false)
@@ -1080,13 +1115,13 @@ async function loadAllProjects() {
 
 function openCreateGroup() {
   editingGroup.value = null
-  groupForm.value = { name: '', description: '' }
+  groupForm.value = { name: '', description: '', avatar: '' }
   showGroupForm.value = true
 }
 
 function openEditGroup(g) {
   editingGroup.value = g
-  groupForm.value = { name: g.name, description: g.description || '' }
+  groupForm.value = { name: g.name, description: g.description || '', avatar: g.avatar || '' }
   showGroupForm.value = true
 }
 
@@ -1796,7 +1831,7 @@ async function submitCreateProject() {
     const { data } = await adminApi.createProject(newProject.value)
     projects.value.unshift(data)
     showCreateProject.value = false
-    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban' }
+    newProject.value = { name: '', description: '', color: '#6366f1', avatar: '', key_prefix: '', board_type: 'kanban' }
     prefixTouched.value = false
     ui.success('Project created')
   } catch (e) {
@@ -1813,7 +1848,8 @@ async function saveEditProject() {
     const { data } = await adminApi.updateProject(editProject.value.id, {
       name: editProject.value.name,
       description: editProject.value.description,
-      color: editProject.value.color
+      color: editProject.value.color,
+      avatar: editProject.value.avatar ?? ''
     })
     const idx = projects.value.findIndex(p => p.id === data.id)
     if (idx >= 0) projects.value[idx] = data
@@ -1821,6 +1857,50 @@ async function saveEditProject() {
     ui.success('Project updated')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to update project')
+  }
+}
+
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
+}
+
+function groupAvatar(group) {
+  return resolveAssetUrl(group?.avatar || '')
+}
+
+async function onNewProjectAvatarSelected(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  e.target.value = ''
+  try {
+    const { data } = await attachmentsApi.uploadImage(file)
+    newProject.value.avatar = data.url
+  } catch {
+    ui.error('Failed to upload avatar')
+  }
+}
+
+async function onEditProjectAvatarSelected(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  e.target.value = ''
+  try {
+    const { data } = await attachmentsApi.uploadImage(file)
+    editProject.value.avatar = data.url
+  } catch {
+    ui.error('Failed to upload avatar')
+  }
+}
+
+async function onGroupAvatarSelected(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  e.target.value = ''
+  try {
+    const { data } = await attachmentsApi.uploadImage(file)
+    groupForm.value.avatar = data.url
+  } catch {
+    ui.error('Failed to upload avatar')
   }
 }
 
@@ -1952,6 +2032,21 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 [data-theme="dark"] .badge-inactive { background: #450a0a; color: #fca5a5; }
 [data-theme="dark"] .badge-mfa { background: #1e3a5f; color: #93c5fd; }
 .open-cards-count { font-weight: 600; color: var(--color-primary); }
+.entity-cell { display: flex; align-items: center; gap: 8px; }
+.entity-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.project-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 .loading-state { display: flex; justify-content: center; padding: 60px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }

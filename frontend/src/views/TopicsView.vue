@@ -1,6 +1,7 @@
 <template>
   <div class="topics-layout">
     <div class="topics-toolbar">
+      <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="project-avatar" alt="" />
       <RouterLink :to="`/projects/${slug}`" class="breadcrumb-link">
         {{ projectStore.currentProject?.name || slug }}
       </RouterLink>
@@ -172,6 +173,7 @@ import { topicsApi } from '@/api/topics'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
+import { resolveAssetUrl } from '@/api/serverConfig'
 
 const route = useRoute()
 const slug = computed(() => route.params.slug)
@@ -183,6 +185,10 @@ const ui = useUIStore()
 const { formatDateTime } = useDateFormat()
 
 const activeTopic = ref(null)
+
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
+}
 const replies = ref([])
 const newReplyBody = ref('')
 const showNew = ref(false)
@@ -454,6 +460,13 @@ function renderMarkdown(text) {
 
 .breadcrumb-link { color: var(--color-text-muted); text-decoration: none; font-size: 14px; }
 .breadcrumb-link:hover { color: var(--color-text); }
+.project-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
 .breadcrumb-sep { color: var(--color-text-muted); margin: 0 6px; font-size: 14px; }
 .breadcrumb-cur { font-size: 14px; font-weight: 500; }
 

@@ -18,6 +18,7 @@
       :style="emojiStart ? emojiPos : {}"
       :class="['editor-emoji-picker', { 'is-autocomplete': emojiStart }]"
       @pick="onEmojiPick"
+      @escape="onEmojiEscape"
       @close="emojiOpen = false"
     />
   </div>
@@ -60,6 +61,12 @@ function onEmojiPick(emoji) {
   mde.codemirror.focus()
   emojiOpen.value = false
   emojiQuery.value = null
+}
+
+function onEmojiEscape() {
+  emojiOpen.value = false
+  emojiQuery.value = null
+  mde?.codemirror?.focus()
 }
 
 // ── Mention state ─────────────────────────────────────────────────────────────

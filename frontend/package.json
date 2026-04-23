@@ -21,6 +21,7 @@
     "dompurify": "^3.1.7",
     "easymde": "^2.18.0",
     "frappe-gantt": "^1.2.2",
+    "gemoji": "^8.1.0",
     "highlight.js": "^11.11.1",
     "marked": "^12.0.0",
     "marked-highlight": "^2.2.4",

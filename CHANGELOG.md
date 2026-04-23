@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.8.13 — 2026-04-23
+
+### Added
+- **Project and group avatars** — projects and groups now support avatar URLs in the backend and admin/project settings UI, including upload and clear actions.
+- **Default project/group avatars in demo generators** — both `warmdesk-seed` and `warmdesk-training` now generate avatars for projects and groups.
+- **Global breadcrumbs bar** — top-level breadcrumb navigation with back/forward controls was added for faster movement through views.
+
+### Changed
+- **Avatar rendering across the UI** — project/group/customer/user/conversation avatars are now shown consistently in key surfaces, including sidebar sections, project toolbars/cards, admin tables, customer detail, and group lists.
+- **Breadcrumb preference** — users can now show or hide breadcrumbs from settings; the preference is persisted per user.
+- **Emoji shortcode support in compose** — chat inputs now support Slack/GitHub-style `:shortcode:` replacements using the full `gemoji` dataset (including aliases such as `:fingerscrossed:`).
+
+### Fixed
+- **Emoji picker keyboard UX** — when only one emoji match remains, `Enter` selects it; pressing `Escape` closes the picker and restores focus to the originating input/editor.
+- **Chat focus continuity** — compose/edit focus handling was tightened around emoji picker close/send flows in project chat, direct messages, and card editors.
+
 ## v0.8.12 — 2026-04-23
 
 ### Added

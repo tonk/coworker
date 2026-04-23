@@ -67,7 +67,8 @@
               :to="`/projects/${p.slug}`"
               class="project-mini-tile"
             >
-              <span class="proj-dot" :style="{ background: p.color || '#6366f1' }"></span>
+              <img v-if="projectAvatar(p)" :src="projectAvatar(p)" class="proj-avatar" alt="" />
+              <span v-else class="proj-dot" :style="{ background: p.color || '#6366f1' }"></span>
               <span>{{ p.name }}</span>
             </RouterLink>
           </div>
@@ -89,7 +90,8 @@
               :to="`/projects/${p.slug}`"
               class="project-mini-tile"
             >
-              <span class="proj-dot" :style="{ background: p.color || '#6366f1' }"></span>
+              <img v-if="projectAvatar(p)" :src="projectAvatar(p)" class="proj-avatar" alt="" />
+              <span v-else class="proj-dot" :style="{ background: p.color || '#6366f1' }"></span>
               <span>{{ p.name }}</span>
             </RouterLink>
           </div>
@@ -146,6 +148,7 @@
           </h3>
           <div v-if="!customerGroups.length" style="color:var(--color-text-muted);font-size:13px;margin-bottom:10px">{{ $t('groups.no_group_access') }}</div>
           <div v-for="g in customerGroups" :key="g.group_id" class="member-row" style="align-items:center">
+            <img v-if="groupAvatar(g.group)" :src="groupAvatar(g.group)" class="group-avatar" alt="" />
             <div class="member-info">
               <span class="member-name">{{ g.group.name }}</span>
               <span class="member-email">{{ g.members.map(m => m.user.display_name || m.user.username).join(', ') || '—' }}</span>
@@ -368,6 +371,14 @@ const filteredUsers = computed(() => {
            u.email.toLowerCase().includes(q)
   })
 })
+
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
+}
+
+function groupAvatar(group) {
+  return resolveAssetUrl(group?.avatar || '')
+}
 
 async function loadMembers() {
   try {
@@ -724,6 +735,14 @@ async function deleteContract(grp) {
   border-radius: 50%;
   flex-shrink: 0;
 }
+.proj-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
 
 .unassigned-block { opacity: .85; }
 
@@ -779,6 +798,14 @@ async function deleteContract(grp) {
 }
 
 .member-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.group-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
 
 .member-info { flex: 1; min-width: 0; }
 .member-name { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

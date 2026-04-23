@@ -166,6 +166,7 @@ func CreateProject(c *gin.Context) {
 		Name        string `json:"name" binding:"required,min=1,max=200"`
 		Description string `json:"description"`
 		Color       string `json:"color"`
+		Avatar      string `json:"avatar"`
 		KeyPrefix   string `json:"key_prefix"`
 		BoardType   string `json:"board_type"`
 		CustomerID  *uint  `json:"customer_id"`
@@ -201,6 +202,7 @@ func CreateProject(c *gin.Context) {
 		Name:        req.Name,
 		Description: req.Description,
 		Color:       req.Color,
+		Avatar:      req.Avatar,
 		Slug:        services.GenerateSlug(req.Name),
 		KeyPrefix:   keyPrefix,
 		BoardType:   boardType,
@@ -337,13 +339,14 @@ func UpdateProject(c *gin.Context) {
 	}
 
 	var req struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Color       string `json:"color"`
-		IsArchived  *bool  `json:"is_archived"`
-		BoardType   string `json:"board_type"`
-		CustomerID  *uint  `json:"customer_id"`
-		ContractID  *uint  `json:"contract_id"`
+		Name        string  `json:"name"`
+		Description string  `json:"description"`
+		Color       string  `json:"color"`
+		Avatar      *string `json:"avatar"`
+		IsArchived  *bool   `json:"is_archived"`
+		BoardType   string  `json:"board_type"`
+		CustomerID  *uint   `json:"customer_id"`
+		ContractID  *uint   `json:"contract_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -359,6 +362,9 @@ func UpdateProject(c *gin.Context) {
 	}
 	if req.Color != "" {
 		updates["color"] = req.Color
+	}
+	if req.Avatar != nil {
+		updates["avatar"] = *req.Avatar
 	}
 	if req.IsArchived != nil {
 		updates["is_archived"] = *req.IsArchived

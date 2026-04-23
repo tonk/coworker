@@ -8,6 +8,12 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging, time tracking, and a ticket API.
 
+## Latest release (v0.8.13)
+
+- Project and group avatars (with upload/clear support) now appear across project views, admin screens, and sidebar lists.
+- Breadcrumb navigation (with back/forward) is available at the top of the app and can be toggled per user in settings.
+- Chat compose supports full `:shortcode:` emoji aliases (via `gemoji`), and the emoji picker now has improved keyboard behavior (`Enter` picks a single remaining result, `Escape` closes and refocuses the input).
+
 ## Build status
 
 [![Release](https://github.com/tonk/warmdesk/actions/workflows/release.yml/badge.svg)](https://github.com/tonk/warmdesk/actions/workflows/release.yml)

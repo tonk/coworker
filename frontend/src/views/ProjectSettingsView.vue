@@ -29,6 +29,18 @@
             <input type="color" class="form-input" v-model="form.color" style="height:40px;padding:4px;width:80px" />
           </div>
           <div class="form-group">
+            <label class="form-label">Avatar</label>
+            <div style="display:flex;gap:8px;align-items:center;max-width:560px">
+              <input class="form-input" v-model="form.avatar" placeholder="https://... or /uploads/..." style="flex:1" />
+              <button type="button" class="btn btn-secondary btn-sm" @click="$refs.projectAvatarInput.click()">Upload</button>
+              <button v-if="form.avatar" type="button" class="btn btn-danger btn-sm" @click="form.avatar = ''">Clear</button>
+            </div>
+            <input ref="projectAvatarInput" type="file" accept="image/*" style="display:none" @change="onProjectAvatarSelected" />
+            <div v-if="form.avatar" class="project-avatar-preview">
+              <img :src="resolveAssetUrl(form.avatar)" alt="" />
+            </div>
+          </div>
+          <div class="form-group">
             <label class="form-label">{{ $t('project.customer') }}</label>
             <select class="form-input" v-model="form.customer_id" style="max-width:400px" @change="form.contract_id = null; loadContractsForCustomer(form.customer_id)">
               <option :value="null">{{ $t('project.no_customer') }}</option>
@@ -114,7 +126,12 @@
               </thead>
               <tbody>
                 <tr v-for="g in projectGroups" :key="g.group_id">
-                  <td><strong>{{ g.group.name }}</strong></td>
+                  <td>
+                    <div class="group-cell">
+                      <img v-if="groupAvatar(g.group)" :src="groupAvatar(g.group)" class="group-avatar" alt="" />
+                      <strong>{{ g.group.name }}</strong>
+                    </div>
+                  </td>
                   <td>{{ g.role }}</td>
                   <td style="color:var(--color-text-muted);font-size:12px">
                     {{ g.members.map(m => m.user.display_name || m.user.username).join(', ') || '—' }}
@@ -383,8 +400,9 @@ import { groupsApi } from '@/api/groups'
 import { authApi } from '@/api/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
 import client from '@/api/client'
-import { getServerUrl } from '@/api/serverConfig'
+import { getServerUrl, resolveAssetUrl } from '@/api/serverConfig'
 import { customersApi } from '@/api/customers'
+import { attachmentsApi } from '@/api/attachments'
 
 const route = useRoute()
 const { formatDateTime } = useDateFormat()
@@ -414,7 +432,7 @@ const invite = ref({ userIds: [], role: 'member' })
 const inviteSearch = ref('')
 const allUsers = ref([])
 const newLabel = ref({ name: '', color: '#6366f1' })
-const form = ref({ name: '', description: '', color: '', customer_id: null, contract_id: null, board_type: 'kanban' })
+const form = ref({ name: '', description: '', color: '', avatar: '', customer_id: null, contract_id: null, board_type: 'kanban' })
 const customers = ref([])
 const allContracts = ref([])
 const filteredContracts = computed(() =>
@@ -476,7 +494,7 @@ const filteredInvitableUsers = computed(() => {
 onMounted(async () => {
   const data = await projectStore.fetchProject(slug.value)
   project.value = data
-  form.value = { name: data.name, description: data.description || '', color: data.color || '#6366f1', customer_id: data.customer_id || null, contract_id: data.contract_id || null, board_type: data.board_type || 'kanban' }
+  form.value = { name: data.name, description: data.description || '', color: data.color || '#6366f1', avatar: data.avatar || '', customer_id: data.customer_id || null, contract_id: data.contract_id || null, board_type: data.board_type || 'kanban' }
   loadMembers()
   loadLabels()
   // Load customers and contracts for the dropdowns
@@ -545,6 +563,22 @@ async function saveGeneral() {
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed')
   }
+}
+
+async function onProjectAvatarSelected(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  e.target.value = ''
+  try {
+    const { data } = await attachmentsApi.uploadImage(file)
+    form.value.avatar = data.url
+  } catch {
+    ui.error('Failed to upload avatar')
+  }
+}
+
+function groupAvatar(group) {
+  return resolveAssetUrl(group?.avatar || '')
 }
 
 async function confirmDelete() {
@@ -805,4 +839,29 @@ function copyWebhookToken() {
 }
 .board-type-badge.kanban { background: #dbeafe; color: #1e40af; }
 .board-type-badge.scrum  { background: #dcfce7; color: #166534; }
+.project-avatar-preview {
+  margin-top: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+.project-avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.group-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.group-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
 </style>

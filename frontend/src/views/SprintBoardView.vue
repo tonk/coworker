@@ -2,6 +2,7 @@
   <div class="board-layout">
     <div class="board-toolbar">
       <div class="board-toolbar-left">
+        <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="board-project-avatar" alt="" />
         <span class="board-project-name">{{ projectStore.currentProject?.name }}</span>
         <template v-if="sprintStore.activeSprint">
           <span class="sprint-badge active">{{ $t('sprint.status_active') }}</span>
@@ -78,6 +79,7 @@ import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { projectsApi } from '@/api/projects'
+import { resolveAssetUrl } from '@/api/serverConfig'
 import BoardColumn from '@/components/board/BoardColumn.vue'
 import CardDetail from '@/components/board/CardDetail.vue'
 
@@ -97,6 +99,10 @@ const loading = ref(true)
 const columnsEl = ref(null)
 
 const { connect, disconnect } = useWebSocket(slug)
+
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
+}
 
 const canManage = computed(() => {
   if (auth.user?.global_role === 'admin') return true
@@ -172,6 +178,14 @@ async function completeSprint() {
 
 <style scoped>
 /* Reuses board-layout, board-toolbar, board-body, board-columns from global styles */
+
+.board-project-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
 
 .sprint-badge {
   font-size: 11px;

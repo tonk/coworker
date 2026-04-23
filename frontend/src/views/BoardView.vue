@@ -2,6 +2,7 @@
   <div class="board-layout">
     <div class="board-toolbar">
       <div class="board-toolbar-left">
+        <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="board-project-avatar" alt="" />
         <span class="board-project-name">{{ projectStore.currentProject?.name }}</span>
         <button class="btn btn-ghost btn-sm star-btn" :class="{ starred: sidebarStore.isStarred(slug) }" @click="toggleStar" :title="sidebarStore.isStarred(slug) ? $t('board.unstar') : $t('board.star')">
           {{ sidebarStore.isStarred(slug) ? '★' : '☆' }}
@@ -100,6 +101,7 @@ import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { projectsApi } from '@/api/projects'
+import { resolveAssetUrl } from '@/api/serverConfig'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -192,6 +194,10 @@ async function toggleStar() {
   } else {
     await sidebarStore.starProject(slug.value)
   }
+}
+
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
 }
 
 function openAddCard(columnId) {
@@ -306,6 +312,13 @@ async function onCardMoved({ cardId, fromColumnId, toColumnId, newIndex }) {
   justify-content: space-between;
 }
 .board-toolbar-left, .board-toolbar-right { display: flex; gap: 8px; align-items: center; }
+.board-project-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
 .board-project-name { font-size: 15px; font-weight: 600; color: var(--color-text); padding: 0 4px; }
 .star-btn { font-size: 18px; line-height: 1; color: var(--color-text-muted); }
 .star-btn.starred { color: #f59e0b; }

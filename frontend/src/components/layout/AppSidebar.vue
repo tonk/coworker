@@ -30,7 +30,8 @@
             data-item-type="project"
           >
             <span class="drag-handle" @pointerdown.prevent.stop="onItemHandleDown($event, project, 'project')">⠿</span>
-            <span class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
+            <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="project-avatar" alt="" />
+            <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
             <span class="link-text">{{ project.name }}</span>
           </RouterLink>
         </nav>
@@ -60,7 +61,8 @@
             :to="`/projects/${project.slug}`"
             class="sidebar-link"
           >
-            <span class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
+            <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="project-avatar" alt="" />
+            <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
             <span class="link-text">{{ project.name }}</span>
             <span v-if="project.starred" class="star-mark">★</span>
           </RouterLink>
@@ -96,7 +98,8 @@
             data-item-type="customer"
           >
             <span class="drag-handle" @pointerdown.prevent.stop="onItemHandleDown($event, c, 'customer')">⠿</span>
-            <span class="customer-icon">🏢</span>
+            <img v-if="customerAvatar(c)" :src="customerAvatar(c)" class="customer-avatar" alt="" />
+            <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
             <span class="link-text">{{ c.name }}</span>
             <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :title="$t('customer.unstar')">★</button>
           </RouterLink>
@@ -127,7 +130,8 @@
             :to="`/customers/${c.id}`"
             class="sidebar-link"
           >
-            <span class="customer-icon">🏢</span>
+            <img v-if="customerAvatar(c)" :src="customerAvatar(c)" class="customer-avatar" alt="" />
+            <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
             <span class="link-text">{{ c.name }}</span>
             <span v-if="c.starred" class="star-mark">★</span>
           </RouterLink>
@@ -159,6 +163,8 @@
             class="user-row"
           >
             <span class="presence-dot" :class="{ online: isOnline(user.id) }" :title="isOnline(user.id) ? $t('sidebar.online') : $t('sidebar.offline')"></span>
+            <img v-if="userAvatar(user)" :src="userAvatar(user)" class="user-avatar" alt="" />
+            <span v-else class="user-avatar-fallback">{{ userInitials(user) }}</span>
             <span class="user-row-name">{{ user.display_name || user.username }}</span>
             <button class="fav-btn fav-btn-active" @click.prevent="unfavorite(user)" :title="$t('sidebar.unfavorite')">★</button>
           </RouterLink>
@@ -188,6 +194,8 @@
             class="user-row"
           >
             <span class="presence-dot" :class="{ online: user.online }" :title="user.online ? $t('sidebar.online') : $t('sidebar.offline')"></span>
+            <img v-if="userAvatar(user)" :src="userAvatar(user)" class="user-avatar" alt="" />
+            <span v-else class="user-avatar-fallback">{{ userInitials(user) }}</span>
             <span class="user-row-name">{{ user.display_name || user.username }}</span>
             <button
               class="fav-btn"
@@ -225,6 +233,8 @@
             class="sidebar-link conv-link"
           >
             <span class="conv-indicator" :class="{ unread: notificationsStore.isConvUnread(conv) }"></span>
+            <img v-if="conversationAvatar(conv)" :src="conversationAvatar(conv)" class="conv-avatar" alt="" />
+            <span v-else class="conv-avatar-fallback">{{ conversationInitials(conv) }}</span>
             <span class="link-text">{{ convSidebarName(conv) }}</span>
           </RouterLink>
           <RouterLink v-if="!recentConversations.length" to="/chats" class="sidebar-link">
@@ -285,6 +295,7 @@ import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useCustomersStore } from '@/stores/customers'
+import { resolveAssetUrl } from '@/api/serverConfig'
 
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
@@ -483,6 +494,42 @@ function convLink(conv) {
   return { name: 'chats', query: { conv: conv.id } }
 }
 
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
+}
+
+function customerAvatar(customer) {
+  return resolveAssetUrl(customer?.logo_url || '')
+}
+
+function customerInitial(customer) {
+  return (customer?.name || '?').slice(0, 1).toUpperCase()
+}
+
+function userAvatar(user) {
+  return resolveAssetUrl(user?.avatar_url || user?.gravatar_url || '')
+}
+
+function userInitials(user) {
+  const base = user?.display_name || user?.username || '?'
+  return base.slice(0, 2).toUpperCase()
+}
+
+function conversationAvatar(conv) {
+  if (!conv) return ''
+  if (conv.is_group && conv.avatar) return resolveAssetUrl(conv.avatar)
+  const other = conv.members?.find(m => m.user_id !== auth.user?.id)?.user
+  return userAvatar(other)
+}
+
+function conversationInitials(conv) {
+  if (!conv) return '?'
+  if (conv.name) return conv.name.slice(0, 2).toUpperCase()
+  if (conv.is_group) return 'GR'
+  const other = conv.members?.find(m => m.user_id !== auth.user?.id)?.user
+  return userInitials(other)
+}
+
 async function toggleFavorite(user) {
   if (sidebarStore.isFavorite(user.id)) {
     await sidebarStore.removeFavoriteUser(user.id)
@@ -667,6 +714,14 @@ onUnmounted(() => {
   border-radius: 50%;
   flex-shrink: 0;
 }
+.project-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
 
 .link-text {
   overflow: hidden;
@@ -681,8 +736,25 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.customer-icon {
-  font-size: 13px;
+.customer-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.customer-avatar-fallback {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
@@ -720,6 +792,27 @@ onUnmounted(() => {
   white-space: nowrap;
   flex: 1;
 }
+.user-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.user-avatar-fallback {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
 
 .fav-btn {
   flex-shrink: 0;
@@ -753,6 +846,27 @@ onUnmounted(() => {
 .conv-indicator.unread {
   background: var(--color-danger, #ef4444);
   animation: pulse 1.4s ease-in-out infinite;
+}
+.conv-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.conv-avatar-fallback {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .sidebar-link-all {

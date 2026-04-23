@@ -13,7 +13,14 @@
     </div>
     <!-- Search -->
     <div class="emoji-search-wrap">
-      <input class="emoji-search" v-model="search" placeholder="Search…" ref="searchEl" />
+      <input
+        class="emoji-search"
+        v-model="search"
+        placeholder="Search…"
+        ref="searchEl"
+        @keydown.enter.prevent="onEnterSearch"
+        @keydown.escape.prevent.stop="onEscapeSearch"
+      />
     </div>
     <!-- Grid -->
     <div class="emoji-grid">
@@ -31,9 +38,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { gemoji } from 'gemoji'
 
 const props = defineProps({ initialSearch: { type: String, default: '' } })
-const emit = defineEmits(['pick', 'close'])
+const emit = defineEmits(['pick', 'close', 'escape'])
 
 const panelEl = ref(null)
 const searchEl = ref(null)
@@ -51,17 +59,66 @@ const CATEGORIES = [
   { icon: '✅', name: 'Symbols', emojis: ['✅','❌','❓','❗','‼️','⚠️','🚫','⛔','🔞','♻️','💯','✨','💫','💥','🎵','🎶','💬','💭','🗯','➕','➖','✖️','➗','♾️','🔄','▶️','⏩','⏪','⏸','⏹','🔔','🔕','📢','📣','🔅','🔆','🆒','🆕','🆓','🔝','🆙','🆗','💲','🔱','⚜️','🔰','🅰️','🅱️','🆎','🅾️','🆑'] },
 ]
 
+const ALL_EMOJIS = Array.from(new Set(CATEGORIES.flatMap(c => c.emojis)))
+
+const EMOJI_META = new Map()
+for (const entry of gemoji) {
+  if (!EMOJI_META.has(entry.emoji)) {
+    EMOJI_META.set(entry.emoji, { names: [], tags: [], descriptions: [] })
+  }
+  const meta = EMOJI_META.get(entry.emoji)
+  meta.names.push(...(entry.names || []))
+  meta.tags.push(...(entry.tags || []))
+  if (entry.description) meta.descriptions.push(entry.description)
+}
+
+function normalizeQuery(q) {
+  return String(q || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^:/, '')
+    .replace(/:$/, '')
+}
+
+function matchesSearch(emoji, query) {
+  if (!query) return true
+  if (emoji.includes(query)) return true
+
+  const meta = EMOJI_META.get(emoji)
+  if (!meta) return false
+
+  const names = [...meta.names, ...meta.tags]
+  for (const name of names) {
+    const n = String(name || '').toLowerCase()
+    if (!n) continue
+    if (n.includes(query)) return true
+    if (n.replace(/_/g, '').includes(query.replace(/_/g, ''))) return true
+  }
+
+  return meta.descriptions.some(d => String(d || '').toLowerCase().includes(query))
+}
+
 const visibleEmojis = computed(() => {
   if (search.value.trim()) {
-    const q = search.value.toLowerCase()
-    const all = CATEGORIES.flatMap(c => c.emojis)
-    return all.filter(e => e.includes(q)).slice(0, 60)
+    const q = normalizeQuery(search.value)
+    return ALL_EMOJIS.filter(e => matchesSearch(e, q)).slice(0, 120)
   }
   return CATEGORIES.find(c => c.name === activeCat.value)?.emojis || []
 })
 
 function pick(emoji) {
   emit('pick', emoji)
+}
+
+function onEnterSearch() {
+  if (visibleEmojis.value.length === 1) {
+    pick(visibleEmojis.value[0])
+  }
+}
+
+function onEscapeSearch() {
+  emit('escape')
+  emit('close')
 }
 
 function onClickOutside(e) {

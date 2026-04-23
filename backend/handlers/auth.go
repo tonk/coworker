@@ -32,7 +32,7 @@ type registerRequest struct {
 }
 
 type loginRequest struct {
-	Login    string `json:"login" binding:"required"`    // email or username
+	Login    string `json:"login" binding:"required"` // email or username
 	Password string `json:"password" binding:"required"`
 }
 
@@ -282,20 +282,21 @@ func userCanViewReports(userID uint, globalRole string) bool {
 func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	var req struct {
-		FirstName          string `json:"first_name"`
-		LastName           string `json:"last_name"`
-		DisplayName        string `json:"display_name"`
-		Email              string `json:"email"`
+		FirstName          string  `json:"first_name"`
+		LastName           string  `json:"last_name"`
+		DisplayName        string  `json:"display_name"`
+		Email              string  `json:"email"`
 		AvatarURL          *string `json:"avatar_url"`
-		Locale             string `json:"locale"`
-		Theme              string `json:"theme"`
-		DateTimeFormat     string `json:"date_time_format"`
-		Timezone           string `json:"timezone"`
-		Font               string `json:"font"`
-		FontSize           string `json:"font_size"`
-		SidebarPosition    string `json:"sidebar_position"`
-		AccentColor        string `json:"accent_color"`
-		EmailNotifications *bool  `json:"email_notifications"`
+		Locale             string  `json:"locale"`
+		Theme              string  `json:"theme"`
+		DateTimeFormat     string  `json:"date_time_format"`
+		Timezone           string  `json:"timezone"`
+		Font               string  `json:"font"`
+		FontSize           string  `json:"font_size"`
+		SidebarPosition    string  `json:"sidebar_position"`
+		ShowBreadcrumbs    *bool   `json:"show_breadcrumbs"`
+		AccentColor        string  `json:"accent_color"`
+		EmailNotifications *bool   `json:"email_notifications"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -339,6 +340,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.SidebarPosition == "left" || req.SidebarPosition == "right" {
 		updates["sidebar_position"] = req.SidebarPosition
+	}
+	if req.ShowBreadcrumbs != nil {
+		updates["show_breadcrumbs"] = *req.ShowBreadcrumbs
 	}
 	validAccents := map[string]bool{"blue": true, "red": true, "green": true, "orange": true}
 	if validAccents[req.AccentColor] {

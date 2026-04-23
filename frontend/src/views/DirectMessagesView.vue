@@ -275,7 +275,13 @@
                 <!-- Edit mode -->
                 <template v-if="editingMsgId === msg.id">
                   <div class="edit-textarea-wrap" style="position:relative; width: 100%;">
-                    <InlineEmojiPicker v-if="editEmojiOpen" :initial-search="editEmojiQuery || ''" @pick="onEditEmojiPick" @close="editEmojiOpen = false" />
+                    <InlineEmojiPicker
+                      v-if="editEmojiOpen"
+                      :initial-search="editEmojiQuery || ''"
+                      @pick="onEditEmojiPick"
+                      @escape="onEditEmojiEscape"
+                      @close="editEmojiOpen = false"
+                    />
                     <MentionDropdown
                       v-if="editMentionUsers.length"
                       :users="editMentionUsers"
@@ -347,7 +353,13 @@
         <div class="dm-compose">
           <AttachmentList v-if="pendingFiles.length" :attachments="pendingFiles" :can-delete="true" @remove="removePending" />
           <div class="compose-outer" style="position:relative">
-            <InlineEmojiPicker v-if="emojiOpen" :initial-search="emojiQuery || ''" @pick="onEmojiPick" @close="emojiOpen = false" />
+            <InlineEmojiPicker
+              v-if="emojiOpen"
+              :initial-search="emojiQuery || ''"
+              @pick="onEmojiPick"
+              @escape="onEmojiEscape"
+              @close="emojiOpen = false"
+            />
             <MentionDropdown
               v-if="mentionUsers.length"
               :users="mentionUsers"
@@ -473,6 +485,11 @@ function onEmojiPick(emoji) {
   emojiOpen.value = false
 }
 
+function onEmojiEscape() {
+  emojiOpen.value = false
+  nextTick(() => textareaEl.value?.focus())
+}
+
 watch(emojiQuery, (q) => {
   emojiOpen.value = q !== null
 })
@@ -526,6 +543,11 @@ watch(editEmojiQuery, (q) => {
 function onEditEmojiPick(emoji) {
   pickEditEmoji(emoji)
   editEmojiOpen.value = false
+}
+
+function onEditEmojiEscape() {
+  editEmojiOpen.value = false
+  nextTick(() => editTextareaEl.value?.focus())
 }
 
 function onEditInput() {

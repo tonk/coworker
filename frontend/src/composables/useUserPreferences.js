@@ -1,5 +1,5 @@
 /**
- * Applies user preferences (font, font-size, sidebar position, theme) to the document.
+ * Applies user preferences (font, font-size, sidebar position, breadcrumbs, theme) to the document.
  * Falls back to global system defaults when the user has not set a preference.
  * Call applyUserPreferences(user) whenever the user object changes.
  */
@@ -29,6 +29,9 @@ export function applyUserPreferences(user) {
   const pos = user.sidebar_position === 'right' ? 'right' : 'left'
   localStorage.setItem('sidebar_position', pos)
   root.setAttribute('data-sidebar', pos)
+
+  // Breadcrumb visibility
+  localStorage.setItem('show_breadcrumbs', user.show_breadcrumbs === false ? 'false' : 'true')
 
   // Accent colour
   const { setAccentColor } = useTheme()

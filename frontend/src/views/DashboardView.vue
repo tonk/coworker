@@ -31,7 +31,10 @@
             <div v-if="isAdmin && !selectedCustomer" class="drag-handle" title="Drag to reorder" @click.stop>⠿</div>
             <div class="project-color-bar" :style="{ background: project.color || '#6366f1' }"></div>
             <div class="project-card-body">
-              <h3>{{ project.name }}</h3>
+              <h3 class="project-title-row">
+                <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="project-avatar" alt="" />
+                <span>{{ project.name }}</span>
+              </h3>
               <p v-if="project.customer" class="project-customer">🏢 {{ project.customer.name }}</p>
               <p v-if="project.description" class="project-desc">{{ project.description }}</p>
               <p class="project-open-cards">{{ project.open_card_count }} {{ $t('board.open_cards') }}</p>
@@ -104,6 +107,7 @@ import { useProjectStore } from '@/stores/project'
 import { useUIStore } from '@/stores/ui'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
+import { resolveAssetUrl } from '@/api/serverConfig'
 
 const router = useRouter()
 const projectStore = useProjectStore()
@@ -181,6 +185,10 @@ async function toggleStar(project) {
   }
 }
 
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
+}
+
 async function handleCreate() {
   if (!newProject.value.name) return
   creating.value = true
@@ -230,6 +238,15 @@ async function handleCreate() {
 
 .project-card-body { padding: 16px; }
 .project-card-body h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.project-title-row { display: flex; align-items: center; gap: 8px; }
+.project-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
 .project-customer { font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; }
 .project-desc { font-size: 13px; color: var(--color-text-muted); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .project-open-cards { font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px; }

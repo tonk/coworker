@@ -74,7 +74,13 @@
             <!-- Edit mode -->
             <template v-if="editingId === msg.id">
               <div class="edit-textarea-wrap" style="position:relative; width: 100%;">
-                <InlineEmojiPicker v-if="editEmojiOpen" :initial-search="editEmojiQuery || ''" @pick="onEditEmojiPick" @close="editEmojiOpen = false" />
+                <InlineEmojiPicker
+                  v-if="editEmojiOpen"
+                  :initial-search="editEmojiQuery || ''"
+                  @pick="onEditEmojiPick"
+                  @escape="onEditEmojiEscape"
+                  @close="editEmojiOpen = false"
+                />
                 <MentionDropdown
                   v-if="editMentionUsers.length"
                   :users="editMentionUsers"
@@ -154,7 +160,13 @@
     <div class="chat-compose">
       <AttachmentList v-if="pendingFiles.length" :attachments="pendingFiles" :can-delete="true" @remove="removePending" />
       <div class="compose-outer" style="position:relative">
-        <InlineEmojiPicker v-if="emojiOpen" :initial-search="emojiQuery || ''" @pick="onEmojiPick" @close="emojiOpen = false" />
+        <InlineEmojiPicker
+          v-if="emojiOpen"
+          :initial-search="emojiQuery || ''"
+          @pick="onEmojiPick"
+          @escape="onEmojiEscape"
+          @close="emojiOpen = false"
+        />
         <MentionDropdown
           v-if="mentionUsers.length"
           :users="mentionUsers"
@@ -276,6 +288,11 @@ function onEditEmojiPick(emoji) {
   editEmojiOpen.value = false
 }
 
+function onEditEmojiEscape() {
+  editEmojiOpen.value = false
+  nextTick(() => editTextareaEl.value?.focus())
+}
+
 function onEditInput(e) {
   autoResize(e)
   onEditTextareaInput()
@@ -305,6 +322,11 @@ watch(emojiQuery, (q) => {
 function onEmojiPick(emoji) {
   pickEmoji(emoji)
   emojiOpen.value = false
+}
+
+function onEmojiEscape() {
+  emojiOpen.value = false
+  nextTick(() => textareaEl.value?.focus())
 }
 
 // Typing indicator — debounced send to avoid flooding the server

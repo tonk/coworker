@@ -2,6 +2,7 @@
   <div class="backlog-layout">
     <div class="backlog-toolbar">
       <div class="backlog-toolbar-left">
+        <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="board-project-avatar" alt="" />
         <span class="board-project-name">{{ projectStore.currentProject?.name }}</span>
       </div>
       <div class="backlog-toolbar-right">
@@ -259,6 +260,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { projectsApi } from '@/api/projects'
+import { resolveAssetUrl } from '@/api/serverConfig'
 import CardDetail from '@/components/board/CardDetail.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
@@ -284,6 +286,10 @@ const displayStartDate = ref('')
 const displayEndDate = ref('')
 
 const { connect, disconnect } = useWebSocket(slug)
+
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
+}
 
 const completedSprints = computed(() => sprintStore.completedSprints)
 const planningOrActiveSprints = computed(() => sprintStore.sprints.filter(s => s.status !== 'completed'))
@@ -521,6 +527,14 @@ const yTicks = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.board-project-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
 }
 
 .board-project-name {

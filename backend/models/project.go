@@ -7,25 +7,26 @@ import (
 )
 
 type Project struct {
-	ID           uint           `gorm:"primaryKey" json:"id"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
-	Name         string         `gorm:"not null;size:200" json:"name"`
-	Description  string         `gorm:"type:text" json:"description"`
-	Slug         string         `gorm:"uniqueIndex;not null;size:100" json:"slug"`
-	Color        string         `gorm:"size:7" json:"color"`
-	IsArchived   bool           `gorm:"default:false" json:"is_archived"`
-	KeyPrefix    string         `gorm:"uniqueIndex;size:10;not null;default:''" json:"key_prefix"`
-	Position     int            `gorm:"default:0" json:"position"`
-	CardCounter  int            `gorm:"default:0" json:"-"`
-	CustomerID   *uint          `gorm:"index" json:"customer_id,omitempty"`
-	Customer     *Customer      `json:"customer,omitempty"`
-	ContractID   *uint          `gorm:"index" json:"contract_id,omitempty"`
-	Contract     *Contract      `json:"contract,omitempty"`
-	BoardType    string         `gorm:"size:20;default:'kanban'" json:"board_type"` // "kanban" | "scrum"
-	CreatedByID  uint           `gorm:"not null" json:"created_by_id"`
-	CreatedBy    User           `json:"created_by"`
+	ID           uint            `gorm:"primaryKey" json:"id"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
+	DeletedAt    gorm.DeletedAt  `gorm:"index" json:"-"`
+	Name         string          `gorm:"not null;size:200" json:"name"`
+	Description  string          `gorm:"type:text" json:"description"`
+	Slug         string          `gorm:"uniqueIndex;not null;size:100" json:"slug"`
+	Color        string          `gorm:"size:7" json:"color"`
+	Avatar       string          `gorm:"size:500" json:"avatar"`
+	IsArchived   bool            `gorm:"default:false" json:"is_archived"`
+	KeyPrefix    string          `gorm:"uniqueIndex;size:10;not null;default:''" json:"key_prefix"`
+	Position     int             `gorm:"default:0" json:"position"`
+	CardCounter  int             `gorm:"default:0" json:"-"`
+	CustomerID   *uint           `gorm:"index" json:"customer_id,omitempty"`
+	Customer     *Customer       `json:"customer,omitempty"`
+	ContractID   *uint           `gorm:"index" json:"contract_id,omitempty"`
+	Contract     *Contract       `json:"contract,omitempty"`
+	BoardType    string          `gorm:"size:20;default:'kanban'" json:"board_type"` // "kanban" | "scrum"
+	CreatedByID  uint            `gorm:"not null" json:"created_by_id"`
+	CreatedBy    User            `json:"created_by"`
 	Members      []ProjectMember `json:"members,omitempty"`
 	Columns      []Column        `json:"columns,omitempty"`
 	Labels       []Label         `json:"labels,omitempty"`

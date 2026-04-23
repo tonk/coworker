@@ -42,7 +42,7 @@ type GroupCustomerEntry struct {
 
 type GroupDetail struct {
 	models.UserGroup
-	Members        []GroupMemberEntry  `json:"members"`
+	Members        []GroupMemberEntry   `json:"members"`
 	ProjectAccess  []GroupProjectEntry  `json:"project_access"`
 	CustomerAccess []GroupCustomerEntry `json:"customer_access"`
 }
@@ -55,10 +55,10 @@ type ProjectGroupEntry struct {
 }
 
 type CustomerGroupEntry struct {
-	GroupID    uint               `json:"group_id"`
-	Role       string             `json:"role"`
-	Group      models.UserGroup   `json:"group"`
-	Members    []GroupMemberEntry `json:"members"`
+	GroupID uint               `json:"group_id"`
+	Role    string             `json:"role"`
+	Group   models.UserGroup   `json:"group"`
+	Members []GroupMemberEntry `json:"members"`
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -160,12 +160,13 @@ func AdminCreateGroup(c *gin.Context) {
 	var req struct {
 		Name        string `json:"name" binding:"required,min=1,max=200"`
 		Description string `json:"description"`
+		Avatar      string `json:"avatar"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	g := models.UserGroup{Name: req.Name, Description: req.Description}
+	g := models.UserGroup{Name: req.Name, Description: req.Description, Avatar: req.Avatar}
 	if err := database.DB.Create(&g).Error; err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "a group with that name already exists"})
 		return
@@ -184,8 +185,9 @@ func AdminUpdateGroup(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
+		Name        string  `json:"name"`
+		Description string  `json:"description"`
+		Avatar      *string `json:"avatar"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -194,6 +196,9 @@ func AdminUpdateGroup(c *gin.Context) {
 	updates := map[string]any{"description": req.Description}
 	if req.Name != "" {
 		updates["name"] = req.Name
+	}
+	if req.Avatar != nil {
+		updates["avatar"] = *req.Avatar
 	}
 	database.DB.Model(&g).Updates(updates)
 	database.DB.First(&g, groupID)

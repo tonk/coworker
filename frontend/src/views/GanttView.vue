@@ -2,6 +2,7 @@
   <div class="gantt-layout">
     <div class="gantt-toolbar">
       <div class="gantt-toolbar-left">
+        <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="project-avatar" alt="" />
         <RouterLink :to="`/projects/${slug}`" class="breadcrumb-link">
           {{ projectStore.currentProject?.name }}
         </RouterLink>
@@ -51,6 +52,7 @@ import 'frappe-gantt/dist/frappe-gantt.css'
 import { useBoardStore } from '@/stores/board'
 import { useProjectStore } from '@/stores/project'
 import { projectsApi } from '@/api/projects'
+import { resolveAssetUrl } from '@/api/serverConfig'
 import CardDetail from '@/components/board/CardDetail.vue'
 
 const route = useRoute()
@@ -75,6 +77,10 @@ const viewMode = ref('Week')
 // Gather members and labels from project store for CardDetail
 const members = computed(() => projectStore.currentProject?.members?.map(m => m.user) || [])
 const labels  = computed(() => projectStore.currentProject?.labels || [])
+
+function projectAvatar(project) {
+  return resolveAssetUrl(project?.avatar || '')
+}
 
 // Build frappe-gantt task list from board cards
 const tasks = computed(() => {
@@ -197,6 +203,13 @@ watch(tasks, initGantt)
 }
 
 .gantt-toolbar-left { display: flex; align-items: center; gap: 8px; }
+.project-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
 .gantt-toolbar-right { display: flex; align-items: center; gap: 8px; }
 
 .breadcrumb-link {

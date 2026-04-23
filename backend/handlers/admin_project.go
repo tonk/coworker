@@ -17,6 +17,7 @@ func AdminCreateProject(c *gin.Context) {
 		Name        string `json:"name" binding:"required"`
 		Description string `json:"description"`
 		Color       string `json:"color"`
+		Avatar      string `json:"avatar"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -30,6 +31,7 @@ func AdminCreateProject(c *gin.Context) {
 		Slug:        services.GenerateSlug(req.Name),
 		Description: req.Description,
 		Color:       req.Color,
+		Avatar:      req.Avatar,
 		CreatedByID: userID,
 	}
 	if err := database.DB.Create(&project).Error; err != nil {
@@ -98,10 +100,11 @@ func AdminUpdateProject(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Color       string `json:"color"`
-		IsArchived  *bool  `json:"is_archived"`
+		Name        string  `json:"name"`
+		Description string  `json:"description"`
+		Color       string  `json:"color"`
+		Avatar      *string `json:"avatar"`
+		IsArchived  *bool   `json:"is_archived"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -117,6 +120,9 @@ func AdminUpdateProject(c *gin.Context) {
 	}
 	if req.Color != "" {
 		updates["color"] = req.Color
+	}
+	if req.Avatar != nil {
+		updates["avatar"] = *req.Avatar
 	}
 	if req.IsArchived != nil {
 		updates["is_archived"] = *req.IsArchived

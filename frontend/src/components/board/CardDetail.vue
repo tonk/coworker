@@ -13,7 +13,13 @@
         <div v-if="!locked" style="position:relative">
           <MentionDropdown v-if="descMentionUsers.length" :users="descMentionUsers" :active-index="descMentionIndex"
             @pick="descPickMention" @update:activeIndex="descMentionIndex = $event" />
-          <InlineEmojiPicker v-if="descEmojiOpen" :initial-search="descEmojiQuery || ''" @pick="onDescEmojiPick" @close="descEmojiOpen = false" />
+          <InlineEmojiPicker
+            v-if="descEmojiOpen"
+            :initial-search="descEmojiQuery || ''"
+            @pick="onDescEmojiPick"
+            @escape="onDescEmojiEscape"
+            @close="descEmojiOpen = false"
+          />
           <textarea class="form-input description-textarea" v-model="form.description"
                     ref="descTextareaEl"
                     spellcheck="true" :lang="auth.user?.locale || 'en'"
@@ -303,7 +309,13 @@
           <div style="position:relative">
             <MentionDropdown v-if="commentMentionUsers.length" :users="commentMentionUsers" :active-index="commentMentionIndex"
               @pick="commentPickMention" @update:activeIndex="commentMentionIndex = $event" />
-            <InlineEmojiPicker v-if="commentEmojiOpen" :initial-search="commentEmojiQuery || ''" @pick="onCommentEmojiPick" @close="commentEmojiOpen = false" />
+            <InlineEmojiPicker
+              v-if="commentEmojiOpen"
+              :initial-search="commentEmojiQuery || ''"
+              @pick="onCommentEmojiPick"
+              @escape="onCommentEmojiEscape"
+              @close="commentEmojiOpen = false"
+            />
             <textarea
               class="form-input comment-textarea"
               v-model="newComment"
@@ -871,9 +883,19 @@ function onDescEmojiPick(emoji) {
   descEmojiOpen.value = false
 }
 
+function onDescEmojiEscape() {
+  descEmojiOpen.value = false
+  descTextareaEl.value?.focus()
+}
+
 function onCommentEmojiPick(emoji) {
   pickCommentEmoji(emoji)
   commentEmojiOpen.value = false
+}
+
+function onCommentEmojiEscape() {
+  commentEmojiOpen.value = false
+  commentTextareaEl.value?.focus()
 }
 
 const displayStartDate = ref(form.value.start_date ? formatDate(form.value.start_date) : '')

@@ -51,6 +51,7 @@ type seedProject struct {
 	slug      string
 	prefix    string
 	color     string
+	avatar    string
 	desc      string
 	boardType string // "kanban" (default) or "scrum"
 	columns   []string
@@ -63,6 +64,7 @@ var demoProjects = []seedProject{
 		slug:      "website-redesign",
 		prefix:    "WEB",
 		color:     "#6366f1",
+		avatar:    "https://api.dicebear.com/9.x/shapes/svg?seed=Website-Redesign&backgroundColor=dbeafe,e9d5ff",
 		boardType: "kanban",
 		desc:      "Full redesign of the marketing website — new brand, new stack, new speed.",
 		columns:   []string{"Backlog", "In Progress", "Review", "Done"},
@@ -76,6 +78,7 @@ var demoProjects = []seedProject{
 		slug:      "mobile-app-v2",
 		prefix:    "MOB",
 		color:     "#f59e0b",
+		avatar:    "https://api.dicebear.com/9.x/shapes/svg?seed=Mobile-App-v2&backgroundColor=fef3c7,fee2e2",
 		boardType: "kanban",
 		desc:      "Ground-up rewrite of the iOS and Android apps with a shared React Native core.",
 		columns:   []string{"Ideas", "Development", "Testing", "Released"},
@@ -89,6 +92,7 @@ var demoProjects = []seedProject{
 		slug:      "devops-infra",
 		prefix:    "INF",
 		color:     "#10b981",
+		avatar:    "https://api.dicebear.com/9.x/shapes/svg?seed=DevOps-Infrastructure&backgroundColor=dcfce7,bfdbfe",
 		boardType: "kanban",
 		desc:      "Kubernetes migration, monitoring, backups, and everything that keeps the lights on.",
 		columns:   []string{"Todo", "In Progress", "Done"},
@@ -102,6 +106,7 @@ var demoProjects = []seedProject{
 		slug:      "product-platform",
 		prefix:    "PLT",
 		color:     "#8b5cf6",
+		avatar:    "https://api.dicebear.com/9.x/shapes/svg?seed=Product-Platform&backgroundColor=e9d5ff,dbeafe",
 		boardType: "scrum",
 		desc:      "The core SaaS platform — built sprint by sprint with a cross-functional team.",
 		columns:   []string{"To Do", "In Progress", "In Review", "Done"},
@@ -115,6 +120,7 @@ var demoProjects = []seedProject{
 		slug:      "marketing",
 		prefix:    "MKT",
 		color:     "#f43f5e",
+		avatar:    "https://api.dicebear.com/9.x/shapes/svg?seed=Marketing-Campaigns&backgroundColor=fce7f3,fef3c7",
 		boardType: "kanban",
 		desc:      "Campaign planning, content production, and launch coordination for the marketing team.",
 		columns:   []string{"Ideas", "Planned", "In Progress", "Published"},
@@ -297,7 +303,7 @@ func main() {
 		}
 		p := &models.Project{
 			Name: sp.name, Slug: sp.slug, KeyPrefix: sp.prefix,
-			Color: sp.color, Description: sp.desc, BoardType: boardType,
+			Color: sp.color, Avatar: sp.avatar, Description: sp.desc, BoardType: boardType,
 			CreatedByID: users["admin"].ID,
 		}
 		must(db.Create(p).Error)
@@ -1615,6 +1621,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	type groupSpec struct {
 		name        string
 		description string
+		avatar      string
 		members     []string // user keys
 		projects    []groupProjectSpec
 		customers   []groupCustomerSpec
@@ -1624,6 +1631,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{
 			name:        "Frontend Team",
 			description: "Web and mobile designers and developers.",
+			avatar:      "https://api.dicebear.com/9.x/shapes/svg?seed=Frontend-Team&backgroundColor=dbeafe,e9d5ff",
 			members:     []string{"sarah", "marc", "priya", "james"},
 			projects: []groupProjectSpec{
 				{"website-redesign", "member"},
@@ -1634,6 +1642,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{
 			name:        "DevOps Team",
 			description: "Infrastructure engineers and site reliability engineers.",
+			avatar:      "https://api.dicebear.com/9.x/shapes/svg?seed=DevOps-Team&backgroundColor=dcfce7,bfdbfe",
 			members:     []string{"marc", "lisa", "raj"},
 			projects: []groupProjectSpec{
 				{"devops-infra", "owner"},
@@ -1643,6 +1652,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{
 			name:        "Acme Stakeholders",
 			description: "Client-facing team for the Acme Corporation account.",
+			avatar:      "https://api.dicebear.com/9.x/shapes/svg?seed=Acme-Stakeholders&backgroundColor=fef3c7,fce7f3",
 			members:     []string{"admin", "sarah", "marc"},
 			customers: []groupCustomerSpec{
 				{"Acme Corporation", "viewer"},
@@ -1651,7 +1661,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 
 	for _, gs := range demoGroupSpecs {
-		g := &models.UserGroup{Name: gs.name, Description: gs.description}
+		g := &models.UserGroup{Name: gs.name, Description: gs.description, Avatar: gs.avatar}
 		must(db.Create(g).Error)
 		for _, key := range gs.members {
 			if u, ok := users[key]; ok {
