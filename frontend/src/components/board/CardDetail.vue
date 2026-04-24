@@ -73,15 +73,6 @@
       </div>
 
       <div class="detail-row">
-        <div class="form-group half">
-          <label class="form-label">{{ $t('board.time_spent') }}</label>
-          <div class="time-input-row">
-            <input class="form-input time-input" type="number" min="0" v-model.number="timeHours" />
-            <span class="time-sep">{{ $t('board.time_hours') }}</span>
-            <input class="form-input time-input" type="number" min="0" max="59" v-model.number="timeMinutes" />
-            <span class="time-sep">{{ $t('board.time_minutes') }}</span>
-          </div>
-        </div>
         <div v-if="systemStore.scrumStorypointsEnabled" class="form-group half">
           <label class="form-label">{{ $t('board.story_points') }}</label>
           <input class="form-input" type="number" min="0" step="1" v-model.number="form.story_points" style="width:90px" />
@@ -286,7 +277,12 @@
       </div>
 
       <div v-if="!isNew" class="comments-section">
-        <h4>{{ $t('board.comments') }}</h4>
+        <div class="comments-header">
+          <h4>{{ $t('board.comments') }}</h4>
+          <span v-if="card.time_spent_minutes > 0" class="time-spent-total">
+            ⏱ {{ $t('board.time_spent') }}: {{ fmtCardTime(card.time_spent_minutes) }}
+          </span>
+        </div>
         <div class="comment-list">
           <div v-for="comment in card.comments" :key="comment.id" class="comment" :class="{ 'comment-reply': comment.body.trimStart().startsWith('>') }">
             <div class="comment-avatar">
@@ -298,6 +294,9 @@
                 <strong>{{ comment.user.display_name || comment.user.username }}</strong>
                 <span class="comment-time">{{ formatDateTime(comment.created_at) }}</span>
                 <span v-if="comment.is_edited" class="edited-badge">✎</span>
+                <span v-if="comment.time_spent_minutes > 0" class="comment-time-badge">
+                  ⏱ {{ fmtCardTime(comment.time_spent_minutes) }}
+                </span>
               </div>
               <div class="comment-text" v-html="renderMarkdown(comment.body)"></div>
               <button class="btn btn-ghost btn-sm reply-btn" @click="replyTo(comment)">{{ $t('board.reply') }}</button>
@@ -327,6 +326,13 @@
               @input="commentOnInput"
               @keydown="commentOnKeydown"
             ></textarea>
+          </div>
+          <div v-if="auth.timeTrackingEnabled" class="log-time-row">
+            <span class="log-time-label">{{ $t('board.log_time') }}</span>
+            <input class="form-input time-input" type="number" min="0" v-model.number="newCommentHours" />
+            <span class="time-sep">{{ $t('board.time_hours') }}</span>
+            <input class="form-input time-input" type="number" min="0" max="59" v-model.number="newCommentMinutes" />
+            <span class="time-sep">{{ $t('board.time_minutes') }}</span>
           </div>
           <button class="btn btn-primary btn-sm" @click="submitComment" :disabled="!newComment.trim()">
             {{ $t('board.add_comment') }}
@@ -825,7 +831,6 @@ const form = ref({
   start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
-  time_spent_minutes: props.card.time_spent_minutes || 0,
   story_points: props.card.story_points ?? null
 })
 
@@ -837,18 +842,18 @@ const _init = {
   start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
-  time_spent_minutes: props.card.time_spent_minutes || 0,
   story_points: props.card.story_points ?? null
 }
 const isDirty = computed(() =>
   newComment.value.trim() !== '' ||
+  newCommentHours.value > 0 ||
+  newCommentMinutes.value > 0 ||
   form.value.title !== _init.title ||
   form.value.description !== _init.description ||
   form.value.priority !== _init.priority ||
   form.value.start_date !== _init.start_date ||
   form.value.due_date !== _init.due_date ||
   form.value.assignee_id !== _init.assignee_id ||
-  form.value.time_spent_minutes !== _init.time_spent_minutes ||
   form.value.story_points !== _init.story_points
 )
 
@@ -925,14 +930,16 @@ function onStartDatePickerChange(e) {
 
 const displayDueDate = ref(form.value.due_date ? formatDate(form.value.due_date) : '')
 
-const timeHours = computed({
-  get: () => Math.floor(form.value.time_spent_minutes / 60),
-  set: (v) => { form.value.time_spent_minutes = (parseInt(v) || 0) * 60 + (form.value.time_spent_minutes % 60) }
-})
-const timeMinutes = computed({
-  get: () => form.value.time_spent_minutes % 60,
-  set: (v) => { form.value.time_spent_minutes = Math.floor(form.value.time_spent_minutes / 60) * 60 + (parseInt(v) || 0) }
-})
+// Time logging on new comments
+const newCommentHours   = ref(0)
+const newCommentMinutes = ref(0)
+
+function fmtCardTime(minutes) {
+  if (!minutes) return '0m'
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`
+}
 
 function hasLabel(labelId) {
   return props.card.labels?.some(l => l.id === labelId)
@@ -981,7 +988,6 @@ async function save() {
       start_date: form.value.start_date || null,
       due_date: form.value.due_date || null,
       assignee_id: form.value.assignee_id,
-      time_spent_minutes: form.value.time_spent_minutes,
       story_points: form.value.story_points
     }
     if (isNew.value) {
@@ -1003,10 +1009,19 @@ async function save() {
 
 async function submitComment() {
   if (!newComment.value.trim()) return
+  const timeMinutes = (newCommentHours.value || 0) * 60 + (newCommentMinutes.value || 0)
   try {
-    const { data } = await projectsApi.createComment(props.projectSlug, props.card.id, newComment.value)
+    const { data } = await projectsApi.createComment(props.projectSlug, props.card.id, {
+      body: newComment.value,
+      time_spent_minutes: timeMinutes,
+    })
     props.card.comments = [...(props.card.comments || []), data]
+    if (timeMinutes > 0) {
+      props.card.time_spent_minutes = (props.card.time_spent_minutes || 0) + timeMinutes
+    }
     newComment.value = ''
+    newCommentHours.value = 0
+    newCommentMinutes.value = 0
   } catch (e) {
     ui.error('Failed to post comment')
   }
@@ -1204,7 +1219,7 @@ function renderMarkdown(text) {
 .btn-icon-xs.btn-danger:hover { color: var(--color-danger); }
 
 .comments-section { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
-.comments-section h4 { margin-bottom: 16px; font-size: 14px; }
+.comments-section h4 { font-size: 14px; }
 
 .comment-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
 .comment { display: flex; gap: 10px; }
@@ -1227,9 +1242,17 @@ function renderMarkdown(text) {
 .comment-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
 .comment-body { flex: 1; }
-.comment-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 12px; }
+.comments-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.comments-header h4 { margin: 0; }
+.time-spent-total { font-size: 12px; color: var(--color-primary); font-weight: 600; }
+
+.comment-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 12px; flex-wrap: wrap; }
 .comment-time { color: var(--color-text-muted); }
 .edited-badge { color: var(--color-text-muted); font-style: italic; font-size: 11px; }
+.comment-time-badge { color: var(--color-primary); font-size: 11px; font-weight: 600; }
+
+.log-time-row { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.log-time-label { color: var(--color-text-muted); font-size: 12px; margin-right: 4px; }
 
 .comment-text { font-size: 13px; line-height: 1.5; }
 .comment-text :deep(p) { margin-bottom: 6px; }

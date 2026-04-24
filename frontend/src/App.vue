@@ -108,11 +108,18 @@ watch([() => notificationsStore.hasUnread, projectChatUnread], ([hasUnread, chat
 })
 
 const { updateAvailable, latestVersion, releaseUrl, check: checkForUpdate } = useUpdateCheck()
-// Run once when the user is logged in
+let versionTimer = null
+function runVersionChecks() {
+  checkForUpdate(appVersion)
+  client.get('/version').then(r => { serverVersion.value = r.data.version }).catch(() => {})
+}
 watch(() => auth.isLoggedIn, (loggedIn) => {
   if (loggedIn) {
-    checkForUpdate(appVersion)
-    client.get('/version').then(r => { serverVersion.value = r.data.version }).catch(() => {})
+    runVersionChecks()
+    versionTimer = setInterval(runVersionChecks, 60 * 60 * 1000)
+  } else {
+    clearInterval(versionTimer)
+    versionTimer = null
   }
 }, { immediate: true })
 

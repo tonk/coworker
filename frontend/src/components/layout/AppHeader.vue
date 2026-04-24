@@ -49,6 +49,7 @@
             <span v-if="notificationsStore.hasUnread" class="msg-unread-dot"></span>
           </div>
           <div class="dropdown-item" v-if="auth.canViewReports" @click="router.push('/reports')">{{ $t('report.nav') }}</div>
+          <div class="dropdown-item" v-if="auth.timeTrackingEnabled" @click="router.push('/time-tracking')">{{ $t('timeTracking.nav') }}</div>
           <div class="dropdown-divider"></div>
           <div class="dropdown-item" @click="showAbout = true">{{ $t('nav.about') }}</div>
           <div class="dropdown-item dropdown-item-danger" @click="handleLogout">{{ $t('nav.logout') }}</div>

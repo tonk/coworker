@@ -386,5 +386,6 @@ func autoMigrate(db *gorm.DB) error {
 		&models.GroupMember{},
 		&models.GroupProjectAccess{},
 		&models.GroupCustomerAccess{},
+		&models.TimeEntry{},
 	)
 }

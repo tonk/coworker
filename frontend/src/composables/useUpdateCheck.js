@@ -2,6 +2,7 @@ import { ref } from 'vue'
 
 const GITHUB_REPO = 'tonk/warmdesk'
 const CACHE_KEY = 'update_check'
+const CACHE_TTL = 60 * 60 * 1000 // 1 hour
 
 // Compare two semver strings (strips leading 'v'). Returns true if b > a.
 function isNewer(current, latest) {
@@ -19,16 +20,17 @@ export function useUpdateCheck() {
   const releaseUrl = ref(null)
 
   async function check(currentVersion) {
-    // Use cached result within the same session
     const cached = sessionStorage.getItem(CACHE_KEY)
     if (cached) {
-      const { tag, url } = JSON.parse(cached)
-      if (isNewer(currentVersion, tag)) {
-        latestVersion.value = tag.replace(/^v/, '')
-        releaseUrl.value = url
-        updateAvailable.value = true
+      const { tag, url, expires } = JSON.parse(cached)
+      if (Date.now() < expires) {
+        if (isNewer(currentVersion, tag)) {
+          latestVersion.value = tag.replace(/^v/, '')
+          releaseUrl.value = url
+          updateAvailable.value = true
+        }
+        return
       }
-      return
     }
 
     try {
@@ -40,7 +42,7 @@ export function useUpdateCheck() {
       const data = await res.json()
       const tag = data.tag_name
       const url = data.html_url
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ tag, url }))
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ tag, url, expires: Date.now() + CACHE_TTL }))
       if (tag && isNewer(currentVersion, tag)) {
         latestVersion.value = tag.replace(/^v/, '')
         releaseUrl.value = url

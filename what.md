@@ -390,3 +390,12 @@ Create an application that has all these features and requirements
 - Remove ?api_key= query param support; require X-API-Key header for API key authentication
 - Log a warning when allowed_origins is set to wildcard (*)
 - Fix Windows CI build: remove FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 from all GitHub Actions workflows
+- Add per-user time tracking module: optional toggle in User Settings; weekly grid (Exact Online-style) with customer/project/activity rows and day columns; week navigation; add, edit, and delete rows; day and row totals; grand total
+- Time tracking report tab: period selector (week/month/year), grouped entries, subtotals, grand total
+- Export weekly timesheet and report to XLSX (SheetJS) and PDF (backend gofpdf, all 12 languages)
+- Move "Time Spent" from card form to per-comment: optional hours/minutes input when writing a comment; card shows running total; auto-creates a TimeEntry (today's date, card's project and customer, first sentence as description) when user has time tracking enabled
+- Highlight overdue board cards with a subtle orange background and border tint (distinct from the red date text)
+- Enforce customer on every project: required at creation (create-project dialog and API) and at update (project settings); blank option removed from project settings customer selector
+- Re-check server and GitHub versions every hour while logged in (previously only on startup)
+- Vite manualChunks bundle split: Vue core, i18n, markdown, HTTP libs moved to named chunks; main JS bundle reduced from ~504 kB to ~298 kB
+- Demo seed: add 60 time entries across 5 users spanning 2 weeks; enable time tracking for all five active demo users

@@ -58,8 +58,8 @@ export const projectsApi = {
 
   // Comments
   listComments: (slug, cardId) => client.get(`/projects/${slug}/cards/${cardId}/comments`),
-  createComment: (slug, cardId, body) => client.post(`/projects/${slug}/cards/${cardId}/comments`, { body }),
-  updateComment: (slug, cardId, commentId, body) => client.put(`/projects/${slug}/cards/${cardId}/comments/${commentId}`, { body }),
+  createComment: (slug, cardId, data) => client.post(`/projects/${slug}/cards/${cardId}/comments`, data),
+  updateComment: (slug, cardId, commentId, data) => client.put(`/projects/${slug}/cards/${cardId}/comments/${commentId}`, data),
   deleteComment: (slug, cardId, commentId) => client.delete(`/projects/${slug}/cards/${cardId}/comments/${commentId}`),
 
   // Chat

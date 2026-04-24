@@ -21,6 +21,7 @@ const routes = [
   { path: '/messages', redirect: '/chats' },
   { path: '/admin', name: 'admin', component: lazyWithReload(() => import('@/views/AdminView.vue')), meta: { adminOnly: true } },
   { path: '/reports', name: 'reports', component: lazyWithReload(() => import('@/views/ReportView.vue')), meta: { reportsOnly: true } },
+  { path: '/time-tracking', name: 'time-tracking', component: lazyWithReload(() => import('@/views/TimeTrackingView.vue')), meta: { timeTrackingOnly: true } },
   { path: '/customers', name: 'customers', component: lazyWithReload(() => import('@/views/CustomersView.vue')) },
   { path: '/customers/:id', name: 'customer-detail', component: lazyWithReload(() => import('@/views/CustomerDetailView.vue')) },
   { path: '/:pathMatch(.*)*', redirect: '/' }
@@ -42,6 +43,7 @@ router.beforeEach((to) => {
   if (!to.meta.public && !auth.isLoggedIn) return '/login'
   if (to.meta.adminOnly && !auth.isAdmin) return '/'
   if (to.meta.reportsOnly && !auth.canViewReports) return '/'
+  if (to.meta.timeTrackingOnly && !auth.timeTrackingEnabled) return '/'
   if (to.meta.public && auth.isLoggedIn && (to.name === 'login' || to.name === 'register')) return '/'
   return true
 })

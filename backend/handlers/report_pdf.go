@@ -113,6 +113,12 @@ type pdfI18n struct {
 	GrandTotal string // e.g. "Grand Total:"
 	Page       string // e.g. "Page"
 	Generated  string // e.g. "Generated:"
+	// Fields used by the personal time-entry PDF
+	Customer string // e.g. "Customer"
+	Project  string // e.g. "Project"
+	Activity string // e.g. "Activity"
+	Hours    string // e.g. "Hours"
+	Total    string // e.g. "Total"
 }
 
 // pdfTranslations provides label sets for each supported language code.
@@ -128,6 +134,11 @@ var pdfTranslations = map[string]pdfI18n{
 		GrandTotal: "Grand Total:",
 		Page:       "Page",
 		Generated:  "Generated:",
+		Customer:   "Customer",
+		Project:    "Project",
+		Activity:   "Activity",
+		Hours:      "Hours",
+		Total:      "Total",
 	},
 	"nl": {
 		TimeReport: "Tijdrapport",
@@ -139,6 +150,11 @@ var pdfTranslations = map[string]pdfI18n{
 		GrandTotal: "Eindtotaal:",
 		Page:       "Pagina",
 		Generated:  "Gegenereerd:",
+		Customer:   "Klant",
+		Project:    "Project",
+		Activity:   "Activiteit",
+		Hours:      "Uren",
+		Total:      "Totaal",
 	},
 	"de": {
 		TimeReport: "Zeitbericht",
@@ -150,6 +166,11 @@ var pdfTranslations = map[string]pdfI18n{
 		GrandTotal: "Gesamtsumme:",
 		Page:       "Seite",
 		Generated:  "Erstellt:",
+		Customer:   "Kunde",
+		Project:    "Projekt",
+		Activity:   "Aktivität",
+		Hours:      "Stunden",
+		Total:      "Gesamt",
 	},
 	"fr": {
 		TimeReport: "Rapport de temps",
@@ -161,6 +182,11 @@ var pdfTranslations = map[string]pdfI18n{
 		GrandTotal: "Total général :",
 		Page:       "Page",
 		Generated:  "Généré le :",
+		Customer:   "Client",
+		Project:    "Projet",
+		Activity:   "Activité",
+		Hours:      "Heures",
+		Total:      "Total",
 	},
 	"es": {
 		TimeReport: "Informe de tiempo",
@@ -172,6 +198,11 @@ var pdfTranslations = map[string]pdfI18n{
 		GrandTotal: "Total general:",
 		Page:       "Página",
 		Generated:  "Generado el:",
+		Customer:   "Cliente",
+		Project:    "Proyecto",
+		Activity:   "Actividad",
+		Hours:      "Horas",
+		Total:      "Total",
 	},
 }
 

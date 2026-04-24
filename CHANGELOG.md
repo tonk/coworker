@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.9.0 — 2026-04-24
+
+### Added
+- **Per-user time tracking module** — optional time registration feature (toggle in User Settings); when enabled, a weekly grid view (Exact Online-style) lets users log hours per customer/project/activity row across the seven days of any week; week navigation, row add/edit/delete, and day/row/grand totals included.
+- **Time tracking report tab** — period selector (week / month / year) with grouped entries, subtotals, and grand total; accessible from the same Time Tracking view.
+- **Time tracking exports** — weekly timesheet and report can be exported to XLSX (SheetJS, client-side) and PDF (backend, gofpdf); all 12 UI languages supported in PDF output.
+- **Comment-level time logging** — "Time Spent" field removed from the card form and moved to each comment; users with time tracking enabled see an optional hours/minutes input when writing a comment; the card header shows the running total across all comments.
+- **Auto time entry from comments** — when a user with time tracking enabled logs time in a card comment, a `TimeEntry` is created automatically: today's date, the card's project, the project's customer (if set), and the first sentence of the comment as description; editable in the Time Tracking view.
+- **Overdue card highlight** — board cards whose due date has passed now show a subtle orange background and border tint, distinct from the red overdue text on the date badge.
+- **Customer required on projects** — every project must be linked to a customer; the create-project dialog and project settings no longer allow saving without one; enforced server-side as well.
+- **Demo seed: time entries** — 60 realistic time entries (5 users, 2 weeks back) added to the demo dataset; time tracking enabled for the five active demo users.
+
+### Changed
+- **Hourly version check** — the client previously checked GitHub/server versions only on login; it now re-checks every hour while the user is logged in.
+- **Frontend bundle split** — Vite `manualChunks` splits Vue core, vue-i18n, marked/highlight.js, and axios/DOMPurify into named chunks; the main `index.js` bundle dropped from ~504 kB to ~298 kB.
+
 ## v0.8.15.2 — 2026-04-24
 
 ### Fixed

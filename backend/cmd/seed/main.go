@@ -1690,7 +1690,135 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d groups\n", len(demoGroupSpecs))
 
-	// ── 8. Summary ────────────────────────────────────────────────────────────
+	// ── 8. Time entries ───────────────────────────────────────────────────────
+	fmt.Println("→ Creating time entries…")
+
+	// Enable time tracking for the users who will have seeded log entries.
+	for _, key := range []string{"tonk", "admin", "sarah", "marc", "lisa"} {
+		if u, ok := users[key]; ok {
+			must(db.Model(u).Update("time_tracking_enabled", true).Error)
+		}
+	}
+
+	// Resolve customer IDs by name for FK references.
+	custIDByName := map[string]uint{}
+	for _, name := range []string{"Acme Corporation", "Globex Systems", "Initech Ltd"} {
+		var c models.Customer
+		if db.Where("name = ?", name).First(&c).Error == nil {
+			custIDByName[name] = c.ID
+		}
+	}
+
+	type teSpec struct {
+		user     string // key in users map (or "tonk")
+		customer string // customer name, "" = none
+		project  string // project slug,   "" = none
+		daysAgo  int
+		minutes  int
+		desc     string
+	}
+
+	pUint := func(v uint) *uint { return &v }
+
+	teSpecs := []teSpec{
+		// ── Ton Kersten (system admin) ─────────────────────────────────────────
+		{"tonk", "Acme Corporation", "website-redesign", 14, 240, "Sprint planning and backlog grooming"},
+		{"tonk", "Acme Corporation", "website-redesign", 13, 390, "Architecture review and stakeholder call"},
+		{"tonk", "Acme Corporation", "mobile-app-v2",    12, 300, "API design session with Marc"},
+		{"tonk", "Globex Systems",   "devops-infra",     11, 480, "Kubernetes migration kick-off"},
+		{"tonk", "Globex Systems",   "devops-infra",     10, 360, "Infrastructure review and documentation"},
+		{"tonk", "Acme Corporation", "website-redesign",  7, 480, "Design system implementation"},
+		{"tonk", "Acme Corporation", "mobile-app-v2",     6, 240, "Mobile API review"},
+		{"tonk", "Globex Systems",   "devops-infra",      5, 480, "CI/CD pipeline setup"},
+		{"tonk", "Acme Corporation", "website-redesign",  4, 300, "Code review and QA"},
+		{"tonk", "Acme Corporation", "website-redesign",  3, 120, "Client demo preparation"},
+		{"tonk", "Acme Corporation", "website-redesign",  2, 480, "Sprint review and retrospective"},
+		{"tonk", "Globex Systems",   "devops-infra",      1, 360, "On-call handover and monitoring setup"},
+
+		// ── Sarah Chen — website redesign ──────────────────────────────────────
+		{"sarah", "Acme Corporation", "website-redesign", 14, 480, "Component library setup"},
+		{"sarah", "Acme Corporation", "website-redesign", 13, 360, "Design implementation: hero section"},
+		{"sarah", "Acme Corporation", "website-redesign", 12, 480, "Responsive layout work"},
+		{"sarah", "Acme Corporation", "website-redesign", 11, 300, "Cross-browser testing"},
+		{"sarah", "Acme Corporation", "website-redesign", 10, 420, "Accessibility audit and fixes"},
+		{"sarah", "Acme Corporation", "website-redesign",  7, 480, "Navigation and routing refactor"},
+		{"sarah", "Acme Corporation", "website-redesign",  6, 360, "CMS integration"},
+		{"sarah", "Acme Corporation", "website-redesign",  5, 480, "Performance optimisation"},
+		{"sarah", "Acme Corporation", "website-redesign",  4, 240, "Content migration"},
+		{"sarah", "Acme Corporation", "website-redesign",  3, 420, "UAT support and bug fixes"},
+		{"sarah", "Acme Corporation", "website-redesign",  2, 480, "Pre-launch checklist"},
+		{"sarah", "Acme Corporation", "website-redesign",  1, 300, "Go-live support"},
+
+		// ── Marc Dubois — mobile app + devops ──────────────────────────────────
+		{"marc", "Acme Corporation", "mobile-app-v2", 14, 480, "React Native project setup"},
+		{"marc", "Acme Corporation", "mobile-app-v2", 13, 360, "Authentication flow implementation"},
+		{"marc", "Acme Corporation", "mobile-app-v2", 12, 480, "Push notification integration"},
+		{"marc", "Globex Systems",   "devops-infra",  11, 240, "Terraform modules for Globex"},
+		{"marc", "Acme Corporation", "mobile-app-v2", 10, 420, "Offline sync implementation"},
+		{"marc", "Acme Corporation", "mobile-app-v2",  7, 480, "App store submission preparation"},
+		{"marc", "Acme Corporation", "mobile-app-v2",  6, 300, "Beta testing and feedback"},
+		{"marc", "Globex Systems",   "devops-infra",   5, 480, "Monitoring dashboard setup"},
+		{"marc", "Acme Corporation", "mobile-app-v2",  4, 360, "Bug fixes from beta"},
+		{"marc", "Acme Corporation", "mobile-app-v2",  3, 240, "Performance profiling"},
+		{"marc", "Globex Systems",   "devops-infra",   2, 480, "Alerting rules configuration"},
+		{"marc", "Acme Corporation", "mobile-app-v2",  1, 420, "App submission and review"},
+
+		// ── Lisa Park — devops ─────────────────────────────────────────────────
+		{"lisa", "Globex Systems", "devops-infra", 14, 480, "Kubernetes cluster audit"},
+		{"lisa", "Globex Systems", "devops-infra", 13, 420, "Node upgrade and security patching"},
+		{"lisa", "Globex Systems", "devops-infra", 12, 360, "Helm chart updates"},
+		{"lisa", "Globex Systems", "devops-infra", 11, 480, "Service mesh configuration"},
+		{"lisa", "Globex Systems", "devops-infra", 10, 300, "Load testing and capacity planning"},
+		{"lisa", "Globex Systems", "devops-infra",  7, 480, "Disaster recovery drill"},
+		{"lisa", "Globex Systems", "devops-infra",  6, 360, "Cost optimisation review"},
+		{"lisa", "Globex Systems", "devops-infra",  5, 480, "Log aggregation setup"},
+		{"lisa", "Globex Systems", "devops-infra",  4, 240, "Runbook documentation"},
+		{"lisa", "Globex Systems", "devops-infra",  3, 420, "Incident post-mortem"},
+		{"lisa", "Globex Systems", "devops-infra",  2, 480, "Database backup automation"},
+		{"lisa", "Globex Systems", "devops-infra",  1, 360, "Weekly ops review"},
+
+		// ── Alex Admin — cross-project management ──────────────────────────────
+		{"admin", "Acme Corporation", "website-redesign", 14, 120, "Project kick-off meeting"},
+		{"admin", "Acme Corporation", "mobile-app-v2",    13, 180, "Requirements refinement"},
+		{"admin", "Acme Corporation", "",                 12, 120, "Client status update call"},
+		{"admin", "Globex Systems",   "devops-infra",     11, 120, "Contract review meeting"},
+		{"admin", "Acme Corporation", "website-redesign", 10, 180, "Sprint 3 review"},
+		{"admin", "Acme Corporation", "mobile-app-v2",     7, 120, "Sprint planning"},
+		{"admin", "Globex Systems",   "devops-infra",      6, 180, "Quarterly business review"},
+		{"admin", "Acme Corporation", "website-redesign",  5, 120, "Stakeholder presentation"},
+		{"admin", "",                 "",                  4, 120, "Internal team sync"},
+		{"admin", "Acme Corporation", "mobile-app-v2",     3, 180, "Beta sign-off meeting"},
+		{"admin", "Globex Systems",   "devops-infra",      2, 120, "SLA review"},
+		{"admin", "Acme Corporation", "website-redesign",  1, 180, "Launch readiness check"},
+	}
+
+	totalTimeEntries := 0
+	for _, s := range teSpecs {
+		u, ok := users[s.user]
+		if !ok {
+			continue
+		}
+		date := time.Now().UTC().AddDate(0, 0, -s.daysAgo).Truncate(24 * time.Hour)
+		entry := models.TimeEntry{
+			UserID:      u.ID,
+			Date:        date,
+			Minutes:     s.minutes,
+			Description: s.desc,
+		}
+		if cid, ok := custIDByName[s.customer]; ok {
+			entry.CustomerID = pUint(cid)
+		}
+		if s.project != "" {
+			if pd, ok := projects[s.project]; ok {
+				entry.ProjectID = pUint(pd.project.ID)
+			}
+		}
+		must(db.Create(&entry).Error)
+		totalTimeEntries++
+	}
+	fmt.Printf("   Created %d time entries for 5 users\n", totalTimeEntries)
+
+	// ── 9. Summary ──────────────────────────────────────────────────────────────
 	fmt.Println()
 	fmt.Println("✅ Demo data seeded successfully!")
 	fmt.Println()
@@ -1717,6 +1845,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Printf("  Sprints       : %d (Product Platform — 1 completed, 1 active, 1 planning)\n", totalSprints)
 	fmt.Printf("  Customers     : %d (Acme Corporation, Globex Systems, Initech Ltd)\n", len(demoCustomers))
 	fmt.Printf("  Groups        : %d (Frontend Team, DevOps Team, Acme Stakeholders)\n", len(demoGroupSpecs))
+	fmt.Printf("  Time entries  : %d (tonk, demo.admin, demo.sarah, demo.marc, demo.lisa)\n", totalTimeEntries)
 	fmt.Println()
 	fmt.Println("  Starred projects")
 	fmt.Println("  ┌─────────────────────┬──────────────────────────────────────────────────────────────┐")
@@ -1890,6 +2019,7 @@ func removeDemoData(db *gorm.DB) {
 			db.Where("conversation_id IN ?", convIDs).Delete(&models.ConversationMember{})
 			db.Unscoped().Where("id IN ?", convIDs).Delete(&models.Conversation{})
 		}
+		db.Where("user_id IN ?", userIDs).Delete(&models.TimeEntry{})
 		db.Unscoped().Where("id IN ?", userIDs).Delete(&models.User{})
 	}
 

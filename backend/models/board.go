@@ -71,16 +71,18 @@ type CardChecklistItem struct {
 }
 
 type CardComment struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-	CardID    uint           `gorm:"not null;index" json:"card_id"`
-	Card      Card           `json:"-"`
-	UserID    uint           `gorm:"not null" json:"user_id"`
-	User      User           `json:"user"`
-	Body      string         `gorm:"type:text;not null" json:"body"`
-	IsEdited  bool           `gorm:"default:false" json:"is_edited"`
+	ID               uint           `gorm:"primaryKey" json:"id"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
+	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
+	CardID           uint           `gorm:"not null;index" json:"card_id"`
+	Card             Card           `json:"-"`
+	UserID           uint           `gorm:"not null" json:"user_id"`
+	User             User           `json:"user"`
+	Body             string         `gorm:"type:text;not null" json:"body"`
+	IsEdited         bool           `gorm:"default:false" json:"is_edited"`
+	TimeSpentMinutes int            `gorm:"default:0" json:"time_spent_minutes"`
+	TimeEntryID      *uint          `gorm:"index" json:"time_entry_id,omitempty"`
 }
 
 type Label struct {

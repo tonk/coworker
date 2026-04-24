@@ -83,6 +83,13 @@
           <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px" />
         </div>
         <div class="form-group">
+          <label class="form-label">{{ $t('project.customer') }} *</label>
+          <select class="form-input" v-model="newProject.customer_id" style="max-width:400px" required>
+            <option :value="null" disabled>— {{ $t('project.customer') }} —</option>
+            <option v-for="c in createCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label class="form-label">{{ $t('sprint.board_type') }}</label>
           <select class="form-input" v-model="newProject.board_type" style="max-width:300px">
             <option value="kanban">{{ $t('sprint.board_type_kanban') }}</option>
@@ -93,7 +100,7 @@
       </form>
       <template #footer>
         <button class="btn btn-secondary" @click="showCreate = false">{{ $t('common.cancel') }}</button>
-        <button class="btn btn-primary" @click="handleCreate" :disabled="creating || !newProject.key_prefix.trim()">{{ $t('project.create') }}</button>
+        <button class="btn btn-primary" @click="handleCreate" :disabled="creating || !newProject.key_prefix.trim() || !newProject.customer_id">{{ $t('project.create') }}</button>
       </template>
   </BaseModal>
 </template>
@@ -108,6 +115,7 @@ import { useUIStore } from '@/stores/ui'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
 import { resolveAssetUrl } from '@/api/serverConfig'
+import { customersApi } from '@/api/customers'
 
 const router = useRouter()
 const projectStore = useProjectStore()
@@ -139,8 +147,9 @@ const filteredProjects = computed(() => {
 })
 
 const creating = ref(false)
-const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban' })
+const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban', customer_id: null })
 const prefixTouched = ref(false)
+const createCustomers = ref([])
 
 function autoPrefix(name) {
   const words = name.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean)
@@ -160,6 +169,7 @@ watch(() => newProject.value.name, (name) => {
 onMounted(async () => {
   await projectStore.fetchProjects()
   sidebarStore.fetchStarred()
+  customersApi.list().then(r => { createCustomers.value = r.data || [] }).catch(() => {})
   if (isAdmin.value && gridEl.value) {
     sortable = Sortable.create(gridEl.value, {
       handle: '.drag-handle',
@@ -191,11 +201,15 @@ function projectAvatar(project) {
 
 async function handleCreate() {
   if (!newProject.value.name) return
+  if (!newProject.value.customer_id) {
+    ui.error('A customer is required')
+    return
+  }
   creating.value = true
   try {
     const project = await projectStore.createProject(newProject.value)
     showCreate.value = false
-    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban' }
+    newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban', customer_id: null }
     prefixTouched.value = false
     router.push(`/projects/${project.slug}`)
   } catch (e) {

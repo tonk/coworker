@@ -138,6 +138,13 @@
                 <span>Receive email notifications for mentions, DMs, and card assignments</span>
               </label>
             </div>
+            <div class="form-group">
+              <label class="form-label">{{ $t('timeTracking.label') }}</label>
+              <label class="toggle-label">
+                <input type="checkbox" v-model="form.time_tracking_enabled" />
+                <span>{{ $t('timeTracking.toggle_hint') }}</span>
+              </label>
+            </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingProfile">
                 {{ savingProfile ? $t('common.loading') : $t('common.save') }}
@@ -331,7 +338,8 @@ const form = ref({
   font_size: '14',
   sidebar_position: 'left',
   show_breadcrumbs: true,
-  email_notifications: true
+  email_notifications: true,
+  time_tracking_enabled: false
 })
 
 const timezones = [
@@ -397,7 +405,8 @@ onMounted(async () => {
       font_size: u.font_size || '14',
       sidebar_position: u.sidebar_position || 'left',
       show_breadcrumbs: u.show_breadcrumbs !== undefined ? u.show_breadcrumbs : true,
-      email_notifications: u.email_notifications !== undefined ? u.email_notifications : true
+      email_notifications: u.email_notifications !== undefined ? u.email_notifications : true,
+      time_tracking_enabled: !!u.time_tracking_enabled
     }
   }
 })
@@ -425,7 +434,8 @@ async function saveProfile() {
       font_size: form.value.font_size,
       sidebar_position: form.value.sidebar_position,
       show_breadcrumbs: form.value.show_breadcrumbs,
-      email_notifications: form.value.email_notifications
+      email_notifications: form.value.email_notifications,
+      time_tracking_enabled: form.value.time_tracking_enabled
     })
     applyUserPreferences(auth.user)
     setTheme(form.value.theme)

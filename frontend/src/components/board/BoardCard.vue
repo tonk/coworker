@@ -1,5 +1,5 @@
 <template>
-  <div class="board-card" :class="{ 'board-card--closed': card.closed }" @click="$emit('open', card)">
+  <div class="board-card" :class="{ 'board-card--closed': card.closed, 'board-card--overdue': isOverdue }" @click="$emit('open', card)">
     <!-- Assignee avatars — top right (shows multi-assignees if present, else primary) -->
     <div v-if="allAssignees.length" class="card-avatars">
       <div
@@ -206,4 +206,9 @@ const isOverdue = computed(() => {
 
 .board-card--closed { opacity: 0.6; }
 .board-card--closed .card-title { text-decoration: line-through; color: var(--color-text-muted); }
+
+.board-card--overdue {
+  background: color-mix(in srgb, #ff8c00 8%, var(--color-surface));
+  border-color: color-mix(in srgb, #ff8c00 35%, var(--color-border));
+}
 </style>

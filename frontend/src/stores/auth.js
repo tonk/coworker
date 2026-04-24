@@ -26,6 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoggedIn = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.global_role === 'admin')
   const canViewReports = computed(() => isAdmin.value || !!user.value?.can_view_reports)
+  const timeTrackingEnabled = computed(() => !!user.value?.time_tracking_enabled)
 
   // ── Idle session timeout ─────────────────────────────────────────────────
   let idleTimer = null
@@ -130,7 +131,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    user, accessToken, isLoggedIn, isAdmin, canViewReports,
+    user, accessToken, isLoggedIn, isAdmin, canViewReports, timeTrackingEnabled,
     pendingMFAToken, mfaSetupRequired,
     login, verifyMFA, register, logout, fetchMe, updateProfile, initSession,
     startIdleTimer, resetIdleTimer, stopIdleTimer,

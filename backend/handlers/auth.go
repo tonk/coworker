@@ -303,7 +303,8 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		SidebarPosition    string  `json:"sidebar_position"`
 		ShowBreadcrumbs    *bool   `json:"show_breadcrumbs"`
 		AccentColor        string  `json:"accent_color"`
-		EmailNotifications *bool   `json:"email_notifications"`
+		EmailNotifications  *bool   `json:"email_notifications"`
+		TimeTrackingEnabled *bool   `json:"time_tracking_enabled"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -357,6 +358,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.EmailNotifications != nil {
 		updates["email_notifications"] = *req.EmailNotifications
+	}
+	if req.TimeTrackingEnabled != nil {
+		updates["time_tracking_enabled"] = *req.TimeTrackingEnabled
 	}
 
 	now := time.Now()

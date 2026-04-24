@@ -176,6 +176,10 @@ func CreateProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if req.CustomerID == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "customer is required"})
+		return
+	}
 
 	keyPrefix := strings.ToUpper(strings.TrimSpace(req.KeyPrefix))
 	if keyPrefix != "" {
@@ -353,6 +357,11 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
+	if req.CustomerID == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "customer is required"})
+		return
+	}
+
 	updates := map[string]interface{}{}
 	if req.Name != "" {
 		updates["name"] = req.Name
@@ -370,7 +379,6 @@ func UpdateProject(c *gin.Context) {
 		updates["is_archived"] = *req.IsArchived
 	}
 	// board_type is immutable after project creation
-	// Always write customer_id and contract_id (nil clears the association)
 	updates["customer_id"] = req.CustomerID
 	updates["contract_id"] = req.ContractID
 

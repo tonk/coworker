@@ -42,8 +42,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">{{ $t('project.customer') }}</label>
-            <select class="form-input" v-model="form.customer_id" style="max-width:400px" @change="form.contract_id = null; loadContractsForCustomer(form.customer_id)">
-              <option :value="null">{{ $t('project.no_customer') }}</option>
+            <select class="form-input" v-model="form.customer_id" style="max-width:400px" @change="form.contract_id = null; loadContractsForCustomer(form.customer_id)" required>
               <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
@@ -557,6 +556,10 @@ async function loadLabels() {
 }
 
 async function saveGeneral() {
+  if (!form.value.customer_id) {
+    ui.error('A customer is required')
+    return
+  }
   try {
     await projectStore.updateProject(slug.value, form.value)
     ui.success('Saved')

@@ -1,0 +1,337 @@
+package handlers
+
+import (
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/tonk/warmdesk/database"
+	"github.com/tonk/warmdesk/middleware"
+	"github.com/tonk/warmdesk/models"
+)
+
+// ListTimeEntries returns all time entries for the authenticated user, optionally
+// filtered by a date range (?from=YYYY-MM-DD&to=YYYY-MM-DD).
+func ListTimeEntries(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	q := database.DB.
+		Preload("Customer").
+		Preload("Project").
+		Where("user_id = ?", userID).
+		Order("date desc, id desc")
+
+	if from := c.Query("from"); from != "" {
+		if t, err := time.Parse("2006-01-02", from); err == nil {
+			q = q.Where("date >= ?", t)
+		}
+	}
+	if to := c.Query("to"); to != "" {
+		if t, err := time.Parse("2006-01-02", to); err == nil {
+			q = q.Where("date <= ?", t.Add(24*time.Hour-time.Second))
+		}
+	}
+
+	var entries []models.TimeEntry
+	if err := q.Find(&entries).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	c.JSON(http.StatusOK, entries)
+}
+
+// CreateTimeEntry logs a new time entry for the authenticated user.
+func CreateTimeEntry(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	var req struct {
+		CustomerID  *uint  `json:"customer_id"`
+		ProjectID   *uint  `json:"project_id"`
+		Date        string `json:"date"`
+		Minutes     int    `json:"minutes"`
+		Description string `json:"description"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Minutes <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "minutes must be positive"})
+		return
+	}
+	date, err := time.Parse("2006-01-02", req.Date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid date format, use YYYY-MM-DD"})
+		return
+	}
+
+	entry := models.TimeEntry{
+		UserID:      userID,
+		CustomerID:  req.CustomerID,
+		ProjectID:   req.ProjectID,
+		Date:        date,
+		Minutes:     req.Minutes,
+		Description: req.Description,
+	}
+	if err := database.DB.Create(&entry).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	database.DB.Preload("Customer").Preload("Project").First(&entry, entry.ID)
+	c.JSON(http.StatusCreated, entry)
+}
+
+// UpdateTimeEntry updates a time entry owned by the authenticated user.
+func UpdateTimeEntry(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	var entry models.TimeEntry
+	if err := database.DB.Where("id = ? AND user_id = ?", id, userID).First(&entry).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+
+	var req struct {
+		CustomerID  *uint  `json:"customer_id"`
+		ProjectID   *uint  `json:"project_id"`
+		Date        string `json:"date"`
+		Minutes     int    `json:"minutes"`
+		Description string `json:"description"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Minutes <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "minutes must be positive"})
+		return
+	}
+	date, err := time.Parse("2006-01-02", req.Date)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid date format, use YYYY-MM-DD"})
+		return
+	}
+
+	entry.CustomerID = req.CustomerID
+	entry.ProjectID = req.ProjectID
+	entry.Date = date
+	entry.Minutes = req.Minutes
+	entry.Description = req.Description
+
+	// Explicitly clear nullable FK columns so zeroing them is persisted.
+	if req.CustomerID == nil {
+		database.DB.Model(&entry).Update("customer_id", nil)
+	}
+	if req.ProjectID == nil {
+		database.DB.Model(&entry).Update("project_id", nil)
+	}
+	if err := database.DB.Save(&entry).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	database.DB.Preload("Customer").Preload("Project").First(&entry, entry.ID)
+	c.JSON(http.StatusOK, entry)
+}
+
+// DeleteTimeEntry removes a time entry owned by the authenticated user.
+func DeleteTimeEntry(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	result := database.DB.Where("id = ? AND user_id = ?", id, userID).Delete(&models.TimeEntry{})
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+	c.JSON(http.StatusNoContent, nil)
+}
+
+// timeEntryGroup is a single period bucket in the report.
+type timeEntryGroup struct {
+	Label       string             `json:"label"`
+	Entries     []models.TimeEntry `json:"entries"`
+	TotalMinutes int               `json:"total_minutes"`
+}
+
+// TimeEntryReportResponse is the shape returned by GetTimeEntryReport.
+type TimeEntryReportResponse struct {
+	Period       string           `json:"period"`
+	PeriodLabel  string           `json:"period_label"`
+	Groups       []timeEntryGroup `json:"groups"`
+	TotalMinutes int              `json:"total_minutes"`
+}
+
+// assembleTimeEntryReport builds the report data from query parameters.
+// Returns (report, httpStatus, errMsg) — status is 0 on success.
+func assembleTimeEntryReport(c *gin.Context, userID uint) (*TimeEntryReportResponse, int, string) {
+	now := time.Now()
+
+	period := c.DefaultQuery("period", "month")
+	year := intOrDefault(c.Query("year"), now.Year())
+	month := intOrDefault(c.Query("month"), int(now.Month()))
+	week := intOrDefault(c.Query("week"), isoWeek(now))
+
+	var from, to time.Time
+	var periodLabel string
+
+	switch period {
+	case "week":
+		from = isoWeekStart(year, week)
+		to = from.AddDate(0, 0, 7)
+		periodLabel = from.Format("Jan 2") + " – " + to.AddDate(0, 0, -1).Format("Jan 2, 2006")
+	case "year":
+		from = time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+		to = from.AddDate(1, 0, 0)
+		periodLabel = strconv.Itoa(year)
+	default:
+		period = "month"
+		from = time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+		to = from.AddDate(0, 1, 0)
+		periodLabel = from.Format("January 2006")
+	}
+
+	var entries []models.TimeEntry
+	if err := database.DB.
+		Preload("Customer").
+		Preload("Project").
+		Where("user_id = ? AND date >= ? AND date < ?", userID, from, to).
+		Order("date asc, id asc").
+		Find(&entries).Error; err != nil {
+		return nil, http.StatusInternalServerError, "internal error"
+	}
+
+	groups := buildGroups(period, from, to, entries)
+
+	total := 0
+	for _, g := range groups {
+		total += g.TotalMinutes
+	}
+
+	return &TimeEntryReportResponse{
+		Period:       period,
+		PeriodLabel:  periodLabel,
+		Groups:       groups,
+		TotalMinutes: total,
+	}, 0, ""
+}
+
+// GetTimeEntryReport returns a grouped report for the authenticated user.
+//
+// Query params:
+//
+//	period=week|month|year  (default: month)
+//	year=2026               (default: current year)
+//	month=4                 (1-12, used when period=month)
+//	week=17                 (ISO week, used when period=week)
+//
+// Grouping inside the period:
+//
+//	period=year  → group by month
+//	period=month → group by ISO week
+//	period=week  → group by day
+func GetTimeEntryReport(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+
+	report, status, msg := assembleTimeEntryReport(c, userID)
+	if status != 0 {
+		c.JSON(status, gin.H{"error": msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, report)
+}
+
+func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) []timeEntryGroup {
+	type key struct{ label string; order int }
+
+	buckets := map[string]*timeEntryGroup{}
+	var order []string
+
+	label := func(e models.TimeEntry) string {
+		switch period {
+		case "week":
+			return e.Date.Format("Monday, January 2")
+		case "year":
+			return e.Date.Format("January 2006")
+		default: // month
+			y, w := e.Date.ISOWeek()
+			wStart := isoWeekStart(y, w)
+			wEnd := wStart.AddDate(0, 0, 6)
+			return "Week " + strconv.Itoa(w) + " (" + wStart.Format("Jan 2") + "–" + wEnd.Format("Jan 2") + ")"
+		}
+	}
+
+	for i := range entries {
+		l := label(entries[i])
+		if _, ok := buckets[l]; !ok {
+			buckets[l] = &timeEntryGroup{Label: l}
+			order = append(order, l)
+		}
+		b := buckets[l]
+		b.Entries = append(b.Entries, entries[i])
+		b.TotalMinutes += entries[i].Minutes
+	}
+
+	// Fill empty buckets for periods with no entries so the report always
+	// shows the full range (e.g. all 12 months for a year report).
+	switch period {
+	case "year":
+		for m := from; m.Before(to); m = m.AddDate(0, 1, 0) {
+			l := m.Format("January 2006")
+			if _, ok := buckets[l]; !ok {
+				buckets[l] = &timeEntryGroup{Label: l}
+				order = append(order, l)
+			}
+		}
+	case "week":
+		for d := from; d.Before(to); d = d.AddDate(0, 0, 1) {
+			l := d.Format("Monday, January 2")
+			if _, ok := buckets[l]; !ok {
+				buckets[l] = &timeEntryGroup{Label: l}
+				order = append(order, l)
+			}
+		}
+	}
+
+	// Deduplicate order list while preserving first-seen ordering.
+	seen := map[string]bool{}
+	var deduped []string
+	for _, l := range order {
+		if !seen[l] {
+			seen[l] = true
+			deduped = append(deduped, l)
+		}
+	}
+
+	result := make([]timeEntryGroup, 0, len(deduped))
+	for _, l := range deduped {
+		b := buckets[l]
+		if b.Entries == nil {
+			b.Entries = []models.TimeEntry{}
+		}
+		result = append(result, *b)
+	}
+	return result
+}
+
+func intOrDefault(s string, def int) int {
+	if v, err := strconv.Atoi(s); err == nil {
+		return v
+	}
+	return def
+}
+
+func isoWeek(t time.Time) int {
+	_, w := t.ISOWeek()
+	return w
+}
