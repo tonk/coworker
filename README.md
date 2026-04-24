@@ -22,8 +22,8 @@ collaboration, direct messaging, time tracking, and a ticket API.
 
 This is an experiment, and a biggie :-)
 
-I haven't written a single line of code (almost), I only created and
-updated `what.md` and asked Claude Code to generate the app.
+I (almost) haven't written a single line of code, I created and
+updated the `what.md` file and asked Claude Code and Cursor to generate the app.
 
 ## Screenshots
 
