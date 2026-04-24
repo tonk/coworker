@@ -22,9 +22,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		r.Use(gin.Logger())
 	}
 	r.Use(middleware.CORS(allowedOrigins))
+	r.Use(middleware.SecurityHeaders())
 
 	authHandler := handlers.NewAuthHandler(authSvc)
-	wsHandler := handlers.NewWSHandler(authSvc)
+	wsHandler := handlers.NewWSHandler(authSvc, allowedOrigins)
 
 	v1 := r.Group("/api/v1")
 
@@ -39,12 +40,13 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 	// Auth routes (public)
 	auth := v1.Group("/auth")
 	{
-		auth.POST("/register", authHandler.Register)
-		auth.POST("/login", authHandler.Login)
+		auth.POST("/register", middleware.RegisterRateLimit(), authHandler.Register)
+		auth.POST("/login", middleware.AuthRateLimit(), authHandler.Login)
+		auth.POST("/logout", authHandler.Logout)
 		auth.POST("/refresh", authHandler.Refresh)
-		auth.POST("/mfa/verify", authHandler.MFAVerify)
-		auth.POST("/forgot-password", authHandler.ForgotPassword)
-		auth.POST("/reset-password", authHandler.ResetPassword)
+		auth.POST("/mfa/verify", middleware.AuthRateLimit(), authHandler.MFAVerify)
+		auth.POST("/forgot-password", middleware.ResetRateLimit(), authHandler.ForgotPassword)
+		auth.POST("/reset-password", middleware.ResetRateLimit(), authHandler.ResetPassword)
 	}
 
 	// Authenticated routes

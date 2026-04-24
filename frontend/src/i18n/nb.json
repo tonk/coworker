@@ -323,7 +323,9 @@
     "backup_email_address": "E-postadresse for varsler",
     "role_backup": "Sikkerhetskopi",
     "scrum_storypoints_enabled": "Scrum story points",
-    "scrum_storypoints_hint": "Når aktivert vises et story points-felt på hvert kort for Scrum-estimering."
+    "scrum_storypoints_hint": "Når aktivert vises et story points-felt på hvert kort for Scrum-estimering.",
+    "gravatar_enabled": "Gravatar-avatarer",
+    "gravatar_hint": "Når aktivert hentes profilbilder fra Gravatar basert på brukerens e-postadresse. Når deaktivert brukes initialer-baserte avatarer i stedet."
   },
   "report": {
     "title": "Tidsrapport",

@@ -4,19 +4,26 @@ import { authApi } from '@/api/auth'
 import { setLocale } from '@/i18n'
 import client from '@/api/client'
 
+// In Tauri (desktop) mode tokens are stored in sessionStorage and sent via the
+// Authorization header. In browser mode the server issues httpOnly cookies and
+// no token ever touches JavaScript — the browser attaches them automatically.
+const isTauri = !!window.__TAURI_INTERNALS__
+
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(JSON.parse(sessionStorage.getItem('user') || 'null'))
-  const accessToken = ref(sessionStorage.getItem('access_token') || null)
+  const user = ref(isTauri ? JSON.parse(sessionStorage.getItem('user') || 'null') : null)
+  const accessToken = ref(isTauri ? (sessionStorage.getItem('access_token') || null) : null)
   const pendingMFAToken = ref(null)
   const mfaSetupRequired = ref(false)
 
-  // Seed the axios default header from the stored token so requests never miss
-  // the token even if sessionStorage is cleared after initialization.
-  if (accessToken.value) {
+  // Seed axios Authorization header from stored token (Tauri only).
+  if (isTauri && accessToken.value) {
     client.defaults.headers.common.Authorization = `Bearer ${accessToken.value}`
   }
 
-  const isLoggedIn = computed(() => !!accessToken.value && !!user.value)
+  // isLoggedIn is driven by the user profile ref only.
+  // In Tauri mode user comes from sessionStorage; in browser mode it is fetched
+  // from the server on startup via initSession() before the app mounts.
+  const isLoggedIn = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.global_role === 'admin')
   const canViewReports = computed(() => isAdmin.value || !!user.value?.can_view_reports)
 
@@ -44,6 +51,28 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // ── Token storage (Tauri only) ───────────────────────────────────────────
+  function setTokens(access, refresh) {
+    if (!isTauri) return
+    accessToken.value = access
+    sessionStorage.setItem('access_token', access)
+    sessionStorage.setItem('refresh_token', refresh)
+    client.defaults.headers.common.Authorization = `Bearer ${access}`
+  }
+
+  // ── Session restoration ──────────────────────────────────────────────────
+  // Called once before app mount in browser mode to hydrate user state from
+  // the httpOnly cookie without exposing the token to JavaScript.
+  async function initSession() {
+    if (isTauri) return
+    try {
+      await fetchMe()
+    } catch {
+      user.value = null
+    }
+  }
+
+  // ── Auth actions ─────────────────────────────────────────────────────────
   async function login(login, password) {
     const { data } = await authApi.login({ login, password })
     if (data.mfa_required) {
@@ -72,15 +101,8 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchMe() {
     const { data } = await authApi.me()
     user.value = data
-    sessionStorage.setItem('user', JSON.stringify(data))
+    if (isTauri) sessionStorage.setItem('user', JSON.stringify(data))
     if (data.locale) setLocale(data.locale)
-  }
-
-  function setTokens(access, refresh) {
-    accessToken.value = access
-    sessionStorage.setItem('access_token', access)
-    sessionStorage.setItem('refresh_token', refresh)
-    client.defaults.headers.common.Authorization = `Bearer ${access}`
   }
 
   function logout() {
@@ -89,18 +111,28 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = null
     pendingMFAToken.value = null
     mfaSetupRequired.value = false
-    sessionStorage.removeItem('access_token')
-    sessionStorage.removeItem('refresh_token')
-    sessionStorage.removeItem('user')
-    delete client.defaults.headers.common.Authorization
+    // Tell the server to expire the httpOnly cookies. Fire-and-forget so the
+    // UI clears immediately even if the network is slow.
+    authApi.logout().catch(() => {})
+    if (isTauri) {
+      sessionStorage.removeItem('access_token')
+      sessionStorage.removeItem('refresh_token')
+      sessionStorage.removeItem('user')
+      delete client.defaults.headers.common.Authorization
+    }
   }
 
   async function updateProfile(data) {
     const { data: updated } = await authApi.updateMe(data)
     user.value = updated
-    sessionStorage.setItem('user', JSON.stringify(updated))
+    if (isTauri) sessionStorage.setItem('user', JSON.stringify(updated))
     if (data.locale) setLocale(data.locale)
   }
 
-  return { user, accessToken, isLoggedIn, isAdmin, canViewReports, pendingMFAToken, mfaSetupRequired, login, verifyMFA, register, logout, fetchMe, updateProfile, startIdleTimer, resetIdleTimer, stopIdleTimer }
+  return {
+    user, accessToken, isLoggedIn, isAdmin, canViewReports,
+    pendingMFAToken, mfaSetupRequired,
+    login, verifyMFA, register, logout, fetchMe, updateProfile, initSession,
+    startIdleTimer, resetIdleTimer, stopIdleTimer,
+  }
 })

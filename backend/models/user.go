@@ -9,6 +9,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// GravatarEnabledFn is wired up by the handlers package so the model layer
+// can check the admin setting without creating a circular import.
+var GravatarEnabledFn func() bool
+
 type User struct {
 	ID                  uint           `gorm:"primaryKey" json:"id"`
 	CreatedAt           time.Time      `json:"created_at"`
@@ -47,9 +51,14 @@ type User struct {
 
 // AfterFind populates the computed GravatarURL field after every DB read.
 func (u *User) AfterFind(tx *gorm.DB) error {
-	if u.Email != "" {
-		h := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(u.Email))))
-		u.GravatarURL = fmt.Sprintf("https://www.gravatar.com/avatar/%x?d=identicon&s=80", h)
+	if u.Username == "" {
+		return nil
+	}
+	if GravatarEnabledFn != nil && GravatarEnabledFn() && u.Email != "" {
+		hash := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(u.Email))))
+		u.GravatarURL = fmt.Sprintf("https://www.gravatar.com/avatar/%x?d=mp&s=80", hash)
+	} else {
+		u.GravatarURL = fmt.Sprintf("https://api.dicebear.com/7.x/initials/svg?seed=%s", u.Username)
 	}
 	return nil
 }

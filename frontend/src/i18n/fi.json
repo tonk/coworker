@@ -323,7 +323,9 @@
     "backup_email_address": "Ilmoitusten sähköpostiosoite",
     "role_backup": "Varmuuskopio",
     "scrum_storypoints_enabled": "Scrum-tarinapisteet",
-    "scrum_storypoints_hint": "Kun käytössä, jokaiselle kortille ilmestyy tarinapisteet-kenttä Scrum-arviointia varten."
+    "scrum_storypoints_hint": "Kun käytössä, jokaiselle kortille ilmestyy tarinapisteet-kenttä Scrum-arviointia varten.",
+    "gravatar_enabled": "Gravatar-avatarit",
+    "gravatar_hint": "Kun käytössä, profiilikuvat haetaan Gravatarista käyttäjän sähköpostiosoitteen perusteella. Kun poistettu käytöstä, käytetään sen sijaan nimikirjaimiin perustuvia avatareja."
   },
   "report": {
     "title": "Aikaraportti",

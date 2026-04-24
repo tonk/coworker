@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,32 +16,48 @@ import (
 	appws "github.com/tonk/warmdesk/ws"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true // CORS is handled by middleware
-	},
-}
-
 type WSHandler struct {
-	authSvc *services.AuthService
+	authSvc  *services.AuthService
+	upgrader websocket.Upgrader
 }
 
-func NewWSHandler(authSvc *services.AuthService) *WSHandler {
-	return &WSHandler{authSvc: authSvc}
+func NewWSHandler(authSvc *services.AuthService, allowedOrigins string) *WSHandler {
+	allowed := middleware.ParseOrigins(allowedOrigins)
+	_, allowAll := allowed["*"]
+	return &WSHandler{
+		authSvc: authSvc,
+		upgrader: websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			CheckOrigin: func(r *http.Request) bool {
+				if allowAll {
+					return true
+				}
+				origin := r.Header.Get("Origin")
+				if origin == "" {
+					// No Origin header — direct (non-browser) client; allow.
+					return true
+				}
+				_, ok := allowed[origin]
+				return ok
+			},
+		},
+	}
 }
 
 func (h *WSHandler) HandleWS(c *gin.Context) {
 	slug := c.Param("projectSlug")
 
-	// Auth via query param token
-	tokenStr := c.Query("token")
+	// 1. httpOnly cookie (browser)
+	tokenStr, _ := c.Cookie("access_token")
+	// 2. ?token= query param (Tauri / direct clients)
 	if tokenStr == "" {
-		// Also check Authorization header as fallback
-		tokenStr = c.GetHeader("Authorization")
-		if len(tokenStr) > 7 {
-			tokenStr = tokenStr[7:]
+		tokenStr = c.Query("token")
+	}
+	// 3. Authorization header
+	if tokenStr == "" {
+		if auth := c.GetHeader("Authorization"); strings.HasPrefix(auth, "Bearer ") {
+			tokenStr = auth[7:]
 		}
 	}
 
@@ -61,7 +78,7 @@ func (h *WSHandler) HandleWS(c *gin.Context) {
 		return
 	}
 
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Printf("ws upgrade error: %v", err)
 		return
@@ -82,11 +99,16 @@ func (h *WSHandler) HandleWS(c *gin.Context) {
 // HandleUserWS establishes a personal WebSocket connection for receiving user-scoped
 // notifications (e.g. @mention alerts) even when not viewing a specific project.
 func (h *WSHandler) HandleUserWS(c *gin.Context) {
-	tokenStr := c.Query("token")
+	// 1. httpOnly cookie (browser)
+	tokenStr, _ := c.Cookie("access_token")
+	// 2. ?token= query param (Tauri / direct clients)
 	if tokenStr == "" {
-		tokenStr = c.GetHeader("Authorization")
-		if len(tokenStr) > 7 {
-			tokenStr = tokenStr[7:]
+		tokenStr = c.Query("token")
+	}
+	// 3. Authorization header
+	if tokenStr == "" {
+		if auth := c.GetHeader("Authorization"); strings.HasPrefix(auth, "Bearer ") {
+			tokenStr = auth[7:]
 		}
 	}
 
@@ -96,7 +118,7 @@ func (h *WSHandler) HandleUserWS(c *gin.Context) {
 		return
 	}
 
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Printf("ws user upgrade error: %v", err)
 		return

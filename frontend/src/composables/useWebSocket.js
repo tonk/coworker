@@ -18,17 +18,23 @@ export function useWebSocket(projectSlugOrRef) {
   const sprintStore = useSprintStore()
 
   function connect() {
-    const token = sessionStorage.getItem('access_token')
-    if (!token) return
+    const isTauri = !!window.__TAURI_INTERNALS__
+    const token = isTauri ? sessionStorage.getItem('access_token') : null
+    // In Tauri mode a token is required; browser mode relies on the httpOnly cookie.
+    if (isTauri && !token) return
 
     const projectSlug = isRef(projectSlugOrRef) ? projectSlugOrRef.value : projectSlugOrRef
     if (!projectSlug) return
+
+    const wsPath = token
+      ? `/api/v1/ws/${projectSlug}?token=${token}`
+      : `/api/v1/ws/${projectSlug}`
     // Use the configured server URL when available (Tauri/desktop mode),
     // otherwise fall back to the current page's origin (browser mode).
-    const wsUrlFromConfig = getWsUrl(`/api/v1/ws/${projectSlug}?token=${token}`)
+    const wsUrlFromConfig = getWsUrl(wsPath)
     const url = wsUrlFromConfig || (() => {
       const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-      return `${protocol}//${location.host}/api/v1/ws/${projectSlug}?token=${token}`
+      return `${protocol}//${location.host}${wsPath}`
     })()
 
     ws.value = new WebSocket(url)

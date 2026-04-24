@@ -4881,7 +4881,7 @@ dependencies = [
 
 [[package]]
 name = "warmdesk"
-version = "0.8.13"
+version = "0.8.14-1-g9794d33"
 dependencies = [
  "serde",
  "serde_json",

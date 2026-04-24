@@ -11,14 +11,11 @@ import (
 	"github.com/tonk/warmdesk/models"
 )
 
-// APIKeyAuth authenticates requests using an X-API-Key header or ?api_key= query param.
+// APIKeyAuth authenticates requests using the X-API-Key header.
 // On success it sets the same context keys as JWT Auth so handlers work unchanged.
 func APIKeyAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		raw := c.GetHeader("X-API-Key")
-		if raw == "" {
-			raw = c.Query("api_key")
-		}
 		if raw == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing API key"})
 			return

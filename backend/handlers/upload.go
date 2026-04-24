@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,6 +38,20 @@ func UploadImage(c *gin.Context) {
 	}
 	if !allowedImageTypes[mimeType] {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image (jpeg, png, gif, webp, svg)"})
+		return
+	}
+
+	// Validate file content against magic bytes — rejects files that lie about
+	// their Content-Type header.
+	f, err := fh.Open()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to read file"})
+		return
+	}
+	detected, err := mimetype.DetectReader(f)
+	f.Close()
+	if err != nil || !allowedImageTypes[detected.String()] {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file content does not match a valid image type"})
 		return
 	}
 

@@ -269,6 +269,14 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
+              <label class="toggle-row">
+                <span>{{ $t('admin.gravatar_enabled') }}</span>
+                <input type="checkbox" v-model="systemSettings.gravatar_enabled" @change="saveGeneralSettings" />
+              </label>
+              <p class="form-hint">{{ $t('admin.gravatar_hint') }}</p>
+            </div>
+
+            <div class="form-group" style="max-width:400px">
               <label class="form-label">{{ $t('admin.session_timeout') }}</label>
               <div class="form-row" style="align-items:center;gap:8px;max-width:240px">
                 <input class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:100px" />
@@ -1295,6 +1303,7 @@ const systemSettings = ref({
   registration_enabled: true,
   mfa_required: false,
   scrum_storypoints_enabled: false,
+  gravatar_enabled: true,
   session_timeout_minutes: 60,
   default_date_time_format: 'YYYY-MM-DD HH:mm',
   default_timezone: 'UTC',
@@ -1397,6 +1406,7 @@ async function loadSettings() {
     systemSettings.value.registration_enabled        = data.registration_enabled !== 'false'
     systemSettings.value.mfa_required                = data.mfa_required === 'true' || data.mfa_required === true
     systemSettings.value.scrum_storypoints_enabled   = data.scrum_storypoints_enabled === 'true' || data.scrum_storypoints_enabled === true
+    systemSettings.value.gravatar_enabled             = data.gravatar_enabled !== 'false' && data.gravatar_enabled !== false
     systemSettings.value.session_timeout_minutes  = parseInt(data.session_timeout_minutes) || 0
     systemSettings.value.default_date_time_format = data.default_date_time_format || 'YYYY-MM-DD HH:mm'
     systemSettings.value.default_timezone         = data.default_timezone || 'UTC'
@@ -1645,6 +1655,7 @@ async function saveGeneralSettings() {
     const payload = {
       registration_enabled:          systemSettings.value.registration_enabled,
       scrum_storypoints_enabled:     systemSettings.value.scrum_storypoints_enabled,
+      gravatar_enabled:              systemSettings.value.gravatar_enabled,
       session_timeout_minutes:       systemSettings.value.session_timeout_minutes,
       default_date_time_format:      systemSettings.value.default_date_time_format,
       default_timezone:              systemSettings.value.default_timezone,

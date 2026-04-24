@@ -1,15 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/config"
@@ -50,7 +53,17 @@ const (
 	settingBackupEmailAddress     = "backup_email_address"
 	settingBackupLastSuccess      = "backup_last_success"
 	settingScrumStorypointsEnabled = "scrum_storypoints_enabled"
+	settingGravatarEnabled         = "gravatar_enabled"
 )
+
+func init() {
+	models.GravatarEnabledFn = IsGravatarEnabled
+}
+
+// IsGravatarEnabled returns true when the admin has enabled Gravatar avatars.
+func IsGravatarEnabled() bool {
+	return loadAllSettings()[settingGravatarEnabled] != "false"
+}
 
 // configuredBaseURL stores the value of base_url from the config file so
 // auth handlers can build absolute URLs (e.g. password-reset links) without
@@ -94,8 +107,8 @@ var systemSettingDefaults = map[string]string{
 	settingMFARequired:            "false",
 	settingPasswordMinLength:      "12",
 	settingPasswordRequireUpper:   "false",
-	settingPasswordRequireLower:   "false",
-	settingPasswordRequireDigit:   "false",
+	settingPasswordRequireLower:   "true",
+	settingPasswordRequireDigit:   "true",
 	settingPasswordRequireSpecial: "false",
 	settingBackupSchedule:         "disabled",
 	settingBackupStartTime:        "",
@@ -105,6 +118,7 @@ var systemSettingDefaults = map[string]string{
 	settingBackupEmailAddress:      "",
 	settingBackupLastSuccess:       "",
 	settingScrumStorypointsEnabled: "false",
+	settingGravatarEnabled:         "true",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -166,8 +180,14 @@ func logoAsDataURI(raw string) string {
 			return ""
 		}
 		mime = mimeFromExt(filepath.Ext(storedName))
-	} else if strings.HasPrefix(raw, "http://") || strings.HasPrefix(raw, "https://") {
-		resp, err := http.Get(raw) //nolint:gosec
+	} else if strings.HasPrefix(raw, "https://") {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, raw, nil)
+		if err != nil {
+			return raw
+		}
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil || resp.StatusCode != http.StatusOK {
 			return raw // fall back to URL so the img src still has something
 		}
@@ -244,6 +264,7 @@ func GetSystemSettings(c *gin.Context) {
 		"mfa_required":                 all[settingMFARequired] == "true",
 		"password_policy":              GetPasswordPolicy(),
 		"scrum_storypoints_enabled":    all[settingScrumStorypointsEnabled] == "true",
+		"gravatar_enabled":              all[settingGravatarEnabled] != "false",
 	})
 }
 
@@ -290,6 +311,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		BackupEmailEnabled          *bool   `json:"backup_email_enabled"`
 		BackupEmailAddress          *string `json:"backup_email_address"`
 		ScrumStorypointsEnabled     *bool   `json:"scrum_storypoints_enabled"`
+		GravatarEnabled             *bool   `json:"gravatar_enabled"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -409,6 +431,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		saveSetting(settingBackupEmailAddress, *req.BackupEmailAddress)
 	}
 	boolSetting(req.ScrumStorypointsEnabled, settingScrumStorypointsEnabled)
+	boolSetting(req.GravatarEnabled, settingGravatarEnabled)
 
 	AdminGetSystemSettings(c)
 }
@@ -445,7 +468,8 @@ func AdminSendTestEmail(c *gin.Context) {
 		services.WrapHTML("SMTP Test", htmlContent),
 		services.WrapText("SMTP Test", plainBody),
 	); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf("test email to %s failed: %v", req.To, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send test email"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Test email sent to " + req.To})

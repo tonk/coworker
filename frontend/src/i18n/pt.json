@@ -323,7 +323,9 @@
     "backup_email_address": "Endereço de e-mail para notificações",
     "role_backup": "Cópia de segurança",
     "scrum_storypoints_enabled": "Pontos de história Scrum",
-    "scrum_storypoints_hint": "Quando ativado, um campo de pontos de história aparece em cada cartão para estimativa Scrum."
+    "scrum_storypoints_hint": "Quando ativado, um campo de pontos de história aparece em cada cartão para estimativa Scrum.",
+    "gravatar_enabled": "Avatares Gravatar",
+    "gravatar_hint": "Quando ativado, as fotos de perfil são obtidas do Gravatar com base no endereço de e-mail do utilizador. Quando desativado, são usados avatares baseados em iniciais."
   },
   "report": {
     "title": "Relatório de tempo",

@@ -323,7 +323,9 @@
     "backup_email_address": "Indirizzo email per le notifiche",
     "role_backup": "Backup",
     "scrum_storypoints_enabled": "Punti storia Scrum",
-    "scrum_storypoints_hint": "Quando abilitato, un campo Punti storia appare su ogni scheda per la stima Scrum."
+    "scrum_storypoints_hint": "Quando abilitato, un campo Punti storia appare su ogni scheda per la stima Scrum.",
+    "gravatar_enabled": "Avatar Gravatar",
+    "gravatar_hint": "Quando abilitato, le foto profilo vengono recuperate da Gravatar in base all'indirizzo email dell'utente. Quando disabilitato, vengono utilizzati avatar con le iniziali."
   },
   "report": {
     "title": "Report ore",

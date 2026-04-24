@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,12 +36,13 @@ func InitBackup(cfg *config.Config) {
 // For MySQL: runs mysqldump.
 func AdminBackupDatabase(c *gin.Context) {
 	ts := time.Now().Format("20060102_1504")
-	filename := "warmdesk_db_" + ts
+	filename := "warmdesk_db_" + ts + "_" + randomHex(4)
 	now := time.Now().UTC()
 
 	if err := os.MkdirAll(backupsDir, 0755); err != nil {
+		log.Printf("backup: cannot create backups directory (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), err)
 		recordBackupResult(false, now)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create backups directory: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create backups directory"})
 		return
 	}
 
@@ -59,9 +61,10 @@ func AdminBackupDatabase(c *gin.Context) {
 	}
 
 	if backupErr != nil {
+		log.Printf("backup: failed (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), backupErr)
 		recordBackupResult(false, now)
 		sendBackupEmail(false, "", backupErr.Error(), now)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": backupErr.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "backup failed"})
 		return
 	}
 
@@ -209,8 +212,12 @@ func doBackupPostgres(filename string) (string, error) {
 		return "", fmt.Errorf("pg_dump not found in PATH")
 	}
 	backupPath := filepath.Join(backupsDir, filename+".sql")
+	safeDSN, pgpw := pgCredentials(backupCfg.DBDSN)
 	// --clean --if-exists adds DROP statements so the dump is self-contained for restore.
-	cmd := exec.Command("pg_dump", "--clean", "--if-exists", "-f", backupPath, backupCfg.DBDSN) //nolint:gosec
+	cmd := exec.Command("pg_dump", "--clean", "--if-exists", "-f", backupPath, safeDSN) //nolint:gosec
+	if pgpw != "" {
+		cmd.Env = append(os.Environ(), "PGPASSWORD="+pgpw)
+	}
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return "", fmt.Errorf("pg_dump failed: %s", out)
 	}
@@ -221,10 +228,13 @@ func doBackupMySQL(filename string) (string, error) {
 	if _, err := exec.LookPath("mysqldump"); err != nil {
 		return "", fmt.Errorf("mysqldump not found in PATH")
 	}
-	args := mysqlDumpArgs(backupCfg.DBDSN)
+	args, mysqlpw := mysqlSafeArgsAndPw(backupCfg.DBDSN)
 	backupPath := filepath.Join(backupsDir, filename+".sql")
 	args = append([]string{"--result-file=" + backupPath}, args...)
 	cmd := exec.Command("mysqldump", args...) //nolint:gosec
+	if mysqlpw != "" {
+		cmd.Env = append(os.Environ(), "MYSQL_PWD="+mysqlpw)
+	}
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return "", fmt.Errorf("mysqldump failed: %s", out)
 	}
@@ -447,9 +457,14 @@ func adminRestorePostgres(c *gin.Context, backupPath string) {
 		return
 	}
 
-	cmd := exec.Command("psql", backupCfg.DBDSN, "-f", backupPath) //nolint:gosec
+	safeDSN, pgpw := pgCredentials(backupCfg.DBDSN)
+	cmd := exec.Command("psql", safeDSN, "-f", backupPath) //nolint:gosec
+	if pgpw != "" {
+		cmd.Env = append(os.Environ(), "PGPASSWORD="+pgpw)
+	}
 	if out, err := cmd.CombinedOutput(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "psql restore failed: " + string(out)})
+		log.Printf("backup: psql restore failed (user=%d, ip=%s): %s", middleware.GetUserID(c), c.ClientIP(), out)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database restore failed"})
 		return
 	}
 
@@ -463,18 +478,22 @@ func adminRestoreMySQL(c *gin.Context, backupPath string) {
 		return
 	}
 
-	args := mysqlClientArgs(backupCfg.DBDSN)
+	args, mysqlpw := mysqlSafeArgsAndPw(backupCfg.DBDSN)
 	cmd := exec.Command("mysql", args...) //nolint:gosec
+	if mysqlpw != "" {
+		cmd.Env = append(os.Environ(), "MYSQL_PWD="+mysqlpw)
+	}
 	f, err := os.Open(backupPath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot open backup: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot open backup"})
 		return
 	}
 	defer f.Close()
 	cmd.Stdin = f
 
 	if out, err := cmd.CombinedOutput(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "mysql restore failed: " + string(out)})
+		log.Printf("backup: mysql restore failed (user=%d, ip=%s): %s", middleware.GetUserID(c), c.ClientIP(), out)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database restore failed"})
 		return
 	}
 
@@ -503,15 +522,69 @@ func copyFile(src, dst string) error {
 	return out.Sync()
 }
 
-// mysqlDumpArgs parses a Go MySQL DSN (user:pass@tcp(host:port)/dbname) into
-// mysqldump flags.
-func mysqlDumpArgs(dsn string) []string {
-	return mysqlArgs(dsn)
+// pgCredentials splits a PostgreSQL DSN into a password-free DSN and the
+// password itself, so pg_dump / psql can receive it via PGPASSWORD env var
+// rather than a command-line argument visible in ps(1).
+// Handles both URL format (postgres://user:pw@host/db) and key=value format.
+func pgCredentials(dsn string) (safeDSN, password string) {
+	if strings.HasPrefix(dsn, "postgres://") || strings.HasPrefix(dsn, "postgresql://") {
+		u, err := url.Parse(dsn)
+		if err == nil && u.User != nil {
+			if pw, ok := u.User.Password(); ok {
+				password = pw
+				u.User = url.User(u.User.Username())
+				return u.String(), password
+			}
+		}
+		return dsn, ""
+	}
+	// key=value format — extract password= token
+	parts := strings.Fields(dsn)
+	filtered := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if strings.HasPrefix(p, "password=") {
+			password = strings.Trim(strings.TrimPrefix(p, "password="), "'")
+		} else {
+			filtered = append(filtered, p)
+		}
+	}
+	return strings.Join(filtered, " "), password
 }
 
-// mysqlClientArgs parses a Go MySQL DSN into mysql client flags.
-func mysqlClientArgs(dsn string) []string {
-	return mysqlArgs(dsn)
+// mysqlSafeArgsAndPw parses a Go MySQL DSN (user:pass@tcp(host:port)/dbname)
+// into mysql / mysqldump flags without the -p argument, returning the password
+// separately so callers can pass it via MYSQL_PWD env var.
+func mysqlSafeArgsAndPw(dsn string) (args []string, password string) {
+	atIdx := strings.LastIndex(dsn, "@")
+	if atIdx < 0 {
+		return
+	}
+	userpass := dsn[:atIdx]
+	rest := dsn[atIdx+1:]
+
+	if colonIdx := strings.Index(userpass, ":"); colonIdx >= 0 {
+		password = userpass[colonIdx+1:]
+		args = append(args, "-u", userpass[:colonIdx])
+	} else {
+		args = append(args, "-u", userpass)
+	}
+
+	if inner, ok := strings.CutPrefix(rest, "tcp("); ok {
+		if closeIdx := strings.Index(inner, ")"); closeIdx >= 0 {
+			hostport := inner[:closeIdx]
+			dbpart := strings.TrimPrefix(inner[closeIdx+1:], "/")
+			if qIdx := strings.Index(dbpart, "?"); qIdx >= 0 {
+				dbpart = dbpart[:qIdx]
+			}
+			if colonIdx := strings.LastIndex(hostport, ":"); colonIdx >= 0 {
+				args = append(args, "-h", hostport[:colonIdx], "-P", hostport[colonIdx+1:])
+			} else {
+				args = append(args, "-h", hostport)
+			}
+			args = append(args, dbpart)
+		}
+	}
+	return
 }
 
 // StartBackupScheduler launches a background goroutine that creates automatic
@@ -598,7 +671,7 @@ func performScheduledBackup() {
 		return
 	}
 	ts := time.Now().Format("20060102_1504")
-	filename := "warmdesk_db_" + ts
+	filename := "warmdesk_db_" + ts + "_" + randomHex(4)
 	now := time.Now().UTC()
 
 	if err := os.MkdirAll(backupsDir, 0755); err != nil {
@@ -659,35 +732,3 @@ func pruneOldBackups() {
 	}
 }
 
-func mysqlArgs(dsn string) []string {
-	var args []string
-	atIdx := strings.LastIndex(dsn, "@")
-	if atIdx < 0 {
-		return args
-	}
-	userpass := dsn[:atIdx]
-	rest := dsn[atIdx+1:]
-
-	if colonIdx := strings.Index(userpass, ":"); colonIdx >= 0 {
-		args = append(args, "-u", userpass[:colonIdx], "-p"+userpass[colonIdx+1:])
-	} else {
-		args = append(args, "-u", userpass)
-	}
-
-	if inner, ok := strings.CutPrefix(rest, "tcp("); ok {
-		if closeIdx := strings.Index(inner, ")"); closeIdx >= 0 {
-			hostport := inner[:closeIdx]
-			dbpart := strings.TrimPrefix(inner[closeIdx+1:], "/")
-			if qIdx := strings.Index(dbpart, "?"); qIdx >= 0 {
-				dbpart = dbpart[:qIdx]
-			}
-			if colonIdx := strings.LastIndex(hostport, ":"); colonIdx >= 0 {
-				args = append(args, "-h", hostport[:colonIdx], "-P", hostport[colonIdx+1:])
-			} else {
-				args = append(args, "-h", hostport)
-			}
-			args = append(args, dbpart)
-		}
-	}
-	return args
-}

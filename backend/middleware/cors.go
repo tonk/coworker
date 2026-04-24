@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -13,26 +14,29 @@ import (
 // https://tauri.localhost — Windows
 var tauriOrigins = []string{"tauri://localhost", "https://tauri.localhost", "http://tauri.localhost"}
 
-func CORS(allowedOrigins string) gin.HandlerFunc {
-	origins := []string{}
+// ParseOrigins returns the full set of allowed origins from the comma-separated
+// config string, always including the Tauri desktop origins.
+func ParseOrigins(allowedOrigins string) map[string]struct{} {
+	combined := make(map[string]struct{})
+	for _, o := range tauriOrigins {
+		combined[o] = struct{}{}
+	}
 	for _, o := range strings.Split(allowedOrigins, ",") {
 		if o = strings.TrimSpace(o); o != "" {
-			origins = append(origins, o)
+			combined[o] = struct{}{}
 		}
 	}
+	return combined
+}
 
-	// Build a combined set for fast lookup. gin-contrib/cors rejects non-http(s)
-	// schemes in AllowOrigins, so we use AllowOriginFunc for everything.
-	allowed := make(map[string]struct{}, len(origins)+len(tauriOrigins))
-	for _, o := range origins {
-		allowed[o] = struct{}{}
-	}
-	for _, o := range tauriOrigins {
-		allowed[o] = struct{}{}
-	}
+func CORS(allowedOrigins string) gin.HandlerFunc {
+	allowed := ParseOrigins(allowedOrigins)
 
 	// Check if wildcard is configured — allow any origin
 	_, allowAll := allowed["*"]
+	if allowAll {
+		log.Printf("WARNING: CORS allowed_origins contains '*' — cross-origin protection is disabled")
+	}
 
 	cfg := cors.Config{
 		AllowOriginFunc: func(origin string) bool {

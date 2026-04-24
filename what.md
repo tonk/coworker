@@ -375,3 +375,17 @@ Create an application that has all these features and requirements
 - Hide Deactivate and Delete buttons for the logged-in admin's own row in Admin → Users (previously Delete was disabled but still visible; Deactivate was fully functional)
 - Swagger UI: /swagger and /swagger/ redirect to /swagger/index.html so typing index.html is no longer needed
 - Fix Swagger startup panic: remove /swagger/ route that conflicted with Gin's /*any wildcard; gin-swagger handles the trailing-slash redirect internally
+- Restore Gravatar avatars with an admin toggle to enable/disable them; fall back to DiceBear initials avatars when disabled
+- Rate-limit auth endpoints: 10 login/MFA attempts per 15 minutes, 5 registrations per hour, 5 password resets per 30 minutes
+- Add security response headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy)
+- Write structured audit log lines for all authentication events
+- Validate uploaded image files against magic bytes to reject MIME-type spoofing
+- Fix login-page redirect loop: token-refresh interceptor no longer reloads the page when already on /login
+- Pass PGPASSWORD via environment variable for pg_dump instead of embedding credentials in the DSN argument
+- Add random hex suffix to backup filenames to prevent same-minute overwrites
+- Issue httpOnly SameSite=Strict cookies for browser auth flows; add POST /auth/logout to clear them server-side
+- Accept access-token cookie for WebSocket upgrades in browser mode
+- Enforce allowed_origins list in the WebSocket upgrader
+- Raise search minimum to 3 characters and strip SQL LIKE wildcards from queries
+- Remove ?api_key= query param support; require X-API-Key header for API key authentication
+- Log a warning when allowed_origins is set to wildcard (*)

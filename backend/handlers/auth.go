@@ -123,6 +123,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	setAuthCookies(c, tokens)
 	authLog(c, "register_ok", user.ID, user.Username, "")
 	c.JSON(http.StatusCreated, tokens)
 }
@@ -186,7 +187,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-
+	setAuthCookies(c, tokens)
 	authLog(c, "login_ok", user.ID, user.Username, "")
 	resp := gin.H{
 		"access_token":  tokens.AccessToken,
@@ -210,10 +211,15 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Router       /auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req struct {
-		RefreshToken string `json:"refresh_token" binding:"required"`
+		RefreshToken string `json:"refresh_token"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// Body is optional — browser clients send no body and rely on the httpOnly cookie.
+	_ = c.ShouldBindJSON(&req)
+	if req.RefreshToken == "" {
+		req.RefreshToken, _ = c.Cookie("refresh_token")
+	}
+	if req.RefreshToken == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing refresh token"})
 		return
 	}
 
@@ -234,6 +240,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	setAuthCookies(c, tokens)
 	c.JSON(http.StatusOK, tokens)
 }
 
@@ -455,6 +462,7 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	setAuthCookies(c, tokens)
 	authLog(c, "mfa_verify_ok", user.ID, user.Username, "")
 	c.JSON(http.StatusOK, tokens)
 }
@@ -707,4 +715,28 @@ func (h *AuthHandler) issueTokens(user models.User) (*tokenResponse, error) {
 		return nil, err
 	}
 	return &tokenResponse{AccessToken: access, RefreshToken: refresh}, nil
+}
+
+// setAuthCookies writes access and refresh tokens as httpOnly, SameSite=Strict cookies.
+// Browser clients use these automatically; API/Tauri clients continue to use the JSON body.
+func setAuthCookies(c *gin.Context, tokens *tokenResponse) {
+	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("access_token", tokens.AccessToken, 15*60, "/", "", secure, true)
+	c.SetCookie("refresh_token", tokens.RefreshToken, 7*24*60*60, "/", "", secure, true)
+}
+
+// clearAuthCookies expires the auth cookies immediately.
+func clearAuthCookies(c *gin.Context) {
+	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("access_token", "", -1, "/", "", secure, true)
+	c.SetCookie("refresh_token", "", -1, "/", "", secure, true)
+}
+
+// Logout handles POST /auth/logout.
+// Clears the httpOnly auth cookies so browser sessions are terminated cleanly.
+func (h *AuthHandler) Logout(c *gin.Context) {
+	clearAuthCookies(c)
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }

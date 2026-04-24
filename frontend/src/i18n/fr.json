@@ -326,7 +326,9 @@
     "backup_email_address": "Adresse e-mail de notification",
     "role_backup": "Sauvegarde",
     "scrum_storypoints_enabled": "Points de story Scrum",
-    "scrum_storypoints_hint": "Lorsqu'activé, un champ Points de story apparaît sur chaque carte pour l'estimation Scrum."
+    "scrum_storypoints_hint": "Lorsqu'activé, un champ Points de story apparaît sur chaque carte pour l'estimation Scrum.",
+    "gravatar_enabled": "Avatars Gravatar",
+    "gravatar_hint": "Lorsqu'activé, les photos de profil sont récupérées depuis Gravatar en fonction de l'adresse e-mail de l'utilisateur. Lorsque désactivé, des avatars à base d'initiales sont utilisés."
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",

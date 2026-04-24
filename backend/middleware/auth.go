@@ -17,6 +17,21 @@ const (
 func Auth(authSvc *services.AuthService) gin.HandlerFunc {
 	apiKeyAuth := APIKeyAuth()
 	return func(c *gin.Context) {
+		// 1. httpOnly cookie — browser clients
+		if cookieToken, err := c.Cookie("access_token"); err == nil && cookieToken != "" {
+			claims, err := authSvc.ValidateToken(cookieToken)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
+			c.Set(ContextUserID, claims.UserID)
+			c.Set(ContextUsername, claims.Username)
+			c.Set(ContextGlobalRole, claims.GlobalRole)
+			c.Next()
+			return
+		}
+
+		// 2. Authorization: Bearer header (API / Tauri clients)
 		header := c.GetHeader("Authorization")
 		// Also accept ?token= query param (needed for <img> tags which can't set headers)
 		if !strings.HasPrefix(header, "Bearer ") {
@@ -38,8 +53,8 @@ func Auth(authSvc *services.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		// Fall back to API key auth (X-API-Key header or ?api_key= query param)
-		if c.GetHeader("X-API-Key") != "" || c.Query("api_key") != "" {
+		// 3. X-API-Key header (CI/CD ticket API)
+		if c.GetHeader("X-API-Key") != "" {
 			apiKeyAuth(c)
 			return
 		}

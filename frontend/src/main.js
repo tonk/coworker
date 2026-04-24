@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import { i18n } from './i18n'
 import { useSystemStore } from '@/stores/system'
+import { useAuthStore } from '@/stores/auth'
 import { setRuntimeServerUrl } from '@/api/serverConfig'
 import './styles/main.css'
 import '@fontsource/inter/400.css'
@@ -53,6 +54,12 @@ async function init() {
 
   app.config.errorHandler = (err, _instance, info) => {
     console.error('[Vue error]', info, err)
+  }
+
+  // In browser mode restore the session from the httpOnly cookie before the
+  // first router navigation so the auth guard sees the correct login state.
+  if (!window.__TAURI_INTERNALS__) {
+    await useAuthStore().initSession().catch(() => {})
   }
 
   app.mount('#app')

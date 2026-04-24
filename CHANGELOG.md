@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.8.15 — 2026-04-24
+
+### Added
+- **Gravatar avatars restored** — user profile pictures are fetched from Gravatar again. A new toggle in Admin → System Settings enables or disables Gravatar; when disabled, initials-based DiceBear avatars are used instead.
+- **Rate limiting on auth endpoints** — login and MFA verify are limited to 10 attempts per 15 minutes per IP; registration to 5 per hour; password reset to 5 per 30 minutes.
+- **Security response headers** — `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, and `Referrer-Policy` headers are now sent on every response.
+- **Auth audit log** — structured log lines are written for all authentication events (login, logout, register, MFA verify/enable/disable, password change, password reset).
+- **Image upload MIME validation** — uploaded images are validated against magic bytes so files with a mismatched Content-Type are rejected.
+
+### Fixed
+- **Login redirect loop on startup** — the token-refresh interceptor no longer redirects to `/login` when the page is already `/login`, preventing an infinite reload loop on first visit with no active session.
+- **PostgreSQL backup DSN leak** — `pg_dump` is now invoked with `PGPASSWORD` set as an environment variable instead of embedding credentials in the DSN argument; error messages no longer expose connection details.
+- **Backup filename collisions** — backup filenames now include a random 4-byte hex suffix to prevent overwrites when two backups are triggered within the same minute.
+
+### Changed
+- **Browser auth uses httpOnly cookies** — login, register, refresh, and MFA flows now issue `httpOnly SameSite=Strict` cookies for browser clients so tokens no longer touch JavaScript. A new `POST /auth/logout` endpoint clears the cookies server-side.
+- **WebSocket auth accepts cookies** — the WebSocket upgrade handler now accepts the access-token cookie (browser mode) in addition to the `?token=` query param (Tauri/API mode).
+- **WebSocket origin validation** — the WebSocket upgrader now enforces the same `allowed_origins` list as the HTTP CORS middleware instead of allowing all origins unconditionally.
+- **Search input hardened** — minimum query length raised to 3 characters; SQL LIKE wildcards (`%`, `_`) are stripped before the query reaches the database.
+- **API key auth header-only** — `X-API-Key` is the sole accepted method; the `?api_key=` query parameter is no longer supported.
+- **CORS wildcard warning** — a warning is logged at startup when `allowed_origins` is set to `*`.
+
 ## v0.8.14 — 2026-04-23
 
 ### Changed

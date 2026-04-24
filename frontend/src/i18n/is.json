@@ -323,7 +323,9 @@
     "backup_email_address": "Netfang fyrir tilkynningar",
     "role_backup": "Afrit",
     "scrum_storypoints_enabled": "Scrum sögu-stig",
-    "scrum_storypoints_hint": "Þegar virkjað birtist sögu-stig reitur á hverju korti fyrir Scrum mat."
+    "scrum_storypoints_hint": "Þegar virkjað birtist sögu-stig reitur á hverju korti fyrir Scrum mat.",
+    "gravatar_enabled": "Gravatar myndir",
+    "gravatar_hint": "Þegar virkjað eru prófílmyndir sóttar frá Gravatar miðað við netfang notanda. Þegar óvirkt eru notaðar upphafsstafs-myndir í staðinn."
   },
   "report": {
     "title": "Tímaskýrsla",

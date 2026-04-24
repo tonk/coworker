@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/database"
@@ -27,8 +28,14 @@ func GlobalSearch(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	globalRole := middleware.GetGlobalRole(c)
 	q := c.Query("q")
-	if len(q) < 2 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "query too short"})
+	if len(q) < 3 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "query too short (minimum 3 characters)"})
+		return
+	}
+	// Strip SQL LIKE wildcards to prevent deliberate full-table scans.
+	q = strings.NewReplacer("%", "", "_", "").Replace(q)
+	if len(q) < 3 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "query too short after sanitization"})
 		return
 	}
 	pattern := "%" + q + "%"

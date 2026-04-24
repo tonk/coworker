@@ -140,13 +140,15 @@ let userWsReconnectDelay = 1000
 
 function connectUserWs() {
   if (userWs) return
-  const token = sessionStorage.getItem('access_token')
-  if (!token) return
+  const token = isTauri ? sessionStorage.getItem('access_token') : null
+  // In Tauri mode a token is required; browser mode relies on the httpOnly cookie.
+  if (isTauri && !token) return
 
-  const wsUrlFromConfig = getWsUrl(`/api/v1/ws/user?token=${token}`)
+  const wsPath = token ? `/api/v1/ws/user?token=${token}` : `/api/v1/ws/user`
+  const wsUrlFromConfig = getWsUrl(wsPath)
   const url = wsUrlFromConfig || (() => {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return `${protocol}//${location.host}/api/v1/ws/user?token=${token}`
+    return `${protocol}//${location.host}${wsPath}`
   })()
 
   userWs = new WebSocket(url)
