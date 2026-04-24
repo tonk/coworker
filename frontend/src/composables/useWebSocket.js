@@ -22,6 +22,7 @@ export function useWebSocket(projectSlugOrRef) {
     if (!token) return
 
     const projectSlug = isRef(projectSlugOrRef) ? projectSlugOrRef.value : projectSlugOrRef
+    if (!projectSlug) return
     // Use the configured server URL when available (Tauri/desktop mode),
     // otherwise fall back to the current page's origin (browser mode).
     const wsUrlFromConfig = getWsUrl(`/api/v1/ws/${projectSlug}?token=${token}`)
@@ -58,6 +59,8 @@ export function useWebSocket(projectSlugOrRef) {
 
   function scheduleReconnect() {
     if (reconnectTimer) return
+    const projectSlug = isRef(projectSlugOrRef) ? projectSlugOrRef.value : projectSlugOrRef
+    if (!projectSlug) return
     reconnectTimer = setTimeout(() => {
       reconnectTimer = null
       connect()

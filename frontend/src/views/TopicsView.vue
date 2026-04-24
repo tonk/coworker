@@ -89,7 +89,35 @@
           <!-- Topic body -->
           <div class="topic-body-section">
             <div v-if="editingTopic">
-              <CardEditor v-model="editForm.body" />
+              <div class="compose-outer">
+                <InlineEmojiPicker
+                  v-if="editTopicEmojiOpen"
+                  :initial-search="editTopicEmojiQuery || ''"
+                  @pick="onEditTopicEmojiPick"
+                  @escape="onEditTopicEmojiEscape"
+                  @close="editTopicEmojiOpen = false"
+                />
+                <MentionDropdown
+                  v-if="editTopicMentionUsers.length"
+                  :users="editTopicMentionUsers"
+                  :active-index="editTopicMentionIndex"
+                  @pick="pickEditTopicMention"
+                  @update:activeIndex="editTopicMentionIndex = $event"
+                />
+                <div class="topic-editor-wrap">
+                  <button class="emoji-trigger-btn" type="button" @click="editTopicEmojiOpen = !editTopicEmojiOpen">😊</button>
+                  <textarea
+                    ref="editTopicTextareaEl"
+                    class="topic-textarea"
+                    v-model="editForm.body"
+                    rows="6"
+                    spellcheck="true"
+                    :lang="auth.user?.locale || 'en'"
+                    @input="onEditTopicInput"
+                    @keydown="onEditTopicKeydownCompose"
+                  ></textarea>
+                </div>
+              </div>
               <div class="edit-actions">
                 <button class="btn btn-secondary btn-sm" @click="cancelEditTopic">{{ $t('common.cancel') }}</button>
                 <button class="btn btn-primary btn-sm" @click="saveTopicEdit">{{ $t('common.save') }}</button>
@@ -117,7 +145,35 @@
                     <button v-if="canEditReply(reply)" class="btn btn-ghost btn-xs btn-danger" @click="deleteReply(reply)">{{ $t('topics.delete') }}</button>
                   </div>
                   <div v-if="editingReplyId === reply.id">
-                    <CardEditor v-model="editReplyBody" />
+                    <div class="compose-outer">
+                      <InlineEmojiPicker
+                        v-if="editReplyEmojiOpen"
+                        :initial-search="editReplyEmojiQuery || ''"
+                        @pick="onEditReplyEmojiPick"
+                        @escape="onEditReplyEmojiEscape"
+                        @close="editReplyEmojiOpen = false"
+                      />
+                      <MentionDropdown
+                        v-if="editReplyMentionUsers.length"
+                        :users="editReplyMentionUsers"
+                        :active-index="editReplyMentionIndex"
+                        @pick="pickEditReplyMention"
+                        @update:activeIndex="editReplyMentionIndex = $event"
+                      />
+                      <div class="topic-editor-wrap">
+                        <button class="emoji-trigger-btn" type="button" @click="editReplyEmojiOpen = !editReplyEmojiOpen">😊</button>
+                        <textarea
+                          ref="editReplyTextareaEl"
+                          class="topic-textarea topic-textarea-sm"
+                          v-model="editReplyBody"
+                          rows="4"
+                          spellcheck="true"
+                          :lang="auth.user?.locale || 'en'"
+                          @input="onEditReplyInput"
+                          @keydown="onEditReplyKeydownCompose"
+                        ></textarea>
+                      </div>
+                    </div>
                     <div class="edit-actions">
                       <button class="btn btn-secondary btn-sm" @click="cancelEditReply">{{ $t('common.cancel') }}</button>
                       <button class="btn btn-primary btn-sm" @click="saveReplyEdit(reply)">{{ $t('common.save') }}</button>
@@ -130,7 +186,36 @@
 
             <!-- Add reply -->
             <div class="add-reply">
-              <CardEditor v-model="newReplyBody" :placeholder="$t('topics.add_reply')" :min-height="'80px'" />
+              <div class="compose-outer">
+                <InlineEmojiPicker
+                  v-if="newReplyEmojiOpen"
+                  :initial-search="newReplyEmojiQuery || ''"
+                  @pick="onNewReplyEmojiPick"
+                  @escape="onNewReplyEmojiEscape"
+                  @close="newReplyEmojiOpen = false"
+                />
+                <MentionDropdown
+                  v-if="newReplyMentionUsers.length"
+                  :users="newReplyMentionUsers"
+                  :active-index="newReplyMentionIndex"
+                  @pick="pickNewReplyMention"
+                  @update:activeIndex="newReplyMentionIndex = $event"
+                />
+                <div class="topic-editor-wrap">
+                  <button class="emoji-trigger-btn" type="button" @click="newReplyEmojiOpen = !newReplyEmojiOpen">😊</button>
+                  <textarea
+                    ref="newReplyTextareaEl"
+                    class="topic-textarea topic-textarea-sm"
+                    v-model="newReplyBody"
+                    :placeholder="$t('topics.add_reply')"
+                    rows="4"
+                    spellcheck="true"
+                    :lang="auth.user?.locale || 'en'"
+                    @input="onNewReplyInput"
+                    @keydown="onNewReplyKeydownCompose"
+                  ></textarea>
+                </div>
+              </div>
               <button class="btn btn-primary btn-sm" @click="postReply" :disabled="!newReplyBody.trim()">
                 {{ $t('topics.post_reply') }}
               </button>
@@ -148,7 +233,35 @@
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('topics.topic_body') }}</label>
-        <CardEditor v-model="newTopic.body" />
+        <div class="compose-outer">
+          <InlineEmojiPicker
+            v-if="newTopicEmojiOpen"
+            :initial-search="newTopicEmojiQuery || ''"
+            @pick="onNewTopicEmojiPick"
+            @escape="onNewTopicEmojiEscape"
+            @close="newTopicEmojiOpen = false"
+          />
+          <MentionDropdown
+            v-if="newTopicMentionUsers.length"
+            :users="newTopicMentionUsers"
+            :active-index="newTopicMentionIndex"
+            @pick="pickNewTopicMention"
+            @update:activeIndex="newTopicMentionIndex = $event"
+          />
+          <div class="topic-editor-wrap">
+            <button class="emoji-trigger-btn" type="button" @click="newTopicEmojiOpen = !newTopicEmojiOpen">😊</button>
+            <textarea
+              ref="newTopicTextareaEl"
+              class="topic-textarea"
+              v-model="newTopic.body"
+              rows="6"
+              spellcheck="true"
+              :lang="auth.user?.locale || 'en'"
+              @input="onNewTopicInput"
+              @keydown="onNewTopicKeydownCompose"
+            ></textarea>
+          </div>
+        </div>
       </div>
       <template #footer>
         <button class="btn btn-secondary" @click="showNew = false">{{ $t('common.cancel') }}</button>
@@ -159,20 +272,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import BaseModal from '@/components/common/BaseModal.vue'
-import CardEditor from '@/components/board/CardEditor.vue'
+import MentionDropdown from '@/components/common/MentionDropdown.vue'
+import InlineEmojiPicker from '@/components/common/InlineEmojiPicker.vue'
 import { useTopicsStore } from '@/stores/topics'
 import { useProjectStore } from '@/stores/project'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { topicsApi } from '@/api/topics'
+import { projectsApi } from '@/api/projects'
+import { messagesApi } from '@/api/messages'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
+import { useCompose } from '@/composables/useCompose'
 import { resolveAssetUrl } from '@/api/serverConfig'
 
 const route = useRoute()
@@ -190,6 +307,7 @@ function projectAvatar(project) {
   return resolveAssetUrl(project?.avatar || '')
 }
 const replies = ref([])
+const projectMembers = ref([])
 const newReplyBody = ref('')
 const showNew = ref(false)
 const newTopic = ref({ title: '', body: '' })
@@ -197,12 +315,93 @@ const editingTopic = ref(false)
 const editForm = ref({ title: '', body: '' })
 const editingReplyId = ref(null)
 const editReplyBody = ref('')
+const projectMentionUsers = computed(() =>
+  (projectMembers.value || [])
+    .map(m => m?.user || m)
+    .filter(u => u && u.username)
+)
+
+const editTopicTextareaEl = ref(null)
+const editReplyTextareaEl = ref(null)
+const newReplyTextareaEl = ref(null)
+const newTopicTextareaEl = ref(null)
+
+const {
+  mentionUsers: editTopicMentionUsers,
+  mentionIndex: editTopicMentionIndex,
+  onTextareaInput: onEditTopicInput,
+  onTextareaKeydown: onEditTopicKeydownCompose,
+  pickMention: pickEditTopicMention,
+  emojiQuery: editTopicEmojiQuery,
+  pickEmoji: pickEditTopicEmoji,
+} = useCompose({
+  textareaEl: editTopicTextareaEl,
+  getValue: () => editForm.value.body,
+  setValue: (v) => { editForm.value.body = v },
+  users: projectMentionUsers,
+})
+const editTopicEmojiOpen = ref(false)
+watch(editTopicEmojiQuery, (q) => { editTopicEmojiOpen.value = q !== null })
+
+const {
+  mentionUsers: editReplyMentionUsers,
+  mentionIndex: editReplyMentionIndex,
+  onTextareaInput: onEditReplyInput,
+  onTextareaKeydown: onEditReplyKeydownCompose,
+  pickMention: pickEditReplyMention,
+  emojiQuery: editReplyEmojiQuery,
+  pickEmoji: pickEditReplyEmoji,
+} = useCompose({
+  textareaEl: editReplyTextareaEl,
+  getValue: () => editReplyBody.value,
+  setValue: (v) => { editReplyBody.value = v },
+  users: projectMentionUsers,
+})
+const editReplyEmojiOpen = ref(false)
+watch(editReplyEmojiQuery, (q) => { editReplyEmojiOpen.value = q !== null })
+
+const {
+  mentionUsers: newReplyMentionUsers,
+  mentionIndex: newReplyMentionIndex,
+  onTextareaInput: onNewReplyInput,
+  onTextareaKeydown: onNewReplyKeydownCompose,
+  pickMention: pickNewReplyMention,
+  emojiQuery: newReplyEmojiQuery,
+  pickEmoji: pickNewReplyEmoji,
+} = useCompose({
+  textareaEl: newReplyTextareaEl,
+  getValue: () => newReplyBody.value,
+  setValue: (v) => { newReplyBody.value = v },
+  users: projectMentionUsers,
+})
+const newReplyEmojiOpen = ref(false)
+watch(newReplyEmojiQuery, (q) => { newReplyEmojiOpen.value = q !== null })
+
+const {
+  mentionUsers: newTopicMentionUsers,
+  mentionIndex: newTopicMentionIndex,
+  onTextareaInput: onNewTopicInput,
+  onTextareaKeydown: onNewTopicKeydownCompose,
+  pickMention: pickNewTopicMention,
+  emojiQuery: newTopicEmojiQuery,
+  pickEmoji: pickNewTopicEmoji,
+} = useCompose({
+  textareaEl: newTopicTextareaEl,
+  getValue: () => newTopic.value.body,
+  setValue: (v) => { newTopic.value.body = v },
+  users: projectMentionUsers,
+})
+const newTopicEmojiOpen = ref(false)
+watch(newTopicEmojiQuery, (q) => { newTopicEmojiOpen.value = q !== null })
 
 const { connect, disconnect } = useWebSocket(slug.value)
 
 onMounted(async () => {
-  await projectStore.fetchProject(slug.value)
-  await topicsStore.loadTopics(slug.value)
+  await Promise.all([
+    projectStore.fetchProject(slug.value),
+    topicsStore.loadTopics(slug.value),
+    loadProjectMembers(),
+  ])
   connect()
 })
 
@@ -218,6 +417,27 @@ watch(() => topicsStore.topics, (topics) => {
     if (updated) activeTopic.value = { ...activeTopic.value, ...updated }
   }
 }, { deep: true })
+
+async function loadProjectMembers() {
+  try {
+    const { data } = await projectsApi.listMembers(slug.value)
+    const members = data || []
+    if (members.length) {
+      projectMembers.value = members
+      return
+    }
+    // Fallback for datasets where project membership rows are empty/missing.
+    const usersResp = await messagesApi.listUsers()
+    projectMembers.value = usersResp.data || []
+  } catch {
+    try {
+      const usersResp = await messagesApi.listUsers()
+      projectMembers.value = usersResp.data || []
+    } catch {
+      projectMembers.value = []
+    }
+  }
+}
 
 const canEditTopic = computed(() => {
   if (!activeTopic.value) return false
@@ -341,6 +561,40 @@ async function deleteReply(reply) {
   }
 }
 
+function onEditTopicEmojiPick(emoji) {
+  pickEditTopicEmoji(emoji)
+  editTopicEmojiOpen.value = false
+}
+function onEditReplyEmojiPick(emoji) {
+  pickEditReplyEmoji(emoji)
+  editReplyEmojiOpen.value = false
+}
+function onNewReplyEmojiPick(emoji) {
+  pickNewReplyEmoji(emoji)
+  newReplyEmojiOpen.value = false
+}
+function onNewTopicEmojiPick(emoji) {
+  pickNewTopicEmoji(emoji)
+  newTopicEmojiOpen.value = false
+}
+
+function onEditTopicEmojiEscape() {
+  editTopicEmojiOpen.value = false
+  nextTick(() => editTopicTextareaEl.value?.focus())
+}
+function onEditReplyEmojiEscape() {
+  editReplyEmojiOpen.value = false
+  nextTick(() => editReplyTextareaEl.value?.focus())
+}
+function onNewReplyEmojiEscape() {
+  newReplyEmojiOpen.value = false
+  nextTick(() => newReplyTextareaEl.value?.focus())
+}
+function onNewTopicEmojiEscape() {
+  newTopicEmojiOpen.value = false
+  nextTick(() => newTopicTextareaEl.value?.focus())
+}
+
 function renderMarkdown(text) {
   return DOMPurify.sanitize(marked.parse(text || ''))
 }
@@ -441,6 +695,44 @@ function renderMarkdown(text) {
 }
 .topic-body-text :deep(p) { margin-bottom: 8px; }
 .topic-body-text :deep(code) { background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-size: 13px; }
+
+.compose-outer { position: relative; }
+.topic-editor-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 8px;
+}
+.topic-editor-wrap:focus-within { border-color: var(--color-primary); }
+.topic-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: vertical;
+  min-height: 150px;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.topic-textarea-sm { min-height: 80px; }
+.emoji-trigger-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 3px;
+  border-radius: 5px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: .55;
+  transition: opacity .1s;
+}
+.emoji-trigger-btn:hover { opacity: 1; }
 
 .edit-actions { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
 

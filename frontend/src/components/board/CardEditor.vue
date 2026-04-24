@@ -78,37 +78,50 @@ const mentionPos   = ref({ top: '0px', left: '0px' })
 const mentionUsers = computed(() => {
   if (mentionQuery.value === null) return []
   const q = (mentionQuery.value || '').toLowerCase()
-  return (props.users || []).filter(u =>
-    u.username.toLowerCase().startsWith(q) ||
-    (u.display_name || '').toLowerCase().startsWith(q)
-  ).slice(0, 8)
+  const normalized = (props.users || [])
+    .map(u => u?.user || u?.User || u)
+    .filter(Boolean)
+    .map(u => ({
+      ...u,
+      id: u.id ?? u.user_id ?? u.UserID,
+      username: u.username ?? u.Username ?? '',
+      display_name: u.display_name ?? u.displayName ?? u.DisplayName ?? '',
+    }))
+    .filter(u => !!u.username)
+
+  return normalized.filter(u => {
+    const username = String(u.username).toLowerCase()
+    const displayName = String(u.display_name || '').toLowerCase()
+    return username.startsWith(q) || displayName.startsWith(q)
+  }).slice(0, 8)
 })
 
 function detectTriggers() {
   if (!mde) return
   const cm     = mde.codemirror
   const cursor = cm.getCursor()
-  const line   = cm.getLine(cursor.line)
+  const line   = cm.getLine(cursor.line) || ''
   const before = line.slice(0, cursor.ch)
+  const cursorPx = cm.cursorCoords(cursor, 'page')
+  const anchorTop = cursorPx.bottom - window.scrollY + 4
+  const anchorLeft = cursorPx.left - window.scrollX
 
-  const mentionMatch = before.match(/(^|\s)@(\w*)$/)
-  const emojiMatch   = before.match(/(^|\s):(\w*)$/)
+  const mentionMatch = before.match(/(^|[^\w])@([\w\s]*)$/)
+  const emojiMatch   = before.match(/(^|[^\w]):(\w*)$/)
 
   if (mentionMatch) {
-    mentionQuery.value = mentionMatch[2]
+    mentionQuery.value = (mentionMatch[2] || '').replace(/\s+/g, '')
     const offset = mentionMatch[1].length
     mentionStart.value = { line: cursor.line, ch: cursor.ch - mentionMatch[0].length + offset }
     mentionIndex.value = 0
-    const coords = cm.cursorCoords(true, 'window')
-    mentionPos.value = { top: (coords.bottom + 4) + 'px', left: coords.left + 'px' }
+    mentionPos.value = { top: `${anchorTop}px`, left: `${anchorLeft}px` }
     emojiQuery.value = null
     emojiStart.value = null
   } else if (emojiMatch) {
     emojiQuery.value = emojiMatch[2]
     const offset = emojiMatch[1].length
     emojiStart.value = { line: cursor.line, ch: cursor.ch - emojiMatch[0].length + offset }
-    const coords = cm.cursorCoords(true, 'window')
-    emojiPos.value = { top: (coords.bottom + 4) + 'px', left: coords.left + 'px' }
+    emojiPos.value = { top: `${anchorTop}px`, left: `${anchorLeft}px` }
     emojiOpen.value = true
     mentionQuery.value = null
     mentionStart.value = null
@@ -187,7 +200,7 @@ onMounted(() => {
     // Only replace on regular character input (not undo/redo/paste)
     if (changeObj.origin === '+input') {
       const cursor = cm.getCursor()
-      const line   = cm.getLine(cursor.line)
+      const line   = cm.getLine(cursor.line) || ''
       const before = line.slice(0, cursor.ch)
       const hit    = detectEmoticon(before)
       if (hit) {

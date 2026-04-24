@@ -25,6 +25,7 @@ type SearchResult struct {
 // @Router       /search [get]
 func GlobalSearch(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
 	q := c.Query("q")
 	if len(q) < 2 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "query too short"})
@@ -32,11 +33,17 @@ func GlobalSearch(c *gin.Context) {
 	}
 	pattern := "%" + q + "%"
 
-	// Get project IDs the user is a member of
+	// Build project scope:
+	// - global admins can search all projects
+	// - regular users are restricted to projects they are a member of
 	var memberProjectIDs []uint
-	database.DB.Model(&models.ProjectMember{}).
-		Where("user_id = ?", userID).
-		Pluck("project_id", &memberProjectIDs)
+	if globalRole == "admin" {
+		database.DB.Model(&models.Project{}).Pluck("id", &memberProjectIDs)
+	} else {
+		database.DB.Model(&models.ProjectMember{}).
+			Where("user_id = ?", userID).
+			Pluck("project_id", &memberProjectIDs)
+	}
 
 	var results []SearchResult
 

@@ -46,6 +46,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { searchApi } from '@/api/search'
+import { projectsApi } from '@/api/projects'
 
 const router = useRouter()
 const query = ref('')
@@ -55,6 +56,7 @@ const loading = ref(false)
 const activeIdx = ref(0)
 const containerEl = ref(null)
 const inputEl = ref(null)
+const projectSlugById = ref(new Map())
 
 let debounceTimer = null
 
@@ -130,17 +132,43 @@ function selectCurrent() {
   if (entry) navigate(entry.result)
 }
 
-function navigate(r) {
+async function ensureProjectSlug(projectId) {
+  const id = Number(projectId)
+  if (!Number.isFinite(id) || id <= 0) return ''
+  if (projectSlugById.value.has(id)) return projectSlugById.value.get(id) || ''
+  try {
+    const { data } = await projectsApi.list()
+    for (const p of data || []) {
+      const pid = Number(p?.id)
+      const slug = String(p?.slug || '')
+      if (Number.isFinite(pid) && slug) projectSlugById.value.set(pid, slug)
+    }
+    return projectSlugById.value.get(id) || ''
+  } catch {
+    return ''
+  }
+}
+
+async function navigate(r) {
   close()
   const item = r.item
+  const slug = await ensureProjectSlug(item.project_id)
   if (r.type === 'card') {
-    router.push(`/projects/${item.project_id || ''}`)
+    if (slug) {
+      router.push({ path: `/projects/${slug}`, query: { card: String(item.id) } })
+    }
   } else if (r.type === 'chat_message') {
-    router.push(`/projects/${item.project_id || ''}`)
+    if (slug) router.push(`/projects/${slug}`)
   } else if (r.type === 'dm_message') {
-    router.push(`/messages`)
+    const convId = item?.conversation_id
+    if (convId) router.push({ path: '/messages', query: { conv: String(convId) } })
+    else router.push('/messages')
   } else if (r.type === 'card_comment') {
-    router.push(`/projects/${item.project_id || ''}`)
+    if (slug) {
+      const cardId = item?.card_id
+      if (cardId) router.push({ path: `/projects/${slug}`, query: { card: String(cardId) } })
+      else router.push(`/projects/${slug}`)
+    }
   }
 }
 
