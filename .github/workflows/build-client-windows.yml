@@ -48,7 +48,7 @@ jobs:
             const p = 'frontend/src-tauri/tauri.conf.json';
             const c = JSON.parse(fs.readFileSync(p, 'utf8'));
             let v = '0.0.0';
-            try { v = execSync('git describe --tags --abbrev=0').toString().trim().replace(/^v/, ''); } catch {}
+            try { v = execSync('git describe --tags --abbrev=0').toString().trim().replace(/^v/, '').split('.').slice(0, 3).join('.'); } catch {}
             c.version = v;
             fs.writeFileSync(p, JSON.stringify(c, null, 2) + '\n');
           "

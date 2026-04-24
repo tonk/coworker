@@ -174,7 +174,8 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-            const ver = process.env.VERSION.replace(/^v/, '');
+            const raw = process.env.VERSION.replace(/^v/, '');
+            const ver = raw.split('.').slice(0, 3).join('.');
             const tp = 'frontend/src-tauri/tauri.conf.json';
             const tc = JSON.parse(fs.readFileSync(tp, 'utf8'));
             tc.version = ver;
@@ -262,7 +263,8 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-            const ver = process.env.VERSION.replace(/^v/, '');
+            const raw = process.env.VERSION.replace(/^v/, '');
+            const ver = raw.split('.').slice(0, 3).join('.');
             const tp = 'frontend/src-tauri/tauri.conf.json';
             const tc = JSON.parse(fs.readFileSync(tp, 'utf8'));
             tc.version = ver;
