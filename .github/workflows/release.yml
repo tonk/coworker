@@ -10,9 +10,6 @@ permissions:
   id-token: write   # required by SignPath to verify OIDC build identity
   actions: read     # required by SignPath to read workflow artifact metadata
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   # ── Create draft release first ───────────────────────────────────────────────
   create-release:
