@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.15.2 — 2026-04-24
+
+### Fixed
+- **Windows desktop build** — Tauri requires strict semver (`MAJOR.MINOR.PATCH`); four-part tag names such as `v0.8.15.1` were rejected. Version-stamp steps in the release and manual Windows workflows now truncate any fourth component before writing `tauri.conf.json` and `Cargo.toml`.
+
 ## v0.8.15.1 — 2026-04-24
 
 ### Fixed
