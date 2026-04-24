@@ -389,3 +389,4 @@ Create an application that has all these features and requirements
 - Raise search minimum to 3 characters and strip SQL LIKE wildcards from queries
 - Remove ?api_key= query param support; require X-API-Key header for API key authentication
 - Log a warning when allowed_origins is set to wildcard (*)
+- Fix Windows CI build: remove FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 from all GitHub Actions workflows

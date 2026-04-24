@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.15.1 — 2026-04-24
+
+### Fixed
+- **Windows CI build** — removed `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` from all five GitHub Actions workflows; the flag was forcing the Actions runner infrastructure itself to use Node 24, breaking the `actions/setup-node` step. The `node-version: '24'` setting already ensures Node 24 is used for build steps.
+
 ## v0.8.15 — 2026-04-24
 
 ### Added
