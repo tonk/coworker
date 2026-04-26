@@ -236,6 +236,7 @@ ansible-galaxy collection install ansiblabnl.warmdesk
 - `ansilabnl.warmdesk.project`: Create and update projects (Kanban/Scrum) and prefixes.
 - `ansilabnl.warmdesk.group`: Manage user groups and their project/customer access.
 - `ansilabnl.warmdesk.customer_member`: Manage membership and roles within a customer.
+- `ansilabnl.warmdesk.from_vars`: Provision WarmDesk resources from YAML variable files.
 
 ### Available Plugins
 
