@@ -9,11 +9,13 @@ description: >
 license:
   - GPL-2.0-or-later
 authors:
-  - Ton Kersten
+  - Ton Kersten <tonk@ansiblelab.nl>
 tags:
   - warmdesk
   - project_management
   - kanban
+  - scrum
+  - time_management
 repository: https://github.com/tonk/warmdesk
 homepage: https://github.com/tonk/warmdesk
 documentation: https://github.com/tonk/warmdesk/tree/main/docs
