@@ -423,6 +423,14 @@
             <h3 class="settings-subsection">{{ $t('admin.branding_title') }}</h3>
             <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.branding_hint') }}</p>
 
+            <div class="form-group">
+              <label class="toggle-row">
+                <span>{{ $t('admin.login_branding_enabled') }}</span>
+                <input type="checkbox" v-model="systemSettings.login_branding_enabled" />
+              </label>
+              <p class="form-hint">{{ $t('admin.login_branding_hint') }}</p>
+            </div>
+
             <div class="form-group" style="max-width:400px">
               <label class="form-label">{{ $t('admin.company_name') }}</label>
               <input class="form-input" v-model="systemSettings.company_name" :placeholder="$t('admin.company_name_placeholder')" />
@@ -1430,6 +1438,7 @@ async function loadSettings() {
     systemSettings.value.smtp_password            = ''
     systemSettings.value.company_name             = data.company_name || ''
     systemSettings.value.company_logo             = data.company_logo || ''
+    systemSettings.value.login_branding_enabled   = data.login_branding_enabled === 'true'
     systemSettings.value.default_columns          = data.default_columns || 'Backlog'
     systemSettings.value.default_labels           = data.default_labels || 'Bug\nFeature\nDesign\nContent'
     systemSettings.value.password_min_length      = parseInt(data.password_min_length) || 8
@@ -1472,6 +1481,7 @@ async function saveBrandingSettings() {
     await adminApi.updateSystemSettings({
       company_name: systemSettings.value.company_name,
       company_logo: systemSettings.value.company_logo,
+      login_branding_enabled: systemSettings.value.login_branding_enabled,
     })
     ui.success('Settings saved')
   } catch {

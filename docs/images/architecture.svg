@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 480" width="820" height="480">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/>
+    </marker>
+    <style>
+      text { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+    </style>
+  </defs>
+
+  <!-- background -->
+  <rect width="820" height="480" fill="#f8fafc" rx="4"/>
+
+  <!-- ═══════════════ TITLE ═══════════════ -->
+  <text x="410" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">
+    WarmDesk — Application Architecture
+  </text>
+
+  <!-- ═══════════════ LAYER 1: CLIENTS ═══════════════ -->
+  <rect x="15" y="38" width="790" height="82" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="27" y="58" font-size="9" font-weight="700" fill="#1e40af" letter-spacing="1.5">CLIENTS</text>
+
+  <!-- Web Browser -->
+  <rect x="135" y="48" width="210" height="62" rx="6" fill="white" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="240" y="76" text-anchor="middle" font-size="13" font-weight="600" fill="#1e40af">&#x1F310;  Web Browser</text>
+  <text x="240" y="95" text-anchor="middle" font-size="11" fill="#475569">Any modern browser</text>
+
+  <!-- Desktop App -->
+  <rect x="480" y="48" width="210" height="62" rx="6" fill="white" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="585" y="76" text-anchor="middle" font-size="13" font-weight="600" fill="#1e40af">&#x1F5A5;  Desktop App</text>
+  <text x="585" y="95" text-anchor="middle" font-size="11" fill="#475569">Tauri 2 · Linux · macOS · Windows</text>
+
+  <!-- connector arrow -->
+  <line x1="410" y1="120" x2="410" y2="140" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="410" y="134" text-anchor="middle" font-size="10" fill="#64748b">HTTPS REST  ·  WebSocket</text>
+
+  <!-- ═══════════════ LAYER 2: FRONTEND ═══════════════ -->
+  <rect x="15" y="142" width="790" height="80" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <text x="27" y="162" font-size="9" font-weight="700" fill="#15803d" letter-spacing="1.5">FRONTEND  ·  Vue 3 SPA</text>
+
+  <!-- pills -->
+  <rect x="32"  y="168" width="64" height="28" rx="14" fill="#4ade80"/>
+  <text x="64"  y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">Vue 3</text>
+
+  <rect x="104" y="168" width="54" height="28" rx="14" fill="#a78bfa"/>
+  <text x="131" y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">Vite</text>
+
+  <rect x="166" y="168" width="60" height="28" rx="14" fill="#fb923c"/>
+  <text x="196" y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">Pinia</text>
+
+  <rect x="234" y="168" width="90" height="28" rx="14" fill="#34d399"/>
+  <text x="279" y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">Vue Router</text>
+
+  <rect x="332" y="168" width="52" height="28" rx="14" fill="#60a5fa"/>
+  <text x="358" y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">i18n</text>
+
+  <rect x="392" y="168" width="60" height="28" rx="14" fill="#94a3b8"/>
+  <text x="422" y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">Axios</text>
+
+  <rect x="460" y="168" width="106" height="28" rx="14" fill="#6366f1"/>
+  <text x="513" y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">Frappe Gantt</text>
+
+  <rect x="574" y="168" width="90" height="28" rx="14" fill="#475569"/>
+  <text x="619" y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">SortableJS</text>
+
+  <rect x="672" y="168" width="88" height="28" rx="14" fill="#64748b"/>
+  <text x="716" y="187" text-anchor="middle" font-size="11" font-weight="700" fill="white">DOMPurify</text>
+
+  <!-- connector arrow -->
+  <line x1="410" y1="222" x2="410" y2="242" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="410" y="236" text-anchor="middle" font-size="10" fill="#64748b">HTTP REST API  ·  WebSocket Hub  ·  JWT auth header</text>
+
+  <!-- ═══════════════ LAYER 3: BACKEND ═══════════════ -->
+  <rect x="15" y="244" width="790" height="80" rx="8" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="27" y="264" font-size="9" font-weight="700" fill="#92400e" letter-spacing="1.5">BACKEND  ·  Go 1.25</text>
+
+  <!-- pills -->
+  <rect x="32"  y="270" width="58" height="28" rx="14" fill="#00b4a6"/>
+  <text x="61"  y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">Gin</text>
+
+  <rect x="98"  y="270" width="64" height="28" rx="14" fill="#d946ef"/>
+  <text x="130" y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">GORM</text>
+
+  <rect x="170" y="270" width="54" height="28" rx="14" fill="#f97316"/>
+  <text x="197" y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">JWT</text>
+
+  <rect x="232" y="270" width="82" height="28" rx="14" fill="#6366f1"/>
+  <text x="273" y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">TOTP MFA</text>
+
+  <rect x="322" y="270" width="92" height="28" rx="14" fill="#0ea5e9"/>
+  <text x="368" y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">WebSocket</text>
+
+  <rect x="422" y="270" width="106" height="28" rx="14" fill="#dc2626"/>
+  <text x="475" y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">Redis pub/sub</text>
+
+  <rect x="536" y="270" width="98" height="28" rx="14" fill="#e11d48"/>
+  <text x="585" y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">Prometheus</text>
+
+  <rect x="642" y="270" width="82" height="28" rx="14" fill="#84cc16"/>
+  <text x="683" y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">Swagger</text>
+
+  <rect x="732" y="270" width="60" height="28" rx="14" fill="#f59e0b"/>
+  <text x="762" y="289" text-anchor="middle" font-size="11" font-weight="700" fill="white">PDF</text>
+
+  <!-- three arrows down to storage -->
+  <line x1="210" y1="324" x2="210" y2="344" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="490" y1="324" x2="490" y2="344" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="715" y1="324" x2="715" y2="344" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ═══════════════ LAYER 4: STORAGE ═══════════════ -->
+
+  <!-- Database -->
+  <rect x="15" y="346" width="360" height="118" rx="8" fill="#f3e8ff" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="195" y="367" text-anchor="middle" font-size="9" font-weight="700" fill="#6b21a8" letter-spacing="1.5">DATABASE</text>
+  <text x="195" y="392" text-anchor="middle" font-size="13" font-weight="600" fill="#3b0764">SQLite · PostgreSQL · MySQL</text>
+  <text x="195" y="413" text-anchor="middle" font-size="11" fill="#6b21a8">GORM AutoMigrate on every startup</text>
+  <text x="195" y="431" text-anchor="middle" font-size="11" fill="#6b21a8">No separate migration files needed</text>
+  <text x="195" y="449" text-anchor="middle" font-size="11" fill="#6b21a8">TLS / mTLS for cloud databases</text>
+
+  <!-- Redis -->
+  <rect x="385" y="346" width="245" height="118" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5"/>
+  <text x="507" y="367" text-anchor="middle" font-size="9" font-weight="700" fill="#be185d" letter-spacing="1.5">REDIS  (optional)</text>
+  <text x="507" y="392" text-anchor="middle" font-size="13" font-weight="600" fill="#831843">WebSocket Pub/Sub</text>
+  <text x="507" y="413" text-anchor="middle" font-size="11" fill="#be185d">Enables multiple backend instances</text>
+  <text x="507" y="431" text-anchor="middle" font-size="11" fill="#be185d">broadcasting to all connected clients</text>
+
+  <!-- SMTP -->
+  <rect x="640" y="346" width="165" height="118" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="722" y="367" text-anchor="middle" font-size="9" font-weight="700" fill="#065f46" letter-spacing="1.5">SMTP  (optional)</text>
+  <text x="722" y="392" text-anchor="middle" font-size="13" font-weight="600" fill="#064e3b">Email Delivery</text>
+  <text x="722" y="413" text-anchor="middle" font-size="11" fill="#065f46">Password resets</text>
+  <text x="722" y="431" text-anchor="middle" font-size="11" fill="#065f46">Configurable via YAML</text>
+</svg>

@@ -33,6 +33,7 @@
             <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="project-avatar" alt="" />
             <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
             <span class="link-text">{{ project.name }}</span>
+            <button class="fav-btn fav-btn-active" @click.prevent="sidebarStore.unstarProject(project.slug)" :title="$t('project.unstar')">★</button>
           </RouterLink>
         </nav>
       </div>

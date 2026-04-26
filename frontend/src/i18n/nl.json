@@ -68,7 +68,8 @@
     },
     "customer": "Klant",
     "contract": "Contract",
-    "no_customer": "Geen klant"
+    "no_customer": "Geen klant",
+    "customer_required": "Een klant is verplicht"
   },
   "customer": {
     "customers": "Klanten",
@@ -332,7 +333,9 @@
     "scrum_storypoints_enabled": "Scrum storypoints",
     "scrum_storypoints_hint": "Als ingeschakeld, verschijnt een storypoints-veld op elke kaart voor Scrum-schatting.",
     "gravatar_enabled": "Gravatar-avatars",
-    "gravatar_hint": "Als ingeschakeld, worden profielfoto's opgehaald van Gravatar op basis van het e-mailadres van de gebruiker. Als uitgeschakeld, worden initialen-avatars gebruikt."
+    "gravatar_hint": "Als ingeschakeld, worden profielfoto's opgehaald van Gravatar op basis van het e-mailadres van de gebruiker. Als uitgeschakeld, worden initialen-avatars gebruikt.",
+    "login_branding_enabled": "Bedrijfsbranding tonen op het inlogscherm",
+    "login_branding_hint": "Toont de bedrijfsnaam en het logo boven de inlogkaart."
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

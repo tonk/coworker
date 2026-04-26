@@ -55,7 +55,7 @@
       </div>
   </main>
 
-  <BaseModal v-if="showCreate" :title="$t('project.new_project')" @close="showCreate = false; newProject.key_prefix = ''; prefixTouched = false">
+  <BaseModal v-if="showCreate" :title="$t('project.new_project')" @close="showCreate = false; newProject.key_prefix = ''; prefixTouched = false; customerError = false">
       <form @submit.prevent="handleCreate">
         <div class="form-group">
           <label class="form-label">{{ $t('project.project_name') }}</label>
@@ -84,10 +84,11 @@
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('project.customer') }} *</label>
-          <select class="form-input" v-model="newProject.customer_id" style="max-width:400px" required>
+          <select class="form-input" :class="{ 'input-error': customerError }" v-model="newProject.customer_id" style="max-width:400px" @change="customerError = false">
             <option :value="null" disabled>— {{ $t('project.customer') }} —</option>
             <option v-for="c in createCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
+          <p v-if="customerError" class="field-error">{{ $t('project.customer_required') }}</p>
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('sprint.board_type') }}</label>
@@ -100,7 +101,7 @@
       </form>
       <template #footer>
         <button class="btn btn-secondary" @click="showCreate = false">{{ $t('common.cancel') }}</button>
-        <button class="btn btn-primary" @click="handleCreate" :disabled="creating || !newProject.key_prefix.trim() || !newProject.customer_id">{{ $t('project.create') }}</button>
+        <button class="btn btn-primary" @click="handleCreate" :disabled="creating || !newProject.key_prefix.trim()">{{ $t('project.create') }}</button>
       </template>
   </BaseModal>
 </template>
@@ -150,6 +151,7 @@ const creating = ref(false)
 const newProject = ref({ name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban', customer_id: null })
 const prefixTouched = ref(false)
 const createCustomers = ref([])
+const customerError = ref(false)
 
 function autoPrefix(name) {
   const words = name.toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean)
@@ -202,7 +204,7 @@ function projectAvatar(project) {
 async function handleCreate() {
   if (!newProject.value.name) return
   if (!newProject.value.customer_id) {
-    ui.error('A customer is required')
+    customerError.value = true
     return
   }
   creating.value = true
@@ -211,6 +213,7 @@ async function handleCreate() {
     showCreate.value = false
     newProject.value = { name: '', description: '', color: '#6366f1', key_prefix: '', board_type: 'kanban', customer_id: null }
     prefixTouched.value = false
+    customerError.value = false
     router.push(`/projects/${project.slug}`)
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to create project')
@@ -283,4 +286,7 @@ async function handleCreate() {
 
 .loading-state { display: flex; justify-content: center; padding: 60px; }
 .empty-state { text-align: center; padding: 60px; color: var(--color-text-muted); }
+
+.input-error { border-color: var(--color-danger, #ef4444) !important; }
+.field-error { margin-top: 4px; font-size: 12px; color: var(--color-danger, #ef4444); }
 </style>

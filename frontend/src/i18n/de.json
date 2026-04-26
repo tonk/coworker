@@ -68,7 +68,8 @@
     },
     "customer": "Kunde",
     "contract": "Vertrag",
-    "no_customer": "Kein Kunde"
+    "no_customer": "Kein Kunde",
+    "customer_required": "Ein Kunde ist erforderlich"
   },
   "customer": {
     "customers": "Kunden",
@@ -332,7 +333,9 @@
     "scrum_storypoints_enabled": "Scrum Story-Punkte",
     "scrum_storypoints_hint": "Wenn aktiviert, erscheint ein Story-Punkte-Feld auf jeder Karte für Scrum-Schätzungen.",
     "gravatar_enabled": "Gravatar-Avatare",
-    "gravatar_hint": "Wenn aktiviert, werden Profilbilder von Gravatar anhand der E-Mail-Adresse des Benutzers abgerufen. Wenn deaktiviert, werden stattdessen initialen-basierte Avatare verwendet."
+    "gravatar_hint": "Wenn aktiviert, werden Profilbilder von Gravatar anhand der E-Mail-Adresse des Benutzers abgerufen. Wenn deaktiviert, werden stattdessen initialen-basierte Avatare verwendet.",
+    "login_branding_enabled": "Unternehmens-Branding auf dem Anmeldebildschirm anzeigen",
+    "login_branding_hint": "Zeigt Firmenname und Logo über der Anmeldekarte an."
   },
   "update": {
     "available": "Eine neue Version von WarmDesk ist verfügbar: v{version}.",

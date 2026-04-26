@@ -68,7 +68,8 @@
     },
     "customer": "Customer",
     "contract": "Contract",
-    "no_customer": "No customer"
+    "no_customer": "No customer",
+    "customer_required": "A customer is required"
   },
   "customer": {
     "customers": "Customers",
@@ -332,7 +333,9 @@
     "backup_email_address": "Notification email address",
     "role_backup": "Backup",
     "timetracking_viewer": "Time Tracking Viewer",
-    "timetracking_viewer_hint": "Can view time tracking data for all users and customers"
+    "timetracking_viewer_hint": "Can view time tracking data for all users and customers",
+    "login_branding_enabled": "Show company branding on the login screen",
+    "login_branding_hint": "Displays the company name and logo above the login card."
   },
   "report": {
     "title": "Time Report",

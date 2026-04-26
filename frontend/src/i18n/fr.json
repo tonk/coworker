@@ -68,7 +68,8 @@
     },
     "customer": "Client",
     "contract": "Contrat",
-    "no_customer": "Aucun client"
+    "no_customer": "Aucun client",
+    "customer_required": "Un client est requis"
   },
   "customer": {
     "customers": "Clients",
@@ -332,7 +333,9 @@
     "scrum_storypoints_enabled": "Points de story Scrum",
     "scrum_storypoints_hint": "Lorsqu'activé, un champ Points de story apparaît sur chaque carte pour l'estimation Scrum.",
     "gravatar_enabled": "Avatars Gravatar",
-    "gravatar_hint": "Lorsqu'activé, les photos de profil sont récupérées depuis Gravatar en fonction de l'adresse e-mail de l'utilisateur. Lorsque désactivé, des avatars à base d'initiales sont utilisés."
+    "gravatar_hint": "Lorsqu'activé, les photos de profil sont récupérées depuis Gravatar en fonction de l'adresse e-mail de l'utilisateur. Lorsque désactivé, des avatars à base d'initiales sont utilisés.",
+    "login_branding_enabled": "Afficher l'identité visuelle sur l'écran de connexion",
+    "login_branding_hint": "Affiche le nom et le logo de l'entreprise au-dessus de la carte de connexion."
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",

@@ -54,6 +54,7 @@ const (
 	settingBackupLastSuccess      = "backup_last_success"
 	settingScrumStorypointsEnabled = "scrum_storypoints_enabled"
 	settingGravatarEnabled         = "gravatar_enabled"
+	settingLoginBrandingEnabled    = "login_branding_enabled"
 )
 
 func init() {
@@ -261,6 +262,7 @@ func GetSystemSettings(c *gin.Context) {
 		"session_timeout_minutes":     timeoutMinutes,
 		"company_name":                all[settingCompanyName],
 		"company_logo":                all[settingCompanyLogo],
+		"login_branding_enabled":      all[settingLoginBrandingEnabled] == "true",
 		"mfa_required":                 all[settingMFARequired] == "true",
 		"password_policy":              GetPasswordPolicy(),
 		"scrum_storypoints_enabled":    all[settingScrumStorypointsEnabled] == "true",
@@ -312,6 +314,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		BackupEmailAddress          *string `json:"backup_email_address"`
 		ScrumStorypointsEnabled     *bool   `json:"scrum_storypoints_enabled"`
 		GravatarEnabled             *bool   `json:"gravatar_enabled"`
+		LoginBrandingEnabled        *bool   `json:"login_branding_enabled"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -432,6 +435,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	}
 	boolSetting(req.ScrumStorypointsEnabled, settingScrumStorypointsEnabled)
 	boolSetting(req.GravatarEnabled, settingGravatarEnabled)
+	boolSetting(req.LoginBrandingEnabled, settingLoginBrandingEnabled)
 
 	AdminGetSystemSettings(c)
 }
