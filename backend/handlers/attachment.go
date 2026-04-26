@@ -67,12 +67,6 @@ func UploadAttachment(c *gin.Context) {
 		return
 	}
 
-	// Detect MIME type from content type header
-	mimeType := fh.Header.Get("Content-Type")
-	if mimeType == "" {
-		mimeType = "application/octet-stream"
-	}
-
 	uploadDir := "./uploads"
 	if attachmentCfg != nil && attachmentCfg.UploadDir != "" {
 		uploadDir = attachmentCfg.UploadDir
@@ -89,6 +83,16 @@ func UploadAttachment(c *gin.Context) {
 	if err := c.SaveUploadedFile(fh, dest); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
 		return
+	}
+
+	// Detect MIME type from the actual file bytes — ignores the client-supplied Content-Type header.
+	mimeType := "application/octet-stream"
+	if f, err := os.Open(dest); err == nil {
+		buf := make([]byte, 512)
+		if n, err := f.Read(buf); err == nil && n > 0 {
+			mimeType = http.DetectContentType(buf[:n])
+		}
+		f.Close()
 	}
 
 	attachment := models.Attachment{
