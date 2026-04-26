@@ -149,7 +149,7 @@ Settings can also be provided as environment variables, which always take preced
 | `jwt_secret` | `JWT_SECRET` | *(required — server refuses to start at default)* | Secret for signing JWT tokens |
 | `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` | CORS allowed origins — `*` is blocked in `release` mode |
 | `default_locale` | `DEFAULT_LOCALE` | `en` | Default UI language for new users |
-| `gin_mode` | `GIN_MODE` | `debug` | `debug` or `release` |
+| `gin_mode` | `GIN_MODE` | `release` | `release` (default) or `debug` (development only) |
 | `api_log` | `API_LOG` | `true` | Log incoming HTTP requests |
 | `db_log` | `DB_LOG` | `info` | DB query log level: `silent` / `error` / `warn` / `info` |
 | `upload_dir` | `UPLOAD_DIR` | `./uploads` | Directory for uploaded files |

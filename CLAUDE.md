@@ -87,6 +87,7 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 | `max_upload_mb` | `MAX_UPLOAD_MB` | `25` |
 | `redis_url` | `REDIS_URL` | *(optional)* |
 | `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` — `*` blocked in `release` mode |
+| `gin_mode` | `GIN_MODE` | `release` — set to `debug` for local development |
 
 ---
 
@@ -214,3 +215,12 @@ There are currently no automated tests (no `*_test.go` files, no Vitest/Jest con
 - `deploy/` has ready-made templates for systemd, nginx (with SSL), and Apache.
 - For multi-instance deployments set `redis_url` — this routes WebSocket broadcasts through Redis pub/sub instead of in-process memory.
 - First-run with an empty DB: register the first user normally; promote to admin with a direct DB update or via another admin account.
+
+### Horizontal scaling limitations
+
+When running more than one WarmDesk instance behind a load balancer, two subsystems are **in-memory only** and do not share state across instances:
+
+| Subsystem | Limitation | Fix |
+|---|---|---|
+| **WebSocket broadcasts** | Board/chat updates only reach clients connected to the same instance | Set `redis_url` — broadcasts are routed through Redis pub/sub |
+| **Rate limiter** (`middleware/ratelimit.go`) | Login/register/reset attempt counts are per-instance; an attacker can hit multiple instances to bypass the limit | Set `redis_url` — currently no Redis-backed rate limiter is implemented; this is a known gap for multi-instance deployments |

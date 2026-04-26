@@ -23,7 +23,7 @@ type Config struct {
 	WebDir         string `yaml:"web_dir"`
 	RedisURL       string `yaml:"redis_url"` // optional — enables horizontal scaling
 	DefaultLocale  string `yaml:"default_locale"`
-	GinMode        string `yaml:"gin_mode"` // debug | release (default: debug)
+	GinMode        string `yaml:"gin_mode"` // debug | release (default: release)
 	DBLog          string `yaml:"db_log"`   // silent | error | warn | info (default: info)
 	APILog         bool   `yaml:"api_log"`  // log HTTP requests (default: true)
 	UploadDir      string `yaml:"upload_dir"`    // directory for uploaded files (default: ./uploads)
@@ -63,6 +63,7 @@ func defaults() *Config {
 		JWTSecret:      "change-me-in-production",
 		AllowedOrigins: "http://localhost:5173",
 		WebDir:         "",
+		GinMode:        "release",
 		DefaultLocale:  "en",
 		APILog:         true,
 		UploadDir:      "./uploads",

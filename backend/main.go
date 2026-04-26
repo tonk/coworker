@@ -124,7 +124,7 @@ func main() {
 	handlers.InitNotifications(notifSvc)
 	handlers.SetBaseURL(cfg.BaseURL)
 
-	if cfg.GinMode == "release" {
+	if cfg.GinMode != "debug" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 

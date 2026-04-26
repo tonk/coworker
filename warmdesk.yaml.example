@@ -95,10 +95,10 @@ allowed_origins: "http://localhost:5173"
 # Can be overridden per-user in their profile settings.
 # default_locale: "en"
 
-# Gin framework mode: debug | release. Defaults to "debug".
-# Set to "release" in production to suppress verbose request logging.
+# Gin framework mode: debug | release. Defaults to "release".
+# Set to "debug" during development to enable verbose request logging and detailed errors.
 # Can also be set via the GIN_MODE environment variable.
-# gin_mode: "release"
+# gin_mode: "debug"
 
 # Database query logging level: silent | error | warn | info. Defaults to "info".
 # Set to "silent" or "error" in production to suppress per-query log output.
