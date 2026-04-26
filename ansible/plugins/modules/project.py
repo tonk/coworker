@@ -64,8 +64,7 @@ options:
     description:
       - Name of an existing WarmDesk customer to associate with this project.
         The name is resolved to a numeric C(customer_id) automatically.
-      - Pass an empty string or omit the parameter to clear the association on
-        an existing project.
+      - Required when C(state=present).
     type: str
   contract:
     description:
@@ -98,11 +97,12 @@ options:
 '''
 
 EXAMPLES = r'''
-- name: Create a minimal project
+- name: Create a project
   ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: Infrastructure
+    customer: Acme Corp
     state: present
 
 - name: Create a fully specified project
@@ -137,13 +137,13 @@ EXAMPLES = r'''
     is_archived: true
     state: present
 
-- name: Unarchive a project and clear its customer association
+- name: Unarchive a project
   ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: Edge Data Analytics
+    customer: Acme Corp
     is_archived: false
-    customer: ""
     state: present
 
 - name: Create a scrum project
@@ -151,6 +151,7 @@ EXAMPLES = r'''
     warmdesk_url: https://desk.example.com
     warmdesk_token: "{{ vault_wd_token }}"
     name: Sprint Board
+    customer: Acme Corp
     board_type: scrum
     state: present
 
@@ -339,6 +340,7 @@ def run_module():
     module = AnsibleModule(
         argument_spec=argument_spec,
         supports_check_mode=True,
+        required_if=[('state', 'present', ['customer'])],
     )
 
     params = module.params
@@ -361,18 +363,13 @@ def run_module():
         customer_id = _SENTINEL
         contract_id = _SENTINEL
 
-        if customer_param is not None:
-            if customer_param == '':
-                # Explicit clear
-                customer_id = None
-                contract_id = None
-            else:
-                customer_id = resolve_customer_id(client, customer_param)
-                if contract_param is not None:
-                    if contract_param == '':
-                        contract_id = None
-                    else:
-                        contract_id = resolve_contract_id(client, customer_id, contract_param)
+        if customer_param:
+            customer_id = resolve_customer_id(client, customer_param)
+            if contract_param is not None:
+                if contract_param == '':
+                    contract_id = None
+                else:
+                    contract_id = resolve_contract_id(client, customer_id, contract_param)
 
         # ------------------------------------------------------------------
         # Look up existing project

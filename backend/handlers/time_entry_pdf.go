@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jung-kurt/gofpdf"
@@ -12,12 +13,25 @@ import (
 	"github.com/tonk/warmdesk/models"
 )
 
-// GetTimeEntryReportPDF renders the authenticated user's time entry report as PDF.
-// It accepts the same query parameters as GetTimeEntryReport.
+// GetTimeEntryReportPDF renders a time entry report as PDF.
+// Admin and timetracking roles may pass ?user_id= to render another user's report.
 func GetTimeEntryReportPDF(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
 
-	report, status, msg := assembleTimeEntryReport(c, userID)
+	var uFlag models.User
+	database.DB.Select("time_tracking_viewer").First(&uFlag, userID)
+
+	targetUserID := userID
+	if globalRole == "admin" || uFlag.TimeTrackingViewer {
+		if targetStr := c.Query("user_id"); targetStr != "" {
+			if id, err := strconv.ParseUint(targetStr, 10, 64); err == nil {
+				targetUserID = uint(id)
+			}
+		}
+	}
+
+	report, status, msg := assembleTimeEntryReport(c, targetUserID)
 	if status != 0 {
 		c.JSON(status, gin.H{"error": msg})
 		return

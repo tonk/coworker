@@ -337,6 +337,7 @@
                   </div>
                   <div :class="['msg-bubble', msg.sender_id === auth.user?.id ? 'bubble-own' : 'bubble-other']">
                     <span v-if="msg.is_deleted" class="msg-deleted">{{ $t('chat.deleted') }}</span>
+                    <!-- nosemgrep: javascript.vue.security.audit.xss.templates.avoid-v-html.avoid-v-html -- renderMarkdown sanitizes with DOMPurify -->
                     <div v-else class="msg-body" v-html="renderMarkdown(msg.body)"></div>
                     <span v-if="msg.is_edited && !msg.is_deleted" class="msg-edited"> · {{ $t('chat.edited') }}</span>
                   </div>

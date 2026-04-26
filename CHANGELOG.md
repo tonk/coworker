@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.9.1 — 2026-04-26
+
+### Added
+- **Time tracking: view all users** — admins and users with the `time_tracking_viewer` flag can switch between individual users or "All employees" using a dropdown in the time tracking header; the sheet is read-only when viewing another user.
+- **Ansible `from_vars` module** — new `ansilabnl.warmdesk.from_vars` module reads one or more YAML variable files and provisions all WarmDesk resources (users, customers, contracts, projects, columns, labels, cards, groups, system settings) in dependency-correct order regardless of declaration order in the file.
+
+### Changed
+- **Ansible `project` module** — `customer` is now a required parameter when `state=present`, matching the server-side enforcement introduced in v0.9.0.
+- **Session timeout setting** — the "minutes (0 = disabled)" label no longer wraps; input field and row width increased.
+
+### Fixed
+- **Login screen inside app shell** — after a server restart and page refresh the login form was rendered inside the sidebar/header shell instead of as a standalone page; fixed by initialising the auth session before installing Vue Router so the navigation guard sees the correct state on first load.
+
+### Security
+- **TLS minimum version** — database TLS connections now enforce a minimum of TLS 1.2 (`tls.VersionTLS12`).
+- **Gravatar hash** — switched from MD5 to SHA-256 for Gravatar URL generation; Gravatar has supported SHA-256 since 2024.
+- **nginx H2C smuggling** — WebSocket proxy location now only accepts `Upgrade: websocket`; general proxy location no longer forwards `Upgrade`/`Connection` headers, preventing h2c upgrade smuggling.
+- **Training seed** — replaced `math/rand` with `math/rand/v2` (auto-seeded, no deprecated `rand.Seed` call).
+
 ## v0.9.0 — 2026-04-24
 
 ### Added

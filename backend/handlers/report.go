@@ -58,8 +58,9 @@ func isoWeekStart(year, week int) time.Time {
 }
 
 // assembleTimeReport builds the report data from query params.
+// timeTrackingViewer, when true, grants access to all projects (same as admin).
 // Returns (data, httpStatus, errMsg). httpStatus == 0 means success.
-func assembleTimeReport(c *gin.Context, userID uint, globalRole string) (*TimeReportResponse, int, string) {
+func assembleTimeReport(c *gin.Context, userID uint, globalRole string, timeTrackingViewer bool) (*TimeReportResponse, int, string) {
 	period := c.DefaultQuery("period", "all")
 	projectSlug := c.Query("project")
 	yearStr := c.Query("year")
@@ -78,7 +79,7 @@ func assembleTimeReport(c *gin.Context, userID uint, globalRole string) (*TimeRe
 			return nil, http.StatusForbidden, "forbidden"
 		}
 		query = query.Where("project_id = ?", project.ID)
-	} else if globalRole != "admin" {
+	} else if globalRole != "admin" && !timeTrackingViewer {
 		var memberProjectIDs []uint
 		database.DB.Model(&models.ProjectMember{}).Where("user_id = ?", userID).Pluck("project_id", &memberProjectIDs)
 		if len(memberProjectIDs) == 0 {
@@ -255,12 +256,15 @@ func GetTimeReport(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	globalRole := middleware.GetGlobalRole(c)
 
-	if !userCanViewReports(userID, globalRole) {
+	var u models.User
+	database.DB.Select("time_tracking_viewer").First(&u, userID)
+
+	if !userCanViewReports(userID, globalRole, u.TimeTrackingViewer) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "reports are only available to project admins and system admins"})
 		return
 	}
 
-	report, status, errMsg := assembleTimeReport(c, userID, globalRole)
+	report, status, errMsg := assembleTimeReport(c, userID, globalRole, u.TimeTrackingViewer)
 	if status != 0 {
 		c.JSON(status, gin.H{"error": errMsg})
 		return

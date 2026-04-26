@@ -1,0 +1,149 @@
+# WarmDesk resource vars file — example for use with ansilabnl.warmdesk.from_vars
+#
+# All keys are optional. Include only the resource types you want to manage.
+# Split into multiple files and pass them all to var_files; lists are merged,
+# dict keys (system_settings) are merged with later files taking precedence.
+#
+# Processing order (dependency-safe regardless of file order):
+#   users → customers (+ contracts + customer members) →
+#   user customer_roles → projects (+ columns + labels + members + cards) →
+#   groups → system_settings
+# ---------------------------------------------------------------------------
+
+# ── Users ──────────────────────────────────────────────────────────────────
+users:
+  - username: alice
+    email: alice@example.com
+    first_name: Alice
+    last_name: Smith
+    global_role: user        # admin | user | viewer | metrics
+    is_active: true
+    # password: changeme     # always treated as changed when supplied
+
+    # Customer access granted to this user (resolved after customers exist).
+    customer_roles:
+      Acme Corp: admin       # customer name → member | admin
+
+  - username: bob
+    email: bob@example.com
+    first_name: Bob
+    last_name: Jones
+    global_role: user
+
+# ── Customers ──────────────────────────────────────────────────────────────
+customers:
+  - name: Acme Corp
+    description: Our primary customer
+    # logo_url: https://example.com/logo.png
+    starred: false
+
+    contracts:
+      - name: Support 2026
+        description: Annual support and maintenance
+        start_date: "2026-01-01"
+        end_date: "2026-12-31"
+
+      - name: Development Q1
+        start_date: "2026-01-01"
+        end_date: "2026-03-31"
+
+    members:
+      - username: alice
+        role: admin          # member | admin
+      - username: bob
+        role: member
+
+  - name: Beta Customer
+    description: Early-access partner
+
+# ── Groups ─────────────────────────────────────────────────────────────────
+groups:
+  - name: DevOps
+    description: Infrastructure and operations team
+    members:
+      - alice
+      - bob
+    customer_access:
+      - customer: Acme Corp
+        role: member         # member | admin (for customers)
+    project_access:
+      - project: Infrastructure   # project name or slug
+        role: member              # viewer | member | owner
+
+  - name: ReadOnly
+    description: Stakeholders with read-only access
+    members:
+      - bob
+    project_access:
+      - project: Website Redesign
+        role: viewer
+
+# ── Projects ───────────────────────────────────────────────────────────────
+projects:
+  - name: Infrastructure
+    customer: Acme Corp          # required
+    contract: Support 2026       # optional; must exist under the customer
+    description: Core infrastructure and CI/CD
+    color: "#3b82f6"
+    key_prefix: INF              # 1–10 uppercase letters/digits; set at creation only
+    board_type: kanban           # kanban | scrum; set at creation only
+    is_archived: false
+    starred: false
+
+    columns:
+      - name: Backlog
+      - name: In Progress
+        wip_limit: 3
+      - name: Review
+      - name: Done
+
+    labels:
+      - name: Bug
+        color: "#ef4444"
+      - name: Feature
+        color: "#22c55e"
+      - name: Urgent
+        color: "#f97316"
+
+    members:
+      - username: alice
+        role: owner              # viewer | member | owner
+      - username: bob
+        role: member
+
+    cards:
+      - title: Set up CI/CD pipeline
+        column: Backlog
+        description: Configure GitHub Actions for build and deploy
+        priority: high           # none | low | medium | high | urgent
+        assignee: alice
+        due_date: "2026-06-30"
+
+      - title: Write deployment runbook
+        column: Backlog
+        priority: medium
+        assignee: bob
+
+  - name: Website Redesign
+    customer: Acme Corp
+    contract: Development Q1
+    color: "#8b5cf6"
+    key_prefix: WEB
+
+    columns:
+      - name: Todo
+      - name: In Progress
+      - name: Done
+
+    members:
+      - username: bob
+        role: owner
+
+# ── System settings ─────────────────────────────────────────────────────────
+# Admin-only. Keys match what GET /api/v1/admin/system returns.
+system_settings:
+  company_name: Acme Corp
+  locale: en
+  # smtp_host: mail.example.com
+  # smtp_port: "587"
+  # smtp_username: noreply@example.com

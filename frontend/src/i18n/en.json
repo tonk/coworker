@@ -330,7 +330,9 @@
     "backup_schedule_save": "Save schedule",
     "backup_email_enabled": "Send email notification after backup",
     "backup_email_address": "Notification email address",
-    "role_backup": "Backup"
+    "role_backup": "Backup",
+    "timetracking_viewer": "Time Tracking Viewer",
+    "timetracking_viewer_hint": "Can view time tracking data for all users and customers"
   },
   "report": {
     "title": "Time Report",
@@ -626,6 +628,7 @@
     "next_week": "Next week",
     "export_xlsx": "Export XLSX",
     "export_pdf": "Export PDF",
-    "export_error": "Export failed."
+    "export_error": "Export failed.",
+    "all_employees": "All employees"
   }
 }

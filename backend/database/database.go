@@ -79,7 +79,8 @@ func buildTLSConfig(cfg *config.Config) (*tls.Config, error) {
 	}
 
 	tlsCfg := &tls.Config{
-		InsecureSkipVerify: mode == "require",
+		InsecureSkipVerify: mode == "require", //nolint:gosec // user-configured; require mode disables cert check intentionally
+		MinVersion:         tls.VersionTLS12,
 	}
 
 	if cfg.DBTLSCACert != "" {

@@ -27,10 +27,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/rand/v2" // nosemgrep: go.lang.security.audit.crypto.math_random.math-random-used -- non-cryptographic shuffle of display names
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/database"
@@ -148,7 +147,6 @@ func main() {
 	copy(shuffled, characters)
 
 	// And randomize them
-	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(shuffled), func(i, j int) {
 		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
 	})

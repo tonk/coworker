@@ -1,7 +1,7 @@
 package models
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
 	"fmt"
 	"strings"
 	"time"
@@ -25,7 +25,7 @@ type User struct {
 	LastName            string         `gorm:"size:100" json:"last_name"`
 	DisplayName         string         `gorm:"size:150" json:"display_name"`
 	AvatarURL           string         `gorm:"size:500" json:"avatar_url"`
-	GlobalRole          string         `gorm:"not null;default:'user'" json:"global_role"` // "admin" | "user" | "viewer" | "metrics"
+	GlobalRole          string         `gorm:"not null;default:'user'" json:"global_role"` // "admin" | "user" | "viewer" | "metrics" | "backup"
 	Locale              string         `gorm:"size:10;default:'en'" json:"locale"`
 	Theme               string         `gorm:"size:20;default:'system'" json:"theme"` // "light" | "dark" | "system"
 	DateTimeFormat      string         `gorm:"size:50;default:'YYYY-MM-DD HH:mm'" json:"date_time_format"`
@@ -40,6 +40,7 @@ type User struct {
 	IsActive            bool           `gorm:"default:true" json:"is_active"`
 	EmailNotifications  bool           `gorm:"default:true" json:"email_notifications"`
 	TimeTrackingEnabled bool           `gorm:"default:false" json:"time_tracking_enabled"`
+	TimeTrackingViewer  bool           `gorm:"default:false" json:"time_tracking_viewer"`
 	TOTPSecret          string         `gorm:"size:64" json:"-"`
 	TOTPEnabled         bool           `gorm:"default:false" json:"totp_enabled"`
 	PasswordResetToken  string         `gorm:"size:64;index" json:"-"`
@@ -56,7 +57,7 @@ func (u *User) AfterFind(tx *gorm.DB) error {
 		return nil
 	}
 	if GravatarEnabledFn != nil && GravatarEnabledFn() && u.Email != "" {
-		hash := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(u.Email))))
+		hash := sha256.Sum256([]byte(strings.ToLower(strings.TrimSpace(u.Email))))
 		u.GravatarURL = fmt.Sprintf("https://www.gravatar.com/avatar/%x?d=mp&s=80", hash)
 	} else {
 		u.GravatarURL = fmt.Sprintf("https://api.dicebear.com/7.x/initials/svg?seed=%s", u.Username)

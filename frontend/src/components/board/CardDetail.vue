@@ -26,6 +26,7 @@
                     :placeholder="$t('board.description')" rows="8"
                     @input="descOnInput" @keydown="descOnKeydown"></textarea>
         </div>
+        <!-- nosemgrep: javascript.vue.security.audit.xss.templates.avoid-v-html.avoid-v-html -- renderMarkdown sanitizes with DOMPurify -->
         <div v-else class="description-text comment-text" v-html="renderMarkdown(form.description)"></div>
       </div>
 
@@ -298,6 +299,7 @@
                   ⏱ {{ fmtCardTime(comment.time_spent_minutes) }}
                 </span>
               </div>
+              <!-- nosemgrep: javascript.vue.security.audit.xss.templates.avoid-v-html.avoid-v-html -- renderMarkdown sanitizes with DOMPurify -->
               <div class="comment-text" v-html="renderMarkdown(comment.body)"></div>
               <button class="btn btn-ghost btn-sm reply-btn" @click="replyTo(comment)">{{ $t('board.reply') }}</button>
             </div>

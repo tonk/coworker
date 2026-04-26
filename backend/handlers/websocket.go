@@ -78,7 +78,8 @@ func (h *WSHandler) HandleWS(c *gin.Context) {
 		return
 	}
 
-	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
+	// h.upgrader has CheckOrigin set in NewWSHandler — origin validation is performed there.
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil) // nosemgrep: go.gorilla.security.audit.websocket-missing-origin-check.websocket-missing-origin-check
 	if err != nil {
 		log.Printf("ws upgrade error: %v", err)
 		return
@@ -118,7 +119,8 @@ func (h *WSHandler) HandleUserWS(c *gin.Context) {
 		return
 	}
 
-	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
+	// h.upgrader has CheckOrigin set in NewWSHandler — origin validation is performed there.
+	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil) // nosemgrep: go.gorilla.security.audit.websocket-missing-origin-check.websocket-missing-origin-check
 	if err != nil {
 		log.Printf("ws user upgrade error: %v", err)
 		return

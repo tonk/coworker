@@ -327,6 +327,8 @@
     "backup_email_enabled": "E-Mail-Benachrichtigung nach Sicherung senden",
     "backup_email_address": "Benachrichtigungs-E-Mail-Adresse",
     "role_backup": "Sicherung",
+    "timetracking_viewer": "Zeiterfassungs-Betrachter",
+    "timetracking_viewer_hint": "Kann Zeiterfassungsdaten aller Benutzer und Kunden einsehen",
     "scrum_storypoints_enabled": "Scrum Story-Punkte",
     "scrum_storypoints_hint": "Wenn aktiviert, erscheint ein Story-Punkte-Feld auf jeder Karte für Scrum-Schätzungen.",
     "gravatar_enabled": "Gravatar-Avatare",
@@ -626,6 +628,7 @@
     "next_week": "Nächste Woche",
     "export_xlsx": "XLSX exportieren",
     "export_pdf": "PDF exportieren",
-    "export_error": "Export fehlgeschlagen."
+    "export_error": "Export fehlgeschlagen.",
+    "all_employees": "Alle Mitarbeiter"
   }
 }

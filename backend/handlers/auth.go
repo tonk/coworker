@@ -259,14 +259,14 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
-	user.CanViewReports = userCanViewReports(userID, user.GlobalRole)
+	user.CanViewReports = userCanViewReports(userID, user.GlobalRole, user.TimeTrackingViewer)
 	c.JSON(http.StatusOK, user)
 }
 
-// userCanViewReports returns true if the user is a global admin or is an
-// admin/owner of at least one project.
-func userCanViewReports(userID uint, globalRole string) bool {
-	if globalRole == "admin" {
+// userCanViewReports returns true if the user is a global admin, has the
+// time_tracking_viewer flag, or is an admin/owner of at least one project.
+func userCanViewReports(userID uint, globalRole string, timeTrackingViewer bool) bool {
+	if globalRole == "admin" || timeTrackingViewer {
 		return true
 	}
 	var count int64

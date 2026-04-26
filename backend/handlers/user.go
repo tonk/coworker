@@ -40,21 +40,22 @@ func AdminUpdateUser(c *gin.Context) {
 		return
 	}
 	var req struct {
-		GlobalRole      string `json:"global_role"`
-		IsActive        *bool  `json:"is_active"`
-		FirstName       string `json:"first_name"`
-		LastName        string `json:"last_name"`
-		DisplayName     string `json:"display_name"`
-		AvatarURL       string `json:"avatar_url"`
-		Email           string `json:"email"`
-		Password        string `json:"password"`
-		Locale          string `json:"locale"`
-		DateTimeFormat  string `json:"date_time_format"`
-		Timezone        string `json:"timezone"`
-		Font            string `json:"font"`
-		FontSize        string `json:"font_size"`
-		SidebarPosition string `json:"sidebar_position"`
-		AccentColor     string `json:"accent_color"`
+		GlobalRole          string `json:"global_role"`
+		IsActive            *bool  `json:"is_active"`
+		TimeTrackingViewer  *bool  `json:"time_tracking_viewer"`
+		FirstName           string `json:"first_name"`
+		LastName            string `json:"last_name"`
+		DisplayName         string `json:"display_name"`
+		AvatarURL           string `json:"avatar_url"`
+		Email               string `json:"email"`
+		Password            string `json:"password"`
+		Locale              string `json:"locale"`
+		DateTimeFormat      string `json:"date_time_format"`
+		Timezone            string `json:"timezone"`
+		Font                string `json:"font"`
+		FontSize            string `json:"font_size"`
+		SidebarPosition     string `json:"sidebar_position"`
+		AccentColor         string `json:"accent_color"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -62,11 +63,15 @@ func AdminUpdateUser(c *gin.Context) {
 	}
 
 	updates := map[string]interface{}{}
-	if req.GlobalRole == "admin" || req.GlobalRole == "user" {
+	validRoles := map[string]bool{"admin": true, "user": true, "viewer": true, "metrics": true, "backup": true}
+	if validRoles[req.GlobalRole] {
 		updates["global_role"] = req.GlobalRole
 	}
 	if req.IsActive != nil {
 		updates["is_active"] = *req.IsActive
+	}
+	if req.TimeTrackingViewer != nil {
+		updates["time_tracking_viewer"] = *req.TimeTrackingViewer
 	}
 	if req.FirstName != "" {
 		updates["first_name"] = req.FirstName

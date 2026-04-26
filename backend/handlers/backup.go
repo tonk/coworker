@@ -200,7 +200,9 @@ func AdminDeleteBackup(c *gin.Context) {
 func doBackupSQLite(filename string) (string, error) {
 	backupPath := filepath.Join(backupsDir, filename+".db")
 	// VACUUM INTO creates a clean, compacted copy atomically (SQLite ≥ 3.27).
-	sql := fmt.Sprintf("VACUUM INTO '%s'", strings.ReplaceAll(backupPath, "'", "''"))
+	// backupPath is server-generated (filepath.Join of a fixed dir + server-chosen filename).
+	// SQLite does not support parameterized VACUUM INTO, so manual escaping is required.
+	sql := fmt.Sprintf("VACUUM INTO '%s'", strings.ReplaceAll(backupPath, "'", "''")) // nosemgrep: go.lang.security.audit.database.string-formatted-query.string-formatted-query -- server-generated path, SQLite has no parameterized VACUUM INTO
 	if err := database.DB.Exec(sql).Error; err != nil {
 		return "", fmt.Errorf("backup failed: %w", err)
 	}

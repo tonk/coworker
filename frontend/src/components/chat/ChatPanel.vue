@@ -147,6 +147,7 @@
               </div>
               <div :class="['msg-bubble', msg.user_id === authUser?.id && !msg.is_bot ? 'bubble-own' : 'bubble-other']">
                 <div v-if="msg.is_deleted" class="msg-deleted">{{ $t('chat.deleted') }}</div>
+                <!-- nosemgrep: javascript.vue.security.audit.xss.templates.avoid-v-html.avoid-v-html -- renderMarkdown sanitizes with DOMPurify -->
                 <div v-else class="msg-body" v-html="renderMarkdown(msg.body)"></div>
               </div>
               <AttachmentList v-if="!msg.is_deleted" :attachments="msg.attachments" />

@@ -11,16 +11,34 @@ import (
 	"github.com/tonk/warmdesk/models"
 )
 
-// ListTimeEntries returns all time entries for the authenticated user, optionally
+// ListTimeEntries returns time entries for the authenticated user, optionally
 // filtered by a date range (?from=YYYY-MM-DD&to=YYYY-MM-DD).
+// Admin and timetracking roles may pass ?user_id= to view another user's entries
+// (0 or omitted returns all users for those roles).
 func ListTimeEntries(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
+
+	var u models.User
+	database.DB.Select("time_tracking_viewer").First(&u, userID)
 
 	q := database.DB.
 		Preload("Customer").
 		Preload("Project").
-		Where("user_id = ?", userID).
 		Order("date desc, id desc")
+
+	if globalRole == "admin" || u.TimeTrackingViewer {
+		if targetStr := c.Query("user_id"); targetStr != "" {
+			if targetID, err := strconv.ParseUint(targetStr, 10, 64); err == nil && targetID > 0 {
+				q = q.Where("user_id = ?", targetID)
+			}
+			// targetID == 0 → no user filter (all users)
+		} else {
+			q = q.Where("user_id = ?", userID)
+		}
+	} else {
+		q = q.Where("user_id = ?", userID)
+	}
 
 	if from := c.Query("from"); from != "" {
 		if t, err := time.Parse("2006-01-02", from); err == nil {
@@ -172,8 +190,9 @@ type TimeEntryReportResponse struct {
 }
 
 // assembleTimeEntryReport builds the report data from query parameters.
+// targetUserID == 0 means all users (admin/timetracking only).
 // Returns (report, httpStatus, errMsg) — status is 0 on success.
-func assembleTimeEntryReport(c *gin.Context, userID uint) (*TimeEntryReportResponse, int, string) {
+func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryReportResponse, int, string) {
 	now := time.Now()
 
 	period := c.DefaultQuery("period", "month")
@@ -201,12 +220,15 @@ func assembleTimeEntryReport(c *gin.Context, userID uint) (*TimeEntryReportRespo
 	}
 
 	var entries []models.TimeEntry
-	if err := database.DB.
+	q := database.DB.
 		Preload("Customer").
 		Preload("Project").
-		Where("user_id = ? AND date >= ? AND date < ?", userID, from, to).
-		Order("date asc, id asc").
-		Find(&entries).Error; err != nil {
+		Where("date >= ? AND date < ?", from, to).
+		Order("date asc, id asc")
+	if targetUserID > 0 {
+		q = q.Where("user_id = ?", targetUserID)
+	}
+	if err := q.Find(&entries).Error; err != nil {
 		return nil, http.StatusInternalServerError, "internal error"
 	}
 
@@ -241,8 +263,21 @@ func assembleTimeEntryReport(c *gin.Context, userID uint) (*TimeEntryReportRespo
 //	period=week  → group by day
 func GetTimeEntryReport(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
 
-	report, status, msg := assembleTimeEntryReport(c, userID)
+	var u models.User
+	database.DB.Select("time_tracking_viewer").First(&u, userID)
+
+	targetUserID := userID
+	if globalRole == "admin" || u.TimeTrackingViewer {
+		if targetStr := c.Query("user_id"); targetStr != "" {
+			if id, err := strconv.ParseUint(targetStr, 10, 64); err == nil {
+				targetUserID = uint(id) // 0 means all users
+			}
+		}
+	}
+
+	report, status, msg := assembleTimeEntryReport(c, targetUserID)
 	if status != 0 {
 		c.JSON(status, gin.H{"error": msg})
 		return

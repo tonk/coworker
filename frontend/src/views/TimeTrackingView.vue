@@ -5,7 +5,11 @@
     <div class="tt-bar">
       <div class="tt-employee">
         <span class="tt-emp-label">{{ $t('timeTracking.employee') }}</span>
-        <strong class="tt-emp-name">{{ displayName }}</strong>
+        <select v-if="canViewOtherUsers" class="tt-user-select" v-model="selectedUserId" @change="onUserChange">
+          <option :value="0">{{ $t('timeTracking.all_employees') }}</option>
+          <option v-for="u in allUsers" :key="u.id" :value="u.id">{{ userName(u) }}</option>
+        </select>
+        <strong v-else class="tt-emp-name">{{ displayName }}</strong>
       </div>
 
       <div class="tt-week-nav">
@@ -91,7 +95,7 @@
                   min="0"
                   :placeholder="savingCell === row.key + d.iso ? '…' : ''"
                   :value="cellVal(row, d.iso)"
-                  :disabled="savingCell === row.key + d.iso || editingRow === row.key"
+                  :disabled="viewingOther || savingCell === row.key + d.iso || editingRow === row.key"
                   @focus="$event.target.select()"
                   @blur="onCellBlur(row, d.iso, $event.target.value)"
                   @keydown.enter="$event.target.blur()"
@@ -101,17 +105,19 @@
 
               <!-- Actions -->
               <td class="c-act">
-                <template v-if="editingRow === row.key">
-                  <button class="act-btn act-ok" @click="confirmEditRow(row)" :title="$t('common.save')">✓</button>
-                  <button class="act-btn act-no" @click="cancelEditRow" :title="$t('common.cancel')">✕</button>
-                </template>
-                <template v-else-if="deletingRow === row.key">
-                  <button class="act-btn act-ok" @click="confirmDeleteRow(row)" :title="$t('common.yes')">✓</button>
-                  <button class="act-btn act-no" @click="cancelDeleteRow" :title="$t('common.no')">✕</button>
-                </template>
-                <template v-else>
-                  <button class="act-btn act-edit" @click="startEditRow(row)" :title="$t('common.edit')">✎</button>
-                  <button class="act-btn act-del" @click="startDeleteRow(row)" :title="$t('common.delete')">🗑</button>
+                <template v-if="!viewingOther">
+                  <template v-if="editingRow === row.key">
+                    <button class="act-btn act-ok" @click="confirmEditRow(row)" :title="$t('common.save')">✓</button>
+                    <button class="act-btn act-no" @click="cancelEditRow" :title="$t('common.cancel')">✕</button>
+                  </template>
+                  <template v-else-if="deletingRow === row.key">
+                    <button class="act-btn act-ok" @click="confirmDeleteRow(row)" :title="$t('common.yes')">✓</button>
+                    <button class="act-btn act-no" @click="cancelDeleteRow" :title="$t('common.no')">✕</button>
+                  </template>
+                  <template v-else>
+                    <button class="act-btn act-edit" @click="startEditRow(row)" :title="$t('common.edit')">✎</button>
+                    <button class="act-btn act-del" @click="startDeleteRow(row)" :title="$t('common.delete')">🗑</button>
+                  </template>
                 </template>
               </td>
             </tr>
@@ -160,12 +166,12 @@
 
       <!-- Bottom bar: add row + exports -->
       <div class="tt-add-bar">
-        <template v-if="!addingRow">
+        <template v-if="!viewingOther && !addingRow">
           <button class="btn-add-row" @click="startAddRow">
             ＋ {{ $t('timeTracking.add_row') }}
           </button>
         </template>
-        <template v-else>
+        <template v-else-if="!viewingOther">
           <button class="btn btn-primary" @click="confirmNewRow">{{ $t('common.save') }}</button>
           <button class="btn btn-secondary" @click="cancelNewRow">{{ $t('common.cancel') }}</button>
         </template>
@@ -252,6 +258,7 @@ import { useUIStore } from '@/stores/ui'
 import { timeEntriesApi } from '@/api/timeEntries'
 import { customersApi } from '@/api/customers'
 import { projectsApi } from '@/api/projects'
+import client from '@/api/client'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -261,11 +268,33 @@ const ui = useUIStore()
 const customers = ref([])
 const projects  = ref([])
 
-const displayName = computed(() => {
-  const u = auth.user
-  if (!u) return ''
+// ── User switching (admin / time_tracking_viewer only) ────────────────────
+const canViewOtherUsers = computed(() => auth.isAdmin || !!auth.user?.time_tracking_viewer)
+const allUsers = ref([])
+const selectedUserId = ref(auth.user?.id ?? null)
+const viewingOther = computed(() => !!selectedUserId.value && selectedUserId.value !== auth.user?.id)
+
+function userName(u) {
   return [u.first_name, u.last_name].filter(Boolean).join(' ') || u.display_name || u.username
+}
+
+const displayName = computed(() => {
+  if (canViewOtherUsers.value) {
+    if (selectedUserId.value === 0) return t('timeTracking.all_employees')
+    const u = allUsers.value.find(u => u.id === selectedUserId.value) || auth.user
+    return u ? userName(u) : ''
+  }
+  return auth.user ? userName(auth.user) : ''
 })
+
+function onUserChange() {
+  localRows.value = []
+  editingRow.value = null
+  deletingRow.value = null
+  addingRow.value = false
+  loadWeek()
+  loadReport()
+}
 
 // ── Mode ──────────────────────────────────────────────────────────────────
 const mode = ref('sheet')
@@ -375,7 +404,9 @@ async function loadWeek() {
   try {
     const from = weekDays.value[0].iso
     const to   = weekDays.value[6].iso
-    const { data } = await timeEntriesApi.list({ from, to })
+    const params = { from, to }
+    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const { data } = await timeEntriesApi.list(params)
     rawEntries.value = data
     // Drop any local rows that now have entries
     const keys = new Set(data.map(e => rowKey(e.customer_id, e.project_id, e.description)))
@@ -578,12 +609,14 @@ function currentISOWeek() {
 async function loadReport() {
   loadingReport.value = true
   try {
-    const { data } = await timeEntriesApi.report({
+    const params = {
       period: rpt.value.period,
       year:   rpt.value.year,
       month:  rpt.value.month,
       week:   rpt.value.week,
-    })
+    }
+    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const { data } = await timeEntriesApi.report(params)
     report.value = data
   } catch {
     ui.error(t('timeTracking.load_error'))
@@ -651,11 +684,9 @@ async function exportSheetXLSX() {
 // Weekly timesheet → PDF: delegates to backend report with period=week.
 async function exportSheetPDF() {
   try {
-    const { data } = await timeEntriesApi.reportPDF({
-      period: 'week',
-      year:   weekInfo.value.year,
-      week:   weekInfo.value.week,
-    })
+    const params = { period: 'week', year: weekInfo.value.year, week: weekInfo.value.week }
+    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const { data } = await timeEntriesApi.reportPDF(params)
     triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.pdf`, 'application/pdf')
   } catch {
     ui.error(t('timeTracking.export_error'))
@@ -712,12 +743,14 @@ async function exportReportXLSX() {
 async function exportReportPDF() {
   if (!report.value) return
   try {
-    const { data } = await timeEntriesApi.reportPDF({
+    const params = {
       period: rpt.value.period,
       year:   rpt.value.year,
       month:  rpt.value.month,
       week:   rpt.value.week,
-    })
+    }
+    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const { data } = await timeEntriesApi.reportPDF(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
   } catch {
@@ -736,12 +769,20 @@ function triggerDownload(blob, filename, type) {
 
 // ── Init ──────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  const [c, p] = await Promise.all([
+  const fetches = [
     customersApi.list().catch(() => ({ data: [] })),
     projectsApi.list().catch(() => ({ data: [] })),
-  ])
-  customers.value = c.data
-  projects.value  = p.data.filter(p => !p.archived)
+  ]
+  if (canViewOtherUsers.value) {
+    fetches.push(client.get('/users').catch(() => ({ data: [] })))
+  }
+  const results = await Promise.all(fetches)
+  customers.value = results[0].data
+  projects.value  = results[1].data.filter(p => !p.archived)
+  if (canViewOtherUsers.value) {
+    allUsers.value = results[2].data
+    selectedUserId.value = auth.user?.id ?? null
+  }
   await loadWeek()
   await loadReport()
 })
@@ -773,6 +814,17 @@ onMounted(async () => {
 
 .tt-emp-label { font-size: 11px; opacity: .7; margin-right: 6px; }
 .tt-emp-name  { font-weight: 600; }
+.tt-user-select {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.tt-user-select option { background: var(--color-surface); color: var(--color-text); }
 
 .tt-week-nav {
   display: flex;

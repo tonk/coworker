@@ -123,6 +123,7 @@
                 <button class="btn btn-primary btn-sm" @click="saveTopicEdit">{{ $t('common.save') }}</button>
               </div>
             </div>
+            <!-- nosemgrep: javascript.vue.security.audit.xss.templates.avoid-v-html.avoid-v-html -- renderMarkdown sanitizes with DOMPurify -->
             <div v-else class="topic-body-text" v-html="renderMarkdown(activeTopic.body)"></div>
           </div>
 
@@ -179,6 +180,7 @@
                       <button class="btn btn-primary btn-sm" @click="saveReplyEdit(reply)">{{ $t('common.save') }}</button>
                     </div>
                   </div>
+                  <!-- nosemgrep: javascript.vue.security.audit.xss.templates.avoid-v-html.avoid-v-html -- renderMarkdown sanitizes with DOMPurify -->
                   <div v-else class="reply-body" v-html="renderMarkdown(reply.body)"></div>
                 </div>
               </div>

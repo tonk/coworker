@@ -49,19 +49,22 @@ async function init() {
   const app = createApp(App)
   const pinia = createPinia()
   app.use(pinia)
-  app.use(router)
   app.use(i18n)
 
   app.config.errorHandler = (err, _instance, info) => {
     console.error('[Vue error]', info, err)
   }
 
-  // In browser mode restore the session from the httpOnly cookie before the
-  // first router navigation so the auth guard sees the correct login state.
+  // Restore the session before installing the router so the beforeEach guard
+  // sees the correct isLoggedIn state on the very first navigation. Installing
+  // the router earlier caused a race: the guard ran while isLoggedIn was still
+  // false, allowed the /login route, and then initSession() completed and set
+  // the user — leaving the login form rendered inside the app shell.
   if (!window.__TAURI_INTERNALS__) {
     await useAuthStore().initSession().catch(() => {})
   }
 
+  app.use(router)
   app.mount('#app')
   useSystemStore().fetchSettings()
 }

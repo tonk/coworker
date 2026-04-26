@@ -326,21 +326,23 @@ func GetTimeReportPDF(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	globalRole := middleware.GetGlobalRole(c)
 
-	if !userCanViewReports(userID, globalRole) {
+	var user models.User
+	database.DB.First(&user, userID)
+
+	if !userCanViewReports(userID, globalRole, user.TimeTrackingViewer) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "reports are only available to project admins and system admins"})
 		return
 	}
 
-	report, status, errMsg := assembleTimeReport(c, userID, globalRole)
+	report, status, errMsg := assembleTimeReport(c, userID, globalRole, user.TimeTrackingViewer)
 	if status != 0 {
 		c.JSON(status, gin.H{"error": errMsg})
 		return
 	}
 
 	// Resolve font: explicit ?font= param wins, then user profile preference.
-	var user models.User
 	fontFamily := "FreeSans"
-	if err := database.DB.First(&user, userID).Error; err == nil {
+	if user.Font != "" {
 		fontFamily = pdfFontFamily(user.Font)
 	}
 	if fam, ok := pdfFontFromParam(c.Query("font")); ok {

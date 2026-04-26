@@ -278,8 +278,8 @@
 
             <div class="form-group" style="max-width:400px">
               <label class="form-label">{{ $t('admin.session_timeout') }}</label>
-              <div class="form-row" style="align-items:center;gap:8px;max-width:240px">
-                <input class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:100px" />
+              <div class="form-row" style="align-items:center;gap:8px">
+                <input class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:120px" />
                 <span class="form-hint" style="margin:0">{{ $t('admin.session_timeout_unit') }}</span>
               </div>
               <p class="form-hint">{{ $t('admin.session_timeout_hint') }}</p>
@@ -710,6 +710,13 @@
       <div class="form-group">
         <label class="form-label">{{ $t('auth.password') }} <span class="form-label-hint">(leave blank to keep current)</span></label>
         <input class="form-input" v-model="editUser._newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="New password…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ $t('admin.timetracking_viewer') }}</label>
+        <label class="checkbox-label">
+          <input type="checkbox" v-model="editUser.time_tracking_viewer" />
+          {{ $t('admin.timetracking_viewer_hint') }}
+        </label>
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('mfa.title') }}</label>
@@ -1815,7 +1822,8 @@ async function saveEditUser() {
       display_name: editUser.value.display_name,
       email: editUser.value.email,
       avatar_url: editUser.value.avatar_url,
-      locale: editUser.value.locale
+      locale: editUser.value.locale,
+      time_tracking_viewer: editUser.value.time_tracking_viewer ?? false
     }
     if (editUser.value._newPassword) {
       payload.password = editUser.value._newPassword
