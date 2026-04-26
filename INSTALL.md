@@ -382,8 +382,8 @@ must be built natively — cross-compilation is not supported.
 
 ```bash
 make appimage          # Linux  — WarmDesk_<version>_amd64.AppImage
-make dmg               # macOS  — WarmDesk-vX.Y.Z-universal.dmg
-make windows-installer # Windows — WarmDesk_vX.Y.Z_x64-setup.exe
+make dmg               # macOS  — WarmDesk_<version>_universal.dmg
+make windows-installer # Windows — WarmDesk_<version>_x64-setup.exe
 make windows-portable  # Windows — WarmDesk-portable.zip (no installation needed)
 ```
 
