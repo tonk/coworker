@@ -395,8 +395,8 @@ The `deploy/` directory ships ready-to-use templates:
 ----
 deploy/
   warmdesk.service        # systemd unit
-  nginx-warmdesk.conf     # reverse proxy with SSL termination
-  apache-warmdesk.conf    # Apache alternative
+  nginx.conf              # reverse proxy with SSL termination
+  apache.conf             # Apache alternative
 ----
 
 === Horizontal Scaling

@@ -86,7 +86,7 @@ allowed_origins: "http://localhost:8080"
 # Omit or leave empty for single-instance deployments (no Redis needed).
 # redis_url: "redis://localhost:6379/0"
 
-# Default UI language for new users (en | nl | de | fr | es). Defaults to "en".
+# Default UI language for new users (en | nl | de | fr | es | da | sv | nb | fi | is | pt | it). Defaults to "en".
 # Can be overridden per-user in their profile settings.
 # default_locale: "en"
 

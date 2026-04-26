@@ -86,7 +86,7 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 | `upload_dir` | `UPLOAD_DIR` | `./uploads` |
 | `max_upload_mb` | `MAX_UPLOAD_MB` | `25` |
 | `redis_url` | `REDIS_URL` | *(optional)* |
-| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:8080` |
+| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` |
 
 ---
 

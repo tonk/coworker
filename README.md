@@ -147,7 +147,7 @@ Settings can also be provided as environment variables, which always take preced
 | `tls_cert` | `TLS_CERT` | *(empty)* | Path to server TLS certificate (enables HTTPS when set with `tls_key`) |
 | `tls_key` | `TLS_KEY` | *(empty)* | Path to server TLS private key |
 | `jwt_secret` | `JWT_SECRET` | *(change this)* | Secret for signing JWT tokens |
-| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:8080` | CORS allowed origins |
+| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` | CORS allowed origins |
 | `default_locale` | `DEFAULT_LOCALE` | `en` | Default UI language for new users |
 | `gin_mode` | `GIN_MODE` | `debug` | `debug` or `release` |
 | `api_log` | `API_LOG` | `true` | Log incoming HTTP requests |
