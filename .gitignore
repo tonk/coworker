@@ -61,5 +61,8 @@ Thumbs.db
 backend/seed
 backend/training
 
+# ── Ansible Collection ────────────────────────────────────────────────────────
+ansilabnl-warmdesk-*.tar.gz
+
 # ── Other, temporary files ────────────────────────────────────────────────────
 resume
