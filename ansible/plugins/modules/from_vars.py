@@ -11,35 +11,44 @@ version_added: "1.0.0"
 author:
   - Ton Kersten (@tonk)
 description:
-  - Reads one or more YAML files and creates or updates the WarmDesk resources
-    described in them.
-  - Resources are always processed in dependency order regardless of how they
-    are declared in the files, so playbook task order does not matter.
-  - Processing order: users → customers (with contracts and customer members) →
-    projects (with columns, labels, project members, and cards) →
-    groups (with members, customer access, and project access) →
-    system settings.
-  - All resources are treated as C(state=present). To remove a resource use
-    the dedicated module (for example M(ansilabnl.warmdesk.project) with
-    C(state=absent)).
+  - |
+      Reads one or more YAML files and creates or updates the WarmDesk resources
+      described in them.
+  - |
+      Resources are always processed in dependency order regardless of how they
+      are declared in the files, so playbook task order does not matter.
+  - |
+      Processing order: users → customers (with contracts and customer members) →
+      projects (with columns, labels, project members, and cards) →
+      groups (with members, customer access, and project access) →
+      system settings.
+  - |
+      All resources are treated as C(state=present). To remove a resource use
+      the dedicated module (for example M(ansilabnl.warmdesk.project) with
+      C(state=absent)).
 notes:
-  - Resources are identified by name (or username for users). Renaming a
-    resource in the var file creates a new resource — the old one is not
-    removed.
-  - Multiple files are merged. Lists under the same top-level key are
-    concatenated; scalar values from later files override earlier ones.
-  - Paths are relative to the directory from which Ansible runs. Use
-    C({{ playbook_dir }}) to make paths absolute.
+  - |
+      Resources are identified by name (or username for users). Renaming a
+      resource in the var file creates a new resource — the old one is not
+      removed.
+  - |
+      Multiple files are merged. Lists under the same top-level key are
+      concatenated; scalar values from later files override earlier ones.
+  - |
+      Paths are relative to the directory from which Ansible runs. Use
+      C({{ playbook_dir }}) to make paths absolute.
 extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
 options:
   var_files:
     description:
       - One or more YAML files to load.
-      - Each file may contain any combination of the supported top-level keys
-        (C(users), C(customers), C(groups), C(projects), C(system_settings)).
-      - Use C({{ playbook_dir }}/vars/warmdesk.yml) for paths relative to the
-        playbook.
+      - |
+          Each file may contain any combination of the supported top-level keys
+          (C(users), C(customers), C(groups), C(projects), C(system_settings)).
+      - |
+          Use C({{ playbook_dir }}/vars/warmdesk.yml) for paths relative to the
+          playbook.
     type: list
     elements: path
     required: true
