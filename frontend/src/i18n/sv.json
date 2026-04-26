@@ -327,7 +327,12 @@
     "scrum_storypoints_enabled": "Scrum story points",
     "scrum_storypoints_hint": "När aktiverat visas ett story points-fält på varje kort för Scrum-estimering.",
     "gravatar_enabled": "Gravatar-avatarer",
-    "gravatar_hint": "När aktiverat hämtas profilbilder från Gravatar baserat på användarens e-postadress. När inaktiverat används initialer-baserade avatarer istället."
+    "gravatar_hint": "När aktiverat hämtas profilbilder från Gravatar baserat på användarens e-postadress. När inaktiverat används initialer-baserade avatarer istället.",
+    "login_branding_enabled": "Visa företagsprofilering på inloggningsskärmen",
+    "login_branding_hint": "Visar företagets namn och logotyp ovanför inloggningskortet.",
+    "allowed_ips_label": "Tillåtna IP-adresser för API:et",
+    "allowed_ips_placeholder": "t.ex. 10.0.0.0/8, 192.168.1.5",
+    "allowed_ips_hint": "Kommaseparerade IPv4/IPv6-adresser eller CIDR-intervall. Lämna tomt för att tillåta alla. Varning: ett felaktigt värde stänger ute alla från API:et."
   },
   "report": {
     "title": "Tidsrapport",

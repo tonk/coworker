@@ -335,7 +335,10 @@
     "gravatar_enabled": "Gravatar-avatars",
     "gravatar_hint": "Als ingeschakeld, worden profielfoto's opgehaald van Gravatar op basis van het e-mailadres van de gebruiker. Als uitgeschakeld, worden initialen-avatars gebruikt.",
     "login_branding_enabled": "Bedrijfsbranding tonen op het inlogscherm",
-    "login_branding_hint": "Toont de bedrijfsnaam en het logo boven de inlogkaart."
+    "login_branding_hint": "Toont de bedrijfsnaam en het logo boven de inlogkaart.",
+    "allowed_ips_label": "Toegestane IP-adressen voor de API",
+    "allowed_ips_placeholder": "bijv. 10.0.0.0/8, 192.168.1.5",
+    "allowed_ips_hint": "Komma-gescheiden IPv4/IPv6-adressen of CIDR-bereiken. Leeg laten om alles toe te staan. Waarschuwing: een onjuiste waarde sluit iedereen buiten de API."
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

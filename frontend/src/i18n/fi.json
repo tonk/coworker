@@ -327,7 +327,12 @@
     "scrum_storypoints_enabled": "Scrum-tarinapisteet",
     "scrum_storypoints_hint": "Kun käytössä, jokaiselle kortille ilmestyy tarinapisteet-kenttä Scrum-arviointia varten.",
     "gravatar_enabled": "Gravatar-avatarit",
-    "gravatar_hint": "Kun käytössä, profiilikuvat haetaan Gravatarista käyttäjän sähköpostiosoitteen perusteella. Kun poistettu käytöstä, käytetään sen sijaan nimikirjaimiin perustuvia avatareja."
+    "gravatar_hint": "Kun käytössä, profiilikuvat haetaan Gravatarista käyttäjän sähköpostiosoitteen perusteella. Kun poistettu käytöstä, käytetään sen sijaan nimikirjaimiin perustuvia avatareja.",
+    "login_branding_enabled": "Näytä yrityksen brändäys kirjautumisnäytöllä",
+    "login_branding_hint": "Näyttää yrityksen nimen ja logon kirjautumiskortin yläpuolella.",
+    "allowed_ips_label": "Sallitut IP-osoitteet API:lle",
+    "allowed_ips_placeholder": "esim. 10.0.0.0/8, 192.168.1.5",
+    "allowed_ips_hint": "Pilkuilla erotetut IPv4/IPv6-osoitteet tai CIDR-alueet. Jätä tyhjäksi salliaksesi kaikki. Varoitus: virheellinen arvo sulkee kaikki ulos API:sta."
   },
   "report": {
     "title": "Aikaraportti",

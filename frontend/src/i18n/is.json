@@ -327,7 +327,12 @@
     "scrum_storypoints_enabled": "Scrum sögu-stig",
     "scrum_storypoints_hint": "Þegar virkjað birtist sögu-stig reitur á hverju korti fyrir Scrum mat.",
     "gravatar_enabled": "Gravatar myndir",
-    "gravatar_hint": "Þegar virkjað eru prófílmyndir sóttar frá Gravatar miðað við netfang notanda. Þegar óvirkt eru notaðar upphafsstafs-myndir í staðinn."
+    "gravatar_hint": "Þegar virkjað eru prófílmyndir sóttar frá Gravatar miðað við netfang notanda. Þegar óvirkt eru notaðar upphafsstafs-myndir í staðinn.",
+    "login_branding_enabled": "Sýna fyrirtækjamerkingu á innskráningarskjánum",
+    "login_branding_hint": "Sýnir nafn og merki fyrirtækis fyrir ofan innskráningarspjaldið.",
+    "allowed_ips_label": "Leyfðar IP-tölur fyrir API",
+    "allowed_ips_placeholder": "t.d. 10.0.0.0/8, 192.168.1.5",
+    "allowed_ips_hint": "Kommuaðskildar IPv4/IPv6-tölur eða CIDR-svið. Skildu eftir tómt til að leyfa allt. Viðvörun: röng gildi munu loka öllum á útaf API."
   },
   "report": {
     "title": "Tímaskýrsla",

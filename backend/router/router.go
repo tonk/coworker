@@ -28,6 +28,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 	wsHandler := handlers.NewWSHandler(authSvc, allowedOrigins)
 
 	v1 := r.Group("/api/v1")
+	v1.Use(middleware.IPAllowlist())
 
 	// Swagger UI — /swagger (no slash) redirects to index; /swagger/* handled by gin-swagger
 	r.GET("/swagger", func(c *gin.Context) { c.Redirect(http.StatusMovedPermanently, "/swagger/index.html") })

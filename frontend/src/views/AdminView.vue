@@ -261,6 +261,15 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
+              <label class="form-label">{{ $t('admin.allowed_ips_label') }}</label>
+              <input class="form-input" v-model="systemSettings.allowed_ips"
+                :placeholder="$t('admin.allowed_ips_placeholder')"
+                spellcheck="false" autocorrect="off" autocapitalize="off"
+                @change="saveSecuritySettings" />
+              <p class="form-hint">{{ $t('admin.allowed_ips_hint') }}</p>
+            </div>
+
+            <div class="form-group" style="max-width:400px">
               <label class="toggle-row">
                 <span>{{ $t('admin.scrum_storypoints_enabled') }}</span>
                 <input type="checkbox" v-model="systemSettings.scrum_storypoints_enabled" @change="saveGeneralSettings" />
@@ -1452,6 +1461,7 @@ async function loadSettings() {
     systemSettings.value.backup_last_run           = data.backup_last_run || ''
     systemSettings.value.backup_email_enabled      = data.backup_email_enabled === 'true'
     systemSettings.value.backup_email_address      = data.backup_email_address || ''
+    systemSettings.value.allowed_ips               = data.allowed_ips || ''
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to load settings')
   } finally {
@@ -1694,6 +1704,15 @@ async function saveGeneralSettings() {
 async function saveMFASettings() {
   try {
     await adminApi.updateSystemSettings({ mfa_required: systemSettings.value.mfa_required })
+    ui.success('Settings saved')
+  } catch {
+    ui.error('Failed to save settings')
+  }
+}
+
+async function saveSecuritySettings() {
+  try {
+    await adminApi.updateSystemSettings({ allowed_ips: systemSettings.value.allowed_ips })
     ui.success('Settings saved')
   } catch {
     ui.error('Failed to save settings')

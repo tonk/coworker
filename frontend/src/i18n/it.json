@@ -327,7 +327,12 @@
     "scrum_storypoints_enabled": "Punti storia Scrum",
     "scrum_storypoints_hint": "Quando abilitato, un campo Punti storia appare su ogni scheda per la stima Scrum.",
     "gravatar_enabled": "Avatar Gravatar",
-    "gravatar_hint": "Quando abilitato, le foto profilo vengono recuperate da Gravatar in base all'indirizzo email dell'utente. Quando disabilitato, vengono utilizzati avatar con le iniziali."
+    "gravatar_hint": "Quando abilitato, le foto profilo vengono recuperate da Gravatar in base all'indirizzo email dell'utente. Quando disabilitato, vengono utilizzati avatar con le iniziali.",
+    "login_branding_enabled": "Mostra il branding aziendale nella schermata di accesso",
+    "login_branding_hint": "Visualizza il nome e il logo dell'azienda sopra la scheda di accesso.",
+    "allowed_ips_label": "Indirizzi IP consentiti per l'API",
+    "allowed_ips_placeholder": "es. 10.0.0.0/8, 192.168.1.5",
+    "allowed_ips_hint": "Indirizzi IPv4/IPv6 o intervalli CIDR separati da virgole. Lasciare vuoto per consentire tutti. Attenzione: un valore errato bloccherà l'accesso di tutti all'API."
   },
   "report": {
     "title": "Report ore",

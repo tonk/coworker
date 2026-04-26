@@ -55,6 +55,7 @@ const (
 	settingScrumStorypointsEnabled = "scrum_storypoints_enabled"
 	settingGravatarEnabled         = "gravatar_enabled"
 	settingLoginBrandingEnabled    = "login_branding_enabled"
+	settingAllowedIPs              = "allowed_ips"
 )
 
 func init() {
@@ -315,6 +316,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		ScrumStorypointsEnabled     *bool   `json:"scrum_storypoints_enabled"`
 		GravatarEnabled             *bool   `json:"gravatar_enabled"`
 		LoginBrandingEnabled        *bool   `json:"login_branding_enabled"`
+		AllowedIPs                  *string `json:"allowed_ips"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -371,7 +373,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	if req.DefaultFontSize != "" {
 		saveSetting(settingDefaultFontSize, req.DefaultFontSize)
 	}
-	validLocales := map[string]bool{"en": true, "nl": true, "de": true, "fr": true, "es": true}
+	validLocales := map[string]bool{"en": true, "nl": true, "de": true, "fr": true, "es": true, "da": true, "sv": true, "nb": true, "fi": true, "is": true, "pt": true, "it": true}
 	if validLocales[req.DefaultLocale] {
 		saveSetting(settingDefaultLocale, req.DefaultLocale)
 	}
@@ -436,6 +438,9 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	boolSetting(req.ScrumStorypointsEnabled, settingScrumStorypointsEnabled)
 	boolSetting(req.GravatarEnabled, settingGravatarEnabled)
 	boolSetting(req.LoginBrandingEnabled, settingLoginBrandingEnabled)
+	if req.AllowedIPs != nil {
+		saveSetting(settingAllowedIPs, *req.AllowedIPs)
+	}
 
 	AdminGetSystemSettings(c)
 }

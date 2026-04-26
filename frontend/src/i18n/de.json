@@ -335,7 +335,10 @@
     "gravatar_enabled": "Gravatar-Avatare",
     "gravatar_hint": "Wenn aktiviert, werden Profilbilder von Gravatar anhand der E-Mail-Adresse des Benutzers abgerufen. Wenn deaktiviert, werden stattdessen initialen-basierte Avatare verwendet.",
     "login_branding_enabled": "Unternehmens-Branding auf dem Anmeldebildschirm anzeigen",
-    "login_branding_hint": "Zeigt Firmenname und Logo über der Anmeldekarte an."
+    "login_branding_hint": "Zeigt Firmenname und Logo über der Anmeldekarte an.",
+    "allowed_ips_label": "Erlaubte IP-Adressen für die API",
+    "allowed_ips_placeholder": "z.B. 10.0.0.0/8, 192.168.1.5",
+    "allowed_ips_hint": "Kommagetrennte IPv4/IPv6-Adressen oder CIDR-Bereiche. Leer lassen, um alle zuzulassen. Warnung: ein falscher Wert sperrt alle aus der API aus."
   },
   "update": {
     "available": "Eine neue Version von WarmDesk ist verfügbar: v{version}.",

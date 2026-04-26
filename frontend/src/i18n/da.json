@@ -327,7 +327,12 @@
     "scrum_storypoints_enabled": "Scrum story points",
     "scrum_storypoints_hint": "Når aktiveret vises et story points-felt på hvert kort til Scrum-estimering.",
     "gravatar_enabled": "Gravatar-avatarer",
-    "gravatar_hint": "Når aktiveret hentes profilbilleder fra Gravatar baseret på brugerens e-mailadresse. Når deaktiveret bruges initialer-baserede avatarer i stedet."
+    "gravatar_hint": "Når aktiveret hentes profilbilleder fra Gravatar baseret på brugerens e-mailadresse. Når deaktiveret bruges initialer-baserede avatarer i stedet.",
+    "login_branding_enabled": "Vis virksomhedsbranding på loginskærmen",
+    "login_branding_hint": "Viser virksomhedens navn og logo over login-kortet.",
+    "allowed_ips_label": "Tilladte IP-adresser til API'en",
+    "allowed_ips_placeholder": "f.eks. 10.0.0.0/8, 192.168.1.5",
+    "allowed_ips_hint": "Kommaseparerede IPv4/IPv6-adresser eller CIDR-intervaller. Lad feltet være tomt for at tillade alle. Advarsel: en forkert værdi låser alle ude af API'en."
   },
   "report": {
     "title": "Tidsrapport",
