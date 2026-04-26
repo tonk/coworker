@@ -146,8 +146,8 @@ Settings can also be provided as environment variables, which always take preced
 | `db_tls_key` | `DB_TLS_KEY` | *(empty)* | Path to client private key (mTLS) |
 | `tls_cert` | `TLS_CERT` | *(empty)* | Path to server TLS certificate (enables HTTPS when set with `tls_key`) |
 | `tls_key` | `TLS_KEY` | *(empty)* | Path to server TLS private key |
-| `jwt_secret` | `JWT_SECRET` | *(change this)* | Secret for signing JWT tokens |
-| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` | CORS allowed origins |
+| `jwt_secret` | `JWT_SECRET` | *(required — server refuses to start at default)* | Secret for signing JWT tokens |
+| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` | CORS allowed origins — `*` is blocked in `release` mode |
 | `default_locale` | `DEFAULT_LOCALE` | `en` | Default UI language for new users |
 | `gin_mode` | `GIN_MODE` | `debug` | `debug` or `release` |
 | `api_log` | `API_LOG` | `true` | Log incoming HTTP requests |

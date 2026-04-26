@@ -325,7 +325,11 @@ All protected routes require a `Bearer <token>` header.
 The access token (15 minutes) is obtained from `POST /api/v1/auth/login`.
 The frontend silently refreshes it using the 7-day refresh token; a 401 response triggers a transparent re-authentication cycle.
 
+Passwords are hashed with bcrypt at cost factor 12.
+The server refuses to start if `jwt_secret` is still set to its default value, or if `allowed_origins` contains `*` in `release` mode.
+
 API keys use `X-API-Key: <key>` or `?api_key=<key>` and are intended for CI/CD pipelines and automation scripts.
+Uploaded file MIME types are detected server-side from the file content — the client-supplied `Content-Type` header is ignored.
 
 === Webhook Receivers
 
@@ -361,7 +365,7 @@ wget https://example.org/warmdesk-linux-amd64
 # Optional: create a minimal config file
 cat > warmdesk.yaml <<EOF
 port: 8080
-jwt_secret: change-this-in-production
+jwt_secret: change-me-in-production   # server refuses to start at this default — change it
 EOF
 
 # Run (creates warmdesk.db on first start)

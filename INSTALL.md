@@ -136,8 +136,8 @@ Open the application at **http://localhost:8080** (or your configured port).
 | `DB_TLS_KEY` | *(empty)* | Path to client private key (mTLS) |
 | `TLS_CERT` | *(empty)* | Path to server TLS certificate (enables HTTPS when set with `TLS_KEY`) |
 | `TLS_KEY` | *(empty)* | Path to server TLS private key |
-| `JWT_SECRET` | `change-me-in-production` | Token signing secret — **always change this** |
-| `ALLOWED_ORIGINS` | `http://localhost:5173` | CORS allowed origins (`*` for any) |
+| `JWT_SECRET` | `change-me-in-production` | Token signing secret — **the server refuses to start if left at the default** |
+| `ALLOWED_ORIGINS` | `http://localhost:5173` | CORS allowed origins — **`*` is blocked in `release` mode** |
 | `WEB_DIR` | *(empty)* | Path to built frontend files (required in production) |
 | `BASE_URL` | *(empty)* | Public base URL (e.g. `https://desk.example.com`) — sets the host shown in Swagger UI |
 

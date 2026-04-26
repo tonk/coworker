@@ -81,12 +81,12 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 | `port` | `PORT` | `8080` |
 | `db_driver` | `DB_DRIVER` | `sqlite` |
 | `db_dsn` | `DB_DSN` | `./warmdesk.db` |
-| `jwt_secret` | `JWT_SECRET` | *(change in prod)* |
+| `jwt_secret` | `JWT_SECRET` | *(server refuses to start at default)* |
 | `web_dir` | `WEB_DIR` | `dist/web` |
 | `upload_dir` | `UPLOAD_DIR` | `./uploads` |
 | `max_upload_mb` | `MAX_UPLOAD_MB` | `25` |
 | `redis_url` | `REDIS_URL` | *(optional)* |
-| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` |
+| `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` — `*` blocked in `release` mode |
 
 ---
 
@@ -101,7 +101,16 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 - **JWT access token**: 15 min expiry, HS256. Claims: `UserID`, `Username`, `GlobalRole`.
 - **JWT refresh token**: 7 day expiry. Frontend auto-refreshes silently on 401.
 - **API keys**: SHA-256 hash stored in DB. Auth via `X-API-Key` header or `?api_key=` query param. Used for the Ticket API (CI/CD automation).
+- **Passwords**: hashed with bcrypt, cost factor 12 (pinned in `services/auth_service.go`).
 - Middleware sets context keys consumed by handlers: `middleware.GetUserID(c)`, `middleware.GetGlobalRole(c)`.
+
+### Security hardening (startup checks)
+The server refuses to start if either of these conditions is true:
+- `jwt_secret` is still `"change-me-in-production"` (the default).
+- `gin_mode` is `"release"` and `allowed_origins` contains `"*"`.
+
+### File uploads
+MIME type is detected server-side from the first 512 bytes of the saved file (`net/http.DetectContentType`) — the client-supplied `Content-Type` header is ignored.
 
 ### System settings
 Settings (SMTP, locale defaults, company branding, session timeout, …) are stored as key/value rows in `system_settings`. They are read at request time via `loadAllSettings()` so changes take effect **without a restart**. `handlers/system.go` owns all setting keys as package-level constants.

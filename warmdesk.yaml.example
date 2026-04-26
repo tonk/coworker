@@ -58,11 +58,16 @@ smtp:
 # Env var override: BASE_URL
 # base_url: "https://desk.example.com"
 
-# Secret used to sign JWT tokens — change this to a long random string in production
-jwt_secret: "change-me-for-production"
+# Secret used to sign JWT tokens.
+# REQUIRED: set this to a long random string before running in production.
+# The server will refuse to start if this value is still "change-me-in-production".
+# Generate one with: openssl rand -hex 32
+jwt_secret: "change-me-in-production"
 
-# Comma-separated list of allowed CORS origins, or * for any
-allowed_origins: "http://localhost:8080"
+# Comma-separated list of allowed CORS origins.
+# Do NOT use * in production — the server will refuse to start with gin_mode: release and a wildcard here.
+# Example: "https://desk.example.com"
+allowed_origins: "http://localhost:5173"
 
 # Comma-separated list of trusted reverse-proxy IP addresses or CIDR ranges.
 # When set, Gin reads the real client IP from the X-Forwarded-For header sent
