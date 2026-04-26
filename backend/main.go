@@ -91,6 +91,10 @@ func main() {
 
 	cfg := config.Load(*configFile)
 
+	if cfg.JWTSecret == "change-me-in-production" {
+		log.Fatal("refusing to start: jwt_secret is still the default value — set a strong random secret via JWT_SECRET or jwt_secret in your config file")
+	}
+
 	if cfg.BaseURL != "" {
 		// Strip scheme so Swagger host is just "host" or "host:port"
 		host := cfg.BaseURL
