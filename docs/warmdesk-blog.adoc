@@ -203,7 +203,7 @@ This is useful for automatically filing a card when a security scan finds a new 
 Every user controls their own:
 
 * *Theme* — light, dark, or follow the OS
-* *Language* — six languages in the current release
+* *Language* — twelve languages in the current release (en, nl, de, fr, es, da, sv, nb, fi, is, pt, it)
 * *Date/time format* and *timezone*
 * *Font* and *font size*
 * *Sidebar position* (left or right)
@@ -257,7 +257,7 @@ frontend/src/
   api/           # Axios wrappers, one file per domain
   components/    # Reusable Vue components
   composables/   # useTheme, useWebSocket, useDateFormat, useAvatar …
-  i18n/          # en.json, nl.json, de.json, fr.json, es.json
+  i18n/          # 12 language files (en, nl, de, fr, es, da, sv, nb, fi, is, pt, it)
   router/        # All routes + auth guards
   stores/        # Pinia stores (auth, board, chat, project, ui …)
   styles/        # CSS custom properties for light and dark themes

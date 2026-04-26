@@ -58,7 +58,7 @@ frontend/
     api/             # Axios wrappers, one file per domain (projects.js, reports.js, …)
     components/      # Reusable Vue components (board/, chat/, common/, layout/)
     composables/     # useTheme, useWebSocket, useDateFormat, useAvatar, …
-    i18n/            # en.json + nl, de, fr, es — all keys must be mirrored
+    i18n/            # en.json + nl, de, fr, es, da, sv, nb, fi, is, pt, it — all keys must be mirrored
     router/          # index.js — all routes + auth guards
     stores/          # Pinia stores (auth, board, chat, project, ui, …)
     styles/          # Global CSS custom properties (light/dark theme vars)
@@ -168,7 +168,7 @@ export const projectsApi = {
 ```
 
 ### i18n
-**All five language files must be kept in sync.** When adding a key to `en.json`, add the same key (with a translated value or a placeholder) to `de.json`, `nl.json`, `fr.json`, `es.json`. Keys are namespaced by feature: `board.*`, `report.*`, `admin.*`, `common.*`, etc.
+**All language files must be kept in sync.** When adding a key to `en.json`, add the same key (with a translated value or a placeholder) to all other language files (`nl`, `de`, `fr`, `es`, `da`, `sv`, `nb`, `fi`, `is`, `pt`, `it`). Keys are namespaced by feature: `board.*`, `report.*`, `admin.*`, `common.*`, etc.
 
 ### Theming
 Theme is controlled by a `data-theme` attribute on `<html>`. CSS custom properties (`--color-primary`, `--color-surface`, `--color-text`, etc.) are defined in `src/styles/` for both light and dark. Never use hard-coded colour values in components.
