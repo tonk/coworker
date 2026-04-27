@@ -266,7 +266,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 
 - **Customer / Contract / Project hierarchy** — customers are top-level entities; contracts sit under a customer; projects can be linked to a customer and optionally to a contract; manage from the Customers page or from Project Settings
 - **Customers sidebar** — starred customers listed in the sidebar with star/unstar toggle; dedicated Customers page (`/customers`) with grid view and full Customer detail page
-- **Sub-cards** — add child cards (one level deep) inside a parent card's detail view; hidden from the board; parent card shows a done/total progress pill; each sub-card has its own card number, assignees, labels, and comments
+- **Sub-cards** — add child cards (one level deep) inside a parent card's detail view; hidden from the board; parent card shows a done/total progress pill; each sub-card has its own card number, assignees, labels, and comments; opening a sub-card shows a ← back link to return to the parent
 - **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, start date, due dates, assignees, watchers, markdown descriptions and comments; configurable card prefix set at creation time (e.g. `PRJ`, `SHOP`, `API`) used in all card references like `PRJ-42`
 - **Scrum** — choose Kanban or Scrum when creating a project (immutable thereafter); Scrum projects add a **Backlog** view (two-panel sprint planner with drag-and-drop card assignment, sprint CRUD, goal and date editing, and a velocity SVG chart of completed sprints) and a **Sprint Board** view (board filtered to the active sprint's cards); sprint lifecycle: planning → active → completed; completing a sprint returns unfinished cards to the backlog; optional story-points field on cards (enabled in Admin → Settings)
 - **Gantt chart** — timeline view per project; cards with a start or due date appear as bars; click any bar to open the card detail; zoom between day, week, and month views
@@ -274,7 +274,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Copy card** — duplicate a card within the same column with one click
 - **Transfer card** — copy or move a card to any other project you have access to; choose the destination project and column
 - **Close / reopen cards** — mark cards as closed; closed cards stay on the board with a strikethrough and muted style and can be reopened at any time
-- **Linked cards (cross-references)** — link any two cards across projects; linked cards appear in the card detail with their reference, title, current column, and open/closed status; remove a link at any time
+- **Linked cards (cross-references)** — link any two cards across projects; linked cards appear in the card detail with their reference, title, current column, and open/closed status; opening a linked card shows a ← back link to return to the originating card; remove a link at any time
 - **Comment replies** — reply to any comment; replies are visually indented
 - **Time tracking** — log hours and minutes spent directly on a card
 - **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
@@ -294,7 +294,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **SMTP email** — configurable from the admin panel without a server restart; username and password are optional for relay servers
 - **Session timeout** — configurable idle timeout (default 60 minutes); set to 0 to disable
 - **Topics** — threaded discussions per project with markdown support and replies
-- **Checklists** — add checklist items to cards with completion tracking
+- **Checklists** — add checklist items to cards; drag the ⠿ handle to reorder; tick items off with a progress bar; changes sync in real time to all viewers
 - **Multiple assignees** — assign more than one user to a card
 - **Watchers** — subscribe to card activity
 - **Favourite people** — mark users for quick access

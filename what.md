@@ -408,3 +408,9 @@ Create an application that has all these features and requirements
 - Apply IP allowlist to Swagger UI routes alongside the API
 - Replace ?token= query param in WebSocket URLs and attachment image URLs with short-lived purpose-limited tickets (30 s WS ticket, 5 min media ticket) so the long-lived JWT never appears in server logs or browser history
 - Sanitise handler error responses: replace raw err.Error() output with generic messages to prevent leaking internal paths or driver details
+- Add drag-to-reorder for checklist items via ⠿ handle; new position saved immediately via a dedicated PATCH reorder endpoint
+- Broadcast checklist changes (add, tick, edit, delete, reorder) over WebSocket so all users viewing the same card see updates in real time
+- Show a ← [parent card title] back link at the top of sub-card and linked-card nested modals to return to the originating card
+- Add ARM64 server build targets (make build-arm64) and ARM64 Tauri desktop targets (appimage-arm64, deb-arm64, rpm-arm64)
+- Add make help target listing all build targets grouped by category
+- Fix version label alignment on the login page

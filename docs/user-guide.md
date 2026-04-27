@@ -234,7 +234,7 @@ Click a card to open its detail panel. The panel is resizable. Fields:
 | **Sub-cards** | Child tasks nested under this card (one level deep); each has its own card number, assignees, labels, and comments; a progress bar shows how many are closed |
 | **Linked cards** | Cards from any project linked as cross-references; shows reference, title, and current column |
 | **Attachments** | Upload files by clicking or dragging; images display inline |
-| **Checklist** | Add, check off, edit, and remove items; a progress bar shows completion % |
+| **Checklist** | Add, check off, edit, and remove items; drag the ⠿ handle to reorder; a progress bar shows completion %; updates sync in real time across all viewers |
 | **Git Links** | Commits, pull requests, and issues linked via webhooks (auto-populated) |
 | **Comments** | Markdown, @mentions, and reply quoting |
 | **Column history** | Log of every column transition |
@@ -257,6 +257,10 @@ In the card detail scroll to **Checklist** and type an item, then press Enter
 or click **Add Item**. Check items off as they are completed. A progress bar at
 the top of the section shows how many items are done. Edit an item by clicking
 the pencil icon; delete it with the ×.
+
+Drag the **⠿** handle on the left of any item to reorder the list. Changes are
+saved immediately and reflected in real time for anyone else viewing the same
+card.
 
 ### Attachments
 
@@ -298,12 +302,19 @@ to mark it closed. A progress bar at the top of the section shows done/total.
 Sub-cards are not shown on the Kanban board — only inside the parent card's
 detail view.
 
+When a sub-card is open, a **← [parent card title]** link appears at the top
+of the modal. Click it to close the sub-card and return to the parent card.
+
 ### Linked cards (cross-references)
 
 Scroll to **Linked Cards** in the card detail. Type a card reference
 (e.g. `PRJ-42`) in the input field and press Enter to link it. The linked card
 appears with its reference, title, and current column. Cards from other projects
 you have access to can also be linked. Click **✕** to remove a link.
+
+Click the **↗** button on any linked card to open it in a nested modal. A
+**← [source card title]** link at the top of that modal returns you to the
+card you came from.
 
 ### Copy card
 

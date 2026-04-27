@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.9.4 — 2026-04-27
+
+### Added
+- **Checklist drag-to-reorder** — drag the ⠿ handle on any checklist item to reorder it; new position is saved immediately.
+- **Checklist real-time sync** — checklist changes (add, tick, edit, delete, reorder) now broadcast via WebSocket and are reflected instantly for all users viewing the same card.
+- **Back navigation in nested card modals** — opening a sub-card or a linked card now shows a **← [parent card title]** breadcrumb at the top of the modal; clicking it closes the nested view and returns to the originating card.
+- **ARM64 server builds** — `make build-arm64` cross-compiles all server binaries for linux/arm64 into `dist/arm64/` (no C cross-compiler needed).
+- **ARM64 desktop builds** — `make appimage-arm64`, `make deb-arm64`, and `make rpm-arm64` targets build Tauri desktop packages for aarch64.
+- **`make help`** — lists all Makefile targets grouped by category with short descriptions.
+
+### Fixed
+- **Login page version label** — version text is now correctly centred on the login screen.
+
 ## v0.9.3 — 2026-04-27
 
 ### Added
