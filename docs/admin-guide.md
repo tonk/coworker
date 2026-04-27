@@ -147,6 +147,12 @@ db_dsn: "warmdesk:secret@tcp(localhost:3306)/warmdesk?charset=utf8mb4&parseTime=
 
 ### Database TLS
 
+> **Strongly advised:** if your database server is not on the same host as WarmDesk,
+> enable TLS. Without it, all queries — including passwords and session data — travel
+> in plaintext between the application and the database. Use `verify-full` in
+> production; `disable` (the default) is only appropriate when the database socket
+> is a local Unix socket or a loopback connection on the same machine.
+
 Both PostgreSQL and MySQL support encrypted connections. Use the `db_tls_*`
 settings (or their `DB_TLS_*` env var equivalents) instead of embedding TLS
 parameters in the DSN directly.
@@ -764,9 +770,11 @@ The scheduler runs server-side — no cron job or external tool needed. It check
 Click **Create Backup**. WarmDesk creates a timestamped file in `./backups/` next to the server binary:
 
 ```
-./backups/warmdesk_db_20260416_1430.db   ← SQLite
-./backups/warmdesk_db_20260416_1430.sql  ← PostgreSQL / MySQL
+./backups/warmdesk_db_20260416_1430_a3f9.db   ← SQLite
+./backups/warmdesk_db_20260416_1430_a3f9.sql  ← PostgreSQL / MySQL
 ```
+
+The filename format is `warmdesk_db_YYYYMMDD_HHMM_<4-hex>.db/.sql`. The four-character hex suffix is random and exists solely to prevent collisions when two backups are triggered within the same minute (e.g. a scheduled backup and a manual one firing simultaneously).
 
 For SQLite, `VACUUM INTO` is used — an atomic online copy that requires no downtime. For PostgreSQL, `pg_dump --clean --if-exists` is used. For MySQL, `mysqldump` is used.
 

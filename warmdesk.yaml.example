@@ -26,6 +26,12 @@ db_dsn: "./warmdesk.db"
 #   verify-ca    — verify the server certificate was signed by a trusted CA
 #   verify-full  — verify the server certificate AND that the hostname matches
 #
+# ⚠ STRONGLY ADVISED: if your database server is not on the same host as WarmDesk,
+# set db_tls_mode to "verify-full" (or at minimum "verify-ca") to encrypt the
+# connection and prevent credential interception or man-in-the-middle attacks.
+# Leaving this at "disable" means all queries, including passwords and session data,
+# travel in plaintext between the application and the database.
+#
 # Env var overrides: DB_TLS_MODE, DB_TLS_CA_CERT, DB_TLS_CERT, DB_TLS_KEY
 #
 # db_tls_mode: "verify-full"

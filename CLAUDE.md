@@ -228,6 +228,12 @@ Mitigations already in place:
 
 ---
 
+### Database TLS — strongly advised for remote databases
+
+`db_tls_mode` defaults to `"disable"`. This is acceptable only when the database runs on the same host (Unix socket or loopback). For any remote PostgreSQL or MySQL instance, **set `db_tls_mode: "verify-full"`** (plus `db_tls_ca_cert`) so the connection is encrypted and the server certificate is verified. Without TLS, credentials and query data travel in plaintext.
+
+---
+
 ### Horizontal scaling limitations
 
 When running more than one WarmDesk instance behind a load balancer, two subsystems are **in-memory only** and do not share state across instances:
