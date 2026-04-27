@@ -1,10 +1,40 @@
-BINARY   := warmdesk
-DIST_DIR := dist
-BACKEND  := backend
-FRONTEND := frontend
-VERSION  := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
-ARCHIVE  := warmdesk-$(VERSION).tar.gz
-.PHONY: all build build-frontend embed-web build-backend clean dev-backend dev-frontend run package stamp-desktop-version appimage deb rpm dmg windows-installer windows-portable
+BINARY    := warmdesk
+DIST_DIR  := dist
+DIST_ARM64 := $(DIST_DIR)/arm64
+BACKEND   := backend
+FRONTEND  := frontend
+VERSION   := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
+ARCHIVE   := warmdesk-$(VERSION).tar.gz
+.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable help
+
+help:
+	@echo "WarmDesk $(VERSION)"
+	@echo ""
+	@echo "Development"
+	@echo "  dev-backend          Start the Go backend in development mode (localhost:8080)"
+	@echo "  dev-frontend         Start the Vite dev server (localhost:5173, proxies /api to :8080)"
+	@echo ""
+	@echo "Server builds  →  dist/"
+	@echo "  build                Build frontend + backend (x86_64) into dist/"
+	@echo "  build-arm64          Build frontend + backend (arm64)  into dist/arm64/"
+	@echo "  run                  build then run the production binary locally"
+	@echo "  package              build then create a dist tarball (warmdesk-<version>.tar.gz)"
+	@echo "  clean                Remove dist/, build artifacts and Tauri target directory"
+	@echo ""
+	@echo "Linux desktop  (requires Rust + webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel)"
+	@echo "  appimage             AppImage (x86_64)"
+	@echo "  appimage-arm64       AppImage (arm64)  — also needs gcc-aarch64-linux-gnu + arm64 webkit2gtk"
+	@echo "  deb                  Debian/Ubuntu .deb package (x86_64)"
+	@echo "  deb-arm64            Debian/Ubuntu .deb package (arm64)"
+	@echo "  rpm                  Fedora/RHEL .rpm package (x86_64)"
+	@echo "  rpm-arm64            Fedora/RHEL .rpm package (arm64)"
+	@echo ""
+	@echo "macOS desktop  (must run on macOS — requires Rust + Xcode command line tools)"
+	@echo "  dmg                  Universal DMG (Intel + Apple Silicon)"
+	@echo ""
+	@echo "Windows desktop  (must run on Windows — requires Rust + WebView2)"
+	@echo "  windows-installer    NSIS installer (.exe)"
+	@echo "  windows-portable     Portable zip (no installation needed)"
 
 # Build everything into dist/
 all: build
@@ -37,6 +67,26 @@ build-backend:
 	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-export ./cmd/export
 	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-import ./cmd/importer
 	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-training ./cmd/training
+
+# Build everything for linux/arm64 (server + embedded web assets).
+# No C cross-compiler required — the SQLite driver (glebarez/sqlite) is pure Go.
+build-arm64: build-frontend embed-web build-backend-arm64
+	@cp warmdesk.yaml.example $(DIST_ARM64)/warmdesk.yaml.example
+	@cp warmdesk-migrate.yaml.example $(DIST_ARM64)/warmdesk-migrate.yaml.example
+	@cp -r deploy $(DIST_ARM64)/deploy
+	@cp INSTALL.md $(DIST_ARM64)/INSTALL.md
+	@cp README.md $(DIST_ARM64)/README.md
+	@cp -r docs $(DIST_ARM64)/docs
+	@echo "ARM64 server build complete. Output: $(DIST_ARM64)/"
+
+build-backend-arm64:
+	@echo "Building backend (linux/arm64)..."
+	mkdir -p $(DIST_ARM64)
+	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -tags embed -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_ARM64)/$(BINARY) .
+	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ../$(DIST_ARM64)/$(BINARY)-seed ./cmd/seed
+	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ../$(DIST_ARM64)/$(BINARY)-export ./cmd/export
+	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ../$(DIST_ARM64)/$(BINARY)-import ./cmd/importer
+	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ../$(DIST_ARM64)/$(BINARY)-training ./cmd/training
 
 
 # Run in development mode (two terminals needed)
@@ -76,6 +126,18 @@ appimage: stamp-desktop-version
 	cd $(FRONTEND) && NO_STRIP=true npm run tauri:build -- --bundles appimage
 	@echo "AppImage: $(FRONTEND)/src-tauri/target/release/bundle/appimage/WarmDesk_*_amd64.AppImage"
 
+# Build the Tauri desktop client as an AppImage (Linux, arm64).
+# Requires (host): Rust aarch64-unknown-linux-gnu target, gcc-aarch64-linux-gnu cross-compiler,
+#   arm64 webkit2gtk + GTK3 dev libraries (via sysroot or running natively on an arm64 host).
+# Fedora/RHEL: dnf install gcc-aarch64-linux-gnu
+# Debian/Ubuntu: apt install gcc-aarch64-linux-gnu
+# The linker is configured in frontend/src-tauri/.cargo/config.toml.
+appimage-arm64: stamp-desktop-version
+	@echo "Building WarmDesk desktop app (AppImage, arm64)..."
+	rustup target add aarch64-unknown-linux-gnu 2>/dev/null || true
+	cd $(FRONTEND) && NO_STRIP=true npm run tauri:build -- --target aarch64-unknown-linux-gnu --bundles appimage
+	@echo "AppImage: $(FRONTEND)/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/WarmDesk_*_aarch64.AppImage"
+
 # Build the Tauri desktop client as a .deb package (Debian/Ubuntu).
 # Requires: Rust, dpkg, webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel
 deb: stamp-desktop-version
@@ -83,12 +145,28 @@ deb: stamp-desktop-version
 	cd $(FRONTEND) && npm run tauri:build -- --bundles deb
 	@echo "Package: $(FRONTEND)/src-tauri/target/release/bundle/deb/"
 
+# Build the Tauri desktop client as a .deb package (Debian/Ubuntu, arm64).
+# Same cross-compilation prerequisites as appimage-arm64.
+deb-arm64: stamp-desktop-version
+	@echo "Building WarmDesk desktop app (.deb, arm64)..."
+	rustup target add aarch64-unknown-linux-gnu 2>/dev/null || true
+	cd $(FRONTEND) && npm run tauri:build -- --target aarch64-unknown-linux-gnu --bundles deb
+	@echo "Package: $(FRONTEND)/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/"
+
 # Build the Tauri desktop client as an .rpm package (Fedora/RHEL).
 # Requires: Rust, rpm-build, webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel
 rpm: stamp-desktop-version
 	@echo "Building WarmDesk desktop app (.rpm)..."
 	cd $(FRONTEND) && npm run tauri:build -- --bundles rpm
 	@echo "Package: $(FRONTEND)/src-tauri/target/release/bundle/rpm/"
+
+# Build the Tauri desktop client as an .rpm package (Fedora/RHEL, arm64).
+# Same cross-compilation prerequisites as appimage-arm64.
+rpm-arm64: stamp-desktop-version
+	@echo "Building WarmDesk desktop app (.rpm, arm64)..."
+	rustup target add aarch64-unknown-linux-gnu 2>/dev/null || true
+	cd $(FRONTEND) && npm run tauri:build -- --target aarch64-unknown-linux-gnu --bundles rpm
+	@echo "Package: $(FRONTEND)/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/rpm/"
 
 # Build the Tauri desktop client as a macOS DMG (universal: Intel + Apple Silicon).
 # Must be run on macOS. Requires: Rust, Xcode command line tools.
