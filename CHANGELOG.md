@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.9.3 — 2026-04-27
+
+### Added
+- **API IP allowlist** — new system setting (`allowed_ips`) restricts API and Swagger UI access to a comma-separated list of IP addresses or CIDR ranges; empty (default) allows all.
+- **Short-lived WS and media tickets** — Tauri desktop clients no longer put the long-lived JWT in WebSocket URLs or attachment `<img src>` URLs; a 30-second WS ticket and a 5-minute media ticket are issued per-connection instead.
+
+### Security
+- **Startup safety checks** — server refuses to start if `jwt_secret` is still the default value, or if `allowed_origins` contains `*` in release mode.
+- **HSTS and CSP headers** — added `Strict-Transport-Security` and `Content-Security-Policy` to the nginx and Apache reverse-proxy templates.
+- **Server-side MIME detection** — uploaded file MIME type is now detected from the first 512 bytes of the saved file; the client-supplied `Content-Type` header is ignored.
+- **bcrypt cost pinned at 12** — password hashing cost raised from the library default (10) to 12.
+- **Wildcard CORS blocked in production** — `allowed_origins: "*"` is rejected at startup when `gin_mode` is `release`.
+- **`gin_mode` defaults to `release`** — debug mode must now be explicitly opted in; the server previously defaulted to debug.
+- **Swagger UI gated by IP allowlist** — the `/swagger/*` routes are now subject to the same `allowed_ips` check as the API.
+- **Error messages sanitised** — handler JSON responses no longer include raw `err.Error()` text that could expose internal paths or driver details.
+
+### Changed
+- **Backup filenames** include a 4-character random hex suffix to prevent collisions when two backups are triggered within the same minute.
+- **Documentation corrections** — language count corrected to 12 (was 5/6 in several places); artifact filenames use consistent `<version>` placeholder; various stale references updated.
+
 ## v0.9.1 — 2026-04-26
 
 ### Added

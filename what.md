@@ -399,3 +399,12 @@ Create an application that has all these features and requirements
 - Re-check server and GitHub versions every hour while logged in (previously only on startup)
 - Vite manualChunks bundle split: Vue core, i18n, markdown, HTTP libs moved to named chunks; main JS bundle reduced from ~504 kB to ~298 kB
 - Demo seed: add 60 time entries across 5 users spanning 2 weeks; enable time tracking for all five active demo users
+- Refuse to start if jwt_secret is still the default value or if allowed_origins contains wildcard in release mode
+- Add HSTS and Content-Security-Policy headers to nginx and Apache reverse-proxy templates
+- Detect uploaded file MIME type from file bytes server-side; ignore client-supplied Content-Type
+- Pin bcrypt password hashing cost to 12 (raised from library default of 10)
+- Default gin_mode to release; require explicit opt-in for debug mode
+- Add API IP allowlist system setting: restrict access to comma-separated IPs or CIDR ranges from the admin panel
+- Apply IP allowlist to Swagger UI routes alongside the API
+- Replace ?token= query param in WebSocket URLs and attachment image URLs with short-lived purpose-limited tickets (30 s WS ticket, 5 min media ticket) so the long-lived JWT never appears in server logs or browser history
+- Sanitise handler error responses: replace raw err.Error() output with generic messages to prevent leaking internal paths or driver details
