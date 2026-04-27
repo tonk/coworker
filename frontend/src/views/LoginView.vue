@@ -19,6 +19,7 @@
       <div class="auth-card">
         <div class="auth-logo">
           <img src="/logo.svg" alt="WarmDesk" style="height:32px;width:auto" />
+          <span class="auth-wordmark">WarmDesk</span>
         </div>
         <template v-if="!mfaStep">
           <h1 class="auth-title">{{ $t('auth.login_title') }}</h1>
@@ -77,6 +78,7 @@
     <div v-else class="auth-card">
       <div class="auth-logo">
         <img src="/logo.svg" alt="WarmDesk" style="height:36px;width:auto" />
+        <span class="auth-wordmark">WarmDesk</span>
       </div>
       <template v-if="!mfaStep">
         <h1 class="auth-title">{{ $t('auth.login_title') }}</h1>
@@ -390,16 +392,31 @@ async function handleMFASubmit() {
   box-shadow: var(--shadow-md);
 }
 
-/* Inside branded split the card fills remaining space */
+/* Inside branded split the card fills remaining space and matches the brand panel height */
 .auth-split .auth-card {
   flex: 1;
   max-width: none;
+  align-self: stretch;
+  box-sizing: border-box;
+}
+
+.auth-brand-panel {
+  box-sizing: border-box;
 }
 
 /* ── Form chrome ────────────────────────────────────── */
 .auth-logo {
-  text-align: center;
-  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.auth-wordmark {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.3px;
 }
 
 .auth-title {
