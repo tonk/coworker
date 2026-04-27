@@ -120,7 +120,7 @@ func CreateComment(c *gin.Context) {
 		TimeSpentMinutes int    `json:"time_spent_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -187,7 +187,7 @@ func UpdateComment(c *gin.Context) {
 		TimeSpentMinutes int    `json:"time_spent_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 

@@ -20,7 +20,7 @@ func AdminCreateProject(c *gin.Context) {
 		Avatar      string `json:"avatar"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	if req.Color == "" {
@@ -107,7 +107,7 @@ func AdminUpdateProject(c *gin.Context) {
 		IsArchived  *bool   `json:"is_archived"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 

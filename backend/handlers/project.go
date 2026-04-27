@@ -173,7 +173,7 @@ func CreateProject(c *gin.Context) {
 		ContractID  *uint  `json:"contract_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	if req.CustomerID == nil {
@@ -353,7 +353,7 @@ func UpdateProject(c *gin.Context) {
 		ContractID  *uint   `json:"contract_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -431,7 +431,7 @@ func ReorderProjects(c *gin.Context) {
 		Position int  `json:"position"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 

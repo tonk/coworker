@@ -8,6 +8,7 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -605,7 +606,8 @@ func GetTimeReportPDF(c *gin.Context) {
 
 	var buf bytes.Buffer
 	if err := pdf.Output(&buf); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "pdf generation failed: " + err.Error()})
+		log.Printf("pdf generation failed: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "pdf generation failed"})
 		return
 	}
 

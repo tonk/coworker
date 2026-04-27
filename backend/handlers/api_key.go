@@ -60,7 +60,7 @@ func CreateAPIKey(c *gin.Context) {
 		Name string `json:"name" binding:"required,max=100"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -157,7 +157,7 @@ func CreateProjectAPIKey(c *gin.Context) {
 		Name string `json:"name" binding:"required,max=100"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	plain, hash, prefix, err := generateAPIKey()

@@ -51,7 +51,7 @@ func CreateColumn(c *gin.Context) {
 		WIPLimit *int   `json:"wip_limit"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -176,7 +176,7 @@ func ReorderColumns(c *gin.Context) {
 		Position float64 `json:"position"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 

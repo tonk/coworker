@@ -105,7 +105,7 @@ func CreateCard(c *gin.Context) {
 		AssigneeID  *uint           `json:"assignee_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -389,7 +389,7 @@ func MoveCard(c *gin.Context) {
 		Position float64 `json:"position"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -477,7 +477,7 @@ func ReorderCards(c *gin.Context) {
 		Position float64 `json:"position"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -606,7 +606,7 @@ func TransferCard(c *gin.Context) {
 		Action            string `json:"action" binding:"required"` // "copy" or "move"
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	if req.Action != "copy" && req.Action != "move" {

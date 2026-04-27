@@ -48,7 +48,7 @@ func AdminSetUserCustomers(c *gin.Context) {
 		CustomerRoles map[uint]string   `json:"customer_roles"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 

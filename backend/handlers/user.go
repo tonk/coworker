@@ -58,7 +58,7 @@ func AdminUpdateUser(c *gin.Context) {
 		AccentColor         string `json:"accent_color"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -183,7 +183,7 @@ func AdminCreateUser(c *gin.Context) {
 		GlobalRole  string `json:"global_role"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 

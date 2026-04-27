@@ -319,7 +319,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		AllowedIPs                  *string `json:"allowed_ips"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 

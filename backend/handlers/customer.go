@@ -219,7 +219,7 @@ func CreateCustomer(c *gin.Context) {
 		LogoURL     string `json:"logo_url"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
@@ -261,7 +261,7 @@ func UpdateCustomer(c *gin.Context) {
 		LogoURL     string `json:"logo_url"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	updates := map[string]interface{}{
@@ -362,7 +362,7 @@ func CreateContract(c *gin.Context) {
 		EndDate     string `json:"end_date"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	con := models.Contract{
@@ -406,7 +406,7 @@ func UpdateContract(c *gin.Context) {
 		EndDate     string `json:"end_date"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	updates := map[string]interface{}{"description": req.Description}
