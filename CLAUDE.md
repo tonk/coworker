@@ -216,6 +216,18 @@ There are currently no automated tests (no `*_test.go` files, no Vitest/Jest con
 - For multi-instance deployments set `redis_url` — this routes WebSocket broadcasts through Redis pub/sub instead of in-process memory.
 - First-run with an empty DB: register the first user normally; promote to admin with a direct DB update or via another admin account.
 
+### Tauri desktop — known security limitation
+
+In the desktop app (Tauri), JWT tokens are stored in the browser's `sessionStorage` because the WebView has no httpOnly cookie jar. `sessionStorage` is readable by any JavaScript running in the WebView, so a malicious npm dependency or an XSS in the app itself could exfiltrate the token.
+
+Mitigations already in place:
+- CSP (`Content-Security-Policy` in the proxy templates) blocks external script sources.
+- `withGlobalTauri: false` in `tauri.conf.json` avoids polluting the global namespace.
+
+**Proper fix (not yet implemented):** move token storage into Rust `tauri::State`, intercept all API requests at the Rust/reqwest layer to inject the `Authorization` header, and never expose the raw token to JavaScript. This requires replacing the Axios-based `api/client.js` Tauri path with `invoke('api_request', …)` calls routed through a custom Rust command — a significant refactor of the HTTP client layer.
+
+---
+
 ### Horizontal scaling limitations
 
 When running more than one WarmDesk instance behind a load balancer, two subsystems are **in-memory only** and do not share state across instances:
