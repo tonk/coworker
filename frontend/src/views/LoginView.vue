@@ -231,10 +231,13 @@ onMounted(async () => {
   try {
     const { data } = await systemApi.getSettings()
     registrationEnabled.value = data.registration_enabled
+    const rawLogo = data.company_logo || ''
+    const server = getServerUrl()
+    const logo = rawLogo && rawLogo.startsWith('/') && server ? `${server}${rawLogo}` : rawLogo
     branding.value = {
       enabled: !!data.login_branding_enabled && !!(data.company_name || data.company_logo),
       name: data.company_name || '',
-      logo: data.company_logo || '',
+      logo,
     }
   } catch {}
 })
