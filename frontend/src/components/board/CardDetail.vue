@@ -1,6 +1,11 @@
 <template>
   <BaseModal :title="isNew ? $t('board.add_card') : $t('board.edit_card')" @close="handleClose" :resizable="true" style="--modal-width: 700px">
     <div class="card-detail">
+      <div v-if="parentCard" class="parent-card-nav">
+        <button class="parent-card-back" @click="emit('back')">
+          ← {{ parentCard.title }}
+        </button>
+      </div>
       <div v-if="cardRef && !isNew" class="card-ref-badge">{{ cardRef }}</div>
       <div class="form-group">
         <label class="form-label">{{ $t('board.card_title') }}</label>
@@ -243,11 +248,6 @@
         </div>
       </div>
 
-      <!-- Parent card indicator -->
-      <div v-if="!isNew && card.parent_card_id" class="parent-card-badge">
-        ↑ {{ $t('subcard.child_of') }} #{{ card.parent_card_id }}
-      </div>
-
       <!-- Linked cards (cross-references) -->
       <div v-if="!isNew" class="linked-cards-section">
         <div class="linked-cards-header">
@@ -442,7 +442,9 @@
     :project-slug="props.projectSlug"
     :members="members"
     :labels="labels"
+    :parent-card="props.card"
     @close="openSubCardRef = null; loadSubCards()"
+    @back="openSubCardRef = null"
   />
 
   <!-- Nested linked-card detail modal -->
@@ -452,6 +454,8 @@
     :project-slug="openLinkedCardSlug"
     :members="openLinkedCardSlug === props.projectSlug ? members : []"
     :labels="openLinkedCardSlug === props.projectSlug ? labels : []"
+    :parent-card="props.card"
+    @back="openLinkedCardRef = null; openLinkedCardSlug = null"
     @close="openLinkedCardRef = null; openLinkedCardSlug = null; loadLinkedCards()"
   />
 </template>
@@ -482,9 +486,10 @@ const props = defineProps({
   card: { type: Object, required: true },
   labels: { type: Array, default: () => [] },
   members: { type: Array, default: () => [] },
-  projectSlug: { type: String, required: true }
+  projectSlug: { type: String, required: true },
+  parentCard: { type: Object, default: null }
 })
-const emit = defineEmits(['close', 'deleted'])
+const emit = defineEmits(['close', 'deleted', 'back'])
 
 const { t } = useI18n()
 
@@ -1245,7 +1250,7 @@ function renderMarkdown(text) {
 }
 .upload-progress { font-size: 12px; color: var(--color-text-muted); margin-top: 6px; }
 
-.checklist-section { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
+.checklist-section { margin-top: 24px; margin-bottom: 32px; border-top: 1px solid var(--color-border); padding-top: 20px; }
 .checklist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .checklist-header h4 { margin: 0; font-size: 14px; }
 .checklist-progress { font-size: 12px; font-weight: 600; color: var(--color-text-muted); }
@@ -1460,7 +1465,18 @@ function renderMarkdown(text) {
 .subcard-ref { font-size: 11px; color: var(--color-text-muted); margin-left: 4px; }
 .subcard-add-row { display: flex; gap: 8px; margin-top: 8px; }
 .subcard-new-input { flex: 1; padding: 6px 8px; font-size: 13px; }
-.parent-card-badge { font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px; }
+.parent-card-nav {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+.parent-card-back {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-size: 12px; color: var(--color-text-muted);
+  display: flex; align-items: center; gap: 4px;
+}
+.parent-card-back:hover { color: var(--color-primary); }
+
 
 .linked-cards-section { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
 .linked-cards-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
