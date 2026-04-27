@@ -373,6 +373,7 @@ async function handleMFASubmit() {
   text-transform: uppercase;
   color: var(--color-text-muted);
   margin-top: 24px;
+  text-align: center;
 }
 
 /* ── Login form card ────────────────────────────────── */
