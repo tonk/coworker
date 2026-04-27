@@ -50,9 +50,9 @@ func (h *WSHandler) HandleWS(c *gin.Context) {
 
 	// 1. httpOnly cookie (browser)
 	tokenStr, _ := c.Cookie("access_token")
-	// 2. ?token= query param (Tauri / direct clients)
+	// 2. ?ticket= query param — short-lived WS ticket (Tauri mode; never the long-lived JWT)
 	if tokenStr == "" {
-		tokenStr = c.Query("token")
+		tokenStr = c.Query("ticket")
 	}
 	// 3. Authorization header
 	if tokenStr == "" {
@@ -61,7 +61,14 @@ func (h *WSHandler) HandleWS(c *gin.Context) {
 		}
 	}
 
-	claims, err := h.authSvc.ValidateToken(tokenStr)
+	// Cookie and Bearer paths accept a normal access token; ?ticket= path accepts only a WS ticket.
+	var claims *services.Claims
+	var err error
+	if c.Query("ticket") != "" {
+		claims, err = h.authSvc.ValidateWSTicket(tokenStr)
+	} else {
+		claims, err = h.authSvc.ValidateToken(tokenStr)
+	}
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 		return
@@ -102,9 +109,9 @@ func (h *WSHandler) HandleWS(c *gin.Context) {
 func (h *WSHandler) HandleUserWS(c *gin.Context) {
 	// 1. httpOnly cookie (browser)
 	tokenStr, _ := c.Cookie("access_token")
-	// 2. ?token= query param (Tauri / direct clients)
+	// 2. ?ticket= query param — short-lived WS ticket (Tauri mode; never the long-lived JWT)
 	if tokenStr == "" {
-		tokenStr = c.Query("token")
+		tokenStr = c.Query("ticket")
 	}
 	// 3. Authorization header
 	if tokenStr == "" {
@@ -113,7 +120,13 @@ func (h *WSHandler) HandleUserWS(c *gin.Context) {
 		}
 	}
 
-	claims, err := h.authSvc.ValidateToken(tokenStr)
+	var claims *services.Claims
+	var err error
+	if c.Query("ticket") != "" {
+		claims, err = h.authSvc.ValidateWSTicket(tokenStr)
+	} else {
+		claims, err = h.authSvc.ValidateToken(tokenStr)
+	}
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 		return

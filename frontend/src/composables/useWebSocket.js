@@ -4,6 +4,7 @@ import { useChatStore } from '@/stores/chat'
 import { useTopicsStore } from '@/stores/topics'
 import { useSprintStore } from '@/stores/sprint'
 import { getWsUrl } from '@/api/serverConfig'
+import { authApi } from '@/api/auth'
 
 export function useWebSocket(projectSlugOrRef) {
   const ws = ref(null)
@@ -17,18 +18,25 @@ export function useWebSocket(projectSlugOrRef) {
   const topicsStore = useTopicsStore()
   const sprintStore = useSprintStore()
 
-  function connect() {
+  async function connect() {
     const isTauri = !!window.__TAURI_INTERNALS__
-    const token = isTauri ? sessionStorage.getItem('access_token') : null
-    // In Tauri mode a token is required; browser mode relies on the httpOnly cookie.
-    if (isTauri && !token) return
 
     const projectSlug = isRef(projectSlugOrRef) ? projectSlugOrRef.value : projectSlugOrRef
     if (!projectSlug) return
 
-    const wsPath = token
-      ? `/api/v1/ws/${projectSlug}?token=${token}`
-      : `/api/v1/ws/${projectSlug}`
+    let wsPath
+    if (isTauri) {
+      // Fetch a short-lived WS ticket so the long-lived JWT never appears in the URL.
+      try {
+        const { data } = await authApi.wsTicket()
+        wsPath = `/api/v1/ws/${projectSlug}?ticket=${data.ticket}`
+      } catch {
+        return
+      }
+    } else {
+      wsPath = `/api/v1/ws/${projectSlug}`
+    }
+
     // Use the configured server URL when available (Tauri/desktop mode),
     // otherwise fall back to the current page's origin (browser mode).
     const wsUrlFromConfig = getWsUrl(wsPath)

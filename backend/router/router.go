@@ -26,6 +26,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 	authHandler := handlers.NewAuthHandler(authSvc)
 	wsHandler := handlers.NewWSHandler(authSvc, allowedOrigins)
+	handlers.InitAttachmentAuth(authSvc)
 
 	v1 := r.Group("/api/v1")
 	v1.Use(middleware.IPAllowlist())
@@ -63,6 +64,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.GET("/auth/mfa/setup", authHandler.MFASetup)
 		protected.POST("/auth/mfa/enable", authHandler.MFAEnable)
 		protected.POST("/auth/mfa/disable", authHandler.MFADisable)
+
+		// Short-lived purpose-limited tickets (keep long-lived JWTs out of URLs)
+		protected.POST("/auth/ws-ticket", authHandler.IssueWSTicket)
+		protected.POST("/auth/media-ticket", authHandler.IssueMediaTicket)
 
 		// API keys (personal tokens)
 		protected.GET("/auth/api-keys", handlers.ListAPIKeys)
@@ -162,7 +167,6 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// File attachments
 		protected.POST("/attachments", handlers.UploadAttachment)
-		protected.GET("/attachments/:id", handlers.DownloadAttachment)
 		protected.DELETE("/attachments/:id", handlers.DeleteAttachment)
 
 		// Global search
@@ -341,7 +345,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 	v1.POST("/github-webhook/:token", handlers.IncomingGitHubWebhook)
 	v1.POST("/gitlab-webhook/:token", handlers.IncomingGitLabWebhook)
 
-	// WebSocket (auth via ?token= query param)
+	// Attachment download — self-auth (cookie, Bearer, or media ticket); outside protected group
+	v1.GET("/attachments/:id", handlers.DownloadAttachment)
+
+	// WebSocket — self-auth (cookie, Bearer, or WS ticket); outside protected group
 	v1.GET("/ws/user", wsHandler.HandleUserWS)
 	v1.GET("/ws/:projectSlug", wsHandler.HandleWS)
 

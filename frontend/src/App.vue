@@ -48,6 +48,8 @@ import UpdateBanner from '@/components/common/UpdateBanner.vue'
 import { applyUserPreferences } from '@/composables/useUserPreferences'
 import { useUpdateCheck } from '@/composables/useUpdateCheck'
 import { getWsUrl } from '@/api/serverConfig'
+import { authApi } from '@/api/auth'
+import { refreshMediaTicket, startMediaTicketRefresh, stopMediaTicketRefresh } from '@/api/attachments'
 
 const auth = useAuthStore()
 const systemStore = useSystemStore()
@@ -145,13 +147,22 @@ let userWs = null
 let userWsReconnectTimer = null
 let userWsReconnectDelay = 1000
 
-function connectUserWs() {
+async function connectUserWs() {
   if (userWs) return
-  const token = isTauri ? sessionStorage.getItem('access_token') : null
-  // In Tauri mode a token is required; browser mode relies on the httpOnly cookie.
-  if (isTauri && !token) return
 
-  const wsPath = token ? `/api/v1/ws/user?token=${token}` : `/api/v1/ws/user`
+  let wsPath
+  if (isTauri) {
+    // Fetch a short-lived WS ticket so the long-lived JWT never appears in the URL.
+    try {
+      const { data } = await authApi.wsTicket()
+      wsPath = `/api/v1/ws/user?ticket=${data.ticket}`
+    } catch {
+      return
+    }
+  } else {
+    wsPath = `/api/v1/ws/user`
+  }
+
   const wsUrlFromConfig = getWsUrl(wsPath)
   const url = wsUrlFromConfig || (() => {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -199,9 +210,17 @@ function disconnectUserWs() {
   userWs = null
 }
 
-watch(() => auth.isLoggedIn, (loggedIn) => {
-  if (loggedIn) connectUserWs()
-  else disconnectUserWs()
+watch(() => auth.isLoggedIn, async (loggedIn) => {
+  if (loggedIn) {
+    connectUserWs()
+    if (isTauri) {
+      await refreshMediaTicket()
+      startMediaTicketRefresh()
+    }
+  } else {
+    disconnectUserWs()
+    stopMediaTicketRefresh()
+  }
 }, { immediate: true })
 
 // ── Zoom (Ctrl +/-/0) ────────────────────────────────────────────────────────

@@ -33,12 +33,6 @@ func Auth(authSvc *services.AuthService) gin.HandlerFunc {
 
 		// 2. Authorization: Bearer header (API / Tauri clients)
 		header := c.GetHeader("Authorization")
-		// Also accept ?token= query param (needed for <img> tags which can't set headers)
-		if !strings.HasPrefix(header, "Bearer ") {
-			if t := c.Query("token"); t != "" {
-				header = "Bearer " + t
-			}
-		}
 		if strings.HasPrefix(header, "Bearer ") {
 			tokenStr := strings.TrimPrefix(header, "Bearer ")
 			claims, err := authSvc.ValidateToken(tokenStr)
@@ -108,4 +102,10 @@ func GetGlobalRole(c *gin.Context) string {
 	v, _ := c.Get(ContextGlobalRole)
 	role, _ := v.(string)
 	return role
+}
+
+func GetUsername(c *gin.Context) string {
+	v, _ := c.Get(ContextUsername)
+	username, _ := v.(string)
+	return username
 }

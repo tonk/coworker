@@ -15,13 +15,43 @@ import (
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
+	"github.com/tonk/warmdesk/services"
 )
 
 var attachmentCfg *config.Config
+var attachmentAuthSvc *services.AuthService
 
 // InitAttachments stores the config reference for upload settings.
 func InitAttachments(cfg *config.Config) {
 	attachmentCfg = cfg
+}
+
+// InitAttachmentAuth stores the auth service for self-auth in DownloadAttachment.
+func InitAttachmentAuth(svc *services.AuthService) {
+	attachmentAuthSvc = svc
+}
+
+// isAuthedForAttachment checks cookie, Bearer header, or short-lived media ticket.
+func isAuthedForAttachment(c *gin.Context) bool {
+	if attachmentAuthSvc == nil {
+		return true
+	}
+	if cookieToken, err := c.Cookie("access_token"); err == nil && cookieToken != "" {
+		if _, err := attachmentAuthSvc.ValidateToken(cookieToken); err == nil {
+			return true
+		}
+	}
+	if auth := c.GetHeader("Authorization"); strings.HasPrefix(auth, "Bearer ") {
+		if _, err := attachmentAuthSvc.ValidateToken(auth[7:]); err == nil {
+			return true
+		}
+	}
+	if ticket := c.Query("ticket"); ticket != "" {
+		if _, err := attachmentAuthSvc.ValidateMediaTicket(ticket); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 func randomHex(n int) string {
@@ -114,7 +144,14 @@ func UploadAttachment(c *gin.Context) {
 }
 
 // DownloadAttachment GET /api/v1/attachments/:id
+// Auth: httpOnly cookie, Bearer header, or short-lived media ticket (?ticket=).
+// This route is registered outside the protected middleware group so it can handle
+// all three auth paths without putting the JWT in the URL.
 func DownloadAttachment(c *gin.Context) {
+	if !isAuthedForAttachment(c) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})

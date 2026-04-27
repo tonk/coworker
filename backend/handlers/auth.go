@@ -744,3 +744,33 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	clearAuthCookies(c)
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
+
+// IssueWSTicket POST /api/v1/auth/ws-ticket
+// Returns a 30-second single-purpose JWT for WebSocket upgrades (Tauri only).
+// Using a short-lived ticket keeps the long-lived access token out of URLs and server logs.
+func (h *AuthHandler) IssueWSTicket(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	username := middleware.GetUsername(c)
+	role := middleware.GetGlobalRole(c)
+	ticket, err := h.authSvc.IssueWSTicket(userID, username, role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to issue ticket"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ticket": ticket})
+}
+
+// IssueMediaTicket POST /api/v1/auth/media-ticket
+// Returns a 5-minute single-purpose JWT for attachment downloads (Tauri only).
+// Using a short-lived ticket keeps the long-lived access token out of image src URLs.
+func (h *AuthHandler) IssueMediaTicket(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	username := middleware.GetUsername(c)
+	role := middleware.GetGlobalRole(c)
+	ticket, err := h.authSvc.IssueMediaTicket(userID, username, role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to issue ticket"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ticket": ticket})
+}

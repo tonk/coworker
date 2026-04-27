@@ -22,6 +22,8 @@ type Claims struct {
 	Username   string `json:"username"`
 	GlobalRole string `json:"global_role"`
 	MFAPending bool   `json:"mfa_pending,omitempty"`
+	// Purpose restricts a token to a specific subsystem ("ws" | "media"). Empty = normal access token.
+	Purpose string `json:"purpose,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -103,7 +105,39 @@ func (s *AuthService) VerifyTOTP(secret, code string) bool {
 	return totp.Validate(code, secret)
 }
 
-func (s *AuthService) ValidateToken(tokenStr string) (*Claims, error) {
+// IssueWSTicket returns a 30-second JWT accepted only by the WebSocket upgrade endpoints.
+func (s *AuthService) IssueWSTicket(userID uint, username, role string) (string, error) {
+	claims := Claims{
+		UserID:     userID,
+		Username:   username,
+		GlobalRole: role,
+		Purpose:    "ws",
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * time.Second)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(s.secret)
+}
+
+// IssueMediaTicket returns a 5-minute JWT accepted only by the attachment download endpoint.
+func (s *AuthService) IssueMediaTicket(userID uint, username, role string) (string, error) {
+	claims := Claims{
+		UserID:     userID,
+		Username:   username,
+		GlobalRole: role,
+		Purpose:    "media",
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(s.secret)
+}
+
+func (s *AuthService) parseToken(tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrInvalidToken
@@ -116,9 +150,44 @@ func (s *AuthService) ValidateToken(tokenStr string) (*Claims, error) {
 		}
 		return nil, ErrInvalidToken
 	}
-
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
+// ValidateToken validates a normal access token; rejects purpose-limited tickets.
+func (s *AuthService) ValidateToken(tokenStr string) (*Claims, error) {
+	claims, err := s.parseToken(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Purpose != "" {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
+// ValidateWSTicket validates a short-lived WebSocket ticket.
+func (s *AuthService) ValidateWSTicket(tokenStr string) (*Claims, error) {
+	claims, err := s.parseToken(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Purpose != "ws" {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
+// ValidateMediaTicket validates a short-lived media download ticket.
+func (s *AuthService) ValidateMediaTicket(tokenStr string) (*Claims, error) {
+	claims, err := s.parseToken(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Purpose != "media" {
 		return nil, ErrInvalidToken
 	}
 	return claims, nil

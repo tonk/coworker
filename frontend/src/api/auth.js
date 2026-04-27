@@ -17,4 +17,6 @@ export const authApi = {
   disableMFA: (password) => client.post('/auth/mfa/disable', { password }),
   forgotPassword: (email) => client.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => client.post('/auth/reset-password', { token, password }),
+  wsTicket: () => client.post('/auth/ws-ticket'),
+  mediaTicket: () => client.post('/auth/media-ticket'),
 }
