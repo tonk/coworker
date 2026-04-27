@@ -290,6 +290,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			// Card checklist
 			projects.GET("/:projectSlug/cards/:cardId/checklist", handlers.ListChecklistItems)
 			projects.POST("/:projectSlug/cards/:cardId/checklist", handlers.CreateChecklistItem)
+			projects.PATCH("/:projectSlug/cards/:cardId/checklist/reorder", handlers.ReorderChecklistItems)
 			projects.PUT("/:projectSlug/cards/:cardId/checklist/:itemId", handlers.UpdateChecklistItem)
 			projects.DELETE("/:projectSlug/cards/:cardId/checklist/:itemId", handlers.DeleteChecklistItem)
 

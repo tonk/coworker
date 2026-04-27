@@ -30,6 +30,11 @@ const (
 	TypeBoardCommentUpdated   = "board.card.comment.updated"
 	TypeBoardCommentDeleted   = "board.card.comment.deleted"
 
+	TypeChecklistItemCreated = "board.card.checklist.created"
+	TypeChecklistItemUpdated = "board.card.checklist.updated"
+	TypeChecklistItemDeleted = "board.card.checklist.deleted"
+	TypeChecklistReordered   = "board.card.checklist.reordered"
+
 	// Server -> Client: presence
 	TypePresenceJoined = "presence.joined"
 	TypePresenceLeft   = "presence.left"

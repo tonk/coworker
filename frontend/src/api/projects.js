@@ -49,6 +49,7 @@ export const projectsApi = {
   // Checklist
   listChecklist: (slug, cardId) => client.get(`/projects/${slug}/cards/${cardId}/checklist`),
   createChecklistItem: (slug, cardId, body) => client.post(`/projects/${slug}/cards/${cardId}/checklist`, { body }),
+  reorderChecklistItems: (slug, cardId, items) => client.patch(`/projects/${slug}/cards/${cardId}/checklist/reorder`, items),
   updateChecklistItem: (slug, cardId, itemId, data) => client.put(`/projects/${slug}/cards/${cardId}/checklist/${itemId}`, data),
   deleteChecklistItem: (slug, cardId, itemId) => client.delete(`/projects/${slug}/cards/${cardId}/checklist/${itemId}`),
 

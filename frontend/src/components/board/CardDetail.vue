@@ -181,8 +181,9 @@
         <div v-if="checklist.length" class="checklist-progress-bar">
           <div class="checklist-progress-fill" :style="{ width: checklistPct + '%' }"></div>
         </div>
-        <div class="checklist-items">
-          <div v-for="item in checklist" :key="item.id" class="checklist-item">
+        <div class="checklist-items" ref="checklistListEl">
+          <div v-for="item in checklist" :key="item.id" class="checklist-item" :data-id="item.id">
+            <span class="checklist-drag-handle" title="Drag to reorder">⠿</span>
             <input
               type="checkbox"
               class="checklist-checkbox"
@@ -456,7 +457,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import Sortable from 'sortablejs'
 import { useI18n } from 'vue-i18n'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -543,6 +545,8 @@ const checklist = ref([])
 const newChecklistItem = ref('')
 const editingItemId = ref(null)
 const editItemBody = ref('')
+const checklistListEl = ref(null)
+let sortableInstance = null
 const assignees = ref([...(props.card.assignees || [])])
 const gitLinks = ref([])
 const copying = ref(false)
@@ -802,6 +806,47 @@ async function openLink(url) {
   }
 }
 
+function initSortable() {
+  if (!checklistListEl.value || sortableInstance) return
+  sortableInstance = new Sortable(checklistListEl.value, {
+    animation: 150,
+    handle: '.checklist-drag-handle',
+    onEnd(evt) {
+      if (evt.oldIndex === evt.newIndex) return
+      const moved = checklist.value.splice(evt.oldIndex, 1)[0]
+      checklist.value.splice(evt.newIndex, 0, moved)
+      const items = checklist.value.map((item, i) => ({ id: item.id, position: (i + 1) * 1000 }))
+      checklist.value.forEach((item, i) => { item.position = (i + 1) * 1000 })
+      projectsApi.reorderChecklistItems(props.projectSlug, props.card.id, items).catch(() => {})
+    },
+  })
+}
+
+watch(checklist, async (val) => {
+  if (val.length && !sortableInstance) {
+    await nextTick()
+    initSortable()
+  }
+}, { flush: 'post' })
+
+watch(() => boardStore.checklistEvent, (event) => {
+  if (!event) return
+  const { type, payload } = event
+  if (Number(payload.card_id) !== props.card.id) return
+  if (type === 'board.card.checklist.created') {
+    if (!checklist.value.find(i => i.id === payload.item.id)) {
+      checklist.value.push(payload.item)
+    }
+  } else if (type === 'board.card.checklist.updated') {
+    const idx = checklist.value.findIndex(i => i.id === payload.item.id)
+    if (idx !== -1) checklist.value[idx] = payload.item
+  } else if (type === 'board.card.checklist.deleted') {
+    checklist.value = checklist.value.filter(i => i.id !== payload.item_id)
+  } else if (type === 'board.card.checklist.reordered') {
+    checklist.value = payload.items
+  }
+})
+
 onMounted(async () => {
   document.addEventListener('keydown', onKeyDown)
   if (isNew.value) return
@@ -819,7 +864,11 @@ onMounted(async () => {
   await loadLinkedCards()
 })
 
-onUnmounted(() => { document.removeEventListener('keydown', onKeyDown) })
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeyDown)
+  sortableInstance?.destroy()
+  sortableInstance = null
+})
 
 const priorities = ['none', 'low', 'medium', 'high', 'critical']
 
@@ -1205,6 +1254,10 @@ function renderMarkdown(text) {
 
 .checklist-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
 .checklist-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.checklist-drag-handle { color: var(--color-text-muted); cursor: grab; font-size: 14px; flex-shrink: 0; user-select: none; }
+.checklist-drag-handle:active { cursor: grabbing; }
+.sortable-ghost { opacity: 0.4; }
+.sortable-drag { opacity: 1; }
 .checklist-checkbox { width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; accent-color: var(--color-primary); }
 .checklist-body { flex: 1; font-size: 13px; line-height: 1.4; }
 .checklist-body.completed { text-decoration: line-through; color: var(--color-text-muted); }

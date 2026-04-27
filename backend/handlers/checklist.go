@@ -9,6 +9,7 @@ import (
 	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
 	"github.com/tonk/warmdesk/services"
+	"github.com/tonk/warmdesk/ws"
 )
 
 // ListChecklistItems GET /projects/:projectSlug/cards/:cardId/checklist
@@ -75,6 +76,12 @@ func CreateChecklistItem(c *gin.Context) {
 		Position: maxPos + 1000,
 	}
 	database.DB.Create(&item)
+
+	ws.BroadcastToProject(project.ID, ws.Message{
+		Type:    ws.TypeChecklistItemCreated,
+		Payload: gin.H{"card_id": cardID, "item": item},
+	})
+
 	c.JSON(http.StatusCreated, item)
 }
 
@@ -127,6 +134,12 @@ func UpdateChecklistItem(c *gin.Context) {
 	}
 
 	database.DB.First(&item, item.ID)
+
+	ws.BroadcastToProject(project.ID, ws.Message{
+		Type:    ws.TypeChecklistItemUpdated,
+		Payload: gin.H{"card_id": cardID, "item": item},
+	})
+
 	c.JSON(http.StatusOK, item)
 }
 
@@ -162,5 +175,57 @@ func DeleteChecklistItem(c *gin.Context) {
 	}
 
 	database.DB.Delete(&item)
+
+	ws.BroadcastToProject(project.ID, ws.Message{
+		Type:    ws.TypeChecklistItemDeleted,
+		Payload: gin.H{"card_id": cardID, "item_id": itemID},
+	})
+
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+}
+
+// ReorderChecklistItems PATCH /projects/:projectSlug/cards/:cardId/checklist/reorder
+func ReorderChecklistItems(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	slug := c.Param("projectSlug")
+	cardID, err := strconv.ParseUint(c.Param("cardId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid card id"})
+		return
+	}
+
+	project, err := services.GetProjectBySlug(slug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "member"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var req []struct {
+		ID       uint    `json:"id"`
+		Position float64 `json:"position"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	for _, r := range req {
+		database.DB.Model(&models.CardChecklistItem{}).
+			Where("id = ? AND card_id = ?", r.ID, cardID).
+			Update("position", r.Position)
+	}
+
+	var items []models.CardChecklistItem
+	database.DB.Where("card_id = ?", cardID).Order("position asc, id asc").Find(&items)
+
+	ws.BroadcastToProject(project.ID, ws.Message{
+		Type:    ws.TypeChecklistReordered,
+		Payload: gin.H{"card_id": cardID, "items": items},
+	})
+
+	c.JSON(http.StatusOK, items)
 }

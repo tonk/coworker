@@ -6,6 +6,7 @@ export const useBoardStore = defineStore('board', () => {
   const columns = ref([])
   const loading = ref(false)
   const projectSlug = ref(null)
+  const checklistEvent = ref(null)
 
   async function loadBoard(slug) {
     loading.value = true
@@ -132,11 +133,17 @@ export const useBoardStore = defineStore('board', () => {
       case 'board.column.updated': updateColumn(payload); break
       case 'board.column.deleted': removeColumn(payload.column_id); break
       case 'board.columns.reordered': reorderColumns(payload); break
+      case 'board.card.checklist.created':
+      case 'board.card.checklist.updated':
+      case 'board.card.checklist.deleted':
+      case 'board.card.checklist.reordered':
+        checklistEvent.value = { type, payload }
+        break
     }
   }
 
   return {
-    columns, loading, projectSlug,
+    columns, loading, projectSlug, checklistEvent,
     loadBoard, silentRefresh, reset,
     addColumn, updateColumn, removeColumn, reorderColumns,
     addCard, updateCard, moveCard, removeCard,
