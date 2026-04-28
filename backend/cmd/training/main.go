@@ -59,24 +59,45 @@ type Character struct {
 // `characters` is a package-level var since Go constants can only hold primitive values.
 // Declaring it here makes it effectively fixed and accessible across the whole package.
 var characters = []Character{
-	{FirstName: "Bedivere", LastName: "The Wise"},
 	{FirstName: "Brother", LastName: "Maynard"},
+	{FirstName: "Concorde", LastName: "The Squire"},
 	{FirstName: "Dennis", LastName: "The Peasant"},
+	{FirstName: "Dingo", LastName: "of Castle Anthrax"},
 	{FirstName: "Frank", LastName: "The Famous Historian"},
-	{FirstName: "French", LastName: "Taunter"},
 	{FirstName: "Galahad", LastName: "The Pure"},
+	{FirstName: "Guinevere", LastName: "The Queen"},
 	{FirstName: "Lancelot", LastName: "The Brave"},
+	{FirstName: "Merlin", LastName: "The Enchanter"},
+	{FirstName: "Mordred", LastName: "The Traitor"},
+	{FirstName: "Morgan", LastName: "le Fay"},
+	{FirstName: "Patsy", LastName: "The Squire"},
 	{FirstName: "Prince", LastName: "Herbert"},
 	{FirstName: "Robin", LastName: "The Not-So-Brave"},
 	{FirstName: "Roger", LastName: "The Shrubber"},
 	{FirstName: "Sir", LastName: "Bedevere"},
+	{FirstName: "Sir", LastName: "Bors"},
+	{FirstName: "Sir", LastName: "Dagonet"},
 	{FirstName: "Sir", LastName: "Ector"},
+	{FirstName: "Sir", LastName: "Gareth"},
 	{FirstName: "Sir", LastName: "Gawain"},
+	{FirstName: "Sir", LastName: "Kay"},
+	{FirstName: "Sir", LastName: "Lamorak"},
+	{FirstName: "Sir", LastName: "Lionel"},
+	{FirstName: "Sir", LastName: "Not-Appearing-In-This-Film"},
+	{FirstName: "Sir", LastName: "Palamedes"},
+	{FirstName: "Sir", LastName: "Pellinore"},
+	{FirstName: "Sir", LastName: "Percival"},
+	{FirstName: "Sir", LastName: "Tristan"},
 	{FirstName: "The Black", LastName: "Knight"},
 	{FirstName: "The Bridge", LastName: "Keeper"},
 	{FirstName: "The French", LastName: "Taunter"},
 	{FirstName: "The Green", LastName: "Knight"},
+	{FirstName: "The Head Knight", LastName: "of Ni"},
+	{FirstName: "The Lady", LastName: "of the Lake"},
+	{FirstName: "The Old Man", LastName: "from Scene 24"},
+	{FirstName: "The Witch", LastName: "of the Village"},
 	{FirstName: "Tim", LastName: "The Enchanter"},
+	{FirstName: "Zoot", LastName: "of Castle Anthrax"},
 }
 
 // Define the trainer, as they are King
@@ -221,8 +242,10 @@ func main() {
 			PasswordHash:       hashPassword(password),
 			GlobalRole:         "user",
 			FirstName:          thisName.FirstName,
-			LastName:           thisName.LastName + " - " + suffix,
-			DisplayName:        thisName.FirstName + " " + thisName.LastName + " - " + suffix,
+			// LastName:           thisName.LastName + " - " + suffix,
+			// DisplayName:        thisName.FirstName + " " + thisName.LastName + " - " + suffix,
+			LastName:           thisName.LastName,
+			DisplayName:        thisName.FirstName + " " + thisName.LastName,
 			AvatarURL:          fmt.Sprintf("https://api.dicebear.com/9.x/avataaars/svg?seed=%s", thisName.FirstName),
 			IsActive:           true,
 			EmailNotifications: false,
@@ -311,7 +334,7 @@ func main() {
 
 		// 9. Create group "Shrubbery Bringing <XX>", add the user, and assign to the project.
 		g := &models.UserGroup{Name: groupName, Avatar: groupAvatarURL(groupName)}
-		must(db.Create(g).Error)
+		must(db.Where(models.UserGroup{Name: groupName}).FirstOrCreate(g).Error)
 		must(db.Create(&models.GroupMember{GroupID: g.ID, UserID: user.ID}).Error)
 		must(db.Create(&models.GroupProjectAccess{
 			GroupID:   g.ID,
@@ -409,10 +432,10 @@ func removeTrainingData(db *gorm.DB) {
 		fmt.Printf("  Removed %d customer(s) and contract(s)\n", len(custIDs))
 	}
 
-	// Groups matching "Holy Grail <XX>".
+	// Groups matching "Shrubbery Bringing <XX>".
 	var groupIDs []uint
 	db.Model(&models.UserGroup{}).
-		Where("name LIKE ? AND LENGTH(name) = ?", "Holy Grail "+"__", len("Holy Grail ")+2).
+		Where("name LIKE ? AND LENGTH(name) = ?", "Shrubbery Bringing "+"__", len("Shrubbery Bringing ")+2).
 		Pluck("id", &groupIDs)
 	if len(groupIDs) > 0 {
 		db.Where("group_id IN ?", groupIDs).Delete(&models.GroupMember{})
