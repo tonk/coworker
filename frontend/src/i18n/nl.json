@@ -415,6 +415,7 @@
     "theme": "Thema",
     "theme_light": "Licht",
     "theme_dark": "Donker",
+    "theme_black": "Zwart",
     "theme_system": "Systeeminstelling",
     "last_login": "Laatste aanmelding",
     "settings_updated_at": "Instellingen laatst gewijzigd",

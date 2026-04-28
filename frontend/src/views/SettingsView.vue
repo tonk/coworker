@@ -58,6 +58,7 @@
               <select class="form-input" v-model="form.theme">
                 <option value="light">{{ $t('settings.theme_light') }}</option>
                 <option value="dark">{{ $t('settings.theme_dark') }}</option>
+                <option value="black">{{ $t('settings.theme_black') }}</option>
                 <option value="system">{{ $t('settings.theme_system') }}</option>
               </select>
             </div>

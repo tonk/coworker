@@ -15,7 +15,8 @@
         </div>
 
         <p class="about-desc">
-          Self-hosted project management — Kanban boards,<br>
+	  Self-hosted project management<br>
+	  Kanban and Scrum boards,<br>
           team chat, discussions, and time reporting.
         </p>
 

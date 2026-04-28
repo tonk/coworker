@@ -5,8 +5,8 @@ const accentColor = ref(localStorage.getItem('accent_color') || 'blue')
 
 function applyTheme(value) {
   const root = document.documentElement
-  if (value === 'dark') {
-    root.setAttribute('data-theme', 'dark')
+  if (value === 'dark' || value === 'black') {
+    root.setAttribute('data-theme', value)
   } else if (value === 'light') {
     root.removeAttribute('data-theme')
   } else {

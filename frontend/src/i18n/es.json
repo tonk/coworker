@@ -415,6 +415,7 @@
     "theme": "Tema",
     "theme_light": "Claro",
     "theme_dark": "Oscuro",
+    "theme_black": "Negro",
     "theme_system": "Seguir el sistema",
     "last_login": "Último inicio de sesión",
     "settings_updated_at": "Configuración modificada el",

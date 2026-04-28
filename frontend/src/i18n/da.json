@@ -444,6 +444,7 @@
     "theme": "Tema",
     "theme_light": "Lyst",
     "theme_dark": "Mørkt",
+    "theme_black": "Sort",
     "theme_system": "Følg system",
     "last_login": "Sidste login",
     "settings_updated_at": "Indstillinger sidst ændret",

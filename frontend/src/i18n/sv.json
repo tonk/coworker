@@ -444,6 +444,7 @@
     "theme": "Tema",
     "theme_light": "Ljust",
     "theme_dark": "Mörkt",
+    "theme_black": "Svart",
     "theme_system": "Följ system",
     "last_login": "Senaste inloggning",
     "settings_updated_at": "Inställningar senast ändrade",

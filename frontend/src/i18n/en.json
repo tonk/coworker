@@ -450,6 +450,7 @@
     "theme": "Theme",
     "theme_light": "Light",
     "theme_dark": "Dark",
+    "theme_black": "Black",
     "theme_system": "Follow system",
     "last_login": "Last Login",
     "settings_updated_at": "Settings Last Changed",

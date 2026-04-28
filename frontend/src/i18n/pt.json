@@ -444,6 +444,7 @@
     "theme": "Tema",
     "theme_light": "Claro",
     "theme_dark": "Escuro",
+    "theme_black": "Preto",
     "theme_system": "Seguir sistema",
     "last_login": "Último início de sessão",
     "settings_updated_at": "Configurações atualizadas em",

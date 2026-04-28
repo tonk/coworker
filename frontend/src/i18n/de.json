@@ -415,6 +415,7 @@
     "theme": "Design",
     "theme_light": "Hell",
     "theme_dark": "Dunkel",
+    "theme_black": "Schwarz",
     "theme_system": "Systemeinstellung",
     "last_login": "Letzte Anmeldung",
     "settings_updated_at": "Einstellungen zuletzt geändert",

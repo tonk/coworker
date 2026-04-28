@@ -444,6 +444,7 @@
     "theme": "Teema",
     "theme_light": "Vaalea",
     "theme_dark": "Tumma",
+    "theme_black": "Musta",
     "theme_system": "Seuraa järjestelmää",
     "last_login": "Viimeisin kirjautuminen",
     "settings_updated_at": "Asetukset viimeksi muutettu",
