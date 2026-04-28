@@ -243,6 +243,11 @@ function applyZoom(level) {
 }
 
 function onKeyZoom(e) {
+  if (isTauri && e.key === 'F5') {
+    e.preventDefault()
+    location.reload()
+    return
+  }
   if (!e.ctrlKey && !e.metaKey) return
   if (e.key === '+' || e.key === '=') {
     if (!isTauri) e.preventDefault()
