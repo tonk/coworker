@@ -187,6 +187,10 @@ const canManageColumns = computed(() => {
   return me ? (ADMIN_RANKS[me.role] ?? 0) >= 3 : false
 })
 
+watch(canManageColumns, (val) => {
+  columnSortable?.option('disabled', !val)
+})
+
 async function toggleStar() {
   if (!slug.value) return
   if (sidebarStore.isStarred(slug.value)) {
