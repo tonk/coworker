@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.9.7 — 2026-04-28
+
+### Added
+- **F5 / Ctrl+F5 reload in Tauri desktop client** — pressing F5 (with or without modifiers) now reloads the page in the desktop app, matching the behaviour of the web browser.
+
+### Fixed
+- **IP allowlist now only restricts API-key requests** — previously the allowlist blocked all traffic including browser sessions, making it impossible to recover from a misconfigured setting via the web interface; now only `X-API-Key`-authenticated requests are subject to the restriction.
+- **Training seeder `--reset` now removes groups correctly** — the cleanup query was matching `"Holy Grail __"` but groups are named `"Shrubbery Bringing XX"`; orphaned groups caused a UNIQUE constraint crash on re-runs.
+- **Training seeder group creation is idempotent** — a `FirstOrCreate` replaces the bare `Create` so a partial previous run cannot block a fresh seed attempt.
+- **Training seeder expanded character list** — 21 new Monty Python / Arthurian characters added; two duplicates removed (Bedivere The Wise / Sir Bedevere, French Taunter / The French Taunter).
+
 ## v0.9.6 — 2026-04-28
 
 ### Fixed
