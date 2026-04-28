@@ -414,3 +414,12 @@ Create an application that has all these features and requirements
 - Add ARM64 server build targets (make build-arm64) and ARM64 Tauri desktop targets (appimage-arm64, deb-arm64, rpm-arm64)
 - Add make help target listing all build targets grouped by category
 - Fix version label alignment on the login page
+- Show WarmDesk wordmark next to logo on the login screen
+- Fix company logo URL not resolving to absolute path in Tauri desktop client
+- Show a ← [parent card title] back link at the top of sub-card and linked-card nested modals to return to the originating card
+- Admin Users table: add Last Password Change column and dedicated MFA column (moved from Status badge)
+- Admin Settings: password_change_period_days policy; login flags expired passwords and redirects to Settings with a warning banner
+- People list in DM/chat: non-admin users with explicit customer assignments only see colleagues in shared customers
+- Admin tables (Users, Groups, Customers, Projects): sortable name column with ↑/↓ toggle
+- Edit User modal in Admin: group assignment chip picker alongside existing project and customer pickers; shows and saves current group memberships
+- Reaction pills in chat and DMs: hover tooltip shows names of all users who reacted ("You, Alice, Bob")

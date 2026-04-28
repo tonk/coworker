@@ -8,13 +8,13 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging, time tracking, and a ticket API.
 
-## Latest release (v0.9.0)
+## Latest release (v0.9.5)
 
-- Per-user time tracking module with an Exact Online-style weekly grid, report tab (week/month/year), and XLSX/PDF exports.
-- Time logged directly on card comments; automatically creates a time entry when the user has time tracking enabled; card total is the sum of all comment times.
-- Overdue cards now have a subtle orange background on the board.
-- Every project must be linked to a customer (enforced in UI and API).
-- Frontend bundle split: main JS chunk reduced from ~504 kB to ~298 kB.
+- Admin panel improvements: Last Password Change and dedicated MFA columns in the Users table; sortable name column in Users, Groups, Customers, and Projects lists; Edit User modal now includes a group assignment picker.
+- Password change period policy: admin-configurable maximum password age; users whose password has expired are redirected to Settings on login.
+- People list in DM/chat filtered by shared customer membership for non-admin users with customer restrictions.
+- Reaction tooltips in chat and DMs show the names of all users who reacted on hover.
+- WarmDesk wordmark shown on the login screen; company logo correctly resolved in the desktop app.
 
 ## Build status
 

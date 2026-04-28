@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.9.5 — 2026-04-28
+
+### Added
+- **Admin Users table: Last Password Change column** — shows when each user last changed their password; tracked on self-service change, password reset, and admin-forced reset.
+- **Admin Users table: dedicated MFA column** — MFA status moved from the Status badge to its own column for clarity.
+- **Password change period policy** — new Admin → Settings → Password Policy field sets a maximum password age in days (0 = disabled); on login, users whose password has expired are redirected to Settings and shown a banner prompting them to change it.
+- **People list filtered by customer membership** — in the DM / People selector, non-admin users who have explicit customer assignments only see colleagues who share at least one customer with them; users with no customer restrictions continue to see everyone.
+- **Sortable name column in Admin tables** — Users, Groups, Customers, and Projects lists all have a clickable name header (↑/↓) that toggles ascending / descending alphabetical order; sorting is client-side.
+- **Assign groups in Edit User modal** — the Edit User modal now includes a group chip picker (purple) alongside the existing project and customer pickers; the user's current group memberships are shown and can be changed in one save.
+- **Reaction tooltip showing reactor names** — hovering over a reaction pill in project chat or DMs shows a styled tooltip with the names of all users who sent that reaction ("You, Alice, Bob"); replaces the previous plain emoji+count tooltip.
+- **WarmDesk wordmark on login screen** — company name displayed next to the logo on the login page.
+
+### Fixed
+- **Company logo URL resolved to absolute path in Tauri desktop client** — relative `/uploads/…` logo URLs are now resolved against the configured server URL so the logo loads correctly in the desktop app.
+- **Back button for sub-cards and linked cards** — a ← [parent card title] breadcrumb is shown at the top of nested card modals; clicking it returns to the originating card.
+
 ## v0.9.4 — 2026-04-27
 
 ### Added
