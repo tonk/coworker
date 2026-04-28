@@ -346,6 +346,7 @@
                   <MessageReactions
                     v-if="!msg.is_deleted"
                     :reactions="msg.reactions"
+                    :users="allUsers"
                     @toggle="(emoji) => toggleConvReaction(msg, emoji)"
                   />
                   <div class="msg-meta">

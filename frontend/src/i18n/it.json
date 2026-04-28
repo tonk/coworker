@@ -38,7 +38,9 @@
     "register_title": "Crea il tuo account",
     "current_password": "Password attuale",
     "new_password": "Nuova password",
-    "change_password": "Cambia password"
+    "change_password": "Cambia password",
+    "password_expired": "La tua password è scaduta. Cambiala nelle impostazioni del tuo account.",
+    "password_expired_title": "Password scaduta"
   },
   "project": {
     "projects": "Progetti",
@@ -236,6 +238,8 @@
     "role_viewer": "Lettore",
     "role_metrics": "Metriche",
     "last_login": "Ultimo accesso",
+    "last_password_change": "Ultima modifica password",
+    "mfa_enabled": "MFA",
     "owner": "Proprietario",
     "open_cards": "Schede aperte",
     "edit_user": "Modifica utente",
@@ -288,6 +292,9 @@
     "password_require_lower": "Richiedi minuscola (a–z)",
     "password_require_digit": "Richiedi cifra (0–9)",
     "password_require_special": "Richiedi carattere speciale (!{'@'}#$…)",
+    "password_change_period": "Età massima della password",
+    "password_change_period_unit": "giorni (0 = disabilitato)",
+    "password_change_period_hint": "Gli utenti vengono avvisati di cambiare la password dopo questo numero di giorni. Impostare a 0 per disabilitare.",
     "deleted": "Eliminato",
     "show_deleted": "Mostra eliminati",
     "restore": "Ripristina",

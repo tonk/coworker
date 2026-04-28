@@ -38,7 +38,9 @@
     "register_title": "Luo tilisi",
     "current_password": "Nykyinen salasana",
     "new_password": "Uusi salasana",
-    "change_password": "Vaihda salasana"
+    "change_password": "Vaihda salasana",
+    "password_expired": "Salasanasi on vanhentunut. Vaihda se tilisi asetuksissa.",
+    "password_expired_title": "Salasana vanhentunut"
   },
   "project": {
     "projects": "Projektit",
@@ -236,6 +238,8 @@
     "role_viewer": "Lukija",
     "role_metrics": "Mittarit",
     "last_login": "Viimeisin kirjautuminen",
+    "last_password_change": "Viimeisin salasanan vaihto",
+    "mfa_enabled": "MFA",
     "owner": "Omistaja",
     "open_cards": "Avoimet kortit",
     "edit_user": "Muokkaa käyttäjää",
@@ -288,6 +292,9 @@
     "password_require_lower": "Vaadi pieni kirjain (a–ö)",
     "password_require_digit": "Vaadi numero (0–9)",
     "password_require_special": "Vaadi erikoismerkki (!{'@'}#$…)",
+    "password_change_period": "Maximum Password Age",
+    "password_change_period_unit": "days (0 = disabled)",
+    "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "deleted": "Poistettu",
     "show_deleted": "Näytä poistetut",
     "restore": "Palauta",

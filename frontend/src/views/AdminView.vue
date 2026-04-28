@@ -26,15 +26,20 @@
             <thead>
               <tr>
                 <th style="width: 48px;"></th>
-                <th>{{ $t('admin.user') }}</th>
+                <th class="sortable-th" @click="toggleUserSort()">
+                  {{ $t('admin.user') }}
+                  <span class="sort-indicator">{{ userSortDir === 'asc' ? '↑' : '↓' }}</span>
+                </th>
                 <th>{{ $t('admin.global_role') }}</th>
                 <th>{{ $t('admin.last_login') }}</th>
+                <th>{{ $t('admin.last_password_change') }}</th>
+                <th>{{ $t('admin.mfa_enabled') }}</th>
                 <th>Status</th>
                 <th>{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="user in users" :key="user.id">
+              <tr v-for="user in sortedUsers" :key="user.id">
                 <td>
                   <div class="member-avatar-wrap">
                     <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" class="member-avatar" alt="" />
@@ -60,10 +65,16 @@
                   <small>{{ user.last_login_at ? formatDateTime(user.last_login_at) : '-' }}</small>
                 </td>
                 <td>
+                  <small>{{ user.password_changed_at ? formatDateTime(user.password_changed_at) : '-' }}</small>
+                </td>
+                <td>
+                  <span v-if="user.totp_enabled" class="badge badge-mfa" :title="$t('mfa.title')">MFA</span>
+                  <span v-else class="text-muted">-</span>
+                </td>
+                <td>
                   <span :class="['badge', user.is_active ? 'badge-active' : 'badge-inactive']">
                     {{ user.is_active ? $t('admin.active') : $t('admin.inactive') }}
                   </span>
-                  <span v-if="user.totp_enabled" class="badge badge-mfa" :title="$t('mfa.title')">MFA</span>
                 </td>
                 <td>
                   <div class="actions-cell">
@@ -97,7 +108,10 @@
           <table v-else class="data-table">
             <thead>
               <tr>
-                <th>{{ $t('project.project_name') }}</th>
+                <th class="sortable-th" @click="toggleProjectSort()">
+                  {{ $t('project.project_name') }}
+                  <span class="sort-indicator">{{ projectSortDir === 'asc' ? '↑' : '↓' }}</span>
+                </th>
                 <th>{{ $t('admin.owner') }}</th>
                 <th>Status</th>
                 <th>{{ $t('admin.open_cards') }}</th>
@@ -105,7 +119,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="project in projects" :key="project.id">
+              <tr v-for="project in sortedProjects" :key="project.id">
                 <td>
                   <div class="entity-cell">
                     <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="entity-avatar" alt="" />
@@ -159,7 +173,10 @@
           <table v-else class="data-table">
             <thead>
               <tr>
-                <th>{{ $t('groups.name') }}</th>
+                <th class="sortable-th" @click="toggleGroupSort()">
+                  {{ $t('groups.name') }}
+                  <span class="sort-indicator">{{ groupSortDir === 'asc' ? '↑' : '↓' }}</span>
+                </th>
                 <th>{{ $t('groups.members') }}</th>
                 <th>{{ $t('admin.projects') }}</th>
                 <th>{{ $t('customer.title') }}</th>
@@ -167,7 +184,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="g in groups" :key="g.id">
+              <tr v-for="g in sortedGroups" :key="g.id">
                 <td>
                   <div class="entity-cell">
                     <img v-if="groupAvatar(g)" :src="groupAvatar(g)" class="entity-avatar" alt="" />
@@ -205,14 +222,17 @@
             <thead>
               <tr>
                 <th style="width: 48px;"></th>
-                <th>{{ $t('customer.name') }}</th>
+                <th class="sortable-th" @click="toggleCustomerSort()">
+                  {{ $t('customer.name') }}
+                  <span class="sort-indicator">{{ customerSortDir === 'asc' ? '↑' : '↓' }}</span>
+                </th>
                 <th>{{ $t('contract.contracts') }}</th>
                 <th>{{ $t('customer.projects') }}</th>
                 <th>{{ $t('common.actions') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="c in adminCustomers" :key="c.id">
+              <tr v-for="c in sortedCustomers" :key="c.id">
                 <td>
                   <div class="customer-avatar-container">
                     <img v-if="c.logo_url" :src="resolveAssetUrl(c.logo_url)" class="customer-avatar" alt="" />
@@ -499,6 +519,15 @@
               </label>
             </div>
 
+            <div class="form-group" style="max-width:400px;margin-top:8px">
+              <label class="form-label">{{ $t('admin.password_change_period') }}</label>
+              <div class="form-row" style="align-items:center;gap:8px">
+                <input class="form-input" type="number" min="0" max="3650" v-model.number="systemSettings.password_change_period_days" style="width:100px" />
+                <span class="form-hint" style="margin:0">{{ $t('admin.password_change_period_unit') }}</span>
+              </div>
+              <p class="form-hint">{{ $t('admin.password_change_period_hint') }}</p>
+            </div>
+
             <div style="max-width:400px;margin-top:8px">
               <button class="btn btn-primary btn-sm" @click="savePasswordPolicy">{{ $t('common.save') }}</button>
             </div>
@@ -742,6 +771,20 @@
           <button type="button" class="btn btn-danger btn-sm" @click="adminResetMFA(editUser)">{{ $t('admin.reset_mfa') }}</button>
         </div>
         <span v-else class="badge badge-inactive">{{ $t('mfa.disabled') }}</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ $t('groups.title') }}</label>
+        <div class="labels-picker">
+          <span
+            v-for="g in groups"
+            :key="g.id"
+            class="label-chip"
+            :class="{ active: userGroupIds.includes(g.id) }"
+            :style="{ borderColor: '#8b5cf6', color: userGroupIds.includes(g.id) ? '#fff' : '#8b5cf6', background: userGroupIds.includes(g.id) ? '#8b5cf6' : 'transparent' }"
+            @click="userGroupIds.includes(g.id) ? userGroupIds.splice(userGroupIds.indexOf(g.id), 1) : userGroupIds.push(g.id)"
+          >{{ g.name }}</span>
+          <span v-if="!groups.length" class="form-hint">{{ $t('groups.no_groups') }}</span>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('admin.assign_projects') }}</label>
@@ -1090,6 +1133,7 @@ const newUser = ref({ username: '', email: '', password: '', first_name: '', las
 const userProjectIds = ref([])
 const userCustomerIds = ref([])
 const userCustomerAdminIds = ref([])
+const userGroupIds = ref([])
 
 const allCustomers = ref([])
 let customersLoaded = false
@@ -1122,6 +1166,46 @@ const usersNotInGroup = computed(() => {
 const adminCustomers = ref([])
 const loadingCustomers = ref(false)
 const showCreateCustomer = ref(false)
+
+const userSortDir = ref('asc')
+const groupSortDir = ref('asc')
+const customerSortDir = ref('asc')
+const projectSortDir = ref('asc')
+
+function toggleUserSort() { userSortDir.value = userSortDir.value === 'asc' ? 'desc' : 'asc' }
+function toggleGroupSort() { groupSortDir.value = groupSortDir.value === 'asc' ? 'desc' : 'asc' }
+function toggleCustomerSort() { customerSortDir.value = customerSortDir.value === 'asc' ? 'desc' : 'asc' }
+function toggleProjectSort() { projectSortDir.value = projectSortDir.value === 'asc' ? 'desc' : 'asc' }
+
+const sortedUsers = computed(() => {
+  const mul = userSortDir.value === 'asc' ? 1 : -1
+  return [...users.value].sort((a, b) => {
+    const an = (a.display_name || a.username || '').toLowerCase()
+    const bn = (b.display_name || b.username || '').toLowerCase()
+    return mul * an.localeCompare(bn)
+  })
+})
+
+const sortedGroups = computed(() => {
+  const mul = groupSortDir.value === 'asc' ? 1 : -1
+  return [...groups.value].sort((a, b) =>
+    mul * (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
+  )
+})
+
+const sortedCustomers = computed(() => {
+  const mul = customerSortDir.value === 'asc' ? 1 : -1
+  return [...adminCustomers.value].sort((a, b) =>
+    mul * (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
+  )
+})
+
+const sortedProjects = computed(() => {
+  const mul = projectSortDir.value === 'asc' ? 1 : -1
+  return [...projects.value].sort((a, b) =>
+    mul * (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
+  )
+})
 const editingCustomer = ref(null)
 const customerForm = ref({ name: '', description: '', logo_url: '' })
 let adminCustomersLoaded = false
@@ -1665,11 +1749,12 @@ function formatBytes(bytes) {
 async function savePasswordPolicy() {
   try {
     await adminApi.updateSystemSettings({
-      password_min_length:      systemSettings.value.password_min_length,
-      password_require_upper:   systemSettings.value.password_require_upper,
-      password_require_lower:   systemSettings.value.password_require_lower,
-      password_require_digit:   systemSettings.value.password_require_digit,
-      password_require_special: systemSettings.value.password_require_special,
+      password_min_length:           systemSettings.value.password_min_length,
+      password_require_upper:        systemSettings.value.password_require_upper,
+      password_require_lower:        systemSettings.value.password_require_lower,
+      password_require_digit:        systemSettings.value.password_require_digit,
+      password_require_special:      systemSettings.value.password_require_special,
+      password_change_period_days:   systemSettings.value.password_change_period_days ?? 0,
     })
     ui.success('Settings saved')
   } catch {
@@ -1827,12 +1912,15 @@ async function openEditUser(user) {
   userProjectIds.value = []
   userCustomerIds.value = []
   userCustomerAdminIds.value = []
+  userGroupIds.value = []
   loadProjects()
   loadAllCustomers()
+  loadGroups()
   try {
-    const [projRes, custRes] = await Promise.all([
+    const [projRes, custRes, grpRes] = await Promise.all([
       adminApi.getUserProjects(user.id),
       adminApi.getUserCustomers(user.id),
+      adminApi.getUserGroups(user.id),
     ])
     userProjectIds.value = projRes.data.project_ids || []
     userCustomerIds.value = custRes.data.customer_ids || []
@@ -1840,6 +1928,7 @@ async function openEditUser(user) {
     userCustomerAdminIds.value = Object.entries(roles)
       .filter(([, role]) => role === 'admin')
       .map(([id]) => Number(id))
+    userGroupIds.value = grpRes.data.group_ids || []
   } catch {}
 }
 
@@ -1862,12 +1951,14 @@ async function saveEditUser() {
     const customerRoles = {}
     userCustomerIds.value.forEach(id => { customerRoles[id] = userCustomerAdminIds.value.includes(id) ? 'admin' : 'member' })
     await adminApi.setUserCustomers(editUser.value.id, userCustomerIds.value, customerRoles)
+    await adminApi.setUserGroups(editUser.value.id, userGroupIds.value)
     const idx = users.value.findIndex(u => u.id === data.id)
     if (idx >= 0) users.value[idx] = data
     editUser.value = null
     userProjectIds.value = []
     userCustomerIds.value = []
     userCustomerAdminIds.value = []
+    userGroupIds.value = []
     ui.success('User updated')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to update user')
@@ -2056,6 +2147,9 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .data-table { width: 100%; border-collapse: collapse; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
 .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--color-border); font-size: 13px; vertical-align: middle; }
 .data-table th { font-weight: 600; color: var(--color-text-muted); font-size: 12px; background: var(--color-bg); }
+.sortable-th { cursor: pointer; user-select: none; white-space: nowrap; }
+.sortable-th:hover { color: var(--color-text); }
+.sort-indicator { margin-left: 4px; opacity: 0.6; font-size: 11px; }
 .data-table small { color: var(--color-text-muted); font-size: 11px; }
 .email { color: var(--color-text-muted); }
 .actions-cell { display: flex; gap: 6px; flex-wrap: wrap; }

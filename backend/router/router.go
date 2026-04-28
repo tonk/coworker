@@ -92,6 +92,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.PUT("/users/:id/projects", handlers.AdminSetUserProjects)
 			admin.GET("/users/:id/customers", handlers.AdminGetUserCustomers)
 			admin.PUT("/users/:id/customers", handlers.AdminSetUserCustomers)
+			admin.GET("/users/:id/groups", handlers.AdminGetUserGroups)
+			admin.PUT("/users/:id/groups", handlers.AdminSetUserGroups)
 			admin.GET("/projects", handlers.AdminListProjects)
 			admin.POST("/projects", handlers.AdminCreateProject)
 			admin.PUT("/projects/:id", handlers.AdminUpdateProject)

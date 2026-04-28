@@ -38,7 +38,9 @@
     "register_title": "Konto erstellen",
     "current_password": "Aktuelles Passwort",
     "new_password": "Neues Passwort",
-    "change_password": "Passwort ändern"
+    "change_password": "Passwort ändern",
+    "password_expired": "Ihr Passwort ist abgelaufen. Bitte ändern Sie es in Ihren Kontoeinstellungen.",
+    "password_expired_title": "Passwort abgelaufen"
   },
   "project": {
     "projects": "Projekte",
@@ -237,6 +239,8 @@
     "role_viewer": "Betrachter",
     "role_metrics": "Metriken",
     "last_login": "Letzte Anmeldung",
+    "last_password_change": "Letzte Passwortänderung",
+    "mfa_enabled": "MFA",
     "owner": "Eigentümer",
     "open_cards": "Offene Karten",
     "edit_user": "Benutzer bearbeiten",
@@ -289,6 +293,9 @@
     "password_require_lower": "Kleinbuchstabe erforderlich (a–z)",
     "password_require_digit": "Ziffer erforderlich (0–9)",
     "password_require_special": "Sonderzeichen erforderlich (!{'@'}#$…)",
+    "password_change_period": "Maximales Passwortalter",
+    "password_change_period_unit": "Tage (0 = deaktiviert)",
+    "password_change_period_hint": "Benutzer werden nach dieser Anzahl von Tagen aufgefordert, ihr Passwort zu ändern. Auf 0 setzen, um zu deaktivieren.",
     "deleted": "Gelöscht",
     "show_deleted": "Gelöschte anzeigen",
     "restore": "Wiederherstellen",

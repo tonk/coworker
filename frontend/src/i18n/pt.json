@@ -38,7 +38,9 @@
     "register_title": "Criar a sua conta",
     "current_password": "Palavra-passe atual",
     "new_password": "Nova palavra-passe",
-    "change_password": "Alterar palavra-passe"
+    "change_password": "Alterar palavra-passe",
+    "password_expired": "A sua palavra-passe expirou. Por favor, altere-a nas definições da sua conta.",
+    "password_expired_title": "Palavra-passe expirada"
   },
   "project": {
     "projects": "Projetos",
@@ -236,6 +238,8 @@
     "role_viewer": "Leitor",
     "role_metrics": "Métricas",
     "last_login": "Último início de sessão",
+    "last_password_change": "Última alteração de palavra-passe",
+    "mfa_enabled": "MFA",
     "owner": "Proprietário",
     "open_cards": "Cartões abertos",
     "edit_user": "Editar utilizador",
@@ -288,6 +292,9 @@
     "password_require_lower": "Exigir minúscula (a–z)",
     "password_require_digit": "Exigir dígito (0–9)",
     "password_require_special": "Exigir carácter especial (!{'@'}#$…)",
+    "password_change_period": "Idade máxima da palavra-passe",
+    "password_change_period_unit": "dias (0 = desativado)",
+    "password_change_period_hint": "Os utilizadores são notificados para alterar a palavra-passe após este número de dias. Defina 0 para desativar.",
     "deleted": "Eliminado",
     "show_deleted": "Mostrar eliminados",
     "restore": "Restaurar",

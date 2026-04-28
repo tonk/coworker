@@ -165,3 +165,15 @@
 - ~~In the Admin -> Users list, also show the users avatar.~~ **Done in v0.8.11**
 
 - ~~In the Admin -> Customers list, also show the customers avatar.~~ **Done in v0.8.11**
+
+- ~~In the Admin -> Users list, add three columns:
+  - Last successful login
+  - Last password change
+  - MFA enabled~~ **Done — last_login already shown; added password_changed_at column and dedicated MFA column (moved from Status badge)**
+
+- ~~In the Admin -> Settings add a setting to set a required password change
+  period, 0 is disabled.~~ **Done — password_change_period_days setting added; login response includes password_expired flag and redirects to settings**
+
+- ~~In the "People" list, only show people that are a member of the
+  customers that I am also a member of.~~ **Done — ListAllUsers filters by shared customer access (direct + group); admins and users without explicit customer access still see everyone**
+

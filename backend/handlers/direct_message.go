@@ -132,7 +132,59 @@ func ListConversations(c *gin.Context) {
 // @Success      200 {array}  models.User
 // @Router       /users [get]
 func ListAllUsers(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
+
 	var users []models.User
-	database.DB.Where("is_active = ?", true).Find(&users)
+
+	if globalRole == "admin" {
+		database.DB.Where("is_active = ?", true).Find(&users)
+		c.JSON(http.StatusOK, users)
+		return
+	}
+
+	// Collect the customer IDs visible to the current user (direct + via groups).
+	myRoles := getAccessibleCustomerRoles(userID)
+	if len(myRoles) == 0 {
+		// No explicit customer access rows → user sees all customers, so see all users.
+		database.DB.Where("is_active = ?", true).Find(&users)
+		c.JSON(http.StatusOK, users)
+		return
+	}
+
+	customerIDs := make([]uint, 0, len(myRoles))
+	for cid := range myRoles {
+		customerIDs = append(customerIDs, cid)
+	}
+
+	// Collect user IDs who share at least one of those customers (direct access).
+	var directUserIDs []uint
+	database.DB.Model(&models.CustomerAccess{}).
+		Where("customer_id IN ?", customerIDs).
+		Distinct("user_id").
+		Pluck("user_id", &directUserIDs)
+
+	// Also collect user IDs who access those customers via a group.
+	var groupUserIDs []uint
+	database.DB.Raw(`
+		SELECT DISTINCT gm.user_id
+		FROM group_members gm
+		JOIN group_customer_accesses gca ON gca.group_id = gm.group_id
+		WHERE gca.customer_id IN ?`, customerIDs).Scan(&groupUserIDs)
+
+	seen := make(map[uint]bool, len(directUserIDs)+len(groupUserIDs)+1)
+	seen[userID] = true // always include the requester themselves
+	for _, id := range directUserIDs {
+		seen[id] = true
+	}
+	for _, id := range groupUserIDs {
+		seen[id] = true
+	}
+	allIDs := make([]uint, 0, len(seen))
+	for id := range seen {
+		allIDs = append(allIDs, id)
+	}
+
+	database.DB.Where("is_active = ? AND id IN ?", true, allIDs).Find(&users)
 	c.JSON(http.StatusOK, users)
 }

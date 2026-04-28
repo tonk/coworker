@@ -254,6 +254,10 @@ async function handleSubmit() {
       mfaCode.value = ''
       return
     }
+    if (result.password_expired) {
+      router.push('/settings?tab=security&expired=1')
+      return
+    }
     router.push('/')
   } catch (e) {
     const data = e.response?.data

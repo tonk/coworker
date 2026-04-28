@@ -38,7 +38,9 @@
     "register_title": "Skapa ditt konto",
     "current_password": "Nuvarande lösenord",
     "new_password": "Nytt lösenord",
-    "change_password": "Ändra lösenord"
+    "change_password": "Ändra lösenord",
+    "password_expired": "Ditt lösenord har gått ut. Byt det i dina kontoinställningar.",
+    "password_expired_title": "Lösenord utgånget"
   },
   "project": {
     "projects": "Projekt",
@@ -236,6 +238,8 @@
     "role_viewer": "Läsare",
     "role_metrics": "Mätvärden",
     "last_login": "Senaste inloggning",
+    "last_password_change": "Senaste lösenordsbyte",
+    "mfa_enabled": "MFA",
     "owner": "Ägare",
     "open_cards": "Öppna kort",
     "edit_user": "Redigera användare",
@@ -288,6 +292,9 @@
     "password_require_lower": "Kräv liten bokstav (a–ö)",
     "password_require_digit": "Kräv siffra (0–9)",
     "password_require_special": "Kräv specialtecken (!{'@'}#$…)",
+    "password_change_period": "Maximum Password Age",
+    "password_change_period_unit": "days (0 = disabled)",
+    "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "deleted": "Raderad",
     "show_deleted": "Visa raderade",
     "restore": "Återställ",

@@ -153,7 +153,11 @@
           </form>
         </div>
 
-        <div class="settings-card">
+        <div v-if="passwordExpired" class="auth-error" style="margin-bottom:16px;padding:12px 16px;border-radius:6px">
+          {{ $t('auth.password_expired') }}
+        </div>
+
+        <div ref="pwCardRef" class="settings-card">
           <h2>{{ $t('auth.change_password') }}</h2>
           <form @submit.prevent="savePassword">
             <div class="form-group">
@@ -300,6 +304,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { useTheme } from '@/composables/useTheme'
@@ -310,8 +315,11 @@ import { resolveAssetUrl } from '@/api/serverConfig'
 import { applyUserPreferences } from '@/composables/useUserPreferences'
 import { useDateFormat } from '@/composables/useDateFormat'
 
+const route = useRoute()
 const auth = useAuthStore()
 const ui = useUIStore()
+const passwordExpired = ref(false)
+const pwCardRef = ref(null)
 const { setTheme, setAccentColor } = useTheme()
 
 const accentColors = [
@@ -388,6 +396,11 @@ onMounted(async () => {
     const { data } = await systemApi.getSettings()
     if (data.password_policy) passwordPolicy.value = data.password_policy
   } catch {}
+  if (route.query.expired === '1') {
+    passwordExpired.value = true
+    await nextTick()
+    pwCardRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
   const u = auth.user
   if (u) {
     form.value = {

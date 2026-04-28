@@ -38,7 +38,9 @@
     "register_title": "Create your account",
     "current_password": "Current Password",
     "new_password": "New Password",
-    "change_password": "Change Password"
+    "change_password": "Change Password",
+    "password_expired": "Your password has expired. Please change it in your account settings.",
+    "password_expired_title": "Password Expired"
   },
   "project": {
     "projects": "Projects",
@@ -237,6 +239,8 @@
     "role_viewer": "Viewer",
     "role_metrics": "Metrics",
     "last_login": "Last Login",
+    "last_password_change": "Last Password Change",
+    "mfa_enabled": "MFA",
     "owner": "Owner",
     "open_cards": "Open Cards",
     "edit_user": "Edit User",
@@ -299,6 +303,9 @@
     "password_require_lower": "Require lowercase letter (a–z)",
     "password_require_digit": "Require digit (0–9)",
     "password_require_special": "Require special character (!{'@'}#$…)",
+    "password_change_period": "Maximum Password Age",
+    "password_change_period_unit": "days (0 = disabled)",
+    "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "backup_title": "Database Backup",
     "backup_description": "Create a backup copy of the database on the server. Backups are stored in the backups/ directory next to the server.",
     "backup_button": "Create Backup",

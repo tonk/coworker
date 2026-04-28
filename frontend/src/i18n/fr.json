@@ -38,7 +38,9 @@
     "register_title": "Créer votre compte",
     "current_password": "Mot de passe actuel",
     "new_password": "Nouveau mot de passe",
-    "change_password": "Changer le mot de passe"
+    "change_password": "Changer le mot de passe",
+    "password_expired": "Votre mot de passe a expiré. Veuillez le changer dans les paramètres de votre compte.",
+    "password_expired_title": "Mot de passe expiré"
   },
   "project": {
     "projects": "Projets",
@@ -237,6 +239,8 @@
     "role_viewer": "Lecteur",
     "role_metrics": "Métriques",
     "last_login": "Dernière connexion",
+    "last_password_change": "Dernier changement de mot de passe",
+    "mfa_enabled": "MFA",
     "owner": "Propriétaire",
     "open_cards": "Cartes ouvertes",
     "edit_user": "Modifier l'utilisateur",
@@ -289,6 +293,9 @@
     "password_require_lower": "Minuscule requise (a–z)",
     "password_require_digit": "Chiffre requis (0–9)",
     "password_require_special": "Caractère spécial requis (!{'@'}#$…)",
+    "password_change_period": "Âge maximum du mot de passe",
+    "password_change_period_unit": "jours (0 = désactivé)",
+    "password_change_period_hint": "Les utilisateurs sont invités à changer leur mot de passe après ce nombre de jours. Mettre 0 pour désactiver.",
     "deleted": "Supprimé",
     "show_deleted": "Afficher supprimés",
     "restore": "Restaurer",

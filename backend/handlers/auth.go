@@ -196,6 +196,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	if IsMFARequired() {
 		resp["mfa_setup_required"] = true
 	}
+	if isPasswordExpired(user) {
+		resp["password_expired"] = true
+	}
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -421,7 +424,11 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	database.DB.Model(&user).Update("password_hash", hash)
+	now := time.Now()
+	database.DB.Model(&user).Updates(map[string]interface{}{
+		"password_hash":       hash,
+		"password_changed_at": now,
+	})
 	authLog(c, "password_changed", user.ID, user.Username, "")
 	c.JSON(http.StatusOK, gin.H{"message": "password updated"})
 }
@@ -676,10 +683,25 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		"password_hash":         hash,
 		"password_reset_token":  "",
 		"password_reset_expiry": nil,
+		"password_changed_at":   time.Now(),
 	})
 
 	authLog(c, "password_reset_ok", user.ID, user.Username, "")
 	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// isPasswordExpired returns true when the password change period is configured
+// and the user's password (or account, if never changed) is older than that period.
+func isPasswordExpired(user models.User) bool {
+	days := GetPasswordChangePeriodDays()
+	if days <= 0 {
+		return false
+	}
+	base := user.CreatedAt
+	if user.PasswordChangedAt != nil {
+		base = *user.PasswordChangedAt
+	}
+	return time.Since(base) > time.Duration(days)*24*time.Hour
 }
 
 // authLog writes a structured audit log line for authentication events.

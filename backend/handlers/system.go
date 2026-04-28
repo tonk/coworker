@@ -56,6 +56,7 @@ const (
 	settingGravatarEnabled         = "gravatar_enabled"
 	settingLoginBrandingEnabled    = "login_branding_enabled"
 	settingAllowedIPs              = "allowed_ips"
+	settingPasswordChangePeriodDays = "password_change_period_days"
 )
 
 func init() {
@@ -65,6 +66,17 @@ func init() {
 // IsGravatarEnabled returns true when the admin has enabled Gravatar avatars.
 func IsGravatarEnabled() bool {
 	return loadAllSettings()[settingGravatarEnabled] != "false"
+}
+
+// GetPasswordChangePeriodDays returns the configured password change period in
+// days. 0 means the policy is disabled.
+func GetPasswordChangePeriodDays() int {
+	v := loadAllSettings()[settingPasswordChangePeriodDays]
+	n, _ := strconv.Atoi(v)
+	if n < 0 {
+		return 0
+	}
+	return n
 }
 
 // configuredBaseURL stores the value of base_url from the config file so
@@ -118,9 +130,10 @@ var systemSettingDefaults = map[string]string{
 	settingBackupKeep:             "10",
 	settingBackupEmailEnabled:      "false",
 	settingBackupEmailAddress:      "",
-	settingBackupLastSuccess:       "",
-	settingScrumStorypointsEnabled: "false",
-	settingGravatarEnabled:         "true",
+	settingBackupLastSuccess:        "",
+	settingScrumStorypointsEnabled:  "false",
+	settingGravatarEnabled:          "true",
+	settingPasswordChangePeriodDays: "0",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -317,6 +330,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		GravatarEnabled             *bool   `json:"gravatar_enabled"`
 		LoginBrandingEnabled        *bool   `json:"login_branding_enabled"`
 		AllowedIPs                  *string `json:"allowed_ips"`
+		PasswordChangePeriodDays    *int    `json:"password_change_period_days"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -440,6 +454,13 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	boolSetting(req.LoginBrandingEnabled, settingLoginBrandingEnabled)
 	if req.AllowedIPs != nil {
 		saveSetting(settingAllowedIPs, *req.AllowedIPs)
+	}
+	if req.PasswordChangePeriodDays != nil {
+		days := *req.PasswordChangePeriodDays
+		if days < 0 {
+			days = 0
+		}
+		saveSetting(settingPasswordChangePeriodDays, fmt.Sprintf("%d", days))
 	}
 
 	AdminGetSystemSettings(c)

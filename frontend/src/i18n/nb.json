@@ -38,7 +38,9 @@
     "register_title": "Opprett kontoen din",
     "current_password": "Nåværende passord",
     "new_password": "Nytt passord",
-    "change_password": "Endre passord"
+    "change_password": "Endre passord",
+    "password_expired": "Passordet ditt har utløpt. Endre det i kontoinnstillingene dine.",
+    "password_expired_title": "Passord utløpt"
   },
   "project": {
     "projects": "Prosjekter",
@@ -236,6 +238,8 @@
     "role_viewer": "Leser",
     "role_metrics": "Metrikk",
     "last_login": "Siste innlogging",
+    "last_password_change": "Siste passordendring",
+    "mfa_enabled": "MFA",
     "owner": "Eier",
     "open_cards": "Åpne kort",
     "edit_user": "Rediger bruker",
@@ -288,6 +292,9 @@
     "password_require_lower": "Krev liten bokstav (a–å)",
     "password_require_digit": "Krev siffer (0–9)",
     "password_require_special": "Krev spesialtegn (!{'@'}#$…)",
+    "password_change_period": "Maximum Password Age",
+    "password_change_period_unit": "days (0 = disabled)",
+    "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "deleted": "Slettet",
     "show_deleted": "Vis slettede",
     "restore": "Gjenopprett",

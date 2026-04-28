@@ -121,6 +121,7 @@ func AdminUpdateUser(c *gin.Context) {
 			return
 		}
 		updates["password_hash"] = string(hash)
+		updates["password_changed_at"] = time.Now()
 	}
 
 	if len(updates) > 0 {

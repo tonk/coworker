@@ -155,6 +155,7 @@
               <MessageReactions
                 v-if="!msg.is_deleted && !msg.is_bot"
                 :reactions="msg.reactions"
+                :users="projectUsers"
                 @toggle="(emoji) => toggleReaction(msg, emoji)"
               />
             </template>

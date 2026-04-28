@@ -38,7 +38,9 @@
     "register_title": "Stofna reikninginn þinn",
     "current_password": "Núverandi lykilorð",
     "new_password": "Nýtt lykilorð",
-    "change_password": "Breyta lykilorði"
+    "change_password": "Breyta lykilorði",
+    "password_expired": "Lykilorðið þitt er útrunnið. Breyttu því í stillingunum þínum.",
+    "password_expired_title": "Lykilorð útrunnið"
   },
   "project": {
     "projects": "Verkefni",
@@ -236,6 +238,8 @@
     "role_viewer": "Lesandi",
     "role_metrics": "Mælingar",
     "last_login": "Síðasta innskráning",
+    "last_password_change": "Síðasta lykilorðsbreyting",
+    "mfa_enabled": "MFA",
     "owner": "Eigandi",
     "open_cards": "Opin spjöld",
     "edit_user": "Breyta notanda",
@@ -288,6 +292,9 @@
     "password_require_lower": "Krefjast lágstafa (a–ö)",
     "password_require_digit": "Krefjast tölu (0–9)",
     "password_require_special": "Krefjast sérstaks tákns (!{'@'}#$…)",
+    "password_change_period": "Maximum Password Age",
+    "password_change_period_unit": "days (0 = disabled)",
+    "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "deleted": "Eytt",
     "show_deleted": "Sýna eydd",
     "restore": "Endurheimta",

@@ -45,6 +45,7 @@ type User struct {
 	TOTPEnabled         bool           `gorm:"default:false" json:"totp_enabled"`
 	PasswordResetToken  string         `gorm:"size:64;index" json:"-"`
 	PasswordResetExpiry *time.Time     `json:"-"`
+	PasswordChangedAt   *time.Time     `json:"password_changed_at"`
 
 	// Computed — not stored in DB
 	GravatarURL    string `gorm:"-" json:"gravatar_url"`

@@ -5,10 +5,10 @@
         v-for="r in reactions"
         :key="r.emoji"
         :class="['reaction-pill', { 'reacted': hasReacted(r) }]"
-        :title="reactionTooltip(r)"
         @click="$emit('toggle', r.emoji)"
       >
         {{ r.emoji }} <span class="reaction-count">{{ r.count }}</span>
+        <span class="reaction-tooltip">{{ reactionTooltip(r) }}</span>
       </button>
     </div>
     <div class="add-reaction-wrap">
@@ -32,7 +32,8 @@ import { useAuthStore } from '@/stores/auth'
 import EmojiPicker from './EmojiPicker.vue'
 
 const props = defineProps({
-  reactions: { type: Array, default: () => [] }
+  reactions: { type: Array, default: () => [] },
+  users:     { type: Array, default: () => [] },
 })
 const emit = defineEmits(['toggle'])
 
@@ -44,7 +45,13 @@ function hasReacted(r) {
 }
 
 function reactionTooltip(r) {
-  return `${r.emoji} ${r.count}`
+  if (!r.user_ids?.length) return r.emoji
+  const names = r.user_ids.map(uid => {
+    if (uid === auth.user?.id) return 'You'
+    const u = props.users.find(u => u.id === uid)
+    return u ? (u.display_name || u.username) : `User ${uid}`
+  })
+  return names.join(', ')
 }
 
 function onPick(emoji) {
@@ -67,6 +74,7 @@ function onPick(emoji) {
   gap: 4px;
 }
 .reaction-pill {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 3px;
@@ -85,6 +93,32 @@ function onPick(emoji) {
   background: color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
 .reaction-count { font-size: 11px; color: var(--color-text-muted); }
+
+.reaction-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-tooltip-bg, #1e293b);
+  color: var(--color-tooltip-text, #f1f5f9);
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 100;
+}
+.reaction-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--color-tooltip-bg, #1e293b);
+}
+.reaction-pill:hover .reaction-tooltip { display: block; }
 
 .add-reaction-wrap { position: relative; }
 .add-reaction-btn {
