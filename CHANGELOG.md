@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.9.8 — 2026-04-28
+
+### Added
+- **Black theme** — new "Black" option in Settings uses a true `#000` background and matching dark chrome for OLED/pure-black setups.
+- **Demo seeder configures company branding** — the seed tool now writes `company_name`, `company_logo`, and `login_branding_enabled` so the branded login panel is active out of the box after seeding.
+
+### Fixed
+- **Dark mode native `<select>` dropdowns** — `color-scheme` is now declared on `:root` and `[data-theme="dark"]` so browser-native dropdowns render in the correct colour scheme rather than always appearing in light mode.
+- **Stray text insertion cursor on UI chrome** — clicking non-editable areas of the interface no longer shows a text-insertion caret; `user-select: none` is set globally and restored only on inputs and text areas.
+- **Blinking caret in login branding panel** — when the branding API response arrives and the layout switches from plain to split, the login input is now re-focused so the browser caret no longer appears inside the brand panel.
+
+### Changed
+- **Login branding panel logo size** — maximum size increased from 180 × 120 px to 240 × 180 px so the company logo has more visual presence while retaining breathing room.
+- **About modal** — description now explicitly mentions both Kanban and Scrum boards.
+
 ## v0.9.7 — 2026-04-28
 
 ### Added

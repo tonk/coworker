@@ -102,7 +102,7 @@ warmdesk.exe --url=http://localhost:8080
 
 A seed tool is included in the distribution to populate the database with
 realistic demo content (users, projects, cards, comments, time entries, topics,
-and conversations):
+conversations, and system settings including company branding):
 
 ```bash
 cd dist

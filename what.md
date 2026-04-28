@@ -429,3 +429,10 @@ Create an application that has all these features and requirements
 - Fix training seeder --reset: was matching wrong group name pattern, leaving orphaned groups that crashed re-runs
 - Fix training seeder group creation to be idempotent (FirstOrCreate)
 - Expand training seeder character list: 21 new Monty Python / Arthurian characters, two duplicates removed
+- Add Black theme (true #000 background) for OLED screens; available alongside Light, Dark, and System in Settings
+- Fix dark mode native select dropdowns: declare color-scheme on :root and [data-theme="dark"] so browser-native dropdowns render correctly
+- Fix stray text insertion cursor on UI chrome: user-select: none on body, restored only for inputs and textareas
+- Fix blinking caret in login branding panel: re-focus login input after async branding loads and layout switches from plain to split
+- Increase login branding panel logo max size from 180x120px to 240x180px for more visual presence with breathing room retained
+- Demo seeder now seeds company_name, company_logo, and login_branding_enabled so the branded login panel is active after seeding
+- About modal now mentions both Kanban and Scrum boards in the description

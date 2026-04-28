@@ -168,6 +168,15 @@ func main() {
 	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "default_labels").Update("value", defaultLabels); r.RowsAffected == 0 {
 		must(db.Create(&models.SystemSetting{Key: "default_labels", Value: defaultLabels}).Error)
 	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_name").Update("value", "WarmDesk Company"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_name", Value: "WarmDesk Company"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_logo").Update("value", "/logo.svg"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_logo", Value: "/logo.svg"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "login_branding_enabled").Update("value", "true"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "login_branding_enabled", Value: "true"}).Error)
+	}
 
 	// ── 1. Users ──────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating users…")

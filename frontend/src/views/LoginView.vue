@@ -162,7 +162,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const appVersion = __APP_VERSION__
@@ -240,6 +240,12 @@ onMounted(async () => {
       enabled: !!data.login_branding_enabled && !!(data.company_name || data.company_logo),
       name: data.company_name || '',
       logo,
+    }
+    // Re-focus the login input after the DOM switches from plain → split layout,
+    // otherwise the browser loses focus and places the caret in the brand panel.
+    if (branding.value.enabled) {
+      await nextTick()
+      document.querySelector('.auth-card .form-input')?.focus()
     }
   } catch {}
 })
@@ -357,8 +363,8 @@ async function handleMFASubmit() {
 }
 
 .auth-brand-logo {
-  max-width: 180px;
-  max-height: 120px;
+  max-width: 240px;
+  max-height: 180px;
   width: auto;
   height: auto;
   object-fit: contain;
