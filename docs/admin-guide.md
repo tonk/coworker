@@ -520,10 +520,11 @@ Go to **Admin → Settings → Branding** to set:
 
 | Setting | Notes |
 |---------|-------|
-| Company name | Appears in the report header and PDF footer |
-| Company logo | Upload an image file (JPG, PNG, GIF, WebP, or SVG); displayed in the on-screen report header and in exported PDFs. Click **Clear** to remove the logo. |
+| Company name | Appears in the login screen branding panel and in the report header / PDF footer |
+| Company logo | Upload an image file (JPG, PNG, GIF, WebP, or SVG); displayed in the login screen branding panel, the on-screen report header, and in exported PDFs. Click **Clear** to remove the logo. |
+| Show company branding on the login screen | When enabled, the login page splits into two panels: the left panel shows the company logo and name; the right panel shows the login form. Requires at least one of company name or company logo to be set. |
 
-Changes take effect immediately and appear on the next report export.
+Changes take effect immediately — the login screen and reports both reflect the new values without a restart.
 
 ---
 
