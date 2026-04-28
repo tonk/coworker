@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.6 — 2026-04-28
+
+### Fixed
+- **Column drag-to-reorder now works for project owners and admins** — the Sortable instance was initialised with `disabled: true` because project membership hadn't loaded yet at setup time; a watcher on `canManageColumns` now enables it as soon as the member list resolves.
+
 ## v0.9.5 — 2026-04-28
 
 ### Added

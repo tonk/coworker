@@ -423,3 +423,4 @@ Create an application that has all these features and requirements
 - Admin tables (Users, Groups, Customers, Projects): sortable name column with ↑/↓ toggle
 - Edit User modal in Admin: group assignment chip picker alongside existing project and customer pickers; shows and saves current group memberships
 - Reaction pills in chat and DMs: hover tooltip shows names of all users who reacted ("You, Alice, Bob")
+- Fix column drag-to-reorder for project owners/admins: Sortable is now enabled reactively once member list loads, not just at board init time
