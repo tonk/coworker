@@ -444,3 +444,6 @@ Create an application that has all these features and requirements
 - Upgrade Vite 5 → 8 and @vitejs/plugin-vue 5 → 6; rename rollupOptions → rolldownOptions in vite.config.js
 - Fix invalid :deep() usage in global CSS and double-:deep() chains in scoped components; eliminates Vite 8 / lightningcss warnings
 - Bump postcss to 8.5.12 (resolves moderate XSS advisory GHSA-qx2v-qp2m-jg93)
+- Fix WebSocket connections rejected for same-origin clients in production: allow connections from browsers where Origin matches the backend host
+- Fix new cards not appearing on board until page refresh: board store adds the card immediately after API response; WS broadcast deduplication prevents double insertion
+- Add separate light/dark company logos for login screen branding: admin sets two logos (light background and dark background); login page switches logo live when theme changes, including OS preference changes in system mode

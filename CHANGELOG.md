@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.10 — 2026-04-29
+
+### Added
+- **Separate light/dark branding logos for the login screen** — Admin Settings → Branding now accepts a second company logo for dark backgrounds. The login page automatically shows the appropriate logo based on the active login theme; when the theme is set to "System", the logo switches live as the OS dark/light preference changes.
+
+### Fixed
+- **New cards appear on the board immediately** — creating a card via the "Add card" form now adds it to the board instantly, without requiring a page refresh.
+- **WebSocket connections no longer rejected in production** — same-origin browser clients (frontend served by the backend) were rejected by the WebSocket upgrader because the backend host was not in the `allowed_origins` list. Same-origin connections are now always permitted.
+
 ## v0.9.9 — 2026-04-29
 
 ### Added
