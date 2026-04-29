@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.9.11 — 2026-04-29
+
+### Added
+- **Company logo and name in time-tracking reports** — the Time Tracking → Report tab now shows the company logo and name in the report header, matching the style of the main Time Report.
+- **Company logo and name in time-tracking PDF export** — the PDF export of the time-tracking sheet and report now includes the company logo and name in the document header. Static frontend assets (e.g. `/logo.svg`) are resolved correctly in addition to uploaded logos.
+
+### Fixed
+- **PDF export shows the correct employee name** — when an admin or time-tracking viewer exports a PDF for a specific employee, the header now shows that employee's name instead of the exporter's own name. Exporting for "All Employees" shows a translated label.
+- **Sidebar indentation inconsistency** — items in "All Projects" and "All Customers" are now indented to the same level as items in "Favourite Projects" and "Favourite Customers".
+- **Time-tracking table unreadable in dark theme** — all hardcoded light colours in the weekly timesheet table (backgrounds, borders, text) have been replaced with CSS custom properties so the table renders correctly in dark and black themes.
+
+### Changed
+- **Time-tracking report columns align across groups** — each week/month group in the Report tab now uses `table-layout: fixed` with shared column widths, so Date, Customer, Project, Activity and Time columns line up consistently across all groups.
+
 ## v0.9.10 — 2026-04-29
 
 ### Added

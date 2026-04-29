@@ -187,6 +187,8 @@ type TimeEntryReportResponse struct {
 	PeriodLabel  string           `json:"period_label"`
 	Groups       []timeEntryGroup `json:"groups"`
 	TotalMinutes int              `json:"total_minutes"`
+	CompanyName  string           `json:"company_name"`
+	CompanyLogo  string           `json:"company_logo"`
 }
 
 // assembleTimeEntryReport builds the report data from query parameters.
@@ -239,11 +241,14 @@ func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryRepor
 		total += g.TotalMinutes
 	}
 
+	settings := loadAllSettings()
 	return &TimeEntryReportResponse{
 		Period:       period,
 		PeriodLabel:  periodLabel,
 		Groups:       groups,
 		TotalMinutes: total,
+		CompanyName:  settings["company_name"],
+		CompanyLogo:  settings["company_logo"],
 	}, 0, ""
 }
 

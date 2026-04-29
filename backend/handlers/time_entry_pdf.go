@@ -37,19 +37,34 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		return
 	}
 
-	var user models.User
+	// Font preference comes from the requesting user (admin/viewer), not the target.
+	var requestingUser models.User
 	fontFamily := "FreeSans"
-	if err := database.DB.First(&user, userID).Error; err == nil {
-		fontFamily = pdfFontFamily(user.Font)
+	if err := database.DB.First(&requestingUser, userID).Error; err == nil {
+		fontFamily = pdfFontFamily(requestingUser.Font)
 	}
 	if fam, ok := pdfFontFromParam(c.Query("font")); ok {
 		fontFamily = fam
 	}
 	tr := pdfI18nFromLang(c.Query("lang"))
 
-	employeeName := user.DisplayName
-	if employeeName == "" {
-		employeeName = user.Username
+	// Employee name shown in the PDF header — resolved from targetUserID.
+	var employeeName string
+	if targetUserID == 0 {
+		employeeName = tr.AllEmployees
+	} else if targetUserID == userID {
+		employeeName = requestingUser.DisplayName
+		if employeeName == "" {
+			employeeName = requestingUser.Username
+		}
+	} else {
+		var targetUser models.User
+		if err := database.DB.First(&targetUser, targetUserID).Error; err == nil {
+			employeeName = targetUser.DisplayName
+			if employeeName == "" {
+				employeeName = targetUser.Username
+			}
+		}
 	}
 
 	// ── Build PDF ─────────────────────────────────────────────────────────────
@@ -63,9 +78,15 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.AddUTF8FontFromBytes(fam, "B", mustFont(files[1]))
 	}
 
+	company := report.CompanyName
+	if company == "" {
+		company = "WarmDesk"
+	}
 	title := tr.TimeReport + " — " + report.PeriodLabel
 	pdf.SetTitle(title, true)
 	pdf.SetAuthor(employeeName, true)
+	pdf.SetSubject(company+" — "+title, true)
+	pdf.SetCreator(company, true)
 
 	ff := fontFamily
 	emp := employeeName
@@ -74,7 +95,11 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.SetY(-12)
 		pdf.SetFont(ff, "", 8)
 		setTxt(pdf, clrMuted)
-		pdf.CellFormat(pdfBodyW/2, 5, "WarmDesk — "+rpt.PeriodLabel, "", 0, "L", false, 0, "")
+		label := "WarmDesk — " + rpt.PeriodLabel
+		if rpt.CompanyName != "" {
+			label = rpt.CompanyName + " — " + rpt.PeriodLabel
+		}
+		pdf.CellFormat(pdfBodyW/2, 5, label, "", 0, "L", false, 0, "")
 		pdf.CellFormat(pdfBodyW/2, 5,
 			fmt.Sprintf("%s %d / {nb}", tr.Page, pdf.PageNo()), "", 0, "R", false, 0, "")
 		_ = emp
@@ -83,19 +108,43 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	pdf.AddPage()
 
 	// ── Document header ───────────────────────────────────────────────────────
+	logoY := pdfMargin
+	logoLoaded := false
+	if rawBytes, ext, ok := resolveLogoBytes(report.CompanyLogo); ok {
+		logoLoaded = renderLogoIntoPDF(pdf, rawBytes, ext, pdfMargin, logoY)
+	}
+
+	textX := pdfMargin
+	if logoLoaded {
+		textX = pdfMargin + 32
+	}
+	textW := pdfPageW - pdfMargin - textX
+
+	pdf.SetXY(textX, logoY)
+	if report.CompanyName != "" {
+		pdf.SetFont(fontFamily, "B", 13)
+		setTxt(pdf, clrPrimary)
+		pdf.CellFormat(textW, 7, report.CompanyName, "", 2, "L", false, 0, "")
+		pdf.SetX(textX)
+	}
+
 	pdf.SetFont(fontFamily, "B", 16)
-	setTxt(pdf, clrPrimary)
-	pdf.CellFormat(pdfBodyW, 9, tr.TimeReport, "", 1, "L", false, 0, "")
+	setTxt(pdf, clrText)
+	pdf.CellFormat(textW, 9, tr.TimeReport, "", 2, "L", false, 0, "")
+	pdf.SetX(textX)
 
 	pdf.SetFont(fontFamily, "", 10)
-	setTxt(pdf, clrText)
-	pdf.CellFormat(pdfBodyW, 6, report.PeriodLabel, "", 1, "L", false, 0, "")
+	setTxt(pdf, clrMuted)
+	pdf.CellFormat(textW, 6, report.PeriodLabel, "", 2, "L", false, 0, "")
+	pdf.SetX(textX)
 
 	pdf.SetFont(fontFamily, "", 9)
-	setTxt(pdf, clrMuted)
-	pdf.CellFormat(pdfBodyW, 5, employeeName, "", 1, "L", false, 0, "")
+	pdf.CellFormat(textW, 5, employeeName, "", 2, "L", false, 0, "")
 
 	ruleY := pdf.GetY() + 2
+	if logoLoaded && ruleY < logoY+22 {
+		ruleY = logoY + 22
+	}
 	setDraw(pdf, clrPrimary)
 	pdf.SetLineWidth(0.4)
 	pdf.Line(pdfMargin, ruleY, pdfMargin+pdfBodyW, ruleY)

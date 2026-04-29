@@ -685,11 +685,11 @@ onUnmounted(() => {
 }
 
 .section-body { }
-.section-body.indented .sidebar-link { padding-left: 28px; }
-.section-body.indented .user-row     { padding-left: 28px; }
+.section-body.indented .sidebar-link { padding-left: 36px; }
+.section-body.indented .user-row     { padding-left: 36px; }
 
 .section-empty {
-  padding: 4px 16px 4px 28px;
+  padding: 4px 16px 4px 36px;
   font-size: 12px;
   color: var(--color-text-muted);
 }
@@ -875,7 +875,7 @@ onUnmounted(() => {
   color: var(--color-text-muted);
   padding-top: 4px;
   padding-bottom: 4px;
-  padding-left: 28px;
+  padding-left: 36px;
   border-top: 1px solid var(--color-border);
   margin-top: 2px;
 }

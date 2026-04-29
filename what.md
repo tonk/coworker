@@ -447,3 +447,9 @@ Create an application that has all these features and requirements
 - Fix WebSocket connections rejected for same-origin clients in production: allow connections from browsers where Origin matches the backend host
 - Fix new cards not appearing on board until page refresh: board store adds the card immediately after API response; WS broadcast deduplication prevents double insertion
 - Add separate light/dark company logos for login screen branding: admin sets two logos (light background and dark background); login page switches logo live when theme changes, including OS preference changes in system mode
+- Show company logo and name in the Time Tracking report header (matches main Time Report style)
+- Include company logo and name in time-tracking PDF export; resolve static frontend assets (e.g. /logo.svg) in addition to uploaded files
+- Fix PDF export employee name: show the target employee's name (not the exporter's) when an admin exports for a specific person; show translated "All Employees" label when exporting across all users
+- Fix sidebar indentation: "All Projects" and "All Customers" items now indent to the same level as starred/favourite items
+- Fix time-tracking weekly sheet in dark/black themes: replace all hardcoded light colours with CSS custom properties
+- Align time-tracking report columns across groups using table-layout: fixed and shared colgroup widths

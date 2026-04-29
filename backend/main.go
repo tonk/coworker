@@ -111,7 +111,6 @@ func main() {
 	handlers.SetVersion(version)
 	handlers.InitSystemDefaults(cfg)
 	handlers.InitAttachments(cfg)
-	handlers.InitReport(cfg)
 	handlers.InitBackup(cfg)
 
 	emailSvc := services.NewEmailService(cfg.SMTP)
@@ -169,6 +168,7 @@ func main() {
 	} else {
 		webFS = staticweb.FS
 	}
+	handlers.InitReport(cfg, webFS)
 	r := router.Setup(authSvc, cfg.AllowedOrigins, webFS, cfg.APILog, cfg.UploadDir, trustedProxies)
 
 	addr := ":" + cfg.Port

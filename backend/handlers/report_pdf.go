@@ -8,6 +8,7 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -28,10 +29,53 @@ import (
 var fontEmbedFS embed.FS
 
 var reportCfg *config.Config
+var reportWebFS fs.FS
 
-// InitReport stores the config reference for PDF generation.
-func InitReport(cfg *config.Config) {
+// InitReport stores the config and web filesystem reference for PDF generation.
+func InitReport(cfg *config.Config, webFS fs.FS) {
 	reportCfg = cfg
+	reportWebFS = webFS
+}
+
+// resolveLogoBytes reads the raw bytes and file extension for a logo URL.
+// Handles /uploads/ paths (uploaded files) and /path static web assets.
+// Returns (data, ext, ok).
+func resolveLogoBytes(logoURL string) ([]byte, string, bool) {
+	if logoURL == "" {
+		return nil, "", false
+	}
+	ext := strings.ToLower(filepath.Ext(logoURL))
+
+	if strings.HasPrefix(logoURL, "/uploads/") {
+		uploadDir := "./uploads"
+		if reportCfg != nil && reportCfg.UploadDir != "" {
+			uploadDir = reportCfg.UploadDir
+		}
+		data, err := os.ReadFile(filepath.Join(uploadDir, strings.TrimPrefix(logoURL, "/uploads/")))
+		if err != nil {
+			return nil, "", false
+		}
+		return data, ext, true
+	}
+
+	// Static web asset (e.g. /logo.svg served by the frontend)
+	rel := strings.TrimPrefix(logoURL, "/")
+	if rel == "" {
+		return nil, "", false
+	}
+	// Try WebDir on disk first
+	if reportCfg != nil && reportCfg.WebDir != "" {
+		if data, err := os.ReadFile(filepath.Join(reportCfg.WebDir, rel)); err == nil {
+			return data, ext, true
+		}
+	}
+	// Fall back to embedded web FS
+	if reportWebFS != nil {
+		if data, err := fs.ReadFile(reportWebFS, rel); err == nil {
+			return data, ext, true
+		}
+	}
+	return nil, "", false
 }
 
 // mustFont reads a font file from the embedded FS and panics on failure.
@@ -115,95 +159,101 @@ type pdfI18n struct {
 	Page       string // e.g. "Page"
 	Generated  string // e.g. "Generated:"
 	// Fields used by the personal time-entry PDF
-	Customer string // e.g. "Customer"
-	Project  string // e.g. "Project"
-	Activity string // e.g. "Activity"
-	Hours    string // e.g. "Hours"
-	Total    string // e.g. "Total"
+	Customer     string // e.g. "Customer"
+	Project      string // e.g. "Project"
+	Activity     string // e.g. "Activity"
+	Hours        string // e.g. "Hours"
+	Total        string // e.g. "Total"
+	AllEmployees string // e.g. "All Employees"
 }
 
 // pdfTranslations provides label sets for each supported language code.
 // Strings are derived from the same source as the frontend i18n files.
 var pdfTranslations = map[string]pdfI18n{
 	"en": {
-		TimeReport: "Time Report",
-		ColRef:     "Ref",
-		ColTask:    "Task",
-		ColAssign:  "Assignees",
-		ColTime:    "Time",
-		Subtotal:   "Subtotal:",
-		GrandTotal: "Grand Total:",
-		Page:       "Page",
-		Generated:  "Generated:",
-		Customer:   "Customer",
-		Project:    "Project",
-		Activity:   "Activity",
-		Hours:      "Hours",
-		Total:      "Total",
+		TimeReport:   "Time Report",
+		ColRef:       "Ref",
+		ColTask:      "Task",
+		ColAssign:    "Assignees",
+		ColTime:      "Time",
+		Subtotal:     "Subtotal:",
+		GrandTotal:   "Grand Total:",
+		Page:         "Page",
+		Generated:    "Generated:",
+		Customer:     "Customer",
+		Project:      "Project",
+		Activity:     "Activity",
+		Hours:        "Hours",
+		Total:        "Total",
+		AllEmployees: "All Employees",
 	},
 	"nl": {
-		TimeReport: "Tijdrapport",
-		ColRef:     "Ref",
-		ColTask:    "Taak",
-		ColAssign:  "Toegewezen",
-		ColTime:    "Tijd",
-		Subtotal:   "Subtotaal:",
-		GrandTotal: "Eindtotaal:",
-		Page:       "Pagina",
-		Generated:  "Gegenereerd:",
-		Customer:   "Klant",
-		Project:    "Project",
-		Activity:   "Activiteit",
-		Hours:      "Uren",
-		Total:      "Totaal",
+		TimeReport:   "Tijdrapport",
+		ColRef:       "Ref",
+		ColTask:      "Taak",
+		ColAssign:    "Toegewezen",
+		ColTime:      "Tijd",
+		Subtotal:     "Subtotaal:",
+		GrandTotal:   "Eindtotaal:",
+		Page:         "Pagina",
+		Generated:    "Gegenereerd:",
+		Customer:     "Klant",
+		Project:      "Project",
+		Activity:     "Activiteit",
+		Hours:        "Uren",
+		Total:        "Totaal",
+		AllEmployees: "Alle medewerkers",
 	},
 	"de": {
-		TimeReport: "Zeitbericht",
-		ColRef:     "Ref",
-		ColTask:    "Aufgabe",
-		ColAssign:  "Bearbeiter",
-		ColTime:    "Zeit",
-		Subtotal:   "Zwischensumme:",
-		GrandTotal: "Gesamtsumme:",
-		Page:       "Seite",
-		Generated:  "Erstellt:",
-		Customer:   "Kunde",
-		Project:    "Projekt",
-		Activity:   "Aktivität",
-		Hours:      "Stunden",
-		Total:      "Gesamt",
+		TimeReport:   "Zeitbericht",
+		ColRef:       "Ref",
+		ColTask:      "Aufgabe",
+		ColAssign:    "Bearbeiter",
+		ColTime:      "Zeit",
+		Subtotal:     "Zwischensumme:",
+		GrandTotal:   "Gesamtsumme:",
+		Page:         "Seite",
+		Generated:    "Erstellt:",
+		Customer:     "Kunde",
+		Project:      "Projekt",
+		Activity:     "Aktivität",
+		Hours:        "Stunden",
+		Total:        "Gesamt",
+		AllEmployees: "Alle Mitarbeiter",
 	},
 	"fr": {
-		TimeReport: "Rapport de temps",
-		ColRef:     "Réf",
-		ColTask:    "Tâche",
-		ColAssign:  "Assignés",
-		ColTime:    "Temps",
-		Subtotal:   "Sous-total :",
-		GrandTotal: "Total général :",
-		Page:       "Page",
-		Generated:  "Généré le :",
-		Customer:   "Client",
-		Project:    "Projet",
-		Activity:   "Activité",
-		Hours:      "Heures",
-		Total:      "Total",
+		TimeReport:   "Rapport de temps",
+		ColRef:       "Réf",
+		ColTask:      "Tâche",
+		ColAssign:    "Assignés",
+		ColTime:      "Temps",
+		Subtotal:     "Sous-total :",
+		GrandTotal:   "Total général :",
+		Page:         "Page",
+		Generated:    "Généré le :",
+		Customer:     "Client",
+		Project:      "Projet",
+		Activity:     "Activité",
+		Hours:        "Heures",
+		Total:        "Total",
+		AllEmployees: "Tous les employés",
 	},
 	"es": {
-		TimeReport: "Informe de tiempo",
-		ColRef:     "Ref",
-		ColTask:    "Tarea",
-		ColAssign:  "Asignados",
-		ColTime:    "Tiempo",
-		Subtotal:   "Subtotal:",
-		GrandTotal: "Total general:",
-		Page:       "Página",
-		Generated:  "Generado el:",
-		Customer:   "Cliente",
-		Project:    "Proyecto",
-		Activity:   "Actividad",
-		Hours:      "Horas",
-		Total:      "Total",
+		TimeReport:   "Informe de tiempo",
+		ColRef:       "Ref",
+		ColTask:      "Tarea",
+		ColAssign:    "Asignados",
+		ColTime:      "Tiempo",
+		Subtotal:     "Subtotal:",
+		GrandTotal:   "Total general:",
+		Page:         "Página",
+		Generated:    "Generado el:",
+		Customer:     "Cliente",
+		Project:      "Proyecto",
+		Activity:     "Actividad",
+		Hours:        "Horas",
+		Total:        "Total",
+		AllEmployees: "Todos los empleados",
 	},
 }
 
@@ -264,17 +314,65 @@ func setFill(pdf *gofpdf.Fpdf, c rgb) { pdf.SetFillColor(c.r, c.g, c.b) }
 func setDraw(pdf *gofpdf.Fpdf, c rgb) { pdf.SetDrawColor(c.r, c.g, c.b) }
 func setTxt(pdf *gofpdf.Fpdf, c rgb)  { pdf.SetTextColor(c.r, c.g, c.b) }
 
-// svgToPNG rasterizes an SVG file to a PNG held in a bytes.Buffer.
-// heightMM is the desired output height in millimetres; width is derived from
-// the SVG's own aspect ratio. We render at 3× (≈ 216 dpi for A4) for crisp output.
-func svgToPNG(svgPath string, heightMM float64) (bytes.Buffer, error) {
-	f, err := os.Open(svgPath)
-	if err != nil {
-		return bytes.Buffer{}, err
+// renderLogoIntoPDF places the logo image at (x, y) in the PDF, 18 mm tall.
+// rawBytes is the file content, ext is the lowercase file extension.
+// Returns true if the image was placed successfully.
+func renderLogoIntoPDF(pdf *gofpdf.Fpdf, rawBytes []byte, ext string, x, y float64) bool {
+	if ext == ".svg" {
+		pngBuf, err := svgToPNGFromBytes(rawBytes, 18)
+		if err != nil {
+			return false
+		}
+		opts := gofpdf.ImageOptions{ImageType: "PNG"}
+		pdf.RegisterImageOptionsReader("_logo", opts, &pngBuf)
+		pdf.ImageOptions("_logo", x, y, 0, 18, false, opts, 0, "")
+		return pdf.Error() == nil
 	}
-	defer f.Close()
+	imgType := ""
+	switch ext {
+	case ".jpg", ".jpeg":
+		imgType = "JPG"
+	case ".png":
+		imgType = "PNG"
+	case ".gif":
+		imgType = "GIF"
+	}
+	if imgType == "" {
+		return false
+	}
+	var imgReader *bytes.Reader
+	if imgType == "PNG" {
+		// Composite over white to strip alpha — gofpdf cannot handle transparent PNGs.
+		if src, err := png.Decode(bytes.NewReader(rawBytes)); err == nil {
+			bounds := src.Bounds()
+			dst := image.NewRGBA(bounds)
+			draw.Draw(dst, bounds, &image.Uniform{color.White}, image.Point{}, draw.Src)
+			draw.Draw(dst, bounds, src, bounds.Min, draw.Over)
+			var pngBuf bytes.Buffer
+			if encErr := png.Encode(&pngBuf, dst); encErr == nil {
+				imgReader = bytes.NewReader(pngBuf.Bytes())
+			}
+		}
+	}
+	if imgReader == nil {
+		imgReader = bytes.NewReader(rawBytes)
+	}
+	opts := gofpdf.ImageOptions{ImageType: imgType}
+	pdf.RegisterImageOptionsReader("_logo", opts, imgReader)
+	if pdf.Error() != nil {
+		return false
+	}
+	pdf.ImageOptions("_logo", x, y, 0, 18, false, opts, 0, "")
+	return pdf.Error() == nil
+}
 
-	icon, err := oksvg.ReadIconStream(f)
+// svgToPNGFromBytes rasterizes SVG bytes to a PNG held in a bytes.Buffer.
+func svgToPNGFromBytes(data []byte, heightMM float64) (bytes.Buffer, error) {
+	return svgRasterize(bytes.NewReader(data), heightMM)
+}
+
+func svgRasterize(r interface{ Read([]byte) (int, error) }, heightMM float64) (bytes.Buffer, error) {
+	icon, err := oksvg.ReadIconStream(r)
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
@@ -403,68 +501,11 @@ func GetTimeReportPDF(c *gin.Context) {
 
 	// ── Page header ──────────────────────────────────────────────
 
-	// Try to load company logo (uploaded files only; skip external URLs).
-	// SVGs are rasterized to PNG in memory; raster formats are streamed directly.
+	// Try to load company logo. SVGs are rasterized to PNG; raster formats streamed directly.
 	logoY := pdfMargin
 	logoLoaded := false
-	if report.CompanyLogo != "" && strings.HasPrefix(report.CompanyLogo, "/uploads/") {
-		uploadDir := "./uploads"
-		if reportCfg != nil && reportCfg.UploadDir != "" {
-			uploadDir = reportCfg.UploadDir
-		}
-		storedName := strings.TrimPrefix(report.CompanyLogo, "/uploads/")
-		logoPath := filepath.Join(uploadDir, storedName)
-		ext := strings.ToLower(filepath.Ext(logoPath))
-
-		if ext == ".svg" {
-			// Rasterize SVG → PNG at 2× resolution for a crisp 18 mm logo.
-			if pngBuf, err := svgToPNG(logoPath, 18); err == nil {
-				opts := gofpdf.ImageOptions{ImageType: "PNG"}
-				pdf.RegisterImageOptionsReader("_logo", opts, &pngBuf)
-				pdf.ImageOptions("_logo", pdfMargin, logoY, 0, 18, false, opts, 0, "")
-				logoLoaded = true
-			}
-		} else {
-			imgType := ""
-			switch ext {
-			case ".jpg", ".jpeg":
-				imgType = "JPG"
-			case ".png":
-				imgType = "PNG"
-			case ".gif":
-				imgType = "GIF"
-			case ".webp":
-				imgType = "WEBP"
-			}
-			if imgType != "" {
-				if rawBytes, err := os.ReadFile(logoPath); err == nil {
-					var imgReader *bytes.Reader
-					if imgType == "PNG" {
-						// Composite over white to strip any alpha channel, which
-						// gofpdf cannot handle and causes an internal error.
-						if src, decErr := png.Decode(bytes.NewReader(rawBytes)); decErr == nil {
-							bounds := src.Bounds()
-							dst := image.NewRGBA(bounds)
-							draw.Draw(dst, bounds, &image.Uniform{color.White}, image.Point{}, draw.Src)
-							draw.Draw(dst, bounds, src, bounds.Min, draw.Over)
-							var pngBuf bytes.Buffer
-							if encErr := png.Encode(&pngBuf, dst); encErr == nil {
-								imgReader = bytes.NewReader(pngBuf.Bytes())
-							}
-						}
-					}
-					if imgReader == nil {
-						imgReader = bytes.NewReader(rawBytes)
-					}
-					opts := gofpdf.ImageOptions{ImageType: imgType}
-					pdf.RegisterImageOptionsReader("_logo", opts, imgReader)
-					if pdf.Error() == nil {
-						pdf.ImageOptions("_logo", pdfMargin, logoY, 0, 18, false, opts, 0, "")
-						logoLoaded = true
-					}
-				}
-			}
-		}
+	if rawBytes, ext, ok := resolveLogoBytes(report.CompanyLogo); ok {
+		logoLoaded = renderLogoIntoPDF(pdf, rawBytes, ext, pdfMargin, logoY)
 	}
 
 	// Text block — shifted right when a logo is present.

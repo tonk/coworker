@@ -211,7 +211,18 @@
 
       <div v-if="loadingReport" class="tt-loading">{{ $t('common.loading') }}</div>
       <template v-else-if="report">
-        <div class="rpt-period-label">{{ report.period_label }}</div>
+        <!-- Report header: logo + company name -->
+        <div class="rpt-header">
+          <div class="rpt-header-left">
+            <img v-if="report.company_logo" :src="resolveAssetUrl(report.company_logo)" alt="" class="rpt-logo" @error="report.company_logo = ''" />
+          </div>
+          <div class="rpt-header-center">
+            <div v-if="report.company_name" class="rpt-company-name">{{ report.company_name }}</div>
+            <div class="rpt-title-label">{{ $t('timeTracking.title') }}</div>
+            <div class="rpt-period-label">{{ report.period_label }}</div>
+          </div>
+          <div class="rpt-header-right"></div>
+        </div>
         <div v-if="report.groups.length === 0" class="rpt-empty">{{ $t('timeTracking.no_entries') }}</div>
         <div v-for="grp in report.groups" :key="grp.label" class="rpt-group">
           <div class="rpt-group-hd">
@@ -219,6 +230,13 @@
             <span class="rpt-grp-total">{{ fmtDecimal(grp.total_minutes) }}</span>
           </div>
           <table v-if="grp.entries.length" class="rpt-table">
+            <colgroup>
+              <col class="rpt-col-date" />
+              <col class="rpt-col-customer" />
+              <col class="rpt-col-project" />
+              <col class="rpt-col-activity" />
+              <col class="rpt-col-time" />
+            </colgroup>
             <thead>
               <tr>
                 <th>{{ $t('timeTracking.date') }}</th>
@@ -259,6 +277,7 @@ import { timeEntriesApi } from '@/api/timeEntries'
 import { customersApi } from '@/api/customers'
 import { projectsApi } from '@/api/projects'
 import client from '@/api/client'
+import { resolveAssetUrl } from '@/api/serverConfig'
 
 const { t } = useI18n()
 const auth = useAuthStore()
@@ -909,33 +928,33 @@ onMounted(async () => {
 
 /* Head */
 .tt-head th {
-  background: #e8ecf0;
-  border-bottom: 2px solid #c4ccd4;
-  border-right: 1px solid #d0d8e0;
+  background: var(--color-surface);
+  border-bottom: 2px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
   padding: 6px 8px;
   text-align: center;
   font-weight: 600;
-  color: #444;
+  color: var(--color-text);
   white-space: nowrap;
 }
 .tt-head .c-nr   { text-align: center; }
 .tt-head .c-info { text-align: left; display: table-cell; }
-.tt-head .c-info .sub { display: block; font-weight: 400; font-size: 11px; color: #777; }
+.tt-head .c-info .sub { display: block; font-weight: 400; font-size: 11px; color: var(--color-text-muted); }
 .tt-head .c-desc { text-align: left; }
 
 .dh-abbr { font-weight: 600; }
-.dh-date { font-size: 11px; color: #666; }
+.dh-date { font-size: 11px; color: var(--color-text-muted); }
 
 /* Rows */
 .tt-row td {
-  border-bottom: 1px solid #dde3ea;
-  border-right: 1px solid #e8ecf0;
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
   padding: 3px 6px;
   vertical-align: middle;
-  background: #fff;
+  background: var(--color-surface);
 }
-.tt-row.alt td { background: #f7f9fb; }
-.c-nr { text-align: center; color: #888; font-size: 12px; }
+.tt-row.alt td { background: var(--color-bg); }
+.c-nr { text-align: center; color: var(--color-text-muted); font-size: 12px; }
 
 .rc-cust { font-weight: 600; font-size: 12px; line-height: 1.3; color: var(--color-text); }
 .rc-proj { font-size: 11px; color: var(--color-text-muted); line-height: 1.3; }
@@ -945,12 +964,12 @@ onMounted(async () => {
 .c-day { padding: 2px; }
 .h-inp {
   width: 100%;
-  border: 1px solid #d8dfe8;
+  border: 1px solid var(--color-border);
   border-radius: 3px;
   padding: 4px 6px;
   text-align: right;
   font-size: 13px;
-  background: #fafbfc;
+  background: var(--color-surface);
   color: var(--color-text);
   outline: none;
   box-sizing: border-box;
@@ -958,9 +977,9 @@ onMounted(async () => {
 }
 .h-inp::-webkit-outer-spin-button,
 .h-inp::-webkit-inner-spin-button { -webkit-appearance: none; }
-.h-inp:focus { border-color: var(--color-primary); background: #fff; box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent); }
-.h-inp.h-inp-filled { background: #fff; font-weight: 600; }
-.h-inp:disabled { background: #f0f2f4; cursor: not-allowed; }
+.h-inp:focus { border-color: var(--color-primary); background: var(--color-surface); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent); }
+.h-inp.h-inp-filled { background: var(--color-surface); font-weight: 600; }
+.h-inp:disabled { background: var(--color-bg); cursor: not-allowed; }
 
 /* Totals */
 .c-total { text-align: right; font-weight: 600; font-size: 13px; padding: 4px 10px; }
@@ -968,9 +987,9 @@ onMounted(async () => {
 
 /* Footer */
 .tt-foot td {
-  background: #e8ecf0;
-  border-top: 2px solid #c4ccd4;
-  border-right: 1px solid #d0d8e0;
+  background: var(--color-surface);
+  border-top: 2px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
   padding: 6px 8px;
   font-weight: 700;
 }
@@ -1006,9 +1025,9 @@ onMounted(async () => {
   text-align: center;
   white-space: nowrap;
 }
-.tt-head .c-act { background: #e8ecf0; border-bottom: 2px solid #c4ccd4; border-right: 1px solid #d0d8e0; }
+.tt-head .c-act { background: var(--color-surface); border-bottom: 2px solid var(--color-border); border-right: 1px solid var(--color-border); }
 .tt-row .c-act { background: inherit; }
-.tt-foot .c-act { background: #e8ecf0; border-top: 2px solid #c4ccd4; }
+.tt-foot .c-act { background: var(--color-surface); border-top: 2px solid var(--color-border); }
 
 .act-btn {
   display: inline-flex;
@@ -1036,13 +1055,13 @@ onMounted(async () => {
 .act-no:hover { background: color-mix(in srgb, var(--color-danger) 12%, transparent); }
 
 /* Deleting row highlight */
-.tt-row-deleting td { background: color-mix(in srgb, var(--color-danger) 8%, #fff) !important; }
+.tt-row-deleting td { background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface)) !important; }
 
 /* Editing row highlight */
-.tt-editing { background: #fffbec !important; }
+.tt-editing { background: color-mix(in srgb, var(--color-warning, #f59e0b) 8%, var(--color-surface)) !important; }
 
 /* New row editor */
-.tt-newrow td { background: #fffbec !important; }
+.tt-newrow td { background: color-mix(in srgb, var(--color-warning, #f59e0b) 8%, var(--color-surface)) !important; }
 .nr-sel {
   width: 100%;
   font-size: 12px;
@@ -1051,7 +1070,8 @@ onMounted(async () => {
   border-radius: 3px;
   display: block;
   margin-bottom: 2px;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 .nr-desc {
   width: 100%;
@@ -1060,7 +1080,8 @@ onMounted(async () => {
   border: 1px solid var(--color-border);
   border-radius: 3px;
   box-sizing: border-box;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 /* ── Report ── */
@@ -1069,7 +1090,23 @@ onMounted(async () => {
 .fi-sm { min-width: 80px; width: auto; }
 .fi-year { width: 80px; }
 
-.rpt-period-label { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+/* Report header: logo + company name + period */
+.rpt-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 3px solid var(--color-primary);
+}
+.rpt-header-left { flex: 0 0 auto; min-width: 60px; }
+.rpt-header-center { flex: 1; text-align: center; }
+.rpt-header-right { flex: 0 0 auto; min-width: 60px; }
+.rpt-logo { max-height: 52px; max-width: 160px; object-fit: contain; }
+.rpt-company-name { font-size: 20px; font-weight: 800; color: var(--color-text); letter-spacing: -0.02em; }
+.rpt-title-label { font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+.rpt-period-label { font-size: 18px; font-weight: 700; color: var(--color-primary); margin-top: 4px; }
 
 .rpt-group {
   margin-bottom: 16px;
@@ -1081,7 +1118,8 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   padding: 8px 14px;
-  background: #e8ecf0;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   font-weight: 600;
   font-size: 13px;
 }
@@ -1092,15 +1130,24 @@ onMounted(async () => {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  table-layout: fixed;
 }
+.rpt-col-date     { width: 110px; }
+.rpt-col-customer { width: 18%; }
+.rpt-col-project  { width: 18%; }
+.rpt-col-activity { /* fills remaining space */ }
+.rpt-col-time     { width: 80px; }
 .rpt-table th,
 .rpt-table td {
   padding: 6px 14px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .rpt-table th { color: var(--color-text-muted); font-weight: 500; background: var(--color-surface); }
-.rpt-th-time { text-align: right; width: 70px; }
+.rpt-th-time { text-align: right; }
 
 .rpt-grand-total {
   display: flex;
