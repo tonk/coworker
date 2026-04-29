@@ -335,9 +335,9 @@ code.hljs { padding: 3px 5px; }
 
 /* Make code blocks uniform and slightly tinted. Applies globally to message/code areas. */
 pre,
-.msg-body :deep(pre),
-.comment-text :deep(pre),
-.card-detail :deep(pre) {
+.msg-body pre,
+.comment-text pre,
+.card-detail pre {
   background: var(--color-code-bg, rgba(0,0,0,0.08));
   border: 1px solid var(--color-border);
   border-radius: 6px;
@@ -363,16 +363,16 @@ pre,
 
 /* Dark mode override */
 [data-theme="dark"] pre,
-[data-theme="dark"] .msg-body :deep(pre),
-[data-theme="dark"] .comment-text :deep(pre),
-[data-theme="dark"] .card-detail :deep(pre) {
+[data-theme="dark"] .msg-body pre,
+[data-theme="dark"] .comment-text pre,
+[data-theme="dark"] .card-detail pre {
   background: rgba(0,0,0,0.22);
 }
 
 /* Prevent per-token/line backgrounds from hljs tokens — make block uniform */
 pre * { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
-.msg-body :deep(pre .hljs-addition),
-.msg-body :deep(pre .hljs-deletion) { background: transparent !important; }
+.msg-body pre .hljs-addition,
+.msg-body pre .hljs-deletion { background: transparent !important; }
 
 /* ── dark mode ── */
 [data-theme="dark"] .hljs { color: #abb2bf; background: transparent; }

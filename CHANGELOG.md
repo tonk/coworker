@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.9.9 — 2026-04-29
+
+### Added
+- **Card sections visibility menu** — a ⋮ button in the top-right corner of the card detail lets users toggle seven sections on/off (Labels, Tags, Attachments, Checklist, Sub-cards, Linked Cards, Watchers). Sections are hidden by default when empty and revealed only when content is added. Preferences are saved per-browser.
+- **All assignees shown on card tiles** — the board card now shows avatars for both the primary assignee and all extra assignees (stacked, up to 3 + overflow counter).
+
+### Fixed
+- **Clearing the primary assignee now persists** — selecting "—" in the Assignee dropdown and pressing Save correctly removes the assignee from the card; previously the null value was silently ignored by the backend.
+- **Primary assignee excluded from Extra Assignees list** — the selected primary assignee is no longer shown as a toggle chip in the Extra Assignees section; selecting someone as primary also removes them from extra assignees automatically.
+
+### Changed
+- **"Assignees" renamed to "Extra Assignees"** — the multi-assignee chip picker below the primary assignee dropdown is now labelled "Extra Assignees" in all 12 supported languages to distinguish it from the primary assignee field.
+- **Upgraded Vite 5 → 8** — build tooling updated to Vite 8 (Rolldown bundler); `@vitejs/plugin-vue` upgraded to v6; `rollupOptions` renamed to `rolldownOptions` in config. Build output and chunk structure are unchanged.
+- **Fixed invalid `:deep()` usage in global CSS** — removed Vue-specific `:deep()` combinator from global stylesheet and corrected double-`:deep()` chains in scoped component styles; eliminates lightningcss warnings introduced by Vite 8.
+- **npm audit: postcss bumped to 8.5.12** — resolves moderate XSS advisory (GHSA-qx2v-qp2m-jg93).
+
 ## v0.9.8 — 2026-04-28
 
 ### Added

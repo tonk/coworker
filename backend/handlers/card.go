@@ -47,7 +47,7 @@ func ListCards(c *gin.Context) {
 	}
 
 	var cards []models.Card
-	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").
 		Where("column_id = ? AND project_id = ? AND parent_card_id IS NULL", colID, project.ID).
 		Order("position asc").Find(&cards)
 
@@ -150,7 +150,7 @@ func CreateCard(c *gin.Context) {
 		CardNumber:  updatedProject.CardCounter,
 	}
 	database.DB.Create(&card)
-	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").First(&card, card.ID)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").First(&card, card.ID)
 
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCardCreated, Payload: card})
 	c.JSON(http.StatusCreated, card)
@@ -249,7 +249,7 @@ func UpdateCard(c *gin.Context) {
 		Priority         string          `json:"priority"`
 		StartDate        json.RawMessage `json:"start_date"` // "YYYY-MM-DD" string or null
 		DueDate          json.RawMessage `json:"due_date"`   // "YYYY-MM-DD" string or null
-		AssigneeID       *uint           `json:"assignee_id"`
+		AssigneeID       json.RawMessage `json:"assignee_id"`
 		TimeSpentMinutes *int            `json:"time_spent_minutes"`
 		StoryPoints      *int            `json:"story_points"`
 		Closed           *bool           `json:"closed"`
@@ -288,8 +288,15 @@ func UpdateCard(c *gin.Context) {
 	if v, ok := parseDate(req.DueDate); ok {
 		updates["due_date"] = v
 	}
-	if req.AssigneeID != nil {
-		updates["assignee_id"] = req.AssigneeID
+	if len(req.AssigneeID) > 0 {
+		if string(req.AssigneeID) == "null" {
+			updates["assignee_id"] = nil
+		} else {
+			var aid uint
+			if json.Unmarshal(req.AssigneeID, &aid) == nil {
+				updates["assignee_id"] = aid
+			}
+		}
 	}
 	if req.TimeSpentMinutes != nil {
 		updates["time_spent_minutes"] = *req.TimeSpentMinutes
@@ -302,7 +309,7 @@ func UpdateCard(c *gin.Context) {
 	}
 
 	database.DB.Model(&card).Updates(updates)
-	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").First(&card, card.ID)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").First(&card, card.ID)
 
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCardUpdated, Payload: card})
 	c.JSON(http.StatusOK, card)
@@ -585,7 +592,7 @@ func CopyCard(c *gin.Context) {
 		database.DB.Create(&models.CardTag{CardID: newCard.ID, Name: tag.Name})
 	}
 
-	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").First(&newCard, newCard.ID)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").First(&newCard, newCard.ID)
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCardCreated, Payload: newCard})
 	c.JSON(http.StatusCreated, newCard)
 }
@@ -672,7 +679,7 @@ func TransferCard(c *gin.Context) {
 		database.DB.Create(&models.CardTag{CardID: newCard.ID, Name: tag.Name})
 	}
 
-	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").First(&newCard, newCard.ID)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").First(&newCard, newCard.ID)
 	ws.BroadcastToProject(targetProject.ID, ws.Message{Type: ws.TypeBoardCardCreated, Payload: newCard})
 
 	if req.Action == "move" {

@@ -160,7 +160,6 @@
     "start_date": "Startdato",
     "due_date": "Forfallsdato",
     "assignee": "Ansvarlig",
-    "assignees": "Ansvarlige",
     "labels": "Etiketter",
     "wip_limit": "WIP-grense",
     "priorities": {
@@ -210,7 +209,8 @@
     "story_points": "Story points",
     "log_time": "Logg tid",
     "time_spent_total": "Total tid brukt",
-    "toggle_sections": "Toggle sections"
+    "toggle_sections": "Toggle sections",
+    "extra_assignees": "Ekstra tildelte"
   },
   "chat": {
     "title": "Teamchat",

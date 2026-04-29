@@ -436,3 +436,11 @@ Create an application that has all these features and requirements
 - Increase login branding panel logo max size from 180x120px to 240x180px for more visual presence with breathing room retained
 - Demo seeder now seeds company_name, company_logo, and login_branding_enabled so the branded login panel is active after seeding
 - About modal now mentions both Kanban and Scrum boards in the description
+- Add ⋮ sections visibility menu to card detail: toggle Labels, Tags, Attachments, Checklist, Sub-cards, Linked Cards, Watchers on/off; sections hidden by default when empty; can only be turned off when empty; preferences persisted in localStorage
+- Show avatars for both primary assignee and extra assignees on board card tiles (stacked, max 3 + overflow counter)
+- Rename "Assignees" chip picker to "Extra Assignees" to distinguish from primary assignee dropdown
+- Filter primary assignee out of Extra Assignees chip list; auto-remove from extra assignees when selected as primary
+- Fix clearing primary assignee (selecting "—") not persisting on Save: backend was skipping null assignee_id; changed to json.RawMessage with explicit null handling matching the date field pattern
+- Upgrade Vite 5 → 8 and @vitejs/plugin-vue 5 → 6; rename rollupOptions → rolldownOptions in vite.config.js
+- Fix invalid :deep() usage in global CSS and double-:deep() chains in scoped components; eliminates Vite 8 / lightningcss warnings
+- Bump postcss to 8.5.12 (resolves moderate XSS advisory GHSA-qx2v-qp2m-jg93)

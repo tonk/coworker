@@ -161,7 +161,6 @@
     "start_date": "Startdatum",
     "due_date": "Vervaldatum",
     "assignee": "Toegewezen aan",
-    "assignees": "Toegewezen aan",
     "labels": "Labels",
     "wip_limit": "WIP-limiet",
     "priorities": {
@@ -211,7 +210,8 @@
     "story_points": "Storypoints",
     "log_time": "Tijd loggen",
     "time_spent_total": "Totale bestede tijd",
-    "toggle_sections": "Toggle sections"
+    "toggle_sections": "Toggle sections",
+    "extra_assignees": "Extra medewerkers"
   },
   "chat": {
     "title": "Teamchat",

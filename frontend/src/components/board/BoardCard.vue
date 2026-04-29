@@ -68,11 +68,11 @@ const { formatDate } = useDateFormat()
 const projectStore = useProjectStore()
 const systemStore = useSystemStore()
 
-// Show multi-assignees if present, fall back to primary assignee_id field
+// Primary assignee first, then extra assignees (deduplicated)
 const allAssignees = computed(() => {
-  if (props.card.assignees?.length) return props.card.assignees
-  if (props.card.assignee) return [props.card.assignee]
-  return []
+  const primary = props.card.assignee ? [props.card.assignee] : []
+  const extras = (props.card.assignees || []).filter(u => u.id !== props.card.assignee?.id)
+  return [...primary, ...extras]
 })
 
 const cardRef = computed(() => {

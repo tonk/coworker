@@ -316,6 +316,28 @@ Click the **↗** button on any linked card to open it in a nested modal. A
 **← [source card title]** link at the top of that modal returns you to the
 card you came from.
 
+### Customising visible sections
+
+The card detail can get busy. Click the **⋮** button in the top-right corner of
+the card to open the sections menu. Each of the seven optional sections can be
+toggled on or off:
+
+| Section | Hidden by default |
+|---------|-------------------|
+| Labels | Yes |
+| Tags | Yes |
+| Attachments | Yes |
+| Checklist | Yes |
+| Sub-cards | Yes |
+| Linked Cards | Yes |
+| Watchers | Yes |
+
+A section can only be turned off when it is **empty** — if a section contains
+data the toggle is disabled and the section stays visible. When data is added to
+a hidden section it becomes visible automatically.
+
+Your preferences are saved in the browser and apply to every card you open.
+
 ### Copy card
 
 Click **Copy Card** in the card detail footer to duplicate the card in the same

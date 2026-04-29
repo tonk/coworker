@@ -161,7 +161,6 @@
     "start_date": "Fecha de inicio",
     "due_date": "Fecha de vencimiento",
     "assignee": "Asignado a",
-    "assignees": "Asignados",
     "labels": "Etiquetas",
     "wip_limit": "Límite WIP",
     "priorities": {
@@ -211,7 +210,8 @@
     "story_points": "Puntos de historia",
     "log_time": "Registrar tiempo",
     "time_spent_total": "Tiempo total invertido",
-    "toggle_sections": "Toggle sections"
+    "toggle_sections": "Toggle sections",
+    "extra_assignees": "Asignados adicionales"
   },
   "chat": {
     "title": "Chat del equipo",

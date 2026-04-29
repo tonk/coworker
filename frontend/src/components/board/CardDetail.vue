@@ -105,10 +105,10 @@
       </div>
 
       <div v-if="!isNew" class="form-group">
-        <label class="form-label">{{ $t('board.assignees') }}</label>
+        <label class="form-label">{{ $t('board.extra_assignees') }}</label>
         <div class="labels-picker">
           <span
-            v-for="m in members"
+            v-for="m in members.filter(m => m.user.id !== form.assignee_id)"
             :key="m.user.id"
             class="label-chip watcher-chip"
             :class="{ active: isAssigned(m.user.id) }"
@@ -117,7 +117,7 @@
         </div>
       </div>
 
-      <div v-if="!isNew" class="form-group">
+      <div v-if="!isNew && isSectionVisible('labels')" class="form-group">
         <label class="form-label">{{ $t('board.labels') }}</label>
         <div class="labels-picker">
           <span
@@ -155,7 +155,7 @@
         </div>
       </div>
 
-      <div v-if="!isNew" class="form-group">
+      <div v-if="!isNew && isSectionVisible('watchers')" class="form-group">
         <label class="form-label">{{ $t('board.watchers') }}</label>
         <div class="labels-picker">
           <span
@@ -564,43 +564,54 @@ const editItemBody = ref('')
 const checklistListEl = ref(null)
 let sortableInstance = null
 const assignees = ref([...(props.card.assignees || [])])
+
+watch(() => form.value.assignee_id, async (newId) => {
+  if (newId && isAssigned(newId)) {
+    const member = props.members.find(m => m.user.id === newId)
+    if (member) await toggleAssignee(member.user)
+  }
+})
 const gitLinks = ref([])
 const copying = ref(false)
 const showTransferPanel = ref(false)
 const showCancelConfirm = ref(false)
 
-// Sections visibility menu
+// Sections visibility menu — stores which sections are explicitly shown (empty = all hidden)
 const sectionsMenuOpen = ref(false)
 const sectionsMenuEl = ref(null)
-const hiddenSections = ref(new Set(JSON.parse(localStorage.getItem('warmdesk-card-sections') || '[]')))
+const shownSections = ref(new Set(JSON.parse(localStorage.getItem('warmdesk-card-shown-sections') || '[]')))
 
 const sectionsConfig = computed(() => [
+  { key: 'labels', label: t('board.labels') },
   { key: 'tags', label: t('board.tags') },
   { key: 'attachments', label: 'Attachments' },
   { key: 'checklist', label: t('checklist.title') },
   { key: 'subcards', label: t('subcard.sub_cards') },
   { key: 'linkedCards', label: t('card_ref.linked_cards') },
+  { key: 'watchers', label: t('board.watchers') },
 ])
 
 const sectionEmpty = computed(() => ({
+  labels: !(props.card.labels?.length),
   tags: !(props.card.tags?.length),
   attachments: !attachments.value.length,
   checklist: !checklist.value.length,
   subcards: !subCards.value.length,
   linkedCards: !linkedCards.value.length,
+  watchers: !(props.card.watchers?.length),
 }))
 
 function isSectionVisible(key) {
-  return !hiddenSections.value.has(key) || !sectionEmpty.value[key]
+  return shownSections.value.has(key) || !sectionEmpty.value[key]
 }
 
 function toggleSection(key) {
   if (!sectionEmpty.value[key]) return
-  const next = new Set(hiddenSections.value)
+  const next = new Set(shownSections.value)
   if (next.has(key)) next.delete(key)
   else next.add(key)
-  hiddenSections.value = next
-  localStorage.setItem('warmdesk-card-sections', JSON.stringify([...next]))
+  shownSections.value = next
+  localStorage.setItem('warmdesk-card-shown-sections', JSON.stringify([...next]))
 }
 
 function onSectionsMenuDocClick(e) {

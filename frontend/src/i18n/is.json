@@ -160,7 +160,6 @@
     "start_date": "Upphafsdagur",
     "due_date": "Eindagi",
     "assignee": "Ábyrgðarmaður",
-    "assignees": "Ábyrgðarmenn",
     "labels": "Merki",
     "wip_limit": "WIP-takmörk",
     "priorities": {
@@ -210,7 +209,8 @@
     "story_points": "Sögu-stig",
     "log_time": "Skrá tíma",
     "time_spent_total": "Heildarfærður tími",
-    "toggle_sections": "Toggle sections"
+    "toggle_sections": "Toggle sections",
+    "extra_assignees": "Aukaúthlutuð"
   },
   "chat": {
     "title": "Liðsspjall",

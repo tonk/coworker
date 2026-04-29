@@ -161,7 +161,6 @@
     "start_date": "Start Date",
     "due_date": "Due Date",
     "assignee": "Assignee",
-    "assignees": "Assignees",
     "labels": "Labels",
     "wip_limit": "WIP Limit",
     "priorities": {
@@ -211,7 +210,8 @@
     "unsaved_changes": "You have unsaved changes.",
     "discard": "Discard",
     "log_time": "Log time",
-    "time_spent_total": "Total time spent"
+    "time_spent_total": "Total time spent",
+    "extra_assignees": "Extra Assignees"
   },
   "chat": {
     "title": "Team Chat",

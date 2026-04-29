@@ -161,7 +161,6 @@
     "start_date": "Startdatum",
     "due_date": "Fälligkeitsdatum",
     "assignee": "Zugewiesen an",
-    "assignees": "Zugewiesen an",
     "labels": "Labels",
     "wip_limit": "WIP-Limit",
     "priorities": {
@@ -211,7 +210,8 @@
     "story_points": "Story-Punkte",
     "log_time": "Zeit erfassen",
     "time_spent_total": "Gesamte aufgewendete Zeit",
-    "toggle_sections": "Toggle sections"
+    "toggle_sections": "Toggle sections",
+    "extra_assignees": "Weitere Bearbeiter"
   },
   "chat": {
     "title": "Team-Chat",
