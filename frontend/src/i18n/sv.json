@@ -209,7 +209,8 @@
     "discard": "Kasta",
     "story_points": "Story points",
     "log_time": "Logga tid",
-    "time_spent_total": "Total tid spenderad"
+    "time_spent_total": "Total tid spenderad",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Teamchatt",

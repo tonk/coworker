@@ -209,7 +209,8 @@
     "discard": "Scarta",
     "story_points": "Punti storia",
     "log_time": "Registra tempo",
-    "time_spent_total": "Tempo totale trascorso"
+    "time_spent_total": "Tempo totale trascorso",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Chat del team",

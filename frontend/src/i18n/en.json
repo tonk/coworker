@@ -185,6 +185,7 @@
     "reply": "Reply",
     "watchers": "Watchers",
     "tags": "Tags",
+    "toggle_sections": "Toggle sections",
     "add_tag_placeholder": "Add tag (e.g. frontend)",
     "sort_none": "Default order",
     "sort_date": "Date",

@@ -209,7 +209,8 @@
     "discard": "Hylkää",
     "story_points": "Tarinapisteet",
     "log_time": "Kirjaa aika",
-    "time_spent_total": "Käytetty kokonaisaika"
+    "time_spent_total": "Käytetty kokonaisaika",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Tiimichatti",

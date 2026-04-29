@@ -209,7 +209,8 @@
     "discard": "Descartar",
     "story_points": "Pontos de história",
     "log_time": "Registar tempo",
-    "time_spent_total": "Tempo total gasto"
+    "time_spent_total": "Tempo total gasto",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Chat da equipa",

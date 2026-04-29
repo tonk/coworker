@@ -209,7 +209,8 @@
     "discard": "Henda",
     "story_points": "Sögu-stig",
     "log_time": "Skrá tíma",
-    "time_spent_total": "Heildarfærður tími"
+    "time_spent_total": "Heildarfærður tími",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Liðsspjall",

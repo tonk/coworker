@@ -210,7 +210,8 @@
     "discard": "Verwerfen",
     "story_points": "Story-Punkte",
     "log_time": "Zeit erfassen",
-    "time_spent_total": "Gesamte aufgewendete Zeit"
+    "time_spent_total": "Gesamte aufgewendete Zeit",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Team-Chat",

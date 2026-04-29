@@ -1,6 +1,17 @@
 <template>
   <BaseModal :title="isNew ? $t('board.add_card') : $t('board.edit_card')" @close="handleClose" :resizable="true" style="--modal-width: 700px">
     <div class="card-detail">
+      <div v-if="!isNew" class="sections-menu-wrap" ref="sectionsMenuEl">
+        <button class="sections-menu-btn" @click.stop="sectionsMenuOpen = !sectionsMenuOpen" :title="$t('board.toggle_sections')">⋮</button>
+        <div v-if="sectionsMenuOpen" class="sections-menu-dropdown">
+          <div v-for="sec in sectionsConfig" :key="sec.key" class="sections-menu-item" :class="{ 'sections-menu-item--locked': !sectionEmpty[sec.key] }">
+            <label class="sections-menu-label">
+              <input type="checkbox" :checked="isSectionVisible(sec.key)" @change="toggleSection(sec.key)" :disabled="!sectionEmpty[sec.key]" />
+              <span>{{ sec.label }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
       <div v-if="parentCard" class="parent-card-nav">
         <button class="parent-card-back" @click="emit('back')">
           ← {{ parentCard.title }}
@@ -120,7 +131,7 @@
         </div>
       </div>
 
-      <div v-if="!isNew" class="form-group">
+      <div v-if="!isNew && isSectionVisible('tags')" class="form-group">
         <label class="form-label">{{ $t('board.tags') }}</label>
         <div class="tags-editor">
           <div class="tags-list" v-if="card.tags?.length">
@@ -157,7 +168,7 @@
         </div>
       </div>
 
-      <div v-if="!isNew" class="form-group">
+      <div v-if="!isNew && isSectionVisible('attachments')" class="form-group">
         <label class="form-label">Attachments</label>
         <AttachmentList :attachments="attachments" :can-delete="true" @remove="deleteAttachment" />
         <div
@@ -176,7 +187,7 @@
       </div>
 
       <!-- Checklist -->
-      <div v-if="!isNew" class="checklist-section">
+      <div v-if="!isNew && isSectionVisible('checklist')" class="checklist-section">
         <div class="checklist-header">
           <h4>{{ $t('checklist.title') }}</h4>
           <span v-if="checklist.length" class="checklist-progress">
@@ -215,7 +226,7 @@
       </div>
 
       <!-- Sub-cards section (hidden from board; shown only here) -->
-      <div v-if="!isNew && !card.parent_card_id" class="subcards-section">
+      <div v-if="!isNew && !card.parent_card_id && isSectionVisible('subcards')" class="subcards-section">
         <div class="subcards-header">
           <h4>{{ $t('subcard.sub_cards') }}</h4>
           <span v-if="subCards.length" class="subcards-progress">
@@ -249,7 +260,7 @@
       </div>
 
       <!-- Linked cards (cross-references) -->
-      <div v-if="!isNew" class="linked-cards-section">
+      <div v-if="!isNew && isSectionVisible('linkedCards')" class="linked-cards-section">
         <div class="linked-cards-header">
           <h4>{{ $t('card_ref.linked_cards') }}</h4>
           <span v-if="linkedCards.length" class="linked-cards-count">{{ linkedCards.length }}</span>
@@ -557,6 +568,51 @@ const gitLinks = ref([])
 const copying = ref(false)
 const showTransferPanel = ref(false)
 const showCancelConfirm = ref(false)
+
+// Sections visibility menu
+const sectionsMenuOpen = ref(false)
+const sectionsMenuEl = ref(null)
+const hiddenSections = ref(new Set(JSON.parse(localStorage.getItem('warmdesk-card-sections') || '[]')))
+
+const sectionsConfig = computed(() => [
+  { key: 'tags', label: t('board.tags') },
+  { key: 'attachments', label: 'Attachments' },
+  { key: 'checklist', label: t('checklist.title') },
+  { key: 'subcards', label: t('subcard.sub_cards') },
+  { key: 'linkedCards', label: t('card_ref.linked_cards') },
+])
+
+const sectionEmpty = computed(() => ({
+  tags: !(props.card.tags?.length),
+  attachments: !attachments.value.length,
+  checklist: !checklist.value.length,
+  subcards: !subCards.value.length,
+  linkedCards: !linkedCards.value.length,
+}))
+
+function isSectionVisible(key) {
+  return !hiddenSections.value.has(key) || !sectionEmpty.value[key]
+}
+
+function toggleSection(key) {
+  if (!sectionEmpty.value[key]) return
+  const next = new Set(hiddenSections.value)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  hiddenSections.value = next
+  localStorage.setItem('warmdesk-card-sections', JSON.stringify([...next]))
+}
+
+function onSectionsMenuDocClick(e) {
+  if (sectionsMenuEl.value && !sectionsMenuEl.value.contains(e.target)) {
+    sectionsMenuOpen.value = false
+  }
+}
+
+watch(sectionsMenuOpen, (open) => {
+  if (open) document.addEventListener('click', onSectionsMenuDocClick)
+  else document.removeEventListener('click', onSectionsMenuDocClick)
+})
 
 // @mention support for description and comment textareas
 const descTextareaEl = ref(null)
@@ -871,6 +927,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeyDown)
+  document.removeEventListener('click', onSectionsMenuDocClick)
   sortableInstance?.destroy()
   sortableInstance = null
 })
@@ -1170,6 +1227,63 @@ function renderMarkdown(text) {
 </script>
 
 <style scoped>
+/* Sections visibility menu */
+.sections-menu-wrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 20;
+}
+.sections-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+}
+.sections-menu-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+.sections-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  padding: 4px 0;
+}
+.sections-menu-item {
+  padding: 0;
+}
+.sections-menu-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text);
+  user-select: none;
+}
+.sections-menu-label:hover {
+  background: var(--color-bg);
+}
+.sections-menu-item--locked .sections-menu-label {
+  color: var(--color-text-muted);
+  cursor: default;
+}
+.sections-menu-item--locked .sections-menu-label:hover {
+  background: none;
+}
+
 .card-ref-badge {
   display: inline-block;
   font-size: 11px;
@@ -1182,7 +1296,7 @@ function renderMarkdown(text) {
   margin-bottom: 12px;
   letter-spacing: 0.04em;
 }
-.card-detail { padding-bottom: 8px; }
+.card-detail { position: relative; padding-bottom: 8px; }
 
 .form-hint { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; display: block; }
 

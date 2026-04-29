@@ -209,7 +209,8 @@
     "discard": "Forkast",
     "story_points": "Story points",
     "log_time": "Logg tid",
-    "time_spent_total": "Total tid brukt"
+    "time_spent_total": "Total tid brukt",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Teamchat",

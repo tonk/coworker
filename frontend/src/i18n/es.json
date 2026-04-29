@@ -210,7 +210,8 @@
     "discard": "Descartar",
     "story_points": "Puntos de historia",
     "log_time": "Registrar tiempo",
-    "time_spent_total": "Tiempo total invertido"
+    "time_spent_total": "Tiempo total invertido",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Chat del equipo",

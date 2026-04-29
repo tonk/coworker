@@ -210,7 +210,8 @@
     "discard": "Abandonner",
     "story_points": "Points de story",
     "log_time": "Enregistrer le temps",
-    "time_spent_total": "Temps total passé"
+    "time_spent_total": "Temps total passé",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Chat d'équipe",

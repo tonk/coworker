@@ -210,7 +210,8 @@
     "discard": "Verwijderen",
     "story_points": "Storypoints",
     "log_time": "Tijd loggen",
-    "time_spent_total": "Totale bestede tijd"
+    "time_spent_total": "Totale bestede tijd",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Teamchat",

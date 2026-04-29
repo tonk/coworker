@@ -209,7 +209,8 @@
     "discard": "Kassér",
     "story_points": "Story points",
     "log_time": "Log tid",
-    "time_spent_total": "Samlet tidsforbrug"
+    "time_spent_total": "Samlet tidsforbrug",
+    "toggle_sections": "Toggle sections"
   },
   "chat": {
     "title": "Teamchat",
