@@ -106,8 +106,7 @@ export const useBoardStore = defineStore('board', () => {
 
   async function createCard(columnId, payload) {
     const { data } = await projectsApi.createCard(projectSlug.value, columnId, payload)
-    // addCard is intentionally omitted here: the backend broadcasts board.card.created
-    // via WebSocket to all clients including the creator, so handleWsEvent does the insert.
+    addCard(data)
     return data
   }
 
