@@ -7,8 +7,8 @@
       <!-- Left: company branding panel -->
       <div class="auth-brand-panel">
         <div class="auth-brand-body">
-          <img v-if="branding.logo" :src="branding.logo" class="auth-brand-logo" alt="" />
-          <span v-if="!branding.logo && branding.name" class="auth-brand-initials">
+          <img v-if="effectiveLogo" :src="effectiveLogo" class="auth-brand-logo" alt="" />
+          <span v-if="!effectiveLogo && branding.name" class="auth-brand-initials">
             {{ branding.name.charAt(0) }}
           </span>
         </div>
@@ -162,7 +162,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const appVersion = __APP_VERSION__
@@ -180,7 +180,7 @@ const mfaCode = ref('')
 const error = ref('')
 const loading = ref(false)
 const registrationEnabled = ref(true)
-const branding = ref({ enabled: false, name: '', logo: '' })
+const branding = ref({ enabled: false, name: '', logo: '', logoDark: '' })
 const isTauri = !!window.__TAURI_INTERNALS__
 const currentServer = getServerUrl()
 const serverReachabilityError = ref('')
@@ -195,8 +195,12 @@ function osTheme() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
+const resolvedTheme = ref(loginTheme.value === 'system' ? osTheme() : loginTheme.value)
+
 function applyLoginTheme(t) {
-  document.documentElement.setAttribute('data-theme', t === 'system' ? osTheme() : t)
+  const actual = t === 'system' ? osTheme() : t
+  document.documentElement.setAttribute('data-theme', actual)
+  resolvedTheme.value = actual
 }
 
 function toggleLoginTheme() {
@@ -206,15 +210,28 @@ function toggleLoginTheme() {
   applyLoginTheme(loginTheme.value)
 }
 
+const effectiveLogo = computed(() => {
+  if (resolvedTheme.value === 'dark' && branding.value.logoDark) return branding.value.logoDark
+  return branding.value.logo
+})
+
 applyLoginTheme(loginTheme.value)
 
+const osMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+function onOSThemeChange() {
+  if (loginTheme.value === 'system') applyLoginTheme('system')
+}
+
 onUnmounted(() => {
+  osMediaQuery.removeEventListener('change', onOSThemeChange)
   // Restore whatever theme the app normally uses for the logged-in user
   const userTheme = localStorage.getItem('theme') || userThemeBeforeLogin || 'light'
   document.documentElement.setAttribute('data-theme', userTheme)
 })
 
 onMounted(async () => {
+  osMediaQuery.addEventListener('change', onOSThemeChange)
   if (isTauri) {
     if (currentServer) {
       try {
@@ -233,13 +250,15 @@ onMounted(async () => {
   try {
     const { data } = await systemApi.getSettings()
     registrationEnabled.value = data.registration_enabled
-    const rawLogo = data.company_logo || ''
     const server = getServerUrl()
-    const logo = rawLogo && rawLogo.startsWith('/') && server ? `${server}${rawLogo}` : rawLogo
+    const resolveLogo = (raw) => raw && raw.startsWith('/') && server ? `${server}${raw}` : (raw || '')
+    const logo = resolveLogo(data.company_logo)
+    const logoDark = resolveLogo(data.company_logo_dark)
     branding.value = {
-      enabled: !!data.login_branding_enabled && !!(data.company_name || data.company_logo),
+      enabled: !!data.login_branding_enabled && !!(data.company_name || data.company_logo || data.company_logo_dark),
       name: data.company_name || '',
       logo,
+      logoDark,
     }
     // Re-focus the login input after the DOM switches from plain → split layout,
     // otherwise the browser loses focus and places the caret in the brand panel.

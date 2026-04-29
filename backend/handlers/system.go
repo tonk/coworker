@@ -55,6 +55,7 @@ const (
 	settingScrumStorypointsEnabled = "scrum_storypoints_enabled"
 	settingGravatarEnabled         = "gravatar_enabled"
 	settingLoginBrandingEnabled    = "login_branding_enabled"
+	settingCompanyLogoDark         = "company_logo_dark"
 	settingAllowedIPs              = "allowed_ips"
 	settingPasswordChangePeriodDays = "password_change_period_days"
 )
@@ -116,6 +117,7 @@ var systemSettingDefaults = map[string]string{
 	settingSessionTimeoutMinutes:  "60",
 	settingCompanyName:            "",
 	settingCompanyLogo:            "",
+	settingCompanyLogoDark:        "",
 	settingDefaultColumns:         "Backlog",
 	settingDefaultLabels:          "Bug\nFeature\nDesign\nContent",
 	settingMFARequired:            "false",
@@ -276,6 +278,7 @@ func GetSystemSettings(c *gin.Context) {
 		"session_timeout_minutes":     timeoutMinutes,
 		"company_name":                all[settingCompanyName],
 		"company_logo":                all[settingCompanyLogo],
+		"company_logo_dark":           all[settingCompanyLogoDark],
 		"login_branding_enabled":      all[settingLoginBrandingEnabled] == "true",
 		"mfa_required":                 all[settingMFARequired] == "true",
 		"password_policy":              GetPasswordPolicy(),
@@ -319,6 +322,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		SessionTimeoutMinutes  *int    `json:"session_timeout_minutes"`
 		CompanyName            *string `json:"company_name"`
 		CompanyLogo            *string `json:"company_logo"`
+		CompanyLogoDark        *string `json:"company_logo_dark"`
 		DefaultColumns         *string `json:"default_columns"`
 		DefaultLabels          *string `json:"default_labels"`
 		BackupSchedule         *string `json:"backup_schedule"`
@@ -420,6 +424,9 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	}
 	if req.CompanyLogo != nil {
 		saveSetting(settingCompanyLogo, *req.CompanyLogo)
+	}
+	if req.CompanyLogoDark != nil {
+		saveSetting(settingCompanyLogoDark, *req.CompanyLogoDark)
 	}
 	if req.DefaultColumns != nil {
 		saveSetting(settingDefaultColumns, *req.DefaultColumns)

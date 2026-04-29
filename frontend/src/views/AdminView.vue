@@ -482,6 +482,23 @@
               </div>
             </div>
 
+            <div class="form-group" style="max-width:400px">
+              <label class="form-label">{{ $t('admin.company_logo_dark') }}</label>
+              <input class="form-input" v-model="systemSettings.company_logo_dark" :placeholder="'https://...'" style="margin-bottom:8px" />
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <button class="btn btn-secondary btn-sm" @click="$refs.logoDarkFileInput.click()">{{ $t('admin.company_logo_upload') }}</button>
+                <button v-if="systemSettings.company_logo_dark" class="btn btn-danger btn-sm" @click="clearCompanyLogoDark">{{ $t('common.clear') }}</button>
+                <span class="form-hint" style="margin:0">{{ $t('admin.company_logo_hint') }}</span>
+              </div>
+              <input ref="logoDarkFileInput" type="file" accept="image/*" style="display:none" @change="onLogoDarkFileSelected" />
+              <div v-if="systemSettings.company_logo_dark" style="margin-top:8px">
+                <span class="form-hint">{{ $t('admin.company_logo_preview') }}</span>
+                <div style="margin-top:6px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius);display:inline-block;background:var(--color-surface)">
+                  <img :src="resolveAssetUrl(systemSettings.company_logo_dark)" alt="Logo dark preview" style="max-height:60px;max-width:200px;object-fit:contain" @error="systemSettings.company_logo_dark=''" />
+                </div>
+              </div>
+            </div>
+
             <div class="form-actions" style="max-width:400px">
               <button class="btn btn-primary" @click="saveBrandingSettings">{{ $t('common.save') }}</button>
             </div>
@@ -1426,6 +1443,7 @@ const systemSettings = ref({
   smtp_password: '',
   company_name: '',
   company_logo: '',
+  company_logo_dark: '',
   default_columns: 'Backlog',
   default_labels: 'Bug\nFeature\nDesign\nContent',
   password_min_length: 8,
@@ -1531,6 +1549,7 @@ async function loadSettings() {
     systemSettings.value.smtp_password            = ''
     systemSettings.value.company_name             = data.company_name || ''
     systemSettings.value.company_logo             = data.company_logo || ''
+    systemSettings.value.company_logo_dark        = data.company_logo_dark || ''
     systemSettings.value.login_branding_enabled   = data.login_branding_enabled === 'true'
     systemSettings.value.default_columns          = data.default_columns || 'Backlog'
     systemSettings.value.default_labels           = data.default_labels || 'Bug\nFeature\nDesign\nContent'
@@ -1570,11 +1589,29 @@ async function clearCompanyLogo() {
   await saveBrandingSettings()
 }
 
+async function onLogoDarkFileSelected(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  e.target.value = ''
+  try {
+    const { data } = await attachmentsApi.uploadImage(file)
+    systemSettings.value.company_logo_dark = data.url
+  } catch {
+    ui.error('Failed to upload image')
+  }
+}
+
+async function clearCompanyLogoDark() {
+  systemSettings.value.company_logo_dark = ''
+  await saveBrandingSettings()
+}
+
 async function saveBrandingSettings() {
   try {
     await adminApi.updateSystemSettings({
       company_name: systemSettings.value.company_name,
       company_logo: systemSettings.value.company_logo,
+      company_logo_dark: systemSettings.value.company_logo_dark,
       login_branding_enabled: systemSettings.value.login_branding_enabled,
     })
     ui.success('Settings saved')
