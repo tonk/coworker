@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -36,6 +37,11 @@ func NewWSHandler(authSvc *services.AuthService, allowedOrigins string) *WSHandl
 				origin := r.Header.Get("Origin")
 				if origin == "" {
 					// No Origin header — direct (non-browser) client; allow.
+					return true
+				}
+				// Same-origin: browser connecting to the backend that also serves
+				// the frontend (production mode). Always allow.
+				if u, err := url.Parse(origin); err == nil && u.Host == r.Host {
 					return true
 				}
 				_, ok := allowed[origin]
