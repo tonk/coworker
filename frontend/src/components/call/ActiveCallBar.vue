@@ -170,17 +170,21 @@ watch(() => state.phase, (phase) => {
     clearInterval(_durationTimer)
     _durationTimer = null
     durationSeconds.value = 0
-    if (phase === 'ended' && state.errorMsg) {
-      const key = state.errorMsg === 'unavailable'
-        ? t('call.unavailable', { name: state.remoteName || '…' })
-        : state.errorMsg === 'rejected'
-          ? t('call.rejected', { name: state.remoteName || '…' })
-          : state.errorMsg === 'no_mic'
-            ? t('call.no_mic')
-            : null
-      if (key) ui.error(key)
-    }
   }
+})
+
+// Watch errorMsg directly so the toast fires even when phase is already
+// 'ended' (e.g. ring timeout raced the reject signal and set it first).
+watch(() => state.errorMsg, (msg) => {
+  if (!msg) return
+  const key = msg === 'unavailable'
+    ? t('call.unavailable', { name: state.remoteName || '…' })
+    : msg === 'rejected'
+      ? t('call.rejected', { name: state.remoteName || '…' })
+      : msg === 'no_mic'
+        ? t('call.no_mic')
+        : null
+  if (key) ui.error(key)
 })
 
 onUnmounted(() => clearInterval(_durationTimer))
