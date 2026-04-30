@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import { fileURLToPath, URL } from 'node:url'
 import { execSync } from 'node:child_process'
 
@@ -12,14 +13,20 @@ const gitVersion = (() => {
 })()
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    VueI18nPlugin({
+      include: [fileURLToPath(new URL('./src/i18n/*.json', import.meta.url))]
+    })
+  ],
   define: {
     __APP_VERSION__: JSON.stringify(gitVersion)
   },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      'frappe-gantt/dist/frappe-gantt.css': fileURLToPath(new URL('./node_modules/frappe-gantt/dist/frappe-gantt.css', import.meta.url))
+      'frappe-gantt/dist/frappe-gantt.css': fileURLToPath(new URL('./node_modules/frappe-gantt/dist/frappe-gantt.css', import.meta.url)),
+      'vue-i18n': 'vue-i18n/dist/vue-i18n.runtime.esm-bundler.js'
     }
   },
   build: {

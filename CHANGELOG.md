@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.16 — 2026-04-30
+
+### Fixed
+- **Blank screen under strict CSP** — vue-i18n's runtime JIT compiler used `new Function()`, triggering a CSP `unsafe-eval` violation that broke all translated views; messages are now pre-compiled at build time via `@intlify/unplugin-vue-i18n` and the runtime-only vue-i18n bundle is used, so no eval is needed at runtime
+
 ## v0.9.15 — 2026-04-30
 
 ### Fixed
