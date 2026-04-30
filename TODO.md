@@ -181,3 +181,5 @@
 
 - ~~In the chat, the response popup should only be shown when you click on
   the message~~ **Done**
+
+- Make sure you can't call someone who isn't online
