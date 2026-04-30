@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.19 — 2026-04-30
+
+### Fixed
+- **Call error toasts now always appear** — the "declined", "unavailable", and "microphone denied" toasts were silently dropped when a race between the 45-second ring timeout and an incoming signal meant the call phase was already `ended` before the error was set; the trigger now watches the error state directly so the toast fires every time
+
 ## v0.9.18 — 2026-04-30
 
 ### Added
