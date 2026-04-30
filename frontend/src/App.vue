@@ -64,6 +64,7 @@ const { projectChatUnread } = useProjectChatUnread()
 const call = useWebRTCCall()
 const route = useRoute()
 const router = useRouter()
+const isTauri = !!window.__TAURI_INTERNALS__
 
 const canGoBack = computed(() => window.history.length > 1)
 
@@ -250,12 +251,10 @@ const ZOOM_MIN = 0.5
 const ZOOM_MAX = 2.0
 
 // In a Tauri desktop window WebView2 does not intercept Ctrl+zoom for its own
-// browser zoom, so preventDefault() is not needed there.  In a regular browser
-// we do need it to suppress the native zoom.  Passive listeners skip the
+// browser zoom, so preventDefault() is not needed there. In a regular browser
+// we do need it to suppress the native zoom. Passive listeners skip the
 // synchronous IPC round-trip that WebView2 requires for every keystroke when a
-// non-passive keydown listener is registered on window — removing that overhead
-// eliminates the typing lag on the Windows desktop app login screen.
-const isTauri = !!window.__TAURI_INTERNALS__
+// non-passive keydown listener is registered on window, removing that overhead.
 
 function applyZoom(level) {
   document.documentElement.style.zoom = level

@@ -543,6 +543,7 @@ async function unfavorite(user) {
   await sidebarStore.removeFavoriteUser(user.id)
 }
 
+const ONLINE_POLL_INTERVAL_MS = 5_000
 let pollInterval = null
 let unreadInterval = null
 
@@ -557,7 +558,7 @@ onMounted(() => {
   pollInterval = setInterval(() => {
     sidebarStore.fetchAllUsers()
     sidebarStore.fetchChatUsers()
-  }, 10_000)
+  }, ONLINE_POLL_INTERVAL_MS)
   unreadInterval = setInterval(() => {
     notificationsStore.checkUnread()
   }, 5_000)
