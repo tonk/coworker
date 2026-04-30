@@ -122,9 +122,12 @@
               </div>
             </template>
             <template v-else>
-              <div class="conv-avatar" :style="avatarBg(otherMember(conv))">
-                <img v-if="getAvatar(otherMember(conv))" :src="getAvatar(otherMember(conv))" class="avatar-img" @error="e => e.target.style.display='none'" />
-                <span v-else class="avatar-initials">{{ initials(otherMember(conv)) }}</span>
+              <div class="conv-avatar-presence">
+                <div class="conv-avatar" :style="avatarBg(otherMember(conv))">
+                  <img v-if="getAvatar(otherMember(conv))" :src="getAvatar(otherMember(conv))" class="avatar-img" @error="e => e.target.style.display='none'" />
+                  <span v-else class="avatar-initials">{{ initials(otherMember(conv)) }}</span>
+                </div>
+                <span v-if="isOnline(otherMember(conv)?.id)" class="presence-dot-sm"></span>
               </div>
             </template>
           </div>
@@ -195,7 +198,12 @@
                   >×</button>
                 </span>
               </template>
-              <template v-else>{{ memberList(activeConv) }}</template>
+              <template v-else>
+                <span class="dm-header-status" :class="{ online: isOnline(otherMember(activeConv)?.id) }">
+                  <span class="dm-status-dot"></span>
+                  {{ isOnline(otherMember(activeConv)?.id) ? $t('sidebar.online') : $t('sidebar.offline') }}
+                </span>
+              </template>
             </div>
           </div>
           <!-- Layout picker -->
@@ -459,6 +467,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import { useSidebarStore } from '@/stores/sidebar'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
 import CallSettingsDropdown from '@/components/call/CallSettingsDropdown.vue'
 import { messagesApi } from '@/api/messages'
@@ -482,7 +491,12 @@ import LinkPreviewCard from '@/components/chat/LinkPreviewCard.vue'
 const route = useRoute()
 const { t } = useI18n()
 const auth = useAuthStore()
+const sidebarStore = useSidebarStore()
 const notificationsStore = useNotificationsStore()
+
+function isOnline(userId) {
+  return sidebarStore.chatUsers.some(u => u.id === userId)
+}
 const { formatTime } = useDateFormat()
 const { layout, setLayout } = useChatLayout()
 const { notifyEnabled, toggleNotify, desktopNotify, shouldNotifyNow } = useChatNotify()
@@ -1417,6 +1431,40 @@ function dayLabel(dateStr) {
 }
 .conv-avatar-md { width: 42px; height: 42px; }
 .conv-avatar-wrap { flex-shrink: 0; }
+
+/* Presence dot overlaid on 1:1 avatar in conversation list */
+.conv-avatar-presence {
+  position: relative;
+  flex-shrink: 0;
+}
+.presence-dot-sm {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid var(--color-surface);
+}
+
+/* Online/offline status line in DM header */
+.dm-header-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.dm-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+.dm-header-status.online { color: #22c55e; }
+.dm-header-status.online .dm-status-dot { background: #22c55e; }
 
 .group-avatar {
   width: 38px;
