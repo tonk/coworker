@@ -153,19 +153,34 @@ let userWs = null
 let userWsReconnectTimer = null
 let userWsReconnectDelay = 1000
 
+function _scheduleUserWsReconnect() {
+  if (userWsReconnectTimer || !auth.isLoggedIn) return
+  userWsReconnectTimer = setTimeout(() => {
+    userWsReconnectTimer = null
+    connectUserWs()
+  }, userWsReconnectDelay)
+  userWsReconnectDelay = Math.min(userWsReconnectDelay * 2, 30000)
+}
+
 async function connectUserWs() {
   if (userWs) return
 
   let wsPath
   if (isTauri) {
     // Fetch a short-lived WS ticket so the long-lived JWT never appears in the URL.
+    // On failure, schedule a retry just like a normal WS disconnect would.
     try {
       const { data } = await authApi.wsTicket()
       wsPath = `/api/v1/ws/user?ticket=${data.ticket}`
     } catch {
+      _scheduleUserWsReconnect()
       return
     }
   } else {
+    // Browser mode: token is in an httpOnly cookie.
+    // Attempt a silent token refresh first so the cookie is guaranteed fresh
+    // before we open the WebSocket (important after a long reconnect backoff).
+    try { await authApi.refresh() } catch {}
     wsPath = `/api/v1/ws/user`
   }
 
@@ -197,12 +212,7 @@ async function connectUserWs() {
 
   userWs.onclose = () => {
     userWs = null
-    if (!auth.isLoggedIn) return
-    userWsReconnectTimer = setTimeout(() => {
-      userWsReconnectTimer = null
-      connectUserWs()
-    }, userWsReconnectDelay)
-    userWsReconnectDelay = Math.min(userWsReconnectDelay * 2, 30000)
+    _scheduleUserWsReconnect()
   }
 
   userWs.onerror = () => {
