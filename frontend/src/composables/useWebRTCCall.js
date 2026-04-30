@@ -32,6 +32,9 @@ let _pendingOffer      = null   // SDP stored while ringing
 let _sendFn            = null   // set by App.vue
 let _onRemoteStream    = null   // set by ActiveCallBar
 let _onLocalStream     = null   // set by ActiveCallBar (self-preview)
+let _ringTimeout       = null   // auto-cancel unanswered outgoing calls
+
+const RING_TIMEOUT_MS = 45_000
 
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
@@ -156,12 +159,24 @@ async function startCall(userId, userName, avatar, convId) {
   _s.phase        = 'calling'
   _s.errorMsg     = ''
 
+  // Auto-cancel if callee doesn't answer within the timeout
+  _ringTimeout = setTimeout(() => {
+    if (_s.phase === 'calling') endCall(true)
+  }, RING_TIMEOUT_MS)
+
   let stream, hasVideo
   try {
     ;({ stream, hasVideo } = await _getMedia(true))
   } catch {
+    clearTimeout(_ringTimeout); _ringTimeout = null
     _s.errorMsg = 'no_mic'
     _reset()
+    return
+  }
+
+  // User may have cancelled while getUserMedia was pending
+  if (_s.phase !== 'calling') {
+    stream.getTracks().forEach(t => t.stop())
     return
   }
 
@@ -174,6 +189,8 @@ async function startCall(userId, userName, avatar, convId) {
 
   const offer = await _pc.createOffer()
   await _pc.setLocalDescription(offer)
+
+  if (_s.phase !== 'calling') return
 
   _send({
     type: 'call.offer',
@@ -213,6 +230,7 @@ function _onRing(payload) {
 
 async function _onAnswer(payload) {
   if (_s.phase !== 'calling' || !_pc) return
+  clearTimeout(_ringTimeout); _ringTimeout = null
   try {
     await _pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: payload.sdp }))
     await _applyPendingCandidates()
@@ -232,8 +250,8 @@ async function _onICE(payload) {
 }
 
 function _onHangup()      { endCall(false) }
-function _onReject()      { _teardown(); _s.phase = 'ended'; setTimeout(_reset, 2000) }
-function _onUnavailable() { _teardown(); _s.errorMsg = 'unavailable'; _s.phase = 'ended'; setTimeout(_reset, 3000) }
+function _onReject()      { clearTimeout(_ringTimeout); _ringTimeout = null; _teardown(); _s.phase = 'ended'; setTimeout(_reset, 2000) }
+function _onUnavailable() { clearTimeout(_ringTimeout); _ringTimeout = null; _teardown(); _s.errorMsg = 'unavailable'; _s.phase = 'ended'; setTimeout(_reset, 3000) }
 
 async function acceptCall() {
   if (_s.phase !== 'ringing' || !_pendingOffer) return
@@ -244,6 +262,12 @@ async function acceptCall() {
   } catch {
     _s.errorMsg = 'no_mic'
     rejectCall()
+    return
+  }
+
+  // Caller may have hung up while getUserMedia was pending
+  if (_s.phase !== 'ringing') {
+    stream.getTracks().forEach(t => t.stop())
     return
   }
 
@@ -278,6 +302,7 @@ function rejectCall() {
 
 function endCall(sendMsg = true) {
   if (_s.phase === 'idle') return
+  clearTimeout(_ringTimeout); _ringTimeout = null
   if (sendMsg && _s.remoteUserId && _s.convId) {
     _send({ type: 'call.hangup', payload: { to_user_id: _s.remoteUserId, conversation_id: _s.convId } })
   }
