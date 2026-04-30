@@ -471,3 +471,4 @@ Create an application that has all these features and requirements
 - Reduce presence poll interval from 10 s to 5 s for faster online/offline updates; extract as named constant
 - Fix blank screen under CSP: add unsafe-eval to script-src in nginx/Apache templates; vue-i18n runtime message compiler requires new Function() and was blocked by the previous policy
 - Fix update checker blocked by CSP: add https://api.github.com to connect-src in nginx/Apache templates
+- Show toast when callee declines an outgoing call: "{name} declined the call" error toast appears instead of call bar silently disappearing; all 12 locales covered

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.18 — 2026-04-30
+
+### Added
+- **"Declined" toast on outgoing calls** — when the person you are calling declines, an error toast now appears with their name ("Alice declined the call") instead of the call bar silently disappearing; translated in all 12 supported languages
+
 ## v0.9.17 — 2026-04-30
 
 ### Fixed
