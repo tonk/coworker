@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.14 — 2026-04-30
+
+### Added
+- **Online presence in Direct Messages** — 1:1 conversations now show a green presence dot overlaid on the avatar in the conversation list, and an "Online / Offline" status line below the name in the chat header; updates every 10 seconds alongside the sidebar
+
+### Fixed
+- **Call hang-up when other side doesn't answer** — two bugs fixed: (1) a race condition where cancelling a call during media acquisition caused `startCall` to continue after the hang-up and re-send the offer; (2) no auto-cancel timeout — unanswered outgoing calls now automatically hang up after 45 seconds
+- **Same race condition in `acceptCall`** — if the caller hung up while the callee's media permission dialog was open, `acceptCall` would continue and send an answer to a dead call; a phase guard now aborts cleanly
+
 ## v0.9.13 — 2026-04-30
 
 ### Added

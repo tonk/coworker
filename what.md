@@ -462,3 +462,5 @@ Create an application that has all these features and requirements
 - Call settings dropdown: chevron next to call button opens floating panel with mic selector + live input-level bar, camera selector + live mirrored preview, speaker selector + test-tone button; device preferences persisted in localStorage; speaker section hidden when setSinkId unsupported (Linux Tauri)
 - Fix ringtone playing when chatting: IncomingCallOverlay used onMounted to start ringtone but is always mounted in App.vue; changed to watch on call phase so ringtone only plays when phase becomes 'ringing'
 - Demo seeder creates group conversations at seed time: each group gets its linked Conversation and ConversationMember rows during seeding, not relying on the startup migration
+- Online presence in DM view: green dot on 1:1 conversation avatars + "Online/Offline" status line in chat header; uses sidebar store chatUsers (10s poll)
+- Fix call hang-up race condition: startCall and acceptCall now check phase after await _getMedia so cancelling during permission prompt correctly aborts the call; 45s auto-cancel timeout added for unanswered outgoing calls
