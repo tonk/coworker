@@ -173,9 +173,11 @@ watch(() => state.phase, (phase) => {
     if (phase === 'ended' && state.errorMsg) {
       const key = state.errorMsg === 'unavailable'
         ? t('call.unavailable', { name: state.remoteName || '…' })
-        : state.errorMsg === 'no_mic'
-          ? t('call.no_mic')
-          : null
+        : state.errorMsg === 'rejected'
+          ? t('call.rejected', { name: state.remoteName || '…' })
+          : state.errorMsg === 'no_mic'
+            ? t('call.no_mic')
+            : null
       if (key) ui.error(key)
     }
   }

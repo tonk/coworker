@@ -661,6 +661,7 @@
     "mute": "Stummschalten",
     "unmute": "Stummschaltung aufheben",
     "unavailable": "{name} ist nicht verfügbar",
+    "rejected": "{name} hat den Anruf abgelehnt",
     "no_mic": "Mikrofonzugriff verweigert",
     "ended": "Anruf beendet",
     "incoming_video": "Eingehender Videoanruf",

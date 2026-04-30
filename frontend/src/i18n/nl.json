@@ -661,6 +661,7 @@
     "mute": "Dempen",
     "unmute": "Dempen opheffen",
     "unavailable": "{name} is niet beschikbaar",
+    "rejected": "{name} heeft het gesprek geweigerd",
     "no_mic": "Microfoontoegang geweigerd",
     "ended": "Gesprek beëindigd",
     "incoming_video": "Inkomend videogesprek",

@@ -250,7 +250,7 @@ async function _onICE(payload) {
 }
 
 function _onHangup()      { endCall(false) }
-function _onReject()      { clearTimeout(_ringTimeout); _ringTimeout = null; _teardown(); _s.phase = 'ended'; setTimeout(_reset, 2000) }
+function _onReject()      { clearTimeout(_ringTimeout); _ringTimeout = null; _teardown(); _s.errorMsg = 'rejected'; _s.phase = 'ended'; setTimeout(_reset, 3000) }
 function _onUnavailable() { clearTimeout(_ringTimeout); _ringTimeout = null; _teardown(); _s.errorMsg = 'unavailable'; _s.phase = 'ended'; setTimeout(_reset, 3000) }
 
 async function acceptCall() {

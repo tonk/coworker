@@ -654,6 +654,7 @@
     "mute": "Lyd fra",
     "unmute": "Lyd til",
     "unavailable": "{name} er ikke tilgængelig",
+    "rejected": "{name} afviste opkaldet",
     "no_mic": "Mikrofonadgang nægtet",
     "ended": "Opkald afsluttet",
     "incoming_video": "Indgående videoopkald",

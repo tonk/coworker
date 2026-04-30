@@ -661,6 +661,7 @@
     "mute": "Muet",
     "unmute": "Rétablir le son",
     "unavailable": "{name} n'est pas disponible",
+    "rejected": "{name} a refusé l'appel",
     "no_mic": "Accès au microphone refusé",
     "ended": "Appel terminé",
     "incoming_video": "Appel vidéo entrant",

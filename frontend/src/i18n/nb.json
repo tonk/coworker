@@ -654,6 +654,7 @@
     "mute": "Demp",
     "unmute": "Opphev demping",
     "unavailable": "{name} er ikke tilgjengelig",
+    "rejected": "{name} avslo anropet",
     "no_mic": "Mikrofontilgang nektet",
     "ended": "Samtale avsluttet",
     "incoming_video": "Innkommende videosamtale",

@@ -654,6 +654,7 @@
     "mute": "Mykistä",
     "unmute": "Poista mykistys",
     "unavailable": "{name} ei ole tavoitettavissa",
+    "rejected": "{name} hylkäsi puhelun",
     "no_mic": "Mikrofonin käyttö estetty",
     "ended": "Puhelu päättyi",
     "incoming_video": "Saapuva videopuhelu",

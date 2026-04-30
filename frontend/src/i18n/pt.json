@@ -654,6 +654,7 @@
     "mute": "Silenciar",
     "unmute": "Ativar som",
     "unavailable": "{name} não está disponível",
+    "rejected": "{name} recusou a chamada",
     "no_mic": "Acesso ao microfone negado",
     "ended": "Chamada terminada",
     "incoming_video": "Videochamada recebida",

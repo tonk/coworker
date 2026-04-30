@@ -661,6 +661,7 @@
     "mute": "Silenciar",
     "unmute": "Activar sonido",
     "unavailable": "{name} no está disponible",
+    "rejected": "{name} rechazó la llamada",
     "no_mic": "Acceso al micrófono denegado",
     "ended": "Llamada finalizada",
     "incoming_video": "Videollamada entrante",

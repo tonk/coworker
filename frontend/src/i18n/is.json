@@ -654,6 +654,7 @@
     "mute": "Þagga",
     "unmute": "Hljóðvirkja",
     "unavailable": "{name} er ekki tiltækur",
+    "rejected": "{name} hafnaði símtalinu",
     "no_mic": "Aðgangur að hljóðnema hafnaður",
     "ended": "Símtali lokið",
     "incoming_video": "Móttekið myndsímtal",
