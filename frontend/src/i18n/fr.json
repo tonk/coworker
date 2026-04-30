@@ -650,5 +650,29 @@
     "export_pdf": "Exporter PDF",
     "export_error": "Échec de l'exportation.",
     "all_employees": "Tous les employés"
+  },
+  "call": {
+    "incoming": "Appel entrant",
+    "calling": "Appel en cours...",
+    "connected": "Connecté",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "hangup": "Raccrocher",
+    "mute": "Muet",
+    "unmute": "Rétablir le son",
+    "unavailable": "{name} n'est pas disponible",
+    "no_mic": "Accès au microphone refusé",
+    "ended": "Appel terminé",
+    "incoming_video": "Appel vidéo entrant",
+    "camera_on": "Caméra activée",
+    "camera_off": "Caméra désactivée",
+    "start_call": "Démarrer l'appel",
+    "settings": "Paramètres d'appel",
+    "microphone": "Microphone",
+    "camera": "Caméra",
+    "speaker": "Haut-parleur",
+    "test_speaker": "Tester",
+    "input_level": "Niveau d'entrée",
+    "no_camera": "Pas de caméra"
   }
 }

@@ -222,6 +222,18 @@
               <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
             </button>
           </div>
+          <!-- Call button — 1-on-1 only -->
+          <div v-if="!activeConv.is_group" class="call-btn-group" ref="callBtnGroupRef">
+            <button class="add-member-btn call-btn-header" :title="$t('call.start_call')" @click="initiateCall">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.22-1.22a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </button>
+            <button class="add-member-btn call-settings-chevron" :title="$t('call.settings')" @click.stop="toggleCallSettings">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <CallSettingsDropdown v-if="showCallSettings" :pos="callSettingsPos" @close="showCallSettings = false" />
+          </div>
           <!-- Add member button for group chats -->
           <button v-if="activeConv.is_group" class="add-member-btn" @click="showAddMember = !showAddMember" title="Add member">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
@@ -447,6 +459,8 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import { useWebRTCCall } from '@/composables/useWebRTCCall'
+import CallSettingsDropdown from '@/components/call/CallSettingsDropdown.vue'
 import { messagesApi } from '@/api/messages'
 import { projectsApi } from '@/api/projects'
 import { attachmentsApi } from '@/api/attachments'
@@ -473,6 +487,35 @@ const { formatTime } = useDateFormat()
 const { layout, setLayout } = useChatLayout()
 const { notifyEnabled, toggleNotify, desktopNotify, shouldNotifyNow } = useChatNotify()
 const ui = useUIStore()
+const { startCall: _startCall, state: callState } = useWebRTCCall()
+
+const callBtnGroupRef  = ref(null)
+const showCallSettings = ref(false)
+const callSettingsPos  = ref({ top: 0, right: 0 })
+
+function toggleCallSettings() {
+  if (showCallSettings.value) { showCallSettings.value = false; return }
+  const rect = callBtnGroupRef.value?.getBoundingClientRect()
+  if (rect) {
+    callSettingsPos.value = {
+      top:   Math.round(rect.bottom + 8),
+      right: Math.round(window.innerWidth - rect.right),
+    }
+  }
+  showCallSettings.value = true
+}
+
+function initiateCall() {
+  if (!activeConv.value || activeConv.value.is_group) return
+  const other = otherMember(activeConv.value)
+  if (!other) return
+  _startCall(
+    other.id,
+    other.display_name || other.username,
+    getAvatar(other),
+    activeConv.value.id
+  )
+}
 
 // ── New-message toast ────────────────────────────────────────────────────────
 const chatToast = ref(null)
@@ -1488,6 +1531,10 @@ function dayLabel(dateStr) {
   transition: all .15s;
 }
 .add-member-btn:hover { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.call-btn-header:hover { background: #22c55e !important; border-color: #22c55e !important; }
+.call-btn-group { display: flex; align-items: center; gap: 1px; }
+.call-settings-chevron { width: 18px !important; padding: 0 !important; border-left: none !important; border-radius: 0 6px 6px 0 !important; }
+.call-btn-group .call-btn-header { border-radius: 6px 0 0 6px !important; }
 
 /* Add member panel */
 .add-member-panel {

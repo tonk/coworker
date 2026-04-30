@@ -643,5 +643,29 @@
     "export_xlsx": "Exportera XLSX",
     "export_pdf": "Exportera PDF",
     "export_error": "Export misslyckades."
+  },
+  "call": {
+    "incoming": "Inkommande samtal",
+    "calling": "Ringer...",
+    "connected": "Ansluten",
+    "accept": "Svara",
+    "decline": "Avvisa",
+    "hangup": "Lägg på",
+    "mute": "Ljud av",
+    "unmute": "Ljud på",
+    "unavailable": "{name} är inte tillgänglig",
+    "no_mic": "Mikrofonåtkomst nekad",
+    "ended": "Samtal avslutat",
+    "incoming_video": "Inkommande videosamtal",
+    "camera_on": "Kamera på",
+    "camera_off": "Kamera av",
+    "start_call": "Starta samtal",
+    "settings": "Samtalsinstäl­lningar",
+    "microphone": "Mikrofon",
+    "camera": "Kamera",
+    "speaker": "Högtalare",
+    "test_speaker": "Testa",
+    "input_level": "Ingångsnivå",
+    "no_camera": "Ingen kamera"
   }
 }

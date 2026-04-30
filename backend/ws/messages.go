@@ -71,6 +71,15 @@ const (
 	TypeSprintCardAdded   = "sprint.card.added"
 	TypeSprintCardRemoved = "sprint.card.removed"
 
+	// Call signaling (relayed directly between users via BroadcastToUser)
+	TypeCallOffer       = "call.offer"
+	TypeCallAnswer      = "call.answer"
+	TypeCallICE         = "call.ice"
+	TypeCallHangup      = "call.hangup"
+	TypeCallReject      = "call.reject"
+	TypeCallRing        = "call.ring"
+	TypeCallUnavailable = "call.unavailable"
+
 	// System
 	TypePong  = "pong"
 	TypeError = "error"
@@ -78,7 +87,7 @@ const (
 
 type Message struct {
 	Type    string      `json:"type"`
-	Payload interface{} `json:"payload"`
+	Payload any `json:"payload"`
 	ID      string      `json:"id,omitempty"`
 }
 

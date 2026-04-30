@@ -643,5 +643,29 @@
     "export_xlsx": "Flytja út XLSX",
     "export_pdf": "Flytja út PDF",
     "export_error": "Útflutningur mistókst."
+  },
+  "call": {
+    "incoming": "Móttekið símtal",
+    "calling": "Hringt...",
+    "connected": "Tengt",
+    "accept": "Svara",
+    "decline": "Hafna",
+    "hangup": "Leggja á",
+    "mute": "Þagga",
+    "unmute": "Hljóðvirkja",
+    "unavailable": "{name} er ekki tiltækur",
+    "no_mic": "Aðgangur að hljóðnema hafnaður",
+    "ended": "Símtali lokið",
+    "incoming_video": "Móttekið myndsímtal",
+    "camera_on": "Myndavél kveikt",
+    "camera_off": "Myndavél slökkt",
+    "start_call": "Hefja símtal",
+    "settings": "Stillingar símtals",
+    "microphone": "Hljóðnemi",
+    "camera": "Myndavél",
+    "speaker": "Hátalari",
+    "test_speaker": "Prófa",
+    "input_level": "Inntaksstig",
+    "no_camera": "Engin myndavél"
   }
 }

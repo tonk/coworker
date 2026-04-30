@@ -650,5 +650,29 @@
     "export_pdf": "PDF exportieren",
     "export_error": "Export fehlgeschlagen.",
     "all_employees": "Alle Mitarbeiter"
+  },
+  "call": {
+    "incoming": "Eingehender Anruf",
+    "calling": "Rufe an...",
+    "connected": "Verbunden",
+    "accept": "Annehmen",
+    "decline": "Ablehnen",
+    "hangup": "Auflegen",
+    "mute": "Stummschalten",
+    "unmute": "Stummschaltung aufheben",
+    "unavailable": "{name} ist nicht verfügbar",
+    "no_mic": "Mikrofonzugriff verweigert",
+    "ended": "Anruf beendet",
+    "incoming_video": "Eingehender Videoanruf",
+    "camera_on": "Kamera an",
+    "camera_off": "Kamera aus",
+    "start_call": "Anruf starten",
+    "settings": "Anrufeinstellungen",
+    "microphone": "Mikrofon",
+    "camera": "Kamera",
+    "speaker": "Lautsprecher",
+    "test_speaker": "Testen",
+    "input_level": "Eingangspegel",
+    "no_camera": "Keine Kamera"
   }
 }

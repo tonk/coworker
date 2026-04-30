@@ -643,5 +643,29 @@
     "export_xlsx": "Vie XLSX",
     "export_pdf": "Vie PDF",
     "export_error": "Vienti epäonnistui."
+  },
+  "call": {
+    "incoming": "Saapuva puhelu",
+    "calling": "Soitetaan...",
+    "connected": "Yhdistetty",
+    "accept": "Vastaa",
+    "decline": "Hylkää",
+    "hangup": "Lopeta puhelu",
+    "mute": "Mykistä",
+    "unmute": "Poista mykistys",
+    "unavailable": "{name} ei ole tavoitettavissa",
+    "no_mic": "Mikrofonin käyttö estetty",
+    "ended": "Puhelu päättyi",
+    "incoming_video": "Saapuva videopuhelu",
+    "camera_on": "Kamera päällä",
+    "camera_off": "Kamera pois",
+    "start_call": "Aloita puhelu",
+    "settings": "Puhelun asetukset",
+    "microphone": "Mikrofoni",
+    "camera": "Kamera",
+    "speaker": "Kaiutin",
+    "test_speaker": "Testaa",
+    "input_level": "Syöttötaso",
+    "no_camera": "Ei kameraa"
   }
 }

@@ -27,6 +27,8 @@
   </div>
   <RouterView v-else />
   <ToastContainer />
+  <IncomingCallOverlay />
+  <ActiveCallBar />
 </template>
 
 <script setup>
@@ -50,12 +52,16 @@ import { useUpdateCheck } from '@/composables/useUpdateCheck'
 import { getWsUrl } from '@/api/serverConfig'
 import { authApi } from '@/api/auth'
 import { refreshMediaTicket, startMediaTicketRefresh, stopMediaTicketRefresh } from '@/api/attachments'
+import { useWebRTCCall } from '@/composables/useWebRTCCall'
+import IncomingCallOverlay from '@/components/call/IncomingCallOverlay.vue'
+import ActiveCallBar from '@/components/call/ActiveCallBar.vue'
 
 const auth = useAuthStore()
 const systemStore = useSystemStore()
 const ui = useUIStore()
 const notificationsStore = useNotificationsStore()
 const { projectChatUnread } = useProjectChatUnread()
+const call = useWebRTCCall()
 const route = useRoute()
 const router = useRouter()
 
@@ -171,6 +177,8 @@ async function connectUserWs() {
 
   userWs = new WebSocket(url)
 
+  call.setSendFn(msg => userWs.readyState === 1 && userWs.send(JSON.stringify(msg)))
+
   userWs.onopen = () => {
     userWsReconnectDelay = 1000
   }
@@ -181,6 +189,8 @@ async function connectUserWs() {
       if (msg.type === 'mention.notification') {
         const { sender_name, body, context } = msg.payload || {}
         ui.mention(sender_name || 'Someone', body || '', context || '')
+      } else if (msg.type && msg.type.startsWith('call.')) {
+        call.handleSignal(msg)
       }
     } catch {}
   }

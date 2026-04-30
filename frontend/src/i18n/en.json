@@ -650,5 +650,29 @@
     "export_pdf": "Export PDF",
     "export_error": "Export failed.",
     "all_employees": "All employees"
+  },
+  "call": {
+    "incoming": "Incoming call",
+    "calling": "Calling...",
+    "connected": "Connected",
+    "accept": "Accept",
+    "decline": "Decline",
+    "hangup": "End call",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "unavailable": "{name} is not available",
+    "no_mic": "Microphone access denied",
+    "ended": "Call ended",
+    "incoming_video": "Incoming video call",
+    "camera_on": "Camera on",
+    "camera_off": "Camera off",
+    "start_call": "Start call",
+    "settings": "Call settings",
+    "microphone": "Microphone",
+    "camera": "Camera",
+    "speaker": "Speaker",
+    "test_speaker": "Test",
+    "input_level": "Input level",
+    "no_camera": "No camera"
   }
 }

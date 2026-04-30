@@ -643,5 +643,29 @@
     "export_xlsx": "Eksporter XLSX",
     "export_pdf": "Eksporter PDF",
     "export_error": "Eksport mislyktes."
+  },
+  "call": {
+    "incoming": "Innkommende anrop",
+    "calling": "Ringer...",
+    "connected": "Tilkoblet",
+    "accept": "Svar",
+    "decline": "Avvis",
+    "hangup": "Legg på",
+    "mute": "Demp",
+    "unmute": "Opphev demping",
+    "unavailable": "{name} er ikke tilgjengelig",
+    "no_mic": "Mikrofontilgang nektet",
+    "ended": "Samtale avsluttet",
+    "incoming_video": "Innkommende videosamtale",
+    "camera_on": "Kamera på",
+    "camera_off": "Kamera av",
+    "start_call": "Start anrop",
+    "settings": "Anropsinnstillinger",
+    "microphone": "Mikrofon",
+    "camera": "Kamera",
+    "speaker": "Høyttaler",
+    "test_speaker": "Test",
+    "input_level": "Inngangsnivå",
+    "no_camera": "Ingen kamera"
   }
 }

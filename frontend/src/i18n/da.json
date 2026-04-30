@@ -643,5 +643,29 @@
     "export_xlsx": "Eksporter XLSX",
     "export_pdf": "Eksporter PDF",
     "export_error": "Eksport mislykkedes."
+  },
+  "call": {
+    "incoming": "Indgående opkald",
+    "calling": "Ringer...",
+    "connected": "Forbundet",
+    "accept": "Svar",
+    "decline": "Afvis",
+    "hangup": "Læg på",
+    "mute": "Lyd fra",
+    "unmute": "Lyd til",
+    "unavailable": "{name} er ikke tilgængelig",
+    "no_mic": "Mikrofonadgang nægtet",
+    "ended": "Opkald afsluttet",
+    "incoming_video": "Indgående videoopkald",
+    "camera_on": "Kamera til",
+    "camera_off": "Kamera fra",
+    "start_call": "Start opkald",
+    "settings": "Opkaldsindstillinger",
+    "microphone": "Mikrofon",
+    "camera": "Kamera",
+    "speaker": "Højttaler",
+    "test_speaker": "Test",
+    "input_level": "Indgangsniveau",
+    "no_camera": "Ingen kamera"
   }
 }

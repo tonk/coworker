@@ -149,7 +149,7 @@ func (h *WSHandler) HandleUserWS(c *gin.Context) {
 	database.DB.First(&user, claims.UserID)
 
 	hub := appws.GetOrCreateUserHub(user.ID)
-	client := appws.NewClient(hub, conn, user.ID, user.Username, user.DisplayName, user.AvatarURL, 0, claims.GlobalRole, nil)
+	client := appws.NewClient(hub, conn, user.ID, user.Username, user.DisplayName, user.AvatarURL, 0, claims.GlobalRole, handleUserIncoming)
 	hub.Register(client)
 
 	go client.WritePump()
@@ -224,17 +224,17 @@ func handleIncoming(client *appws.Client, raw []byte) {
 			return
 		}
 
-		database.DB.Model(&chatMsg).Updates(map[string]interface{}{"body": payload.Body, "is_edited": true})
+		database.DB.Model(&chatMsg).Updates(map[string]any{"body": payload.Body, "is_edited": true})
 		appws.BroadcastToProject(client.ProjectID(), appws.Message{
 			Type:    appws.TypeChatMessageUpdated,
-			Payload: map[string]interface{}{"id": chatMsg.ID, "body": payload.Body, "is_edited": true},
+			Payload: map[string]any{"id": chatMsg.ID, "body": payload.Body, "is_edited": true},
 		})
 
 	case appws.TypeChatTyping:
 		// Broadcast typing notification to all other clients in the project.
 		appws.BroadcastToProject(client.ProjectID(), appws.Message{
 			Type: appws.TypeChatUserTyping,
-			Payload: map[string]interface{}{
+			Payload: map[string]any{
 				"user_id":      client.UserID(),
 				"username":     client.Username(),
 				"display_name": client.DisplayName(),
@@ -267,6 +267,130 @@ func handleIncoming(client *appws.Client, raw []byte) {
 		appws.BroadcastToProject(client.ProjectID(), appws.Message{
 			Type:    appws.TypeChatMessageDeleted,
 			Payload: map[string]uint{"id": payload.MessageID},
+		})
+
+	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject:
+		handleCallSignal(client, msg)
+	}
+}
+
+// handleUserIncoming processes messages received on the personal user WebSocket.
+func handleUserIncoming(client *appws.Client, raw []byte) {
+	var msg appws.Message
+	if err := json.Unmarshal(raw, &msg); err != nil {
+		client.SendError("parse_error", "invalid JSON", "")
+		return
+	}
+
+	switch msg.Type {
+	case appws.TypePing:
+		pong := appws.Message{
+			Type:    appws.TypePong,
+			Payload: map[string]string{"server_time": time.Now().UTC().Format(time.RFC3339)},
+		}
+		data, _ := json.Marshal(pong)
+		client.Send(data)
+
+	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject:
+		handleCallSignal(client, msg)
+	}
+}
+
+// callBasePayload holds the fields common to all call signaling messages.
+type callBasePayload struct {
+	ToUserID       uint   `json:"to_user_id"`
+	ConversationID uint   `json:"conversation_id"`
+	SDP            string `json:"sdp,omitempty"`
+	Candidate      string `json:"candidate,omitempty"`
+	HasVideo       bool   `json:"has_video,omitempty"`
+}
+
+// handleCallSignal relays WebRTC signaling messages between two conversation members.
+// It verifies membership, rebuilds the outgoing payload from scratch, and never
+// forwards raw JSON to prevent payload injection.
+func handleCallSignal(client *appws.Client, msg appws.Message) {
+	payloadBytes, _ := json.Marshal(msg.Payload)
+	var payload callBasePayload
+	if err := json.Unmarshal(payloadBytes, &payload); err != nil || payload.ToUserID == 0 || payload.ConversationID == 0 {
+		client.SendError("invalid_payload", "to_user_id and conversation_id required", msg.ID)
+		return
+	}
+
+	callerID := client.UserID()
+	calleeID := payload.ToUserID
+	convID := payload.ConversationID
+
+	// Both users must be members of the conversation
+	if !isMember(convID, callerID) || !isMember(convID, calleeID) {
+		client.SendError("forbidden", "not a conversation member", msg.ID)
+		return
+	}
+
+	switch msg.Type {
+	case appws.TypeCallOffer:
+		if !appws.IsUserOnline(calleeID) {
+			// Callee is offline — notify caller
+			unavail, _ := json.Marshal(appws.Message{
+				Type: appws.TypeCallUnavailable,
+				Payload: map[string]any{
+					"from_user_id":    callerID,
+					"conversation_id": convID,
+				},
+			})
+			client.Send(unavail)
+			return
+		}
+		// Look up caller's avatar URL
+		var caller models.User
+		database.DB.First(&caller, callerID)
+		appws.BroadcastToUser(calleeID, appws.Message{
+			Type: appws.TypeCallRing,
+			Payload: map[string]any{
+				"from_user_id":    callerID,
+				"from_name":       client.DisplayName(),
+				"from_avatar":     caller.AvatarURL,
+				"conversation_id": convID,
+				"sdp":             payload.SDP,
+				"has_video":       payload.HasVideo,
+			},
+		})
+
+	case appws.TypeCallAnswer:
+		appws.BroadcastToUser(calleeID, appws.Message{
+			Type: appws.TypeCallAnswer,
+			Payload: map[string]any{
+				"from_user_id":    callerID,
+				"conversation_id": convID,
+				"sdp":             payload.SDP,
+			},
+		})
+
+	case appws.TypeCallICE:
+		appws.BroadcastToUser(calleeID, appws.Message{
+			Type: appws.TypeCallICE,
+			Payload: map[string]any{
+				"from_user_id":    callerID,
+				"conversation_id": convID,
+				"candidate":       payload.Candidate,
+			},
+		})
+
+	case appws.TypeCallHangup:
+		appws.BroadcastToUser(calleeID, appws.Message{
+			Type: appws.TypeCallHangup,
+			Payload: map[string]any{
+				"from_user_id":    callerID,
+				"conversation_id": convID,
+			},
+		})
+
+	case appws.TypeCallReject:
+		appws.BroadcastToUser(calleeID, appws.Message{
+			Type: appws.TypeCallReject,
+			Payload: map[string]any{
+				"from_user_id":    callerID,
+				"conversation_id": convID,
+			},
 		})
 	}
 }

@@ -643,5 +643,29 @@
     "export_xlsx": "Esporta XLSX",
     "export_pdf": "Esporta PDF",
     "export_error": "Esportazione non riuscita."
+  },
+  "call": {
+    "incoming": "Chiamata in arrivo",
+    "calling": "Chiamando...",
+    "connected": "Connesso",
+    "accept": "Accetta",
+    "decline": "Rifiuta",
+    "hangup": "Riattacca",
+    "mute": "Silenzia",
+    "unmute": "Riattiva audio",
+    "unavailable": "{name} non è disponibile",
+    "no_mic": "Accesso al microfono negato",
+    "ended": "Chiamata terminata",
+    "incoming_video": "Videochiamata in arrivo",
+    "camera_on": "Fotocamera attiva",
+    "camera_off": "Fotocamera disattiva",
+    "start_call": "Avvia chiamata",
+    "settings": "Impostazioni chiamata",
+    "microphone": "Microfono",
+    "camera": "Fotocamera",
+    "speaker": "Altoparlante",
+    "test_speaker": "Testa",
+    "input_level": "Livello ingresso",
+    "no_camera": "Nessuna fotocamera"
   }
 }

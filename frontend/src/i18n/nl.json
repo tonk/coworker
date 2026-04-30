@@ -650,5 +650,29 @@
     "export_pdf": "Exporteer PDF",
     "export_error": "Exporteren mislukt.",
     "all_employees": "Alle medewerkers"
+  },
+  "call": {
+    "incoming": "Inkomende oproep",
+    "calling": "Bellen...",
+    "connected": "Verbonden",
+    "accept": "Opnemen",
+    "decline": "Weigeren",
+    "hangup": "Ophangen",
+    "mute": "Dempen",
+    "unmute": "Dempen opheffen",
+    "unavailable": "{name} is niet beschikbaar",
+    "no_mic": "Microfoontoegang geweigerd",
+    "ended": "Gesprek beëindigd",
+    "incoming_video": "Inkomend videogesprek",
+    "camera_on": "Camera aan",
+    "camera_off": "Camera uit",
+    "start_call": "Gesprek starten",
+    "settings": "Gespreksinstelling",
+    "microphone": "Microfoon",
+    "camera": "Camera",
+    "speaker": "Luidspreker",
+    "test_speaker": "Testen",
+    "input_level": "Ingangsniveau",
+    "no_camera": "Geen camera"
   }
 }

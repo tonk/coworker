@@ -643,5 +643,29 @@
     "export_xlsx": "Exportar XLSX",
     "export_pdf": "Exportar PDF",
     "export_error": "Falha na exportação."
+  },
+  "call": {
+    "incoming": "Chamada recebida",
+    "calling": "A ligar...",
+    "connected": "Ligado",
+    "accept": "Aceitar",
+    "decline": "Recusar",
+    "hangup": "Terminar chamada",
+    "mute": "Silenciar",
+    "unmute": "Ativar som",
+    "unavailable": "{name} não está disponível",
+    "no_mic": "Acesso ao microfone negado",
+    "ended": "Chamada terminada",
+    "incoming_video": "Videochamada recebida",
+    "camera_on": "Câmara ligada",
+    "camera_off": "Câmara desligada",
+    "start_call": "Iniciar chamada",
+    "settings": "Definições de chamada",
+    "microphone": "Microfone",
+    "camera": "Câmara",
+    "speaker": "Altifalante",
+    "test_speaker": "Testar",
+    "input_level": "Nível de entrada",
+    "no_camera": "Sem câmara"
   }
 }
