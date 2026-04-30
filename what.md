@@ -464,3 +464,8 @@ Create an application that has all these features and requirements
 - Demo seeder creates group conversations at seed time: each group gets its linked Conversation and ConversationMember rows during seeding, not relying on the startup migration
 - Online presence in DM view: green dot on 1:1 conversation avatars + "Online/Offline" status line in chat header; uses sidebar store chatUsers (10s poll)
 - Fix call hang-up race condition: startCall and acceptCall now check phase after await _getMedia so cancelling during permission prompt correctly aborts the call; 45s auto-cancel timeout added for unanswered outgoing calls
+- Fix WebSocket reconnect robustness: Tauri mode retries after ticket-fetch failure; browser mode silently refreshes token before each reconnect to survive 15-minute JWT expiry
+- Show error toast on call failure: "unavailable" (callee offline) and "no_mic" (microphone denied) errors now surface a toast instead of the call bar silently disappearing
+- Fix chat layout: chat panel and Direct Messages view fill available height correctly with input anchored to bottom
+- Fix nginx WebSocket Connection header: quote "upgrade" value per HTTP spec in provided nginx template
+- Reduce presence poll interval from 10 s to 5 s for faster online/offline updates; extract as named constant

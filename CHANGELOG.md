@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.15 — 2026-04-30
+
+### Fixed
+- **WebSocket reconnect robustness** — in Tauri mode, a ticket-fetch failure now schedules a retry so the user WebSocket reconnects after transient errors; in browser mode, a silent token refresh is attempted before each reconnect to prevent a 15-minute JWT expiry from stranding the user
+- **Call failure toast** — when an outgoing call fails because the callee is offline ("unavailable") or microphone access was denied ("no_mic"), an error toast is now shown instead of the call bar silently disappearing
+- **Chat layout** — fixed layout issues in the chat panel and Direct Messages view so message lists fill available height correctly and the input area stays anchored to the bottom
+- **nginx WebSocket header** — `Connection` header value is now correctly quoted (`"upgrade"`) in the provided nginx template, matching the HTTP spec requirement
+- **Online presence poll interval** — reduced the sidebar presence poll from 10 s to 5 s so online/offline status updates appear more quickly; interval extracted as a named constant
+
 ## v0.9.14 — 2026-04-30
 
 ### Added
