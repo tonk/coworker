@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.9.13 — 2026-04-30
+
+### Added
+- **1:1 audio and video calls** — call any user directly from the Direct Messages header; calls use WebRTC peer-to-peer (STUN servers) with signaling over the existing WebSocket connection; audio-only fallback when camera is unavailable; call states: calling → ringing → active → ended
+- **Incoming call overlay** — fixed overlay in the bottom-right corner shows the caller's avatar and name, with Accept and Decline buttons; a camera icon indicates an incoming video call; a ringtone plays for incoming calls
+- **Video call overlay** — when a video call is active the UI switches to a full-screen overlay: remote video fills the frame, a mirrored self-preview appears in the bottom-right corner, and a gradient controls bar offers mute, camera toggle, and end-call buttons; audio-only calls show a slim bottom bar with a live duration timer
+- **Call settings dropdown** — a chevron next to the call button in the DM header opens a floating settings panel with three sections: microphone (device selector with live input-level bar), camera (device selector with mirrored live preview), and speaker (device selector with a test-tone button; hidden when `setSinkId` is not supported, e.g. Linux Tauri); selections are persisted in localStorage and applied to subsequent calls
+
+### Fixed
+- **Ringtone playing when chatting** — the incoming-call ringtone was started unconditionally when the overlay component mounted (always present in `App.vue`); changed to a `watch` on call phase so it only plays when the phase transitions to `ringing`
+
 ## v0.9.12 — 2026-04-30
 
 ### Added
