@@ -176,6 +176,36 @@
           <button class="btn btn-secondary" @click="cancelNewRow">{{ $t('common.cancel') }}</button>
         </template>
         <div class="tt-export-group" v-if="allRows.length > 0">
+          <div class="pdf-font-group">
+            <label class="filter-label">{{ $t('report.pdf_font') }}</label>
+            <select class="form-input" v-model="pdfFont">
+              <option value="inter">Inter</option>
+              <option value="roboto">Roboto</option>
+              <option value="opensans">Open Sans</option>
+              <option value="sourcecode">Source Code Pro</option>
+              <option value="freesans">{{ $t('report.pdf_font_freesans') }}</option>
+              <option value="freeserif">{{ $t('report.pdf_font_freeserif') }}</option>
+              <option value="freemono">{{ $t('report.pdf_font_freemono') }}</option>
+            </select>
+          </div>
+          <div class="pdf-font-group">
+            <label class="filter-label">{{ $t('report.pdf_lang') }}</label>
+            <select class="form-input" v-model="pdfLang">
+              <option value="auto">{{ $t('report.pdf_lang_auto') }}</option>
+              <option value="en">English</option>
+              <option value="nl">Nederlands</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+              <option value="da">Dansk</option>
+              <option value="sv">Svenska</option>
+              <option value="nb">Norsk</option>
+              <option value="fi">Suomi</option>
+              <option value="is">Íslenska</option>
+              <option value="pt">Português</option>
+              <option value="it">Italiano</option>
+            </select>
+          </div>
           <button class="btn btn-secondary" @click="exportSheetXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
           <button class="btn btn-secondary" @click="exportSheetPDF">{{ $t('timeTracking.export_pdf') }}</button>
         </div>
@@ -204,6 +234,36 @@
         </select>
         <button class="btn btn-secondary" @click="loadReport">{{ $t('timeTracking.refresh') }}</button>
         <div class="tt-export-group" v-if="report && report.total_minutes > 0">
+          <div class="pdf-font-group">
+            <label class="filter-label">{{ $t('report.pdf_font') }}</label>
+            <select class="form-input" v-model="pdfFont">
+              <option value="inter">Inter</option>
+              <option value="roboto">Roboto</option>
+              <option value="opensans">Open Sans</option>
+              <option value="sourcecode">Source Code Pro</option>
+              <option value="freesans">{{ $t('report.pdf_font_freesans') }}</option>
+              <option value="freeserif">{{ $t('report.pdf_font_freeserif') }}</option>
+              <option value="freemono">{{ $t('report.pdf_font_freemono') }}</option>
+            </select>
+          </div>
+          <div class="pdf-font-group">
+            <label class="filter-label">{{ $t('report.pdf_lang') }}</label>
+            <select class="form-input" v-model="pdfLang">
+              <option value="auto">{{ $t('report.pdf_lang_auto') }}</option>
+              <option value="en">English</option>
+              <option value="nl">Nederlands</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+              <option value="da">Dansk</option>
+              <option value="sv">Svenska</option>
+              <option value="nb">Norsk</option>
+              <option value="fi">Suomi</option>
+              <option value="is">Íslenska</option>
+              <option value="pt">Português</option>
+              <option value="it">Italiano</option>
+            </select>
+          </div>
           <button class="btn btn-secondary" @click="exportReportXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
           <button class="btn btn-secondary" @click="exportReportPDF">{{ $t('timeTracking.export_pdf') }}</button>
         </div>
@@ -269,7 +329,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
@@ -314,6 +374,12 @@ function onUserChange() {
   loadWeek()
   loadReport()
 }
+
+// ── PDF export options ────────────────────────────────────────────────────
+const pdfFont = ref(localStorage.getItem('timeTracking.pdfFont') || 'inter')
+watch(pdfFont, v => localStorage.setItem('timeTracking.pdfFont', v))
+const pdfLang = ref(localStorage.getItem('timeTracking.pdfLang') || 'auto')
+watch(pdfLang, v => localStorage.setItem('timeTracking.pdfLang', v))
 
 // ── Mode ──────────────────────────────────────────────────────────────────
 const mode = ref('sheet')
@@ -703,7 +769,7 @@ async function exportSheetXLSX() {
 // Weekly timesheet → PDF: delegates to backend report with period=week.
 async function exportSheetPDF() {
   try {
-    const params = { period: 'week', year: weekInfo.value.year, week: weekInfo.value.week }
+    const params = { period: 'week', year: weekInfo.value.year, week: weekInfo.value.week, font: pdfFont.value, lang: pdfLang.value }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const { data } = await timeEntriesApi.reportPDF(params)
     triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.pdf`, 'application/pdf')
@@ -767,6 +833,8 @@ async function exportReportPDF() {
       year:   rpt.value.year,
       month:  rpt.value.month,
       week:   rpt.value.week,
+      font:   pdfFont.value,
+      lang:   pdfLang.value,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const { data } = await timeEntriesApi.reportPDF(params)
@@ -1017,7 +1085,15 @@ onMounted(async () => {
   color: var(--color-primary);
 }
 .btn-add-row:hover { background: var(--color-bg); border-color: var(--color-primary); }
-.tt-export-group { margin-left: auto; display: flex; gap: 6px; }
+.tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
+.pdf-font-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 
 /* Action column */
 .c-act {

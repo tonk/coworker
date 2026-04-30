@@ -6,12 +6,13 @@ import "time"
 // projects and customers. Created and managed by admins; project/customer
 // owners can add users to groups that are already linked to their resource.
 type UserGroup struct {
-	ID          uint      `gorm:"primaryKey" json:"id"`
-	Name        string    `gorm:"not null;uniqueIndex;size:200" json:"name"`
-	Description string    `gorm:"type:text" json:"description"`
-	Avatar      string    `gorm:"size:500" json:"avatar"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID             uint      `gorm:"primaryKey" json:"id"`
+	Name           string    `gorm:"not null;uniqueIndex;size:200" json:"name"`
+	Description    string    `gorm:"type:text" json:"description"`
+	Avatar         string    `gorm:"size:500" json:"avatar"`
+	ConversationID *uint     `gorm:"index" json:"conversation_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 // GroupMember links a user to a UserGroup.

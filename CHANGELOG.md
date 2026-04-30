@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.9.12 — 2026-04-30
+
+### Added
+- **Git issue linking on cards** — each card can store an external issue URL and a short reference (e.g. `#42`). The URL is entered in the card detail; the reference is auto-filled from the URL path (`/issues/`, `/pull/`, `/merge_requests/`) but can be edited manually. The fields are saved on every card save. The section is optional and toggled through the card ⋮ sections menu.
+- **Group team chat** — every user group now has a dedicated group conversation automatically created with it. Members added or removed from the group are kept in sync with the conversation. Group renames and avatar changes propagate to the linked conversation. Deleting a group removes the conversation and all its messages. Existing groups at startup receive a linked conversation via a one-time migration.
+- **PDF font and language selects in Time Tracking** — the weekly timesheet export bar and the Report tab filter bar both now show PDF Font and PDF Language dropdowns (same options as in the main Time Report view). Selections are persisted in localStorage separately from the report view and passed to the backend PDF generator.
+
+### Fixed
+- **Backup email HTML rendering** — table row background colours were set on `<tr>` elements, which most email clients ignore; moved to `background-color` on each `<td>` and `<th>` individually so alternating-row shading renders correctly.
+
+### Changed
+- **Card ⋮ sections menu sorted alphabetically** — options are now sorted by their translated label in the active UI language.
+
 ## v0.9.11 — 2026-04-29
 
 ### Added

@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 	"unicode"
 
 	mysqldriver "github.com/go-sql-driver/mysql"
@@ -348,7 +349,7 @@ func generateKeyPrefix(name string) string {
 }
 
 func autoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
+	err := db.AutoMigrate(
 		&models.User{},
 		&models.Project{},
 		&models.ProjectMember{},
@@ -389,4 +390,38 @@ func autoMigrate(db *gorm.DB) error {
 		&models.GroupCustomerAccess{},
 		&models.TimeEntry{},
 	)
+	if err != nil {
+		return err
+	}
+	return migrateGroupConversations(db)
+}
+
+// migrateGroupConversations creates a linked Conversation for any UserGroup
+// that does not yet have one (i.e. groups created before this feature).
+func migrateGroupConversations(db *gorm.DB) error {
+	var groups []models.UserGroup
+	db.Where("conversation_id IS NULL").Find(&groups)
+	for _, g := range groups {
+		var members []models.GroupMember
+		db.Where("group_id = ?", g.ID).Find(&members)
+		conv := models.Conversation{
+			Name:        g.Name,
+			Avatar:      g.Avatar,
+			IsGroup:     true,
+			CreatedByID: 0,
+		}
+		if err := db.Create(&conv).Error; err != nil {
+			continue
+		}
+		now := time.Now()
+		for _, m := range members {
+			db.FirstOrCreate(&models.ConversationMember{}, models.ConversationMember{
+				ConversationID: conv.ID,
+				UserID:         m.UserID,
+				JoinedAt:       now,
+			})
+		}
+		db.Model(&g).Update("conversation_id", conv.ID)
+	}
+	return nil
 }

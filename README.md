@@ -268,7 +268,8 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Customers sidebar** — starred customers listed in the sidebar with star/unstar toggle; dedicated Customers page (`/customers`) with grid view and full Customer detail page
 - **Sub-cards** — add child cards (one level deep) inside a parent card's detail view; hidden from the board; parent card shows a done/total progress pill; each sub-card has its own card number, assignees, labels, and comments; opening a sub-card shows a ← back link to return to the parent
 - **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, start date, due dates, assignees, watchers, markdown descriptions and comments; configurable card prefix set at creation time (e.g. `PRJ`, `SHOP`, `API`) used in all card references like `PRJ-42`; primary and extra assignee avatars shown on card tiles
-- **Card sections visibility menu** — ⋮ button on the card detail lets users toggle Labels, Tags, Attachments, Checklist, Sub-cards, Linked Cards, and Watchers on/off; sections hidden by default when empty; preferences saved per-browser
+- **Card sections visibility menu** — ⋮ button on the card detail lets users toggle Labels, Tags, Attachments, Checklist, Sub-cards, Linked Cards, Watchers, and Git Issue on/off; sections hidden by default when empty; preferences saved per-browser; options sorted alphabetically in the active UI language
+- **Git issue linking** — optionally attach an external issue URL (GitHub, GitLab, Gitea, Forgejo, etc.) and a short reference to any card; reference is auto-filled from the URL path (`/issues/42`, `/pull/7`, `/merge_requests/5`) but can be edited; opens in a new tab; toggled via the card ⋮ menu
 - **Scrum** — choose Kanban or Scrum when creating a project (immutable thereafter); Scrum projects add a **Backlog** view (two-panel sprint planner with drag-and-drop card assignment, sprint CRUD, goal and date editing, and a velocity SVG chart of completed sprints) and a **Sprint Board** view (board filtered to the active sprint's cards); sprint lifecycle: planning → active → completed; completing a sprint returns unfinished cards to the backlog; optional story-points field on cards (enabled in Admin → Settings)
 - **Gantt chart** — timeline view per project; cards with a start or due date appear as bars; click any bar to open the card detail; zoom between day, week, and month views
 - **Card sorting** — sort column cards by date, assignee, or priority (ascending / descending)
@@ -281,7 +282,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
 - **Role-based access** — global roles (admin / user / viewer / metrics / backup) and per-project roles (owner / admin / member / viewer); project admins can manage columns
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
-- **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management
+- **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management; every user group automatically gets a linked group conversation that stays in sync with group membership
 - **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
 - **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages
 - **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted); all sections are drag-to-reorder with custom order persisted in localStorage
@@ -300,6 +301,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Watchers** — subscribe to card activity
 - **Favourite people** — mark users for quick access
 - **Time reports** — generate a time overview filtered by period (all / year / month / week), project, and one or more assignees; export to server-generated PDF (selectable font and output language, company logo, per-project subtotal badges) or Excel (XLSX); time displayed as H:MM
+- **Time tracking PDF options** — the weekly timesheet export and the time-tracking report tab both offer the same PDF Font and PDF Language selects as the main report view; selections are persisted in localStorage
 - **Company branding** — set a company name and separate light/dark logos (JPG, PNG, GIF, WebP, or SVG); light logo shown on the login screen's light theme, dark logo on dark theme; logos also appear on reports
 - **Configurable initial columns** — admin can define which columns are created when a new project is made (defaults to "Backlog")
 - **Ticket API** — create cards, add comments, and move cards via API key (for CI/CD pipelines and external integrations); API keys also work on all other authenticated endpoints

@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/database"
@@ -171,6 +172,13 @@ func AdminCreateGroup(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "a group with that name already exists"})
 		return
 	}
+	creatorID := middleware.GetUserID(c)
+	conv := models.Conversation{Name: req.Name, Avatar: req.Avatar, IsGroup: true, CreatedByID: creatorID}
+	if database.DB.Create(&conv).Error == nil {
+		database.DB.Create(&models.ConversationMember{ConversationID: conv.ID, UserID: creatorID, JoinedAt: time.Now()})
+		database.DB.Model(&g).Update("conversation_id", conv.ID)
+		g.ConversationID = &conv.ID
+	}
 	c.JSON(http.StatusCreated, g)
 }
 
@@ -202,6 +210,18 @@ func AdminUpdateGroup(c *gin.Context) {
 	}
 	database.DB.Model(&g).Updates(updates)
 	database.DB.First(&g, groupID)
+	if g.ConversationID != nil {
+		convUpdates := map[string]any{}
+		if req.Name != "" {
+			convUpdates["name"] = g.Name
+		}
+		if req.Avatar != nil {
+			convUpdates["avatar"] = g.Avatar
+		}
+		if len(convUpdates) > 0 {
+			database.DB.Model(&models.Conversation{}).Where("id = ?", *g.ConversationID).Updates(convUpdates)
+		}
+	}
 	c.JSON(http.StatusOK, g)
 }
 
@@ -218,6 +238,11 @@ func AdminDeleteGroup(c *gin.Context) {
 	database.DB.Where("group_id = ?", groupID).Delete(&models.GroupMember{})
 	database.DB.Where("group_id = ?", groupID).Delete(&models.GroupProjectAccess{})
 	database.DB.Where("group_id = ?", groupID).Delete(&models.GroupCustomerAccess{})
+	if g.ConversationID != nil {
+		database.DB.Where("conversation_id = ?", *g.ConversationID).Delete(&models.ConversationMember{})
+		database.DB.Where("conversation_id = ?", *g.ConversationID).Delete(&models.ConversationMessage{})
+		database.DB.Delete(&models.Conversation{}, *g.ConversationID)
+	}
 	database.DB.Delete(&g)
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
@@ -253,6 +278,13 @@ func AdminAddGroupMember(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to add member"})
 			return
 		}
+		if g.ConversationID != nil {
+			database.DB.FirstOrCreate(&models.ConversationMember{}, models.ConversationMember{
+				ConversationID: *g.ConversationID,
+				UserID:         req.UserID,
+				JoinedAt:       time.Now(),
+			})
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
@@ -267,7 +299,12 @@ func AdminRemoveGroupMember(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 		return
 	}
+	var g models.UserGroup
+	database.DB.First(&g, groupID)
 	database.DB.Where("group_id = ? AND user_id = ?", groupID, userID).Delete(&models.GroupMember{})
+	if g.ConversationID != nil {
+		database.DB.Where("conversation_id = ? AND user_id = ?", *g.ConversationID, userID).Delete(&models.ConversationMember{})
+	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 

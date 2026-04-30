@@ -1672,9 +1672,20 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	for _, gs := range demoGroupSpecs {
 		g := &models.UserGroup{Name: gs.name, Description: gs.description, Avatar: gs.avatar}
 		must(db.Create(g).Error)
+
+		conv := models.Conversation{Name: gs.name, Avatar: gs.avatar, IsGroup: true, CreatedByID: 0}
+		must(db.Create(&conv).Error)
+		must(db.Model(g).Update("conversation_id", conv.ID).Error)
+
+		now := time.Now()
 		for _, key := range gs.members {
 			if u, ok := users[key]; ok {
 				must(db.Create(&models.GroupMember{GroupID: g.ID, UserID: u.ID}).Error)
+				must(db.Create(&models.ConversationMember{
+					ConversationID: conv.ID,
+					UserID:         u.ID,
+					JoinedAt:       now,
+				}).Error)
 			}
 		}
 		for _, pa := range gs.projects {

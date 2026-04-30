@@ -244,15 +244,17 @@ func UpdateCard(c *gin.Context) {
 	}
 
 	var req struct {
-		Title            string          `json:"title"`
-		Description      string          `json:"description"`
-		Priority         string          `json:"priority"`
-		StartDate        json.RawMessage `json:"start_date"` // "YYYY-MM-DD" string or null
-		DueDate          json.RawMessage `json:"due_date"`   // "YYYY-MM-DD" string or null
-		AssigneeID       json.RawMessage `json:"assignee_id"`
-		TimeSpentMinutes *int            `json:"time_spent_minutes"`
-		StoryPoints      *int            `json:"story_points"`
-		Closed           *bool           `json:"closed"`
+		Title             string          `json:"title"`
+		Description       string          `json:"description"`
+		Priority          string          `json:"priority"`
+		StartDate         json.RawMessage `json:"start_date"` // "YYYY-MM-DD" string or null
+		DueDate           json.RawMessage `json:"due_date"`   // "YYYY-MM-DD" string or null
+		AssigneeID        json.RawMessage `json:"assignee_id"`
+		TimeSpentMinutes  *int            `json:"time_spent_minutes"`
+		StoryPoints       *int            `json:"story_points"`
+		Closed            *bool           `json:"closed"`
+		ExternalIssueURL  *string         `json:"external_issue_url"`
+		ExternalIssueRef  *string         `json:"external_issue_ref"`
 	}
 	c.ShouldBindJSON(&req)
 
@@ -306,6 +308,12 @@ func UpdateCard(c *gin.Context) {
 	}
 	if req.Closed != nil {
 		updates["closed"] = *req.Closed
+	}
+	if req.ExternalIssueURL != nil {
+		updates["external_issue_url"] = *req.ExternalIssueURL
+	}
+	if req.ExternalIssueRef != nil {
+		updates["external_issue_ref"] = *req.ExternalIssueRef
 	}
 
 	database.DB.Model(&card).Updates(updates)

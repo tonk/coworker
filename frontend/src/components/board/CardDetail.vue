@@ -94,6 +94,39 @@
           <label class="form-label">{{ $t('board.story_points') }}</label>
           <input class="form-input" type="number" min="0" step="1" v-model.number="form.story_points" style="width:90px" />
         </div>
+        <div v-if="!isNew && isSectionVisible('externalIssue')" class="form-group half">
+          <label class="form-label">{{ $t('board.external_issue') }}</label>
+          <div class="external-issue-row">
+            <input
+              class="form-input"
+              type="url"
+              v-model="form.external_issue_url"
+              :placeholder="$t('board.external_issue_url_placeholder')"
+              style="flex:1;min-width:0"
+            />
+            <input
+              class="form-input"
+              type="text"
+              v-model="form.external_issue_ref"
+              placeholder="#42"
+              style="width:72px"
+            />
+            <a
+              v-if="form.external_issue_url"
+              :href="form.external_issue_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-icon-xs"
+              :title="$t('board.external_issue_open')"
+            >↗</a>
+            <button
+              v-if="form.external_issue_url"
+              class="btn-icon-xs"
+              type="button"
+              @click="form.external_issue_url = ''; form.external_issue_ref = ''"
+            >×</button>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -572,6 +605,12 @@ watch(() => form.value.assignee_id, async (newId) => {
   }
 })
 const gitLinks = ref([])
+
+watch(() => form.value.external_issue_url, (url) => {
+  if (!url || form.value.external_issue_ref) return
+  const m = url.match(/\/(?:issues|pull|merge_requests)\/(\d+)/)
+  if (m) form.value.external_issue_ref = `#${m[1]}`
+})
 const copying = ref(false)
 const showTransferPanel = ref(false)
 const showCancelConfirm = ref(false)
@@ -584,12 +623,13 @@ const shownSections = ref(new Set(JSON.parse(localStorage.getItem('warmdesk-card
 const sectionsConfig = computed(() => [
   { key: 'labels', label: t('board.labels') },
   { key: 'tags', label: t('board.tags') },
-  { key: 'attachments', label: 'Attachments' },
+  { key: 'attachments', label: t('board.attachments') },
   { key: 'checklist', label: t('checklist.title') },
   { key: 'subcards', label: t('subcard.sub_cards') },
   { key: 'linkedCards', label: t('card_ref.linked_cards') },
   { key: 'watchers', label: t('board.watchers') },
-])
+  { key: 'externalIssue', label: t('board.external_issue') },
+].sort((a, b) => a.label.localeCompare(b.label)))
 
 const sectionEmpty = computed(() => ({
   labels: !(props.card.labels?.length),
@@ -599,6 +639,7 @@ const sectionEmpty = computed(() => ({
   subcards: !subCards.value.length,
   linkedCards: !linkedCards.value.length,
   watchers: !(props.card.watchers?.length),
+  externalIssue: !form.value.external_issue_url,
 }))
 
 function isSectionVisible(key) {
@@ -955,7 +996,9 @@ const form = ref({
   start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
-  story_points: props.card.story_points ?? null
+  story_points: props.card.story_points ?? null,
+  external_issue_url: props.card.external_issue_url || '',
+  external_issue_ref: props.card.external_issue_ref || '',
 })
 
 // Snapshot for dirty-check (plain values, not reactive)
@@ -966,7 +1009,9 @@ const _init = {
   start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
-  story_points: props.card.story_points ?? null
+  story_points: props.card.story_points ?? null,
+  external_issue_url: props.card.external_issue_url || '',
+  external_issue_ref: props.card.external_issue_ref || '',
 }
 const isDirty = computed(() =>
   newComment.value.trim() !== '' ||
@@ -978,7 +1023,9 @@ const isDirty = computed(() =>
   form.value.start_date !== _init.start_date ||
   form.value.due_date !== _init.due_date ||
   form.value.assignee_id !== _init.assignee_id ||
-  form.value.story_points !== _init.story_points
+  form.value.story_points !== _init.story_points ||
+  form.value.external_issue_url !== _init.external_issue_url ||
+  form.value.external_issue_ref !== _init.external_issue_ref
 )
 
 const {
@@ -1112,7 +1159,9 @@ async function save() {
       start_date: form.value.start_date || null,
       due_date: form.value.due_date || null,
       assignee_id: form.value.assignee_id,
-      story_points: form.value.story_points
+      story_points: form.value.story_points,
+      external_issue_url: form.value.external_issue_url || '',
+      external_issue_ref: form.value.external_issue_ref || '',
     }
     if (isNew.value) {
       await boardStore.createCard(props.card.column_id, payload)
@@ -1555,6 +1604,8 @@ function renderMarkdown(text) {
 
 .date-input-row { display: flex; align-items: center; gap: 6px; }
 .date-input-row .form-input { flex: 1; }
+
+.external-issue-row { display: flex; align-items: center; gap: 6px; }
 
 .picker-wrap {
   position: relative;

@@ -453,3 +453,8 @@ Create an application that has all these features and requirements
 - Fix sidebar indentation: "All Projects" and "All Customers" items now indent to the same level as starred/favourite items
 - Fix time-tracking weekly sheet in dark/black themes: replace all hardcoded light colours with CSS custom properties
 - Align time-tracking report columns across groups using table-layout: fixed and shared colgroup widths
+- Fix backup email HTML rendering: row background colours moved from <tr> to each <td>/<th> with background-color so alternating-row shading renders in all email clients
+- Git issue linking on cards: optional ExternalIssueURL and ExternalIssueRef fields on each card; reference auto-filled from URL path (/issues/, /pull/, /merge_requests/); toggled via card ⋮ sections menu
+- Group team chat: every user group has a linked Conversation (IsGroup=true) created on save; membership kept in sync; rename/avatar propagated; deletion cleans up conversation; one-time startup migration for existing groups
+- Sort card ⋮ sections menu options alphabetically by translated label
+- PDF font and language selects in Time Tracking: weekly sheet export bar and Report tab filter bar both show PDF Font and PDF Language dropdowns (same options as main Time Report); persisted in localStorage; passed to backend PDF generator

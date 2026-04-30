@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/database"
@@ -61,15 +62,25 @@ func AdminSetUserGroups(c *gin.Context) {
 		if !desired[m.GroupID] {
 			database.DB.Where("group_id = ? AND user_id = ?", m.GroupID, userID).
 				Delete(&models.GroupMember{})
+			var g models.UserGroup
+			if database.DB.First(&g, m.GroupID).Error == nil && g.ConversationID != nil {
+				database.DB.Where("conversation_id = ? AND user_id = ?", *g.ConversationID, userID).
+					Delete(&models.ConversationMember{})
+			}
 		}
 	}
 
 	for _, gid := range req.GroupIDs {
 		if !currentSet[gid] {
-			database.DB.Create(&models.GroupMember{
-				GroupID: gid,
-				UserID:  uint(userID),
-			})
+			database.DB.Create(&models.GroupMember{GroupID: gid, UserID: uint(userID)})
+			var g models.UserGroup
+			if database.DB.First(&g, gid).Error == nil && g.ConversationID != nil {
+				database.DB.FirstOrCreate(&models.ConversationMember{}, models.ConversationMember{
+					ConversationID: *g.ConversationID,
+					UserID:         uint(userID),
+					JoinedAt:       time.Now(),
+				})
+			}
 		}
 	}
 
