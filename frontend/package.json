@@ -34,7 +34,6 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@intlify/unplugin-vue-i18n": "^11.1.2",
     "@tauri-apps/cli": "^2.10.1",
     "@types/dompurify": "^3.0.5",
     "@types/sortablejs": "^1.15.8",

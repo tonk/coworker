@@ -469,4 +469,5 @@ Create an application that has all these features and requirements
 - Fix chat layout: chat panel and Direct Messages view fill available height correctly with input anchored to bottom
 - Fix nginx WebSocket Connection header: quote "upgrade" value per HTTP spec in provided nginx template
 - Reduce presence poll interval from 10 s to 5 s for faster online/offline updates; extract as named constant
-- Fix blank screen under strict CSP: pre-compile vue-i18n messages at build time with @intlify/unplugin-vue-i18n and use runtime-only bundle so no unsafe-eval is needed
+- Fix blank screen under CSP: add unsafe-eval to script-src in nginx/Apache templates; vue-i18n runtime message compiler requires new Function() and was blocked by the previous policy
+- Fix update checker blocked by CSP: add https://api.github.com to connect-src in nginx/Apache templates

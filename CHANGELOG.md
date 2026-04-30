@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.9.17 — 2026-04-30
+
+### Fixed
+- **Blank screen under CSP** — added `'unsafe-eval'` to `script-src` in the nginx and Apache templates; vue-i18n's runtime message compiler requires `new Function()` and was blocked by the previous policy, causing a hard crash on every page load
+- **Update checker blocked by CSP** — added `https://api.github.com` to `connect-src` so the in-app version check can reach the GitHub Releases API
+
 ## v0.9.16 — 2026-04-30
 
 ### Fixed
