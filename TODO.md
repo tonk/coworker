@@ -177,3 +177,7 @@
 - ~~In the "People" list, only show people that are a member of the
   customers that I am also a member of.~~ **Done — ListAllUsers filters by shared customer access (direct + group); admins and users without explicit customer access still see everyone**
 
+- ~~In the chat, place the time of the chat behind the username~~ **Done**
+
+- ~~In the chat, the response popup should only be shown when you click on
+  the message~~ **Done**

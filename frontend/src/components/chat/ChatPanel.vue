@@ -53,8 +53,7 @@
         <!-- Message row -->
         <div
           :class="['msg-row', { 'msg-own': msg.user_id === authUser?.id && !msg.is_bot }]"
-          @mouseenter="hoveredReactionMessageId = msg.id"
-          @mouseleave="onMessageHoverLeave(msg.id)"
+          @click="onMessageRowClick($event, msg)"
         >
 
           <div class="msg-avatar">
@@ -70,9 +69,25 @@
           </div>
 
           <div class="msg-content">
-            <div class="msg-sender" v-if="layout !== 'bubble' || msg.user_id !== authUser?.id || msg.is_bot">
-              {{ msg.is_bot ? msg.bot_name : (msg.user?.display_name || msg.user?.username) }}
+            <div
+              class="msg-sender"
+              v-if="layout !== 'bubble' || msg.user_id !== authUser?.id || msg.is_bot"
+            >
+              <span class="msg-sender-name">
+                {{ msg.is_bot ? msg.bot_name : (msg.user?.display_name || msg.user?.username) }}
+              </span>
               <span v-if="msg.is_bot" class="bot-badge">BOT</span>
+              <template v-if="editingId !== msg.id">
+                <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
+                <span v-if="msg.is_edited" class="msg-edited">· {{ $t('chat.edited') }}</span>
+              </template>
+            </div>
+            <div
+              class="msg-sender msg-sender--time-only"
+              v-else-if="editingId !== msg.id"
+            >
+              <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
+              <span v-if="msg.is_edited" class="msg-edited">· {{ $t('chat.edited') }}</span>
             </div>
 
             <!-- Edit mode -->
@@ -114,7 +129,7 @@
               <div
                 v-if="canUseHoverReactions(msg)"
                 class="msg-hover-actions"
-                :class="{ visible: isHoverReactionsVisible(msg.id) }"
+                :class="{ visible: isReactionBarVisible(msg.id) }"
               >
                 <button
                   v-for="emoji in quickReactionEmojis"
@@ -160,11 +175,11 @@
               />
             </template>
 
-            <div class="msg-meta">
-              <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
-              <span v-if="msg.is_edited" class="msg-edited">· {{ $t('chat.edited') }}</span>
+            <div
+              class="msg-meta"
+              v-if="msg.user_id === authUser?.id && !msg.is_deleted && !msg.is_bot && editingId !== msg.id"
+            >
               <button
-                v-if="msg.user_id === authUser?.id && !msg.is_deleted && !msg.is_bot && editingId !== msg.id"
                 class="msg-action-btn"
                 @click="startEdit(msg)"
                 title="Edit"
@@ -287,7 +302,8 @@ const { addProjectChatUnread, clearProjectChatUnread } = useProjectChatUnread()
 const chatToast = ref(null)
 let toastTimer = null
 const quickReactionEmojis = QUICK_REACTION_EMOJIS
-const hoveredReactionMessageId = ref(null)
+/** Message id for which the quick-reaction bar is shown (click-to-toggle, not hover). */
+const reactionBarMessageId = ref(null)
 const reactionPickerMessageId = ref(null)
 
 function showChatToast(msg) {
@@ -606,12 +622,12 @@ function canUseHoverReactions(msg) {
   return msg.user_id !== authUser.value?.id && !msg.is_deleted && !msg.is_bot
 }
 
-function isHoverReactionsVisible(messageId) {
-  return hoveredReactionMessageId.value === messageId || reactionPickerMessageId.value === messageId
+function isReactionBarVisible(messageId) {
+  return reactionBarMessageId.value === messageId || reactionPickerMessageId.value === messageId
 }
 
 function toggleReactionPicker(messageId) {
-  hoveredReactionMessageId.value = messageId
+  reactionBarMessageId.value = messageId
   reactionPickerMessageId.value = reactionPickerMessageId.value === messageId ? null : messageId
 }
 
@@ -620,8 +636,20 @@ async function onHoverReactionPick(msg, emoji) {
   reactionPickerMessageId.value = null
 }
 
-function onMessageHoverLeave(messageId) {
-  if (reactionPickerMessageId.value !== messageId) hoveredReactionMessageId.value = null
+function shouldIgnoreReactionBarToggleClick(e) {
+  const el = e.target
+  if (el.closest('.msg-hover-actions')) return true
+  if (el.closest('.reactions-wrap') || el.closest('.add-reaction-wrap')) return true
+  if (el.closest('.attachment-list')) return true
+  if (el.closest('a, button, textarea, input')) return true
+  return false
+}
+
+function onMessageRowClick(e, msg) {
+  if (!canUseHoverReactions(msg)) return
+  if (shouldIgnoreReactionBarToggleClick(e)) return
+  reactionBarMessageId.value =
+    reactionBarMessageId.value === msg.id ? null : msg.id
 }
 
 function autoResize(e) {
@@ -635,6 +663,10 @@ const { handleCardRefClick } = useCardRef()
 function onMessagesClick(e) {
   handleCardRefClick(e)
   clearProjectChatUnread()
+  if (!e.target.closest('.msg-row')) {
+    reactionBarMessageId.value = null
+    reactionPickerMessageId.value = null
+  }
 }
 
 function getAvatar(user) {
@@ -823,13 +855,27 @@ function dayLabel(dateStr) {
 
 .msg-sender {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--color-text-muted);
   margin-bottom: 3px;
   padding: 0 4px;
   display: flex;
-  align-items: center;
-  gap: 5px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.msg-sender-name {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.msg-sender--time-only {
+  justify-content: flex-end;
+}
+
+.msg-row:not(.msg-own) .msg-sender--time-only {
+  justify-content: flex-start;
 }
 
 .bot-badge {
@@ -997,8 +1043,9 @@ function dayLabel(dateStr) {
   gap: 4px;
   margin-top: 3px;
   padding: 0 4px;
+  min-height: 14px;
 }
-.msg-time { font-size: 10px; color: var(--color-text-muted); }
+.msg-time { font-size: 10px; color: var(--color-text-muted); font-weight: 400; }
 .msg-edited { font-size: 10px; font-style: italic; color: var(--color-text-muted); }
 .msg-action-btn {
   background: none;
@@ -1253,13 +1300,16 @@ function dayLabel(dateStr) {
 .layout-compact .msg-sender {
   order: 1;
   font-size: 12px;
-  font-weight: 700;
-  color: var(--color-text);
+  font-weight: 400;
   margin: 0;
   padding: 0;
   flex-shrink: 0;
 }
-.layout-compact .msg-sender::after { content: ':'; }
+.layout-compact .msg-sender-name {
+  font-weight: 700;
+  color: var(--color-text);
+}
+.layout-compact .msg-sender-name::after { content: ':'; }
 .layout-compact .msg-bubble {
   order: 2;
   background: transparent !important;
@@ -1270,14 +1320,7 @@ function dayLabel(dateStr) {
   font-size: 12px;
   max-width: none;
 }
-.layout-compact .msg-meta {
-  order: 0;
-  margin-top: 0;
-  padding: 0;
-  flex-shrink: 0;
-  min-width: 32px;
-}
-.layout-compact .msg-time { font-size: 10px; }
+.layout-compact .msg-sender .msg-time { font-size: 10px; }
 .layout-compact .msg-action-btn { display: none; }
 
 /* ── Cozy ────────────────────────────────────────────────── */

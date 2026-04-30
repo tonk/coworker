@@ -99,15 +99,11 @@
 
 <script setup>
 import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
 import { useCallSettings } from '@/composables/useCallSettings'
-import { useUIStore } from '@/stores/ui'
 
-const { t } = useI18n()
 const { state, toggleMute, toggleCamera, endCall, setRemoteStreamCallback, setLocalStreamCallback } = useWebRTCCall()
 const { audioOutputId } = useCallSettings()
-const ui = useUIStore()
 
 const remoteVideo = ref(null)
 const localVideo  = ref(null)
