@@ -21,9 +21,9 @@
 
       <main class="docs-content">
         <nav class="breadcrumb" aria-label="breadcrumb">
-          <a href="{{ "/" | relURL }}">Home</a>
+          <a href="{{ "/" | absURL }}">Home</a>
           <span class="breadcrumb-sep">/</span>
-          <a href="{{ "/docs/" | relURL }}">Docs</a>
+          <a href="{{ "/docs/" | absURL }}">Docs</a>
           <span class="breadcrumb-sep">/</span>
           <span>{{ .Title }}</span>
         </nav>
@@ -46,9 +46,9 @@
   <div class="site-content">
     <div class="content-wrap container--narrow" style="max-width:960px;margin:0 auto;padding:60px 24px;">
       <nav class="breadcrumb" aria-label="breadcrumb">
-        <a href="{{ "/" | relURL }}">Home</a>
+        <a href="{{ "/" | absURL }}">Home</a>
         <span class="breadcrumb-sep">/</span>
-        <a href="{{ "/blog/" | relURL }}">Blog</a>
+        <a href="{{ "/blog/" | absURL }}">Blog</a>
         <span class="breadcrumb-sep">/</span>
         <span>{{ .Title }}</span>
       </nav>

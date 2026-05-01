@@ -2,14 +2,14 @@
 <!-- ===================== HERO ===================== -->
 <section class="hero">
   <div class="hero-inner">
-    <img src="{{ "/images/logo-full.svg" | relURL }}"
+    <img src="{{ "/images/logo-full.svg" | absURL }}"
          class="hero-logo"
          alt="WarmDesk"
          onerror="this.style.display='none'">
     <h1>{{ site.Params.tagline | default "Own Your Workflow" }}</h1>
     <p class="lead">{{ site.Params.subtitle }}</p>
     <div class="hero-buttons">
-      <a href="{{ "/docs/install/" | relURL }}" class="btn btn-primary">
+      <a href="{{ "/docs/install/" | absURL }}" class="btn btn-primary">
         <i class="fa-solid fa-rocket"></i>&nbsp; Get Started
       </a>
       <a href="{{ site.Params.github }}" class="btn btn-outline" target="_blank" rel="noopener">
@@ -103,7 +103,7 @@
     <div class="screenshots-grid">
 
       <div class="screenshot-item">
-        <img src="{{ "/images/screenshots/02-dashboard.png" | relURL }}"
+        <img src="{{ "/images/screenshots/02-dashboard.png" | absURL }}"
              alt="Project dashboard"
              loading="lazy"
              onerror="this.closest('.screenshot-item').style.display='none'">
@@ -111,7 +111,7 @@
       </div>
 
       <div class="screenshot-item">
-        <img src="{{ "/images/screenshots/03-board.png" | relURL }}"
+        <img src="{{ "/images/screenshots/03-board.png" | absURL }}"
              alt="Kanban board"
              loading="lazy"
              onerror="this.closest('.screenshot-item').style.display='none'">
@@ -119,7 +119,7 @@
       </div>
 
       <div class="screenshot-item">
-        <img src="{{ "/images/screenshots/04-card-detail.png" | relURL }}"
+        <img src="{{ "/images/screenshots/04-card-detail.png" | absURL }}"
              alt="Card detail"
              loading="lazy"
              onerror="this.closest('.screenshot-item').style.display='none'">
@@ -127,7 +127,7 @@
       </div>
 
       <div class="screenshot-item">
-        <img src="{{ "/images/screenshots/06-messages.png" | relURL }}"
+        <img src="{{ "/images/screenshots/06-messages.png" | absURL }}"
              alt="Direct messages"
              loading="lazy"
              onerror="this.closest('.screenshot-item').style.display='none'">
@@ -135,7 +135,7 @@
       </div>
 
       <div class="screenshot-item">
-        <img src="{{ "/images/screenshots/07-report.png" | relURL }}"
+        <img src="{{ "/images/screenshots/07-report.png" | absURL }}"
              alt="Time report"
              loading="lazy"
              onerror="this.closest('.screenshot-item').style.display='none'">
@@ -143,7 +143,7 @@
       </div>
 
       <div class="screenshot-item">
-        <img src="{{ "/images/screenshots/08-admin-users.png" | relURL }}"
+        <img src="{{ "/images/screenshots/08-admin-users.png" | absURL }}"
              alt="Admin panel"
              loading="lazy"
              onerror="this.closest('.screenshot-item').style.display='none'">
@@ -179,7 +179,7 @@ EOF
 <span class="cmd">xdg-open</span> http://localhost:8080</pre>
 
     <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:8px;">
-      <a href="{{ "/docs/install/" | relURL }}" class="btn btn-primary">
+      <a href="{{ "/docs/install/" | absURL }}" class="btn btn-primary">
         Full installation guide
       </a>
       <a href="{{ site.Params.github }}/releases" class="btn btn-outline" target="_blank" rel="noopener">
@@ -232,8 +232,8 @@ EOF
       Read the installation guide, browse the blog, or explore the source code.
     </p>
     <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-      <a href="{{ "/docs/install/" | relURL }}" class="btn btn-primary">Get Started</a>
-      <a href="{{ "/blog/" | relURL }}" class="btn btn-ghost">Read the Blog</a>
+      <a href="{{ "/docs/install/" | absURL }}" class="btn btn-primary">Get Started</a>
+      <a href="{{ "/blog/" | absURL }}" class="btn btn-ghost">Read the Blog</a>
       <a href="{{ site.Params.github }}" class="btn btn-ghost" target="_blank" rel="noopener">
         <i class="fa-brands fa-github"></i>&nbsp; GitHub
       </a>
