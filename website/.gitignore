@@ -1,0 +1,5 @@
+public/
+resources/
+static/images/screenshots/
+static/images/logo-full.svg
+.hugo_build.lock

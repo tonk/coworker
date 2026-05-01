@@ -1,0 +1,321 @@
+---
+title: "Installation"
+description: "How to install and run WarmDesk on your own server"
+weight: 10
+---
+:icons: font
+:source-highlighter: highlight.js
+:toc: left
+:toc-title: Contents
+:toclevels: 3
+:sectanchors:
+
+== Requirements
+
+WarmDesk is a single statically-linked binary.
+No runtime dependencies are required on the host.
+
+[cols="1,2"]
+|===
+|OS | Linux, macOS, or Windows (x86-64 or ARM64)
+|RAM | 128 MB minimum (SQLite); 256 MB with PostgreSQL or MySQL
+|Disk | 50 MB for the binary, plus database and uploaded files
+|Network | Inbound HTTP/HTTPS on your chosen port; outbound SMTP (optional)
+|===
+
+== Quick start
+
+=== 1. Download
+
+Download the latest release archive for your platform from the
+https://github.com/tonk/warmdesk/releases[releases page].
+
+Linux releases are distributed as `.tar.gz` archives containing the server binary and the bundled web frontend.
+Extract the archive before running:
+
+[source,bash]
+----
+# Linux x86-64
+wget https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-v0.9.20-linux-amd64.tar.gz
+mkdir warmdesk && tar -xzf warmdesk-v0.9.20-linux-amd64.tar.gz -C warmdesk
+cd warmdesk
+
+# Linux ARM64
+wget https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-v0.9.20-linux-arm64.tar.gz
+mkdir warmdesk && tar -xzf warmdesk-v0.9.20-linux-arm64.tar.gz -C warmdesk
+cd warmdesk
+----
+
+NOTE: Replace `v0.9.20` with the actual version number from the releases page.
+
+Desktop installers for macOS (`.dmg`) and Linux (`.AppImage`) are listed in the link:#desktop-apps[Desktop apps] section.
+
+=== 2. Configure
+
+Create a minimal `warmdesk.yaml` in the same directory as the binary:
+
+[source,yaml]
+----
+port: 8080
+jwt_secret: replace-with-a-long-random-string   # REQUIRED — server refuses default value
+----
+
+See the full link:#configuration-reference[configuration reference] below.
+
+=== 3. Run
+
+[source,bash]
+----
+./warmdesk
+----
+
+On first start, WarmDesk creates `warmdesk.db` (SQLite) in the current directory and starts listening on port 8080.
+Open `http://localhost:8080` in your browser and register the first user.
+
+TIP: Promote the first user to admin by running `UPDATE users SET global_role='admin' WHERE id=1;` in the SQLite shell, or via another admin account once the first admin exists.
+
+== Build from source
+
+[source,bash]
+----
+git clone https://github.com/tonk/warmdesk.git
+cd warmdesk
+
+# Build frontend + backend into dist/
+make build
+
+# Run from the build output
+cd dist
+WEB_DIR=./web JWT_SECRET=your-secret ./warmdesk
+----
+
+Requires Go 1.21+ and Node.js 20+.
+
+== Configuration reference
+
+Configuration is loaded in priority order:
+
+. CLI flag: `--config /path/to/file.yaml`
+. `CONFIG_FILE` environment variable
+. `warmdesk.yaml` in the current directory
+. Built-in defaults
+
+Every YAML key has a matching environment variable override (e.g. `port` → `PORT`).
+
+[cols="1,1,1,2", options="header"]
+|===
+|Key |Env var |Default |Description
+
+|`port`
+|`PORT`
+|`8080`
+|HTTP port to listen on
+
+|`jwt_secret`
+|`JWT_SECRET`
+|_(none — required)_
+|HS256 signing secret; server refuses to start at default value
+
+|`db_driver`
+|`DB_DRIVER`
+|`sqlite`
+|`sqlite`, `postgres`, or `mysql`
+
+|`db_dsn`
+|`DB_DSN`
+|`./warmdesk.db`
+|Database connection string
+
+|`web_dir`
+|`WEB_DIR`
+|`dist/web`
+|Path to the compiled frontend
+
+|`upload_dir`
+|`UPLOAD_DIR`
+|`./uploads`
+|Directory for uploaded files
+
+|`max_upload_mb`
+|`MAX_UPLOAD_MB`
+|`25`
+|Maximum file upload size in MB
+
+|`redis_url`
+|`REDIS_URL`
+|_(optional)_
+|Redis connection URL for multi-instance WebSocket pub/sub
+
+|`allowed_origins`
+|`ALLOWED_ORIGINS`
+|`http://localhost:5173`
+|CORS allowed origins; `*` is blocked in release mode
+
+|`gin_mode`
+|`GIN_MODE`
+|`release`
+|Set to `debug` for development verbose output
+
+|`db_tls_mode`
+|`DB_TLS_MODE`
+|`disable`
+|TLS mode for remote PostgreSQL/MySQL: `disable`, `require`, `verify-full`
+|===
+
+IMPORTANT: Set `db_tls_mode: verify-full` for any remote database. Without TLS, credentials travel in plaintext.
+
+== Database setup
+
+=== SQLite (default)
+
+No setup required. The database file is created automatically on first run.
+
+=== PostgreSQL
+
+[source,bash]
+----
+# Create database and user
+psql -U postgres -c "CREATE USER warmdesk WITH PASSWORD 'secret';"
+psql -U postgres -c "CREATE DATABASE warmdesk OWNER warmdesk;"
+----
+
+[source,yaml]
+----
+# warmdesk.yaml
+db_driver: postgres
+db_dsn: host=localhost user=warmdesk password=secret dbname=warmdesk sslmode=disable
+----
+
+=== MySQL / MariaDB
+
+[source,bash]
+----
+mysql -u root -e "CREATE DATABASE warmdesk CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -e "CREATE USER 'warmdesk'@'%' IDENTIFIED BY 'secret';"
+mysql -u root -e "GRANT ALL ON warmdesk.* TO 'warmdesk'@'%';"
+----
+
+[source,yaml]
+----
+# warmdesk.yaml
+db_driver: mysql
+db_dsn: warmdesk:secret@tcp(localhost:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local
+----
+
+== Running as a service (systemd)
+
+A ready-made systemd unit is included in `deploy/warmdesk.service`.
+
+[source,bash]
+----
+# Copy binary, web frontend, and config
+sudo cp -r warmdesk/ /opt/warmdesk/
+sudo cp warmdesk.yaml /opt/warmdesk/
+
+# Install and enable the service
+sudo cp deploy/warmdesk.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now warmdesk
+
+sudo journalctl -u warmdesk -f   # follow logs
+----
+
+== Reverse proxy (nginx)
+
+The `deploy/nginx.conf` template configures nginx as a TLS-terminating reverse proxy.
+
+[source,nginx]
+----
+server {
+    listen 443 ssl http2;
+    server_name warmdesk.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/warmdesk.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/warmdesk.example.com/privkey.pem;
+
+    location / {
+        proxy_pass         http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection "upgrade";
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+    }
+}
+----
+
+`proxy_http_version 1.1` and the `Upgrade`/`Connection` headers are required for WebSocket to work through the proxy.
+
+== Desktop apps
+
+Pre-built Tauri 2 desktop apps are available on the
+https://github.com/tonk/warmdesk/releases[releases page]:
+
+* `warmdesk-linux-amd64.AppImage` — Linux (no install required)
+* `warmdesk-mac-universal.dmg` — macOS (Intel + Apple Silicon)
+* `warmdesk-windows-installer.exe` — Windows NSIS installer
+
+The desktop app wraps the same Vue 3 frontend.
+On launch it prompts for the server URL and stores credentials in `sessionStorage`.
+
+== Horizontal scaling
+
+To run multiple instances behind a load balancer:
+
+[source,yaml]
+----
+redis_url: redis://redis-host:6379/0
+db_driver: postgres
+db_dsn: host=pg-primary user=warmdesk ...
+----
+
+All instances must share the same database and Redis instance.
+WebSocket broadcasts and rate-limiter state are routed through Redis so every instance sees every event.
+
+NOTE: The in-process rate limiter does not yet have a Redis backend. For strict rate limiting across multiple instances, place a WAF or rate-limiting proxy in front.
+
+== Demo data seeder
+
+WarmDesk ships with a `warmdesk-seed` binary that populates a fresh database with sample projects, boards, cards, users, and time entries.
+It is included in the release `.tar.gz` alongside the main binary — no compilation required.
+
+WARNING: The seeder creates fictitious data in the database it connects to. Never run it against a production instance.
+
+=== Running the seeder
+
+[source,bash]
+----
+# Extract the release archive (if not already done)
+tar -xzf warmdesk-v0.9.20-linux-amd64.tar.gz -C warmdesk
+cd warmdesk
+
+# Seed the default SQLite database in the current directory
+./warmdesk-seed
+
+# Seed a specific database via environment variables
+DB_DRIVER=postgres \
+  DB_DSN="host=localhost user=warmdesk password=secret dbname=warmdesk_demo sslmode=disable" \
+  ./warmdesk-seed
+----
+
+After seeding, start the server normally.
+The seeder prints the credentials of the created demo accounts to stdout.
+
+=== What the seeder creates
+
+* Several sample projects (Kanban and Scrum) with columns and cards
+* Cards with descriptions, checklists, labels, assignees, and comments
+* A set of demo users with different global roles
+* Sample time entries spread across the past few weeks
+* Example customers and contracts
+
+== Security checklist
+
+* [ ] `jwt_secret` is a long random string (not the default)
+* [ ] `gin_mode` is `release` in production
+* [ ] `allowed_origins` lists only your actual domain(s)
+* [ ] `db_tls_mode: verify-full` is set for remote databases
+* [ ] TLS is terminated at the reverse proxy (nginx / Apache / Caddy)
+* [ ] Firewall blocks direct access to port 8080 from the internet
+* [ ] `upload_dir` is outside the web root
+* [ ] Backups are scheduled and tested

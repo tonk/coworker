@@ -1,0 +1,332 @@
+---
+title: "API Reference"
+description: "REST API, Ticket API, webhooks, Prometheus, and Swagger UI"
+weight: 40
+---
+:icons: font
+:source-highlighter: highlight.js
+:toc: left
+:toc-title: Contents
+:toclevels: 3
+:sectanchors:
+
+== Interactive API (Swagger UI)
+
+WarmDesk ships with a full Swagger UI at:
+
+----
+http://<your-server>:8080/swagger/index.html
+----
+
+The interactive documentation lists every endpoint, shows request/response schemas, and lets you try requests directly from the browser.
+Enter a valid JWT Bearer token via the *Authorize* button to authenticate requests.
+
+== Authentication
+
+=== JWT (user sessions)
+
+Obtain an access token:
+
+[source,bash]
+----
+curl -s -X POST https://warmdesk.example.com/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"hunter2"}' \
+  | jq .access_token
+----
+
+Use the token in subsequent requests:
+
+[source,bash]
+----
+curl -H "Authorization: Bearer <token>" \
+     https://warmdesk.example.com/api/v1/projects
+----
+
+* Access tokens expire after *15 minutes*
+* The frontend silently refreshes using the 7-day refresh token
+* A 401 response from the API signals an expired token
+
+=== API keys
+
+API keys authenticate CI/CD pipelines and automation scripts.
+Create a personal API key in *Settings → API Keys*.
+
+Use the key with either:
+
+* Header: `X-API-Key: <key>`
+* Query parameter: `?api_key=<key>`
+
+[source,bash]
+----
+curl -H "X-API-Key: wd_abc123..." \
+     https://warmdesk.example.com/api/v1/projects
+----
+
+API keys carry the same project permissions as the user who created them.
+Keys with the `backup` global role can trigger backups without a full admin account.
+
+== REST API overview
+
+All endpoints are nested under `/api/v1/`.
+
+=== Authentication endpoints
+
+[source]
+----
+POST /api/v1/auth/login           # obtain access + refresh token
+POST /api/v1/auth/refresh         # exchange refresh token for new access token
+POST /api/v1/auth/logout          # invalidate refresh token
+POST /api/v1/auth/register        # register a new user
+POST /api/v1/auth/forgot-password # request a password reset email
+POST /api/v1/auth/reset-password  # complete password reset
+----
+
+=== Projects
+
+[source]
+----
+GET    /api/v1/projects                      # list accessible projects
+POST   /api/v1/projects                      # create project
+GET    /api/v1/projects/:slug                # get project detail
+PUT    /api/v1/projects/:slug                # update project
+DELETE /api/v1/projects/:slug                # archive project
+----
+
+=== Columns
+
+[source]
+----
+GET    /api/v1/projects/:slug/columns         # list columns
+POST   /api/v1/projects/:slug/columns         # create column
+PUT    /api/v1/projects/:slug/columns/:id     # update column
+DELETE /api/v1/projects/:slug/columns/:id     # delete column
+PATCH  /api/v1/projects/:slug/columns/reorder # reorder columns
+----
+
+=== Cards
+
+[source]
+----
+GET    /api/v1/projects/:slug/columns/:colId/cards   # list cards in column
+POST   /api/v1/projects/:slug/columns/:colId/cards   # create card
+GET    /api/v1/projects/:slug/cards/:cardId          # get card detail
+PUT    /api/v1/projects/:slug/cards/:cardId          # update card
+DELETE /api/v1/projects/:slug/cards/:cardId          # soft-delete card
+PATCH  /api/v1/projects/:slug/cards/:cardId/move     # move to another column
+PATCH  /api/v1/projects/:slug/cards/:cardId/reorder  # reorder within column
+----
+
+=== Card sub-resources
+
+[source]
+----
+GET  /api/v1/projects/:slug/cards/:cardId/comments   # list comments
+POST /api/v1/projects/:slug/cards/:cardId/comments   # add comment (+ time log)
+PUT  /api/v1/projects/:slug/cards/:cardId/comments/:id
+DELETE /api/v1/projects/:slug/cards/:cardId/comments/:id
+
+GET  /api/v1/projects/:slug/cards/:cardId/checklist
+POST /api/v1/projects/:slug/cards/:cardId/checklist
+PUT  /api/v1/projects/:slug/cards/:cardId/checklist/:id
+DELETE /api/v1/projects/:slug/cards/:cardId/checklist/:id
+
+POST /api/v1/projects/:slug/cards/:cardId/attachments
+DELETE /api/v1/projects/:slug/cards/:cardId/attachments/:id
+
+GET  /api/v1/projects/:slug/cards/:cardId/links      # git links
+POST /api/v1/projects/:slug/cards/:cardId/links
+----
+
+=== Chat
+
+[source]
+----
+GET  /api/v1/projects/:slug/chat/messages   # paginated message history
+POST /api/v1/projects/:slug/chat/messages   # send message
+PUT  /api/v1/projects/:slug/chat/messages/:id
+DELETE /api/v1/projects/:slug/chat/messages/:id
+POST /api/v1/projects/:slug/chat/messages/:id/reactions  # add reaction
+----
+
+=== Direct messages
+
+[source]
+----
+GET  /api/v1/conversations                   # list DM conversations
+POST /api/v1/conversations                   # create DM or group chat
+GET  /api/v1/conversations/:id/messages
+POST /api/v1/conversations/:id/messages
+----
+
+=== Topics
+
+[source]
+----
+GET    /api/v1/projects/:slug/topics
+POST   /api/v1/projects/:slug/topics
+GET    /api/v1/projects/:slug/topics/:id
+PUT    /api/v1/projects/:slug/topics/:id
+DELETE /api/v1/projects/:slug/topics/:id
+POST   /api/v1/projects/:slug/topics/:id/replies
+----
+
+=== Time and reports
+
+[source]
+----
+GET  /api/v1/reports/time          # aggregate time report
+GET  /api/v1/reports/timesheet     # weekly time sheet for the current user
+POST /api/v1/time-entries          # log a time entry
+PUT  /api/v1/time-entries/:id
+DELETE /api/v1/time-entries/:id
+----
+
+=== Users and admin
+
+[source]
+----
+GET  /api/v1/users/me              # current user profile
+PUT  /api/v1/users/me              # update profile
+GET  /api/v1/users                 # list all users (admin)
+POST /api/v1/users                 # create user (admin)
+PUT  /api/v1/users/:id             # update user (admin)
+
+GET  /api/v1/admin/system-settings
+PUT  /api/v1/admin/system-settings
+POST /api/v1/admin/backup
+POST /api/v1/admin/restore
+----
+
+== Ticket API
+
+The Ticket API is designed for CI/CD automation.
+It uses `X-API-Key` authentication and provides stable, simple operations.
+
+=== Create a card
+
+[source,bash]
+----
+curl -X POST \
+  -H "X-API-Key: wd_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Security scan found CVE-2026-1234",
+    "description": "**Severity:** High\n\nFound in dependency `foo@1.2.3`.",
+    "priority": "high",
+    "column_name": "Backlog"
+  }' \
+  "https://warmdesk.example.com/api/v1/projects/myproject/ticket"
+----
+
+=== Add a comment / move a card
+
+[source,bash]
+----
+# Move card to 'Done' and add a comment
+curl -X PATCH \
+  -H "X-API-Key: wd_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "column_name": "Done",
+    "comment": "Deployment to production succeeded. Build #4242."
+  }' \
+  "https://warmdesk.example.com/api/v1/projects/myproject/ticket/MYPROJ-99"
+----
+
+== Webhooks
+
+=== Generic webhook (chat notifications)
+
+Post any JSON payload to push a message to a project's chat channel:
+
+[source,bash]
+----
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Deployment to staging succeeded 🚀","username":"CI"}' \
+  "https://warmdesk.example.com/api/v1/webhooks/<token>"
+----
+
+The token is generated in *Project Settings → Webhooks*.
+
+=== Git platform webhooks
+
+Register an endpoint in your git host's project settings to link commits and pull requests to cards.
+Card references in commit messages and PR titles (`PROJ-42`) are parsed automatically.
+
+[source]
+----
+POST /api/v1/github-webhook/:token    # GitHub push, PR, issue events
+POST /api/v1/gitlab-webhook/:token    # GitLab push, MR, issue events
+POST /api/v1/gitea-webhook/:token     # Gitea / Forgejo push, PR, issue events
+----
+
+== Response format
+
+All success responses return JSON.
+All error responses use a consistent shape:
+
+[source,json]
+----
+{ "error": "human readable message" }
+----
+
+HTTP status codes follow standard conventions:
+
+[cols="1,2"]
+|===
+|200 |OK — resource returned or updated
+|201 |Created — resource created; `id` in response
+|204 |No Content — successful delete
+|400 |Bad Request — validation error
+|401 |Unauthorized — missing or expired token
+|403 |Forbidden — insufficient role
+|404 |Not Found — resource does not exist or is not accessible
+|422 |Unprocessable Entity — semantic validation error
+|500 |Internal Server Error — server-side bug
+|===
+
+== WebSocket
+
+=== Project WebSocket
+
+[source]
+----
+wss://warmdesk.example.com/api/v1/ws/:projectSlug?token=<jwt>
+----
+
+Messages are JSON objects `{"type": "...", "payload": {...}}`.
+
+Common event types:
+
+[cols="1,2"]
+|===
+|`board.card_created` | A card was created in the project
+|`board.card_updated` | A card field was changed
+|`board.card_moved`   | A card was moved to another column
+|`board.card_deleted` | A card was soft-deleted
+|`chat.message`       | A new chat message was posted
+|`topic.created`      | A new topic was created
+|`presence.join`      | A user opened the project
+|`presence.leave`     | A user left the project
+|===
+
+=== User WebSocket
+
+[source]
+----
+wss://warmdesk.example.com/api/v1/ws/user?token=<jwt>
+----
+
+Delivers user-level events: DM messages, @mentions, and card notifications.
+
+== Prometheus metrics
+
+[source]
+----
+GET /api/v1/metrics
+----
+
+Requires `Authorization: Bearer <token>` with the `metrics` or `admin` global role.
+Returns standard Prometheus text format.

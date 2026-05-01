@@ -1,0 +1,277 @@
+---
+title: "Administrator Guide"
+description: "Installing, configuring, and operating WarmDesk as an administrator"
+weight: 30
+---
+:icons: font
+:source-highlighter: highlight.js
+:toc: left
+:toc-title: Contents
+:toclevels: 3
+:sectanchors:
+
+See the link:/docs/install/[Installation Guide] for binary download, database setup, systemd, and reverse proxy instructions.
+This guide focuses on configuration and day-to-day administration.
+
+== First admin account
+
+After the first user registers, promote them to admin:
+
+[source,bash]
+----
+# SQLite
+sqlite3 warmdesk.db "UPDATE users SET global_role='admin' WHERE id=1;"
+
+# PostgreSQL
+psql -U warmdesk -c "UPDATE users SET global_role='admin' WHERE id=1;"
+----
+
+Restart the server (not strictly required, but good practice).
+Future admin accounts can be promoted from the admin panel.
+
+== Global roles
+
+[cols="1,3", options="header"]
+|===
+|Role |Capabilities
+
+|`admin`
+|Full access to all projects, customers, users, and system settings
+
+|`user`
+|Can create projects, manage their own projects, access assigned resources
+
+|`viewer`
+|Read-only access to assigned projects and customers
+
+|`metrics`
+|Read-only access to the Prometheus `/api/v1/metrics` endpoint
+
+|`backup`
+|Can trigger and download backups via the API
+|===
+
+Within each project, users have a *project role* (owner, member, viewer) that is independent of their global role.
+Admin users bypass all project-level checks.
+
+== Admin panel
+
+Access the admin panel from the sidebar (admin users only).
+It contains:
+
+=== Users tab
+
+* Create new user accounts (for when self-registration is disabled)
+* Edit name, email, and global role
+* Deactivate or reactivate accounts
+* Reset a user's MFA (TOTP)
+* View last login time and last password change
+
+=== Groups tab
+
+Define *user groups* and assign them to projects and customers.
+Assigning a group to a project gives all group members the specified project role.
+This is useful for onboarding an entire team at once.
+
+=== Projects tab
+
+* View all projects, including archived ones
+* Archive, restore, or permanently delete projects
+* Change project ownership
+
+=== System settings tab
+
+See the link:#system-settings[System Settings] section below.
+
+== System settings
+
+System settings are stored as key/value rows in the database and take effect immediately without a restart.
+Configure them from *Admin → System Settings*.
+
+=== SMTP (email)
+
+[cols="1,2", options="header"]
+|===
+|Setting |Description
+
+|SMTP host
+|Mail server hostname
+
+|SMTP port
+|Usually 587 (STARTTLS) or 465 (TLS)
+
+|SMTP username / password
+|Mail server credentials
+
+|From address
+|`From:` header on all outgoing mail
+
+|TLS mode
+|`none`, `starttls`, or `ssl`
+|===
+
+Test the SMTP configuration with the *Send test email* button.
+
+=== Registration and sessions
+
+* *Allow public registration* — enable or disable self-registration on the login page
+* *Session timeout* — idle minutes before a user is logged out (0 = no timeout)
+* *Password max age* — days before a password expires (0 = never); users with expired passwords are redirected to Settings on login
+
+=== Branding
+
+* *Company name* — shown in the page title and emails
+* *Company logo* — PNG/SVG displayed on the login page and in the header
+
+=== Locale defaults
+
+Default language, date format, and timezone for new users.
+Users can override these in their own settings.
+
+== Password policy
+
+[cols="1,2", options="header"]
+|===
+|Setting |Description
+
+|Minimum length
+|Default: 8 characters
+
+|Max age (days)
+|Days before password expires; 0 disables expiry
+
+|Bcrypt cost
+|Fixed at 12 (compile-time constant; change requires a rebuild)
+|===
+
+== SMTP troubleshooting
+
+* Verify host, port, credentials, and TLS mode in System Settings
+* Use the *Send test email* button to confirm delivery
+* Check firewall rules for outbound port 587/465
+* If using Gmail, create an App Password (regular passwords are blocked)
+
+== Backup and recovery
+
+=== Via the admin panel
+
+Go to *Admin → Backup*.
+Click *Create backup* to generate a ZIP containing the database dump and uploaded files.
+Download the ZIP for off-site storage.
+To restore, upload the ZIP and click *Restore*.
+
+WARNING: Restoring from backup replaces all current data. Take a fresh backup before restoring.
+
+=== Via the API (automation)
+
+Use a personal API key with the `backup` role:
+
+[source,bash]
+----
+# Create a backup and download it
+curl -H "X-API-Key: your-key" \
+     https://warmdesk.example.com/api/v1/admin/backup \
+     -o backup-$(date +%Y%m%d).zip
+----
+
+Schedule with cron for automated nightly backups.
+
+=== SQLite — manual backup
+
+[source,bash]
+----
+# Safe hot backup using SQLite's backup API
+sqlite3 warmdesk.db ".backup /backup/warmdesk-$(date +%Y%m%d).db"
+----
+
+== Security hardening
+
+=== Startup safety checks
+
+WarmDesk refuses to start if:
+
+* `jwt_secret` is still the default value `change-me-in-production`
+* `gin_mode` is `release` and `allowed_origins` contains `*`
+
+=== Security checklist
+
+* [ ] `jwt_secret` is a long random string
+* [ ] `gin_mode: release` in production
+* [ ] `allowed_origins` lists only your actual domain(s)
+* [ ] `db_tls_mode: verify-full` for remote databases
+* [ ] TLS terminated at the reverse proxy
+* [ ] Port 8080 not exposed to the internet (firewall)
+* [ ] `upload_dir` is outside the web root
+* [ ] Backups are scheduled and regularly tested
+* [ ] MFA enforced for admin accounts
+* [ ] Asciidoctor `safeMode` set to `unsafe` only in trusted deployments
+
+=== Known limitations
+
+* The in-process rate limiter is per-instance. In a multi-instance deployment, each instance has its own counter — a distributed brute-force attack can bypass the limit. Use a WAF or rate-limiting proxy for multi-instance deployments.
+* In the desktop (Tauri) app, JWT tokens are stored in `sessionStorage` (accessible to JavaScript). A proper fix requires routing API calls through the Rust layer — not yet implemented.
+
+== Horizontal scaling
+
+Run multiple WarmDesk instances behind a load balancer:
+
+[source,yaml]
+----
+redis_url: redis://redis-host:6379/0
+db_driver: postgres
+db_dsn: host=pg-primary user=warmdesk password=secret dbname=warmdesk sslmode=require
+----
+
+Requirements:
+
+* All instances share the same PostgreSQL or MySQL database
+* Redis is required for WebSocket pub/sub across instances
+* Sticky sessions are *not* required — WebSocket connections are handled per-instance and bridged via Redis
+
+== Ansible deployment
+
+An Ansible collection is available on Ansible Galaxy:
+
+[source,bash]
+----
+ansible-galaxy collection install ansilabnl.warmdesk
+----
+
+The collection installs the binary, creates a systemd unit, and configures nginx.
+See the collection README for variables and an example playbook.
+
+== Updating
+
+. Download the new binary
+. Stop the service: `systemctl stop warmdesk`
+. Replace the binary
+. Start the service: `systemctl start warmdesk`
+
+Schema migrations run automatically on startup via GORM AutoMigrate.
+No manual SQL migration steps are needed.
+
+== Demo data
+
+A script in the repository populates the database with sample projects, cards, and users for demonstration purposes:
+
+[source,bash]
+----
+cd backend
+go run scripts/demo_data.go
+----
+
+== Prometheus metrics
+
+`GET /api/v1/metrics` exposes a standard Prometheus scrape endpoint.
+Accessible to users with the `metrics` or `admin` global role.
+
+[source,yaml]
+----
+# prometheus.yml snippet
+scrape_configs:
+  - job_name: warmdesk
+    bearer_token: your-metrics-api-key
+    static_configs:
+      - targets: ['warmdesk.example.com:443']
+    scheme: https
+----

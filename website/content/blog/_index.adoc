@@ -1,0 +1,4 @@
+---
+title: "Blog"
+description: "Development notes, guides, and announcements about WarmDesk"
+---

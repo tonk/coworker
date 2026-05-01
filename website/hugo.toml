@@ -1,0 +1,69 @@
+baseURL = "https://tonk.github.io/warmdesk/"
+languageCode = "en-us"
+title = "WarmDesk"
+theme = "warmdesk"
+enableRobotsTXT = true
+enableEmoji = true
+
+[params]
+  description = "Self-hosted project management for modern teams"
+  author = "Ton Kersten"
+  github = "https://github.com/tonk/warmdesk"
+  email = "tonk@smartowl.nl"
+  tagline = "Own Your Workflow"
+  subtitle = "A single Go binary covering Kanban boards, Scrum sprints, team chat, customer management, time tracking, and Git integration — owned and operated by you."
+
+[markup]
+  [markup.asciidocext]
+    backend = "html5"
+    extensions = []
+    failureLevel = "fatal"
+    noHeaderOrFooter = true
+    preserveTOC = false
+    safeMode = "unsafe"
+    sectionNumbers = false
+    trace = false
+    verbose = false
+    workingFolderCurrent = false
+    [markup.asciidocext.attributes]
+      "icons" = "font"
+      "source-highlighter" = "highlight.js"
+      "imagesdir" = "/images"
+      "sectanchors" = ""
+      "sectlinks" = ""
+
+  [markup.highlight]
+    style = "github-dark"
+    noClasses = true
+
+[security]
+  [security.exec]
+    allow = ['^(dart-)?sass(-embedded)?$', '^go$', '^git$', '^npx$', '^postcss$', '^tailwindcss$', '^asciidoctor$']
+
+[[menus.main]]
+  name = "Features"
+  url = "/#features"
+  weight = 10
+
+[[menus.main]]
+  name = "Screenshots"
+  url = "/#screenshots"
+  weight = 20
+
+[[menus.main]]
+  name = "Docs"
+  url = "/docs/"
+  weight = 30
+
+[[menus.main]]
+  name = "Blog"
+  url = "/blog/"
+  weight = 40
+
+[[menus.main]]
+  name = "GitHub"
+  url = "https://github.com/tonk/warmdesk"
+  weight = 50
+  [menus.main.params]
+    external = true
+    icon = "github"
