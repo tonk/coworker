@@ -1,6 +1,6 @@
 # WarmDesk — Developer Guide for Claude
 
-WarmDesk is a self-hosted project management tool (Kanban boards, team chat, discussions, time reporting). It has a Go backend and a Vue 3 frontend; both live in this repository. A Tauri wrapper produces native desktop apps from the same frontend code.
+WarmDesk is a self-hosted project management tool (Kanban boards, team chat with one-to-one voice & video, discussions, time reporting). It has a Go backend and a Vue 3 frontend; both live in this repository. A Tauri wrapper produces native desktop apps from the same frontend code.
 
 ---
 

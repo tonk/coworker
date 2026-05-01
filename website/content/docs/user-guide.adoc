@@ -162,7 +162,10 @@ Start a 1-on-1 conversation from any user's profile.
 Create a *group chat* by selecting multiple users (or an entire project team).
 Group chats support a custom avatar and member management (add / remove participants).
 
-=== Chat features
+=== Voice and video calls
+
+From a *one-on-one direct message* thread you can start an audio or video call with the other participant (WebRTC peer-to-peer).
+*Group* voice or video calls are not available yet but are planned for a future release.
 
 * *Markdown* formatting in messages
 * *File attachments* — images shown inline, other files as links

@@ -5,6 +5,7 @@ author: "Ton Kersten"
 description: "A deep dive into WarmDesk — what it is, why it exists, and how it was built almost entirely with AI assistance."
 draft: false
 ---
+:imagesdir: ../../images
 :doctype: article
 :toc: left
 :toc-title: Contents
@@ -16,7 +17,7 @@ draft: false
 
 Modern software teams produce a constant stream of tasks, conversations, customer commitments, and billable hours.
 Most commercial tools that manage all of this run in somebody else's cloud, lock data inside proprietary formats, and charge per seat.
-WarmDesk is a self-hosted alternative: a single binary that covers Kanban boards, Scrum sprints, team chat, discussion threads, customer contracts, and time tracking — owned and operated by you.
+WarmDesk is a self-hosted alternative: a single binary that covers Kanban boards, Scrum sprints, team chat (including one-to-one voice & video), discussion threads, customer contracts, and time tracking — owned and operated by you.
 
 == What is WarmDesk?
 
@@ -68,7 +69,9 @@ image::screenshots/02-dashboard.png[Project dashboard, 900]
 Columns support *WIP limits* — a visual warning appears when a column holds more cards than the configured maximum.
 The column ordering is adjusted by dragging; card ordering inside a column is likewise drag-and-drop, persisted immediately through the API.
 
-image::screenshots/03-board.png[Kanban board, 900]
+image::screenshots/03-board.png[Board view with drag-and-drop and optional WIP limits,900]
+
+==== Scrum backlog and sprints
 
 For Scrum projects a sidebar sprint panel lets you create sprints, drag backlog cards into them, and start or complete a sprint with a click.
 Completed sprints are retained for historical reference; incomplete cards are returned to the backlog.
@@ -108,6 +111,8 @@ Members send Markdown-formatted messages, attach files, react with emoji, and @m
 
 Cross-project *direct messaging* is fully supported: start a 1-on-1 conversation with any user, or create a named group chat by selecting multiple participants.
 Group chats support a custom avatar, member management, and five chat layout options — bubble, comfortable, compact, cozy, and grouped (Discord-style).
+
+One-on-one *voice & video calls* are available directly from a direct message conversation (WebRTC peer-to-peer); group voice or video calls are planned for the future.
 
 image::screenshots/06-messages.png[Direct messages, 900]
 
@@ -244,7 +249,7 @@ Each instance runs an independent WebSocket hub; Redis pub/sub bridges them so t
 
 == Summary
 
-WarmDesk brings together the features a small-to-medium engineering team actually needs — Kanban and Scrum boards, real-time chat, customer management, time tracking, and Git integration — in a package that fits on a single server, scales horizontally when traffic grows, and keeps every byte of project data under your own control.
+WarmDesk brings together the features a small-to-medium engineering team actually needs — Kanban and Scrum boards, real-time chat (including one-to-one voice & video), customer management, time tracking, and Git integration — in a package that fits on a single server, scales horizontally when traffic grows, and keeps every byte of project data under your own control.
 
 Its architecture is deliberately boring: a Go binary, a Vue SPA, a database.
 No external services required out of the box, no per-seat pricing, no vendor lock-in.

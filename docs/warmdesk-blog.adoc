@@ -67,8 +67,10 @@ image::../screenshots/02-dashboard.png[Project dashboard, 900]
 Columns support *WIP limits* — a visual warning appears when a column holds more cards than the configured maximum.
 The column ordering is adjusted by dragging; card ordering inside a column is likewise drag-and-drop, persisted immediately through the API.
 
-.Kanban board with drag-and-drop, WIP limit indicators, and a card open in the detail panel
-image::../screenshots/03-board.png[Kanban board, 900]
+.Board view — drag-and-drop, optional WIP limits
+image::../screenshots/03-board.png[Board view — drag-and-drop, optional WIP limits, 900]
+
+==== Scrum backlog and sprints
 
 For Scrum projects a sidebar sprint panel lets you create sprints, drag backlog cards into them, and start or complete a sprint with a click.
 Completed sprints are retained for historical reference; incomplete cards are returned to the backlog.
