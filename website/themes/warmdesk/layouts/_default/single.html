@@ -1,0 +1,84 @@
+{{- define "main" }}
+{{- $isDoc  := eq .Section "docs" }}
+{{- $isBlog := eq .Section "blog" }}
+
+{{- if $isDoc }}
+  <!-- Docs page: sidebar + content -->
+  <div class="site-content">
+    <div class="docs-layout container">
+      <aside class="docs-sidebar">
+        <p class="docs-sidebar-title">Documentation</p>
+        <ul class="docs-nav">
+          {{- range .Site.Pages }}
+            {{- if and (eq .Section "docs") (not .IsSection) (not .IsHome) }}
+              <li>
+                <a href="{{ .Permalink }}">{{ .Title }}</a>
+              </li>
+            {{- end }}
+          {{- end }}
+        </ul>
+      </aside>
+
+      <main class="docs-content">
+        <nav class="breadcrumb" aria-label="breadcrumb">
+          <a href="{{ "/" | relURL }}">Home</a>
+          <span class="breadcrumb-sep">/</span>
+          <a href="{{ "/docs/" | relURL }}">Docs</a>
+          <span class="breadcrumb-sep">/</span>
+          <span>{{ .Title }}</span>
+        </nav>
+
+        <h1 class="page-title">{{ .Title }}</h1>
+        {{- with .Description }}
+          <p class="text-muted" style="font-size:1.05rem;color:var(--color-text-muted);margin:-8px 0 32px;">{{ . }}</p>
+        {{- end }}
+        <hr class="article-divider">
+
+        <article class="adoc-content">
+          {{- .Content }}
+        </article>
+      </main>
+    </div>
+  </div>
+
+{{- else if $isBlog }}
+  <!-- Blog post: centered article -->
+  <div class="site-content">
+    <div class="content-wrap container--narrow" style="max-width:960px;margin:0 auto;padding:60px 24px;">
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="{{ "/" | relURL }}">Home</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="{{ "/blog/" | relURL }}">Blog</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>{{ .Title }}</span>
+      </nav>
+
+      <article>
+        <header class="article-header">
+          <h1>{{ .Title }}</h1>
+          <div class="article-meta">
+            {{- with .Date }}<time datetime="{{ .Format "2006-01-02" }}"><i class="fa-regular fa-calendar"></i> {{ .Format "January 2, 2006" }}</time>{{ end }}
+            {{- with .Params.author }}<span><i class="fa-regular fa-user"></i> {{ . }}</span>{{ end }}
+          </div>
+        </header>
+        <hr class="article-divider">
+        <div class="blog-content adoc-content">
+          {{- .Content }}
+        </div>
+      </article>
+    </div>
+  </div>
+
+{{- else }}
+  <!-- Generic single page -->
+  <div class="site-content">
+    <div class="content-wrap" style="max-width:960px;margin:0 auto;padding:60px 24px;">
+      <h1 class="page-title">{{ .Title }}</h1>
+      <hr class="article-divider">
+      <div class="adoc-content">
+        {{- .Content }}
+      </div>
+    </div>
+  </div>
+{{- end }}
+{{- end }}

@@ -1,0 +1,32 @@
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-inner">
+    <a class="navbar-brand" href="{{ "/" | relURL }}">
+      <img src="{{ "/images/logo-full.svg" | relURL }}" alt="WarmDesk" onerror="this.style.display='none'">
+      <span>WarmDesk</span>
+    </a>
+
+    <button class="navbar-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class="navbar-nav">
+      {{- range site.Menus.main }}
+        {{- $external := .Params.external | default false }}
+        {{- $icon := .Params.icon | default "" }}
+        {{- if eq $icon "github" }}
+          <li class="nav-cta">
+            <a href="{{ .URL }}"{{ if $external }} target="_blank" rel="noopener"{{ end }}>
+              <i class="fa-brands fa-github"></i> GitHub
+            </a>
+          </li>
+        {{- else }}
+          <li>
+            <a href="{{ .URL }}"{{ if $external }} target="_blank" rel="noopener"{{ end }}>
+              {{- .Name -}}
+            </a>
+          </li>
+        {{- end }}
+      {{- end }}
+    </ul>
+  </div>
+</nav>

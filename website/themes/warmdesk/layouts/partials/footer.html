@@ -1,0 +1,45 @@
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a class="footer-logo" href="{{ "/" | relURL }}">
+        <img src="{{ "/images/logo-full.svg" | relURL }}" alt="WarmDesk" onerror="this.style.display='none'">
+        <span>WarmDesk</span>
+      </a>
+      <p class="footer-desc">
+        Self-hosted project management.<br>
+        Your data, your infrastructure.
+      </p>
+    </div>
+
+    <div>
+      <p class="footer-heading">Documentation</p>
+      <ul class="footer-links">
+        <li><a href="{{ "/docs/install/" | relURL }}">Installation</a></li>
+        <li><a href="{{ "/docs/user-guide/" | relURL }}">User Guide</a></li>
+        <li><a href="{{ "/docs/admin-guide/" | relURL }}">Admin Guide</a></li>
+        <li><a href="{{ "/docs/api/" | relURL }}">API Reference</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <p class="footer-heading">Project</p>
+      <ul class="footer-links">
+        <li><a href="{{ site.Params.github }}" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a></li>
+        <li><a href="{{ "/blog/" | relURL }}">Blog</a></li>
+        <li><a href="{{ "/about/" | relURL }}">About</a></li>
+        <li><a href="mailto:{{ site.Params.email }}"><i class="fa-regular fa-envelope"></i> Contact</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>
+      &copy; {{ now.Year }} {{ site.Params.author }} &mdash;
+      Released under the <a href="{{ site.Params.github }}/blob/main/LICENSE" target="_blank" rel="noopener">AGPL-3.0 License</a>
+    </span>
+    <span>
+      Built with <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>
+      &amp; <a href="https://asciidoctor.org" target="_blank" rel="noopener">Asciidoctor</a>
+    </span>
+  </div>
+</footer>

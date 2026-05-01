@@ -1,0 +1,243 @@
+{{- define "main" }}
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+  <div class="hero-inner">
+    <img src="{{ "/images/logo-full.svg" | relURL }}"
+         class="hero-logo"
+         alt="WarmDesk"
+         onerror="this.style.display='none'">
+    <h1>{{ site.Params.tagline | default "Own Your Workflow" }}</h1>
+    <p class="lead">{{ site.Params.subtitle }}</p>
+    <div class="hero-buttons">
+      <a href="{{ "/docs/install/" | relURL }}" class="btn btn-primary">
+        <i class="fa-solid fa-rocket"></i>&nbsp; Get Started
+      </a>
+      <a href="{{ site.Params.github }}" class="btn btn-outline" target="_blank" rel="noopener">
+        <i class="fa-brands fa-github"></i>&nbsp; View on GitHub
+      </a>
+    </div>
+    <p class="hero-meta">
+      Free &amp; open source &nbsp;·&nbsp;
+      <a href="{{ site.Params.github }}/releases" target="_blank" rel="noopener">Latest release</a>
+      &nbsp;·&nbsp; Go + Vue 3 + Tauri 2
+    </p>
+  </div>
+</section>
+
+<!-- ===================== FEATURES ===================== -->
+<section class="section section--alt" id="features">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Everything a team needs</h2>
+      <p class="section-subtitle">
+        No per-seat pricing. No cloud lock-in. One binary, your server, all your data.
+      </p>
+    </div>
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <span class="feature-icon">🗂️</span>
+        <h3>Kanban &amp; Scrum Boards</h3>
+        <p>Flexible Kanban boards with WIP limits, drag-and-drop reordering, and full Scrum support with sprints, backlog, story points, and a Gantt view.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">💬</span>
+        <h3>Real-time Team Chat</h3>
+        <p>Project chat channels, direct messages, and group conversations delivered over WebSocket. Markdown, file attachments, emoji reactions, @mentions, and link previews.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🧩</span>
+        <h3>Rich Cards</h3>
+        <p>Cards hold descriptions, checklists, assignees, labels, due dates, time logs, attachments, sub-cards, cross-references, and Git links — all in one panel.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">👥</span>
+        <h3>Customer &amp; Team Management</h3>
+        <p>Built-in CRM layer: customers, contracts, user groups, and fine-grained role-based access control across projects and customers.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">⏱️</span>
+        <h3>Time Tracking &amp; Reports</h3>
+        <p>Log time per project or card. Weekly time sheets, flexible report filtering, and one-click export to PDF or XLSX.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🔗</span>
+        <h3>Git &amp; CI/CD Integration</h3>
+        <p>Webhooks for GitHub, GitLab, and Gitea link commits and pull requests to cards. A ticket API lets CI pipelines create and move cards without a user session.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🔒</span>
+        <h3>Security-first Auth</h3>
+        <p>JWT with silent refresh, TOTP/MFA, bcrypt passwords at cost 12, per-user API keys, and startup safety checks that refuse insecure defaults.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">🌍</span>
+        <h3>Twelve Languages</h3>
+        <p>Full interface translations for English, Dutch, German, French, Spanish, Danish, Swedish, Norwegian, Finnish, Icelandic, Portuguese, and Italian.</p>
+      </div>
+
+      <div class="feature-card">
+        <span class="feature-icon">📦</span>
+        <h3>Single Binary, Any Platform</h3>
+        <p>Go backend + Vue 3 SPA bundled in one statically-linked binary. SQLite out of the box; PostgreSQL or MySQL with one config key. Desktop apps via Tauri 2 for Linux, macOS, and Windows.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SCREENSHOTS ===================== -->
+<section class="section" id="screenshots">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">See it in action</h2>
+      <p class="section-subtitle">A tour through the main screens of WarmDesk.</p>
+    </div>
+    <div class="screenshots-grid">
+
+      <div class="screenshot-item">
+        <img src="{{ "/images/screenshots/02-dashboard.png" | relURL }}"
+             alt="Project dashboard"
+             loading="lazy"
+             onerror="this.closest('.screenshot-item').style.display='none'">
+        <p class="screenshot-caption">Project dashboard — star, filter by customer, drag to reorder</p>
+      </div>
+
+      <div class="screenshot-item">
+        <img src="{{ "/images/screenshots/03-board.png" | relURL }}"
+             alt="Kanban board"
+             loading="lazy"
+             onerror="this.closest('.screenshot-item').style.display='none'">
+        <p class="screenshot-caption">Kanban board with drag-and-drop and WIP limit indicators</p>
+      </div>
+
+      <div class="screenshot-item">
+        <img src="{{ "/images/screenshots/04-card-detail.png" | relURL }}"
+             alt="Card detail"
+             loading="lazy"
+             onerror="this.closest('.screenshot-item').style.display='none'">
+        <p class="screenshot-caption">Card detail — checklist, assignees, labels, attachments, time log</p>
+      </div>
+
+      <div class="screenshot-item">
+        <img src="{{ "/images/screenshots/06-messages.png" | relURL }}"
+             alt="Direct messages"
+             loading="lazy"
+             onerror="this.closest('.screenshot-item').style.display='none'">
+        <p class="screenshot-caption">Direct messages and group chat with layout options</p>
+      </div>
+
+      <div class="screenshot-item">
+        <img src="{{ "/images/screenshots/07-report.png" | relURL }}"
+             alt="Time report"
+             loading="lazy"
+             onerror="this.closest('.screenshot-item').style.display='none'">
+        <p class="screenshot-caption">Time report — filter by user, project, and date range; export to PDF or XLSX</p>
+      </div>
+
+      <div class="screenshot-item">
+        <img src="{{ "/images/screenshots/08-admin-users.png" | relURL }}"
+             alt="Admin panel"
+             loading="lazy"
+             onerror="this.closest('.screenshot-item').style.display='none'">
+        <p class="screenshot-caption">Admin panel — user management with MFA status and role assignment</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== INSTALL ===================== -->
+<section class="section section--dark" id="install">
+  <div class="container" style="text-align:center;">
+    <div class="section-header">
+      <h2 class="section-title">Up in minutes</h2>
+      <p class="section-subtitle">Download the binary, write a config file, run it. No containers required.</p>
+    </div>
+
+    <pre class="install-code"><span class="comment"># Download the release binary (example for Linux x86-64)</span>
+<span class="cmd">wget</span> <span class="val">https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-linux-amd64</span>
+<span class="cmd">chmod</span> +x warmdesk-linux-amd64
+
+<span class="comment"># Create a minimal config</span>
+<span class="cmd">cat</span> > warmdesk.yaml &lt;&lt;EOF
+port: 8080
+jwt_secret: <span class="val">your-secret-here</span>   <span class="comment"># required — server refuses default</span>
+EOF
+
+<span class="comment"># Run — SQLite database created automatically</span>
+<span class="cmd">./warmdesk-linux-amd64</span>
+
+<span class="comment"># Open in browser</span>
+<span class="cmd">xdg-open</span> http://localhost:8080</pre>
+
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:8px;">
+      <a href="{{ "/docs/install/" | relURL }}" class="btn btn-primary">
+        Full installation guide
+      </a>
+      <a href="{{ site.Params.github }}/releases" class="btn btn-outline" target="_blank" rel="noopener">
+        Download releases
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHY SELF-HOSTED ===================== -->
+<section class="section section--alt">
+  <div class="container" style="max-width:960px;margin:0 auto;">
+    <div class="section-header">
+      <h2 class="section-title">Why self-host?</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;">
+      <div style="padding:24px 0;">
+        <strong style="color:var(--color-primary);display:block;margin-bottom:8px;">
+          <i class="fa-solid fa-lock" style="color:var(--color-accent);margin-right:6px;"></i> Your data stays yours
+        </strong>
+        <p style="color:var(--color-text-muted);font-size:0.95rem;margin:0;">
+          Tasks, chat messages, time entries, and customer contracts never leave your infrastructure. No third-party access, no usage telemetry.
+        </p>
+      </div>
+      <div style="padding:24px 0;">
+        <strong style="color:var(--color-primary);display:block;margin-bottom:8px;">
+          <i class="fa-solid fa-tag" style="color:var(--color-accent);margin-right:6px;"></i> No per-seat pricing
+        </strong>
+        <p style="color:var(--color-text-muted);font-size:0.95rem;margin:0;">
+          Run WarmDesk for a team of 5 or 500. The only costs are your server and your time.
+        </p>
+      </div>
+      <div style="padding:24px 0;">
+        <strong style="color:var(--color-primary);display:block;margin-bottom:8px;">
+          <i class="fa-solid fa-sliders" style="color:var(--color-accent);margin-right:6px;"></i> Full control
+        </strong>
+        <p style="color:var(--color-text-muted);font-size:0.95rem;margin:0;">
+          Configure SMTP, branding, auth policies, and storage to match your organisation's requirements. No vendor roadmap blocking your workflow.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA ===================== -->
+<section class="section" style="text-align:center;">
+  <div class="container">
+    <h2 class="section-title" style="margin-bottom:16px;">Ready to get started?</h2>
+    <p style="color:var(--color-text-muted);max-width:520px;margin:0 auto 36px;font-size:1.05rem;">
+      Read the installation guide, browse the blog, or explore the source code.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="{{ "/docs/install/" | relURL }}" class="btn btn-primary">Get Started</a>
+      <a href="{{ "/blog/" | relURL }}" class="btn btn-ghost">Read the Blog</a>
+      <a href="{{ site.Params.github }}" class="btn btn-ghost" target="_blank" rel="noopener">
+        <i class="fa-brands fa-github"></i>&nbsp; GitHub
+      </a>
+    </div>
+  </div>
+</section>
+{{- end }}

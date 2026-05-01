@@ -3,7 +3,7 @@
 
 # ── Build output ─────────────────────────────────────────────────────────────
 dist/
-warmdesk
+/warmdesk
 warmdesk.db
 warmdesk-*.tar.gz
 ansible/*.tar.gz

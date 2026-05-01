@@ -1,0 +1,87 @@
+{{- define "main" }}
+{{- $isDoc  := eq .Section "docs" }}
+{{- $isBlog := or (eq .Section "blog") (eq .Data.Plural "blog") }}
+
+{{- if $isDoc }}
+  <!-- Docs index -->
+  <div class="site-content">
+    <div class="content-wrap" style="max-width:960px;margin:0 auto;padding:60px 24px;">
+      <h1 class="page-title">Documentation</h1>
+      <p style="color:var(--color-text-muted);font-size:1.05rem;margin:0 0 40px;">
+        Everything you need to install, configure, and use WarmDesk.
+      </p>
+      <hr class="article-divider">
+
+      <ul class="post-list">
+        {{- $order := slice "install" "user-guide" "admin-guide" "api" }}
+        {{- $pages := .Pages }}
+        {{- range $order }}
+          {{- $slug := . }}
+          {{- range $pages }}
+            {{- if eq .File.ContentBaseName $slug }}
+              <li class="post-list-item">
+                <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+                {{- with .Description }}<p>{{ . }}</p>{{ end }}
+                <p class="read-more"><a href="{{ .Permalink }}">Read &rarr;</a></p>
+              </li>
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- range $pages }}
+          {{- $slug := .File.ContentBaseName }}
+          {{- if not (in $order $slug) }}
+            <li class="post-list-item">
+              <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+              {{- with .Description }}<p>{{ . }}</p>{{ end }}
+              <p class="read-more"><a href="{{ .Permalink }}">Read &rarr;</a></p>
+            </li>
+          {{- end }}
+        {{- end }}
+      </ul>
+    </div>
+  </div>
+
+{{- else if $isBlog }}
+  <!-- Blog index -->
+  <div class="site-content">
+    <div class="content-wrap" style="max-width:960px;margin:0 auto;padding:60px 24px;">
+      <h1 class="page-title">Blog</h1>
+      <p style="color:var(--color-text-muted);font-size:1.05rem;margin:0 0 40px;">
+        Development notes, guides, and announcements about WarmDesk.
+      </p>
+      <hr class="article-divider">
+
+      <ul class="post-list">
+        {{- range .Pages }}
+          <li class="post-list-item">
+            <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+            <div class="post-list-meta">
+              {{- with .Date }}<time datetime="{{ .Format "2006-01-02" }}">{{ .Format "January 2, 2006" }}</time>{{ end }}
+              {{- with .Params.author }} &mdash; {{ . }}{{ end }}
+            </div>
+            {{- with .Description }}<p>{{ . }}</p>{{ end }}
+            <p class="read-more"><a href="{{ .Permalink }}">Read &rarr;</a></p>
+          </li>
+        {{- end }}
+      </ul>
+    </div>
+  </div>
+
+{{- else }}
+  <!-- Generic list -->
+  <div class="site-content">
+    <div class="content-wrap" style="max-width:960px;margin:0 auto;padding:60px 24px;">
+      <h1 class="page-title">{{ .Title }}</h1>
+      <hr class="article-divider">
+      <ul class="post-list">
+        {{- range .Pages }}
+          <li class="post-list-item">
+            <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
+            {{- with .Description }}<p>{{ . }}</p>{{ end }}
+          </li>
+        {{- end }}
+      </ul>
+    </div>
+  </div>
+{{- end }}
+{{- end }}

@@ -1,0 +1,8 @@
+name = "warmdesk"
+description = "WarmDesk product site theme — inspired by Beautiful Hugo"
+license = "MIT"
+min_version = "0.120.0"
+
+[author]
+  name = "Ton Kersten"
+  email = "tonk@smartowl.nl"
