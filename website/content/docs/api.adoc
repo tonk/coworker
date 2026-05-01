@@ -3,7 +3,7 @@ title: "API Reference"
 description: "REST API, Ticket API, webhooks, Prometheus, and Swagger UI"
 weight: 40
 ---
-:icons: font
+:icons!:
 :source-highlighter: highlight.js
 :toc: left
 :toc-title: Contents

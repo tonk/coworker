@@ -3,7 +3,7 @@ title: "Administrator Guide"
 description: "Installing, configuring, and operating WarmDesk as an administrator"
 weight: 30
 ---
-:icons: font
+:icons!:
 :source-highlighter: highlight.js
 :toc: left
 :toc-title: Contents

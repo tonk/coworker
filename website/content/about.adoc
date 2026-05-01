@@ -2,7 +2,7 @@
 title: "About WarmDesk"
 description: "The story behind WarmDesk"
 ---
-:icons: font
+:icons!:
 
 WarmDesk is a self-hosted project management tool built for software teams that want to own their own data.
 It covers Kanban boards, Scrum sprints, team chat, customer management, time tracking, and Git integration — all in a single statically-linked Go binary.

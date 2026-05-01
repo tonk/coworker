@@ -1,8 +1,59 @@
 /* ============================================================
    WarmDesk site — main.css
    Inspired by Beautiful Hugo / tonkersten.com
-   Fonts: Open Sans + Source Code Pro (Google Fonts)
+   Fonts: Open Sans + Source Code Pro (self-hosted woff2, OFL)
    ============================================================ */
+
+/* ---------- Fonts (latin subset, @fontsource builds) ---------- */
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/open-sans/open-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/open-sans/open-sans-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/open-sans/open-sans-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/open-sans/open-sans-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../fonts/open-sans/open-sans-latin-800-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/source-code-pro/source-code-pro-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/source-code-pro/source-code-pro-latin-600-normal.woff2') format('woff2');
+}
 
 /* ---------- Reset & base ------------------------------------ */
 *, *::before, *::after { box-sizing: border-box; }
@@ -592,8 +643,31 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
 }
 .adoc-content .admonitionblock.warning { border-color: #f59e0b; background: #fffbeb; }
 .adoc-content .admonitionblock.important, .adoc-content .admonitionblock.caution { border-color: #ef4444; background: #fef2f2; }
-.adoc-content .admonitionblock .icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
-.adoc-content .admonitionblock td.icon { padding: 0.5em 0.8em 0.5em 0; }
+/* AsciiDoc admonitions (:icons!:) — emoji icon column (accessibility: .title kept for SR) */
+.adoc-content .admonitionblock td.icon {
+  vertical-align: top;
+  position: relative;
+  width: 2.25rem;
+  padding: 0.35em 0.65em 0.35em 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+.adoc-content .admonitionblock td.icon .title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.adoc-content .admonitionblock.note td.icon::before { content: 'ℹ️'; display: block; }
+.adoc-content .admonitionblock.tip td.icon::before { content: '💡'; display: block; }
+.adoc-content .admonitionblock.warning td.icon::before { content: '⚠️'; display: block; }
+.adoc-content .admonitionblock.important td.icon::before { content: '❗'; display: block; }
+.adoc-content .admonitionblock.caution td.icon::before { content: '🔶'; display: block; }
 .adoc-content .admonitionblock td.content { padding: 0.5em 0; }
 .adoc-content .admonitionblock table { margin: 0; border: none; background: transparent; }
 .adoc-content .admonitionblock table td, .adoc-content .admonitionblock table th { background: transparent; border: none; padding: 0.3em 0; }

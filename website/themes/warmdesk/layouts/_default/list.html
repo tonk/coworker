@@ -13,7 +13,9 @@
       <hr class="article-divider">
 
       <ul class="post-list">
-        {{- $order := slice "install" "user-guide" "admin-guide" "api" "database-schema" }}
+        {{- $fallbackOrder := slice "install" "user-guide" "admin-guide" "api" "database-schema" }}
+        {{- $meta := index site.Data "docs_nav_order" | default dict }}
+        {{- $order := $meta.order | default $fallbackOrder }}
         {{- $pages := .Pages }}
         {{- range $order }}
           {{- $slug := . }}

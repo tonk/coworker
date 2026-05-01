@@ -3,7 +3,7 @@ title: "Installation"
 description: "How to install and run WarmDesk on your own server"
 weight: 10
 ---
-:icons: font
+:icons!:
 :source-highlighter: highlight.js
 :toc: left
 :toc-title: Contents

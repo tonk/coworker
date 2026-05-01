@@ -9,8 +9,26 @@
       <aside class="docs-sidebar">
         <p class="docs-sidebar-title">Documentation</p>
         <ul class="docs-nav">
-          {{- range .Site.Pages }}
-            {{- if and (eq .Section "docs") (not .IsSection) (not .IsHome) }}
+          {{- $fallbackOrder := slice "install" "user-guide" "admin-guide" "api" "database-schema" }}
+          {{- $meta := index site.Data "docs_nav_order" | default dict }}
+          {{- $order := $meta.order | default $fallbackOrder }}
+          {{- $pages := slice }}
+          {{- with site.GetPage "/docs" }}
+            {{- $pages = .RegularPages }}
+          {{- end }}
+          {{- range $order }}
+            {{- $slug := . }}
+            {{- range $pages }}
+              {{- if eq .File.ContentBaseName $slug }}
+                <li>
+                  <a href="{{ .Permalink }}">{{ .Title }}</a>
+                </li>
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- range $pages }}
+            {{- $slug := .File.ContentBaseName }}
+            {{- if not (in $order $slug) }}
               <li>
                 <a href="{{ .Permalink }}">{{ .Title }}</a>
               </li>
@@ -57,8 +75,8 @@
         <header class="article-header">
           <h1>{{ .Title }}</h1>
           <div class="article-meta">
-            {{- with .Date }}<time datetime="{{ .Format "2006-01-02" }}"><i class="fa-regular fa-calendar"></i> {{ .Format "January 2, 2006" }}</time>{{ end }}
-            {{- with .Params.author }}<span><i class="fa-regular fa-user"></i> {{ . }}</span>{{ end }}
+            {{- with .Date }}<time datetime="{{ .Format "2006-01-02" }}">📅 {{ .Format "January 2, 2006" }}</time>{{ end }}
+            {{- with .Params.author }}<span>👤 {{ . }}</span>{{ end }}
           </div>
         </header>
         <hr class="article-divider">

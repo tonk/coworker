@@ -20,7 +20,7 @@ backend/staticweb/files/*
 *.dylib
 *.test
 *.out
-vendor/
+/vendor/
 
 # ── Node / Frontend ──────────────────────────────────────────────────────────
 frontend/node_modules/

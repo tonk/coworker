@@ -3,7 +3,7 @@ title: "User Guide"
 description: "How to use WarmDesk — boards, cards, chat, time tracking, and more"
 weight: 20
 ---
-:icons: font
+:icons!:
 :source-highlighter: highlight.js
 :toc: left
 :toc-title: Contents

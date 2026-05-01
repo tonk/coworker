@@ -1,0 +1,7 @@
+# Single source for docs index + sidebar ordering (match slug = ContentBaseName).
+order:
+  - install
+  - user-guide
+  - admin-guide
+  - api
+  - database-schema

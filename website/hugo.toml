@@ -12,6 +12,8 @@ enableEmoji = true
   email = "tonk@smartowl.nl"
   tagline = "Own Your Workflow"
   subtitle = "A single Go binary covering Kanban boards, Scrum sprints, team chat, customer management, time tracking, and Git integration — owned and operated by you."
+  # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
+  og_image = "images/logo-full.svg"
 
 [markup]
   [markup.asciidocext]
@@ -26,15 +28,14 @@ enableEmoji = true
     verbose = false
     workingFolderCurrent = false
     [markup.asciidocext.attributes]
-      "icons" = "font"
       "source-highlighter" = "highlight.js"
       "imagesdir" = "/images"
       "sectanchors" = ""
       "sectlinks" = ""
 
+  # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]
-    style = "github-dark"
-    noClasses = true
+    codeFences = false
 
 [security]
   [security.exec]

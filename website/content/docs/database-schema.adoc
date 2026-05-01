@@ -3,7 +3,7 @@ title: "Database Schema"
 description: "Complete reference for the WarmDesk database schema — tables, columns, relationships, and design decisions"
 weight: 50
 ---
-:icons: font
+:icons!:
 :source-highlighter: highlight.js
 :toc: left
 :toc-title: Contents
