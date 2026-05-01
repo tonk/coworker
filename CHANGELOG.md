@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.9.20 — 2026-05-01
+
+### Added
+- **Video toggle button in the audio call bar** — a camera on/off button now appears in the slim bottom bar (shown during outgoing calls and audio-only calls) whenever the call has a video track, matching the style of the mute button
+- **LiveKit token endpoint** — `GET /api/v1/conversations/:id/livekit-token` generates a signed access token for a LiveKit room; foundation for future group video/audio calls; returns 503 when LiveKit is not configured so existing behaviour is unchanged
+- **LiveKit config fields** — `livekit_url`, `livekit_api_key`, and `livekit_api_secret` added to config with env var overrides (`LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`) and full documentation in `warmdesk.yaml.example`
+
+### Fixed
+- **Call error toasts finally working** — despite the v0.9.19 watcher fix, the "declined", "unavailable", and "microphone denied" toasts were still never shown because `useI18n` and `useUIStore` were missing from `ActiveCallBar.vue`; every toast attempt threw a silent runtime error; both are now properly imported and initialised
+
 ## v0.9.19 — 2026-04-30
 
 ### Fixed

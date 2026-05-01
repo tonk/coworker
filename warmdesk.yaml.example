@@ -91,6 +91,22 @@ allowed_origins: "http://localhost:5173"
 # without rebuilding the binary. Leave empty (or omit) to use the embedded UI.
 # web_dir: ""
 
+# LiveKit — group video/audio calls (optional).
+# When configured, WarmDesk can issue LiveKit access tokens so users can join
+# multi-person video/audio rooms. Without these settings the endpoint returns
+# 503 and the existing 1-on-1 call system continues to work as normal.
+#
+# livekit_url      — the WebSocket address of your LiveKit server.
+#                    Use wss:// (secure) in production, ws:// only for local testing.
+# livekit_api_key  — the API key you set in your LiveKit server config (livekit.yaml).
+# livekit_api_secret — the matching API secret. Keep this private; it signs the tokens.
+#
+# Env var overrides: LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
+#
+# livekit_url: "wss://livekit.yourcompany.com"
+# livekit_api_key: "APIxxxxxxxxxxxxxxxx"
+# livekit_api_secret: "a_long_random_secret_string"
+
 # Redis URL for horizontal scaling (optional).
 # When set, WebSocket broadcasts are routed through Redis pub/sub so all
 # server instances deliver the message to their connected clients.

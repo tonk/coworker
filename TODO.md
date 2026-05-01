@@ -183,3 +183,95 @@
   the message~~ **Done**
 
 - Make sure you can't call someone who isn't online
+
+---
+
+## Group video/audio calls with LiveKit
+
+Right now WarmDesk can only call one person at a time (1-on-1). This works by sending
+your voice and video directly from your computer to the other person's computer — no
+middleman needed.
+
+For **group calls** (3+ people at the same time) that direct approach falls apart: everyone
+would need to send their video to everyone else simultaneously, which hammers your upload
+speed and melts slower computers. The solution is a **media server** — a computer in the
+middle that receives everyone's streams and re-sends only what each person needs to see.
+
+**LiveKit** is a free, open-source media server that does exactly this. Here is what you
+would need to get it running with WarmDesk.
+
+---
+
+### The server (hardware / VM)
+
+You need a separate machine — either a cheap VPS (virtual server you rent) or a physical
+box you already own. Minimum requirements:
+
+| What         | Minimum (≤ 10 people per call)  | Comfortable (≤ 30 people per call) |
+|---|---|---|
+| CPU          | 2 cores                          | 4 cores                            |
+| RAM          | 2 GB                             | 4 GB                               |
+| Disk         | 10 GB (LiveKit itself is tiny)   | 10 GB                              |
+| Network      | 100 Mbps upload **dedicated**    | 500 Mbps upload                    |
+| OS           | Ubuntu 22.04 LTS (recommended)  | Ubuntu 22.04 LTS                   |
+
+> **The network is the bottleneck, not the CPU.** A cheap €5/month VPS with a shared 1 Gbps
+> port from Hetzner, DigitalOcean, or Vultr works fine for small teams.
+
+This machine does **not** have to be the same machine that runs WarmDesk. In fact it is
+better if it is not — LiveKit is chatty on the network and you do not want it competing
+with your web traffic.
+
+---
+
+### What needs to be installed on that server
+
+1. **LiveKit server** — one binary, runs as a systemd service. Download from
+   `https://github.com/livekit/livekit/releases` or run it as a Docker container.
+
+2. **A domain name pointing at that server** — LiveKit must be reachable over HTTPS
+   (encrypted). You cannot use a bare IP address because browsers refuse unencrypted
+   camera/microphone streams. Something like `livekit.yourcompany.com` is fine.
+
+3. **An SSL certificate** — free from Let's Encrypt (`certbot`). Takes 5 minutes to set up.
+
+4. **Open firewall ports:**
+   - TCP 443 — secure web traffic (HTTPS / WebSocket)
+   - TCP 7881 — fallback for video when UDP is blocked
+   - UDP 50000–60000 — the actual video/audio streams (this range is configurable)
+
+---
+
+### What needs to change inside WarmDesk
+
+This is developer work, not server work. A rough list of what has to be built:
+
+**Backend (Go):**
+- Add a LiveKit API key and secret to `warmdesk.yaml` (two new config fields).
+- Add one new API endpoint — something like `POST /api/v1/projects/:slug/livekit-token`.
+  When a user wants to join a group call, they ask WarmDesk for a short-lived *token*
+  (a signed ticket that proves who they are). WarmDesk generates this using the LiveKit
+  Go SDK and hands it back. No token = no entry to the call room.
+
+**Frontend (Vue):**
+- Replace (or extend) the current `useWebRTCCall.js` composable with the
+  **LiveKit JavaScript SDK** (`@livekit/components-react` or the lower-level
+  `livekit-client` npm package).
+- Build a group-call UI: a grid of video tiles, one per participant, that appears
+  either as a full-screen overlay or as a floating panel.
+- Wire up the existing "start call" button so that, for group/channel calls, it joins
+  a LiveKit room instead of dialling a single person directly.
+
+The existing 1-on-1 call system (`useWebRTCCall.js`) can stay as-is for direct
+person-to-person calls — it does not need LiveKit and costs nothing to keep.
+
+---
+
+### Summary in one paragraph
+
+Rent a small Linux VPS (2 CPU, 2 GB RAM, good network), point a subdomain at it, get a
+free SSL certificate, and install the LiveKit binary. Open the right firewall ports. Add
+the LiveKit address and a secret key to WarmDesk's config file. Then a developer needs
+to write roughly 200–400 lines of Go + Vue code to generate call tokens on the backend
+and show a multi-person video grid on the frontend. That is it — no licences, no monthly
+fees beyond the VPS cost (~€5–15/month depending on provider).

@@ -215,6 +215,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			convs.DELETE("/:id/members/:userId", handlers.RemoveConversationMember)
 			convs.POST("/:id/avatar", handlers.UploadConversationAvatar)
 			convs.POST("/:id/messages/:msgId/reactions", handlers.ToggleConvReaction)
+			convs.GET("/:id/livekit-token", handlers.GetLiveKitToken)
 		}
 
 		// Projects

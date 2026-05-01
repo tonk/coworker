@@ -30,6 +30,9 @@ type Config struct {
 	MaxUploadMB    int64  `yaml:"max_upload_mb"` // max upload size in MB (default: 25)
 	BaseURL        string `yaml:"base_url"`      // public base URL (e.g. https://desk.example.com) — used in Swagger UI
 	SMTP           SMTPConfig `yaml:"smtp"`
+	LiveKitURL       string `yaml:"livekit_url"`        // e.g. wss://livekit.yourcompany.com
+	LiveKitAPIKey    string `yaml:"livekit_api_key"`
+	LiveKitAPISecret string `yaml:"livekit_api_secret"`
 }
 
 type SMTPConfig struct {
@@ -160,5 +163,14 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv("BASE_URL"); v != "" {
 		cfg.BaseURL = v
+	}
+	if v := os.Getenv("LIVEKIT_URL"); v != "" {
+		cfg.LiveKitURL = v
+	}
+	if v := os.Getenv("LIVEKIT_API_KEY"); v != "" {
+		cfg.LiveKitAPIKey = v
+	}
+	if v := os.Getenv("LIVEKIT_API_SECRET"); v != "" {
+		cfg.LiveKitAPISecret = v
 	}
 }

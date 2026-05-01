@@ -85,6 +85,17 @@
             </svg>
           </button>
 
+          <button v-if="state.hasVideo" :class="['call-bar-btn', { active: state.isCameraOff }]" :title="state.isCameraOff ? $t('call.camera_on') : $t('call.camera_off')" @click="toggleCamera">
+            <svg v-if="!state.isCameraOff" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="1" y1="1" x2="23" y2="23"/>
+              <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34"/>
+            </svg>
+          </button>
+
           <button class="call-bar-btn end-btn" :title="$t('call.hangup')" @click="endCall()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91M1 1l22 22"/>
@@ -99,8 +110,13 @@
 
 <script setup>
 import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useUIStore } from '@/stores/ui'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
 import { useCallSettings } from '@/composables/useCallSettings'
+
+const { t } = useI18n()
+const ui = useUIStore()
 
 const { state, toggleMute, toggleCamera, endCall, setRemoteStreamCallback, setLocalStreamCallback } = useWebRTCCall()
 const { audioOutputId } = useCallSettings()

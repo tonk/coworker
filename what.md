@@ -473,3 +473,7 @@ Create an application that has all these features and requirements
 - Fix update checker blocked by CSP: add https://api.github.com to connect-src in nginx/Apache templates
 - Show toast when callee declines an outgoing call: "{name} declined the call" error toast appears instead of call bar silently disappearing; all 12 locales covered
 - Fix call error toasts dropped by phase race: watch errorMsg directly instead of phase so declined/unavailable/no_mic toasts always fire even when ring timeout races the signal
+- Add video toggle button to audio call bar: camera on/off button appears in the slim bottom bar when the call has a video track; matches mute button style and uses same toggleCamera action
+- Fix call error toasts still not appearing: useI18n and useUIStore were missing imports in ActiveCallBar.vue so every toast attempt threw a silent runtime error; both now properly imported
+- Add LiveKit token endpoint: GET /api/v1/conversations/:id/livekit-token issues a signed LiveKit JWT for the conversation room; membership-checked; returns 503 when livekit_api_key/secret not configured
+- Add LiveKit config fields: livekit_url, livekit_api_key, livekit_api_secret with LIVEKIT_URL/LIVEKIT_API_KEY/LIVEKIT_API_SECRET env var overrides; documented in warmdesk.yaml.example
