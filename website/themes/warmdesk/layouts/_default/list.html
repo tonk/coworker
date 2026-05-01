@@ -13,7 +13,7 @@
       <hr class="article-divider">
 
       <ul class="post-list">
-        {{- $order := slice "install" "user-guide" "admin-guide" "api" }}
+        {{- $order := slice "install" "user-guide" "admin-guide" "api" "database-schema" }}
         {{- $pages := .Pages }}
         {{- range $order }}
           {{- $slug := . }}

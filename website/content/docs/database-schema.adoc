@@ -1,0 +1,648 @@
+---
+title: "Database Schema"
+description: "Complete reference for the WarmDesk database schema — tables, columns, relationships, and design decisions"
+weight: 50
+---
+:icons: font
+:source-highlighter: highlight.js
+:toc: left
+:toc-title: Contents
+:toclevels: 3
+:sectanchors:
+
+WarmDesk uses https://gorm.io[GORM] with automatic migration (`AutoMigrate`) — there are no separate migration files.
+Every time the server starts it compares the model structs to the live schema and adds any missing columns or tables.
+You should never need to touch the database directly for routine upgrades.
+
+Supported engines: **SQLite** (default), **PostgreSQL**, and **MySQL**.
+
+---
+
+== Design decisions
+
+=== Fractional position ordering
+
+Columns and cards use a `position REAL` (float) column.
+Inserting between two items assigns the midpoint of the surrounding values.
+This avoids renumbering the entire list on every drag-and-drop.
+
+=== Atomic card numbering
+
+Each project has a `card_counter INTEGER` column.
+The backend increments it atomically when creating a card and uses the result as the human-readable number (e.g. `PRJ-42`).
+
+=== Polymorphic attachments
+
+The `attachments` table stores files for cards, card comments, chat messages, and direct messages through two columns: `owner_type` (string) and `owner_id` (integer).
+Valid owner types: `card`, `card_comment`, `chat_message`, `conv_message`.
+
+=== System settings
+
+Operational settings (SMTP, branding, locale defaults, session timeout, …) live in a `system_settings` key/value table and are read at request time so changes take effect without a restart.
+
+---
+
+== Core tables
+
+=== users
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |GORM auto-field
+|`updated_at` |TIMESTAMP | |GORM auto-field
+|`deleted_at` |TIMESTAMP |nullable, index |Soft-delete support
+|`email` |VARCHAR |unique, not null |Login identifier
+|`username` |VARCHAR |unique, not null |Display name
+|`password_hash` |VARCHAR |not null |bcrypt, cost 12
+|`global_role` |VARCHAR |default `user` |`user`, `admin`
+|`locale` |VARCHAR |default `en` |UI language preference
+|`theme` |VARCHAR |default `light` |`light`, `dark`
+|`avatar_url` |VARCHAR |nullable |Profile picture path
+|`totp_enabled` |BOOLEAN |default false |MFA active flag
+|`totp_secret` |VARCHAR |nullable |Encrypted TOTP secret
+|`active` |BOOLEAN |default true |Account enabled
+|`must_change_password` |BOOLEAN |default false |Force password reset on next login
+|===
+
+=== projects
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`name` |VARCHAR |not null |Display name
+|`slug` |VARCHAR |unique, not null |URL-safe identifier used in all API routes
+|`description` |TEXT |nullable |
+|`key_prefix` |VARCHAR |not null |Prefix for card numbers (e.g. `PRJ`)
+|`card_counter` |INTEGER |default 0 |Atomic counter, incremented per card
+|`board_type` |VARCHAR |default `kanban` |`kanban`, `scrum`
+|`customer_id` |BIGINT |FK → customers, nullable |Owning customer
+|`color` |VARCHAR |nullable |Hex accent colour for the project card
+|`is_archived` |BOOLEAN |default false |
+|===
+
+=== project_members
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`project_id` |BIGINT |FK → projects |
+|`user_id` |BIGINT |FK → users |
+|`role` |VARCHAR |default `member` |`viewer`, `member`, `owner`; admins bypass all role checks
+|===
+
+---
+
+== Board tables
+
+=== columns
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`project_id` |BIGINT |FK → projects |
+|`name` |VARCHAR |not null |
+|`position` |REAL |not null |Fractional ordering
+|`wip_limit` |INTEGER |default 0 |0 = unlimited
+|`color` |VARCHAR |nullable |Column header accent
+|===
+
+=== cards
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`column_id` |BIGINT |FK → columns |Current column
+|`project_id` |BIGINT |FK → projects |
+|`title` |VARCHAR |not null |
+|`description` |TEXT |nullable |Markdown body
+|`position` |REAL |not null |Fractional ordering within column
+|`priority` |VARCHAR |default `medium` |`low`, `medium`, `high`, `critical`
+|`status` |VARCHAR |default `open` |`open`, `closed`
+|`due_date` |DATE |nullable |
+|`estimated_hours` |REAL |default 0 |
+|`card_number` |INTEGER |not null |Human-readable number (PRJ-N)
+|`story_points` |INTEGER |default 0 |Scrum only
+|`parent_card_id` |BIGINT |FK → cards, nullable |Sub-card relationship
+|`reporter_id` |BIGINT |FK → users, nullable |Who created the card
+|===
+
+=== card_assignees
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`card_id` |BIGINT |FK → cards |
+|`user_id` |BIGINT |FK → users |
+|===
+
+=== card_checklist_items
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`card_id` |BIGINT |FK → cards |
+|`text` |VARCHAR |not null |
+|`checked` |BOOLEAN |default false |
+|`position` |REAL |not null |Fractional ordering
+|===
+
+=== card_comments
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`card_id` |BIGINT |FK → cards |
+|`user_id` |BIGINT |FK → users |
+|`body` |TEXT |not null |Markdown
+|===
+
+=== labels
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`project_id` |BIGINT |FK → projects |
+|`name` |VARCHAR |not null |
+|`color` |VARCHAR |not null |Hex colour
+|===
+
+=== card_labels
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`card_id` |BIGINT |FK → cards |
+|`label_id` |BIGINT |FK → labels |
+|===
+
+=== card_references
+
+Cross-references between cards (e.g. "blocks", "is blocked by", "relates to").
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`card_id` |BIGINT |FK → cards |Source card
+|`target_card_id` |BIGINT |FK → cards |Referenced card
+|`ref_type` |VARCHAR |not null |`blocks`, `blocked_by`, `relates_to`, `duplicates`
+|===
+
+=== card_history
+
+Audit log for card changes.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`card_id` |BIGINT |FK → cards |
+|`user_id` |BIGINT |FK → users |
+|`field` |VARCHAR |not null |Changed field name
+|`old_value` |TEXT |nullable |
+|`new_value` |TEXT |nullable |
+|===
+
+---
+
+== Customer & contract tables
+
+=== customers
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`name` |VARCHAR |not null |
+|`slug` |VARCHAR |unique, not null |
+|`description` |TEXT |nullable |
+|`website` |VARCHAR |nullable |
+|`color` |VARCHAR |nullable |Accent colour
+|===
+
+=== contracts
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`customer_id` |BIGINT |FK → customers |
+|`name` |VARCHAR |not null |
+|`description` |TEXT |nullable |
+|`start_date` |DATE |nullable |
+|`end_date` |DATE |nullable |
+|`budget_hours` |REAL |default 0 |Total contracted hours
+|`status` |VARCHAR |default `active` |`active`, `expired`, `cancelled`
+|===
+
+=== customer_favorites
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`user_id` |BIGINT |FK → users |
+|`customer_id` |BIGINT |FK → customers |
+|===
+
+=== customer_access
+
+Grants a user access to a specific customer (used when the user is not an admin and has no group access).
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`user_id` |BIGINT |FK → users |
+|`customer_id` |BIGINT |FK → customers |
+|`role` |VARCHAR |default `member` |`viewer`, `member`, `owner`
+|===
+
+---
+
+== Groups tables
+
+=== user_groups
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`name` |VARCHAR |not null |
+|`description` |TEXT |nullable |
+|===
+
+=== group_members
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`group_id` |BIGINT |FK → user_groups |
+|`user_id` |BIGINT |FK → users |
+|===
+
+=== group_project_access
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`group_id` |BIGINT |FK → user_groups |
+|`project_id` |BIGINT |FK → projects |
+|`role` |VARCHAR |default `member` |`viewer`, `member`, `owner`
+|===
+
+=== group_customer_access
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`group_id` |BIGINT |FK → user_groups |
+|`customer_id` |BIGINT |FK → customers |
+|`role` |VARCHAR |default `member` |`viewer`, `member`, `owner`
+|===
+
+---
+
+== Scrum tables
+
+=== sprints
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`project_id` |BIGINT |FK → projects |
+|`name` |VARCHAR |not null |
+|`goal` |TEXT |nullable |Sprint goal description
+|`start_date` |DATE |nullable |
+|`end_date` |DATE |nullable |
+|`status` |VARCHAR |default `planned` |`planned`, `active`, `completed`
+|===
+
+=== sprint_cards
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`sprint_id` |BIGINT |FK → sprints |
+|`card_id` |BIGINT |FK → cards |
+|===
+
+---
+
+== Time tracking
+
+=== time_entries
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`user_id` |BIGINT |FK → users |
+|`customer_id` |BIGINT |FK → customers, nullable |
+|`project_id` |BIGINT |FK → projects, nullable |
+|`card_id` |BIGINT |FK → cards, nullable |
+|`contract_id` |BIGINT |FK → contracts, nullable |
+|`date` |DATE |not null |
+|`minutes` |INTEGER |not null |Duration in minutes
+|`description` |TEXT |nullable |
+|===
+
+---
+
+== Discussion tables
+
+=== topics
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`project_id` |BIGINT |FK → projects |
+|`user_id` |BIGINT |FK → users |Author
+|`title` |VARCHAR |not null |
+|`body` |TEXT |not null |Markdown
+|`is_pinned` |BOOLEAN |default false |
+|`is_locked` |BOOLEAN |default false |No new replies when locked
+|===
+
+=== topic_replies
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`topic_id` |BIGINT |FK → topics |
+|`user_id` |BIGINT |FK → users |
+|`body` |TEXT |not null |Markdown
+|===
+
+---
+
+== Chat tables
+
+=== chat_messages
+
+Project-level channel messages.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`project_id` |BIGINT |FK → projects |
+|`user_id` |BIGINT |FK → users |
+|`body` |TEXT |not null |Markdown
+|`is_bot` |BOOLEAN |default false |Messages from webhook/CI integrations
+|===
+
+=== conversations
+
+Direct messages and group DMs.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`name` |VARCHAR |nullable |Set for group conversations
+|`is_group` |BOOLEAN |default false |
+|===
+
+=== conversation_members
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`conversation_id` |BIGINT |FK → conversations |
+|`user_id` |BIGINT |FK → users |
+|===
+
+=== conversation_messages
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`conversation_id` |BIGINT |FK → conversations |
+|`user_id` |BIGINT |FK → users |
+|`body` |TEXT |not null |Markdown
+|===
+
+---
+
+== Files
+
+=== attachments
+
+Polymorphic file table — one row per uploaded file, regardless of where it is attached.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`owner_type` |VARCHAR |not null |`card`, `card_comment`, `chat_message`, `conv_message`
+|`owner_id` |BIGINT |not null |PK of the owning row
+|`filename` |VARCHAR |not null |Stored filename (randomised hex)
+|`original_name` |VARCHAR |not null |Original filename as uploaded
+|`mime_type` |VARCHAR |not null |Detected server-side from file content
+|`size` |BIGINT |not null |Bytes
+|`uploader_id` |BIGINT |FK → users |
+|===
+
+NOTE: MIME type is detected from the first 512 bytes of the file using `net/http.DetectContentType`.
+The `Content-Type` header sent by the client is ignored.
+
+---
+
+== Integration tables
+
+=== card_links
+
+Git commit and pull-request links attached to cards.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`card_id` |BIGINT |FK → cards |
+|`platform` |VARCHAR |not null |`github`, `gitlab`, `gitea`
+|`link_type` |VARCHAR |not null |`commit`, `pull_request`
+|`url` |VARCHAR |not null |
+|`title` |VARCHAR |nullable |PR/commit title
+|`status` |VARCHAR |nullable |PR state (e.g. `open`, `merged`)
+|===
+
+=== project_webhooks
+
+Inbound webhooks that push events from external systems into WarmDesk.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`project_id` |BIGINT |FK → projects |
+|`token` |VARCHAR |not null |Secret used to verify the request
+|`type` |VARCHAR |not null |`github`, `gitlab`, `gitea`
+|`active` |BOOLEAN |default true |
+|===
+
+=== api_keys
+
+Long-lived API keys, primarily for CI/CD automation via the Ticket API.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`user_id` |BIGINT |FK → users |Owning user
+|`project_id` |BIGINT |FK → projects, nullable |Scope-limited to one project if set
+|`name` |VARCHAR |not null |Human label
+|`key_hash` |VARCHAR |not null |SHA-256 of the raw key
+|`key_prefix` |VARCHAR |not null |First 8 chars, shown in the UI
+|`last_used_at` |TIMESTAMP |nullable |
+|`expires_at` |TIMESTAMP |nullable |Null = no expiry
+|===
+
+---
+
+== System settings
+
+=== system_settings
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`key` |VARCHAR |unique, not null |Setting identifier
+|`value` |TEXT |not null |String value
+|===
+
+Settings are read at request time so changes take effect without restarting the server.
+All valid keys are defined as constants in `handlers/system.go`.
+
+---
+
+== Entity-relationship overview
+
+[source,text]
+----
+users ────────────────── project_members ──── projects
+  │                                               │
+  │                                           columns
+  │                                               │
+  ├── group_members ── user_groups               cards
+  │                        │                      │
+  │              group_project_access ─────────── │
+  │              group_customer_access ──── customers
+  │                                               │
+  └── time_entries ──────────────────────    contracts
+        │
+        ├── projects
+        ├── customers
+        └── cards
+----
+
+Key relationships:
+
+* A **project** belongs to a **customer** (optional) and has many **columns** and **cards**.
+* **project_members** is the direct user↔project join table; **group_project_access** grants access to all group members at once.
+* **cards** belong to a **column** and a **project**; they can have a `parent_card_id` for sub-cards.
+* **attachments** are polymorphic: `owner_type` + `owner_id` point to any of `card`, `card_comment`, `chat_message`, or `conv_message`.
+* **time_entries** link a user to any combination of customer, project, card, and contract.
