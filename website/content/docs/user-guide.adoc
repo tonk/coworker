@@ -76,8 +76,14 @@ Filter by customer using the dropdown at the top.
 
 === Columns
 
-Add, rename, reorder, and delete columns from the column header menu (⋮).
-Set a *WIP limit* on a column to get a visual warning when the column holds more cards than the limit.
+Add columns with *+ Add Column* in the board toolbar (project admins and owners).
+Double-click a column title to rename it; drag the column header to reorder; remove an empty column with the trash icon.
+
+Open *Column settings* (⚙) on a column header to change its colour and optional *WIP limit* (maximum cards).
+The header shows count versus limit (for example `3 / 5`); it is emphasized when the column is at or over the limit.
+Leave the limit empty to turn off WIP tracking.
+
+You can also set an optional WIP limit when creating a new column.
 
 === Cards
 

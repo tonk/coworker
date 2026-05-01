@@ -50,6 +50,7 @@
             @card-moved="onCardMoved"
             @rename-column="onRenameColumn"
             @delete-column="onDeleteColumn"
+            @edit-column="openEditColumn"
           />
         </div>
       </div>
@@ -66,10 +67,38 @@
           <label class="form-label">{{ $t('project.color') }}</label>
           <input type="color" class="form-input" v-model="newColumn.color" style="height:40px;padding:4px" />
         </div>
+        <div class="form-group">
+          <label class="form-label">{{ $t('board.wip_limit') }}</label>
+          <input class="form-input" type="text" inputmode="numeric" v-model="newColumn.wip" autocomplete="off" />
+          <p class="form-hint">{{ $t('board.wip_limit_hint') }}</p>
+        </div>
       </form>
       <template #footer>
         <button class="btn btn-secondary" @click="showAddColumn = false">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="submitAddColumn">{{ $t('common.create') }}</button>
+      </template>
+    </BaseModal>
+
+    <!-- Edit column modal -->
+    <BaseModal v-if="showEditColumn" :title="$t('board.edit_column')" @close="showEditColumn = false">
+      <form @submit.prevent="submitEditColumn">
+        <div class="form-group">
+          <label class="form-label">{{ $t('board.column_name') }}</label>
+          <input class="form-input" v-model="editColumn.name" required autofocus />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ $t('project.color') }}</label>
+          <input type="color" class="form-input" v-model="editColumn.color" style="height:40px;padding:4px" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ $t('board.wip_limit') }}</label>
+          <input class="form-input" type="text" inputmode="numeric" v-model="editColumn.wip" autocomplete="off" />
+          <p class="form-hint">{{ $t('board.wip_limit_hint') }}</p>
+        </div>
+      </form>
+      <template #footer>
+        <button type="button" class="btn btn-secondary" @click="showEditColumn = false">{{ $t('common.cancel') }}</button>
+        <button type="button" class="btn btn-primary" @click="submitEditColumn">{{ $t('common.save') }}</button>
       </template>
     </BaseModal>
 
@@ -114,8 +143,11 @@ const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
 
 const showAddColumn = ref(false)
+const showEditColumn = ref(false)
+const editingColumnId = ref(null)
 const selectedCard = ref(null)
-const newColumn = ref({ name: '', color: '#94a3b8' })
+const newColumn = ref({ name: '', color: '#94a3b8', wip: '' })
+const editColumn = ref({ name: '', color: '#94a3b8', wip: '' })
 const columnsEl = ref(null)
 let columnSortable = null
 
@@ -209,13 +241,58 @@ function openAddCard(columnId) {
 }
 
 async function submitAddColumn() {
-  if (!newColumn.value.name) return
+  if (!newColumn.value.name.trim()) return
   try {
-    await boardStore.createColumn(newColumn.value.name, { color: newColumn.value.color })
+    const extra = { color: newColumn.value.color }
+    const raw = String(newColumn.value.wip ?? '').trim()
+    if (raw !== '') {
+      const n = parseInt(raw, 10)
+      if (!Number.isFinite(n) || n < 1) {
+        ui.error(t('board.wip_limit_invalid'))
+        return
+      }
+      extra.wip_limit = n
+    }
+    await boardStore.createColumn(newColumn.value.name.trim(), extra)
     showAddColumn.value = false
-    newColumn.value = { name: '', color: '#94a3b8' }
+    newColumn.value = { name: '', color: '#94a3b8', wip: '' }
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to create column')
+  }
+}
+
+function openEditColumn(column) {
+  editingColumnId.value = column.id
+  editColumn.value = {
+    name: column.name,
+    color: column.color || '#94a3b8',
+    wip: column.wip_limit != null && column.wip_limit !== undefined ? String(column.wip_limit) : ''
+  }
+  showEditColumn.value = true
+}
+
+async function submitEditColumn() {
+  const name = editColumn.value.name.trim()
+  if (!name || editingColumnId.value == null) return
+  const payload = { name, color: editColumn.value.color || '#94a3b8' }
+  const raw = String(editColumn.value.wip ?? '').trim()
+  if (raw === '') {
+    payload.wip_limit_clear = true
+  } else {
+    const n = parseInt(raw, 10)
+    if (!Number.isFinite(n) || n < 1) {
+      ui.error(t('board.wip_limit_invalid'))
+      return
+    }
+    payload.wip_limit = n
+  }
+  try {
+    const { data } = await projectsApi.updateColumn(slug.value, editingColumnId.value, payload)
+    boardStore.updateColumn(data)
+    showEditColumn.value = false
+    editingColumnId.value = null
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update column')
   }
 }
 
@@ -356,4 +433,6 @@ async function onCardMoved({ cardId, fromColumnId, toColumnId, newIndex }) {
 
 :global(.column-ghost) { opacity: 0.4; background: var(--color-primary) !important; }
 :global(.column-drag) { transform: rotate(1deg); box-shadow: var(--shadow-md); }
+
+.form-hint { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; margin-bottom: 0; }
 </style>

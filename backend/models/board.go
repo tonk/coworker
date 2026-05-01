@@ -16,7 +16,7 @@ type Column struct {
 	Name      string         `gorm:"not null;size:200" json:"name"`
 	Position  float64        `gorm:"not null;default:0" json:"position"`
 	Color     string         `gorm:"size:7" json:"color"`
-	WIPLimit  *int           `json:"wip_limit"`
+	WIPLimit  *int           `gorm:"column:wip_limit" json:"wip_limit"`
 	Cards     []Card         `json:"cards,omitempty"`
 }
 

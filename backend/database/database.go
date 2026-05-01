@@ -348,7 +348,24 @@ func generateKeyPrefix(name string) string {
 	return string(result[:3])
 }
 
+// migrateLegacyColumnWIPLimitName renames GORM's default column "w_ip_limit" to "wip_limit".
+// Updates using map keys matched the JSON/API name "wip_limit", but inserts used "w_ip_limit",
+// so limits appeared to save on create yet clears/edits via Updates wrote to a non-existent column.
+func migrateLegacyColumnWIPLimitName(db *gorm.DB) error {
+	m := db.Migrator()
+	if !m.HasTable(&models.Column{}) {
+		return nil
+	}
+	if m.HasColumn(&models.Column{}, "w_ip_limit") && !m.HasColumn(&models.Column{}, "wip_limit") {
+		return m.RenameColumn(&models.Column{}, "w_ip_limit", "wip_limit")
+	}
+	return nil
+}
+
 func autoMigrate(db *gorm.DB) error {
+	if err := migrateLegacyColumnWIPLimitName(db); err != nil {
+		return err
+	}
 	err := db.AutoMigrate(
 		&models.User{},
 		&models.Project{},

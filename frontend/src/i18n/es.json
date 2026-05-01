@@ -215,7 +215,13 @@
     "log_time": "Registrar tiempo",
     "time_spent_total": "Tiempo total invertido",
     "toggle_sections": "Toggle sections",
-    "extra_assignees": "Asignados adicionales"
+    "extra_assignees": "Asignados adicionales",
+    "edit_column": "Column settings",
+    "wip_limit_hint": "Optional. The header shows card count vs limit; it turns red when at or over the limit.",
+    "wip_limit_invalid": "Enter a positive number or leave empty for no limit.",
+    "column_cards_tooltip": "Open cards in this column: {count}",
+    "column_wip_tooltip": "Work in progress limit: {limit}. This column has {count} cards.",
+    "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit."
   },
   "chat": {
     "title": "Chat del equipo",

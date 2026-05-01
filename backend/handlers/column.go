@@ -54,6 +54,9 @@ func CreateColumn(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
+	if req.WIPLimit != nil && *req.WIPLimit < 1 {
+		req.WIPLimit = nil
+	}
 
 	// Find max position
 	var maxPos float64
@@ -98,11 +101,15 @@ func UpdateColumn(c *gin.Context) {
 	}
 
 	var req struct {
-		Name     string `json:"name"`
-		Color    string `json:"color"`
-		WIPLimit *int   `json:"wip_limit"`
+		Name          string `json:"name"`
+		Color         string `json:"color"`
+		WIPLimit      *int   `json:"wip_limit"`
+		ClearWIPLimit bool   `json:"wip_limit_clear"`
 	}
-	c.ShouldBindJSON(&req)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
 
 	updates := map[string]interface{}{}
 	if req.Name != "" {
@@ -111,11 +118,26 @@ func UpdateColumn(c *gin.Context) {
 	if req.Color != "" {
 		updates["color"] = req.Color
 	}
-	if req.WIPLimit != nil {
-		updates["wip_limit"] = req.WIPLimit
+	if req.ClearWIPLimit {
+		updates["wip_limit"] = nil
+	} else if req.WIPLimit != nil {
+		if *req.WIPLimit < 1 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "wip_limit must be at least 1"})
+			return
+		}
+		updates["wip_limit"] = *req.WIPLimit
+	}
+
+	if len(updates) == 0 {
+		c.JSON(http.StatusOK, col)
+		return
 	}
 
 	database.DB.Model(&col).Updates(updates)
+	if err := database.DB.Where("id = ? AND project_id = ?", col.ID, project.ID).First(&col).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardColumnUpdated, Payload: col})
 	c.JSON(http.StatusOK, col)
 }
