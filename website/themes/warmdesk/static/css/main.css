@@ -464,6 +464,7 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
   box-shadow: 0 4px 16px rgba(0,0,0,0.09);
   display: block;
   transition: box-shadow 0.2s;
+  cursor: zoom-in;
 }
 .screenshot-item img:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.14); }
 .screenshot-caption {
@@ -471,6 +472,37 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
   color: var(--color-text-muted);
   text-align: center;
   font-style: italic;
+}
+
+/* Full-screen screenshot preview (click overlay or image to close) */
+.screenshot-popout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgba(15, 23, 42, 0.88);
+  cursor: zoom-out;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+.screenshot-popout-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+.screenshot-popout-overlay img {
+  max-width: min(96vw, 1400px);
+  max-height: min(92vh, 900px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.55);
+  cursor: zoom-out;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 /* ---------- Install section -------------------------------- */
@@ -483,8 +515,10 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
   font-size: 0.875rem;
   line-height: 1.75;
   text-align: left;
-  max-width: 640px;
+  max-width: 100%;
+  width: 100%;
   margin: 32px auto;
+  box-sizing: border-box;
   overflow-x: auto;
   color: #cdd6f4;
 }

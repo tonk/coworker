@@ -59,4 +59,50 @@
       a.classList.add('active');
     }
   });
+
+  // Screenshots: click thumbnail for full-screen overlay; click overlay or image to dismiss (Escape too)
+  const shotsSection = document.getElementById('screenshots');
+  if (shotsSection) {
+    const overlay = document.createElement('div');
+    overlay.className = 'screenshot-popout-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Enlarged screenshot');
+    const popImg = document.createElement('img');
+    overlay.appendChild(popImg);
+    document.body.appendChild(overlay);
+
+    var prevOverflow = '';
+
+    function closePopout() {
+      overlay.classList.remove('is-open');
+      document.body.style.overflow = prevOverflow;
+      prevOverflow = '';
+    }
+
+    function openPopout(thumb) {
+      popImg.src = thumb.currentSrc || thumb.src;
+      popImg.alt = thumb.alt || '';
+      prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      overlay.classList.add('is-open');
+    }
+
+    shotsSection.querySelectorAll('.screenshot-item img').forEach(function (thumb) {
+      thumb.addEventListener('click', function (e) {
+        e.preventDefault();
+        openPopout(thumb);
+      });
+    });
+
+    overlay.addEventListener('click', function () {
+      closePopout();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) {
+        closePopout();
+      }
+    });
+  }
 })();

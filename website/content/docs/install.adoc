@@ -72,7 +72,7 @@ See the full link:#configuration-reference[configuration reference] below.
 On first start, WarmDesk creates `warmdesk.db` (SQLite) in the current directory and starts listening on port 8080.
 Open `http://localhost:8080` in your browser and register the first user.
 
-TIP: Promote the first user to admin by running `UPDATE users SET global_role='admin' WHERE id=1;` in the SQLite shell, or via another admin account once the first admin exists.
+TIP: On an empty database, that first registration becomes an **admin** automatically. Further admins can be promoted from *Admin → Users*.
 
 == Build from source
 

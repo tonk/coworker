@@ -214,7 +214,7 @@ There are currently no automated tests (no `*_test.go` files, no Vitest/Jest con
 
 - `deploy/` has ready-made templates for systemd, nginx (with SSL), and Apache.
 - For multi-instance deployments set `redis_url` — this routes WebSocket broadcasts through Redis pub/sub instead of in-process memory.
-- First-run with an empty DB: register the first user normally; promote to admin with a direct DB update or via another admin account.
+- First-run with an empty DB: register the first user normally—they receive `admin` automatically; use a direct DB update only to recover if every admin is lost.
 
 ### Tauri desktop — known security limitation
 

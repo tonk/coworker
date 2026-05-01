@@ -260,7 +260,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - Running as a systemd service
 - Nginx and Apache reverse proxy configuration
 - PostgreSQL / MySQL setup
-- First admin account setup
+- First-run login (first user is admin)
 
 ## Features
 

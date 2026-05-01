@@ -318,9 +318,14 @@ admin: **Admin → Settings → Allow public registration → Off**.
 >   "UPDATE users SET global_role='admin' WHERE username='yourname';"
 > ```
 >
-> **PostgreSQL / MySQL**
+> **PostgreSQL**
 > ```sql
 > UPDATE users SET global_role = 'admin' WHERE username = 'yourname';
+> ```
+>
+> **MySQL**
+> ```bash
+> mysql -u warmdesk -p -e "UPDATE users SET global_role='admin' WHERE username='yourname';" warmdesk
 > ```
 
 ---

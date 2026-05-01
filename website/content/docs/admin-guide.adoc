@@ -13,21 +13,29 @@ weight: 30
 See the link:/docs/install/[Installation Guide] for binary download, database setup, systemd, and reverse proxy instructions.
 This guide focuses on configuration and day-to-day administration.
 
-== First admin account
+== First registered user (automatic admin)
 
-After the first user registers, promote them to admin:
+When the user table is empty, the account created by the first successful self-registration is given the `admin` global role automatically—no SQL or manual promotion step.
+
+Additional administrators can be assigned later from *Admin panel → Users*.
+
+=== Recovering admin access
+
+If every administrator has been demoted or deactivated and you are locked out, restore access with a direct database update (use the account’s **username**, not its numeric id):
 
 [source,bash]
 ----
 # SQLite
-sqlite3 warmdesk.db "UPDATE users SET global_role='admin' WHERE id=1;"
+sqlite3 warmdesk.db "UPDATE users SET global_role='admin' WHERE username='yourname';"
 
 # PostgreSQL
-psql -U warmdesk -c "UPDATE users SET global_role='admin' WHERE id=1;"
+psql -U warmdesk -c "UPDATE users SET global_role='admin' WHERE username='yourname';"
+
+# MySQL (adjust user and database name to match `db_dsn` in warmdesk.yaml)
+mysql -u warmdesk -p -e "UPDATE users SET global_role='admin' WHERE username='yourname';" warmdesk
 ----
 
-Restart the server (not strictly required, but good practice).
-Future admin accounts can be promoted from the admin panel.
+Restarting the server is optional after manual fixes like these.
 
 == Global roles
 

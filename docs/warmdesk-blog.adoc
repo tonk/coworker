@@ -372,7 +372,7 @@ EOF
 ./warmdesk
 ----
 
-Open `http://localhost:8080`, register the first user, and promote them to admin with a direct DB update — or use another admin account once the first admin exists.
+Open `http://localhost:8080` and register the first user—that account becomes **admin** automatically on an empty database.
 
 === Database Selection
 
