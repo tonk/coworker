@@ -5,7 +5,7 @@ BACKEND   := backend
 FRONTEND  := frontend
 VERSION   := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
 ARCHIVE   := warmdesk-$(VERSION).tar.gz
-.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable help
+.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit help
 
 help:
 	@echo "WarmDesk $(VERSION)"
@@ -20,6 +20,7 @@ help:
 	@echo "  run                  build then run the production binary locally"
 	@echo "  package              build then create a dist tarball (warmdesk-<version>.tar.gz)"
 	@echo "  clean                Remove dist/, build artifacts and Tauri target directory"
+	@echo "  docs-commit          Stage docs/website files and create a commit (set MSG=... and BODY=...)"
 	@echo ""
 	@echo "Linux desktop  (requires Rust + webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel)"
 	@echo "  appimage             AppImage (x86_64)"
@@ -200,3 +201,9 @@ clean:
 # Build and run production binary locally (web UI is embedded in the binary)
 run: build
 	cd $(DIST_DIR) && ./$(BINARY)
+
+# Stage docs/website updates and create a formatted commit.
+# Usage:
+#   make docs-commit MSG="docs: update group video docs" BODY="Add LiveKit docs and blog item."
+docs-commit:
+	@./scripts/commit-docs-website.sh "$(MSG)" "$(BODY)"
