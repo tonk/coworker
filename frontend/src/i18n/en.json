@@ -275,6 +275,8 @@
     "scrum_storypoints_hint": "When enabled, a Story Points field appears on every card for Scrum estimation.",
     "gravatar_enabled": "Gravatar Avatars",
     "gravatar_hint": "When enabled, user profile pictures are fetched from Gravatar based on the user's email address. When disabled, initials-based avatars are used instead.",
+    "external_image_proxy_enabled": "External Image Proxy",
+    "external_image_proxy_hint": "When enabled, external avatar/image URLs are loaded through the built-in same-origin proxy for strict CSP compatibility.",
     "session_timeout": "Session Timeout",
     "session_timeout_unit": "minutes (0 = disabled)",
     "session_timeout_hint": "Automatically log out users after this many minutes of inactivity. Set to 0 to disable.",
@@ -680,6 +682,13 @@
     "speaker": "Speaker",
     "test_speaker": "Test",
     "input_level": "Input level",
-    "no_camera": "No camera"
+    "no_camera": "No camera",
+    "group_video": "Group video call",
+    "group_call": "Group call",
+    "joining_group": "Joining room…",
+    "group_you": "You",
+    "group_peer": "User {id}",
+    "livekit_unavailable": "Group video is not enabled on this server. An administrator must configure LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
+    "livekit_connect_failed": "Could not connect to the video room. Check your network and LiveKit settings."
   }
 }

@@ -1,0 +1,34 @@
+---
+title: "Group Video Chat Is Here"
+date: "2026-05-03"
+author: "Ton Kersten"
+description: "WarmDesk now supports group video calls in direct-message group conversations."
+draft: false
+---
+:doctype: article
+:icons!:
+
+WarmDesk now supports *group video chat* in direct-message group conversations.
+
+== What's new
+
+* Group chats with *3 or more members* can now start a shared video room from the chat header.
+* One-on-one calls continue to use peer-to-peer WebRTC.
+* Group calls use LiveKit for stable multi-user media routing.
+
+== Operator notes
+
+Group video requires LiveKit server settings on the WarmDesk backend:
+
+[source,yaml]
+----
+livekit_url: "wss://livekit.example.com"
+livekit_api_key: "APIxxxxxxxxxxxxxxxx"
+livekit_api_secret: "your-secret"
+----
+
+If LiveKit is not configured, users see a clear in-app status banner in eligible group chats and can continue using normal chat and 1:1 calls.
+
+== Why this matters
+
+This closes a long-standing gap for teams that run planning, standups, and incident triage directly in WarmDesk group conversations.

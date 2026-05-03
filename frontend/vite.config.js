@@ -26,6 +26,30 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         manualChunks(id) {
+          // Split large app-internal shared modules out of the entry chunk.
+          if (id.includes('/src/stores/'))
+            return 'chunk-stores'
+          if (id.includes('/src/api/') || id.includes('/src/composables/useWebSocket'))
+            return 'chunk-app-net'
+          if (id.includes('/src/i18n/'))
+            return 'chunk-app-i18n'
+          if (
+            id.includes('/src/components/layout/') ||
+            id.includes('/src/components/common/ToastContainer.vue') ||
+            id.includes('/src/components/common/UpdateBanner.vue') ||
+            id.includes('/src/composables/useProjectChatUnread') ||
+            id.includes('/src/composables/useUserPreferences') ||
+            id.includes('/src/composables/useUpdateCheck')
+          )
+            return 'chunk-app-shell'
+          if (
+            id.includes('/src/components/call/') ||
+            id.includes('/src/composables/useWebRTCCall') ||
+            id.includes('/src/composables/useLiveKitGroupCall') ||
+            id.includes('/src/composables/useCallSettings')
+          )
+            return 'chunk-calls'
+
           if (!id.includes('node_modules')) return
 
           // Vue core + router + state

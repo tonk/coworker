@@ -19,4 +19,6 @@ export const messagesApi = {
   uploadAvatar: (convId, formData) => client.post(`/conversations/${convId}/avatar`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   editConvMessage: (convId, msgId, body) => client.patch(`/conversations/${convId}/messages/${msgId}`, { body }),
   toggleConvReaction: (convId, msgId, emoji) => client.post(`/conversations/${convId}/messages/${msgId}/reactions`, { emoji }),
+  /** LiveKit room token for group video (503 if not configured on server). */
+  getLiveKitToken: (convId) => client.get(`/conversations/${convId}/livekit-token`),
 }

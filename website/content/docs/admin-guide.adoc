@@ -126,6 +126,21 @@ Test the SMTP configuration with the *Send test email* button.
 * *Session timeout* — idle minutes before a user is logged out (0 = no timeout)
 * *Password max age* — days before a password expires (0 = never); users with expired passwords are redirected to Settings on login
 
+=== Group video calls (LiveKit)
+
+WarmDesk supports group video calls in DM group conversations with 3+ members via LiveKit.
+
+Add these settings in `warmdesk.yaml` (or environment variables) and restart the server:
+
+[source,yaml]
+----
+livekit_url: "wss://livekit.example.com"
+livekit_api_key: "APIxxxxxxxxxxxxxxxx"
+livekit_api_secret: "your-secret"
+----
+
+When LiveKit is not configured, one-on-one WebRTC calls continue to work and the UI shows a status banner in group chats explaining that group video is unavailable on that server.
+
 === Branding
 
 * *Company name* — shown in the page title and emails

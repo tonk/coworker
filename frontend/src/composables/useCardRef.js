@@ -4,6 +4,7 @@ import hljs from 'highlight.js/lib/core'
 import DOMPurify from 'dompurify'
 import { useRouter } from 'vue-router'
 import client from '@/api/client'
+import { resolveAssetUrl } from '@/api/serverConfig'
 
 // Register the languages most likely to appear in chat code blocks
 import bash from 'highlight.js/lib/languages/bash'
@@ -57,7 +58,13 @@ export function renderMarkdown(text) {
   const withRefs = (text || '').replace(CARD_REF_RE, (_, ref) =>
     `<span class="card-ref-link" data-card-ref="${ref}">#${ref}</span>`
   )
-  return DOMPurify.sanitize(marked.parse(withRefs), { ADD_ATTR: ['data-card-ref'] })
+  const safe = DOMPurify.sanitize(marked.parse(withRefs), { ADD_ATTR: ['data-card-ref'] })
+  const doc = new DOMParser().parseFromString(safe, 'text/html')
+  doc.querySelectorAll('img[src]').forEach((img) => {
+    const src = img.getAttribute('src') || ''
+    img.setAttribute('src', resolveAssetUrl(src))
+  })
+  return doc.body.innerHTML
 }
 
 export function firstUrl(text) {

@@ -117,7 +117,7 @@
           <div class="conv-avatar-wrap">
             <template v-if="conv.is_group">
               <div class="group-avatar">
-                <img v-if="conv.avatar" :src="conv.avatar" class="avatar-img" @error="e => e.target.style.display='none'" />
+                <img v-if="conv.avatar" :src="resolveAssetUrl(conv.avatar)" class="avatar-img" @error="e => e.target.style.display='none'" />
                 <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
             </template>
@@ -169,7 +169,7 @@
           <div class="conv-avatar-wrap">
             <template v-if="activeConv.is_group">
               <div class="group-avatar group-avatar-md group-avatar-upload" @click="triggerAvatarUpload" title="Change group avatar">
-                <img v-if="activeConv.avatar" :src="activeConv.avatar" class="avatar-img" @error="e => e.target.style.display='none'" />
+                <img v-if="activeConv.avatar" :src="resolveAssetUrl(activeConv.avatar)" class="avatar-img" @error="e => e.target.style.display='none'" />
                 <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <div class="avatar-upload-overlay">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -242,6 +242,19 @@
             </button>
             <CallSettingsDropdown v-if="showCallSettings" :pos="callSettingsPos" @close="showCallSettings = false" />
           </div>
+          <!-- Group video (3+ members) — LiveKit room -->
+          <div v-else-if="activeConv.members?.length >= 3" class="call-btn-group" ref="groupCallBtnGroupRef">
+            <button class="add-member-btn call-btn-header" :title="$t('call.group_video')" @click="initiateGroupCall">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="23 7 16 12 23 17 23 7"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </button>
+            <button class="add-member-btn call-settings-chevron" :title="$t('call.settings')" @click.stop="toggleGroupCallSettings">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <CallSettingsDropdown v-if="showGroupCallSettings" :pos="groupCallSettingsPos" @close="showGroupCallSettings = false" />
+          </div>
           <!-- Add member button for group chats -->
           <button v-if="activeConv.is_group" class="add-member-btn" @click="showAddMember = !showAddMember" title="Add member">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
@@ -265,6 +278,18 @@
             </div>
             <div v-if="!filteredAddMembers.length" class="search-empty">No users to add</div>
           </div>
+        </div>
+
+        <div v-if="showGroupCallBanner" class="group-call-banner">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          <span class="group-call-banner-text">{{ groupCallBannerText }}</span>
+          <button class="group-call-banner-close" type="button" @click="dismissGroupCallBanner" aria-label="Dismiss">
+            ×
+          </button>
         </div>
 
         <!-- Messages -->
@@ -477,6 +502,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
+import { useLiveKitGroupCall } from '@/composables/useLiveKitGroupCall'
 import CallSettingsDropdown from '@/components/call/CallSettingsDropdown.vue'
 import { messagesApi } from '@/api/messages'
 import { projectsApi } from '@/api/projects'
@@ -485,6 +511,7 @@ import { useNotificationsStore } from '@/stores/notifications'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { useChatLayout } from '@/composables/useChatLayout'
 import { useChatNotify } from '@/composables/useChatNotify'
+import { resolveAssetUrl } from '@/api/serverConfig'
 import { avatarUrl } from '@/composables/useAvatar'
 import { useCompose } from '@/composables/useCompose'
 import { QUICK_REACTION_EMOJIS } from '@/utils/emoticons'
@@ -510,10 +537,16 @@ const { layout, setLayout } = useChatLayout()
 const { notifyEnabled, toggleNotify, desktopNotify, shouldNotifyNow } = useChatNotify()
 const ui = useUIStore()
 const { startCall: _startCall, state: callState } = useWebRTCCall()
+const { joinGroupCall: _joinGroupCall, state: groupCallState } = useLiveKitGroupCall()
 
 const callBtnGroupRef  = ref(null)
 const showCallSettings = ref(false)
 const callSettingsPos  = ref({ top: 0, right: 0 })
+
+const groupCallBtnGroupRef = ref(null)
+const showGroupCallSettings = ref(false)
+const groupCallSettingsPos = ref({ top: 0, right: 0 })
+const dismissedGroupCallBanners = ref({})
 
 function toggleCallSettings() {
   if (showCallSettings.value) { showCallSettings.value = false; return }
@@ -527,6 +560,18 @@ function toggleCallSettings() {
   showCallSettings.value = true
 }
 
+function toggleGroupCallSettings() {
+  if (showGroupCallSettings.value) { showGroupCallSettings.value = false; return }
+  const rect = groupCallBtnGroupRef.value?.getBoundingClientRect()
+  if (rect) {
+    groupCallSettingsPos.value = {
+      top:   Math.round(rect.bottom + 8),
+      right: Math.round(window.innerWidth - rect.right),
+    }
+  }
+  showGroupCallSettings.value = true
+}
+
 function initiateCall() {
   if (!activeConv.value || activeConv.value.is_group) return
   const other = otherMember(activeConv.value)
@@ -538,6 +583,44 @@ function initiateCall() {
     activeConv.value.id
   )
 }
+
+function initiateGroupCall() {
+  const c = activeConv.value
+  if (!c?.is_group || (c.members?.length ?? 0) < 3) return
+  const profiles = (c.members || []).map((m) => ({
+    identity: m.user_id,
+    name: m.user?.display_name || m.user?.username || '',
+    avatar: getAvatar(m.user) || '',
+  }))
+  void _joinGroupCall(c.id, convDisplayName(c), profiles)
+}
+
+const showGroupCallBanner = computed(() => {
+  const c = activeConv.value
+  if (!c?.is_group || (c.members?.length ?? 0) < 3) return false
+  if (dismissedGroupCallBanners.value[c.id]) return false
+  return groupCallState.errorMsg === 'livekit_unavailable' || groupCallState.errorMsg === 'livekit_connect_failed'
+})
+
+const groupCallBannerText = computed(() => {
+  if (groupCallState.errorMsg === 'livekit_unavailable') return t('call.livekit_unavailable')
+  if (groupCallState.errorMsg === 'livekit_connect_failed') return t('call.livekit_connect_failed')
+  return ''
+})
+
+function dismissGroupCallBanner() {
+  const convId = activeConv.value?.id
+  if (!convId) return
+  dismissedGroupCallBanners.value = { ...dismissedGroupCallBanners.value, [convId]: true }
+}
+
+watch(
+  () => [activeConv.value?.id, groupCallState.errorMsg],
+  ([convId, err], [, prevErr]) => {
+    if (!convId || !err || err === prevErr) return
+    dismissedGroupCallBanners.value = { ...dismissedGroupCallBanners.value, [convId]: false }
+  }
+)
 
 // ── New-message toast ────────────────────────────────────────────────────────
 const chatToast = ref(null)
@@ -1634,6 +1717,33 @@ function dayLabel(dateStr) {
   flex-shrink: 0;
 }
 .add-member-panel .search-input { padding-left: 10px; }
+
+.group-call-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 16%, var(--color-surface));
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.group-call-banner-text { flex: 1; }
+.group-call-banner-close {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+.group-call-banner-close:hover {
+  background: var(--color-surface-raised, var(--color-bg));
+}
 
 /* Messages */
 .dm-messages {

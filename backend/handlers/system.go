@@ -22,42 +22,43 @@ import (
 )
 
 const (
-	settingRegistrationEnabled    = "registration_enabled"
-	settingDefaultDateTimeFormat  = "default_date_time_format"
-	settingDefaultTimezone        = "default_timezone"
-	settingDefaultTheme           = "default_theme"
-	settingDefaultFont            = "default_font"
-	settingDefaultFontSize        = "default_font_size"
-	settingDefaultLocale          = "default_locale"
-	settingSMTPHost               = "smtp_host"
-	settingSMTPPort               = "smtp_port"
-	settingSMTPFrom               = "smtp_from"
-	settingSMTPUsername           = "smtp_username"
-	settingSMTPPassword           = "smtp_password"
-	settingSessionTimeoutMinutes  = "session_timeout_minutes"
-	settingCompanyName            = "company_name"
-	settingCompanyLogo            = "company_logo"
-	settingDefaultColumns         = "default_columns"
-	settingDefaultLabels          = "default_labels"
-	settingMFARequired            = "mfa_required"
-	settingPasswordMinLength      = "password_min_length"
-	settingPasswordRequireUpper   = "password_require_upper"
-	settingPasswordRequireLower   = "password_require_lower"
-	settingPasswordRequireDigit   = "password_require_digit"
-	settingPasswordRequireSpecial = "password_require_special"
-	settingBackupSchedule         = "backup_schedule"
-	settingBackupStartTime        = "backup_start_time"
-	settingBackupLastRun          = "backup_last_run"
-	settingBackupKeep             = "backup_keep"
-	settingBackupEmailEnabled     = "backup_email_enabled"
-	settingBackupEmailAddress     = "backup_email_address"
-	settingBackupLastSuccess      = "backup_last_success"
-	settingScrumStorypointsEnabled = "scrum_storypoints_enabled"
-	settingGravatarEnabled         = "gravatar_enabled"
-	settingLoginBrandingEnabled    = "login_branding_enabled"
-	settingCompanyLogoDark         = "company_logo_dark"
-	settingAllowedIPs              = "allowed_ips"
-	settingPasswordChangePeriodDays = "password_change_period_days"
+	settingRegistrationEnabled       = "registration_enabled"
+	settingDefaultDateTimeFormat     = "default_date_time_format"
+	settingDefaultTimezone           = "default_timezone"
+	settingDefaultTheme              = "default_theme"
+	settingDefaultFont               = "default_font"
+	settingDefaultFontSize           = "default_font_size"
+	settingDefaultLocale             = "default_locale"
+	settingSMTPHost                  = "smtp_host"
+	settingSMTPPort                  = "smtp_port"
+	settingSMTPFrom                  = "smtp_from"
+	settingSMTPUsername              = "smtp_username"
+	settingSMTPPassword              = "smtp_password"
+	settingSessionTimeoutMinutes     = "session_timeout_minutes"
+	settingCompanyName               = "company_name"
+	settingCompanyLogo               = "company_logo"
+	settingDefaultColumns            = "default_columns"
+	settingDefaultLabels             = "default_labels"
+	settingMFARequired               = "mfa_required"
+	settingPasswordMinLength         = "password_min_length"
+	settingPasswordRequireUpper      = "password_require_upper"
+	settingPasswordRequireLower      = "password_require_lower"
+	settingPasswordRequireDigit      = "password_require_digit"
+	settingPasswordRequireSpecial    = "password_require_special"
+	settingBackupSchedule            = "backup_schedule"
+	settingBackupStartTime           = "backup_start_time"
+	settingBackupLastRun             = "backup_last_run"
+	settingBackupKeep                = "backup_keep"
+	settingBackupEmailEnabled        = "backup_email_enabled"
+	settingBackupEmailAddress        = "backup_email_address"
+	settingBackupLastSuccess         = "backup_last_success"
+	settingScrumStorypointsEnabled   = "scrum_storypoints_enabled"
+	settingGravatarEnabled           = "gravatar_enabled"
+	settingExternalImageProxyEnabled = "external_image_proxy_enabled"
+	settingLoginBrandingEnabled      = "login_branding_enabled"
+	settingCompanyLogoDark           = "company_logo_dark"
+	settingAllowedIPs                = "allowed_ips"
+	settingPasswordChangePeriodDays  = "password_change_period_days"
 )
 
 func init() {
@@ -67,6 +68,12 @@ func init() {
 // IsGravatarEnabled returns true when the admin has enabled Gravatar avatars.
 func IsGravatarEnabled() bool {
 	return loadAllSettings()[settingGravatarEnabled] != "false"
+}
+
+// IsExternalImageProxyEnabled returns true when the media proxy should be used
+// for external avatar/image URLs.
+func IsExternalImageProxyEnabled() bool {
+	return loadAllSettings()[settingExternalImageProxyEnabled] != "false"
 }
 
 // GetPasswordChangePeriodDays returns the configured password change period in
@@ -102,40 +109,41 @@ func baseURL(c *gin.Context) string {
 }
 
 var systemSettingDefaults = map[string]string{
-	settingRegistrationEnabled:    "true",
-	settingDefaultDateTimeFormat:  "YYYY-MM-DD HH:mm",
-	settingDefaultTimezone:        "UTC",
-	settingDefaultTheme:           "system",
-	settingDefaultFont:            "system",
-	settingDefaultFontSize:        "14",
-	settingDefaultLocale:          "en",
-	settingSMTPHost:               "",
-	settingSMTPPort:               "587",
-	settingSMTPFrom:               "",
-	settingSMTPUsername:           "",
-	settingSMTPPassword:           "",
-	settingSessionTimeoutMinutes:  "60",
-	settingCompanyName:            "",
-	settingCompanyLogo:            "",
-	settingCompanyLogoDark:        "",
-	settingDefaultColumns:         "Backlog",
-	settingDefaultLabels:          "Bug\nFeature\nDesign\nContent",
-	settingMFARequired:            "false",
-	settingPasswordMinLength:      "12",
-	settingPasswordRequireUpper:   "false",
-	settingPasswordRequireLower:   "true",
-	settingPasswordRequireDigit:   "true",
-	settingPasswordRequireSpecial: "false",
-	settingBackupSchedule:         "disabled",
-	settingBackupStartTime:        "",
-	settingBackupLastRun:          "",
-	settingBackupKeep:             "10",
-	settingBackupEmailEnabled:      "false",
-	settingBackupEmailAddress:      "",
-	settingBackupLastSuccess:        "",
-	settingScrumStorypointsEnabled:  "false",
-	settingGravatarEnabled:          "true",
-	settingPasswordChangePeriodDays: "0",
+	settingRegistrationEnabled:       "true",
+	settingDefaultDateTimeFormat:     "YYYY-MM-DD HH:mm",
+	settingDefaultTimezone:           "UTC",
+	settingDefaultTheme:              "system",
+	settingDefaultFont:               "system",
+	settingDefaultFontSize:           "14",
+	settingDefaultLocale:             "en",
+	settingSMTPHost:                  "",
+	settingSMTPPort:                  "587",
+	settingSMTPFrom:                  "",
+	settingSMTPUsername:              "",
+	settingSMTPPassword:              "",
+	settingSessionTimeoutMinutes:     "60",
+	settingCompanyName:               "",
+	settingCompanyLogo:               "",
+	settingCompanyLogoDark:           "",
+	settingDefaultColumns:            "Backlog",
+	settingDefaultLabels:             "Bug\nFeature\nDesign\nContent",
+	settingMFARequired:               "false",
+	settingPasswordMinLength:         "12",
+	settingPasswordRequireUpper:      "false",
+	settingPasswordRequireLower:      "true",
+	settingPasswordRequireDigit:      "true",
+	settingPasswordRequireSpecial:    "false",
+	settingBackupSchedule:            "disabled",
+	settingBackupStartTime:           "",
+	settingBackupLastRun:             "",
+	settingBackupKeep:                "10",
+	settingBackupEmailEnabled:        "false",
+	settingBackupEmailAddress:        "",
+	settingBackupLastSuccess:         "",
+	settingScrumStorypointsEnabled:   "false",
+	settingGravatarEnabled:           "true",
+	settingExternalImageProxyEnabled: "true",
+	settingPasswordChangePeriodDays:  "0",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -268,22 +276,23 @@ func GetSystemSettings(c *gin.Context) {
 	all := loadAllSettings()
 	timeoutMinutes, _ := strconv.Atoi(all[settingSessionTimeoutMinutes])
 	c.JSON(http.StatusOK, gin.H{
-		"registration_enabled":        all[settingRegistrationEnabled] != "false",
-		"default_date_time_format":    all[settingDefaultDateTimeFormat],
-		"default_timezone":            all[settingDefaultTimezone],
-		"default_theme":               all[settingDefaultTheme],
-		"default_font":                all[settingDefaultFont],
-		"default_font_size":           all[settingDefaultFontSize],
-		"default_locale":              all[settingDefaultLocale],
-		"session_timeout_minutes":     timeoutMinutes,
-		"company_name":                all[settingCompanyName],
-		"company_logo":                all[settingCompanyLogo],
-		"company_logo_dark":           all[settingCompanyLogoDark],
-		"login_branding_enabled":      all[settingLoginBrandingEnabled] == "true",
+		"registration_enabled":         all[settingRegistrationEnabled] != "false",
+		"default_date_time_format":     all[settingDefaultDateTimeFormat],
+		"default_timezone":             all[settingDefaultTimezone],
+		"default_theme":                all[settingDefaultTheme],
+		"default_font":                 all[settingDefaultFont],
+		"default_font_size":            all[settingDefaultFontSize],
+		"default_locale":               all[settingDefaultLocale],
+		"session_timeout_minutes":      timeoutMinutes,
+		"company_name":                 all[settingCompanyName],
+		"company_logo":                 all[settingCompanyLogo],
+		"company_logo_dark":            all[settingCompanyLogoDark],
+		"login_branding_enabled":       all[settingLoginBrandingEnabled] == "true",
 		"mfa_required":                 all[settingMFARequired] == "true",
 		"password_policy":              GetPasswordPolicy(),
 		"scrum_storypoints_enabled":    all[settingScrumStorypointsEnabled] == "true",
-		"gravatar_enabled":              all[settingGravatarEnabled] != "false",
+		"gravatar_enabled":             all[settingGravatarEnabled] != "false",
+		"external_image_proxy_enabled": all[settingExternalImageProxyEnabled] != "false",
 	})
 }
 
@@ -301,40 +310,41 @@ func AdminGetSystemSettings(c *gin.Context) {
 // AdminUpdateSystemSettings updates system settings.
 func AdminUpdateSystemSettings(c *gin.Context) {
 	var req struct {
-		MFARequired            *bool   `json:"mfa_required"`
-		RegistrationEnabled    *bool   `json:"registration_enabled"`
-		DefaultDateTimeFormat  string  `json:"default_date_time_format"`
-		DefaultTimezone        string  `json:"default_timezone"`
-		DefaultTheme           string  `json:"default_theme"`
-		DefaultFont            string  `json:"default_font"`
-		DefaultFontSize        string  `json:"default_font_size"`
-		DefaultLocale          string  `json:"default_locale"`
-		PasswordMinLength      *int    `json:"password_min_length"`
-		PasswordRequireUpper   *bool   `json:"password_require_upper"`
-		PasswordRequireLower   *bool   `json:"password_require_lower"`
-		PasswordRequireDigit   *bool   `json:"password_require_digit"`
-		PasswordRequireSpecial *bool   `json:"password_require_special"`
-		SMTPHost               *string `json:"smtp_host"`
-		SMTPPort               json.Number `json:"smtp_port"` // accepts "587" or 587
-		SMTPFrom               *string `json:"smtp_from"`
-		SMTPUsername           *string `json:"smtp_username"` // pointer so empty string clears it
-		SMTPPassword           *string `json:"smtp_password"` // pointer so empty string clears it
-		SessionTimeoutMinutes  *int    `json:"session_timeout_minutes"`
-		CompanyName            *string `json:"company_name"`
-		CompanyLogo            *string `json:"company_logo"`
-		CompanyLogoDark        *string `json:"company_logo_dark"`
-		DefaultColumns         *string `json:"default_columns"`
-		DefaultLabels          *string `json:"default_labels"`
-		BackupSchedule         *string `json:"backup_schedule"`
-		BackupStartTime        *string `json:"backup_start_time"`
-		BackupKeep             *int    `json:"backup_keep"`
-		BackupEmailEnabled          *bool   `json:"backup_email_enabled"`
-		BackupEmailAddress          *string `json:"backup_email_address"`
-		ScrumStorypointsEnabled     *bool   `json:"scrum_storypoints_enabled"`
-		GravatarEnabled             *bool   `json:"gravatar_enabled"`
-		LoginBrandingEnabled        *bool   `json:"login_branding_enabled"`
-		AllowedIPs                  *string `json:"allowed_ips"`
-		PasswordChangePeriodDays    *int    `json:"password_change_period_days"`
+		MFARequired               *bool       `json:"mfa_required"`
+		RegistrationEnabled       *bool       `json:"registration_enabled"`
+		DefaultDateTimeFormat     string      `json:"default_date_time_format"`
+		DefaultTimezone           string      `json:"default_timezone"`
+		DefaultTheme              string      `json:"default_theme"`
+		DefaultFont               string      `json:"default_font"`
+		DefaultFontSize           string      `json:"default_font_size"`
+		DefaultLocale             string      `json:"default_locale"`
+		PasswordMinLength         *int        `json:"password_min_length"`
+		PasswordRequireUpper      *bool       `json:"password_require_upper"`
+		PasswordRequireLower      *bool       `json:"password_require_lower"`
+		PasswordRequireDigit      *bool       `json:"password_require_digit"`
+		PasswordRequireSpecial    *bool       `json:"password_require_special"`
+		SMTPHost                  *string     `json:"smtp_host"`
+		SMTPPort                  json.Number `json:"smtp_port"` // accepts "587" or 587
+		SMTPFrom                  *string     `json:"smtp_from"`
+		SMTPUsername              *string     `json:"smtp_username"` // pointer so empty string clears it
+		SMTPPassword              *string     `json:"smtp_password"` // pointer so empty string clears it
+		SessionTimeoutMinutes     *int        `json:"session_timeout_minutes"`
+		CompanyName               *string     `json:"company_name"`
+		CompanyLogo               *string     `json:"company_logo"`
+		CompanyLogoDark           *string     `json:"company_logo_dark"`
+		DefaultColumns            *string     `json:"default_columns"`
+		DefaultLabels             *string     `json:"default_labels"`
+		BackupSchedule            *string     `json:"backup_schedule"`
+		BackupStartTime           *string     `json:"backup_start_time"`
+		BackupKeep                *int        `json:"backup_keep"`
+		BackupEmailEnabled        *bool       `json:"backup_email_enabled"`
+		BackupEmailAddress        *string     `json:"backup_email_address"`
+		ScrumStorypointsEnabled   *bool       `json:"scrum_storypoints_enabled"`
+		GravatarEnabled           *bool       `json:"gravatar_enabled"`
+		ExternalImageProxyEnabled *bool       `json:"external_image_proxy_enabled"`
+		LoginBrandingEnabled      *bool       `json:"login_branding_enabled"`
+		AllowedIPs                *string     `json:"allowed_ips"`
+		PasswordChangePeriodDays  *int        `json:"password_change_period_days"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -458,6 +468,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	}
 	boolSetting(req.ScrumStorypointsEnabled, settingScrumStorypointsEnabled)
 	boolSetting(req.GravatarEnabled, settingGravatarEnabled)
+	boolSetting(req.ExternalImageProxyEnabled, settingExternalImageProxyEnabled)
 	boolSetting(req.LoginBrandingEnabled, settingLoginBrandingEnabled)
 	if req.AllowedIPs != nil {
 		saveSetting(settingAllowedIPs, *req.AllowedIPs)

@@ -353,6 +353,8 @@
     "scrum_storypoints_hint": "Lorsqu'activé, un champ Points de story apparaît sur chaque carte pour l'estimation Scrum.",
     "gravatar_enabled": "Avatars Gravatar",
     "gravatar_hint": "Lorsqu'activé, les photos de profil sont récupérées depuis Gravatar en fonction de l'adresse e-mail de l'utilisateur. Lorsque désactivé, des avatars à base d'initiales sont utilisés.",
+    "external_image_proxy_enabled": "Proxy d'images externes",
+    "external_image_proxy_hint": "Lorsque active, les URL externes d'avatar/image sont chargees via le proxy same-origin integre pour une compatibilite CSP stricte.",
     "login_branding_enabled": "Afficher l'identité visuelle sur l'écran de connexion",
     "login_branding_hint": "Affiche le nom et le logo de l'entreprise au-dessus de la carte de connexion.",
     "allowed_ips_label": "Adresses IP autorisées pour l'API",
@@ -680,6 +682,13 @@
     "speaker": "Haut-parleur",
     "test_speaker": "Tester",
     "input_level": "Niveau d'entrée",
-    "no_camera": "Pas de caméra"
+    "no_camera": "Pas de caméra",
+    "group_video": "Appel vidéo de groupe",
+    "group_call": "Appel de groupe",
+    "joining_group": "Connexion à la salle…",
+    "group_you": "Vous",
+    "group_peer": "Utilisateur {id}",
+    "livekit_unavailable": "La vidéo de groupe n'est pas activée sur ce serveur. Un administrateur doit configurer LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
+    "livekit_connect_failed": "Impossible de se connecter à la salle vidéo. Vérifiez le réseau et la configuration LiveKit."
   }
 }

@@ -9,6 +9,7 @@
 
 import { reactive, readonly } from 'vue'
 import { useCallSettings } from './useCallSettings'
+import { isLiveKitCallActive } from './callsGate'
 
 // ── Module-level singleton ──────────────────────────────────────────────────
 
@@ -151,6 +152,7 @@ function setLocalStreamCallback(fn) {
 
 async function startCall(userId, userName, avatar, convId) {
   if (_s.phase !== 'idle') return
+  if (isLiveKitCallActive()) return
 
   _s.remoteUserId = userId
   _s.remoteName   = userName || ''
@@ -324,6 +326,11 @@ function toggleCamera() {
 }
 
 // ── Composable export ────────────────────────────────────────────────────────
+
+/** True while a 1:1 call is in progress (outgoing, ringing, or connected). */
+export function isWebRTCCallBusy() {
+  return _s.phase === 'calling' || _s.phase === 'ringing' || _s.phase === 'active'
+}
 
 export function useWebRTCCall() {
   return {

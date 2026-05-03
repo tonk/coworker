@@ -1,6 +1,6 @@
 <template>
   <a v-if="preview" :href="url" target="_blank" rel="noopener noreferrer" class="link-preview-card">
-    <img v-if="preview.image && !imgBroken" :src="preview.image" class="preview-thumb" @error="imgBroken = true" />
+    <img v-if="previewImage && !imgBroken" :src="previewImage" class="preview-thumb" @error="imgBroken = true" />
     <div class="preview-text">
       <div v-if="preview.title" class="preview-title">{{ preview.title }}</div>
       <div v-if="preview.description" class="preview-desc">{{ preview.description }}</div>
@@ -12,6 +12,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useLinkPreview } from '@/composables/useLinkPreview'
+import { resolveAssetUrl } from '@/api/serverConfig'
 
 const props = defineProps({ url: { type: String, required: true } })
 
@@ -19,6 +20,7 @@ const { cache, fetchPreview } = useLinkPreview()
 const imgBroken = ref(false)
 
 const preview = computed(() => cache[props.url] || null)
+const previewImage = computed(() => resolveAssetUrl(preview.value?.image || ''))
 
 const displayHost = computed(() => {
   try { return new URL(props.url).hostname } catch { return props.url }

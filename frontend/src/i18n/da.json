@@ -347,6 +347,8 @@
     "scrum_storypoints_hint": "Når aktiveret vises et story points-felt på hvert kort til Scrum-estimering.",
     "gravatar_enabled": "Gravatar-avatarer",
     "gravatar_hint": "Når aktiveret hentes profilbilleder fra Gravatar baseret på brugerens e-mailadresse. Når deaktiveret bruges initialer-baserede avatarer i stedet.",
+    "external_image_proxy_enabled": "Ekstern billedproxy",
+    "external_image_proxy_hint": "Nar aktiveret indlaeses eksterne avatar-/billede-URL'er via den indbyggede same-origin-proxy for streng CSP-kompatibilitet.",
     "login_branding_enabled": "Vis virksomhedsbranding på loginskærmen",
     "login_branding_hint": "Viser virksomhedens navn og logo over login-kortet.",
     "allowed_ips_label": "Tilladte IP-adresser til API'en",
@@ -673,6 +675,13 @@
     "speaker": "Højttaler",
     "test_speaker": "Test",
     "input_level": "Indgangsniveau",
-    "no_camera": "Ingen kamera"
+    "no_camera": "Ingen kamera",
+    "group_video": "Gruppevideoopkald",
+    "group_call": "Gruppeopkald",
+    "joining_group": "Deltager i rum…",
+    "group_you": "Dig",
+    "group_peer": "Bruger {id}",
+    "livekit_unavailable": "Gruppevideo er ikke aktiveret på denne server. En administrator skal konfigurere LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
+    "livekit_connect_failed": "Kunne ikke oprette forbindelse til videorummet. Tjek netværk og LiveKit-indstillinger."
   }
 }

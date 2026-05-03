@@ -421,6 +421,16 @@ and add multiple members. Give the group a name. You can later:
 - **Remove members** by clicking × next to their name in the header
 - **Change the group avatar** by clicking the group icon in the header
 
+### Voice and video calls
+
+WarmDesk supports two call modes in direct messages:
+
+- **1:1 audio/video calls** in one-on-one conversations (WebRTC peer-to-peer)
+- **Group video calls** in group conversations with **3 or more members** (LiveKit)
+
+In eligible group chats, use the video button in the header to join the group room.
+If the server has not configured LiveKit yet, a status banner is shown in the conversation with a clear admin-facing message.
+
 ### Teams tab
 
 In **Chats → New Conversation → Teams**, you can see all projects you belong

@@ -458,10 +458,8 @@ const baseUrl = computed(() => getServerUrl() || window.location.origin)
 
 function getUserAvatar(user) {
   if (!user) return null
-  const url = user.avatar_url || user.gravatar_url
-  if (!url) return null
-  if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url
-  return `${baseUrl.value}${url}`
+  const url = user.avatar_url || user.gravatar_url || ''
+  return resolveAssetUrl(url || '')
 }
 
 function getInitials(user) {

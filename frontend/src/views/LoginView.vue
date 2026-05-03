@@ -169,7 +169,7 @@ const appVersion = __APP_VERSION__
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { systemApi } from '@/api/system'
-import { getServerUrl } from '@/api/serverConfig'
+import { getServerUrl, resolveAssetUrl, setExternalImageProxyEnabled } from '@/api/serverConfig'
 
 const { t: $t } = useI18n()
 const auth = useAuthStore()
@@ -250,10 +250,9 @@ onMounted(async () => {
   try {
     const { data } = await systemApi.getSettings()
     registrationEnabled.value = data.registration_enabled
-    const server = getServerUrl()
-    const resolveLogo = (raw) => raw && raw.startsWith('/') && server ? `${server}${raw}` : (raw || '')
-    const logo = resolveLogo(data.company_logo)
-    const logoDark = resolveLogo(data.company_logo_dark)
+    setExternalImageProxyEnabled(data.external_image_proxy_enabled !== false)
+    const logo = resolveAssetUrl(data.company_logo || '')
+    const logoDark = resolveAssetUrl(data.company_logo_dark || '')
     branding.value = {
       enabled: !!data.login_branding_enabled && !!(data.company_name || data.company_logo || data.company_logo_dark),
       name: data.company_name || '',

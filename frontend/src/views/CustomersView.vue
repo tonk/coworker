@@ -18,7 +18,7 @@
         class="customer-tile"
       >
         <div class="tile-header">
-          <img v-if="c.logo_url" :src="c.logo_url" class="cust-logo" alt="" />
+          <img v-if="c.logo_url" :src="resolveAssetUrl(c.logo_url)" class="cust-logo" alt="" />
           <span v-else class="cust-logo-placeholder">{{ c.name[0] }}</span>
           <button
             class="star-btn"
@@ -67,6 +67,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useCustomersStore } from '@/stores/customers'
 import { useUIStore } from '@/stores/ui'
 import { customersApi } from '@/api/customers'
+import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 const auth = useAuthStore()

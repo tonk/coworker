@@ -183,6 +183,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Link preview — fetches OG metadata for a URL
 		protected.GET("/link-preview", handlers.LinkPreview)
+		protected.GET("/media/proxy", handlers.ProxyImage)
 
 		// Reports
 		protected.GET("/reports/time", handlers.GetTimeReport)

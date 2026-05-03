@@ -353,6 +353,8 @@
     "scrum_storypoints_hint": "Als ingeschakeld, verschijnt een storypoints-veld op elke kaart voor Scrum-schatting.",
     "gravatar_enabled": "Gravatar-avatars",
     "gravatar_hint": "Als ingeschakeld, worden profielfoto's opgehaald van Gravatar op basis van het e-mailadres van de gebruiker. Als uitgeschakeld, worden initialen-avatars gebruikt.",
+    "external_image_proxy_enabled": "Externe afbeeldingsproxy",
+    "external_image_proxy_hint": "Wanneer ingeschakeld worden externe avatar-/afbeeldings-URL's geladen via de ingebouwde same-origin-proxy voor strikte CSP-compatibiliteit.",
     "login_branding_enabled": "Bedrijfsbranding tonen op het inlogscherm",
     "login_branding_hint": "Toont de bedrijfsnaam en het logo boven de inlogkaart.",
     "allowed_ips_label": "Toegestane IP-adressen voor de API",
@@ -680,6 +682,13 @@
     "speaker": "Luidspreker",
     "test_speaker": "Testen",
     "input_level": "Ingangsniveau",
-    "no_camera": "Geen camera"
+    "no_camera": "Geen camera",
+    "group_video": "Groepsvideogesprek",
+    "group_call": "Groepsgesprek",
+    "joining_group": "Deelnemen aan ruimte…",
+    "group_you": "Jij",
+    "group_peer": "Gebruiker {id}",
+    "livekit_unavailable": "Groepsvideo staat op deze server niet aan. Een beheerder moet LiveKit configureren (livekit_url, livekit_api_key, livekit_api_secret).",
+    "livekit_connect_failed": "Verbinding met de videoruimte mislukt. Controleer netwerk en LiveKit-instellingen."
   }
 }

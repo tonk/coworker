@@ -347,6 +347,8 @@
     "scrum_storypoints_hint": "Quando abilitato, un campo Punti storia appare su ogni scheda per la stima Scrum.",
     "gravatar_enabled": "Avatar Gravatar",
     "gravatar_hint": "Quando abilitato, le foto profilo vengono recuperate da Gravatar in base all'indirizzo email dell'utente. Quando disabilitato, vengono utilizzati avatar con le iniziali.",
+    "external_image_proxy_enabled": "Proxy immagini esterne",
+    "external_image_proxy_hint": "Quando abilitato, gli URL esterni di avatar/immagini vengono caricati tramite il proxy same-origin integrato per compatibilita CSP rigorosa.",
     "login_branding_enabled": "Mostra il branding aziendale nella schermata di accesso",
     "login_branding_hint": "Visualizza il nome e il logo dell'azienda sopra la scheda di accesso.",
     "allowed_ips_label": "Indirizzi IP consentiti per l'API",
@@ -673,6 +675,13 @@
     "speaker": "Altoparlante",
     "test_speaker": "Testa",
     "input_level": "Livello ingresso",
-    "no_camera": "Nessuna fotocamera"
+    "no_camera": "Nessuna fotocamera",
+    "group_video": "Videochiamata di gruppo",
+    "group_call": "Chiamata di gruppo",
+    "joining_group": "Accesso alla stanza…",
+    "group_you": "Tu",
+    "group_peer": "Utente {id}",
+    "livekit_unavailable": "Il video di gruppo non è attivo su questo server. Un amministratore deve configurare LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
+    "livekit_connect_failed": "Impossibile connettersi alla stanza video. Controllare rete e impostazioni LiveKit."
   }
 }

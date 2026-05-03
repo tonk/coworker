@@ -347,6 +347,8 @@
     "scrum_storypoints_hint": "Kun käytössä, jokaiselle kortille ilmestyy tarinapisteet-kenttä Scrum-arviointia varten.",
     "gravatar_enabled": "Gravatar-avatarit",
     "gravatar_hint": "Kun käytössä, profiilikuvat haetaan Gravatarista käyttäjän sähköpostiosoitteen perusteella. Kun poistettu käytöstä, käytetään sen sijaan nimikirjaimiin perustuvia avatareja.",
+    "external_image_proxy_enabled": "Ulkoisten kuvien valityspalvelin",
+    "external_image_proxy_hint": "Kun kaytossa, ulkoiset avatari-/kuva-URL-osoitteet ladataan sisaanrakennetun same-origin-valityspalvelimen kautta tiukan CSP-yhteensopivuuden vuoksi.",
     "login_branding_enabled": "Näytä yrityksen brändäys kirjautumisnäytöllä",
     "login_branding_hint": "Näyttää yrityksen nimen ja logon kirjautumiskortin yläpuolella.",
     "allowed_ips_label": "Sallitut IP-osoitteet API:lle",
@@ -673,6 +675,13 @@
     "speaker": "Kaiutin",
     "test_speaker": "Testaa",
     "input_level": "Syöttötaso",
-    "no_camera": "Ei kameraa"
+    "no_camera": "Ei kameraa",
+    "group_video": "Ryhmävideopuhelu",
+    "group_call": "Ryhmäpuhelu",
+    "joining_group": "Liitytään huoneeseen…",
+    "group_you": "Sinä",
+    "group_peer": "Käyttäjä {id}",
+    "livekit_unavailable": "Ryhmävideota ei ole otettu käyttöön tällä palvelimella. Järjestelmänvalvojan on määritettävä LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
+    "livekit_connect_failed": "Yhteyttä videohuoneeseen ei voitu muodostaa. Tarkista verkko ja LiveKit-asetukset."
   }
 }

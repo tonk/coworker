@@ -347,6 +347,8 @@
     "scrum_storypoints_hint": "Þegar virkjað birtist sögu-stig reitur á hverju korti fyrir Scrum mat.",
     "gravatar_enabled": "Gravatar myndir",
     "gravatar_hint": "Þegar virkjað eru prófílmyndir sóttar frá Gravatar miðað við netfang notanda. Þegar óvirkt eru notaðar upphafsstafs-myndir í staðinn.",
+    "external_image_proxy_enabled": "Proxy fyrir ytri myndir",
+    "external_image_proxy_hint": "Þegar virkjað eru ytri slodir fyrir avatar/myndir hladnar i gegnum innbyggda same-origin proxy fyrir stranga CSP samhaefni.",
     "login_branding_enabled": "Sýna fyrirtækjamerkingu á innskráningarskjánum",
     "login_branding_hint": "Sýnir nafn og merki fyrirtækis fyrir ofan innskráningarspjaldið.",
     "allowed_ips_label": "Leyfðar IP-tölur fyrir API",
@@ -673,6 +675,13 @@
     "speaker": "Hátalari",
     "test_speaker": "Prófa",
     "input_level": "Inntaksstig",
-    "no_camera": "Engin myndavél"
+    "no_camera": "Engin myndavél",
+    "group_video": "Hópvídeóspjall",
+    "group_call": "Hópspjall",
+    "joining_group": "Tengist herbergi…",
+    "group_you": "Þú",
+    "group_peer": "Notandi {id}",
+    "livekit_unavailable": "Hópvídeó er ekki virkt á þessum netþjóni. Kerfisstjóri verður að stilla LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
+    "livekit_connect_failed": "Tókst ekki að tengjast vídeóherberginu. Athugaðu netkerfið og LiveKit-stillingarnar."
   }
 }

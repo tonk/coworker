@@ -347,6 +347,8 @@
     "scrum_storypoints_hint": "Quando ativado, um campo de pontos de história aparece em cada cartão para estimativa Scrum.",
     "gravatar_enabled": "Avatares Gravatar",
     "gravatar_hint": "Quando ativado, as fotos de perfil são obtidas do Gravatar com base no endereço de e-mail do utilizador. Quando desativado, são usados avatares baseados em iniciais.",
+    "external_image_proxy_enabled": "Proxy de imagens externas",
+    "external_image_proxy_hint": "Quando ativado, URLs externas de avatar/imagem sao carregadas pelo proxy same-origin incorporado para compatibilidade CSP rigorosa.",
     "login_branding_enabled": "Mostrar identidade visual da empresa no ecrã de início de sessão",
     "login_branding_hint": "Mostra o nome e o logótipo da empresa acima do cartão de início de sessão.",
     "allowed_ips_label": "Endereços IP permitidos para a API",
@@ -673,6 +675,13 @@
     "speaker": "Altifalante",
     "test_speaker": "Testar",
     "input_level": "Nível de entrada",
-    "no_camera": "Sem câmara"
+    "no_camera": "Sem câmara",
+    "group_video": "Chamada de vídeo em grupo",
+    "group_call": "Chamada em grupo",
+    "joining_group": "A entrar na sala…",
+    "group_you": "Você",
+    "group_peer": "Utilizador {id}",
+    "livekit_unavailable": "O vídeo em grupo não está ativado neste servidor. Um administrador tem de configurar o LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
+    "livekit_connect_failed": "Não foi possível ligar à sala de vídeo. Verifique a rede e as definições do LiveKit."
   }
 }

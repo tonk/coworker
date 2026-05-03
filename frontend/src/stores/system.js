@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { systemApi } from '@/api/system'
+import { setExternalImageProxyEnabled } from '@/api/serverConfig'
 import { setLocale } from '@/i18n'
 
 export const useSystemStore = defineStore('system', () => {
   const registrationEnabled = ref(true)
   const scrumStorypointsEnabled = ref(false)
+  const externalImageProxyEnabled = ref(true)
   const sessionTimeoutMinutes = ref(60)
   const defaults = ref({
     date_time_format: 'YYYY-MM-DD HH:mm',
@@ -21,6 +23,8 @@ export const useSystemStore = defineStore('system', () => {
       const { data } = await systemApi.getSettings()
       registrationEnabled.value = data.registration_enabled !== false
       scrumStorypointsEnabled.value = data.scrum_storypoints_enabled === true
+      externalImageProxyEnabled.value = data.external_image_proxy_enabled !== false
+      setExternalImageProxyEnabled(externalImageProxyEnabled.value)
       sessionTimeoutMinutes.value = data.session_timeout_minutes || 0
       if (data.default_date_time_format) defaults.value.date_time_format = data.default_date_time_format
       if (data.default_timezone)         defaults.value.timezone         = data.default_timezone
@@ -35,5 +39,5 @@ export const useSystemStore = defineStore('system', () => {
     } catch {}
   }
 
-  return { registrationEnabled, scrumStorypointsEnabled, sessionTimeoutMinutes, defaults, fetchSettings }
+  return { registrationEnabled, scrumStorypointsEnabled, externalImageProxyEnabled, sessionTimeoutMinutes, defaults, fetchSettings }
 })

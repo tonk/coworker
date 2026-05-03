@@ -170,8 +170,13 @@ Group chats support a custom avatar and member management (add / remove particip
 
 === Voice and video calls
 
-From a *one-on-one direct message* thread you can start an audio or video call with the other participant (WebRTC peer-to-peer).
-*Group* voice or video calls are not available yet but are planned for a future release.
+WarmDesk supports two call modes in direct messages:
+
+* *1:1 audio/video* in one-on-one conversations (WebRTC peer-to-peer)
+* *Group video calls* in group conversations with *3 or more members* (LiveKit)
+
+In eligible group chats, use the video button in the header to join the room.
+If the server has not configured LiveKit yet, the chat shows a clear status banner so users know group video is currently unavailable on that instance.
 
 * *Markdown* formatting in messages
 * *File attachments* — images shown inline, other files as links

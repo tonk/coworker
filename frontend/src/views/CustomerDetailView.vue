@@ -109,8 +109,7 @@
         </div>
         <div v-else class="members-list">
           <div v-for="m in members" :key="m.user_id" class="member-row">
-            <img v-if="m.avatar_url" :src="resolveAssetUrl(m.avatar_url)" class="member-avatar" alt="" />
-            <img v-else :src="m.gravatar_url" class="member-avatar" alt="" />
+            <img :src="resolveAssetUrl(m.avatar_url || m.gravatar_url)" class="member-avatar" alt="" />
             <div class="member-info">
               <span class="member-name">{{ m.display_name || m.username }}</span>
               <span class="member-email">{{ m.email }}</span>
@@ -248,8 +247,7 @@
         :class="{ selected: pendingMemberIds.includes(u.id) }"
         @click="togglePendingMember(u.id)"
       >
-        <img v-if="u.avatar_url" :src="resolveAssetUrl(u.avatar_url)" class="member-avatar" alt="" />
-        <img v-else :src="u.gravatar_url" class="member-avatar" alt="" />
+        <img :src="resolveAssetUrl(u.avatar_url || u.gravatar_url)" class="member-avatar" alt="" />
         <div class="member-info">
           <span class="member-name">{{ u.display_name || u.username }}</span>
           <span class="member-email">{{ u.email }}</span>

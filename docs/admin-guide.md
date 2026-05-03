@@ -80,6 +80,11 @@ db_log: "warn"                    # DB_LOG — silent | error | warn | info
 upload_dir: "./uploads"           # UPLOAD_DIR — where attachments are stored
 max_upload_mb: 25                 # MAX_UPLOAD_MB — per-file upload limit
 
+# ── Group video calls (optional, LiveKit SFU) ────────────────────────────────
+livekit_url: "wss://livekit.example.com"  # LIVEKIT_URL — LiveKit websocket URL
+livekit_api_key: "APIxxxxxxxxxxxxxxxx"    # LIVEKIT_API_KEY — server API key
+livekit_api_secret: "your-secret"         # LIVEKIT_API_SECRET — matching secret
+
 # ── Logging ───────────────────────────────────────────────────────────────────
 gin_mode: "release"               # GIN_MODE — debug | release
 api_log: false                    # API_LOG — log every HTTP request
@@ -598,6 +603,20 @@ enter any whole number; leaving the field empty means no estimate has been given
 
 This setting takes effect immediately for all open sessions without a page
 reload.
+
+### Group video calls (LiveKit)
+
+WarmDesk uses LiveKit for group video calls in DM group conversations with 3+ members.
+
+Set these server values in `warmdesk.yaml` (or env vars) and restart the service:
+
+```yaml
+livekit_url: "wss://livekit.example.com"
+livekit_api_key: "APIxxxxxxxxxxxxxxxx"
+livekit_api_secret: "your-secret"
+```
+
+Without these values, 1:1 WebRTC calls still work, but group video shows an in-app "not configured" banner.
 
 ### Global defaults (overridden per user)
 
