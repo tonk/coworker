@@ -346,7 +346,7 @@
     "scrum_storypoints_enabled": "Scrum story points",
     "scrum_storypoints_hint": "Når aktiveret vises et story points-felt på hvert kort til Scrum-estimering.",
     "gravatar_enabled": "Gravatar-avatarer",
-    "gravatar_hint": "Når aktiveret hentes profilbilleder fra Gravatar baseret på brugerens e-mailadresse. Når deaktiveret bruges initialer-baserede avatarer i stedet.",
+    "gravatar_hint": "Når aktiveret hentes profilbilleder automatisk fra Gravatar baseret på brugerens e-mailadresse. Når deaktiveret bruges automatisk genererede initialer-avatarer som fallback. Brugerdefinerede avatar-URL'er på brugere, projekter eller kunder bruges altid uanset denne indstilling.",
     "external_image_proxy_enabled": "Ekstern billedproxy",
     "external_image_proxy_hint": "Nar aktiveret indlaeses eksterne avatar-/billede-URL'er via den indbyggede same-origin-proxy for streng CSP-kompatibilitet.",
     "login_branding_enabled": "Vis virksomhedsbranding på loginskærmen",

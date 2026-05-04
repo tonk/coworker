@@ -8,11 +8,12 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.22)
+## Latest release (v0.9.23)
 
-- In-call attendee invites: a **+** button in any active video or audio call opens a searchable user picker; selected users receive a real-time invite popup and join with one click; inviting from a 1:1 call automatically upgrades it to a LiveKit group room.
-- Apache WebSocket proxy timeout: `deploy/apache.conf` now uses a dedicated `<Location>` block for `/api/v1/ws` with a 24-hour `ProxyTimeout`, preventing silent disconnects under Apache.
-- Backup email: file sizes display as `kB` (correct SI unit); size and date columns no longer wrap in narrow email clients.
+- **"All Customers" sidebar section** — lists all customers below the Favourite Customers panel; starred customers appear first and are marked.
+- **Starred customers drag-to-reorder** — reorder favourite customers in the sidebar via drag handles (pointer events, Linux/WebKitGTK compatible).
+- **LiveKit room prefix** — new `livekit_room_prefix` / `LIVEKIT_ROOM_PREFIX` option to namespace rooms when sharing a LiveKit server across instances.
+- **Media proxy hardening** — DNS-rebinding protection, query-string re-encoding (fixes DiceBear URLs), content-type validation, and a 200-req/10-min rate limit.
 
 ## Build status
 

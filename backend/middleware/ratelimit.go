@@ -68,6 +68,9 @@ var (
 	registerLimiter = newRateLimiter(5, time.Hour)
 	// 5 password-reset requests per 30 minutes per IP
 	resetLimiter = newRateLimiter(5, 30*time.Minute)
+	// 200 proxy fetches per 10 minutes — generous for an initial page load with
+	// many avatars, but prevents unauthenticated bandwidth abuse.
+	mediaProxyLimiter = newRateLimiter(200, 10*time.Minute)
 )
 
 func rateLimit(rl *rateLimiter) gin.HandlerFunc {
@@ -80,6 +83,7 @@ func rateLimit(rl *rateLimiter) gin.HandlerFunc {
 	}
 }
 
-func AuthRateLimit() gin.HandlerFunc     { return rateLimit(authLimiter) }
-func RegisterRateLimit() gin.HandlerFunc { return rateLimit(registerLimiter) }
-func ResetRateLimit() gin.HandlerFunc    { return rateLimit(resetLimiter) }
+func AuthRateLimit() gin.HandlerFunc       { return rateLimit(authLimiter) }
+func RegisterRateLimit() gin.HandlerFunc   { return rateLimit(registerLimiter) }
+func ResetRateLimit() gin.HandlerFunc      { return rateLimit(resetLimiter) }
+func MediaProxyRateLimit() gin.HandlerFunc { return rateLimit(mediaProxyLimiter) }

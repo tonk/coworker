@@ -352,7 +352,7 @@
     "scrum_storypoints_enabled": "Scrum Story-Punkte",
     "scrum_storypoints_hint": "Wenn aktiviert, erscheint ein Story-Punkte-Feld auf jeder Karte für Scrum-Schätzungen.",
     "gravatar_enabled": "Gravatar-Avatare",
-    "gravatar_hint": "Wenn aktiviert, werden Profilbilder von Gravatar anhand der E-Mail-Adresse des Benutzers abgerufen. Wenn deaktiviert, werden stattdessen initialen-basierte Avatare verwendet.",
+    "gravatar_hint": "Wenn aktiviert, werden Profilbilder automatisch von Gravatar anhand der E-Mail-Adresse des Benutzers abgerufen. Wenn deaktiviert, werden automatisch generierte Initialen-Avatare als Fallback verwendet. Benutzerdefinierte Avatar-URLs für Benutzer, Projekte oder Kunden werden immer verwendet, unabhängig von dieser Einstellung.",
     "external_image_proxy_enabled": "Externer Bild-Proxy",
     "external_image_proxy_hint": "Wenn aktiviert, werden externe Avatar-/Bild-URLs uber den integrierten Same-Origin-Proxy geladen, um strikte CSP-Kompatibilitat zu erreichen.",
     "login_branding_enabled": "Unternehmens-Branding auf dem Anmeldebildschirm anzeigen",

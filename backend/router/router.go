@@ -42,6 +42,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 	// Public endpoints
 	v1.GET("/version", handlers.GetVersion)
 	v1.GET("/system/settings", handlers.GetSystemSettings)
+	v1.GET("/media/proxy", middleware.MediaProxyRateLimit(), handlers.ProxyImage) // no auth — img tags can't send Bearer tokens
 
 	// Auth routes (public)
 	auth := v1.Group("/auth")
@@ -183,7 +184,6 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Link preview — fetches OG metadata for a URL
 		protected.GET("/link-preview", handlers.LinkPreview)
-		protected.GET("/media/proxy", handlers.ProxyImage)
 
 		// Reports
 		protected.GET("/reports/time", handlers.GetTimeReport)

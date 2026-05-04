@@ -7,6 +7,8 @@ dist/
 warmdesk.db
 warmdesk-*.tar.gz
 ansible/*.tar.gz
+ansible/warmdesk
+backend/warmdesk
 
 # ── Embedded web files (populated by embed-web Makefile target, not tracked) ─
 backend/staticweb/files/*

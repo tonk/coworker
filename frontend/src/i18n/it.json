@@ -346,7 +346,7 @@
     "scrum_storypoints_enabled": "Punti storia Scrum",
     "scrum_storypoints_hint": "Quando abilitato, un campo Punti storia appare su ogni scheda per la stima Scrum.",
     "gravatar_enabled": "Avatar Gravatar",
-    "gravatar_hint": "Quando abilitato, le foto profilo vengono recuperate da Gravatar in base all'indirizzo email dell'utente. Quando disabilitato, vengono utilizzati avatar con le iniziali.",
+    "gravatar_hint": "Quando abilitato, le foto profilo vengono recuperate automaticamente da Gravatar in base all'indirizzo email dell'utente. Quando disabilitato, vengono utilizzati avatar con le iniziali generati automaticamente come fallback. Gli URL avatar personalizzati impostati su utenti, progetti o clienti vengono sempre utilizzati indipendentemente da questa impostazione.",
     "external_image_proxy_enabled": "Proxy immagini esterne",
     "external_image_proxy_hint": "Quando abilitato, gli URL esterni di avatar/immagini vengono caricati tramite il proxy same-origin integrato per compatibilita CSP rigorosa.",
     "login_branding_enabled": "Mostra il branding aziendale nella schermata di accesso",

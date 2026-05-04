@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.9.23 — 2026-05-04
+
+### Added
+- **"All Customers" sidebar section** — a collapsible section lists all customers below the Favourite Customers panel, with starred customers sorted first and marked; mirrors the existing "All Projects" section
+- **Starred customers drag-to-reorder** — favourite customers in the sidebar can be reordered by dragging (pointer events — works on Linux/WebKitGTK)
+- **LiveKit room prefix** — new `livekit_room_prefix` config option (env: `LIVEKIT_ROOM_PREFIX`) prepends a prefix to every room name; useful when sharing a LiveKit server across multiple WarmDesk instances
+- **Media proxy rate limiting** — the external image proxy endpoint is now rate-limited to 200 requests per 10 minutes per IP to prevent unauthenticated bandwidth abuse
+
+### Fixed
+- **Media proxy SSRF protection** — the image proxy now resolves DNS once, verifies every resolved IP is a publicly routable address, and dials by IP directly; a subsequent DNS change cannot redirect the connection to an internal host (DNS-rebinding defence)
+- **Media proxy query-string re-encoding** — URLs with spaces, commas, or other reserved characters in query parameters (e.g. DiceBear seed names) are now re-encoded before fetching, preventing malformed upstream requests
+- **Media proxy content-type validation** — the proxy now rejects upstream responses whose `Content-Type` is not an image, preventing use as a general-purpose data-exfiltration relay
+- **Tauri desktop: external images bypass same-origin proxy** — in the desktop app, external image URLs (Gravatar, DiceBear, etc.) are loaded directly instead of via the same-origin proxy; WebKit's `tauri://` origin treats the proxied HTTP responses as mixed content and blocks them
+
 ## v0.9.22 — 2026-05-04
 
 ### Added

@@ -346,7 +346,7 @@
     "scrum_storypoints_enabled": "Scrum sögu-stig",
     "scrum_storypoints_hint": "Þegar virkjað birtist sögu-stig reitur á hverju korti fyrir Scrum mat.",
     "gravatar_enabled": "Gravatar myndir",
-    "gravatar_hint": "Þegar virkjað eru prófílmyndir sóttar frá Gravatar miðað við netfang notanda. Þegar óvirkt eru notaðar upphafsstafs-myndir í staðinn.",
+    "gravatar_hint": "Þegar virkjað eru prófílmyndir sjálfkrafa sóttar frá Gravatar miðað við netfang notanda. Þegar óvirkt eru sjálfkrafa myndaðar upphafsstafs-myndir notaðar sem varamöguleiki. Sérsniðnar avatar-slóðir á notendur, verkefni eða viðskiptavini eru alltaf notaðar óháð þessari stillingu.",
     "external_image_proxy_enabled": "Proxy fyrir ytri myndir",
     "external_image_proxy_hint": "Þegar virkjað eru ytri slodir fyrir avatar/myndir hladnar i gegnum innbyggda same-origin proxy fyrir stranga CSP samhaefni.",
     "login_branding_enabled": "Sýna fyrirtækjamerkingu á innskráningarskjánum",

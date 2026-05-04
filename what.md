@@ -481,3 +481,9 @@ Create an application that has all these features and requirements
 - Upgrade 1:1 call to group when inviting: clicking + during a 1:1 WebRTC call sends the group invite to selected users and to the existing call partner, ends the WebRTC call, and joins the LiveKit room automatically
 - Fix Apache WebSocket proxy timeout: replace RewriteRule-based WebSocket handling with a dedicated <Location "/api/v1/ws"> block using ProxyPass ws:// and ProxyTimeout 86400; prevents silent 5-minute disconnects under default Apache settings
 - Fix backup email size unit: display kB (correct SI prefix, lowercase k) instead of KB; add white-space:nowrap to size and date columns so narrow email clients do not wrap "548.0 kB" across two lines
+- Add "All Customers" collapsible section to sidebar: lists every customer with starred ones sorted first and marked; mirrors the existing "All Projects" section
+- Add drag-to-reorder for starred customers in sidebar via ⠿ handle (pointer events — works on Linux/WebKitGTK); order persisted in localStorage
+- Add livekit_room_prefix config option (LIVEKIT_ROOM_PREFIX env var): prepends a prefix to every LiveKit room name to avoid collisions when sharing a server across multiple WarmDesk instances
+- Harden external image proxy: resolve DNS once and verify every IP is a publicly routable address, then dial by IP directly (prevents DNS-rebinding attacks); re-encode query strings so reserved characters in parameters (e.g. DiceBear seed names with spaces or commas) do not produce malformed requests; validate Content-Type header and reject non-image responses
+- Rate-limit external image proxy endpoint: 200 requests per 10 minutes per IP to prevent unauthenticated bandwidth abuse
+- Tauri desktop: load external images (Gravatar, DiceBear, etc.) directly instead of via the same-origin proxy; WebKit's tauri:// origin treats proxied HTTP responses as mixed content and blocks them

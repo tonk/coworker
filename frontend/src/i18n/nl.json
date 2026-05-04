@@ -352,7 +352,7 @@
     "scrum_storypoints_enabled": "Scrum storypoints",
     "scrum_storypoints_hint": "Als ingeschakeld, verschijnt een storypoints-veld op elke kaart voor Scrum-schatting.",
     "gravatar_enabled": "Gravatar-avatars",
-    "gravatar_hint": "Als ingeschakeld, worden profielfoto's opgehaald van Gravatar op basis van het e-mailadres van de gebruiker. Als uitgeschakeld, worden initialen-avatars gebruikt.",
+    "gravatar_hint": "Als ingeschakeld, worden profielfoto's automatisch opgehaald van Gravatar op basis van het e-mailadres van de gebruiker. Als uitgeschakeld, worden automatisch gegenereerde initialen-avatars als fallback gebruikt. Aangepaste avatar-URL's voor gebruikers, projecten of klanten worden altijd gebruikt, ongeacht deze instelling.",
     "external_image_proxy_enabled": "Externe afbeeldingsproxy",
     "external_image_proxy_hint": "Wanneer ingeschakeld worden externe avatar-/afbeeldings-URL's geladen via de ingebouwde same-origin-proxy voor strikte CSP-compatibiliteit.",
     "login_branding_enabled": "Bedrijfsbranding tonen op het inlogscherm",

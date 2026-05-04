@@ -55,10 +55,15 @@ func GetLiveKitToken(c *gin.Context) {
 		return
 	}
 
+	roomName := fmt.Sprintf("conv-%d", convID)
+	if livekitCfg.LiveKitRoomPrefix != "" {
+		roomName = livekitCfg.LiveKitRoomPrefix + "-" + roomName
+	}
+
 	now := time.Now()
 	claims := livekitClaims{
 		Video: &livekitVideoClaims{
-			Room:           fmt.Sprintf("conv-%d", convID),
+			Room:           roomName,
 			RoomJoin:       true,
 			CanPublish:     true,
 			CanSubscribe:   true,
@@ -81,9 +86,9 @@ func GetLiveKitToken(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token":       signed,
-		"url":         livekitCfg.LiveKitURL,
-		"room":        fmt.Sprintf("conv-%d", convID),
-		"identity":    fmt.Sprintf("%d", userID),
+		"token":    signed,
+		"url":      livekitCfg.LiveKitURL,
+		"room":     roomName,
+		"identity": fmt.Sprintf("%d", userID),
 	})
 }

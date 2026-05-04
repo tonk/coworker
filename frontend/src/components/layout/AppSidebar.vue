@@ -30,7 +30,7 @@
             data-item-type="project"
           >
             <span class="drag-handle" @pointerdown.prevent.stop="onItemHandleDown($event, project, 'project')">⠿</span>
-            <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="project-avatar" alt="" />
+            <img v-if="projectAvatar(project) && !avatarErrors.has('p'+project.id)" :src="projectAvatar(project)" class="project-avatar" alt="" @error="avatarErrors.add('p'+project.id)" />
             <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
             <span class="link-text">{{ project.name }}</span>
             <button class="fav-btn fav-btn-active" @click.prevent="sidebarStore.unstarProject(project.slug)" :title="$t('project.unstar')">★</button>
@@ -62,7 +62,7 @@
             :to="`/projects/${project.slug}`"
             class="sidebar-link"
           >
-            <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="project-avatar" alt="" />
+            <img v-if="projectAvatar(project) && !avatarErrors.has('p'+project.id)" :src="projectAvatar(project)" class="project-avatar" alt="" @error="avatarErrors.add('p'+project.id)" />
             <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
             <span class="link-text">{{ project.name }}</span>
             <span v-if="project.starred" class="star-mark">★</span>
@@ -99,7 +99,7 @@
             data-item-type="customer"
           >
             <span class="drag-handle" @pointerdown.prevent.stop="onItemHandleDown($event, c, 'customer')">⠿</span>
-            <img v-if="customerAvatar(c)" :src="customerAvatar(c)" class="customer-avatar" alt="" />
+            <img v-if="customerAvatar(c) && !avatarErrors.has('c'+c.id)" :src="customerAvatar(c)" class="customer-avatar" alt="" @error="avatarErrors.add('c'+c.id)" />
             <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
             <span class="link-text">{{ c.name }}</span>
             <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :title="$t('customer.unstar')">★</button>
@@ -131,7 +131,7 @@
             :to="`/customers/${c.id}`"
             class="sidebar-link"
           >
-            <img v-if="customerAvatar(c)" :src="customerAvatar(c)" class="customer-avatar" alt="" />
+            <img v-if="customerAvatar(c) && !avatarErrors.has('c'+c.id)" :src="customerAvatar(c)" class="customer-avatar" alt="" @error="avatarErrors.add('c'+c.id)" />
             <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
             <span class="link-text">{{ c.name }}</span>
             <span v-if="c.starred" class="star-mark">★</span>
@@ -164,7 +164,7 @@
             class="user-row"
           >
             <span class="presence-dot" :class="{ online: isOnline(user.id) }" :title="isOnline(user.id) ? $t('sidebar.online') : $t('sidebar.offline')"></span>
-            <img v-if="userAvatar(user)" :src="userAvatar(user)" class="user-avatar" alt="" />
+            <img v-if="userAvatar(user) && !avatarErrors.has('u'+user.id)" :src="userAvatar(user)" class="user-avatar" alt="" @error="avatarErrors.add('u'+user.id)" />
             <span v-else class="user-avatar-fallback">{{ userInitials(user) }}</span>
             <span class="user-row-name">{{ user.display_name || user.username }}</span>
             <button class="fav-btn fav-btn-active" @click.prevent="unfavorite(user)" :title="$t('sidebar.unfavorite')">★</button>
@@ -195,7 +195,7 @@
             class="user-row"
           >
             <span class="presence-dot" :class="{ online: user.online }" :title="user.online ? $t('sidebar.online') : $t('sidebar.offline')"></span>
-            <img v-if="userAvatar(user)" :src="userAvatar(user)" class="user-avatar" alt="" />
+            <img v-if="userAvatar(user) && !avatarErrors.has('u'+user.id)" :src="userAvatar(user)" class="user-avatar" alt="" @error="avatarErrors.add('u'+user.id)" />
             <span v-else class="user-avatar-fallback">{{ userInitials(user) }}</span>
             <span class="user-row-name">{{ user.display_name || user.username }}</span>
             <button
@@ -234,7 +234,7 @@
             class="sidebar-link conv-link"
           >
             <span class="conv-indicator" :class="{ unread: notificationsStore.isConvUnread(conv) }"></span>
-            <img v-if="conversationAvatar(conv)" :src="conversationAvatar(conv)" class="conv-avatar" alt="" />
+            <img v-if="conversationAvatar(conv) && !avatarErrors.has('cv'+conv.id)" :src="conversationAvatar(conv)" class="conv-avatar" alt="" @error="avatarErrors.add('cv'+conv.id)" />
             <span v-else class="conv-avatar-fallback">{{ conversationInitials(conv) }}</span>
             <span class="link-text">{{ convSidebarName(conv) }}</span>
           </RouterLink>
@@ -250,7 +250,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
+
+const avatarErrors = reactive(new Set())
 
 const SIDEBAR_WIDTH_KEY = 'sidebar_width'
 const MIN_WIDTH = 150

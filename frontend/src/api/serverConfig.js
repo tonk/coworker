@@ -65,6 +65,15 @@ export function resolveAssetUrl(url) {
         try { sameAsServer = urlObj.origin === new URL(server).origin } catch {}
       }
       if (sameAsPage || sameAsServer) return absolute
+      // In the Tauri desktop app, WebKit treats the tauri:// origin as a secure
+      // context and blocks http:// image loads as mixed content — including the
+      // proxy endpoint itself.  fetch() calls are routed around this via
+      // tauri-plugin-http (see main.js), but <img> tags use WebKit's native
+      // loader.  Return external URLs directly: HTTPS ones (Gravatar, DiceBear,
+      // etc.) load fine; HTTP ones would be blocked by the proxy too, so no
+      // regression.
+      const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+      if (isTauri) return absolute
       if (!_externalImageProxyEnabled) return absolute
       const proxyPath = `/api/v1/media/proxy?url=${encodeURIComponent(absolute)}`
       return server ? `${server}${proxyPath}` : proxyPath

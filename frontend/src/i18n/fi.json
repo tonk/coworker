@@ -346,7 +346,7 @@
     "scrum_storypoints_enabled": "Scrum-tarinapisteet",
     "scrum_storypoints_hint": "Kun käytössä, jokaiselle kortille ilmestyy tarinapisteet-kenttä Scrum-arviointia varten.",
     "gravatar_enabled": "Gravatar-avatarit",
-    "gravatar_hint": "Kun käytössä, profiilikuvat haetaan Gravatarista käyttäjän sähköpostiosoitteen perusteella. Kun poistettu käytöstä, käytetään sen sijaan nimikirjaimiin perustuvia avatareja.",
+    "gravatar_hint": "Kun käytössä, profiilikuvat haetaan automaattisesti Gravatarista käyttäjän sähköpostiosoitteen perusteella. Kun poistettu käytöstä, käytetään automaattisesti luotuja nimikirjain-avatarjea varavalintana. Käyttäjille, projekteille tai asiakkaille asetetut mukautetut avatar-URL:t käytetään aina tästä asetuksesta riippumatta.",
     "external_image_proxy_enabled": "Ulkoisten kuvien valityspalvelin",
     "external_image_proxy_hint": "Kun kaytossa, ulkoiset avatari-/kuva-URL-osoitteet ladataan sisaanrakennetun same-origin-valityspalvelimen kautta tiukan CSP-yhteensopivuuden vuoksi.",
     "login_branding_enabled": "Näytä yrityksen brändäys kirjautumisnäytöllä",
