@@ -20,6 +20,18 @@ const _s = reactive({
   errorMsg: '',
 })
 
+const _invite = reactive({
+  pending: false,
+  convId: null,
+  convName: '',
+  fromName: '',
+  fromAvatar: '',
+})
+
+let _sendFn = null
+function setSendFn(fn) { _sendFn = fn }
+function _send(msg) { if (_sendFn) _sendFn(msg) }
+
 /** @type {Room | null} */
 let _room = null
 
@@ -225,13 +237,67 @@ async function toggleCamera() {
   _syncTiles()
 }
 
+/** Send a call.group_invite for the given user IDs via the personal WebSocket. */
+function inviteUsers(toUserIds) {
+  if (!_s.convId || !toUserIds?.length) return
+  _send({
+    type: 'call.group_invite',
+    payload: { to_user_ids: toUserIds, conversation_id: _s.convId },
+  })
+}
+
+/** Send a group invite without requiring an active LiveKit call (used for 1:1 → group upgrade). */
+function sendGroupInvite(convId, toUserIds) {
+  if (!convId || !toUserIds?.length) return
+  _send({
+    type: 'call.group_invite',
+    payload: { to_user_ids: toUserIds, conversation_id: convId },
+  })
+}
+
+/** Called by App.vue when a call.group_invite message arrives on the personal WS. */
+function handleGroupInvite(payload) {
+  if (_invite.pending) return // already have a pending invite
+  _invite.pending = true
+  _invite.convId = payload.conversation_id
+  _invite.convName = payload.conv_name || ''
+  _invite.fromName = payload.from_name || ''
+  _invite.fromAvatar = payload.from_avatar || ''
+}
+
+async function acceptGroupInvite() {
+  if (!_invite.pending) return
+  const { convId, convName, fromName } = _invite
+  _invite.pending = false
+  _invite.convId = null
+  _invite.convName = ''
+  _invite.fromName = ''
+  _invite.fromAvatar = ''
+  await joinGroupCall(convId, convName || fromName, [])
+}
+
+function declineGroupInvite() {
+  _invite.pending = false
+  _invite.convId = null
+  _invite.convName = ''
+  _invite.fromName = ''
+  _invite.fromAvatar = ''
+}
+
 export function useLiveKitGroupCall() {
   return {
     state: readonly(_s),
     tiles: readonly(_tiles),
+    invite: readonly(_invite),
+    setSendFn,
     joinGroupCall,
     leaveGroupCall,
     toggleMute,
     toggleCamera,
+    inviteUsers,
+    sendGroupInvite,
+    handleGroupInvite,
+    acceptGroupInvite,
+    declineGroupInvite,
   }
 }

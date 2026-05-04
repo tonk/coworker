@@ -689,6 +689,13 @@
     "group_you": "Sie",
     "group_peer": "Benutzer {id}",
     "livekit_unavailable": "Gruppenvideo ist auf diesem Server nicht aktiviert. Ein Administrator muss LiveKit konfigurieren (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Verbindung zum Videoraum fehlgeschlagen. Prüfen Sie Netzwerk und LiveKit-Einstellungen."
+    "livekit_connect_failed": "Verbindung zum Videoraum fehlgeschlagen. Prüfen Sie Netzwerk und LiveKit-Einstellungen.",
+    "invite_to_call": "Zum Anruf einladen",
+    "invite_users": "Einladen",
+    "group_invite": "Gruppenanruf-Einladung",
+    "join_call": "Beitreten",
+    "no_users_to_invite": "Keine Benutzer zum Einladen",
+    "search_users": "Benutzer suchen…",
+    "invite_sent": "Einladung gesendet"
   }
 }

@@ -682,6 +682,13 @@
     "group_you": "Þú",
     "group_peer": "Notandi {id}",
     "livekit_unavailable": "Hópvídeó er ekki virkt á þessum netþjóni. Kerfisstjóri verður að stilla LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Tókst ekki að tengjast vídeóherberginu. Athugaðu netkerfið og LiveKit-stillingarnar."
+    "livekit_connect_failed": "Tókst ekki að tengjast vídeóherberginu. Athugaðu netkerfið og LiveKit-stillingarnar.",
+    "invite_to_call": "Bjóða í símtal",
+    "invite_users": "Bjóða",
+    "group_invite": "Boð í hópsímtal",
+    "join_call": "Taka þátt",
+    "no_users_to_invite": "Engir notendur að bjóða",
+    "search_users": "Leita að notendum…",
+    "invite_sent": "Boð sent"
   }
 }

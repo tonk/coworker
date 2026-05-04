@@ -29,6 +29,16 @@ livekit_api_secret: "your-secret"
 
 If LiveKit is not configured, users see a clear in-app status banner in eligible group chats and can continue using normal chat and 1:1 calls.
 
+== Inviting people to an active call
+
+You can now bring someone into a running call without leaving it.
+The *+* button in the bottom controls bar opens a user picker — search by name, tick one or more people, and hit *Invite*.
+Each person receives a real-time popup with a *Join* button anywhere in the app.
+
+If you are in a *1:1 call*, the invite automatically upgrades the session to a LiveKit group room.
+Your existing call partner receives the same join popup, so no one is left behind.
+
 == Why this matters
 
 This closes a long-standing gap for teams that run planning, standups, and incident triage directly in WarmDesk group conversations.
+With in-call invites you can pull in a subject-matter expert or a late joiner without anyone having to hang up and restart.

@@ -259,6 +259,8 @@ sudo a2ensite warmdesk
 sudo systemctl reload apache2
 ```
 
+The template uses a dedicated `<Location "/api/v1/ws">` block with `ProxyPass ws://…` and `ProxyTimeout 86400` to keep WebSocket connections (board updates, chat, video-call signalling) alive for up to 24 hours without a forced reconnect. All other traffic is handled by the catch-all `ProxyPass / http://…` below it.
+
 ### Server TLS
 
 WarmDesk can serve HTTPS directly without a reverse proxy. Set both `tls_cert`

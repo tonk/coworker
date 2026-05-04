@@ -682,6 +682,13 @@
     "group_you": "Tu",
     "group_peer": "Utente {id}",
     "livekit_unavailable": "Il video di gruppo non è attivo su questo server. Un amministratore deve configurare LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Impossibile connettersi alla stanza video. Controllare rete e impostazioni LiveKit."
+    "livekit_connect_failed": "Impossibile connettersi alla stanza video. Controllare rete e impostazioni LiveKit.",
+    "invite_to_call": "Invita alla chiamata",
+    "invite_users": "Invita",
+    "group_invite": "Invito alla chiamata di gruppo",
+    "join_call": "Partecipa",
+    "no_users_to_invite": "Nessun utente da invitare",
+    "search_users": "Cerca utenti…",
+    "invite_sent": "Invito inviato"
   }
 }

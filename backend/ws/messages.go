@@ -79,6 +79,7 @@ const (
 	TypeCallReject      = "call.reject"
 	TypeCallRing        = "call.ring"
 	TypeCallUnavailable = "call.unavailable"
+	TypeCallGroupInvite = "call.group_invite"
 
 	// System
 	TypePong  = "pong"

@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.9.22 — 2026-05-04
+
+### Added
+- **In-call attendee invites** — a **+** button in the bottom controls bar of any active call opens a searchable user picker; selected users receive a real-time invite popup and join the LiveKit group room with one click; works in both group calls and 1:1 calls
+- **1:1 → group call upgrade** — inviting someone from a 1:1 WebRTC call automatically upgrades the session to a LiveKit group room; the existing call partner also receives the join popup so no one is dropped
+
+### Fixed
+- **Apache WebSocket proxy timeout** — `deploy/apache.conf` now uses a dedicated `<Location "/api/v1/ws">` block with `ProxyTimeout 86400` (24 hours); the previous catch-all approach left WebSocket connections subject to Apache's 300-second default, silently disconnecting board updates, chat, and video-call sessions
+- **Backup email: unit and layout** — file sizes now display as `kB` (correct SI prefix) instead of `KB`; size and date columns have `white-space:nowrap` so narrow email clients no longer wrap `548.0 kB` across two lines
+
 ## v0.9.20 — 2026-05-01
 
 ### Added

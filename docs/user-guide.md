@@ -431,6 +431,15 @@ WarmDesk supports two call modes in direct messages:
 In eligible group chats, use the video button in the header to join the group room.
 If the server has not configured LiveKit yet, a status banner is shown in the conversation with a clear admin-facing message.
 
+#### Inviting people to an active call
+
+While in any call, click the **+** button (add person icon) in the bottom controls bar to invite additional participants:
+
+- A user picker appears — search by name and tick one or more people.
+- Click **Invite**. Each selected user receives a real-time popup with a **Join** button.
+- If you are currently in a **1:1 call**, inviting someone automatically upgrades the call to a LiveKit group room. Your existing call partner also receives the join popup.
+- Invitations are send-and-forget: users who are offline or decline simply don't appear in the room.
+
 ### Teams tab
 
 In **Chats → New Conversation → Teams**, you can see all projects you belong

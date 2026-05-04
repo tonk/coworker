@@ -682,6 +682,13 @@
     "group_you": "Sinä",
     "group_peer": "Käyttäjä {id}",
     "livekit_unavailable": "Ryhmävideota ei ole otettu käyttöön tällä palvelimella. Järjestelmänvalvojan on määritettävä LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Yhteyttä videohuoneeseen ei voitu muodostaa. Tarkista verkko ja LiveKit-asetukset."
+    "livekit_connect_failed": "Yhteyttä videohuoneeseen ei voitu muodostaa. Tarkista verkko ja LiveKit-asetukset.",
+    "invite_to_call": "Kutsu puheluun",
+    "invite_users": "Kutsu",
+    "group_invite": "Ryhmäpuhelukutsu",
+    "join_call": "Liity",
+    "no_users_to_invite": "Ei kutsuttavia käyttäjiä",
+    "search_users": "Etsi käyttäjiä…",
+    "invite_sent": "Kutsu lähetetty"
   }
 }

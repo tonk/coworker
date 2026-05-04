@@ -682,6 +682,13 @@
     "group_you": "Du",
     "group_peer": "Bruker {id}",
     "livekit_unavailable": "Gruppevideo er ikke aktivert på denne serveren. En administrator må konfigurere LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Kunne ikke koble til videorommet. Sjekk nettverket og LiveKit-innstillingene."
+    "livekit_connect_failed": "Kunne ikke koble til videorommet. Sjekk nettverket og LiveKit-innstillingene.",
+    "invite_to_call": "Inviter til samtale",
+    "invite_users": "Inviter",
+    "group_invite": "Invitasjon til gruppesamtale",
+    "join_call": "Bli med",
+    "no_users_to_invite": "Ingen brukere å invitere",
+    "search_users": "Søk etter brukere…",
+    "invite_sent": "Invitasjon sendt"
   }
 }

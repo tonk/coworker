@@ -223,28 +223,32 @@ sudo journalctl -u warmdesk -f   # follow logs
 == Reverse proxy (nginx)
 
 The `deploy/nginx.conf` template configures nginx as a TLS-terminating reverse proxy.
+Copy it and replace the placeholder domain and certificate paths:
 
-[source,nginx]
+[source,bash]
 ----
-server {
-    listen 443 ssl http2;
-    server_name warmdesk.example.com;
-
-    ssl_certificate     /etc/letsencrypt/live/warmdesk.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/warmdesk.example.com/privkey.pem;
-
-    location / {
-        proxy_pass         http://127.0.0.1:8080;
-        proxy_http_version 1.1;
-        proxy_set_header   Upgrade $http_upgrade;
-        proxy_set_header   Connection "upgrade";
-        proxy_set_header   Host $host;
-        proxy_set_header   X-Real-IP $remote_addr;
-    }
-}
+sudo cp deploy/nginx.conf /etc/nginx/sites-available/warmdesk
+sudo ln -s /etc/nginx/sites-available/warmdesk /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
 ----
 
-`proxy_http_version 1.1` and the `Upgrade`/`Connection` headers are required for WebSocket to work through the proxy.
+The template uses a *dedicated location block* for `/api/v1/ws` with hardcoded `Upgrade: websocket` headers and 24-hour read/send timeouts, which keeps board updates, chat, and video-call signalling stable through the proxy.
+A separate `location /` block handles regular HTTP traffic without forwarding upgrade headers (prevents h2c smuggling).
+
+== Reverse proxy (Apache)
+
+The `deploy/apache.conf` template requires the following modules:
+
+[source,bash]
+----
+sudo a2enmod proxy proxy_http proxy_wstunnel ssl headers rewrite
+sudo cp deploy/apache.conf /etc/apache2/sites-available/warmdesk.conf
+sudo a2ensite warmdesk
+sudo systemctl reload apache2
+----
+
+A dedicated `<Location "/api/v1/ws">` block with `ProxyPass ws://…` and `ProxyTimeout 86400` handles WebSocket connections.
+It must appear *before* the catch-all `ProxyPass /` so Apache routes WebSocket traffic correctly.
 
 == Desktop apps
 

@@ -682,6 +682,13 @@
     "group_you": "Dig",
     "group_peer": "Bruger {id}",
     "livekit_unavailable": "Gruppevideo er ikke aktiveret på denne server. En administrator skal konfigurere LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Kunne ikke oprette forbindelse til videorummet. Tjek netværk og LiveKit-indstillinger."
+    "livekit_connect_failed": "Kunne ikke oprette forbindelse til videorummet. Tjek netværk og LiveKit-indstillinger.",
+    "invite_to_call": "Inviter til opkald",
+    "invite_users": "Inviter",
+    "group_invite": "Gruppeoperkaldinvitation",
+    "join_call": "Deltag",
+    "no_users_to_invite": "Ingen brugere at invitere",
+    "search_users": "Søg efter brugere…",
+    "invite_sent": "Invitation sendt"
   }
 }

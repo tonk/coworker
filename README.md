@@ -8,13 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.5)
+## Latest release (v0.9.22)
 
-- Admin panel improvements: Last Password Change and dedicated MFA columns in the Users table; sortable name column in Users, Groups, Customers, and Projects lists; Edit User modal now includes a group assignment picker.
-- Password change period policy: admin-configurable maximum password age; users whose password has expired are redirected to Settings on login.
-- People list in DM/chat filtered by shared customer membership for non-admin users with customer restrictions.
-- Reaction tooltips in chat and DMs show the names of all users who reacted on hover.
-- WarmDesk wordmark shown on the login screen; company logo correctly resolved in the desktop app.
+- In-call attendee invites: a **+** button in any active video or audio call opens a searchable user picker; selected users receive a real-time invite popup and join with one click; inviting from a 1:1 call automatically upgrades it to a LiveKit group room.
+- Apache WebSocket proxy timeout: `deploy/apache.conf` now uses a dedicated `<Location>` block for `/api/v1/ws` with a 24-hour `ProxyTimeout`, preventing silent disconnects under Apache.
+- Backup email: file sizes display as `kB` (correct SI unit); size and date columns no longer wrap in narrow email clients.
 
 ## Build status
 

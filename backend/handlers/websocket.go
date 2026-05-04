@@ -293,6 +293,9 @@ func handleUserIncoming(client *appws.Client, raw []byte) {
 
 	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject:
 		handleCallSignal(client, msg)
+
+	case appws.TypeCallGroupInvite:
+		handleGroupCallInvite(client, msg)
 	}
 }
 
@@ -390,6 +393,67 @@ func handleCallSignal(client *appws.Client, msg appws.Message) {
 			Payload: map[string]any{
 				"from_user_id":    callerID,
 				"conversation_id": convID,
+			},
+		})
+	}
+}
+
+// handleGroupCallInvite adds invited users to the conversation (if not already
+// members) and relays a call.group_invite notification to each of them so they
+// can join the active LiveKit room.
+func handleGroupCallInvite(client *appws.Client, msg appws.Message) {
+	type groupInvitePayload struct {
+		ToUserIDs      []uint `json:"to_user_ids"`
+		ConversationID uint   `json:"conversation_id"`
+	}
+	payloadBytes, _ := json.Marshal(msg.Payload)
+	var payload groupInvitePayload
+	if err := json.Unmarshal(payloadBytes, &payload); err != nil || len(payload.ToUserIDs) == 0 || payload.ConversationID == 0 {
+		client.SendError("invalid_payload", "to_user_ids and conversation_id required", msg.ID)
+		return
+	}
+
+	inviterID := client.UserID()
+	convID := payload.ConversationID
+
+	if !isMember(convID, inviterID) {
+		client.SendError("forbidden", "not a conversation member", msg.ID)
+		return
+	}
+
+	var conv models.Conversation
+	database.DB.First(&conv, convID)
+
+	var inviter models.User
+	database.DB.First(&inviter, inviterID)
+
+	now := time.Now()
+	for _, uid := range payload.ToUserIDs {
+		if uid == inviterID {
+			continue
+		}
+		if !isMember(convID, uid) {
+			database.DB.Create(&models.ConversationMember{
+				ConversationID: convID,
+				UserID:         uid,
+				JoinedAt:       now,
+			})
+			var count int64
+			database.DB.Model(&models.ConversationMember{}).
+				Where("conversation_id = ?", convID).Count(&count)
+			if count > 2 {
+				database.DB.Model(&models.Conversation{}).
+					Where("id = ?", convID).Update("is_group", true)
+			}
+		}
+		appws.BroadcastToUser(uid, appws.Message{
+			Type: appws.TypeCallGroupInvite,
+			Payload: map[string]any{
+				"from_user_id":    inviterID,
+				"from_name":       client.DisplayName(),
+				"from_avatar":     inviter.AvatarURL,
+				"conversation_id": convID,
+				"conv_name":       conv.Name,
 			},
 		})
 	}

@@ -682,6 +682,13 @@
     "group_you": "Du",
     "group_peer": "Användare {id}",
     "livekit_unavailable": "Gruppvideo är inte aktiverat på den här servern. En administratör måste konfigurera LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Det gick inte att ansluta till videorummet. Kontrollera nätverket och LiveKit-inställningarna."
+    "livekit_connect_failed": "Det gick inte att ansluta till videorummet. Kontrollera nätverket och LiveKit-inställningarna.",
+    "invite_to_call": "Bjud in till samtal",
+    "invite_users": "Bjud in",
+    "group_invite": "Inbjudan till gruppsamtal",
+    "join_call": "Delta",
+    "no_users_to_invite": "Inga användare att bjuda in",
+    "search_users": "Sök användare…",
+    "invite_sent": "Inbjudan skickad"
   }
 }

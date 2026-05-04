@@ -689,6 +689,13 @@
     "group_you": "Jij",
     "group_peer": "Gebruiker {id}",
     "livekit_unavailable": "Groepsvideo staat op deze server niet aan. Een beheerder moet LiveKit configureren (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Verbinding met de videoruimte mislukt. Controleer netwerk en LiveKit-instellingen."
+    "livekit_connect_failed": "Verbinding met de videoruimte mislukt. Controleer netwerk en LiveKit-instellingen.",
+    "invite_to_call": "Uitnodigen voor gesprek",
+    "invite_users": "Uitnodigen",
+    "group_invite": "Groepsgesprek uitnodiging",
+    "join_call": "Deelnemen",
+    "no_users_to_invite": "Geen gebruikers om uit te nodigen",
+    "search_users": "Gebruikers zoeken…",
+    "invite_sent": "Uitnodiging verzonden"
   }
 }

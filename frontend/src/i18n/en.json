@@ -689,6 +689,13 @@
     "group_you": "You",
     "group_peer": "User {id}",
     "livekit_unavailable": "Group video is not enabled on this server. An administrator must configure LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Could not connect to the video room. Check your network and LiveKit settings."
+    "livekit_connect_failed": "Could not connect to the video room. Check your network and LiveKit settings.",
+    "invite_to_call": "Invite to call",
+    "invite_users": "Invite",
+    "group_invite": "Group call invite",
+    "join_call": "Join",
+    "no_users_to_invite": "No users to invite",
+    "search_users": "Search users…",
+    "invite_sent": "Invite sent"
   }
 }

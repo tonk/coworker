@@ -28,6 +28,7 @@
   <RouterView v-else />
   <ToastContainer />
   <IncomingCallOverlay />
+  <IncomingGroupCallOverlay />
   <ActiveCallBar />
 </template>
 
@@ -53,7 +54,9 @@ import { getWsUrl } from '@/api/serverConfig'
 import { authApi } from '@/api/auth'
 import { refreshMediaTicket, startMediaTicketRefresh, stopMediaTicketRefresh } from '@/api/attachments'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
+import { useLiveKitGroupCall } from '@/composables/useLiveKitGroupCall'
 import IncomingCallOverlay from '@/components/call/IncomingCallOverlay.vue'
+import IncomingGroupCallOverlay from '@/components/call/IncomingGroupCallOverlay.vue'
 import ActiveCallBar from '@/components/call/ActiveCallBar.vue'
 
 const auth = useAuthStore()
@@ -62,6 +65,7 @@ const ui = useUIStore()
 const notificationsStore = useNotificationsStore()
 const { projectChatUnread } = useProjectChatUnread()
 const call = useWebRTCCall()
+const lkGroupCall = useLiveKitGroupCall()
 const route = useRoute()
 const router = useRouter()
 const isTauri = !!window.__TAURI_INTERNALS__
@@ -194,6 +198,7 @@ async function connectUserWs() {
   userWs = new WebSocket(url)
 
   call.setSendFn(msg => userWs.readyState === 1 && userWs.send(JSON.stringify(msg)))
+  lkGroupCall.setSendFn(msg => userWs.readyState === 1 && userWs.send(JSON.stringify(msg)))
 
   userWs.onopen = () => {
     userWsReconnectDelay = 1000
@@ -205,6 +210,8 @@ async function connectUserWs() {
       if (msg.type === 'mention.notification') {
         const { sender_name, body, context } = msg.payload || {}
         ui.mention(sender_name || 'Someone', body || '', context || '')
+      } else if (msg.type === 'call.group_invite') {
+        lkGroupCall.handleGroupInvite(msg.payload)
       } else if (msg.type && msg.type.startsWith('call.')) {
         call.handleSignal(msg)
       }

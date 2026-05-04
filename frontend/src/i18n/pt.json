@@ -682,6 +682,13 @@
     "group_you": "Você",
     "group_peer": "Utilizador {id}",
     "livekit_unavailable": "O vídeo em grupo não está ativado neste servidor. Um administrador tem de configurar o LiveKit (livekit_url, livekit_api_key, livekit_api_secret).",
-    "livekit_connect_failed": "Não foi possível ligar à sala de vídeo. Verifique a rede e as definições do LiveKit."
+    "livekit_connect_failed": "Não foi possível ligar à sala de vídeo. Verifique a rede e as definições do LiveKit.",
+    "invite_to_call": "Convidar para chamada",
+    "invite_users": "Convidar",
+    "group_invite": "Convite para chamada em grupo",
+    "join_call": "Entrar",
+    "no_users_to_invite": "Nenhum utilizador para convidar",
+    "search_users": "Pesquisar utilizadores…",
+    "invite_sent": "Convite enviado"
   }
 }

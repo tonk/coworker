@@ -371,8 +371,8 @@ func buildBackupEmailHTML(success bool, filename, errMsg string, t time.Time, fi
 			backupRows += fmt.Sprintf(
 				`<tr>`+
 					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#333;background-color:%s">%s</td>`+
-					`<td style="padding:6px 8px;font-size:12px;color:#888;text-align:right;background-color:%s">%s</td>`+
-					`<td style="padding:6px 8px;font-size:12px;color:#888;background-color:%s">%s</td></tr>`,
+					`<td style="padding:6px 8px;font-size:12px;color:#888;text-align:right;white-space:nowrap;background-color:%s">%s</td>`+
+					`<td style="padding:6px 8px;font-size:12px;color:#888;white-space:nowrap;background-color:%s">%s</td></tr>`,
 				rowBg, f.Filename, rowBg, formatEmailBytes(f.Size), rowBg, f.ModifiedAt,
 			)
 		}
@@ -412,7 +412,7 @@ func formatEmailBytes(b int64) string {
 	case b >= 1<<20:
 		return fmt.Sprintf("%.1f MB", float64(b)/(1<<20))
 	case b >= 1<<10:
-		return fmt.Sprintf("%.1f KB", float64(b)/(1<<10))
+		return fmt.Sprintf("%.1f kB", float64(b)/(1<<10))
 	default:
 		return fmt.Sprintf("%d B", b)
 	}

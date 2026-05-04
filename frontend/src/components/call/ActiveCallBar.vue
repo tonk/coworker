@@ -11,7 +11,7 @@
       </div>
 
       <!-- ── LiveKit: active (grid) ───────────────────────────────────────── -->
-      <div v-else-if="lkState.phase === 'active'" class="video-overlay lk-grid-overlay">
+      <div v-else-if="lkState.phase === 'active'" class="video-overlay lk-grid-overlay" @click.self="closeInvitePicker">
         <div class="lk-grid-top">
           <div class="remote-name">{{ lkState.title || $t('call.group_call') }}</div>
           <div class="call-duration">{{ formattedLkDuration }}</div>
@@ -27,7 +27,41 @@
             :camera-off="t.cameraOff"
           />
         </div>
+
+        <!-- ── Invite picker panel ───────────────────────────────────────── -->
+        <div v-if="showInvitePicker" class="invite-picker" @click.stop>
+          <div class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
+          <input
+            v-model="inviteSearch"
+            class="invite-picker-search"
+            :placeholder="$t('call.search_users')"
+            autofocus
+          />
+          <div class="invite-picker-list">
+            <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
+              <input type="checkbox" :value="u.id" v-model="selectedInviteIds" class="invite-check" />
+              <div class="invite-avatar" :style="inviteAvatarBg(u)">
+                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" @error="e => e.target.style.display='none'" />
+                <span v-else class="invite-avatar-initials">{{ inviteInitials(u) }}</span>
+              </div>
+              <span class="invite-user-name">{{ u.display_name || u.username }}</span>
+            </label>
+            <div v-if="!filteredInviteUsers.length" class="invite-empty">{{ $t('call.no_users_to_invite') }}</div>
+          </div>
+          <button class="invite-send-btn" :disabled="!selectedInviteIds.length" @click="sendInvites">
+            {{ $t('call.invite_users') }}
+          </button>
+        </div>
+
         <div class="video-controls">
+          <button class="vc-btn invite-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePicker">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/>
+              <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+          </button>
           <button :class="['vc-btn', { active: lkState.isMuted }]" :title="lkState.isMuted ? $t('call.unmute') : $t('call.mute')" @click="lkToggleMute">
             <svg v-if="!lkState.isMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -79,8 +113,36 @@
         <div class="remote-name">{{ state.remoteName }}</div>
         <div class="call-duration">{{ formattedDuration }}</div>
 
+        <!-- Invite picker for 1:1 → group upgrade -->
+        <div v-if="showInvitePicker && upgradeMode" class="invite-picker" @click.stop>
+          <div class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
+          <input v-model="inviteSearch" class="invite-picker-search" :placeholder="$t('call.search_users')" autofocus />
+          <div class="invite-picker-list">
+            <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
+              <input type="checkbox" :value="u.id" v-model="selectedInviteIds" class="invite-check" />
+              <div class="invite-avatar" :style="inviteAvatarBg(u)">
+                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" @error="e => e.target.style.display='none'" />
+                <span v-else class="invite-avatar-initials">{{ inviteInitials(u) }}</span>
+              </div>
+              <span class="invite-user-name">{{ u.display_name || u.username }}</span>
+            </label>
+            <div v-if="!filteredInviteUsers.length" class="invite-empty">{{ $t('call.no_users_to_invite') }}</div>
+          </div>
+          <button class="invite-send-btn" :disabled="!selectedInviteIds.length" @click="sendInvites">
+            {{ $t('call.invite_users') }}
+          </button>
+        </div>
+
         <!-- Controls bar -->
         <div class="video-controls">
+          <button class="vc-btn invite-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePickerWebRTC">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/>
+              <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+          </button>
           <button :class="['vc-btn', { active: state.isMuted }]" :title="state.isMuted ? $t('call.unmute') : $t('call.mute')" @click="toggleMute">
             <svg v-if="!state.isMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -119,6 +181,26 @@
         <!-- Hidden audio element for remote stream in audio-only mode -->
         <audio ref="remoteAudio" autoplay playsinline></audio>
 
+        <!-- Invite picker anchored above the audio bar -->
+        <div v-if="showInvitePicker && upgradeMode" class="invite-picker invite-picker-above-bar" @click.stop>
+          <div class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
+          <input v-model="inviteSearch" class="invite-picker-search" :placeholder="$t('call.search_users')" autofocus />
+          <div class="invite-picker-list">
+            <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
+              <input type="checkbox" :value="u.id" v-model="selectedInviteIds" class="invite-check" />
+              <div class="invite-avatar" :style="inviteAvatarBg(u)">
+                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" @error="e => e.target.style.display='none'" />
+                <span v-else class="invite-avatar-initials">{{ inviteInitials(u) }}</span>
+              </div>
+              <span class="invite-user-name">{{ u.display_name || u.username }}</span>
+            </label>
+            <div v-if="!filteredInviteUsers.length" class="invite-empty">{{ $t('call.no_users_to_invite') }}</div>
+          </div>
+          <button class="invite-send-btn" :disabled="!selectedInviteIds.length" @click="sendInvites">
+            {{ $t('call.invite_users') }}
+          </button>
+        </div>
+
         <div class="call-bar-info">
           <div class="call-bar-name">{{ state.remoteName || '…' }}</div>
           <div class="call-bar-status">
@@ -128,6 +210,14 @@
         </div>
 
         <div class="call-bar-actions">
+          <button v-if="state.phase === 'active'" class="call-bar-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePickerWebRTC">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="20" y1="8" x2="20" y2="14"/>
+              <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+          </button>
           <button :class="['call-bar-btn', { active: state.isMuted }]" :title="state.isMuted ? $t('call.unmute') : $t('call.mute')" @click="toggleMute">
             <svg v-if="!state.isMuted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -169,13 +259,16 @@
 import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUIStore } from '@/stores/ui'
+import { useAuthStore } from '@/stores/auth'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
 import { useLiveKitGroupCall } from '@/composables/useLiveKitGroupCall'
 import { useCallSettings } from '@/composables/useCallSettings'
+import { messagesApi } from '@/api/messages'
 import LkVideoCell from '@/components/call/LkVideoCell.vue'
 
 const { t } = useI18n()
 const ui = useUIStore()
+const auth = useAuthStore()
 
 const {
   state: lkState,
@@ -183,7 +276,100 @@ const {
   leaveGroupCall,
   toggleMute: lkToggleMute,
   toggleCamera: lkToggleCamera,
+  inviteUsers,
+  sendGroupInvite,
+  joinGroupCall,
 } = useLiveKitGroupCall()
+
+// ── Invite picker ────────────────────────────────────────────────────────────
+const showInvitePicker = ref(false)
+const inviteSearch = ref('')
+const allUsers = ref([])
+const selectedInviteIds = ref([])
+
+// upgradeMode: true when inviting from a 1:1 WebRTC call (needs LK upgrade)
+const upgradeMode = ref(false)
+const upgradeConvId = ref(null)
+const upgradeRemoteId = ref(null)  // the 1:1 partner — auto-invited on upgrade
+
+const filteredInviteUsers = computed(() => {
+  const excluded = new Set(lkTiles.map(t => String(t.identity)))
+  excluded.add(String(auth.user?.id ?? ''))
+  if (upgradeRemoteId.value) excluded.add(String(upgradeRemoteId.value))
+  const q = inviteSearch.value.trim().toLowerCase()
+  return allUsers.value.filter(u => {
+    if (excluded.has(String(u.id))) return false
+    if (!q) return true
+    return (u.display_name || u.username || '').toLowerCase().includes(q)
+  })
+})
+
+async function _loadUsers() {
+  try {
+    const res = await messagesApi.listUsers()
+    allUsers.value = res.data || []
+  } catch { allUsers.value = [] }
+}
+
+// Called from the LiveKit active overlay (already in a group call)
+async function openInvitePicker() {
+  if (showInvitePicker.value && !upgradeMode.value) { closeInvitePicker(); return }
+  upgradeMode.value = false
+  upgradeConvId.value = null
+  upgradeRemoteId.value = null
+  selectedInviteIds.value = []
+  inviteSearch.value = ''
+  await _loadUsers()
+  showInvitePicker.value = true
+}
+
+// Called from the WebRTC 1:1 video/audio overlay — will upgrade to LiveKit
+async function openInvitePickerWebRTC() {
+  if (showInvitePicker.value && upgradeMode.value) { closeInvitePicker(); return }
+  upgradeMode.value = true
+  upgradeConvId.value = state.convId
+  upgradeRemoteId.value = state.remoteUserId
+  selectedInviteIds.value = []
+  inviteSearch.value = ''
+  await _loadUsers()
+  showInvitePicker.value = true
+}
+
+function closeInvitePicker() {
+  showInvitePicker.value = false
+  selectedInviteIds.value = []
+  inviteSearch.value = ''
+  upgradeMode.value = false
+  upgradeConvId.value = null
+  upgradeRemoteId.value = null
+}
+
+async function sendInvites() {
+  if (!selectedInviteIds.value.length) return
+  if (upgradeMode.value) {
+    const convId = upgradeConvId.value
+    const allIds = [...selectedInviteIds.value]
+    if (upgradeRemoteId.value) allIds.push(upgradeRemoteId.value)
+    sendGroupInvite(convId, allIds)
+    closeInvitePicker()
+    endCall()
+    await joinGroupCall(convId, state.remoteName || '', [])
+  } else {
+    inviteUsers(selectedInviteIds.value)
+    ui.success(t('call.invite_sent'))
+    closeInvitePicker()
+  }
+}
+
+function inviteInitials(u) {
+  return ((u.display_name || u.username) || '?').slice(0, 2).toUpperCase()
+}
+
+const AVATAR_COLORS = ['#6366f1','#8b5cf6','#ec4899','#f97316','#14b8a6','#3b82f6','#22c55e']
+function inviteAvatarBg(u) {
+  const idx = (u.id || 0) % AVATAR_COLORS.length
+  return { background: AVATAR_COLORS[idx] }
+}
 
 const { state, toggleMute, toggleCamera, endCall, setRemoteStreamCallback, setLocalStreamCallback } = useWebRTCCall()
 
@@ -512,5 +698,98 @@ onUnmounted(() => {
   gap: 10px;
   align-content: start;
   overflow-y: auto;
+}
+
+/* ── Invite button ────────────────────────────────────────────────────────── */
+.vc-btn.invite-btn { background: rgba(255,255,255,0.18); }
+.vc-btn.invite-btn:hover { background: rgba(255,255,255,0.28); }
+
+/* ── Invite picker panel ──────────────────────────────────────────────────── */
+.invite-picker {
+  position: absolute;
+  bottom: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  background: var(--color-surface, #1e1e2e);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
+.invite-picker-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.invite-picker-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+.invite-picker-search::placeholder { color: rgba(255,255,255,0.4); }
+.invite-picker-list {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.invite-picker-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.invite-picker-user:hover { background: rgba(255,255,255,0.1); }
+.invite-check { accent-color: #3b82f6; width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; }
+.invite-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.invite-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+.invite-avatar-initials { color: #fff; font-size: 11px; font-weight: 700; }
+.invite-user-name { font-size: 13px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.invite-empty { font-size: 13px; color: rgba(255,255,255,0.5); text-align: center; padding: 10px 0; }
+.invite-send-btn {
+  width: 100%;
+  padding: 9px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.invite-send-btn:hover:not(:disabled) { background: #2563eb; }
+.invite-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Variant: anchored above the audio bar */
+.invite-picker-above-bar {
+  position: fixed;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 </style>
