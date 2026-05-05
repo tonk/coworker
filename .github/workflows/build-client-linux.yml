@@ -36,12 +36,6 @@ jobs:
             gstreamer1.0-plugins-good \
             gstreamer1.0-pulseaudio
 
-      - name: Download linuxdeploy-plugin-gstreamer
-        run: |
-          curl -fsSL -o /tmp/linuxdeploy-plugin-gstreamer \
-            "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gstreamer/master/linuxdeploy-plugin-gstreamer.sh"
-          chmod +x /tmp/linuxdeploy-plugin-gstreamer
-
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -73,11 +67,37 @@ jobs:
 
       - name: Build
         # NO_STRIP=true: linuxdeploy's bundled strip is too old for newer glibc.
-        # PATH includes /tmp so linuxdeploy discovers linuxdeploy-plugin-gstreamer
-        # and bundles the GStreamer plugins needed for camera/mic (appsink, v4l2src,
-        # pulsesrc).  Without this the AppImage ships no GStreamer plugins and
-        # getUserMedia returns empty device lists on all non-Ubuntu distros.
-        run: cd frontend && NO_STRIP=true PATH="$PATH:/tmp" npm run tauri:build -- --bundles appimage
+        run: cd frontend && NO_STRIP=true npm run tauri:build -- --bundles appimage
+
+      - name: Bundle GStreamer plugins into AppImage
+        # Tauri's linuxdeploy integration doesn't reliably invoke the
+        # linuxdeploy-plugin-gstreamer plugin.  Instead we post-process:
+        # extract the AppImage, copy ubuntu-24.04's GStreamer plugins (ABI-
+        # compatible with the bundled webkit2gtk GStreamer core) directly into
+        # usr/lib/gstreamer-1.0/, then repack.  At runtime lib.rs sets
+        # GST_PLUGIN_PATH to that directory so GStreamer finds the bundled
+        # plugins instead of falling back to the system path (e.g. Fedora's
+        # incompatible GStreamer 1.26 in /usr/lib64/).
+        run: |
+          set -euo pipefail
+          APPIMAGE=$(ls frontend/src-tauri/target/release/bundle/appimage/*.AppImage | head -1)
+          echo "Bundling GStreamer into: $APPIMAGE"
+
+          chmod +x "$APPIMAGE"
+          "$APPIMAGE" --appimage-extract   # → squashfs-root/ in CWD
+
+          GST_SRC="/usr/lib/x86_64-linux-gnu/gstreamer-1.0"
+          GST_DST="squashfs-root/usr/lib/gstreamer-1.0"
+          mkdir -p "$GST_DST/gstreamer-1.0"
+          cp "$GST_SRC"/lib*.so "$GST_DST/"
+          cp "$GST_SRC/gstreamer-1.0/gst-plugin-scanner" "$GST_DST/gstreamer-1.0/"
+          echo "Bundled $(ls "$GST_DST"/lib*.so | wc -l) plugins + gst-plugin-scanner"
+
+          curl -fsSL -o /tmp/appimagetool \
+            "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x /tmp/appimagetool
+          ARCH=x86_64 /tmp/appimagetool squashfs-root "$APPIMAGE"
+          rm -rf squashfs-root
 
       - name: Collect artifact
         run: |
