@@ -31,7 +31,16 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             patchelf \
-            file
+            file \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-pulseaudio
+
+      - name: Download linuxdeploy-plugin-gstreamer
+        run: |
+          curl -fsSL -o /tmp/linuxdeploy-plugin-gstreamer \
+            "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gstreamer/master/linuxdeploy-plugin-gstreamer.sh"
+          chmod +x /tmp/linuxdeploy-plugin-gstreamer
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -64,8 +73,11 @@ jobs:
 
       - name: Build
         # NO_STRIP=true: linuxdeploy's bundled strip is too old for newer glibc.
-        # The Rust release profile already strips the binary.
-        run: cd frontend && NO_STRIP=true npm run tauri:build -- --bundles appimage
+        # PATH includes /tmp so linuxdeploy discovers linuxdeploy-plugin-gstreamer
+        # and bundles the GStreamer plugins needed for camera/mic (appsink, v4l2src,
+        # pulsesrc).  Without this the AppImage ships no GStreamer plugins and
+        # getUserMedia returns empty device lists on all non-Ubuntu distros.
+        run: cd frontend && NO_STRIP=true PATH="$PATH:/tmp" npm run tauri:build -- --bundles appimage
 
       - name: Collect artifact
         run: |
