@@ -92,9 +92,8 @@ jobs:
           cp "$GST_SRC"/lib*.so "$GST_DST/"
           echo "Bundled $(ls "$GST_DST"/lib*.so | wc -l) GStreamer plugins"
 
-          # gst-plugin-scanner moved to /usr/libexec on Ubuntu 24.04; search both locations
-          GST_SCANNER=$(find /usr/lib/x86_64-linux-gnu/gstreamer-1.0 /usr/libexec/gstreamer-1.0 \
-            -name 'gst-plugin-scanner' 2>/dev/null | head -1)
+          # gst-plugin-scanner location varies by Ubuntu version; search all of /usr
+          GST_SCANNER=$(find /usr -name 'gst-plugin-scanner' -type f 2>/dev/null | head -1) || true
           if [ -n "$GST_SCANNER" ]; then
             cp "$GST_SCANNER" "$GST_DST/gstreamer-1.0/"
             echo "Bundled gst-plugin-scanner from $GST_SCANNER"
