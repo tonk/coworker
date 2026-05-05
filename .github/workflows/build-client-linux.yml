@@ -89,8 +89,31 @@ jobs:
           GST_SRC="/usr/lib/x86_64-linux-gnu/gstreamer-1.0"
           GST_DST="squashfs-root/usr/lib/gstreamer-1.0"
           mkdir -p "$GST_DST/gstreamer-1.0"
-          cp "$GST_SRC"/lib*.so "$GST_DST/"
-          echo "Bundled $(ls "$GST_DST"/lib*.so | wc -l) GStreamer plugins"
+
+          # Bundle only the plugins needed for camera/mic enumeration and
+          # preview in webkit2gtk.  Copying all plugins pulls in RTP/network
+          # plugins that link against GStreamer 1.26 symbols not present in
+          # Fedora's libgstrtp/libgstnet, causing 25 s plugin-scanner hangs
+          # and a frozen UI on first launch.
+          for plugin in \
+            libgstapp.so \
+            libgstcoreelements.so \
+            libgstvideoconvert.so \
+            libgstvideoscale.so \
+            libgstaudioconvert.so \
+            libgstaudioresample.so \
+            libgstvideo4linux2.so \
+            libgstpulseaudio.so \
+            libgstpipewire.so \
+            libgstautodetect.so \
+            libgstplayback.so; do
+            if [ -f "$GST_SRC/$plugin" ]; then
+              cp "$GST_SRC/$plugin" "$GST_DST/"
+            else
+              echo "Note: $plugin not found on build host (skipped)"
+            fi
+          done
+          echo "Bundled $(ls "$GST_DST"/lib*.so 2>/dev/null | wc -l) GStreamer plugins"
 
           # gst-plugin-scanner location varies by Ubuntu version; search all of /usr
           GST_SCANNER=$(find /usr -name 'gst-plugin-scanner' -type f 2>/dev/null | head -1) || true
