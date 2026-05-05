@@ -90,8 +90,17 @@ jobs:
           GST_DST="squashfs-root/usr/lib/gstreamer-1.0"
           mkdir -p "$GST_DST/gstreamer-1.0"
           cp "$GST_SRC"/lib*.so "$GST_DST/"
-          cp "$GST_SRC/gstreamer-1.0/gst-plugin-scanner" "$GST_DST/gstreamer-1.0/"
-          echo "Bundled $(ls "$GST_DST"/lib*.so | wc -l) plugins + gst-plugin-scanner"
+          echo "Bundled $(ls "$GST_DST"/lib*.so | wc -l) GStreamer plugins"
+
+          # gst-plugin-scanner moved to /usr/libexec on Ubuntu 24.04; search both locations
+          GST_SCANNER=$(find /usr/lib/x86_64-linux-gnu/gstreamer-1.0 /usr/libexec/gstreamer-1.0 \
+            -name 'gst-plugin-scanner' 2>/dev/null | head -1)
+          if [ -n "$GST_SCANNER" ]; then
+            cp "$GST_SCANNER" "$GST_DST/gstreamer-1.0/"
+            echo "Bundled gst-plugin-scanner from $GST_SCANNER"
+          else
+            echo "Warning: gst-plugin-scanner not found — GStreamer plugin scanning may fall back to in-process"
+          fi
 
           curl -fsSL -o /tmp/appimagetool \
             "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
