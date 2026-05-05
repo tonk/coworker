@@ -115,6 +115,28 @@ jobs:
           done
           echo "Bundled $(ls "$GST_DST"/lib*.so 2>/dev/null | wc -l) GStreamer plugins"
 
+          # Each plugin .so has its own library dependencies (libgstvideo-1.0,
+          # libgstaudio-1.0, libgstapp-1.0, liborc-0.4, …) that may not already
+          # be bundled in the AppImage.  Without them the plugin silently fails to
+          # dlopen and gst_element_factory_make returns NULL, causing all the
+          # GST_IS_ELEMENT / GST_IS_PAD assertion failures and a black preview.
+          # Use ldd to find every /usr/lib dependency of each copied plugin and
+          # add missing ones to the AppImage's usr/lib directory.
+          APPLIB="squashfs-root/usr/lib"
+          for plugin_so in "$GST_DST"/lib*.so; do
+            ldd "$plugin_so" 2>/dev/null \
+              | grep '=> /usr/lib' \
+              | awk '{print $3}' \
+              | while read -r lib; do
+                  [ -f "$lib" ] || continue
+                  base=$(basename "$lib")
+                  if ! find squashfs-root/usr -name "$base" 2>/dev/null | grep -q .; then
+                    echo "Adding dependency: $base"
+                    cp "$lib" "$APPLIB/"
+                  fi
+                done
+          done
+
           # gst-plugin-scanner location varies by Ubuntu version; search all of /usr
           GST_SCANNER=$(find /usr -name 'gst-plugin-scanner' -type f 2>/dev/null | head -1) || true
           if [ -n "$GST_SCANNER" ]; then
