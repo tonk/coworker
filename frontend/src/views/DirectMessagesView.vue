@@ -242,8 +242,8 @@
             </button>
             <CallSettingsDropdown v-if="showCallSettings" :pos="callSettingsPos" @close="showCallSettings = false" />
           </div>
-          <!-- Group video (3+ members) — LiveKit room -->
-          <div v-else-if="activeConv.members?.length >= 3" class="call-btn-group" ref="groupCallBtnGroupRef">
+          <!-- Group video — LiveKit room -->
+          <div v-else-if="activeConv.is_group" class="call-btn-group" ref="groupCallBtnGroupRef">
             <button class="add-member-btn call-btn-header" :title="$t('call.group_video')" @click="initiateGroupCall">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7"/>
@@ -586,7 +586,7 @@ function initiateCall() {
 
 function initiateGroupCall() {
   const c = activeConv.value
-  if (!c?.is_group || (c.members?.length ?? 0) < 3) return
+  if (!c?.is_group || (c.members?.length ?? 0) < 2) return
   const profiles = (c.members || []).map((m) => ({
     identity: m.user_id,
     name: m.user?.display_name || m.user?.username || '',
@@ -597,7 +597,7 @@ function initiateGroupCall() {
 
 const showGroupCallBanner = computed(() => {
   const c = activeConv.value
-  if (!c?.is_group || (c.members?.length ?? 0) < 3) return false
+  if (!c?.is_group || (c.members?.length ?? 0) < 2) return false
   if (dismissedGroupCallBanners.value[c.id]) return false
   return groupCallState.errorMsg === 'livekit_unavailable' || groupCallState.errorMsg === 'livekit_connect_failed'
 })
