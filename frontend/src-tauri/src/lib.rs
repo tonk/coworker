@@ -35,6 +35,32 @@ pub fn run() {
         if std::env::var("GDK_RENDERING").is_err() {
             unsafe { std::env::set_var("GDK_RENDERING", "image") };
         }
+        // When running as an AppImage, Tauri's AppRun does not export
+        // GST_PLUGIN_PATH, so GStreamer falls back to system plugin paths
+        // (e.g. /usr/lib64 on Fedora).  Those paths contain GStreamer 1.26
+        // plugins that are ABI-incompatible with the ubuntu-24.04 GStreamer
+        // core bundled in the AppImage, causing crashes or "element not found"
+        // errors (appsink, v4l2src, …).
+        //
+        // APPDIR is set by the AppImage runtime.  linuxdeploy-plugin-gstreamer
+        // copies the build-host plugins to $APPDIR/usr/lib/gstreamer-1.0/ and
+        // the plugin scanner to …/gstreamer-1.0/gst-plugin-scanner.  We point
+        // GStreamer there so it only sees the bundled, ABI-compatible plugins.
+        // The exists() guard is a no-op outside AppImages (APPDIR not set) or
+        // when the plugin was not bundled.
+        if std::env::var("GST_PLUGIN_PATH").is_err() {
+            if let Ok(appdir) = std::env::var("APPDIR") {
+                let plugin_dir =
+                    std::path::PathBuf::from(&appdir).join("usr/lib/gstreamer-1.0");
+                if plugin_dir.exists() {
+                    unsafe { std::env::set_var("GST_PLUGIN_PATH", &plugin_dir) };
+                    let scanner = plugin_dir.join("gstreamer-1.0/gst-plugin-scanner");
+                    if scanner.exists() && std::env::var("GST_PLUGIN_SCANNER").is_err() {
+                        unsafe { std::env::set_var("GST_PLUGIN_SCANNER", &scanner) };
+                    }
+                }
+            }
+        }
     }
 
     tauri::Builder::default()
