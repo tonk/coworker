@@ -280,7 +280,7 @@ func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
 			bi := BackupInfo{Filename: e.Name()}
 			if info != nil {
 				bi.Size = info.Size()
-				bi.ModifiedAt = info.ModTime().UTC().Format(time.RFC3339)
+				bi.ModifiedAt = info.ModTime().UTC().Format("2006-01-02 15:04 UTC")
 			}
 			backupFiles = append(backupFiles, bi)
 		}
@@ -370,7 +370,7 @@ func buildBackupEmailHTML(success bool, filename, errMsg string, t time.Time, fi
 			}
 			backupRows += fmt.Sprintf(
 				`<tr>`+
-					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#333;background-color:%s">%s</td>`+
+					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#333;white-space:nowrap;background-color:%s">%s</td>`+
 					`<td style="padding:6px 8px;font-size:12px;color:#888;text-align:right;white-space:nowrap;background-color:%s">%s</td>`+
 					`<td style="padding:6px 8px;font-size:12px;color:#888;white-space:nowrap;background-color:%s">%s</td></tr>`,
 				rowBg, f.Filename, rowBg, formatEmailBytes(f.Size), rowBg, f.ModifiedAt,
