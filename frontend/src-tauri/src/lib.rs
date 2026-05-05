@@ -78,12 +78,25 @@ pub fn run() {
                 // webkit2gtk 2.50.x). Forces software compositing.
                 #[cfg(target_os = "linux")]
                 win.with_webview(|webview| {
-                    use webkit2gtk::{HardwareAccelerationPolicy, SettingsExt, WebViewExt};
+                    use webkit2gtk::{
+                        HardwareAccelerationPolicy, PermissionRequestExt, SettingsExt, WebViewExt,
+                    };
                     if let Some(settings) = WebViewExt::settings(&webview.inner()) {
                         settings.set_hardware_acceleration_policy(
                             HardwareAccelerationPolicy::Never,
                         );
+                        // webkit2gtk disables getUserMedia by default (false).
+                        // Must be enabled explicitly or navigator.mediaDevices
+                        // returns no devices at all.
+                        settings.set_enable_media_stream(true);
                     }
+                    // webkit2gtk denies all getUserMedia requests by default.
+                    // Allow them so the device-selection dropdown and call
+                    // previews can access the microphone and camera.
+                    webview.inner().connect_permission_request(|_view, request| {
+                        request.allow();
+                        true
+                    });
                 })?;
 
                 // On Windows, WebView2's autofill/credential service sends a

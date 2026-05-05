@@ -5,7 +5,7 @@ BACKEND   := backend
 FRONTEND  := frontend
 VERSION   := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
 ARCHIVE   := warmdesk-$(VERSION).tar.gz
-.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit help
+.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 _fetch-gst-plugin deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit help
 
 help:
 	@echo "WarmDesk $(VERSION)"
@@ -119,12 +119,33 @@ stamp-desktop-version:
 		console.log('Stamped desktop version:', ver);\
 	"
 
+# URL for the linuxdeploy GStreamer plugin script (bundles audio/video capture plugins).
+LINUXDEPLOY_PLUGIN_GST_URL := https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gstreamer/master/linuxdeploy-plugin-gstreamer.sh
+# Cached to /tmp so repeated builds in one session skip the download.
+LINUXDEPLOY_PLUGIN_GST     := /tmp/linuxdeploy-plugin-gstreamer
+
+# Fetch linuxdeploy-plugin-gstreamer if not already present.
+# linuxdeploy auto-discovers executables named linuxdeploy-plugin-* in PATH and
+# runs them, so placing the script here and prepending /tmp to PATH is enough.
+.PHONY: _fetch-gst-plugin
+_fetch-gst-plugin:
+	@if [ ! -x $(LINUXDEPLOY_PLUGIN_GST) ]; then \
+		echo "  Downloading linuxdeploy-plugin-gstreamer..."; \
+		curl -fsSL -o $(LINUXDEPLOY_PLUGIN_GST) "$(LINUXDEPLOY_PLUGIN_GST_URL)" \
+		&& chmod +x $(LINUXDEPLOY_PLUGIN_GST) \
+		|| { echo "ERROR: failed to download linuxdeploy-plugin-gstreamer"; exit 1; }; \
+	fi
+
 # Build the Tauri desktop client as an AppImage (Linux).
 # Requires: Rust, webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel
+# Must be built on Ubuntu 24.04: the AppImage bundles webkit2gtk + GStreamer core
+# from the build host.  linuxdeploy-plugin-gstreamer then adds the matching
+# GStreamer plugins so getUserMedia / camera-mic selection works on all distros
+# (Fedora's GStreamer is a different major version and cannot be mixed in).
 # NO_STRIP=true works around linuxdeploy's bundled strip being too old for newer glibc.
-appimage: stamp-desktop-version
+appimage: stamp-desktop-version _fetch-gst-plugin
 	@echo "Building WarmDesk desktop app (AppImage)..."
-	cd $(FRONTEND) && NO_STRIP=true npm run tauri:build -- --bundles appimage
+	cd $(FRONTEND) && NO_STRIP=true PATH="$$PATH:/tmp" npm run tauri:build -- --bundles appimage
 	@echo "AppImage: $(FRONTEND)/src-tauri/target/release/bundle/appimage/WarmDesk_*_amd64.AppImage"
 
 # Build the Tauri desktop client as an AppImage (Linux, arm64).
@@ -133,10 +154,10 @@ appimage: stamp-desktop-version
 # Fedora/RHEL: dnf install gcc-aarch64-linux-gnu
 # Debian/Ubuntu: apt install gcc-aarch64-linux-gnu
 # The linker is configured in frontend/src-tauri/.cargo/config.toml.
-appimage-arm64: stamp-desktop-version
+appimage-arm64: stamp-desktop-version _fetch-gst-plugin
 	@echo "Building WarmDesk desktop app (AppImage, arm64)..."
 	rustup target add aarch64-unknown-linux-gnu 2>/dev/null || true
-	cd $(FRONTEND) && NO_STRIP=true npm run tauri:build -- --target aarch64-unknown-linux-gnu --bundles appimage
+	cd $(FRONTEND) && NO_STRIP=true PATH="$$PATH:/tmp" npm run tauri:build -- --target aarch64-unknown-linux-gnu --bundles appimage
 	@echo "AppImage: $(FRONTEND)/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/WarmDesk_*_aarch64.AppImage"
 
 # Build the Tauri desktop client as a .deb package (Debian/Ubuntu).
