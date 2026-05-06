@@ -62,9 +62,22 @@ pub fn run() {
                     .unwrap_or(false);
                 if has_plugins {
                     unsafe { std::env::set_var("GST_PLUGIN_PATH", &plugin_dir) };
+                    // Override the compiled-in Ubuntu system plugin path so GStreamer
+                    // does not fall back to the (nonexistent on Fedora) Ubuntu path.
+                    if std::env::var("GST_PLUGIN_SYSTEM_PATH_1_0").is_err() {
+                        unsafe { std::env::set_var("GST_PLUGIN_SYSTEM_PATH_1_0", &plugin_dir) };
+                    }
                     let scanner = plugin_dir.join("gstreamer-1.0/gst-plugin-scanner");
                     if scanner.exists() && std::env::var("GST_PLUGIN_SCANNER").is_err() {
                         unsafe { std::env::set_var("GST_PLUGIN_SCANNER", &scanner) };
+                    }
+                    // Use a private registry so Fedora's system registry cache
+                    // (built from GStreamer 1.26 plugins) does not hide our bundled
+                    // Ubuntu 1.24 plugins.  The file is shared across AppImage runs
+                    // so GStreamer only rescans when plugins actually change.
+                    if std::env::var("GST_REGISTRY").is_err() {
+                        unsafe { std::env::set_var("GST_REGISTRY",
+                            "/tmp/warmdesk-gst-registry.bin") };
                     }
                 }
             }

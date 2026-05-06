@@ -97,27 +97,16 @@ jobs:
           ls "$GST_SRC"/*.so 2>/dev/null | xargs -n1 basename | sort || echo "(none found at $GST_SRC)"
           echo "======================================="
 
-          # Copy the plugins webkit2gtk needs for camera/mic enumeration and
-          # preview.  Use find so we are not brittle against filename changes.
-          for plugin in \
-            libgstapp.so \
-            libgstcoreelements.so \
-            libgstvideoconvert.so \
-            libgstvideoscale.so \
-            libgstaudioconvert.so \
-            libgstaudioresample.so \
-            libgstvideo4linux2.so \
-            libgstpulseaudio.so \
-            libgstpipewire.so \
-            libgstautodetect.so \
-            libgstplayback.so; do
-            src=$(find "$GST_SRC" -maxdepth 1 -name "$plugin" 2>/dev/null | head -1) || true
-            if [ -n "$src" ]; then
-              cp "$src" "$GST_DST/"
-              echo "Copied: $plugin"
-            else
-              echo "Skipped (not found): $plugin"
-            fi
+          # Copy ALL GStreamer plugins from the system directory.  Listing
+          # specific filenames proved fragile (videoconvert/videoscale showed
+          # "Skipped (not found)" even when gstreamer1.0-plugins-base was
+          # installed, causing NULL element assertions at runtime).  Every
+          # plugin here is from ubuntu-24.04 and is ABI-compatible with the
+          # webkit2gtk GStreamer core that is also bundled from ubuntu-24.04,
+          # so there is no version mismatch risk.
+          find "$GST_SRC" -maxdepth 1 -name "lib*.so" -type f | sort | while IFS= read -r src; do
+            cp "$src" "$GST_DST/"
+            echo "Copied: $(basename "$src")"
           done
           echo "Bundled $(ls "$GST_DST"/lib*.so 2>/dev/null | wc -l) GStreamer plugins"
 
