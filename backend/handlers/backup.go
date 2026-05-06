@@ -371,8 +371,8 @@ func buildBackupEmailHTML(success bool, filename, errMsg string, t time.Time, fi
 			backupRows += fmt.Sprintf(
 				`<tr>`+
 					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#333;white-space:nowrap;background-color:%s"><nobr>%s</nobr></td>`+
-					`<td style="padding:6px 8px;font-size:12px;color:#888;text-align:right;white-space:nowrap;background-color:%s">%s</td>`+
-					`<td style="padding:6px 8px;font-size:12px;color:#888;white-space:nowrap;background-color:%s">%s</td></tr>`,
+					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#888;text-align:right;white-space:nowrap;background-color:%s">%s</td>`+
+					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#888;white-space:nowrap;background-color:%s">%s</td></tr>`,
 				rowBg, f.Filename, rowBg, formatEmailBytes(f.Size), rowBg, f.ModifiedAt,
 			)
 		}
@@ -392,9 +392,9 @@ func buildBackupEmailHTML(success bool, filename, errMsg string, t time.Time, fi
 			`<div style="font-size:14px;font-weight:bold;color:#333;margin-bottom:10px">Available backups</div>`+
 			`<table width="100%%" cellpadding="0" cellspacing="0" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden">`+
 			`<thead><tr>`+
-			`<th style="padding:7px 8px;text-align:left;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0;background-color:#f5f5f5">Filename</th>`+
-			`<th style="padding:7px 8px;text-align:right;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0;background-color:#f5f5f5">Size</th>`+
-			`<th style="padding:7px 8px;text-align:left;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0;background-color:#f5f5f5">Date</th>`+
+			`<th style="padding:7px 8px;text-align:left;font-family:monospace;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0;background-color:#f5f5f5">Filename</th>`+
+			`<th style="padding:7px 8px;text-align:right;font-family:monospace;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0;background-color:#f5f5f5">Size</th>`+
+			`<th style="padding:7px 8px;text-align:left;font-family:monospace;font-size:12px;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0;background-color:#f5f5f5">Date</th>`+
 			`</tr></thead><tbody>%s</tbody></table>`+
 			`</td></tr>`,
 		statusBg, statusColor, statusIcon, statusText,
