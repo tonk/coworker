@@ -348,7 +348,7 @@ func buildBackupEmailHTML(success bool, filename, errMsg string, t time.Time, fi
 			`<tr><td style="padding:6px 12px 6px 0;color:#666;white-space:nowrap;font-size:14px">Date / time</td>`+
 				`<td style="padding:6px 0;font-size:14px">%s</td></tr>`+
 				`<tr><td style="padding:6px 12px 6px 0;color:#666;white-space:nowrap;font-size:14px">File</td>`+
-				`<td style="padding:6px 0;font-size:14px;font-family:monospace">%s</td></tr>`,
+				`<td style="padding:6px 0;font-size:14px;font-family:monospace;white-space:nowrap"><nobr>%s</nobr></td></tr>`,
 			t.Format("2006-01-02 15:04:05 UTC"), filename)
 	} else {
 		detailRows = fmt.Sprintf(
@@ -370,7 +370,7 @@ func buildBackupEmailHTML(success bool, filename, errMsg string, t time.Time, fi
 			}
 			backupRows += fmt.Sprintf(
 				`<tr>`+
-					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#333;white-space:nowrap;background-color:%s">%s</td>`+
+					`<td style="padding:6px 8px;font-family:monospace;font-size:12px;color:#333;white-space:nowrap;background-color:%s"><nobr>%s</nobr></td>`+
 					`<td style="padding:6px 8px;font-size:12px;color:#888;text-align:right;white-space:nowrap;background-color:%s">%s</td>`+
 					`<td style="padding:6px 8px;font-size:12px;color:#888;white-space:nowrap;background-color:%s">%s</td></tr>`,
 				rowBg, f.Filename, rowBg, formatEmailBytes(f.Size), rowBg, f.ModifiedAt,
