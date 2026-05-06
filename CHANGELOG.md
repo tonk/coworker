@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.28 — 2026-05-06
+
+### Fixed
+- **GPG signing in CI** — release artifact signing no longer fails with "Inappropriate ioctl for device"; the signing steps now configure `pinentry-mode loopback` and restart gpg-agent before signing so the headless runner does not need a TTY
+
 ## v0.9.27 — 2026-05-06
 
 ### Added
