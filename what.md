@@ -491,3 +491,4 @@ Create an application that has all these features and requirements
 - Fix Linux AppImage camera and microphone: bundle all GStreamer 1.24 plugins and set GST_PLUGIN_SYSTEM_PATH_1_0 and GST_REGISTRY so the AppImage's plugins take precedence over incompatible system GStreamer installations on Fedora and other non-Ubuntu distributions
 - Use camera icon for 1:1 call button to match the group chat button
 - Fix backup email filename wrapping and raw timestamp: long filenames no longer wrap mid-word; backup date displays as readable date/time instead of a Unix timestamp
+- Fix backup email filename wrapping in HTML viewers: wrap filenames in <nobr> so w3m, lynx, and Mutt's HTML viewer no longer break the filename mid-hash at narrow terminal widths

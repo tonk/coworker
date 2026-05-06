@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.25 — 2026-05-06
+
+### Fixed
+- **Backup email: filename wrapping in HTML viewers** — filenames in the backup list and the "File" detail row are now wrapped in `<nobr>` so HTML-to-text renderers (w3m, lynx, Mutt's HTML viewer) no longer break the filename mid-hash at narrow terminal widths
+
 ## v0.9.24 — 2026-05-06
 
 ### Added
