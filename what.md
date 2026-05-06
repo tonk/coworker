@@ -494,3 +494,4 @@ Create an application that has all these features and requirements
 - Fix backup email filename wrapping in HTML viewers: wrap filenames in <nobr> so w3m, lynx, and Mutt's HTML viewer no longer break the filename mid-hash at narrow terminal widths
 - Accept 'Name <address>' format in SMTP From setting: smtp_from now accepts RFC 5322 display-name form in addition to plain addresses; envelope address extracted automatically for smtp.SendMail
 - Use monospace font for all columns in the Available backups email table: Size and Date columns now match the Filename column; header row also monospace
+- GPG-sign all release artifacts: every file attached to a GitHub release has a companion detached armoured .asc signature; signing is conditional on GPG_SIGNING_KEY and GPG_KEY_ID secrets being set in the repository

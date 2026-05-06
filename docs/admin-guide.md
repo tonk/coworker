@@ -729,9 +729,23 @@ Pre-built desktop apps are attached to each GitHub release:
 | Platform | File | Notes |
 |----------|------|-------|
 | Linux | `WarmDesk-vX.Y.Z-x86_64.AppImage` | Portable; no installation required |
+| Linux | `WarmDesk-vX.Y.Z-amd64.deb` | Debian/Ubuntu package |
+| Linux | `WarmDesk-vX.Y.Z-x86_64.rpm` | RPM package |
 | Windows | `WarmDesk-vX.Y.Z-x64-setup.exe` | NSIS installer |
 | Windows | `WarmDesk-vX.Y.Z-x64-portable.zip` | Extract and run `WarmDesk.exe` |
 | macOS | `WarmDesk-vX.Y.Z-universal.dmg` | Universal binary (Intel + Apple Silicon) |
+
+Each file has a companion `.asc` detached GPG signature. To verify a download:
+
+```bash
+# Import the WarmDesk release key once
+gpg --import signing-key.asc          # key is in the root of the repository
+
+# Verify any downloaded file
+gpg --verify WarmDesk-vX.Y.Z-x86_64.AppImage.asc WarmDesk-vX.Y.Z-x86_64.AppImage
+```
+
+A `Good signature from "WarmDesk Releases"` message confirms the file is unmodified and was signed by the official release key.
 
 ### Building desktop apps from source
 

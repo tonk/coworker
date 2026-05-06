@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.27 — 2026-05-06
+
+### Added
+- **GPG-signed release artifacts** — every file attached to a GitHub release (server tarballs, AppImage, deb, rpm, dmg, Windows installer and portable zip) now has a companion detached armoured signature (`.asc`); verify with `gpg --verify file.asc file` after importing `signing-key.asc` from the repository
+
 ## v0.9.26 — 2026-05-06
 
 ### Added

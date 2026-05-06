@@ -1,0 +1,39 @@
+---
+title: "Release Artifacts Are Now GPG Signed"
+date: "2026-05-06"
+author: "Ton Kersten"
+description: "Every WarmDesk release artifact now ships with a detached GPG signature so you can verify downloads before installing."
+draft: false
+---
+:doctype: article
+:icons!:
+
+Starting with v0.9.27, every file attached to a WarmDesk GitHub release has a companion detached GPG signature.
+
+== What is signed
+
+Each release now includes a `.asc` file alongside every downloadable package:
+
+* Server tarballs (`linux-amd64.tar.gz`, `linux-arm64.tar.gz`)
+* Linux desktop packages (`.AppImage`, `.deb`, `.rpm`)
+* macOS desktop (`.dmg`)
+* Windows installer and portable zip (`.exe`, `.zip`)
+
+== How to verify a download
+
+[source,bash]
+----
+# Import the WarmDesk release key once (key is in the repository root)
+gpg --import signing-key.asc
+
+# Verify any downloaded file — example:
+gpg --verify WarmDesk-v0.9.27-x86_64.AppImage.asc \
+             WarmDesk-v0.9.27-x86_64.AppImage
+----
+
+A `Good signature from "WarmDesk Releases"` message confirms the file is unmodified and came from the official release pipeline.
+
+== Why this matters
+
+Detached GPG signatures let you confirm that a downloaded binary was produced by the same key that signed every other WarmDesk release — not a mirror, a man-in-the-middle, or a compromised build.
+The release key is an Ed25519 key kept separate from any personal key, so it can be rotated or revoked independently if needed.
