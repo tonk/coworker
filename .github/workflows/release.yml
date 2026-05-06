@@ -27,6 +27,8 @@ jobs:
     name: Build server binary
     runs-on: ubuntu-latest
     needs: create-release
+    env:
+      HAS_GPG: ${{ secrets.GPG_SIGNING_KEY != '' }}
 
     steps:
       - name: Checkout
@@ -102,7 +104,7 @@ jobs:
           tar -czf warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz -C dist-arm64 .
 
       - name: Sign archives
-        if: ${{ secrets.GPG_SIGNING_KEY != '' }}
+        if: env.HAS_GPG == 'true'
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
@@ -128,6 +130,8 @@ jobs:
     name: Build desktop client (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     needs: create-release
+    env:
+      HAS_GPG: ${{ secrets.GPG_SIGNING_KEY != '' }}
 
     strategy:
       fail-fast: false
@@ -231,7 +235,7 @@ jobs:
           cp "$SRC" "WarmDesk-${{ github.ref_name }}-universal.dmg"
 
       - name: Sign artifacts (Linux)
-        if: matrix.os == 'ubuntu-24.04' && secrets.GPG_SIGNING_KEY != ''
+        if: matrix.os == 'ubuntu-24.04' && env.HAS_GPG == 'true'
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
@@ -244,7 +248,7 @@ jobs:
           done
 
       - name: Sign artifact (macOS)
-        if: matrix.os == 'macos-latest' && secrets.GPG_SIGNING_KEY != ''
+        if: matrix.os == 'macos-latest' && env.HAS_GPG == 'true'
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
@@ -280,6 +284,8 @@ jobs:
     name: Build and sign desktop client (Windows)
     runs-on: windows-latest
     needs: create-release
+    env:
+      HAS_GPG: ${{ secrets.GPG_SIGNING_KEY != '' }}
 
     steps:
       - name: Checkout
@@ -333,7 +339,7 @@ jobs:
           Compress-Archive -Path "frontend/src-tauri/target/release/WarmDesk.exe" -DestinationPath "WarmDesk-${{ github.ref_name }}-x64-portable.zip"
 
       - name: Sign artifacts (Windows)
-        if: ${{ secrets.GPG_SIGNING_KEY != '' }}
+        if: env.HAS_GPG == 'true'
         shell: bash
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
