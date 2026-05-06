@@ -426,10 +426,14 @@ and add multiple members. Give the group a name. You can later:
 WarmDesk supports two call modes in direct messages:
 
 - **1:1 audio/video calls** in one-on-one conversations (WebRTC peer-to-peer)
-- **Group video calls** in group conversations with **3 or more members** (LiveKit)
+- **Group video calls** in any group conversation, regardless of member count (LiveKit)
 
-In eligible group chats, use the video button in the header to join the group room.
+In any group chat, use the camera button in the header to join the group room.
 If the server has not configured LiveKit yet, a status banner is shown in the conversation with a clear admin-facing message.
+
+#### Desktop app (Linux AppImage)
+
+Camera and microphone access work in the Linux desktop app on all major distributions, including Fedora, openSUSE, and Ubuntu. The AppImage bundles the required GStreamer plugins so the host system's GStreamer version does not need to match.
 
 #### Inviting people to an active call
 

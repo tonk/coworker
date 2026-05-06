@@ -1,0 +1,33 @@
+---
+title: "Video Chat Now Works in the Desktop App"
+date: "2026-05-06"
+author: "Ton Kersten"
+description: "Camera and microphone support is fully working in the WarmDesk Linux AppImage, and group video is now available in all group conversations."
+draft: false
+---
+:doctype: article
+:icons!:
+
+Two improvements landed today that make video chat in WarmDesk significantly more reliable.
+
+== Camera and microphone in the Linux desktop app
+
+The WarmDesk Linux AppImage now correctly exposes camera and microphone access on all major distributions — including Fedora, openSUSE, and any distribution whose system GStreamer version differs from Ubuntu.
+
+The root cause was an ABI mismatch: the AppImage bundles webkit2gtk from Ubuntu 24.04, which expects GStreamer 1.24 plugins, but distributions like Fedora 43 ship GStreamer 1.26 in their system plugin directory (`/usr/lib64/gstreamer-1.0/`).
+When GStreamer tried to load those system plugins, it hit undefined symbols and fell back to finding no usable elements at all — camera and microphone appeared in the picker but the preview stayed black.
+
+The fix bundles the full set of GStreamer 1.24 plugins directly inside the AppImage and points GStreamer at those exclusively, so the host system's GStreamer installation is bypassed entirely.
+No configuration is needed: it works out of the box on any Linux system that can run an AppImage.
+
+== Group video in all group conversations
+
+Group video calls are no longer restricted to conversations with three or more members.
+Any group chat can now start a video room from the camera button in the chat header.
+
+One-to-one calls remain peer-to-peer WebRTC.
+Group calls continue to use LiveKit — the operator configuration (`livekit_url`, `livekit_api_key`, `livekit_api_secret`) is unchanged.
+
+== Also
+
+The call button in 1:1 conversations now uses a camera icon, consistent with the group chat button.
