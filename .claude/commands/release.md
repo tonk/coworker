@@ -35,14 +35,21 @@ Append any new features or changes as bullet points at the end of the file, matc
 - If any changes where made, that need an update on the documentation,
   update the documentation
 
-## 6. Commit and tag
+## 6. Update website version
+In `website/hugo.toml`, update three values:
+- Under `[params]`: `warmdesk_version = "v{version}"` and `release_date = "{today's date YYYY-MM-DD}"`
+- Under `[markup.asciidocext.attributes]`: `"warmdesk-version" = "v{version}"`
+
+The params feed the homepage release strip; the AsciiDoc attribute feeds the install docs code blocks.
+
+## 7. Commit and tag
 ```bash
-git add CHANGELOG.md README.md what.md
+git add CHANGELOG.md README.md what.md website/hugo.toml
 git commit -m "chore: release v{version} — CHANGELOG, README, what.md\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git tag -a v{version} -m "Release v{version}"
 ```
 
-## 7. Push
+## 8. Push
 ```bash
 git push && git push --tags
 ```

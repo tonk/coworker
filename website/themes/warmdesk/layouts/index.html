@@ -224,6 +224,18 @@ EOF
   </div>
 </section>
 
+<!-- ===================== LATEST RELEASE ===================== -->
+<section class="release-strip">
+  <div class="container">
+    <p class="release-line">
+      <span class="release-badge">Latest release</span>
+      <strong>{{ site.Params.warmdesk_version }}</strong>
+      {{- with site.Params.release_date }}<span class="release-meta"> &nbsp;·&nbsp; {{ . }}</span>{{- end }}
+      <a href="{{ site.Params.github }}/releases/latest" target="_blank" rel="noopener" class="release-link">Download ↗</a>
+    </p>
+  </div>
+</section>
+
 <!-- ===================== CTA ===================== -->
 <section class="section" style="text-align:center;">
   <div class="container">

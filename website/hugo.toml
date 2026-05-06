@@ -14,6 +14,9 @@ enableEmoji = true
   subtitle = "A single Go binary covering Kanban boards, Scrum sprints, team chat with one-to-one voice & video calls, customer management, time tracking, and Git integration — owned and operated by you."
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
+  # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
+  warmdesk_version = "v0.9.33"
+  release_date     = "2026-05-06"
 
 [markup]
   [markup.asciidocext]
