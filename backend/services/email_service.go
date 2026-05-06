@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"net/mail"
 	"net/smtp"
 	"regexp"
 	"strings"
@@ -11,6 +12,17 @@ import (
 	"github.com/tonk/warmdesk/models"
 	appws "github.com/tonk/warmdesk/ws"
 )
+
+// envelopeAddress extracts the bare email address from a From value that may
+// be either a plain address ("a@b.com") or RFC 5322 display-name form
+// ("Display Name <a@b.com>").  smtp.SendMail requires the bare address for
+// the SMTP envelope; the full string is used unchanged in the From: header.
+func envelopeAddress(from string) string {
+	if addr, err := mail.ParseAddress(from); err == nil {
+		return addr.Address
+	}
+	return from
+}
 
 // smtpConfigReader is set by main to avoid an import cycle
 // (services → handlers is not allowed; handlers → services is fine).
@@ -74,7 +86,7 @@ func (s *EmailService) Send(to, subject, body string) error {
 		auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
 	}
 
-	return smtp.SendMail(addr, auth, from, []string{to}, []byte(msg))
+	return smtp.SendMail(addr, auth, envelopeAddress(from), []string{to}, []byte(msg))
 }
 
 // SendHTML sends a multipart/alternative email with both a plain-text fallback
@@ -109,7 +121,7 @@ func (s *EmailService) SendHTML(to, subject, htmlBody, textBody string) error {
 		auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
 	}
 
-	return smtp.SendMail(addr, auth, from, []string{to}, []byte(b.String()))
+	return smtp.SendMail(addr, auth, envelopeAddress(from), []string{to}, []byte(b.String()))
 }
 
 // NotificationService sends in-app and email notifications.

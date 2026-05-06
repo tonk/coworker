@@ -429,7 +429,7 @@
 
             <div class="form-group" style="max-width:400px">
               <label class="form-label">{{ $t('admin.smtp_from') }}</label>
-              <input class="form-input" v-model="systemSettings.smtp_from" type="email" placeholder="noreply@example.com" />
+              <input class="form-input" v-model="systemSettings.smtp_from" type="text" placeholder="WarmDesk &lt;noreply@example.com&gt;" />
             </div>
 
             <div class="form-row" style="max-width:500px">
