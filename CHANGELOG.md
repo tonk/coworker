@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.9.33 — 2026-05-06
+
+### Changed
+- **Theme switcher in app** — replaced the single-click cycle button in the top navbar with a Light / Dark / System dropdown; the active selection is highlighted and choice is persisted to the user profile
+- **Theme switcher on website** — added a Light / Dark / System dropdown to the marketing website navbar; selection persisted in `localStorage`; dark mode CSS variables applied throughout; system mode follows the OS preference automatically
+
 ## v0.9.32 — 2026-05-06
 
 ### Fixed

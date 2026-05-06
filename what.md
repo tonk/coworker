@@ -502,3 +502,5 @@ Create an application that has all these features and requirements
 - Fix CSP img-src blocking external avatars: add https: to img-src in nginx and Apache deploy templates so Gravatar, DiceBear, and other external avatar images load when the proxy redirects to them
 - Fix customer logo proxy 400 when hostname resolves to internal IP: return 302 redirect to original URL instead of 400 when resolveAndVerify rejects a host; browser loads the image directly, server-side SSRF protection still holds
 - Show "no one online" error for group video call: clicking the group call button when no other members are online now shows a toast message instead of silently joining an empty room
+- Replace theme cycle button in app navbar with a Light / Dark / System dropdown; active option highlighted; persisted to user profile
+- Add Light / Dark / System theme switcher to marketing website navbar; dark mode CSS variables applied throughout; system mode follows OS preference; choice persisted in localStorage
