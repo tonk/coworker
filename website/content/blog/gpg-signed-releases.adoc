@@ -8,7 +8,7 @@ draft: false
 :doctype: article
 :icons!:
 
-Starting with v0.9.27, every file attached to a WarmDesk GitHub release has a companion detached GPG signature.
+Starting with v0.9.29, every file attached to a WarmDesk GitHub release has a companion detached GPG signature.
 
 == What is signed
 
@@ -27,8 +27,8 @@ Each release now includes a `.asc` file alongside every downloadable package:
 gpg --import signing-key.asc
 
 # Verify any downloaded file — example:
-gpg --verify WarmDesk-v0.9.27-x86_64.AppImage.asc \
-             WarmDesk-v0.9.27-x86_64.AppImage
+gpg --verify WarmDesk-v0.9.29-x86_64.AppImage.asc \
+             WarmDesk-v0.9.29-x86_64.AppImage
 ----
 
 A `Good signature from "WarmDesk Releases"` message confirms the file is unmodified and came from the official release pipeline.
