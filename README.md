@@ -282,7 +282,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Role-based access** — global roles (admin / user / viewer / metrics / backup) and per-project roles (owner / admin / member / viewer); project admins can manage columns
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
 - **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management; every user group automatically gets a linked group conversation that stays in sync with group membership
-- **1:1 and group video calls** — call any user from a direct message conversation with WebRTC peer-to-peer for 1:1 calls, and start LiveKit-powered group video rooms in group chats (3+ members); includes call settings for microphone, camera, and speaker plus in-app status guidance when LiveKit is not configured
+- **1:1 and group video calls** — call any user from a direct message conversation with WebRTC peer-to-peer for 1:1 calls, and start LiveKit-powered group video rooms in any group chat; includes call settings for microphone, camera, and speaker plus in-app status guidance when LiveKit is not configured
 - **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
 - **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages
 - **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted); all sections are drag-to-reorder with custom order persisted in localStorage

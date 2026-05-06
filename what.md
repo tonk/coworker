@@ -487,3 +487,7 @@ Create an application that has all these features and requirements
 - Harden external image proxy: resolve DNS once and verify every IP is a publicly routable address, then dial by IP directly (prevents DNS-rebinding attacks); re-encode query strings so reserved characters in parameters (e.g. DiceBear seed names with spaces or commas) do not produce malformed requests; validate Content-Type header and reject non-image responses
 - Rate-limit external image proxy endpoint: 200 requests per 10 minutes per IP to prevent unauthenticated bandwidth abuse
 - Tauri desktop: load external images (Gravatar, DiceBear, etc.) directly instead of via the same-origin proxy; WebKit's tauri:// origin treats proxied HTTP responses as mixed content and blocks them
+- Enable video call button in all group chats regardless of member count; remove the previous 3-member minimum
+- Fix Linux AppImage camera and microphone: bundle all GStreamer 1.24 plugins and set GST_PLUGIN_SYSTEM_PATH_1_0 and GST_REGISTRY so the AppImage's plugins take precedence over incompatible system GStreamer installations on Fedora and other non-Ubuntu distributions
+- Use camera icon for 1:1 call button to match the group chat button
+- Fix backup email filename wrapping and raw timestamp: long filenames no longer wrap mid-word; backup date displays as readable date/time instead of a Unix timestamp

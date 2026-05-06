@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.9.24 — 2026-05-06
+
+### Added
+- **Group video call in all group chats** — the video call button is now available in any group conversation regardless of member count; the previous restriction requiring 3 or more members has been removed
+
+### Fixed
+- **Linux desktop: camera and microphone in AppImage** — the Linux AppImage now bundles the complete set of GStreamer 1.24 plugins and sets `GST_PLUGIN_SYSTEM_PATH_1_0` and `GST_REGISTRY` so camera and microphone work correctly on all distributions including Fedora and openSUSE, without requiring a matching system GStreamer installation
+- **1:1 call button icon** — the call button in one-on-one conversations now shows a camera icon, consistent with the group chat button
+- **Backup email: filename wrapping and raw timestamp** — long backup filenames no longer wrap mid-word in narrow email clients; the backup date now shows as a readable date/time instead of a raw Unix timestamp
+
 ## v0.9.23 — 2026-05-04
 
 ### Added
