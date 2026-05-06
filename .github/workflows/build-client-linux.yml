@@ -32,6 +32,7 @@ jobs:
             librsvg2-dev \
             patchelf \
             file \
+            gstreamer1.0-tools \
             gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good \
             gstreamer1.0-pulseaudio
@@ -86,64 +87,58 @@ jobs:
           chmod +x "$APPIMAGE"
           "$APPIMAGE" --appimage-extract   # → squashfs-root/ in CWD
 
-          GST_SRC="/usr/lib/x86_64-linux-gnu/gstreamer-1.0"
           GST_DST="squashfs-root/usr/lib/gstreamer-1.0"
+          APPLIB="squashfs-root/usr/lib"
           mkdir -p "$GST_DST/gstreamer-1.0"
 
-          # Bundle only the plugins needed for camera/mic enumeration and
-          # preview in webkit2gtk.  Copying all plugins pulls in RTP/network
-          # plugins that link against GStreamer 1.26 symbols not present in
-          # Fedora's libgstrtp/libgstnet, causing 25 s plugin-scanner hangs
-          # and a frozen UI on first launch.
-          for plugin in \
-            libgstapp.so \
-            libgstcoreelements.so \
-            libgstvideoconvert.so \
-            libgstvideoscale.so \
-            libgstaudioconvert.so \
-            libgstaudioresample.so \
-            libgstvideo4linux2.so \
-            libgstpulseaudio.so \
-            libgstpipewire.so \
-            libgstautodetect.so \
-            libgstplayback.so; do
-            if [ -f "$GST_SRC/$plugin" ]; then
-              cp "$GST_SRC/$plugin" "$GST_DST/"
-            else
-              echo "Note: $plugin not found on build host (skipped)"
-            fi
+          # Use gst-inspect-1.0 to resolve each element to its actual plugin
+          # filename — avoids guessing names that change between GStreamer
+          # releases (e.g. libgstvideoconvert.so was not found on the runner).
+          for element in \
+            appsink appsrc \
+            videoconvert videoscale \
+            audioconvert audioresample \
+            v4l2src \
+            pulsesrc \
+            pipewiresrc \
+            autoaudiosrc autovideosrc \
+            queue; do
+            plugin_file=$(gst-inspect-1.0 "$element" 2>/dev/null \
+                          | awk '/Filename:/{print $2}') || true
+            [ -f "$plugin_file" ] || { echo "Note: element '$element' not found (skipped)"; continue; }
+            base=$(basename "$plugin_file")
+            [ -f "$GST_DST/$base" ] && continue   # already copied by an earlier element
+            echo "Copying $base  (element: $element)"
+            cp "$plugin_file" "$GST_DST/"
           done
           echo "Bundled $(ls "$GST_DST"/lib*.so 2>/dev/null | wc -l) GStreamer plugins"
 
           # Each plugin .so has its own library dependencies (libgstvideo-1.0,
-          # libgstaudio-1.0, libgstapp-1.0, liborc-0.4, …) that may not already
-          # be bundled in the AppImage.  Without them the plugin silently fails to
-          # dlopen and gst_element_factory_make returns NULL, causing all the
-          # GST_IS_ELEMENT / GST_IS_PAD assertion failures and a black preview.
-          # Use ldd to find every /usr/lib dependency of each copied plugin and
-          # add missing ones to the AppImage's usr/lib directory.
-          APPLIB="squashfs-root/usr/lib"
+          # libgstaudio-1.0, libgstapp-1.0, liborc-0.4, …) that may not be
+          # bundled in the AppImage.  Without them the plugin silently fails to
+          # dlopen, gst_element_factory_make returns NULL, and the camera
+          # preview stays black.  Use ldd to find /usr/lib deps not yet present
+          # and add them.  Wrap with || true so grep's exit-1-on-no-match
+          # doesn't kill the script under pipefail.
           for plugin_so in "$GST_DST"/lib*.so; do
-            ldd "$plugin_so" 2>/dev/null \
-              | grep '=> /usr/lib' \
-              | awk '{print $3}' \
-              | while read -r lib; do
+            { ldd "$plugin_so" 2>/dev/null | grep '=> /usr/lib' | awk '{print $3}' || true; } \
+              | while IFS= read -r lib; do
                   [ -f "$lib" ] || continue
                   base=$(basename "$lib")
                   if ! find squashfs-root/usr -name "$base" 2>/dev/null | grep -q .; then
-                    echo "Adding dependency: $base"
+                    echo "  dep: $base"
                     cp "$lib" "$APPLIB/"
                   fi
                 done
           done
 
-          # gst-plugin-scanner location varies by Ubuntu version; search all of /usr
+          # gst-plugin-scanner location varies by Ubuntu version
           GST_SCANNER=$(find /usr -name 'gst-plugin-scanner' -type f 2>/dev/null | head -1) || true
           if [ -n "$GST_SCANNER" ]; then
             cp "$GST_SCANNER" "$GST_DST/gstreamer-1.0/"
             echo "Bundled gst-plugin-scanner from $GST_SCANNER"
           else
-            echo "Warning: gst-plugin-scanner not found — GStreamer plugin scanning may fall back to in-process"
+            echo "Warning: gst-plugin-scanner not found"
           fi
 
           curl -fsSL -o /tmp/appimagetool \
