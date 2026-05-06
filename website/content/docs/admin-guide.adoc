@@ -178,10 +178,13 @@ Users can override these in their own settings.
 
 === Via the admin panel
 
-Go to *Admin → Backup*.
+Go to *Admin → Backup / Restore*.
 Click *Create backup* to generate a ZIP containing the database dump and uploaded files.
 Download the ZIP for off-site storage.
 To restore, upload the ZIP and click *Restore*.
+
+The *Scheduled Backups* section on the same tab lets you configure automatic backups: set the interval (hourly, daily, weekly), the retention count, and an optional download URL for off-site storage.
+Scheduled backups run server-side — no external cron job needed.
 
 WARNING: Restoring from backup replaces all current data. Take a fresh backup before restoring.
 
@@ -197,7 +200,16 @@ curl -H "X-API-Key: your-key" \
      -o backup-$(date +%Y%m%d).zip
 ----
 
-Schedule with cron for automated nightly backups.
+To schedule automatic backups, add a cron job (`crontab -e`):
+
+[source,cron]
+----
+# Every night at 02:00 — keep the last 30 days of backups
+0 2 * * * curl -sS -H "X-API-Key: your-key" \
+               https://warmdesk.example.com/api/v1/admin/backup \
+               -o /backup/warmdesk-$(date +\%Y\%m\%d).zip && \
+           find /backup -name 'warmdesk-*.zip' -mtime +30 -delete
+----
 
 === SQLite — manual backup
 
@@ -275,12 +287,19 @@ No manual SQL migration steps are needed.
 
 == Demo data
 
-A script in the repository populates the database with sample projects, cards, and users for demonstration purposes:
+The `warmdesk-seed` binary (shipped alongside the main server) populates the database with sample projects, cards, users, and more for demonstration purposes.
+It is idempotent — it exits early if demo data is already present (detected by the `demo.admin` username).
 
 [source,bash]
 ----
-cd backend
-go run scripts/demo_data.go
+# Basic usage
+./warmdesk-seed
+
+# Override the config file location
+./warmdesk-seed --config /path/to/warmdesk.yaml
+
+# Drop all existing demo data first, then re-seed
+./warmdesk-seed --reset
 ----
 
 == Prometheus metrics
