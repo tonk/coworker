@@ -108,6 +108,7 @@ jobs:
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
@@ -116,6 +117,7 @@ jobs:
           for f in warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz \
                    warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz; do
             gpg --batch --yes --pinentry-mode loopback \
+              --passphrase "$GPG_PASSPHRASE" \
               --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
           done
 
@@ -243,6 +245,7 @@ jobs:
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
@@ -252,6 +255,7 @@ jobs:
                    WarmDesk-${{ github.ref_name }}-amd64.deb \
                    WarmDesk-${{ github.ref_name }}-x86_64.rpm; do
             gpg --batch --yes --pinentry-mode loopback \
+              --passphrase "$GPG_PASSPHRASE" \
               --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
           done
 
@@ -260,12 +264,14 @@ jobs:
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
           gpgconf --kill gpg-agent
           gpg --batch --yes --pinentry-mode loopback \
+            --passphrase "$GPG_PASSPHRASE" \
             --detach-sign --armor --local-user "$GPG_KEY_ID" \
             WarmDesk-${{ github.ref_name }}-universal.dmg
 
@@ -356,6 +362,7 @@ jobs:
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
@@ -364,6 +371,7 @@ jobs:
           for f in "WarmDesk-${{ github.ref_name }}-x64-setup.exe" \
                    "WarmDesk-${{ github.ref_name }}-x64-portable.zip"; do
             gpg --batch --yes --pinentry-mode loopback \
+              --passphrase "$GPG_PASSPHRASE" \
               --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
           done
 
