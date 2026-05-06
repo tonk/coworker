@@ -496,3 +496,4 @@ Create an application that has all these features and requirements
 - Use monospace font for all columns in the Available backups email table: Size and Date columns now match the Filename column; header row also monospace
 - GPG-sign all release artifacts: every file attached to a GitHub release has a companion detached armoured .asc signature; signing is conditional on GPG_SIGNING_KEY and GPG_KEY_ID secrets being set in the repository
 - Fix GPG signing in headless CI: configure pinentry-mode loopback and restart gpg-agent after import so signing works without a TTY
+- Fix GPG signing batchmode passphrase error: pass --passphrase from GPG_PASSPHRASE secret so keys with a passphrase work without interactive prompting

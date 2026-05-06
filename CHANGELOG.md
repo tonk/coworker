@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.29 — 2026-05-06
+
+### Fixed
+- **GPG signing: passphrase in batch mode** — signing no longer fails with "Sorry, we are in batchmode - can't get input" when the key has a passphrase; the passphrase is now read from the `GPG_PASSPHRASE` repository secret and passed directly to every signing call
+
 ## v0.9.28 — 2026-05-06
 
 ### Fixed
