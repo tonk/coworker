@@ -65,7 +65,11 @@ func ProxyImage(c *gin.Context) {
 	// cannot redirect the connection to a private address.
 	safeIP, err := resolveAndVerify(u.Hostname())
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "unsafe image host"})
+		// Host resolves to a private/internal IP (e.g. on cloud networks where
+		// the server's own domain maps to an RFC-1918 address internally).
+		// The server must not proxy it (SSRF), but the browser can load it
+		// directly, so redirect rather than hard-fail.
+		c.Redirect(http.StatusFound, u.String())
 		return
 	}
 

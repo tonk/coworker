@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.31 — 2026-05-06
+
+### Fixed
+- **Customer logo proxy 400 on same-network hosts** — media proxy now returns 302 redirect (instead of 400) when the target hostname resolves to a private/internal IP; the browser loads the image directly while the server-side SSRF guard still prevents the server from fetching internal hosts
+
 ## v0.9.30 — 2026-05-06
 
 ### Fixed

@@ -500,3 +500,4 @@ Create an application that has all these features and requirements
 - Fix external avatar 502 errors in web app: media proxy returns 302 redirect to original URL when server cannot reach upstream host instead of 502; browsers follow redirect and load image directly
 - Fix CSP font-src blocking inlined fonts: add data: to font-src in nginx and Apache deploy templates so Vite-bundled woff2/woff data-URI fonts are allowed
 - Fix CSP img-src blocking external avatars: add https: to img-src in nginx and Apache deploy templates so Gravatar, DiceBear, and other external avatar images load when the proxy redirects to them
+- Fix customer logo proxy 400 when hostname resolves to internal IP: return 302 redirect to original URL instead of 400 when resolveAndVerify rejects a host; browser loads the image directly, server-side SSRF protection still holds
