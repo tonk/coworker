@@ -110,9 +110,13 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
         run: |
           echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
           for f in warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz \
                    warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz; do
-            gpg --batch --yes --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
+            gpg --batch --yes --pinentry-mode loopback \
+              --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
           done
 
       - name: Upload to GitHub Release
@@ -241,10 +245,14 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
         run: |
           echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
           for f in WarmDesk-${{ github.ref_name }}-x86_64.AppImage \
                    WarmDesk-${{ github.ref_name }}-amd64.deb \
                    WarmDesk-${{ github.ref_name }}-x86_64.rpm; do
-            gpg --batch --yes --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
+            gpg --batch --yes --pinentry-mode loopback \
+              --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
           done
 
       - name: Sign artifact (macOS)
@@ -254,7 +262,11 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
         run: |
           echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
-          gpg --batch --yes --detach-sign --armor --local-user "$GPG_KEY_ID" \
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
+          gpg --batch --yes --pinentry-mode loopback \
+            --detach-sign --armor --local-user "$GPG_KEY_ID" \
             WarmDesk-${{ github.ref_name }}-universal.dmg
 
       - name: Upload to GitHub Release (Linux)
@@ -346,9 +358,13 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
         run: |
           echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
           for f in "WarmDesk-${{ github.ref_name }}-x64-setup.exe" \
                    "WarmDesk-${{ github.ref_name }}-x64-portable.zip"; do
-            gpg --batch --yes --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
+            gpg --batch --yes --pinentry-mode loopback \
+              --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
           done
 
       # Authenticode signing temporarily disabled
