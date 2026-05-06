@@ -86,13 +86,15 @@ func ProxyImage(c *gin.Context) {
 	req.Header.Set("User-Agent", "WarmDesk-MediaProxy/1.0")
 	resp, err := mediaProxyClient.Do(req)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": "image fetch failed"})
+		// Server can't reach the upstream URL (e.g. firewall blocking outbound).
+		// Redirect the browser to fetch the image directly instead of failing.
+		c.Redirect(http.StatusFound, u.String())
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		c.JSON(http.StatusBadGateway, gin.H{"error": "image fetch failed"})
+		c.Redirect(http.StatusFound, u.String())
 		return
 	}
 

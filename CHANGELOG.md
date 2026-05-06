@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.30 — 2026-05-06
+
+### Fixed
+- **External avatars in web app** — media proxy now returns a 302 redirect to the original URL instead of 502 when the server cannot reach the upstream image host (e.g. outbound firewall); browsers follow the redirect and load the image directly
+- **CSP font-src blocking inlined fonts** — nginx and Apache deploy templates now include `data:` in `font-src` so Vite-bundled woff2/woff data-URI fonts load correctly
+- **CSP img-src blocking redirected avatars** — nginx and Apache deploy templates now include `https:` in `img-src` so external avatar images (Gravatar, DiceBear, custom URLs) load correctly when the proxy redirects to them
+
 ## v0.9.29 — 2026-05-06
 
 ### Fixed

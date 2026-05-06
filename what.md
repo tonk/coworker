@@ -497,3 +497,6 @@ Create an application that has all these features and requirements
 - GPG-sign all release artifacts: every file attached to a GitHub release has a companion detached armoured .asc signature; signing is conditional on GPG_SIGNING_KEY and GPG_KEY_ID secrets being set in the repository
 - Fix GPG signing in headless CI: configure pinentry-mode loopback and restart gpg-agent after import so signing works without a TTY
 - Fix GPG signing batchmode passphrase error: pass --passphrase from GPG_PASSPHRASE secret so keys with a passphrase work without interactive prompting
+- Fix external avatar 502 errors in web app: media proxy returns 302 redirect to original URL when server cannot reach upstream host instead of 502; browsers follow redirect and load image directly
+- Fix CSP font-src blocking inlined fonts: add data: to font-src in nginx and Apache deploy templates so Vite-bundled woff2/woff data-URI fonts are allowed
+- Fix CSP img-src blocking external avatars: add https: to img-src in nginx and Apache deploy templates so Gravatar, DiceBear, and other external avatar images load when the proxy redirects to them
