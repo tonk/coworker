@@ -689,6 +689,7 @@
     "join_call": "Partecipa",
     "no_users_to_invite": "Nessun utente da invitare",
     "search_users": "Cerca utenti…",
-    "invite_sent": "Invito inviato"
+    "invite_sent": "Invito inviato",
+    "nobody_online": "No other members are currently online"
   }
 }

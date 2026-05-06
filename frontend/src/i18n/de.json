@@ -696,6 +696,7 @@
     "join_call": "Beitreten",
     "no_users_to_invite": "Keine Benutzer zum Einladen",
     "search_users": "Benutzer suchen…",
-    "invite_sent": "Einladung gesendet"
+    "invite_sent": "Einladung gesendet",
+    "nobody_online": "No other members are currently online"
   }
 }

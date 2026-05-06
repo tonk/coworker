@@ -696,6 +696,7 @@
     "join_call": "Deelnemen",
     "no_users_to_invite": "Geen gebruikers om uit te nodigen",
     "search_users": "Gebruikers zoeken…",
-    "invite_sent": "Uitnodiging verzonden"
+    "invite_sent": "Uitnodiging verzonden",
+    "nobody_online": "No other members are currently online"
   }
 }

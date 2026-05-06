@@ -689,6 +689,7 @@
     "join_call": "Deltag",
     "no_users_to_invite": "Ingen brugere at invitere",
     "search_users": "Søg efter brugere…",
-    "invite_sent": "Invitation sendt"
+    "invite_sent": "Invitation sendt",
+    "nobody_online": "No other members are currently online"
   }
 }

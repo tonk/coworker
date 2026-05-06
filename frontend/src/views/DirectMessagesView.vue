@@ -588,6 +588,13 @@ function initiateCall() {
 function initiateGroupCall() {
   const c = activeConv.value
   if (!c?.is_group || (c.members?.length ?? 0) < 2) return
+  const othersOnline = (c.members || []).some(
+    m => m.user_id !== auth.user?.id && isOnline(m.user_id)
+  )
+  if (!othersOnline) {
+    ui.error(t('call.nobody_online'))
+    return
+  }
   const profiles = (c.members || []).map((m) => ({
     identity: m.user_id,
     name: m.user?.display_name || m.user?.username || '',

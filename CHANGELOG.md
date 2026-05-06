@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.32 — 2026-05-06
+
+### Fixed
+- **Group call with no one online** — clicking the group video call button now shows "No other members are currently online" instead of silently joining an empty room when you are the only member present
+
 ## v0.9.31 — 2026-05-06
 
 ### Fixed

@@ -689,6 +689,7 @@
     "join_call": "Delta",
     "no_users_to_invite": "Inga användare att bjuda in",
     "search_users": "Sök användare…",
-    "invite_sent": "Inbjudan skickad"
+    "invite_sent": "Inbjudan skickad",
+    "nobody_online": "No other members are currently online"
   }
 }

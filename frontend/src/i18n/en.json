@@ -696,6 +696,7 @@
     "join_call": "Join",
     "no_users_to_invite": "No users to invite",
     "search_users": "Search users…",
-    "invite_sent": "Invite sent"
+    "invite_sent": "Invite sent",
+    "nobody_online": "No other members are currently online"
   }
 }
