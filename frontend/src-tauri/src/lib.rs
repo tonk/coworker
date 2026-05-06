@@ -52,7 +52,15 @@ pub fn run() {
             if let Ok(appdir) = std::env::var("APPDIR") {
                 let plugin_dir =
                     std::path::PathBuf::from(&appdir).join("usr/lib/gstreamer-1.0");
-                if plugin_dir.exists() {
+                // Only activate when plugins are actually present; an empty
+                // directory still passes exists() and would set GST_PLUGIN_PATH
+                // to an empty path, causing GStreamer to find nothing.
+                let has_plugins = plugin_dir.read_dir()
+                    .map(|mut d| d.any(|e| e.map(|e| {
+                        e.file_name().to_string_lossy().ends_with(".so")
+                    }).unwrap_or(false)))
+                    .unwrap_or(false);
+                if has_plugins {
                     unsafe { std::env::set_var("GST_PLUGIN_PATH", &plugin_dir) };
                     let scanner = plugin_dir.join("gstreamer-1.0/gst-plugin-scanner");
                     if scanner.exists() && std::env::var("GST_PLUGIN_SCANNER").is_err() {
