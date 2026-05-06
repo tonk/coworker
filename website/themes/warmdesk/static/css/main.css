@@ -385,6 +385,14 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
 }
 .hero-meta a { color: rgba(255,255,255,0.55); }
 .hero-meta a:hover { color: rgba(255,255,255,0.85); text-decoration: none; }
+.hero-release {
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.03em;
+}
+.hero-release a { color: rgba(255,255,255,0.65); }
+.hero-release a:hover { color: rgba(255,255,255,0.9); text-decoration: none; }
 
 /* ---------- Section chrome --------------------------------- */
 .section { padding: 80px 24px; }
@@ -848,39 +856,6 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
   font-size: 0.875em;
 }
 
-/* ---------- Latest release strip --------------------------- */
-.release-strip {
-  background: var(--color-bg-alt);
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  padding: 14px 24px;
-}
-.release-line {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 0;
-  font-size: 15px;
-}
-.release-badge {
-  background: var(--color-accent);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 3px 8px;
-  border-radius: 4px;
-}
-.release-meta { color: var(--color-text-muted); }
-.release-link {
-  font-weight: 600;
-  color: var(--color-accent);
-  text-decoration: none;
-}
-.release-link:hover { text-decoration: underline; color: var(--color-accent-dark); }
 
 /* ============================================================
    Dark / system theme

@@ -17,21 +17,10 @@
       </a>
     </div>
     <p class="hero-meta">
-      Free &amp; open source &nbsp;·&nbsp;
-      <a href="{{ site.Params.github }}/releases/latest" target="_blank" rel="noopener">{{ site.Params.warmdesk_version }} &nbsp;·&nbsp; {{ site.Params.release_date }} &nbsp;Download ↗</a>
-      &nbsp;·&nbsp; Go + Vue 3 + Tauri 2
+      Free &amp; open source &nbsp;·&nbsp; Go + Vue 3 + Tauri 2
     </p>
-  </div>
-</section>
-
-<!-- ===================== LATEST RELEASE ===================== -->
-<section class="release-strip">
-  <div class="container">
-    <p class="release-line">
-      <span class="release-badge">Latest release</span>
-      <strong>{{ site.Params.warmdesk_version }}</strong>
-      {{- with site.Params.release_date }}<span class="release-meta"> &nbsp;·&nbsp; {{ . }}</span>{{- end }}
-      <a href="{{ site.Params.github }}/releases/latest" target="_blank" rel="noopener" class="release-link">Download ↗</a>
+    <p class="hero-release">
+      Latest release <a href="{{ site.Params.github }}/releases/latest" target="_blank" rel="noopener">{{ site.Params.warmdesk_version }} &nbsp;·&nbsp; {{ site.Params.release_date }} &nbsp;Download ↗</a>
     </p>
   </div>
 </section>
