@@ -29,29 +29,56 @@
           <option value="it">IT</option>
         </select>
       </div>
-      <button class="btn-icon" @click="cycleTheme" :title="$t('settings.theme')">
-        <!-- sun: light mode -->
-        <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1" x2="12" y2="3"/>
-          <line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/>
-          <line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-        <!-- moon: dark mode -->
-        <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-        <!-- monitor: system theme -->
-        <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/>
-          <polyline points="8 21 12 17 16 21"/>
-        </svg>
-      </button>
+      <div class="theme-switcher" ref="themeRef">
+        <button class="btn-icon" @click.stop="themeOpen = !themeOpen" :title="$t('settings.theme')">
+          <!-- sun: light mode -->
+          <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <!-- moon: dark mode -->
+          <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <!-- monitor: system theme -->
+          <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <polyline points="8 21 12 17 16 21"/>
+          </svg>
+        </button>
+        <div class="dropdown theme-dropdown" v-if="themeOpen">
+          <div class="dropdown-item" :class="{ 'dropdown-item-active': theme === 'light' }" @click="selectTheme('light')">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            {{ $t('settings.theme_light') }}
+          </div>
+          <div class="dropdown-item" :class="{ 'dropdown-item-active': theme === 'dark' }" @click="selectTheme('dark')">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            {{ $t('settings.theme_dark') }}
+          </div>
+          <div class="dropdown-item" :class="{ 'dropdown-item-active': theme === 'system' }" @click="selectTheme('system')">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <polyline points="8 21 12 17 16 21"/>
+            </svg>
+            {{ $t('settings.theme_system') }}
+          </div>
+        </div>
+      </div>
       <div class="user-menu" v-if="auth.user" @click="menuOpen = !menuOpen" ref="menuRef">
         <div class="avatar">
           <img v-if="userAvatar" :src="userAvatar" :alt="initials" class="avatar-img" @error="avatarErr = true" />
@@ -98,17 +125,18 @@ const { locale } = useI18n()
 const { theme, setTheme } = useTheme()
 const notificationsStore = useNotificationsStore()
 const menuOpen = ref(false)
+const themeOpen = ref(false)
 const showAbout = ref(false)
 const menuRef = ref(null)
+const themeRef = ref(null)
 const avatarErr = ref(false)
 
 const userAvatar = computed(() => avatarErr.value ? null : avatarUrl(auth.user))
 
-const themes = ['light', 'dark', 'system']
-function cycleTheme() {
-  const idx = themes.indexOf(theme.value)
-  setTheme(themes[(idx + 1) % themes.length])
-  if (auth.isLoggedIn) auth.updateProfile({ theme: theme.value })
+function selectTheme(value) {
+  setTheme(value)
+  themeOpen.value = false
+  if (auth.isLoggedIn) auth.updateProfile({ theme: value })
 }
 
 const initials = computed(() => {
@@ -128,6 +156,7 @@ function handleLogout() {
 
 function handleClick(e) {
   if (menuRef.value && !menuRef.value.contains(e.target)) menuOpen.value = false
+  if (themeRef.value && !themeRef.value.contains(e.target)) themeOpen.value = false
 }
 
 onMounted(() => document.addEventListener('click', handleClick))
@@ -232,4 +261,16 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClick))
   line-height: 1;
 }
 .btn-icon:hover { background: var(--color-bg); }
+
+.theme-switcher { position: relative; }
+.theme-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 140px;
+}
+.dropdown-item-active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
 </style>
