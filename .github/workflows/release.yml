@@ -101,12 +101,27 @@ jobs:
           tar -czf warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz -C dist-amd64 .
           tar -czf warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz -C dist-arm64 .
 
+      - name: Sign archives
+        if: ${{ secrets.GPG_SIGNING_KEY != '' }}
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        run: |
+          echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
+          for f in warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz \
+                   warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz; do
+            gpg --batch --yes --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
+          done
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          fail_on_unmatched_files: false
           files: |
             warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz
+            warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz.asc
             warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz
+            warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz.asc
 
   # ── Tauri desktop clients ────────────────────────────────────────────────────
   release-desktop:
@@ -215,20 +230,50 @@ jobs:
           SRC=$(ls frontend/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg | head -1)
           cp "$SRC" "WarmDesk-${{ github.ref_name }}-universal.dmg"
 
+      - name: Sign artifacts (Linux)
+        if: matrix.os == 'ubuntu-24.04' && secrets.GPG_SIGNING_KEY != ''
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        run: |
+          echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
+          for f in WarmDesk-${{ github.ref_name }}-x86_64.AppImage \
+                   WarmDesk-${{ github.ref_name }}-amd64.deb \
+                   WarmDesk-${{ github.ref_name }}-x86_64.rpm; do
+            gpg --batch --yes --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
+          done
+
+      - name: Sign artifact (macOS)
+        if: matrix.os == 'macos-latest' && secrets.GPG_SIGNING_KEY != ''
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        run: |
+          echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
+          gpg --batch --yes --detach-sign --armor --local-user "$GPG_KEY_ID" \
+            WarmDesk-${{ github.ref_name }}-universal.dmg
+
       - name: Upload to GitHub Release (Linux)
         if: matrix.os == 'ubuntu-24.04'
         uses: softprops/action-gh-release@v2
         with:
+          fail_on_unmatched_files: false
           files: |
             WarmDesk-${{ github.ref_name }}-x86_64.AppImage
+            WarmDesk-${{ github.ref_name }}-x86_64.AppImage.asc
             WarmDesk-${{ github.ref_name }}-amd64.deb
+            WarmDesk-${{ github.ref_name }}-amd64.deb.asc
             WarmDesk-${{ github.ref_name }}-x86_64.rpm
+            WarmDesk-${{ github.ref_name }}-x86_64.rpm.asc
 
       - name: Upload to GitHub Release (macOS)
         if: matrix.os == 'macos-latest'
         uses: softprops/action-gh-release@v2
         with:
-          files: WarmDesk-${{ github.ref_name }}-universal.dmg
+          fail_on_unmatched_files: false
+          files: |
+            WarmDesk-${{ github.ref_name }}-universal.dmg
+            WarmDesk-${{ github.ref_name }}-universal.dmg.asc
 
   # ── Windows desktop client (separate job for SignPath code signing) ───────────
   release-desktop-windows:
@@ -287,7 +332,20 @@ jobs:
           Copy-Item $installer.FullName "WarmDesk-${{ github.ref_name }}-x64-setup.exe"
           Compress-Archive -Path "frontend/src-tauri/target/release/WarmDesk.exe" -DestinationPath "WarmDesk-${{ github.ref_name }}-x64-portable.zip"
 
-      # Signing temporarily disabled
+      - name: Sign artifacts (Windows)
+        if: ${{ secrets.GPG_SIGNING_KEY != '' }}
+        shell: bash
+        env:
+          GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+        run: |
+          echo "$GPG_SIGNING_KEY" | base64 -d | gpg --batch --import
+          for f in "WarmDesk-${{ github.ref_name }}-x64-setup.exe" \
+                   "WarmDesk-${{ github.ref_name }}-x64-portable.zip"; do
+            gpg --batch --yes --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
+          done
+
+      # Authenticode signing temporarily disabled
       # - name: Upload unsigned installer for signing
       #   id: upload-unsigned
       #   uses: actions/upload-artifact@v4
@@ -316,9 +374,12 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          fail_on_unmatched_files: false
           files: |
             WarmDesk-${{ github.ref_name }}-x64-setup.exe
+            WarmDesk-${{ github.ref_name }}-x64-setup.exe.asc
             WarmDesk-${{ github.ref_name }}-x64-portable.zip
+            WarmDesk-${{ github.ref_name }}-x64-portable.zip.asc
 
   # ── Publish release after all assets are uploaded ───────────────────────────
   publish-release:
