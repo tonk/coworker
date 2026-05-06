@@ -847,3 +847,151 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
   padding: 0 !important;
   font-size: 0.875em;
 }
+
+/* ============================================================
+   Dark / system theme
+   ============================================================ */
+
+[data-theme="dark"] {
+  --color-bg:          #0f172a;
+  --color-bg-alt:      #1e293b;
+  --color-text:        #e2e8f0;
+  --color-text-muted:  #94a3b8;
+  --color-text-light:  #64748b;
+  --color-border:      #334155;
+  --color-accent:      #60a5fa;
+  --color-accent-dark: #3b82f6;
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --color-bg:          #0f172a;
+    --color-bg-alt:      #1e293b;
+    --color-text:        #e2e8f0;
+    --color-text-muted:  #94a3b8;
+    --color-text-light:  #64748b;
+    --color-border:      #334155;
+    --color-accent:      #60a5fa;
+    --color-accent-dark: #3b82f6;
+  }
+}
+
+/* Headings use --color-primary (dark navy) — override to light on dark bg */
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3,
+[data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6,
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .feature-card h3,
+[data-theme="dark"] .post-list-item h2 a { color: var(--color-text); }
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] h1, [data-theme="system"] h2, [data-theme="system"] h3,
+  [data-theme="system"] h4, [data-theme="system"] h5, [data-theme="system"] h6,
+  [data-theme="system"] .section-title,
+  [data-theme="system"] .feature-card h3,
+  [data-theme="system"] .post-list-item h2 a { color: var(--color-text); }
+}
+
+/* Feature cards: same colour as page background — lift them */
+[data-theme="dark"] .feature-card { background: var(--color-bg-alt); }
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .feature-card { background: var(--color-bg-alt); }
+}
+
+/* Docs nav active item */
+[data-theme="dark"] .docs-nav a.active { background: rgba(96,165,250,0.12); }
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .docs-nav a.active { background: rgba(96,165,250,0.12); }
+}
+
+/* Tags */
+[data-theme="dark"] .tag { background: rgba(96,165,250,0.12); color: var(--color-accent); }
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .tag { background: rgba(96,165,250,0.12); color: var(--color-accent); }
+}
+
+/* Admonition blocks */
+[data-theme="dark"] .adoc-content .admonitionblock          { background: rgba(96,165,250,0.08); }
+[data-theme="dark"] .adoc-content .admonitionblock.warning  { background: rgba(245,158,11,0.10); }
+[data-theme="dark"] .adoc-content .admonitionblock.important,
+[data-theme="dark"] .adoc-content .admonitionblock.caution  { background: rgba(239,68,68,0.10); }
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .adoc-content .admonitionblock          { background: rgba(96,165,250,0.08); }
+  [data-theme="system"] .adoc-content .admonitionblock.warning  { background: rgba(245,158,11,0.10); }
+  [data-theme="system"] .adoc-content .admonitionblock.important,
+  [data-theme="system"] .adoc-content .admonitionblock.caution  { background: rgba(239,68,68,0.10); }
+}
+
+/* Blog TOC links */
+[data-theme="dark"] .blog-content .adoc-content #toc a { color: var(--color-text); }
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .blog-content .adoc-content #toc a { color: var(--color-text); }
+}
+
+/* ============================================================
+   Theme switcher
+   ============================================================ */
+.theme-switcher { position: relative; }
+
+.theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.78);
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.theme-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+.theme-icon { display: none; }
+html[data-theme="light"]  .theme-icon-light  { display: block; }
+html[data-theme="dark"]   .theme-icon-dark   { display: block; }
+html[data-theme="system"] .theme-icon-system { display: block; }
+
+.theme-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+  min-width: 130px;
+  z-index: 300;
+  overflow: hidden;
+}
+.theme-dropdown[hidden] { display: none; }
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  text-align: left;
+  transition: background 0.12s;
+}
+.theme-option:hover { background: var(--color-bg-alt); }
+.theme-option svg { flex-shrink: 0; }
+
+html[data-theme="light"]  .theme-option[data-theme-val="light"],
+html[data-theme="dark"]   .theme-option[data-theme-val="dark"],
+html[data-theme="system"] .theme-option[data-theme-val="system"] {
+  color: var(--color-accent-dark);
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .theme-btn { width: 30px; height: 30px; padding: 5px; }
+}

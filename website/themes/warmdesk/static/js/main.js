@@ -1,5 +1,49 @@
 'use strict';
 
+// Theme switcher
+(function () {
+  var STORAGE_KEY = 'wd-theme';
+
+  function getStored() { return localStorage.getItem(STORAGE_KEY) || 'system'; }
+
+  function applyTheme(val) {
+    document.documentElement.setAttribute('data-theme', val);
+    localStorage.setItem(STORAGE_KEY, val);
+  }
+
+  // Belt-and-suspenders: inline <head> script handles FOUC, this covers edge cases
+  if (!document.documentElement.hasAttribute('data-theme')) {
+    document.documentElement.setAttribute('data-theme', getStored());
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('themeBtn');
+    var dd  = document.getElementById('themeDropdown');
+    var sw  = document.getElementById('themeSwitcher');
+    if (!btn || !dd) return;
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      dd.hidden = !dd.hidden;
+    });
+
+    dd.querySelectorAll('.theme-option').forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        applyTheme(opt.dataset.themeVal);
+        dd.hidden = true;
+      });
+    });
+
+    document.addEventListener('click', function (e) {
+      if (sw && !sw.contains(e.target)) dd.hidden = true;
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') dd.hidden = true;
+    });
+  });
+})();
+
 (function () {
   const toggle = document.querySelector('.navbar-toggle');
   const nav = document.querySelector('.navbar-nav');
