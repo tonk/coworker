@@ -198,6 +198,21 @@ horizontal bar. Cards without dates are hidden.
 
 Return to the board with the breadcrumb at the top of the page.
 
+### Charts
+
+Click the **📊 Charts** button in the board toolbar to open the project's
+analytics view. Four charts are available for Kanban boards:
+
+| Chart | What it shows |
+|-------|---------------|
+| **CFD** (Cumulative Flow Diagram) | Daily card counts per column over the selected period. A widening band for a column signals growing WIP or a blocked stage. |
+| **Cycle Time** | Distribution of how long each card spent in progress — from the moment it first left the starting column until it was closed. |
+| **Lead Time** | Distribution of total time from card creation to closure, including any time spent waiting in the initial column. |
+| **Throughput** | Number of cards closed per week over the selected period — a direct measure of delivery rate. |
+
+Use the time-range selectors at the top of each chart to zoom in or out.
+Hover over any data point to see the exact values.
+
 ---
 
 ## 5. Cards

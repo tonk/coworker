@@ -17,6 +17,9 @@
         <RouterLink :to="`/projects/${slug}`" class="btn btn-ghost btn-sm">
           📌 Board
         </RouterLink>
+        <RouterLink :to="`/projects/${slug}/charts`" class="btn btn-ghost btn-sm">
+          📊 {{ $t('sprint.charts') }}
+        </RouterLink>
         <template v-if="sprintStore.activeSprint && canManage">
           <span class="sp-summary">
             {{ sprintStore.activeSprint.completed_points }}/{{ sprintStore.activeSprint.total_points }} SP

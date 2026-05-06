@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.34 — 2026-05-06
+
+### Added
+- **Kanban charts** — the 📊 Charts button is now available on all board types; Kanban projects get four dedicated charts: CFD (Cumulative Flow Diagram), Cycle Time, Lead Time, and Throughput (weekly closed-card count)
+
 ## v0.9.33 — 2026-05-06
 
 ### Changed

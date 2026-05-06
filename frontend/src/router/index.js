@@ -16,6 +16,7 @@ const routes = [
   { path: '/projects/:slug/gantt', name: 'gantt', component: lazyWithReload(() => import('@/views/GanttView.vue')) },
   { path: '/projects/:slug/backlog', name: 'backlog', component: lazyWithReload(() => import('@/views/BacklogView.vue')) },
   { path: '/projects/:slug/sprint', name: 'sprint-board', component: lazyWithReload(() => import('@/views/SprintBoardView.vue')) },
+  { path: '/projects/:slug/charts', name: 'charts', component: lazyWithReload(() => import('@/views/ChartsView.vue')) },
   { path: '/settings', name: 'settings', component: lazyWithReload(() => import('@/views/SettingsView.vue')) },
   { path: '/chats', name: 'chats', component: lazyWithReload(() => import('@/views/DirectMessagesView.vue')) },
   { path: '/messages', redirect: '/chats' },

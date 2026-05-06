@@ -1,0 +1,53 @@
+---
+title: "Charts for Kanban Boards"
+date: "2026-05-06"
+author: "Ton Kersten"
+description: "WarmDesk now shows CFD, Cycle Time, Lead Time, and Throughput charts on all Kanban projects — no sprints required."
+draft: false
+---
+:doctype: article
+:icons!:
+
+WarmDesk now brings analytics to *Kanban boards*.
+The 📊 Charts button is visible on every board type — click it to explore four charts tailored for continuous-flow teams.
+
+== The four charts
+
+=== Cumulative Flow Diagram (CFD)
+
+The CFD plots daily card counts per column, stacked into a ribbon.
+A smooth, parallel flow means your process is healthy.
+A widening band for a particular column is a signal worth investigating — cards are piling up there and slowing delivery.
+
+Use the *period selector* (7, 14, 30, 60, or 90 days) to narrow or widen the time window.
+
+=== Cycle Time
+
+Cycle Time measures how long a card spent actively in progress — from the moment it first moved out of the initial column until it was marked closed.
+
+The chart shows a scatter plot of individual cards with a trend line.
+Outliers (cards that took much longer than the median) are easy to spot and worth a retrospective conversation.
+
+=== Lead Time
+
+Lead Time captures the full customer experience: the elapsed time from when a card was *created* to when it was *closed*, including any time it sat waiting in the backlog column.
+
+Comparing Lead Time with Cycle Time tells you how much of the total wait is queue time versus active work time.
+
+=== Throughput
+
+Throughput counts how many cards were closed per week over the selected period (4, 8, 12, or 26 weeks).
+
+A stable or rising bar chart is a healthy sign.
+A sudden drop is an early warning — useful input for capacity planning and stakeholder conversations before a deadline arrives.
+
+== How closed cards are tracked
+
+A card is counted as closed when it is moved to a column that has been designated as the terminal (done) column for the project.
+The timestamp of that move is recorded and used by the Cycle Time, Lead Time, and Throughput charts.
+
+== Scrum boards
+
+Scrum projects already had charts (velocity, burndown, burnup, release burndown, CFD, and cycle time).
+The Charts button was previously hidden on Kanban boards — it is now visible everywhere.
+Scrum projects are unaffected; they continue to show all eight chart tabs as before.

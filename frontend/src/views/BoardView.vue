@@ -20,6 +20,9 @@
             🏃 {{ $t('sprint.board') }}
           </RouterLink>
         </template>
+        <RouterLink :to="`/projects/${slug}/charts`" class="btn btn-ghost btn-sm">
+          📊 {{ $t('sprint.charts') }}
+        </RouterLink>
         <RouterLink :to="`/projects/${slug}/gantt`" class="btn btn-ghost btn-sm">
           📅 {{ $t('gantt.title') }}
         </RouterLink>

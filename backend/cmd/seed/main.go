@@ -116,6 +116,20 @@ var demoProjects = []seedProject{
 		},
 	},
 	{
+		name:      "API Platform",
+		slug:      "api-platform",
+		prefix:    "API",
+		color:     "#06b6d4",
+		avatar:    "https://api.dicebear.com/9.x/shapes/svg?seed=API-Platform&backgroundColor=cffafe,e0f2fe",
+		boardType: "scrum",
+		desc:      "Developer-facing REST API — designed API-first, built sprint by sprint with a focus on stability and developer experience.",
+		columns:   []string{"To Do", "In Progress", "In Review", "Done"},
+		labels: []struct{ name, color string }{
+			{"Bug", "#ef4444"}, {"Feature", "#3b82f6"},
+			{"Enhancement", "#f59e0b"}, {"Security", "#8b5cf6"},
+		},
+	},
+	{
 		name:      "Marketing Campaigns",
 		slug:      "marketing",
 		prefix:    "MKT",
@@ -299,6 +313,10 @@ func main() {
 			{"priya", "owner"}, {"sarah", "admin"}, {"james", "member"},
 			{"raj", "member"}, {"elena", "member"}, {"viewer", "viewer"},
 		},
+		"api-platform": {
+			{"elena", "owner"}, {"raj", "admin"}, {"james", "member"},
+			{"priya", "member"}, {"sarah", "member"}, {"viewer", "viewer"},
+		},
 		"marketing": {
 			{"lisa", "owner"}, {"admin", "admin"}, {"sarah", "member"},
 			{"james", "member"}, {"viewer", "viewer"},
@@ -364,6 +382,7 @@ func main() {
 		{"admin", "devops-infra"},
 		{"admin", "product-platform"},
 		{"admin", "marketing"},
+		{"admin", "api-platform"},
 		// Sarah: website owner, follows mobile and product-platform
 		{"sarah", "website-redesign"},
 		{"sarah", "mobile-app-v2"},
@@ -375,6 +394,10 @@ func main() {
 		{"lisa", "devops-infra"},
 		{"lisa", "website-redesign"},
 		{"lisa", "marketing"},
+		// Elena: API Platform owner
+		{"elena", "api-platform"},
+		// Raj: API Platform admin
+		{"raj", "api-platform"},
 		// Priya: product-platform owner
 		{"priya", "product-platform"},
 	}
@@ -418,7 +441,10 @@ func main() {
 			author string
 			body   string
 		}
-		subCards []cardSpec
+		subCards      []cardSpec
+		closed        bool
+		closedAtDays  *int // negative = days in the past; sets closed_at
+		createdAtDays *int // negative = days in the past; sets created_at for CFD chart spread
 	}
 
 	webCards := []cardSpec{
@@ -506,21 +532,25 @@ func main() {
 			title: "Set up GitHub Actions CI/CD pipeline", col: "Done",
 			priority: "high", labels: []string{"Feature"},
 			assignee: "admin", timeMin: 360, startInDays: ptr(-16), dueInDays: ptr(-10),
+			closed: true, closedAtDays: ptr(-10), createdAtDays: ptr(-16),
 		},
 		{
 			title: "Migrate DNS and SSL to new hosting provider", col: "Done",
 			priority: "critical", labels: []string{"Feature"},
 			assignee: "admin", timeMin: 480, startInDays: ptr(-9), dueInDays: ptr(-5),
+			closed: true, closedAtDays: ptr(-5), createdAtDays: ptr(-9),
 		},
 		{
 			title: "Create component library documentation", col: "Done",
 			priority: "low", labels: []string{"Design", "Content"},
 			assignee: "sarah", timeMin: 210, startInDays: ptr(-10), dueInDays: ptr(-3),
+			closed: true, closedAtDays: ptr(-3), createdAtDays: ptr(-10),
 		},
 		{
 			title: "Audit and fix all broken links", col: "Done",
 			priority: "medium", labels: []string{"Bug"},
 			assignee: "marc", timeMin: 60, startInDays: ptr(-9), dueInDays: ptr(-7),
+			closed: true, closedAtDays: ptr(-7), createdAtDays: ptr(-9),
 		},
 	}
 
@@ -615,11 +645,13 @@ func main() {
 			title: "Initial 1.0 app release", col: "Released",
 			priority: "critical", labels: []string{"Enhancement", "iOS", "Android"},
 			assignee: "sarah", timeMin: 1200, startInDays: ptr(-60), dueInDays: ptr(-30),
+			closed: true, closedAtDays: ptr(-30), createdAtDays: ptr(-60),
 		},
 		{
 			title: "Bug fix release 1.0.1", col: "Released",
 			priority: "high", labels: []string{"Bug"},
 			assignee: "marc", timeMin: 120, startInDays: ptr(-18), dueInDays: ptr(-14),
+			closed: true, closedAtDays: ptr(-14), createdAtDays: ptr(-18),
 		},
 	}
 
@@ -686,33 +718,93 @@ func main() {
 			title: "Set up private Docker registry", col: "Done",
 			priority: "medium", labels: []string{"Enhancement"},
 			assignee: "marc", timeMin: 240, startInDays: ptr(-14), dueInDays: ptr(-10),
+			closed: true, closedAtDays: ptr(-10), createdAtDays: ptr(-14),
 		},
 		{
 			title: "Configure Nginx load balancer with health checks", col: "Done",
 			priority: "high", labels: []string{"Enhancement"},
 			assignee: "lisa", timeMin: 300, startInDays: ptr(-13), dueInDays: ptr(-8),
+			closed: true, closedAtDays: ptr(-8), createdAtDays: ptr(-13),
 		},
 		{
 			title: "Deploy staging environment", col: "Done",
 			priority: "high", labels: []string{"Enhancement"},
 			assignee: "marc", timeMin: 360, startInDays: ptr(-21), dueInDays: ptr(-15),
+			closed: true, closedAtDays: ptr(-15), createdAtDays: ptr(-21),
 		},
 	}
 
 	pltCards := []cardSpec{
-		// Sprint 1 — Foundation (completed): all in Done
+		// Sprint 1 — Discovery (completed, -70 to -56): all in Done
+		{title: "Product market research and user interviews", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "priya", timeMin: 300,
+			storyPoints: 5, sprintName: "Sprint 1 — Discovery",
+			startInDays: ptr(-70), dueInDays: ptr(-63),
+			closed: true, closedAtDays: ptr(-59), createdAtDays: ptr(-70)},
+		{title: "Competitor analysis and positioning", col: "Done", priority: "medium",
+			labels: []string{"Feature"}, assignee: "james", timeMin: 180,
+			storyPoints: 3, sprintName: "Sprint 1 — Discovery",
+			startInDays: ptr(-69), dueInDays: ptr(-62),
+			closed: true, closedAtDays: ptr(-58), createdAtDays: ptr(-69)},
+		{title: "Technical feasibility study", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 240,
+			storyPoints: 3, sprintName: "Sprint 1 — Discovery",
+			startInDays: ptr(-68), dueInDays: ptr(-61),
+			closed: true, closedAtDays: ptr(-58), createdAtDays: ptr(-68)},
+		{title: "Initial wireframes and UX sketches", col: "Done", priority: "medium",
+			labels: []string{"Feature"}, assignee: "sarah", timeMin: 360,
+			storyPoints: 5, sprintName: "Sprint 1 — Discovery",
+			startInDays: ptr(-67), dueInDays: ptr(-60),
+			closed: true, closedAtDays: ptr(-57), createdAtDays: ptr(-67)},
+		{title: "Project charter and team kick-off", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "priya", timeMin: 60,
+			storyPoints: 2, sprintName: "Sprint 1 — Discovery",
+			startInDays: ptr(-66), dueInDays: ptr(-59),
+			closed: true, closedAtDays: ptr(-57), createdAtDays: ptr(-66)},
+
+		// Sprint 2 — Auth & Security (completed, -56 to -42): all in Done
+		{title: "OAuth 2.0 provider integration", col: "Done", priority: "critical",
+			labels: []string{"Feature"}, assignee: "priya", timeMin: 480,
+			storyPoints: 5, sprintName: "Sprint 2 — Auth & Security",
+			startInDays: ptr(-56), dueInDays: ptr(-49),
+			closed: true, closedAtDays: ptr(-45), createdAtDays: ptr(-56)},
+		{title: "JWT token management and refresh", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 300,
+			storyPoints: 5, sprintName: "Sprint 2 — Auth & Security",
+			startInDays: ptr(-55), dueInDays: ptr(-48),
+			closed: true, closedAtDays: ptr(-44), createdAtDays: ptr(-55)},
+		{title: "Bcrypt password hashing", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "james", timeMin: 120,
+			storyPoints: 3, sprintName: "Sprint 2 — Auth & Security",
+			startInDays: ptr(-54), dueInDays: ptr(-48),
+			closed: true, closedAtDays: ptr(-44), createdAtDays: ptr(-54)},
+		{title: "Admin dashboard scaffolding", col: "Done", priority: "medium",
+			labels: []string{"Feature"}, assignee: "sarah", timeMin: 360,
+			storyPoints: 5, sprintName: "Sprint 2 — Auth & Security",
+			startInDays: ptr(-53), dueInDays: ptr(-46),
+			closed: true, closedAtDays: ptr(-43), createdAtDays: ptr(-53)},
+		{title: "User invitation and onboarding flow", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "priya", timeMin: 240,
+			storyPoints: 3, sprintName: "Sprint 2 — Auth & Security",
+			startInDays: ptr(-52), dueInDays: ptr(-45),
+			closed: true, closedAtDays: ptr(-43), createdAtDays: ptr(-52)},
+
+		// Sprint 3 — Foundation (completed, -28 to -14): all in Done
 		{title: "Set up monorepo and CI/CD pipeline", col: "Done", priority: "high",
 			labels: []string{"Feature"}, assignee: "raj", timeMin: 240,
-			storyPoints: 3, sprintName: "Sprint 1 — Foundation",
-			startInDays: ptr(-28), dueInDays: ptr(-21)},
+			storyPoints: 3, sprintName: "Sprint 3 — Foundation",
+			startInDays: ptr(-28), dueInDays: ptr(-21),
+			closed: true, closedAtDays: ptr(-17), createdAtDays: ptr(-28)},
 		{title: "Design system and component library", col: "Done", priority: "high",
 			labels: []string{"Feature"}, assignee: "sarah", timeMin: 480,
-			storyPoints: 5, sprintName: "Sprint 1 — Foundation",
-			startInDays: ptr(-27), dueInDays: ptr(-20)},
+			storyPoints: 5, sprintName: "Sprint 3 — Foundation",
+			startInDays: ptr(-27), dueInDays: ptr(-20),
+			closed: true, closedAtDays: ptr(-16), createdAtDays: ptr(-27)},
 		{title: "User registration and login flow", col: "Done", priority: "critical",
 			labels: []string{"Feature"}, assignee: "priya", timeMin: 360,
-			storyPoints: 5, sprintName: "Sprint 1 — Foundation",
+			storyPoints: 5, sprintName: "Sprint 3 — Foundation",
 			startInDays: ptr(-26), dueInDays: ptr(-19),
+			closed: true, closedAtDays: ptr(-15), createdAtDays: ptr(-26),
 			comments: []struct {
 				author string
 				body   string
@@ -722,18 +814,21 @@ func main() {
 			}},
 		{title: "Database schema v1 with migrations", col: "Done", priority: "high",
 			labels: []string{"Feature"}, assignee: "raj", timeMin: 180,
-			storyPoints: 3, sprintName: "Sprint 1 — Foundation",
-			startInDays: ptr(-25), dueInDays: ptr(-18)},
+			storyPoints: 3, sprintName: "Sprint 3 — Foundation",
+			startInDays: ptr(-25), dueInDays: ptr(-18),
+			closed: true, closedAtDays: ptr(-16), createdAtDays: ptr(-25)},
 		{title: "Deployment to staging (Docker + nginx)", col: "Done", priority: "medium",
 			labels: []string{"Feature"}, assignee: "james", timeMin: 120,
-			storyPoints: 2, sprintName: "Sprint 1 — Foundation",
-			startInDays: ptr(-24), dueInDays: ptr(-17)},
+			storyPoints: 2, sprintName: "Sprint 3 — Foundation",
+			startInDays: ptr(-24), dueInDays: ptr(-17),
+			closed: true, closedAtDays: ptr(-15), createdAtDays: ptr(-24)},
 
-		// Sprint 2 — Core Features (active): In Progress / In Review
-		{title: "User dashboard overview screen", col: "In Review", priority: "high",
+		// Sprint 4 — Core Features (active, -14 to +7): mix of Done and In Progress
+		{title: "User dashboard overview screen", col: "Done", priority: "high",
 			labels: []string{"Feature"}, assignee: "sarah", timeMin: 300,
-			storyPoints: 5, sprintName: "Sprint 2 — Core Features",
+			storyPoints: 5, sprintName: "Sprint 4 — Core Features",
 			startInDays: ptr(-13), dueInDays: ptr(1),
+			closed: true, closedAtDays: ptr(-5), createdAtDays: ptr(-13),
 			checklist: []struct {
 				body string
 				done bool
@@ -741,20 +836,21 @@ func main() {
 				{"Design approved in Figma", true},
 				{"API endpoints wired up", true},
 				{"Responsive layout", true},
-				{"Unit tests written", false},
+				{"Unit tests written", true},
 			}},
 		{title: "Email notification service", col: "In Progress", priority: "medium",
 			labels: []string{"Feature"}, assignee: "james", timeMin: 120,
-			storyPoints: 3, sprintName: "Sprint 2 — Core Features",
-			startInDays: ptr(-10), dueInDays: ptr(3)},
+			storyPoints: 3, sprintName: "Sprint 4 — Core Features",
+			startInDays: ptr(-10), dueInDays: ptr(3), createdAtDays: ptr(-13)},
 		{title: "Full-text search endpoint", col: "In Progress", priority: "high",
 			labels: []string{"Feature"}, assignee: "raj", timeMin: 180,
-			storyPoints: 5, sprintName: "Sprint 2 — Core Features",
-			startInDays: ptr(-9), dueInDays: ptr(4)},
-		{title: "Role-based access control (RBAC)", col: "In Review", priority: "high",
+			storyPoints: 5, sprintName: "Sprint 4 — Core Features",
+			startInDays: ptr(-9), dueInDays: ptr(4), createdAtDays: ptr(-12)},
+		{title: "Role-based access control (RBAC)", col: "Done", priority: "high",
 			labels: []string{"Feature"}, assignee: "priya", timeMin: 240,
-			storyPoints: 3, sprintName: "Sprint 2 — Core Features",
+			storyPoints: 3, sprintName: "Sprint 4 — Core Features",
 			startInDays: ptr(-12), dueInDays: ptr(2),
+			closed: true, closedAtDays: ptr(-6), createdAtDays: ptr(-14),
 			comments: []struct {
 				author string
 				body   string
@@ -764,19 +860,19 @@ func main() {
 			}},
 		{title: "API rate limiting middleware", col: "In Progress", priority: "medium",
 			labels: []string{"Enhancement"}, assignee: "james", timeMin: 60,
-			storyPoints: 2, sprintName: "Sprint 2 — Core Features",
-			startInDays: ptr(-5), dueInDays: ptr(6)},
+			storyPoints: 2, sprintName: "Sprint 4 — Core Features",
+			startInDays: ptr(-5), dueInDays: ptr(6), createdAtDays: ptr(-13)},
 
-		// Sprint 3 — Polish (planning): all in To Do
+		// Sprint 5 — Polish & Launch (planning): all in To Do
 		{title: "Stripe payment integration", col: "To Do", priority: "critical",
-			labels: []string{"Feature"}, storyPoints: 8, sprintName: "Sprint 3 — Polish & Launch",
+			labels: []string{"Feature"}, storyPoints: 8, sprintName: "Sprint 5 — Polish & Launch",
 			dueInDays: ptr(21)},
 		{title: "Analytics event tracking", col: "To Do", priority: "high",
-			labels: []string{"Feature"}, storyPoints: 5, sprintName: "Sprint 3 — Polish & Launch"},
+			labels: []string{"Feature"}, storyPoints: 5, sprintName: "Sprint 5 — Polish & Launch"},
 		{title: "Performance audit and optimizations", col: "To Do", priority: "medium",
-			labels: []string{"Tech Debt"}, storyPoints: 3, sprintName: "Sprint 3 — Polish & Launch"},
+			labels: []string{"Tech Debt"}, storyPoints: 3, sprintName: "Sprint 5 — Polish & Launch"},
 		{title: "Launch checklist and public docs", col: "To Do", priority: "medium",
-			labels: []string{"Feature"}, storyPoints: 2, sprintName: "Sprint 3 — Polish & Launch"},
+			labels: []string{"Feature"}, storyPoints: 2, sprintName: "Sprint 5 — Polish & Launch"},
 
 		// Backlog (no sprint)
 		{title: "Multi-language support (i18n)", col: "To Do", priority: "low",
@@ -829,13 +925,176 @@ func main() {
 		// Published
 		{title: "Q1 newsletter — Spring edition", col: "Published", priority: "medium",
 			labels: []string{"Email"}, assignee: "lisa", timeMin: 120,
-			startInDays: ptr(-20), dueInDays: ptr(-12)},
+			startInDays: ptr(-20), dueInDays: ptr(-12),
+			closed: true, closedAtDays: ptr(-12), createdAtDays: ptr(-20)},
 		{title: "Product Hunt launch announcement", col: "Published", priority: "high",
 			labels: []string{"Campaign"}, assignee: "admin", timeMin: 60,
-			startInDays: ptr(-30), dueInDays: ptr(-25)},
+			startInDays: ptr(-30), dueInDays: ptr(-25),
+			closed: true, closedAtDays: ptr(-25), createdAtDays: ptr(-30)},
 		{title: "Year in review blog post", col: "Published", priority: "low",
 			labels: []string{"Content"}, assignee: "sarah", timeMin: 150,
-			startInDays: ptr(-45), dueInDays: ptr(-38)},
+			startInDays: ptr(-45), dueInDays: ptr(-38),
+			closed: true, closedAtDays: ptr(-38), createdAtDays: ptr(-45)},
+	}
+
+	apiCards := []cardSpec{
+		// Sprint 1 — Bootstrap (completed, -84 to -70): all in Done
+		{title: "Design API schema and OpenAPI spec", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "elena", timeMin: 480,
+			storyPoints: 5, sprintName: "Sprint 1 — Bootstrap",
+			startInDays: ptr(-84), dueInDays: ptr(-77),
+			closed: true, closedAtDays: ptr(-73), createdAtDays: ptr(-84)},
+		{title: "Set up Go project structure with CI/CD", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 300,
+			storyPoints: 3, sprintName: "Sprint 1 — Bootstrap",
+			startInDays: ptr(-83), dueInDays: ptr(-76),
+			closed: true, closedAtDays: ptr(-73), createdAtDays: ptr(-83)},
+		{title: "Implement health-check and metrics endpoints", col: "Done", priority: "medium",
+			labels: []string{"Feature"}, assignee: "james", timeMin: 180,
+			storyPoints: 3, sprintName: "Sprint 1 — Bootstrap",
+			startInDays: ptr(-82), dueInDays: ptr(-75),
+			closed: true, closedAtDays: ptr(-72), createdAtDays: ptr(-82)},
+		{title: "Docker containerisation and registry setup", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 240,
+			storyPoints: 5, sprintName: "Sprint 1 — Bootstrap",
+			startInDays: ptr(-81), dueInDays: ptr(-74),
+			closed: true, closedAtDays: ptr(-72), createdAtDays: ptr(-81)},
+		{title: "Error response standardisation (RFC 7807)", col: "Done", priority: "medium",
+			labels: []string{"Enhancement"}, assignee: "elena", timeMin: 120,
+			storyPoints: 2, sprintName: "Sprint 1 — Bootstrap",
+			startInDays: ptr(-80), dueInDays: ptr(-73),
+			closed: true, closedAtDays: ptr(-71), createdAtDays: ptr(-80)},
+
+		// Sprint 2 — Core API (completed, -70 to -56): all in Done
+		{title: "Implement resource CRUD endpoints", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "elena", timeMin: 480,
+			storyPoints: 5, sprintName: "Sprint 2 — Core API",
+			startInDays: ptr(-70), dueInDays: ptr(-63),
+			closed: true, closedAtDays: ptr(-59), createdAtDays: ptr(-70)},
+		{title: "Pagination and filtering support", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 360,
+			storyPoints: 5, sprintName: "Sprint 2 — Core API",
+			startInDays: ptr(-69), dueInDays: ptr(-62),
+			closed: true, closedAtDays: ptr(-59), createdAtDays: ptr(-69)},
+		{title: "Request validation middleware", col: "Done", priority: "medium",
+			labels: []string{"Enhancement"}, assignee: "james", timeMin: 240,
+			storyPoints: 3, sprintName: "Sprint 2 — Core API",
+			startInDays: ptr(-68), dueInDays: ptr(-61),
+			closed: true, closedAtDays: ptr(-58), createdAtDays: ptr(-68)},
+		{title: "Database migrations with versioning", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 300,
+			storyPoints: 5, sprintName: "Sprint 2 — Core API",
+			startInDays: ptr(-67), dueInDays: ptr(-60),
+			closed: true, closedAtDays: ptr(-58), createdAtDays: ptr(-67)},
+		{title: "Structured logging with correlation IDs", col: "Done", priority: "medium",
+			labels: []string{"Enhancement"}, assignee: "elena", timeMin: 180,
+			storyPoints: 3, sprintName: "Sprint 2 — Core API",
+			startInDays: ptr(-66), dueInDays: ptr(-59),
+			closed: true, closedAtDays: ptr(-57), createdAtDays: ptr(-66)},
+
+		// Sprint 3 — Auth & Docs (completed, -56 to -42): all in Done
+		{title: "API key authentication and rotation", col: "Done", priority: "critical",
+			labels: []string{"Security"}, assignee: "elena", timeMin: 480,
+			storyPoints: 5, sprintName: "Sprint 3 — Auth & Docs",
+			startInDays: ptr(-56), dueInDays: ptr(-49),
+			closed: true, closedAtDays: ptr(-45), createdAtDays: ptr(-56)},
+		{title: "Rate limiting per API key", col: "Done", priority: "high",
+			labels: []string{"Security"}, assignee: "raj", timeMin: 360,
+			storyPoints: 5, sprintName: "Sprint 3 — Auth & Docs",
+			startInDays: ptr(-55), dueInDays: ptr(-48),
+			closed: true, closedAtDays: ptr(-44), createdAtDays: ptr(-55)},
+		{title: "Interactive API documentation (Swagger UI)", col: "Done", priority: "medium",
+			labels: []string{"Feature"}, assignee: "james", timeMin: 240,
+			storyPoints: 3, sprintName: "Sprint 3 — Auth & Docs",
+			startInDays: ptr(-54), dueInDays: ptr(-47),
+			closed: true, closedAtDays: ptr(-44), createdAtDays: ptr(-54)},
+		{title: "Webhook delivery with retry logic", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "priya", timeMin: 300,
+			storyPoints: 3, sprintName: "Sprint 3 — Auth & Docs",
+			startInDays: ptr(-53), dueInDays: ptr(-46),
+			closed: true, closedAtDays: ptr(-43), createdAtDays: ptr(-53)},
+		{title: "Audit log for all API mutations", col: "Done", priority: "medium",
+			labels: []string{"Security"}, assignee: "elena", timeMin: 120,
+			storyPoints: 2, sprintName: "Sprint 3 — Auth & Docs",
+			startInDays: ptr(-52), dueInDays: ptr(-45),
+			closed: true, closedAtDays: ptr(-43), createdAtDays: ptr(-52)},
+
+		// Sprint 4 — SDKs & Testing (completed, -42 to -28): all in Done
+		{title: "Python SDK for the public API", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "elena", timeMin: 480,
+			storyPoints: 5, sprintName: "Sprint 4 — SDKs & Testing",
+			startInDays: ptr(-42), dueInDays: ptr(-35),
+			closed: true, closedAtDays: ptr(-31), createdAtDays: ptr(-42)},
+		{title: "JavaScript / TypeScript SDK", col: "Done", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 420,
+			storyPoints: 5, sprintName: "Sprint 4 — SDKs & Testing",
+			startInDays: ptr(-41), dueInDays: ptr(-34),
+			closed: true, closedAtDays: ptr(-30), createdAtDays: ptr(-41)},
+		{title: "End-to-end integration test suite", col: "Done", priority: "high",
+			labels: []string{"Enhancement"}, assignee: "priya", timeMin: 360,
+			storyPoints: 3, sprintName: "Sprint 4 — SDKs & Testing",
+			startInDays: ptr(-40), dueInDays: ptr(-33),
+			closed: true, closedAtDays: ptr(-30), createdAtDays: ptr(-40)},
+		{title: "Load testing and performance benchmarks", col: "Done", priority: "medium",
+			labels: []string{"Enhancement"}, assignee: "james", timeMin: 300,
+			storyPoints: 3, sprintName: "Sprint 4 — SDKs & Testing",
+			startInDays: ptr(-39), dueInDays: ptr(-32),
+			closed: true, closedAtDays: ptr(-29), createdAtDays: ptr(-39)},
+		{title: "API changelog and versioning policy", col: "Done", priority: "low",
+			labels: []string{"Feature"}, assignee: "elena", timeMin: 120,
+			storyPoints: 2, sprintName: "Sprint 4 — SDKs & Testing",
+			startInDays: ptr(-38), dueInDays: ptr(-31),
+			closed: true, closedAtDays: ptr(-29), createdAtDays: ptr(-38)},
+
+		// Sprint 5 — Stabilisation (active, -14 to +7): mix of Done and In Progress
+		{title: "Deprecate v0 endpoints and notify users", col: "Done", priority: "high",
+			labels: []string{"Enhancement"}, assignee: "elena", timeMin: 180,
+			storyPoints: 3, sprintName: "Sprint 5 — Stabilisation",
+			startInDays: ptr(-14), dueInDays: ptr(-8),
+			closed: true, closedAtDays: ptr(-9), createdAtDays: ptr(-14)},
+		{title: "Fix response envelope inconsistency bug", col: "Done", priority: "critical",
+			labels: []string{"Bug"}, assignee: "raj", timeMin: 120,
+			storyPoints: 2, sprintName: "Sprint 5 — Stabilisation",
+			startInDays: ptr(-13), dueInDays: ptr(-7),
+			closed: true, closedAtDays: ptr(-10), createdAtDays: ptr(-13)},
+		{title: "Add batch API endpoints for bulk operations", col: "In Review", priority: "high",
+			labels: []string{"Feature"}, assignee: "priya", timeMin: 300,
+			storyPoints: 5, sprintName: "Sprint 5 — Stabilisation",
+			startInDays: ptr(-12), dueInDays: ptr(3), createdAtDays: ptr(-12),
+			comments: []struct {
+				author string
+				body   string
+			}{
+				{"elena", "Design looks solid. Make sure the response envelope is consistent with single-resource endpoints."},
+				{"priya", "Good catch — I'll normalise the wrapper before merging."},
+			}},
+		{title: "Improve error messages with actionable hints", col: "In Progress", priority: "medium",
+			labels: []string{"Enhancement"}, assignee: "james", timeMin: 90,
+			storyPoints: 3, sprintName: "Sprint 5 — Stabilisation",
+			startInDays: ptr(-10), dueInDays: ptr(4), createdAtDays: ptr(-10)},
+		{title: "Support cursor-based pagination", col: "In Progress", priority: "high",
+			labels: []string{"Feature"}, assignee: "raj", timeMin: 120,
+			storyPoints: 5, sprintName: "Sprint 5 — Stabilisation",
+			startInDays: ptr(-9), dueInDays: ptr(5), createdAtDays: ptr(-9)},
+
+		// Sprint 6 — GA Launch (planning): all in To Do
+		{title: "Public developer portal and onboarding docs", col: "To Do", priority: "high",
+			labels: []string{"Feature"}, storyPoints: 8, sprintName: "Sprint 6 — GA Launch",
+			dueInDays: ptr(28)},
+		{title: "API key self-service management console", col: "To Do", priority: "high",
+			labels: []string{"Feature"}, storyPoints: 5, sprintName: "Sprint 6 — GA Launch"},
+		{title: "SLA monitoring and status-page integration", col: "To Do", priority: "medium",
+			labels: []string{"Enhancement"}, storyPoints: 3, sprintName: "Sprint 6 — GA Launch"},
+		{title: "Launch announcement and developer blog post", col: "To Do", priority: "low",
+			labels: []string{"Feature"}, storyPoints: 2, sprintName: "Sprint 6 — GA Launch"},
+
+		// Backlog (no sprint)
+		{title: "GraphQL gateway layer", col: "To Do", priority: "medium",
+			labels: []string{"Enhancement"}, tags: []string{"graphql", "api"}},
+		{title: "Multi-region failover support", col: "To Do", priority: "high",
+			labels: []string{"Security"}},
+		{title: "Fix null pointer in optional field serialisation", col: "To Do", priority: "high",
+			labels: []string{"Bug"}},
 	}
 
 	projectCards := map[string][]cardSpec{
@@ -843,6 +1102,7 @@ func main() {
 		"mobile-app-v2":    mobCards,
 		"devops-infra":     infCards,
 		"product-platform": pltCards,
+		"api-platform":     apiCards,
 		"marketing":        mktCards,
 	}
 
@@ -886,6 +1146,11 @@ func main() {
 				v := spec.storyPoints
 				sp = &v
 			}
+			var closedAt *time.Time
+			if spec.closed && spec.closedAtDays != nil {
+				t := time.Now().UTC().AddDate(0, 0, *spec.closedAtDays)
+				closedAt = &t
+			}
 			card := &models.Card{
 				ColumnID:         col.ID,
 				ProjectID:        pd.project.ID,
@@ -899,8 +1164,14 @@ func main() {
 				DueDate:          dueDate,
 				TimeSpentMinutes: spec.timeMin,
 				StoryPoints:      sp,
+				Closed:           spec.closed,
+				ClosedAt:         closedAt,
 			}
 			must(db.Create(card).Error)
+			if spec.createdAtDays != nil {
+				createdAt := time.Now().UTC().AddDate(0, 0, *spec.createdAtDays).Truncate(24 * time.Hour)
+				must(db.Model(card).UpdateColumn("created_at", createdAt).Error)
+			}
 			createdCards[slug+"/"+spec.title] = card
 
 			// Labels
@@ -994,19 +1265,61 @@ func main() {
 	scrumSprints := map[string][]sprintSpec{
 		"product-platform": {
 			{
-				name: "Sprint 1 — Foundation", status: "completed",
+				name: "Sprint 1 — Discovery", status: "completed",
+				goal:      "Validate the product concept, define architecture, and align the team.",
+				startDays: -70, endDays: -56, hasDate: true,
+			},
+			{
+				name: "Sprint 2 — Auth & Security", status: "completed",
+				goal:      "Implement authentication, authorisation, and the admin dashboard.",
+				startDays: -56, endDays: -42, hasDate: true,
+			},
+			{
+				name: "Sprint 3 — Foundation", status: "completed",
 				goal:      "Establish the core codebase, CI/CD pipeline, and authentication layer.",
 				startDays: -28, endDays: -14, hasDate: true,
 			},
 			{
-				name: "Sprint 2 — Core Features", status: "active",
+				name: "Sprint 4 — Core Features", status: "active",
 				goal:      "Ship user dashboard, email notifications, search, and RBAC.",
 				startDays: -14, endDays: 7, hasDate: true,
 			},
 			{
-				name: "Sprint 3 — Polish & Launch", status: "planning",
-				goal:    "Payment integration, analytics, performance, and public launch.",
-				hasDate: false,
+				name: "Sprint 5 — Polish & Launch", status: "planning",
+				goal:      "Payment integration, analytics, performance, and public launch.",
+				hasDate:   false,
+			},
+		},
+		"api-platform": {
+			{
+				name: "Sprint 1 — Bootstrap", status: "completed",
+				goal:      "Set up project structure, CI/CD, containerisation, and baseline endpoints.",
+				startDays: -84, endDays: -70, hasDate: true,
+			},
+			{
+				name: "Sprint 2 — Core API", status: "completed",
+				goal:      "Deliver CRUD endpoints, pagination, request validation, and structured logging.",
+				startDays: -70, endDays: -56, hasDate: true,
+			},
+			{
+				name: "Sprint 3 — Auth & Docs", status: "completed",
+				goal:      "Ship API key auth, rate limiting, Swagger UI, webhooks, and audit log.",
+				startDays: -56, endDays: -42, hasDate: true,
+			},
+			{
+				name: "Sprint 4 — SDKs & Testing", status: "completed",
+				goal:      "Publish Python and JS/TS SDKs, integration tests, and performance benchmarks.",
+				startDays: -42, endDays: -28, hasDate: true,
+			},
+			{
+				name: "Sprint 5 — Stabilisation", status: "active",
+				goal:      "Deprecate v0, fix known issues, land batch endpoints and cursor pagination.",
+				startDays: -14, endDays: 7, hasDate: true,
+			},
+			{
+				name: "Sprint 6 — GA Launch", status: "planning",
+				goal:      "Developer portal, self-service key management, SLA monitoring, and launch announcement.",
+				hasDate:   false,
 			},
 		},
 	}
@@ -1067,7 +1380,257 @@ func main() {
 	}
 	fmt.Printf("   Created %d sprints\n", totalSprints)
 
-	// ── 3c. Card cross-references ─────────────────────────────────────────────
+	// ── 3c. Card history (column moves — feeds the CFD chart) ─────────────────
+	fmt.Println("→ Creating card history for CFD chart…")
+
+	type histSpec struct {
+		slug    string
+		title   string
+		fromCol string
+		toCol   string
+		daysAgo int
+	}
+
+	histSpecs := []histSpec{
+		// ── Product Platform — Sprint 1 Discovery (created -70 to -66, closed -59 to -57) ──
+		{"product-platform", "Product market research and user interviews", "To Do", "In Progress", 67},
+		{"product-platform", "Product market research and user interviews", "In Progress", "In Review", 62},
+		{"product-platform", "Product market research and user interviews", "In Review", "Done", 59},
+		{"product-platform", "Competitor analysis and positioning", "To Do", "In Progress", 66},
+		{"product-platform", "Competitor analysis and positioning", "In Progress", "In Review", 61},
+		{"product-platform", "Competitor analysis and positioning", "In Review", "Done", 58},
+		{"product-platform", "Technical feasibility study", "To Do", "In Progress", 65},
+		{"product-platform", "Technical feasibility study", "In Progress", "In Review", 60},
+		{"product-platform", "Technical feasibility study", "In Review", "Done", 58},
+		{"product-platform", "Initial wireframes and UX sketches", "To Do", "In Progress", 64},
+		{"product-platform", "Initial wireframes and UX sketches", "In Progress", "In Review", 59},
+		{"product-platform", "Initial wireframes and UX sketches", "In Review", "Done", 57},
+		{"product-platform", "Project charter and team kick-off", "To Do", "In Progress", 63},
+		{"product-platform", "Project charter and team kick-off", "In Progress", "In Review", 58},
+		{"product-platform", "Project charter and team kick-off", "In Review", "Done", 57},
+
+		// ── Product Platform — Sprint 2 Auth & Security (created -56 to -52, closed -45 to -43) ──
+		{"product-platform", "OAuth 2.0 provider integration", "To Do", "In Progress", 53},
+		{"product-platform", "OAuth 2.0 provider integration", "In Progress", "In Review", 48},
+		{"product-platform", "OAuth 2.0 provider integration", "In Review", "Done", 45},
+		{"product-platform", "JWT token management and refresh", "To Do", "In Progress", 52},
+		{"product-platform", "JWT token management and refresh", "In Progress", "In Review", 47},
+		{"product-platform", "JWT token management and refresh", "In Review", "Done", 44},
+		{"product-platform", "Bcrypt password hashing", "To Do", "In Progress", 51},
+		{"product-platform", "Bcrypt password hashing", "In Progress", "In Review", 46},
+		{"product-platform", "Bcrypt password hashing", "In Review", "Done", 44},
+		{"product-platform", "Admin dashboard scaffolding", "To Do", "In Progress", 50},
+		{"product-platform", "Admin dashboard scaffolding", "In Progress", "In Review", 45},
+		{"product-platform", "Admin dashboard scaffolding", "In Review", "Done", 43},
+		{"product-platform", "User invitation and onboarding flow", "To Do", "In Progress", 49},
+		{"product-platform", "User invitation and onboarding flow", "In Progress", "In Review", 44},
+		{"product-platform", "User invitation and onboarding flow", "In Review", "Done", 43},
+
+		// ── Product Platform — Sprint 3 Foundation (created -28 to -24, closed -17 to -15) ──
+		{"product-platform", "Set up monorepo and CI/CD pipeline", "To Do", "In Progress", 25},
+		{"product-platform", "Set up monorepo and CI/CD pipeline", "In Progress", "In Review", 20},
+		{"product-platform", "Set up monorepo and CI/CD pipeline", "In Review", "Done", 17},
+		{"product-platform", "Design system and component library", "To Do", "In Progress", 24},
+		{"product-platform", "Design system and component library", "In Progress", "In Review", 19},
+		{"product-platform", "Design system and component library", "In Review", "Done", 16},
+		{"product-platform", "User registration and login flow", "To Do", "In Progress", 23},
+		{"product-platform", "User registration and login flow", "In Progress", "In Review", 18},
+		{"product-platform", "User registration and login flow", "In Review", "Done", 15},
+		{"product-platform", "Database schema v1 with migrations", "To Do", "In Progress", 22},
+		{"product-platform", "Database schema v1 with migrations", "In Progress", "In Review", 17},
+		{"product-platform", "Database schema v1 with migrations", "In Review", "Done", 16},
+		{"product-platform", "Deployment to staging (Docker + nginx)", "To Do", "In Progress", 21},
+		{"product-platform", "Deployment to staging (Docker + nginx)", "In Progress", "In Review", 16},
+		{"product-platform", "Deployment to staging (Docker + nginx)", "In Review", "Done", 15},
+
+		// ── Product Platform — Sprint 4 Core Features (active): Done and In Progress ──
+		{"product-platform", "User dashboard overview screen", "To Do", "In Progress", 11},
+		{"product-platform", "User dashboard overview screen", "In Progress", "In Review", 8},
+		{"product-platform", "User dashboard overview screen", "In Review", "Done", 5},
+		{"product-platform", "Role-based access control (RBAC)", "To Do", "In Progress", 12},
+		{"product-platform", "Role-based access control (RBAC)", "In Progress", "In Review", 8},
+		{"product-platform", "Role-based access control (RBAC)", "In Review", "Done", 6},
+		{"product-platform", "Email notification service", "To Do", "In Progress", 10},
+		{"product-platform", "Full-text search endpoint", "To Do", "In Progress", 9},
+		{"product-platform", "API rate limiting middleware", "To Do", "In Progress", 5},
+
+		// ── API Platform — Sprint 1 Bootstrap (created -84 to -80, closed -73 to -71) ──
+		{"api-platform", "Design API schema and OpenAPI spec", "To Do", "In Progress", 81},
+		{"api-platform", "Design API schema and OpenAPI spec", "In Progress", "In Review", 76},
+		{"api-platform", "Design API schema and OpenAPI spec", "In Review", "Done", 73},
+		{"api-platform", "Set up Go project structure with CI/CD", "To Do", "In Progress", 80},
+		{"api-platform", "Set up Go project structure with CI/CD", "In Progress", "In Review", 75},
+		{"api-platform", "Set up Go project structure with CI/CD", "In Review", "Done", 73},
+		{"api-platform", "Implement health-check and metrics endpoints", "To Do", "In Progress", 79},
+		{"api-platform", "Implement health-check and metrics endpoints", "In Progress", "In Review", 74},
+		{"api-platform", "Implement health-check and metrics endpoints", "In Review", "Done", 72},
+		{"api-platform", "Docker containerisation and registry setup", "To Do", "In Progress", 78},
+		{"api-platform", "Docker containerisation and registry setup", "In Progress", "In Review", 73},
+		{"api-platform", "Docker containerisation and registry setup", "In Review", "Done", 72},
+		{"api-platform", "Error response standardisation (RFC 7807)", "To Do", "In Progress", 77},
+		{"api-platform", "Error response standardisation (RFC 7807)", "In Progress", "In Review", 72},
+		{"api-platform", "Error response standardisation (RFC 7807)", "In Review", "Done", 71},
+
+		// ── API Platform — Sprint 2 Core API (created -70 to -66, closed -59 to -57) ──
+		{"api-platform", "Implement resource CRUD endpoints", "To Do", "In Progress", 67},
+		{"api-platform", "Implement resource CRUD endpoints", "In Progress", "In Review", 62},
+		{"api-platform", "Implement resource CRUD endpoints", "In Review", "Done", 59},
+		{"api-platform", "Pagination and filtering support", "To Do", "In Progress", 66},
+		{"api-platform", "Pagination and filtering support", "In Progress", "In Review", 61},
+		{"api-platform", "Pagination and filtering support", "In Review", "Done", 59},
+		{"api-platform", "Request validation middleware", "To Do", "In Progress", 65},
+		{"api-platform", "Request validation middleware", "In Progress", "In Review", 60},
+		{"api-platform", "Request validation middleware", "In Review", "Done", 58},
+		{"api-platform", "Database migrations with versioning", "To Do", "In Progress", 64},
+		{"api-platform", "Database migrations with versioning", "In Progress", "In Review", 59},
+		{"api-platform", "Database migrations with versioning", "In Review", "Done", 58},
+		{"api-platform", "Structured logging with correlation IDs", "To Do", "In Progress", 63},
+		{"api-platform", "Structured logging with correlation IDs", "In Progress", "In Review", 58},
+		{"api-platform", "Structured logging with correlation IDs", "In Review", "Done", 57},
+
+		// ── API Platform — Sprint 3 Auth & Docs (created -56 to -52, closed -45 to -43) ──
+		{"api-platform", "API key authentication and rotation", "To Do", "In Progress", 53},
+		{"api-platform", "API key authentication and rotation", "In Progress", "In Review", 48},
+		{"api-platform", "API key authentication and rotation", "In Review", "Done", 45},
+		{"api-platform", "Rate limiting per API key", "To Do", "In Progress", 52},
+		{"api-platform", "Rate limiting per API key", "In Progress", "In Review", 47},
+		{"api-platform", "Rate limiting per API key", "In Review", "Done", 44},
+		{"api-platform", "Interactive API documentation (Swagger UI)", "To Do", "In Progress", 51},
+		{"api-platform", "Interactive API documentation (Swagger UI)", "In Progress", "In Review", 46},
+		{"api-platform", "Interactive API documentation (Swagger UI)", "In Review", "Done", 44},
+		{"api-platform", "Webhook delivery with retry logic", "To Do", "In Progress", 50},
+		{"api-platform", "Webhook delivery with retry logic", "In Progress", "In Review", 45},
+		{"api-platform", "Webhook delivery with retry logic", "In Review", "Done", 43},
+		{"api-platform", "Audit log for all API mutations", "To Do", "In Progress", 49},
+		{"api-platform", "Audit log for all API mutations", "In Progress", "In Review", 44},
+		{"api-platform", "Audit log for all API mutations", "In Review", "Done", 43},
+
+		// ── API Platform — Sprint 4 SDKs & Testing (created -42 to -38, closed -31 to -29) ──
+		{"api-platform", "Python SDK for the public API", "To Do", "In Progress", 39},
+		{"api-platform", "Python SDK for the public API", "In Progress", "In Review", 34},
+		{"api-platform", "Python SDK for the public API", "In Review", "Done", 31},
+		{"api-platform", "JavaScript / TypeScript SDK", "To Do", "In Progress", 38},
+		{"api-platform", "JavaScript / TypeScript SDK", "In Progress", "In Review", 33},
+		{"api-platform", "JavaScript / TypeScript SDK", "In Review", "Done", 30},
+		{"api-platform", "End-to-end integration test suite", "To Do", "In Progress", 37},
+		{"api-platform", "End-to-end integration test suite", "In Progress", "In Review", 32},
+		{"api-platform", "End-to-end integration test suite", "In Review", "Done", 30},
+		{"api-platform", "Load testing and performance benchmarks", "To Do", "In Progress", 36},
+		{"api-platform", "Load testing and performance benchmarks", "In Progress", "In Review", 31},
+		{"api-platform", "Load testing and performance benchmarks", "In Review", "Done", 29},
+		{"api-platform", "API changelog and versioning policy", "To Do", "In Progress", 35},
+		{"api-platform", "API changelog and versioning policy", "In Progress", "In Review", 30},
+		{"api-platform", "API changelog and versioning policy", "In Review", "Done", 29},
+
+		// ── API Platform — Sprint 5 Stabilisation (active): Done and In Progress ──
+		{"api-platform", "Deprecate v0 endpoints and notify users", "To Do", "In Progress", 12},
+		{"api-platform", "Deprecate v0 endpoints and notify users", "In Progress", "In Review", 11},
+		{"api-platform", "Deprecate v0 endpoints and notify users", "In Review", "Done", 9},
+		{"api-platform", "Fix response envelope inconsistency bug", "To Do", "In Progress", 12},
+		{"api-platform", "Fix response envelope inconsistency bug", "In Progress", "Done", 10},
+		{"api-platform", "Add batch API endpoints for bulk operations", "To Do", "In Progress", 10},
+		{"api-platform", "Add batch API endpoints for bulk operations", "In Progress", "In Review", 7},
+		{"api-platform", "Improve error messages with actionable hints", "To Do", "In Progress", 8},
+		{"api-platform", "Support cursor-based pagination", "To Do", "In Progress", 7},
+	}
+
+	totalHistory := 0
+	for _, hs := range histSpecs {
+		cardKey := hs.slug + "/" + hs.title
+		card, ok := createdCards[cardKey]
+		if !ok {
+			fmt.Printf("   ⚠ skipping history for %q (card not found)\n", cardKey)
+			continue
+		}
+		pd := projects[hs.slug]
+		fromCol := pd.cols[hs.fromCol]
+		toCol := pd.cols[hs.toCol]
+		if fromCol == nil || toCol == nil {
+			fmt.Printf("   ⚠ skipping history move %s→%s for %q (column not found)\n", hs.fromCol, hs.toCol, cardKey)
+			continue
+		}
+		moveTime := time.Now().UTC().AddDate(0, 0, -hs.daysAgo)
+		hist := &models.CardHistory{
+			CardID:       card.ID,
+			UserID:       users["admin"].ID,
+			FromColumnID: fromCol.ID,
+			ToColumnID:   toCol.ID,
+		}
+		must(db.Create(hist).Error)
+		must(db.Model(hist).UpdateColumn("created_at", moveTime).Error)
+		totalHistory++
+	}
+	fmt.Printf("   Created %d card history records\n", totalHistory)
+
+	// ── 3d. Releases ──────────────────────────────────────────────────────────
+	fmt.Println("→ Creating releases…")
+
+	type releaseSpec struct {
+		project    string
+		name       string
+		goal       string
+		targetDays int
+		sprints    []string
+	}
+
+	releaseSpecs := []releaseSpec{
+		{
+			project:    "product-platform",
+			name:       "v1.0 — Platform Launch",
+			goal:       "Ship the complete SaaS platform — from auth through payments — to production.",
+			targetDays: 14,
+			sprints: []string{
+				"Sprint 1 — Discovery",
+				"Sprint 2 — Auth & Security",
+				"Sprint 3 — Foundation",
+				"Sprint 4 — Core Features",
+				"Sprint 5 — Polish & Launch",
+			},
+		},
+		{
+			project:    "api-platform",
+			name:       "v1.0 — Public API",
+			goal:       "Release the stable, documented public API with SDKs to developers.",
+			targetDays: 15,
+			sprints: []string{
+				"Sprint 1 — Bootstrap",
+				"Sprint 2 — Core API",
+				"Sprint 3 — Auth & Docs",
+				"Sprint 4 — SDKs & Testing",
+				"Sprint 5 — Stabilisation",
+			},
+		},
+		{
+			project:    "api-platform",
+			name:       "v1.1 — GA Launch",
+			goal:       "Developer portal, self-service key management, and general availability announcement.",
+			targetDays: 45,
+			sprints:    []string{"Sprint 6 — GA Launch"},
+		},
+	}
+
+	totalReleases := 0
+	for _, rs := range releaseSpecs {
+		pd := projects[rs.project]
+		targetDate := time.Now().UTC().AddDate(0, 0, rs.targetDays).Truncate(24 * time.Hour)
+		release := &models.Release{
+			ProjectID:  pd.project.ID,
+			Name:       rs.name,
+			Goal:       rs.goal,
+			TargetDate: &targetDate,
+		}
+		must(db.Create(release).Error)
+		for _, sprintName := range rs.sprints {
+			var sprint models.Sprint
+			if err := db.Where("project_id = ? AND name = ?", pd.project.ID, sprintName).First(&sprint).Error; err == nil {
+				must(db.Create(&models.ReleaseSprint{ReleaseID: release.ID, SprintID: sprint.ID}).Error)
+			}
+		}
+		totalReleases++
+	}
+	fmt.Printf("   Created %d releases\n", totalReleases)
+
+	// ── 3e. Card cross-references ─────────────────────────────────────────────
 	fmt.Println("→ Creating card cross-references…")
 
 	cardLinks := [][2]string{
@@ -1656,6 +2219,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			projects: []groupProjectSpec{
 				{"devops-infra", "owner"},
 				{"product-platform", "member"},
+				{"api-platform", "member"},
 			},
 		},
 		{
@@ -1858,11 +2422,11 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Println("  │ demo.viewer         │ Victor Viewer       │ viewer │")
 	fmt.Println("  └─────────────────────┴─────────────────────┴────────┘")
 	fmt.Println()
-	fmt.Printf("  Projects      : %d (%d kanban, %d scrum)\n", len(demoProjects), len(demoProjects)-1, 1)
+	fmt.Printf("  Projects      : %d (%d kanban, %d scrum)\n", len(demoProjects), len(demoProjects)-2, 2)
 	fmt.Printf("  Cards         : %d\n", totalCards)
 	fmt.Printf("  Topics        : %d\n", totalTopics)
 	fmt.Printf("  Conversations : %d (%d messages)\n", totalConvs, totalConvMsgs)
-	fmt.Printf("  Sprints       : %d (Product Platform — 1 completed, 1 active, 1 planning)\n", totalSprints)
+	fmt.Printf("  Sprints       : %d (PLT: 3 completed, 1 active, 1 planning • API: 4 completed, 1 active, 1 planning)\n", totalSprints)
 	fmt.Printf("  Customers     : %d (Acme Corporation, Globex Systems, Initech Ltd)\n", len(demoCustomers))
 	fmt.Printf("  Groups        : %d (Frontend Team, DevOps Team, Acme Stakeholders)\n", len(demoGroupSpecs))
 	fmt.Printf("  Time entries  : %d (tonk, demo.admin, demo.sarah, demo.marc, demo.lisa)\n", totalTimeEntries)
@@ -1978,7 +2542,7 @@ func joinNames(arr []string) string {
 // demo users and projects), then the users themselves,
 func removeDemoData(db *gorm.DB) {
 	demoUsernames := []string{"demo.admin", "demo.sarah", "demo.marc", "demo.lisa", "demo.viewer", "demo.priya", "demo.james", "demo.elena", "demo.raj"}
-	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra", "product-platform", "marketing"}
+	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra", "product-platform", "api-platform", "marketing"}
 	demoCustomerNames := []string{"Acme Corporation", "Globex Systems", "Initech Ltd"}
 
 	// Collect user IDs

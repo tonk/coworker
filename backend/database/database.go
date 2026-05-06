@@ -401,6 +401,8 @@ func autoMigrate(db *gorm.DB) error {
 		&models.CardReference{},
 		&models.Sprint{},
 		&models.SprintCard{},
+		&models.Release{},
+		&models.ReleaseSprint{},
 		&models.UserGroup{},
 		&models.GroupMember{},
 		&models.GroupProjectAccess{},

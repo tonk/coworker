@@ -308,6 +308,12 @@ func UpdateCard(c *gin.Context) {
 	}
 	if req.Closed != nil {
 		updates["closed"] = *req.Closed
+		if *req.Closed {
+			now := time.Now()
+			updates["closed_at"] = now
+		} else {
+			updates["closed_at"] = nil
+		}
 	}
 	if req.ExternalIssueURL != nil {
 		updates["external_issue_url"] = *req.ExternalIssueURL

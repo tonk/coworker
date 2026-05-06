@@ -7,11 +7,13 @@
       </div>
       <div class="backlog-toolbar-right">
         <RouterLink :to="`/projects/${slug}`" class="btn btn-ghost btn-sm">
-          📌 {{ $t('board.add_column').replace('Add Column', 'Board') || 'Board' }}
+          📌 Board
         </RouterLink>
-        <RouterLink :to="`/projects/${slug}`" class="btn btn-ghost btn-sm">Board</RouterLink>
         <RouterLink v-if="sprintStore.activeSprint" :to="`/projects/${slug}/sprint`" class="btn btn-ghost btn-sm">
           🏃 {{ $t('sprint.board') }}
+        </RouterLink>
+        <RouterLink :to="`/projects/${slug}/charts`" class="btn btn-ghost btn-sm">
+          📊 {{ $t('sprint.charts') }}
         </RouterLink>
       </div>
     </div>

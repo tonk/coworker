@@ -42,6 +42,7 @@ type Card struct {
 	TimeSpentMinutes  int            `gorm:"default:0" json:"time_spent_minutes"`
 	StoryPoints       *int           `json:"story_points"`
 	Closed            bool           `gorm:"default:false" json:"closed"`
+	ClosedAt          *time.Time     `json:"closed_at"`
 	ExternalIssueURL  string         `gorm:"size:2000" json:"external_issue_url"`
 	ExternalIssueRef  string         `gorm:"size:200" json:"external_issue_ref"`
 	ParentCardID      *uint          `gorm:"index" json:"parent_card_id,omitempty"`

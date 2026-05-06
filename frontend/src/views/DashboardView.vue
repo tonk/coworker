@@ -34,6 +34,7 @@
               <h3 class="project-title-row">
                 <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="project-avatar" alt="" />
                 <span>{{ project.name }}</span>
+                <span class="board-type-badge" :class="project.board_type || 'kanban'">{{ $t(`sprint.board_type_${project.board_type || 'kanban'}`) }}</span>
               </h3>
               <p v-if="project.customer" class="project-customer">🏢 {{ project.customer.name }}</p>
               <p v-if="project.description" class="project-desc">{{ project.description }}</p>
@@ -263,6 +264,24 @@ async function handleCreate() {
   object-fit: cover;
   border: 1px solid var(--color-border);
   flex-shrink: 0;
+}
+.board-type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.board-type-badge.scrum {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+}
+.board-type-badge.kanban {
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
 }
 .project-customer { font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; }
 .project-desc { font-size: 13px; color: var(--color-text-muted); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

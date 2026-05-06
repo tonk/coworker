@@ -97,6 +97,31 @@ In Scrum projects, a *Sprint* panel appears in the left sidebar.
 Create a sprint, drag backlog cards into it, and click *Start Sprint* to begin.
 When a sprint ends, incomplete cards are moved back to the backlog.
 
+=== Charts
+
+Click *📊 Charts* in the board toolbar to open the analytics view.
+Kanban projects include four charts:
+
+[cols="1,3"]
+|===
+|Chart |What it shows
+
+|*CFD* (Cumulative Flow Diagram)
+|Daily card counts per column over the selected period.
+A widening band for a column signals growing WIP or a blocked stage.
+
+|*Cycle Time*
+|Distribution of how long each card spent in progress — from the moment it first left the starting column until it was closed.
+
+|*Lead Time*
+|Distribution of total time from card creation to closure, including any waiting time in the initial column.
+
+|*Throughput*
+|Number of cards closed per week over the selected period — a direct measure of delivery rate.
+|===
+
+Use the time-range selectors at the top of each chart to adjust the window.
+
 == Cards
 
 A card is the basic unit of work.

@@ -109,4 +109,21 @@ export const projectsApi = {
   removeCardFromSprint: (slug, sprintId, cardId)  => client.delete(`/projects/${slug}/sprints/${sprintId}/cards/${cardId}`),
   reorderSprintCards:   (slug, sprintId, items)   => client.patch(`/projects/${slug}/sprints/${sprintId}/cards/reorder`, items),
   listBacklog:          (slug)                    => client.get(`/projects/${slug}/backlog`),
+
+  // Releases (Scrum)
+  listReleases:            (slug)                      => client.get(`/projects/${slug}/releases`),
+  createRelease:           (slug, data)                => client.post(`/projects/${slug}/releases`, data),
+  updateRelease:           (slug, releaseId, data)     => client.put(`/projects/${slug}/releases/${releaseId}`, data),
+  deleteRelease:           (slug, releaseId)           => client.delete(`/projects/${slug}/releases/${releaseId}`),
+  addSprintToRelease:      (slug, releaseId, sprintId) => client.post(`/projects/${slug}/releases/${releaseId}/sprints/${sprintId}`),
+  removeSprintFromRelease: (slug, releaseId, sprintId) => client.delete(`/projects/${slug}/releases/${releaseId}/sprints/${sprintId}`),
+
+  // Charts (Scrum)
+  getVelocityChart:        (slug)           => client.get(`/projects/${slug}/charts/velocity`),
+  getBurndownChart:        (slug, sprintId) => client.get(`/projects/${slug}/charts/burndown/${sprintId}`),
+  getBurnupChart:          (slug, sprintId) => client.get(`/projects/${slug}/charts/burnup/${sprintId}`),
+  getCFDChart:             (slug, days)     => client.get(`/projects/${slug}/charts/cfd`, { params: { days } }),
+  getCycleTimeChart:       (slug)           => client.get(`/projects/${slug}/charts/cycle-time`),
+  getThroughputChart:      (slug, weeks)    => client.get(`/projects/${slug}/charts/throughput`, { params: { weeks } }),
+  getReleaseBurndownChart: (slug, releaseId) => client.get(`/projects/${slug}/charts/release-burndown/${releaseId}`),
 }

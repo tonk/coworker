@@ -345,6 +345,23 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 			// Backlog (Scrum)
 			projects.GET("/:projectSlug/backlog", handlers.ListBacklog)
+
+			// Releases (Scrum)
+			projects.GET("/:projectSlug/releases", handlers.ListReleases)
+			projects.POST("/:projectSlug/releases", handlers.CreateRelease)
+			projects.PUT("/:projectSlug/releases/:releaseId", handlers.UpdateRelease)
+			projects.DELETE("/:projectSlug/releases/:releaseId", handlers.DeleteRelease)
+			projects.POST("/:projectSlug/releases/:releaseId/sprints/:sprintId", handlers.AddSprintToRelease)
+			projects.DELETE("/:projectSlug/releases/:releaseId/sprints/:sprintId", handlers.RemoveSprintFromRelease)
+
+			// Charts
+			projects.GET("/:projectSlug/charts/velocity", handlers.GetVelocityChart)
+			projects.GET("/:projectSlug/charts/burndown/:sprintId", handlers.GetBurndownChart)
+			projects.GET("/:projectSlug/charts/burnup/:sprintId", handlers.GetBurnupChart)
+			projects.GET("/:projectSlug/charts/cfd", handlers.GetCFDChart)
+			projects.GET("/:projectSlug/charts/cycle-time", handlers.GetCycleTimeChart)
+			projects.GET("/:projectSlug/charts/throughput", handlers.GetThroughputChart)
+			projects.GET("/:projectSlug/charts/release-burndown/:releaseId", handlers.GetReleaseBurndownChart)
 		}
 	}
 
