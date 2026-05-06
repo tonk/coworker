@@ -929,7 +929,7 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
 /* ============================================================
    Theme switcher
    ============================================================ */
-.theme-switcher { position: relative; }
+.theme-switcher { position: relative; margin-left: auto; }
 
 .theme-btn {
   display: flex;
@@ -994,4 +994,5 @@ html[data-theme="system"] .theme-option[data-theme-val="system"] {
 
 @media (max-width: 720px) {
   .theme-btn { width: 30px; height: 30px; padding: 5px; }
+  .theme-switcher { margin-left: 0; }
 }
