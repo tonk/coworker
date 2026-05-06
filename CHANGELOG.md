@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.26 — 2026-05-06
+
+### Added
+- **SMTP From: display-name support** — the "From Address" setting now accepts both a plain address (`noreply@example.com`) and RFC 5322 display-name form (`WarmDesk <noreply@example.com>`); the admin input field placeholder is updated to reflect this
+
+### Fixed
+- **Backup email: monospace font throughout** — the Size and Date columns in the "Available backups" table now use the same fixed-width font as the Filename column; the header row is also monospace
+
 ## v0.9.25 — 2026-05-06
 
 ### Fixed

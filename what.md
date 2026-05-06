@@ -492,3 +492,5 @@ Create an application that has all these features and requirements
 - Use camera icon for 1:1 call button to match the group chat button
 - Fix backup email filename wrapping and raw timestamp: long filenames no longer wrap mid-word; backup date displays as readable date/time instead of a Unix timestamp
 - Fix backup email filename wrapping in HTML viewers: wrap filenames in <nobr> so w3m, lynx, and Mutt's HTML viewer no longer break the filename mid-hash at narrow terminal widths
+- Accept 'Name <address>' format in SMTP From setting: smtp_from now accepts RFC 5322 display-name form in addition to plain addresses; envelope address extracted automatically for smtp.SendMail
+- Use monospace font for all columns in the Available backups email table: Size and Date columns now match the Filename column; header row also monospace
