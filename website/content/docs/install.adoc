@@ -33,20 +33,18 @@ https://github.com/tonk/warmdesk/releases[releases page].
 Linux releases are distributed as `.tar.gz` archives containing the server binary and the bundled web frontend.
 Extract the archive before running:
 
-[source,bash]
+[source,bash,subs="attributes+"]
 ----
 # Linux x86-64
-wget https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-v0.9.20-linux-amd64.tar.gz
-mkdir warmdesk && tar -xzf warmdesk-v0.9.20-linux-amd64.tar.gz -C warmdesk
+wget https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-{warmdesk-version}-linux-amd64.tar.gz
+mkdir warmdesk && tar -xzf warmdesk-{warmdesk-version}-linux-amd64.tar.gz -C warmdesk
 cd warmdesk
 
 # Linux ARM64
-wget https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-v0.9.20-linux-arm64.tar.gz
-mkdir warmdesk && tar -xzf warmdesk-v0.9.20-linux-arm64.tar.gz -C warmdesk
+wget https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-{warmdesk-version}-linux-arm64.tar.gz
+mkdir warmdesk && tar -xzf warmdesk-{warmdesk-version}-linux-arm64.tar.gz -C warmdesk
 cd warmdesk
 ----
-
-NOTE: Replace `v0.9.20` with the actual version number from the releases page.
 
 Desktop installers for macOS (`.dmg`) and Linux (`.AppImage`) are listed in the link:#desktop-apps[Desktop apps] section.
 
@@ -287,10 +285,10 @@ WARNING: The seeder creates fictitious data in the database it connects to. Neve
 
 === Running the seeder
 
-[source,bash]
+[source,bash,subs="attributes+"]
 ----
 # Extract the release archive (if not already done)
-tar -xzf warmdesk-v0.9.20-linux-amd64.tar.gz -C warmdesk
+tar -xzf warmdesk-{warmdesk-version}-linux-amd64.tar.gz -C warmdesk
 cd warmdesk
 
 # Seed the default SQLite database in the current directory
