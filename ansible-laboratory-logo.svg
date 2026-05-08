@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 300">
+
+  <defs>
+    <!-- Clip everything inside the circle boundary -->
+    <clipPath id="cc">
+      <circle cx="140" cy="122" r="112"/>
+    </clipPath>
+  </defs>
+
+  <!-- White background -->
+  <rect width="280" height="300" fill="white"/>
+
+  <!-- Ansible-red circle -->
+  <circle cx="140" cy="122" r="112" fill="#EE0000"/>
+
+  <!-- Flask / A shape — clipped to circle -->
+  <g clip-path="url(#cc)">
+
+    <!-- Flask mouth (wide ellipse = rim; also echoes the Ansible dot) -->
+    <ellipse cx="140" cy="19" rx="22" ry="8" fill="white"/>
+
+    <!-- Flask neck — narrow vertical stroke (top of the A) -->
+    <line x1="140" y1="27"  x2="140" y2="86"
+          stroke="white" stroke-width="26" stroke-linecap="round"/>
+
+    <!-- Left wall — flask left / A left leg -->
+    <line x1="140" y1="86"  x2="68"  y2="210"
+          stroke="white" stroke-width="26" stroke-linecap="round"/>
+
+    <!-- Right wall — flask right / A right leg -->
+    <line x1="140" y1="86"  x2="212" y2="210"
+          stroke="white" stroke-width="26" stroke-linecap="round"/>
+
+    <!-- Flask base — rounded arc replaces the A crossbar (Ansible no-crossbar style) -->
+    <path d="M 68,210 Q 140,236 212,210"
+          stroke="white" stroke-width="26" fill="none" stroke-linecap="round"/>
+
+    <!-- Bubbles rising inside the flask body -->
+    <circle cx="140" cy="160" r="7"  fill="white"/>
+    <circle cx="131" cy="145" r="5"  fill="white"/>
+    <circle cx="152" cy="142" r="4"  fill="white"/>
+
+  </g>
+</svg>
