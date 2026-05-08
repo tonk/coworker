@@ -1,0 +1,58 @@
+---
+title: "Exploring the WarmDesk API with Bruno"
+date: "2026-05-08"
+author: "Ton Kersten"
+description: "The repository now ships a Bruno collection under docs/bruno — a practical, version-controlled way to call every major WarmDesk API from your desktop."
+draft: false
+---
+:doctype: article
+:icons!:
+
+https://www.usebruno.com/[Bruno] is a lightweight, open-source API client.
+Request definitions live as plain text files in your project, so you can review them in diffs, share them with the team, and keep them next to the code they exercise — without checking a proprietary cloud workspace.
+
+WarmDesk includes a ready-made *WarmDesk API* collection in the repository at `docs/bruno/`.
+It maps the public REST surface into folders you can run one by one or chain together while developing integrations or debugging the backend.
+
+== What the collection contains
+
+The collection is organised by feature area:
+
+* *auth* — login, register, refresh, logout, current user, profile update, API key list/create
+* *admin* — user administration, system settings, backup (global-admin flows)
+* *projects* — list, create, read, update, starred projects, members, labels
+* *columns* — column CRUD for a board
+* *cards* — list, create, read, update, move, delete, comments, checklists, labels, history, external refs
+* *charts* — velocity, burndown, burnup, CFD, cycle time, throughput, release burndown
+* *reports* — time report and time entries
+* *scrum* — backlog, sprints, releases, moving cards into sprints
+* *ticket-api* — create card, comment, and move via `X-API-Key` (automation / CI)
+* *topics* — discussion topics
+* *system* — version and settings endpoints
+
+Each `.bru` file can include a short `docs` block explaining parameters, enums, or auth — open a request in Bruno to read those notes beside the request.
+
+== Environments
+
+Two environments ship under `docs/bruno/environments/`:
+
+* *local* — `baseUrl` defaults to `http://localhost:8080`, with example `username`, `password`, and placeholders such as `projectSlug`, `columnId`, and `cardId` for path segments.
+* *production* — `baseUrl` points at a hostname you configure; sensitive values (`password`, `apiKey`) are marked as secrets in Bruno so they are not stored in plain text in the environment file.
+
+Switch environments in Bruno whenever you move between a dev server and a deployed instance.
+
+== How to use it
+
+. Install Bruno from https://www.usebruno.com/[the official site] or your package manager.
+. In Bruno, choose *Open Collection* and select the `docs/bruno` folder from your WarmDesk checkout (the folder that contains `bruno.json`).
+. Select the *local* or *production* environment.
+. Adjust variables to match your setup: at minimum `baseUrl`, `username`, and `password`; then set `projectSlug`, `columnId`, and `cardId` to real IDs when you exercise project-specific routes.
+. Run *Login* (`auth/01_login.bru`) first. A post-response script stores the JWT `access_token` in the `token` variable; most other requests use Bearer auth with `{{token}}`.
+. For the *ticket-api* folder, set `apiKey` to a key created in the app (user or project settings). Those requests use the `X-API-Key` header instead of the JWT.
+
+If you use multi-factor authentication, the Login request documentation in the collection notes the `mfa_required` / `mfa_token` flow so you can complete verification before retrying protected calls.
+
+== Why keep this in the repo?
+
+Having the collection in `docs/bruno` means the API stays *documented by example*: new endpoints can gain a matching `.bru` file in the same change set, and integrators can import the folder without hunting through separate downloads.
+Pair it with the human-written guides in `docs/` when you need narrative context; use Bruno when you want to send real HTTP traffic quickly and repeatably.
