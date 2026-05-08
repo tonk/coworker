@@ -1,0 +1,15 @@
+meta {
+  name: List Topics
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/topics
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

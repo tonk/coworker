@@ -1,0 +1,15 @@
+meta {
+  name: List Checklist Items
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/cards/{{cardId}}/checklist
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

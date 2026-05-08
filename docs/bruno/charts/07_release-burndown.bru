@@ -1,0 +1,19 @@
+meta {
+  name: Release Burndown Chart
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/charts/release-burndown/{{releaseId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Progress across all sprints in a release toward the release goal.
+}

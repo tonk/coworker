@@ -1,0 +1,26 @@
+meta {
+  name: Update Card
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/cards/{{cardId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Updated title",
+    "description": "Updated description",
+    "priority": "medium",
+    "due_date": "2026-06-15T00:00:00Z",
+    "story_points": 5,
+    "closed": false
+  }
+}

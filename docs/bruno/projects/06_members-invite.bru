@@ -1,0 +1,26 @@
+meta {
+  name: Invite Member
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/members
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "user_id": {{userId}},
+    "role": "member"
+  }
+}
+
+docs {
+  role: "viewer", "member", "admin", or "owner"
+}

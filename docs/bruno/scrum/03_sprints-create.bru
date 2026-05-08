@@ -1,0 +1,24 @@
+meta {
+  name: Create Sprint
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/sprints
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Sprint 1",
+    "goal": "Ship the authentication module",
+    "start_date": "2026-05-12T00:00:00Z",
+    "end_date": "2026-05-23T00:00:00Z"
+  }
+}

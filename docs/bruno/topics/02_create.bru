@@ -1,0 +1,22 @@
+meta {
+  name: Create Topic
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/topics
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Architecture decision: database driver",
+    "body": "## Context\n\nWe need to decide whether to stick with SQLite for production or move to PostgreSQL.\n\n## Options\n\n1. SQLite — zero config, single file\n2. PostgreSQL — better concurrency, horizontal scaling"
+  }
+}

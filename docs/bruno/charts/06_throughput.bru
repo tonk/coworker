@@ -1,0 +1,23 @@
+meta {
+  name: Weekly Throughput Chart
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/charts/throughput
+  body: none
+  auth: bearer
+}
+
+params:query {
+  weeks: 12
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Number of cards closed per week — direct measure of delivery rate.
+}

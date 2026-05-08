@@ -1,0 +1,22 @@
+meta {
+  name: Create Checklist Item
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/cards/{{cardId}}/checklist
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "body": "Write unit tests",
+    "is_completed": false
+  }
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Create API Key
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/auth/api-keys
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "ci-pipeline"
+  }
+}
+
+docs {
+  The full key (cwk_...) is returned once only — save it immediately.
+}

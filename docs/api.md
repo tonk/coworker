@@ -12,6 +12,8 @@
 5. [Card References](#5-card-references)
 6. [Response Formats](#6-response-formats)
 
+See also: [Interactive API (Swagger UI)](#interactive-api-swagger-ui) · [Bruno Collection](#bruno-collection)
+
 ---
 
 ## Interactive API (Swagger UI)
@@ -26,6 +28,45 @@ The interactive documentation lists every endpoint, shows request/response
 schemas, and lets you try requests directly from the browser. A valid JWT
 Bearer token (obtained from `POST /api/v1/auth/login`) can be entered via the
 **Authorize** button to authenticate requests.
+
+---
+
+## Bruno Collection
+
+A [Bruno](https://www.usebruno.com/) API collection covering all major endpoints
+is included at `docs/bruno/`. Bruno is an open-source API client that stores
+collections as plain text files — no account or cloud sync required.
+
+**Opening the collection:**
+
+1. Install Bruno from [usebruno.com](https://www.usebruno.com/)
+2. Open Bruno → **Open Collection** → select the `docs/bruno/` directory
+3. Select the **local** or **production** environment from the top-right dropdown
+4. Run `auth / 01_login` and copy the returned `access_token` into the `token`
+   environment variable
+
+**Environments:**
+
+| Environment | Base URL |
+|---|---|
+| `local` | `http://localhost:8080` — pre-filled with demo credentials |
+| `production` | Your production instance URL |
+
+**Folders in the collection:**
+
+| Folder | Contents |
+|---|---|
+| `auth` | Login, register, refresh, current user, API keys |
+| `system` | Server version, public settings |
+| `projects` | CRUD, members, labels, star/unstar |
+| `columns` | CRUD |
+| `cards` | CRUD, move, comments, checklist, labels, history, cross-references |
+| `scrum` | Backlog, sprints (create/start/complete), releases |
+| `charts` | Velocity, burndown, burnup, CFD, cycle time, throughput, release burndown |
+| `topics` | List, create, get, reply |
+| `reports` | Time report, time entries |
+| `admin` | User management, system settings, backup |
+| `ticket-api` | Create card, add comment, move card (API key auth) |
 
 ---
 

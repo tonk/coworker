@@ -1,0 +1,23 @@
+meta {
+  name: List Time Entries
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/time-entries
+  body: none
+  auth: bearer
+}
+
+params:query {
+  week: 2026-W19
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  week format: YYYY-Www (ISO week number, e.g. 2026-W19)
+}

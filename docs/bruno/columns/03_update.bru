@@ -1,0 +1,23 @@
+meta {
+  name: Update Column
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/columns/{{columnId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Done",
+    "color": "#27ae60",
+    "wip_limit": null
+  }
+}

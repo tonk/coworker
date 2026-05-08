@@ -1,0 +1,27 @@
+meta {
+  name: Create Column
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/columns
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "In Review",
+    "color": "#f39c12",
+    "wip_limit": 5
+  }
+}
+
+docs {
+  wip_limit: optional; omit or set to null to disable WIP tracking
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Star Project
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/star
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

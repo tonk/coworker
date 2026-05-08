@@ -1,0 +1,19 @@
+meta {
+  name: Get Backlog
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/backlog
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Returns cards not assigned to any sprint. Scrum projects only.
+}

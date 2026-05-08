@@ -1,0 +1,23 @@
+meta {
+  name: Create Release
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/releases
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "v1.0",
+    "description": "First public release",
+    "release_date": "2026-06-30T00:00:00Z"
+  }
+}

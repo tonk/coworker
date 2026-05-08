@@ -1,0 +1,19 @@
+meta {
+  name: Delete Column
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/columns/{{columnId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Column must be empty before it can be deleted.
+}

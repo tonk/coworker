@@ -1,0 +1,22 @@
+meta {
+  name: Move Card to Column
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/cards/{{cardId}}/move
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "column_id": 2,
+    "position": 1.0
+  }
+}

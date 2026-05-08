@@ -1,0 +1,26 @@
+meta {
+  name: Create Comment
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/cards/{{cardId}}/comments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "body": "Investigated the issue — root cause is the missing null check on line 42.",
+    "time_spent_minutes": 30
+  }
+}
+
+docs {
+  time_spent_minutes: optional; logged time appears in time reports
+}

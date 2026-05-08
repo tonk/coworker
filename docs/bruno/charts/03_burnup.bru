@@ -1,0 +1,19 @@
+meta {
+  name: Sprint Burnup Chart
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/charts/burnup/{{sprintId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Work completed vs total scope — shows scope creep clearly.
+}

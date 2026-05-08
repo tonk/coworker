@@ -1,0 +1,15 @@
+meta {
+  name: List Columns
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/columns
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

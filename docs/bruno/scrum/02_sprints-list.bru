@@ -1,0 +1,15 @@
+meta {
+  name: List Sprints
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/sprints
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

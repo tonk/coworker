@@ -1,0 +1,15 @@
+meta {
+  name: List Cross-References
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/cards/{{cardId}}/refs
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

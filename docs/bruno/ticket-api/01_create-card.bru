@@ -1,0 +1,29 @@
+meta {
+  name: Create Card (Ticket API)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/ticket/{{projectSlug}}/cards
+  body: json
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+body:json {
+  {
+    "title": "Fix regression in payment flow",
+    "description": "Detected by CI pipeline — see build #1234.",
+    "priority": "high",
+    "column": "Backlog"
+  }
+}
+
+docs {
+  Authenticate with X-API-Key header or ?api_key= query param.
+  Generate an API key in User Settings or Project Settings.
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Velocity Chart
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/charts/velocity
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Story points completed per sprint. Scrum projects only.
+}

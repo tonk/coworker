@@ -1,0 +1,26 @@
+meta {
+  name: Time Report
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/reports/time
+  body: none
+  auth: bearer
+}
+
+params:query {
+  period: month
+  user_id:
+  project_slug:
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  period: "all", "year", "month", or "week"
+  user_id and project_slug are optional filters.
+}

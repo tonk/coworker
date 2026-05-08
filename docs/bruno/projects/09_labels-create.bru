@@ -1,0 +1,22 @@
+meta {
+  name: Create Label
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/labels
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "bug",
+    "color": "#e74c3c"
+  }
+}

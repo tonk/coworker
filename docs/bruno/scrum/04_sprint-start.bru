@@ -1,0 +1,15 @@
+meta {
+  name: Start Sprint
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/sprints/{{sprintId}}/start
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Create Project
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "My Project",
+    "key": "MYP",
+    "type": "kanban",
+    "description": "Project description"
+  }
+}
+
+docs {
+  type: "kanban" or "scrum" (immutable after creation)
+  key: short uppercase prefix used in card numbers (e.g. MYP-1)
+}

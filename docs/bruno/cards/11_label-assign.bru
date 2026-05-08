@@ -1,0 +1,15 @@
+meta {
+  name: Assign Label to Card
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/cards/{{cardId}}/labels/{{labelId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

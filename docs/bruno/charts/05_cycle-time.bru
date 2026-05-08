@@ -1,0 +1,23 @@
+meta {
+  name: Cycle Time Chart
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/charts/cycle-time
+  body: none
+  auth: bearer
+}
+
+params:query {
+  days: 90
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Distribution of time each card spent in progress (first move → closed).
+}

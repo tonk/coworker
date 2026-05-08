@@ -1,0 +1,26 @@
+meta {
+  name: Create Cross-Reference
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/cards/{{cardId}}/refs
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "target_card_id": 42
+  }
+}
+
+docs {
+  Creates a bidirectional "relates to" link between two cards.
+  The link is stored once and appears in both cards.
+}

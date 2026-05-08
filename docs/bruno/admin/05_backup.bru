@@ -1,0 +1,20 @@
+meta {
+  name: Trigger Backup (Admin)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/system/backup
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Creates a timestamped backup in the ./backups/ directory.
+  Also accessible via POST /api/v1/backup with a backup-role API key.
+}

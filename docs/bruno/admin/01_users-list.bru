@@ -1,0 +1,15 @@
+meta {
+  name: List All Users (Admin)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/users
+  body: none
+  auth: inherit
+}
+
+docs {
+  Requires global admin role.
+}

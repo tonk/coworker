@@ -1,0 +1,30 @@
+meta {
+  name: Create Card
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/columns/{{columnId}}/cards
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Implement login page",
+    "description": "## Overview\n\nBuild the login form with username/password fields.\n\n## Acceptance criteria\n\n- [ ] Username and password fields\n- [ ] Error message on invalid credentials\n- [ ] Redirect to dashboard on success",
+    "priority": "high",
+    "due_date": "2026-06-01T00:00:00Z",
+    "story_points": 3
+  }
+}
+
+docs {
+  priority: "none", "low", "medium", or "high"
+  story_points: optional; only meaningful for Scrum projects
+}

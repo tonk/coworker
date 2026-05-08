@@ -1,0 +1,16 @@
+meta {
+  name: Public System Settings
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/system/settings
+  body: none
+  auth: none
+}
+
+docs {
+  Returns public settings: company name, registration enabled, MFA required, etc.
+  No authentication required.
+}

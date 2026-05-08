@@ -1,0 +1,21 @@
+meta {
+  name: Reply to Topic
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/topics/{{topicId}}/replies
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "body": "I vote for PostgreSQL given our expected user growth."
+  }
+}

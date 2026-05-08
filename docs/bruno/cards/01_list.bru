@@ -1,0 +1,15 @@
+meta {
+  name: List Cards in Column
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/columns/{{columnId}}/cards
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

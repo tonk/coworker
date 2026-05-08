@@ -1,0 +1,24 @@
+meta {
+  name: Cumulative Flow Diagram
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/charts/cfd
+  body: none
+  auth: bearer
+}
+
+params:query {
+  days: 30
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Daily card counts per column over the given period.
+  A widening band signals growing WIP or a blocked stage.
+}

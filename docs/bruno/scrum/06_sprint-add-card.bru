@@ -1,0 +1,15 @@
+meta {
+  name: Add Card to Sprint
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/sprints/{{sprintId}}/cards/{{cardId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

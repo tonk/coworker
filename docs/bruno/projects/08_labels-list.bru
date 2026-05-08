@@ -1,0 +1,15 @@
+meta {
+  name: List Labels
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/v1/projects/{{projectSlug}}/labels
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

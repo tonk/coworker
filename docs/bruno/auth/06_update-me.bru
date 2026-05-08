@@ -1,0 +1,24 @@
+meta {
+  name: Update Current User
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/v1/auth/me
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "display_name": "Ton Kersten",
+    "email": "tonk@example.com",
+    "locale": "en",
+    "theme": "dark"
+  }
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Create User (Admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/users
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "username": "jane.doe",
+    "display_name": "Jane Doe",
+    "email": "jane@example.com",
+    "password": "TempPass123!",
+    "global_role": "user"
+  }
+}
+
+docs {
+  global_role: "admin", "user", "viewer", "metrics", or "backup"
+}

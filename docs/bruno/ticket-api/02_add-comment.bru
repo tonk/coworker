@@ -1,0 +1,21 @@
+meta {
+  name: Add Comment (Ticket API)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/ticket/{{projectSlug}}/cards/{{cardId}}/comments
+  body: json
+  auth: none
+}
+
+headers {
+  X-API-Key: {{apiKey}}
+}
+
+body:json {
+  {
+    "body": "Build #1235 passed — regression is fixed."
+  }
+}

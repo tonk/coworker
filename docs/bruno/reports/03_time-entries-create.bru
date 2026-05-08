@@ -1,0 +1,24 @@
+meta {
+  name: Create Time Entry
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/time-entries
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "project_slug": "{{projectSlug}}",
+    "date": "2026-05-08",
+    "minutes": 120,
+    "description": "Sprint planning and backlog grooming"
+  }
+}
