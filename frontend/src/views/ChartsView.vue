@@ -341,9 +341,9 @@ async function loadWeeklyThroughput() {
   try {
     const r = await projectsApi.getThroughputChart(slug.value, throughputWeeks.value)
     weeklyThroughput.value = r.data.weeks || []
-    await nextTick(); renderWeeklyThroughput()
   } catch { weeklyThroughput.value = [] }
   finally { weeklyThroughputLoading.value = false }
+  await nextTick(); renderWeeklyThroughput()
 }
 
 function renderWeeklyThroughput() {
@@ -376,9 +376,9 @@ async function loadBurndown() {
   try {
     const r = await projectsApi.getBurndownChart(slug.value, selectedSprintId.value)
     burndownData.value = r.data.data || []
-    await nextTick(); renderBurndown()
   } catch (e) { burndownError.value = e.response?.data?.error || t('sprint.no_chart_data') }
   finally { burndownLoading.value = false }
+  await nextTick(); renderBurndown()
 }
 
 function renderBurndown() {
@@ -407,9 +407,9 @@ async function loadBurnup() {
   try {
     const r = await projectsApi.getBurnupChart(slug.value, selectedBurnupSprintId.value)
     burnupData.value = r.data.data || []
-    await nextTick(); renderBurnup()
   } catch (e) { burnupError.value = e.response?.data?.error || t('sprint.no_chart_data') }
   finally { burnupLoading.value = false }
+  await nextTick(); renderBurnup()
 }
 
 function renderBurnup() {
@@ -438,9 +438,9 @@ async function loadCFD() {
     const r = await projectsApi.getCFDChart(slug.value, cfdDays.value)
     cfdLabels.value = r.data.labels || []
     cfdSeries.value = r.data.series || []
-    await nextTick(); renderCFD()
   } catch { cfdLabels.value = [] }
   finally { cfdLoading.value = false }
+  await nextTick(); renderCFD()
 }
 
 const CFD_PALETTE = ['#6366f1','#22c55e','#f59e0b','#ef4444','#06b6d4','#8b5cf6','#ec4899','#14b8a6','#f97316','#84cc16']
@@ -479,9 +479,9 @@ async function loadReleaseBurndown() {
   try {
     const r = await projectsApi.getReleaseBurndownChart(slug.value, selectedReleaseId.value)
     releaseBurndownData.value = r.data.data || []
-    await nextTick(); renderReleaseBurndown()
   } catch (e) { releaseBurndownError.value = e.response?.data?.error || t('sprint.no_chart_data') }
   finally { releaseBurndownLoading.value = false }
+  await nextTick(); renderReleaseBurndown()
 }
 
 function renderReleaseBurndown() {

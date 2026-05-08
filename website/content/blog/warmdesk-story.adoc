@@ -76,6 +76,8 @@ image::screenshots/03-board.png[Board view with drag-and-drop and optional WIP l
 For Scrum projects a sidebar sprint panel lets you create sprints, drag backlog cards into them, and start or complete a sprint with a click.
 Completed sprints are retained for historical reference; incomplete cards are returned to the backlog.
 
+image::screenshots/15-scrum-backlog.png[Scrum backlog with sprint planner, 900]
+
 === Cards: The Heart of the System
 
 Every piece of work lives on a card.
@@ -103,6 +105,8 @@ image::screenshots/04-card-detail.png[Card detail panel, 900]
 
 A per-project Gantt chart visualises cards that have a start date and a due date.
 The chart is rendered client-side with Frappe Gantt and lets you quickly spot scheduling conflicts and milestones without leaving the application.
+
+image::screenshots/13-gant.png[Gantt timeline view, 900]
 
 === Team Chat
 
@@ -154,6 +158,22 @@ An admin panel covers:
 * *Database backup* — on-demand or scheduled backup with download and restore via the UI
 
 image::screenshots/08-admin-users.png[Admin panel, 900]
+
+=== Analytics and Charts
+
+The *Charts* tab (📊) is available on every project board.
+Kanban and Scrum projects share Cycle Time, Lead Time, Throughput, and Cumulative Flow Diagram charts.
+Scrum projects add sprint-specific charts: Velocity, Burndown, Burnup, and Release Burndown.
+
+image::screenshots/14-cumulative.png[Cumulative flow diagram, 900]
+
+image::screenshots/16-scrum-throughput.png[Sprint throughput chart, 900]
+
+image::screenshots/17-scrum-burndown.png[Sprint burndown chart, 900]
+
+image::screenshots/18-scrum-burnup.png[Sprint burnup chart, 900]
+
+image::screenshots/19-scrum-release.png[Release burndown chart, 900]
 
 === Git and CI/CD Integration
 

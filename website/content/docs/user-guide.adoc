@@ -97,6 +97,8 @@ In Scrum projects, a *Sprint* panel appears in the left sidebar.
 Create a sprint, drag backlog cards into it, and click *Start Sprint* to begin.
 When a sprint ends, incomplete cards are moved back to the backlog.
 
+image::../../images/screenshots/15-scrum-backlog.png[Scrum backlog, 900]
+
 === Charts
 
 Click *📊 Charts* in the board toolbar to open the analytics view.
@@ -121,6 +123,33 @@ A widening band for a column signals growing WIP or a blocked stage.
 |===
 
 Use the time-range selectors at the top of each chart to adjust the window.
+
+image::../../images/screenshots/14-cumulative.png[Cumulative flow diagram, 900]
+
+Scrum projects add four additional charts:
+
+[cols="1,3"]
+|===
+|Chart |What it shows
+
+|*Velocity*
+|Story points completed per sprint — helps forecast future sprint capacity.
+
+|*Burndown*
+|Remaining story points versus the ideal burn line; shows whether the sprint is on track.
+
+|*Burnup*
+|Work completed versus total scope — useful for visualising scope creep mid-sprint.
+
+|*Release Burndown*
+|Progress across all sprints in a release; shows remaining scope toward the release goal.
+|===
+
+image::../../images/screenshots/17-scrum-burndown.png[Sprint burndown chart, 900]
+
+image::../../images/screenshots/18-scrum-burnup.png[Sprint burnup chart, 900]
+
+image::../../images/screenshots/19-scrum-release.png[Release burndown chart, 900]
 
 == Cards
 

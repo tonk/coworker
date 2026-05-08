@@ -3,6 +3,15 @@
 # Small program to build, seed, training seed, configure
 # and run WarmDesk.
 #
+#
+# Screenshots:
+#   Start the app with:
+#    chromium-browser --window-size=1400,900 --app="http://localhost:8080" &>/dev/null &
+#
+#   Shoot with:
+#     sleep 3; maim --hidecursor -u  -i "$(xdotool getactivewindow)" <filename>
+#
+#
 # Just for development.
 #
 
@@ -25,7 +34,7 @@ make clean all || {
 cd dist
 ./warmdesk-seed --reset
 ./warmdesk-training --reset
-./warmdesk-training 4 Salami
+#./warmdesk-training 4 Salami
 
 # Create simple config
 cat << '@EOF' > warmdesk.yaml

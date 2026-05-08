@@ -8,12 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.23)
+## Latest release (v0.9.35)
 
-- **"All Customers" sidebar section** — lists all customers below the Favourite Customers panel; starred customers appear first and are marked.
-- **Starred customers drag-to-reorder** — reorder favourite customers in the sidebar via drag handles (pointer events, Linux/WebKitGTK compatible).
-- **LiveKit room prefix** — new `livekit_room_prefix` / `LIVEKIT_ROOM_PREFIX` option to namespace rooms when sharing a LiveKit server across instances.
-- **Media proxy hardening** — DNS-rebinding protection, query-string re-encoding (fixes DiceBear URLs), content-type validation, and a 200-req/10-min rate limit.
+- **Fix scrum chart rendering** — Burndown, Burnup, Cumulative Flow, and Release Burndown charts now render correctly; a Vue timing bug caused the canvas element to be absent from the DOM when Chart.js tried to draw.
+- **Demo seed descriptions** — all ~101 seeded demo cards now include rich Markdown descriptions with context, acceptance criteria, technical notes, and reproduction steps for bugs.
+- **New screenshots** — Gantt chart, Scrum backlog, CFD, sprint throughput, burndown, burnup, and release burndown screenshots added to the website homepage, blog post, user guide, and README.
 
 ## Build status
 
@@ -42,6 +41,14 @@ updated the `what.md` file and asked Claude Code and Cursor to generate the app.
 | *Admin settings* | *User settings* |
 | ![Chat reaction hover](screenshots/11-chat-reaction-hover.png) | ![Chat reaction selected](screenshots/12-chat-reaction-selected.png) |
 | *Chat hover quick reactions + full picker* | *Selected reaction shown on message* |
+| ![Gantt chart](screenshots/13-gant.png) | ![Cumulative flow diagram](screenshots/14-cumulative.png) |
+| *Gantt chart — timeline view with start/due date bars* | *Cumulative flow diagram — daily card counts per column* |
+| ![Scrum backlog](screenshots/15-scrum-backlog.png) | ![Sprint throughput](screenshots/16-scrum-throughput.png) |
+| *Scrum backlog — two-panel sprint planner* | *Sprint throughput — cards closed per sprint* |
+| ![Sprint burndown](screenshots/17-scrum-burndown.png) | ![Sprint burnup](screenshots/18-scrum-burnup.png) |
+| *Sprint burndown — remaining points vs. ideal line* | *Sprint burnup — completed vs. total scope* |
+| ![Release burndown](screenshots/19-scrum-release.png) | |
+| *Release burndown — progress across all sprints in a release* | |
 
 ## Quick Start
 
