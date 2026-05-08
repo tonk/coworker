@@ -17,8 +17,14 @@ body:json {
   }
 }
 
+script:post-response {
+  if (res.status === 200 && res.body.access_token) {
+    bru.setVar("token", res.body.access_token);
+  }
+}
+
 docs {
-  Returns access_token and refresh_token.
-  Copy the access_token into the token environment variable.
-  If MFA is enabled, use the returned mfa_token with the MFA Verify request instead.
+  Logs in and automatically stores the access_token in the token environment variable.
+  If MFA is enabled, the response contains mfa_required: true and an mfa_token — use
+  the MFA Verify request to complete login.
 }

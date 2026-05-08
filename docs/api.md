@@ -42,8 +42,8 @@ collections as plain text files — no account or cloud sync required.
 1. Install Bruno from [usebruno.com](https://www.usebruno.com/)
 2. Open Bruno → **Open Collection** → select the `docs/bruno/` directory
 3. Select the **local** or **production** environment from the top-right dropdown
-4. Run `auth / 01_login` and copy the returned `access_token` into the `token`
-   environment variable
+4. Run `auth / 01_login` — the `token` variable is set automatically via a
+   post-response script; all other requests pick it up immediately
 
 **Environments:**
 
