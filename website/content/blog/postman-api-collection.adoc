@@ -1,0 +1,29 @@
+---
+title: "WarmDesk Postman collection"
+date: "2026-05-09"
+author: "Ton Kersten"
+description: "The repository now ships a Postman Collection v2.1 export under docs/postman alongside the Bruno files — identical requests, usable from Postman on any platform."
+draft: false
+---
+:doctype: article
+:icons!:
+
+https://www.postman.com/[Postman] remains a widely used REST client across teams who already rely on workspaces, mocks, runners, or CI wrappers.
+WarmDesk therefore includes matching API definitions you can import in a few clicks, staying in sync with the curated examples that already live beside the codebase.
+
+You will find everything under `docs/postman/`:
+
+* `WarmDesk-API.postman_collection.json` — the WarmDesk REST surface as a Collection v2.1 export (*67* requests in the same *eleven* folders as `docs/bruno`: auth, admin, projects, columns, cards, charts, reports, scrum, Ticket API, topics, and system).
+* `WarmDesk-Local.postman_environment.json` and `WarmDesk-Production.postman_environment.json` — variables aligned with link:/blog/bruno-api-collection/[*Exploring the WarmDesk API with Bruno*] (`baseUrl`, credentials, placeholders such as `{{projectSlug}}`, ids, Ticket API keys, and bearer token slot).
+
+Keeping two exports side by side means you choose the toolchain (Bruno, Postman, or both) without the examples drifting: `docs/postman/generate_collection.py` regenerates the Postman artefacts from `docs/bruno/*.bru`, so the Bruno definitions remain authoritative.
+
+== Import and first steps
+
+. In Postman, choose *Import* and select `docs/postman/WarmDesk-API.postman_collection.json`.
+. Import either environment JSON, activate it as the active environment.
+. Adjust values for your deployment (at minimum `baseUrl`, `username`, `password`); fill `projectSlug`, `columnId`, `cardId`, and siblings when you target specific resources.
+. Run *Login* under `auth`. The Tests script mirrors Bruno's post-response handler: when the API returns HTTP 200 and an `access_token`, it persists it to the active environment variable `token`, which Bearer auth on the dependent requests consumes.
+. For *Ticket API* folders, populate `apiKey` instead of bearer auth (`X-API-Key`).
+
+For a detailed rundown of each folder, auth modes, MFA notes, and why the repository hosts these files, refer to link:/blog/bruno-api-collection/[*Exploring the WarmDesk API with Bruno*] — the Postman bundle is mechanically equivalent; only the client format differs.
