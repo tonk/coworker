@@ -69,6 +69,8 @@ npm run dev
 
 Open **http://localhost:5173** in your browser.
 
+To cut a new version (changelog, tags, `./release`), see [docs/release.md](docs/release.md).
+
 ### Production build
 
 ```bash
