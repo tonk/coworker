@@ -13,6 +13,17 @@
 ### Fixed
 - **Call control bar** — the bottom control strip wraps on narrow layouts (e.g. with the chat sidebar open) so the camera toggle and other buttons are no longer clipped off-screen
 
+## v0.9.35 — 2026-05-08
+
+### Fixed
+- **Scrum chart rendering** — Burndown, Burnup, Cumulative Flow, and Release Burndown charts now render correctly; a Vue timing bug left the canvas element out of the DOM when Chart.js tried to draw
+
+### Changed
+- **Demo seed descriptions** — all ~101 seeded demo cards now include rich Markdown descriptions with context, acceptance criteria, technical notes, and reproduction steps for bugs
+
+### Documentation
+- **New screenshots** — Gantt chart, Scrum backlog, CFD, sprint throughput, burndown, burnup, and release burndown screenshots added to the website homepage, blog post, user guide, and README
+
 ## v0.9.34 — 2026-05-06
 
 ### Added
