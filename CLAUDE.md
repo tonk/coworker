@@ -1,6 +1,6 @@
 # WarmDesk — Developer Guide for Claude
 
-WarmDesk is a self-hosted project management tool (Kanban boards, team chat with one-to-one voice & video, discussions, time reporting). It has a Go backend and a Vue 3 frontend; both live in this repository. A Tauri wrapper produces native desktop apps from the same frontend code.
+WarmDesk is a self-hosted project management tool (Kanban boards, team chat with one-to-one WebRTC voice & video, LiveKit-based group calls for conversations with 3+ members, discussions, time reporting). It has a Go backend and a Vue 3 frontend; both live in this repository. A Tauri wrapper produces native desktop apps from the same frontend code.
 
 ---
 
@@ -44,24 +44,29 @@ WEB_DIR=./web ./warmdesk
 ```
 backend/
   main.go            # entry point — config, DB, services, router
+  cmd/               # auxiliary binaries (e.g. seed)
   config/            # Config struct + env var / YAML loading
   database/          # GORM init, AutoMigrate for all models
+  docs/              # Swagger-generated API docs (do not hand-edit)
   handlers/          # One file per feature area (card.go, report.go, …)
-  middleware/        # Auth (JWT), AdminOnly, APIKeyAuth, CORS
+  middleware/        # auth, api_key, cors, ratelimit, ip_allowlist, security_headers
+  migrate/           # one-off data migration helpers (separate from AutoMigrate)
   models/            # GORM model structs (board.go, user.go, project.go, …)
   router/            # Single router.go — all routes in one place
-  services/          # Business logic (auth, email, project helpers, ordering)
+  services/          # Business logic (auth, email, project helpers, ordering, git)
+  staticweb/         # Embeds the built frontend (dist/web) into the Go binary
   ws/                # WebSocket hub + client + pub/sub (memory & Redis)
 
 frontend/
   src/
     api/             # Axios wrappers, one file per domain (projects.js, reports.js, …)
-    components/      # Reusable Vue components (board/, chat/, common/, layout/)
-    composables/     # useTheme, useWebSocket, useDateFormat, useAvatar, …
+    components/      # Reusable Vue components (board/, call/, chat/, common/, layout/)
+    composables/     # useTheme, useWebSocket, useDateFormat, useAvatar, useLiveKitGroupCall, …
     i18n/            # en.json + nl, de, fr, es, da, sv, nb, fi, is, pt, it — all keys must be mirrored
     router/          # index.js — all routes + auth guards
-    stores/          # Pinia stores (auth, board, chat, project, ui, …)
+    stores/          # Pinia stores (auth, board, chat, project, sprint, topics, ui, …)
     styles/          # Global CSS custom properties (light/dark theme vars)
+    utils/           # Small framework-agnostic helpers
     views/           # Page-level Vue components
 
 frontend/src-tauri/  # Rust/Tauri config (minimal — mostly tauri.conf.json)
@@ -81,13 +86,23 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 | `port` | `PORT` | `8080` |
 | `db_driver` | `DB_DRIVER` | `sqlite` |
 | `db_dsn` | `DB_DSN` | `./warmdesk.db` |
+| `db_log` | `DB_LOG` | `info` (silent / error / warn / info) |
+| `db_tls_mode` | `DB_TLS_MODE` | `disable` (see Database TLS section) |
+| `db_tls_ca_cert` / `db_tls_cert` / `db_tls_key` | `DB_TLS_*` | *(empty)* |
 | `jwt_secret` | `JWT_SECRET` | *(server refuses to start at default)* |
-| `web_dir` | `WEB_DIR` | `dist/web` |
+| `web_dir` | `WEB_DIR` | *(empty — falls back to embedded frontend in `staticweb`)* |
 | `upload_dir` | `UPLOAD_DIR` | `./uploads` |
 | `max_upload_mb` | `MAX_UPLOAD_MB` | `25` |
-| `redis_url` | `REDIS_URL` | *(optional)* |
+| `redis_url` | `REDIS_URL` | *(optional — enables horizontal scaling)* |
 | `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` — `*` blocked in `release` mode |
+| `trusted_proxies` | `TRUSTED_PROXIES` | *(empty — trust no proxy headers; comma-separated CIDRs/IPs)* |
+| `tls_cert` / `tls_key` | `TLS_CERT` / `TLS_KEY` | *(empty — set both to enable HTTPS directly)* |
+| `base_url` | `BASE_URL` | *(empty — used in Swagger host and email links)* |
+| `default_locale` | `DEFAULT_LOCALE` | `en` |
+| `api_log` | `API_LOG` | `true` |
 | `gin_mode` | `GIN_MODE` | `release` — set to `debug` for local development |
+| `smtp.host` / `.port` / `.from` / `.username` / `.password` / `.use_tls` | — | port `587`, rest empty (overridable via system settings) |
+| `livekit_url` / `livekit_api_key` / `livekit_api_secret` / `livekit_room_prefix` | `LIVEKIT_*` | *(empty — required for voice/video calls)* |
 
 ---
 
@@ -100,10 +115,15 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 
 ### Authentication
 - **JWT access token**: 15 min expiry, HS256. Claims: `UserID`, `Username`, `GlobalRole`.
-- **JWT refresh token**: 7 day expiry. Frontend auto-refreshes silently on 401.
+- **JWT refresh token**: 7 day expiry. Auto-refreshes silently on 401.
+- **Browser transport**: tokens are issued as **httpOnly + SameSite=Strict cookies** (`access_token`, `refresh_token`) by `setAuthCookies` in `handlers/auth.go`. JavaScript never sees the token; the browser attaches it to every request automatically. On startup the SPA calls `authStore.initSession()` → `GET /me` to hydrate user state from the cookie.
+- **Tauri transport**: there is no httpOnly cookie jar in the WebView, so tokens are kept in `sessionStorage` and attached as an `Authorization: Bearer …` header by `api/client.js`. This is the security limitation described later in this document.
+- **MFA / TOTP**: optional per-user. When enabled, login returns `{mfa_required: true, mfa_token}` (a 5-minute purpose-restricted JWT from `IssueMFAToken`) and the frontend posts the 6-digit code back to complete login. TOTP secret generation/verification lives in `services/auth_service.go` (`GenerateTOTPSecret`, `VerifyTOTP`).
+- **WebSocket tickets**: 30-second purpose-`"ws"` JWTs from `IssueWSTicket`, used by Tauri so the long-lived access token never appears in the WebSocket URL. Browser clients rely on the cookie and don't need a ticket.
+- **Media tickets**: 5-minute purpose-`"media"` JWTs from `IssueMediaTicket`, used to grant attachment downloads to `<img>`/`<video>` elements that can't send the `Authorization` header.
 - **API keys**: SHA-256 hash stored in DB. Auth via `X-API-Key` header or `?api_key=` query param. Used for the Ticket API (CI/CD automation).
 - **Passwords**: hashed with bcrypt, cost factor 12 (pinned in `services/auth_service.go`).
-- Middleware sets context keys consumed by handlers: `middleware.GetUserID(c)`, `middleware.GetGlobalRole(c)`.
+- Middleware sets context keys consumed by handlers: `middleware.GetUserID(c)`, `middleware.GetGlobalRole(c)`, `middleware.GetUsername(c)`. `middleware.AdminOnly()` gates admin-only routes; `middleware.MetricsAuth()` and `BackupAuth()` protect the metrics and backup endpoints.
 
 ### Security hardening (startup checks)
 The server refuses to start if either of these conditions is true:
@@ -117,12 +137,15 @@ MIME type is detected server-side from the first 512 bytes of the saved file (`n
 Settings (SMTP, locale defaults, company branding, session timeout, …) are stored as key/value rows in `system_settings`. They are read at request time via `loadAllSettings()` so changes take effect **without a restart**. `handlers/system.go` owns all setting keys as package-level constants.
 
 ### WebSocket
-One `Hub` per project, created on first connection, destroyed when empty. Messages are JSON `{type, payload}`. Handlers call `ws.BroadcastToProject(projectID, msg)`. For horizontal scaling, replace the in-memory pub/sub with Redis (`redis_url` in config).
+- One project `Hub` per project, created on first connection and destroyed when empty (`ws/hub.go`).
+- Per-user notification hubs are stored in the same map under `userID | 0x80000000` so they don't collide with project IDs. Use `ws.GetOrCreateUserHub(userID)` and the convenience helpers `ws.BroadcastToUser(userID, msg)`, `ws.IsUserOnline(userID)`, `ws.GetAllOnlineUsers()`.
+- Messages are JSON `{type, payload}`. Handlers call `ws.BroadcastToProject(projectID, msg)` for board/chat/topic events.
+- For horizontal scaling, set `redis_url`: broadcasts route through a Redis pub/sub channel instead of in-process memory (`ws/pubsub_redis.go`).
 
 ### Frontend state
-- **Pinia stores** own all shared state; components read from stores and call store actions.
-- **`board.js`** is the most complex store: it owns columns + cards, applies WebSocket updates, and handles drag-drop reordering.
-- **`useWebSocket.js`** establishes one connection per project view and routes messages to the appropriate store by type prefix (`board.*`, `chat.*`, `topic.*`, `presence.*`).
+- **Pinia stores** own all shared state; components read from stores and call store actions. Stores live in `frontend/src/stores/`: `auth`, `board`, `chat`, `customers`, `notifications`, `project`, `sidebar`, `sprint`, `system`, `topics`, `ui`.
+- **`board.js`** owns columns + cards and applies WebSocket updates (`board.card.*`, `board.column.*`, checklist events). Drag-and-drop reordering is implemented in the components themselves and pushed via the API.
+- **`useWebSocket.js`** establishes one connection per project view and routes messages to the appropriate store by type prefix (`board.*` → `boardStore`, `sprint.*` → `sprintStore`, `chat.*` → `chatStore`, `topic.*` → `topicsStore`, `presence.*` is handled inline).
 
 ---
 
@@ -218,11 +241,14 @@ There are currently no automated tests (no `*_test.go` files, no Vitest/Jest con
 
 ### Tauri desktop — known security limitation
 
-In the desktop app (Tauri), JWT tokens are stored in the browser's `sessionStorage` because the WebView has no httpOnly cookie jar. `sessionStorage` is readable by any JavaScript running in the WebView, so a malicious npm dependency or an XSS in the app itself could exfiltrate the token.
+This applies **only to the Tauri desktop build**. Browser clients use httpOnly cookies (see Authentication above) and are not affected.
+
+In the desktop app (Tauri), JWT tokens are stored in the WebView's `sessionStorage` because the WebView has no httpOnly cookie jar shared with the Go backend. `sessionStorage` is readable by any JavaScript running in the WebView, so a malicious npm dependency or an XSS in the app itself could exfiltrate the token.
 
 Mitigations already in place:
 - CSP (`Content-Security-Policy` in the proxy templates) blocks external script sources.
 - `withGlobalTauri: false` in `tauri.conf.json` avoids polluting the global namespace.
+- WebSocket connections use a 30-second `ws` ticket (`IssueWSTicket`) instead of the access token in the URL.
 
 **Proper fix (not yet implemented):** move token storage into Rust `tauri::State`, intercept all API requests at the Rust/reqwest layer to inject the `Authorization` header, and never expose the raw token to JavaScript. This requires replacing the Axios-based `api/client.js` Tauri path with `invoke('api_request', …)` calls routed through a custom Rust command — a significant refactor of the HTTP client layer.
 
