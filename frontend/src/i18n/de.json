@@ -722,6 +722,13 @@
     "join_call": "Beitreten",
     "no_users_to_invite": "Keine Benutzer zum Einladen",
     "search_users": "Benutzer suchen…",
+    "share_screen": "Bildschirm teilen",
+    "stop_share": "Teilen beenden",
+    "show_chat": "Textchat anzeigen",
+    "hide_chat": "Textchat ausblenden",
+    "chat_while_in_call": "Konversation",
+    "your_screen": "Ihr Bildschirm",
+    "peer_screen": "Bildschirm von {name}",
     "invite_sent": "Einladung gesendet",
     "nobody_online": "No other members are currently online"
   }

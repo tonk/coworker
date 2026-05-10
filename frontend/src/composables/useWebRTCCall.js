@@ -22,11 +22,14 @@ const _s = reactive({
   isMuted:     false,
   isCameraOff: false,
   hasVideo:    false,
+  isScreenSharing: false,
   errorMsg:    '',
 })
 
 let _pc                = null
 let _localStream       = null
+/** Display capture stream while screen-sharing (video sender replaced); cleaned up on end. */
+let _screenStream      = null
 let _remoteStream      = null
 let _pendingCandidates = []
 let _pendingOffer      = null   // SDP stored while ringing
@@ -57,6 +60,7 @@ function _reset() {
   _s.isMuted      = false
   _s.isCameraOff  = false
   _s.hasVideo     = false
+  _s.isScreenSharing = false
   _s.errorMsg     = ''
   _pendingCandidates = []
   _pendingOffer   = null
@@ -64,6 +68,11 @@ function _reset() {
 }
 
 function _teardown() {
+  if (_screenStream) {
+    _screenStream.getTracks().forEach(t => t.stop())
+    _screenStream = null
+    _s.isScreenSharing = false
+  }
   if (_localStream) {
     _localStream.getTracks().forEach(t => t.stop())
     _localStream = null
@@ -325,6 +334,54 @@ function toggleCamera() {
   _s.isCameraOff = !_s.isCameraOff
 }
 
+/**
+ * Share screen by replacing the outbound camera video track (same transceiver — no renegotiation).
+ * Only for established video calls. PiP keeps showing the local camera.
+ */
+async function toggleScreenShare() {
+  if (_s.phase !== 'active' || !_pc || !_s.hasVideo) return
+  const sender = _pc.getSenders().find(s => s.track?.kind === 'video')
+  if (!sender) return
+
+  if (_s.isScreenSharing) {
+    if (_screenStream) {
+      _screenStream.getTracks().forEach(t => t.stop())
+      _screenStream = null
+    }
+    const cam = _localStream?.getVideoTracks?.()[0]
+    if (cam) {
+      try {
+        await sender.replaceTrack(cam)
+      } catch {}
+    }
+    _s.isScreenSharing = false
+    return
+  }
+
+  let stream
+  try {
+    stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false })
+  } catch {
+    return
+  }
+  const v = stream.getVideoTracks()[0]
+  if (!v) {
+    stream.getTracks().forEach(t => t.stop())
+    return
+  }
+  _screenStream = stream
+  v.addEventListener('ended', () => {
+    if (_s.isScreenSharing) void toggleScreenShare()
+  }, { once: true })
+  try {
+    await sender.replaceTrack(v)
+    _s.isScreenSharing = true
+  } catch {
+    stream.getTracks().forEach(t => t.stop())
+    _screenStream = null
+  }
+}
+
 // ── Composable export ────────────────────────────────────────────────────────
 
 /** True while a 1:1 call is in progress (outgoing, ringing, or connected). */
@@ -345,5 +402,6 @@ export function useWebRTCCall() {
     endCall,
     toggleMute,
     toggleCamera,
+    toggleScreenShare,
   }
 }

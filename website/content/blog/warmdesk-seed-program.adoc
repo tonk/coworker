@@ -1,0 +1,155 @@
+---
+title: "The WarmDesk seed program: fill your database with realistic demo data"
+date: "2026-05-10"
+author: "Ton Kersten"
+description: "How warmdesk-seed works, what it creates, and example command output—run it once for a full demo workspace."
+draft: false
+---
+:doctype: article
+:toc: left
+:toclevels: 2
+:sectanchors:
+:sectlinks:
+:icons!:
+:source-highlighter: highlight.js
+
+A fresh WarmDesk install starts with an empty database.
+That is perfect for production, but awkward when you want to _show_ the product: boards, charts, direct messages, and reports all look best when there is something to click.
+
+The **seed program** solves that.
+It is a small Go command—distributed as `warmdesk-seed` next to the main `warmdesk` binary—that populates the database with a consistent, realistic dataset: multiple projects (Kanban and Scrum), a hundred-plus cards with markdown descriptions, customers, contracts, group chats, time entries, and more.
+
+== What the seed does
+
+In one run, the tool creates:
+
+* **System settings** — default column and label names for new projects, plus company name, logo path, and login branding so the login screen looks polished immediately.
+* **Users** — demo accounts (global roles from admin down to viewer) and DiceBear avatars.
+* **A persistent system admin** — the `tonk` account is created if missing and is **not** removed when you use `--reset`, so your own admin login survives demo wipes.
+* **Six projects** — including Kanban boards (e.g. _Website Redesign_, _Marketing Campaigns_) and Scrum projects (_Product Platform_, _API Platform_) with columns, labels, sprints, releases, and card history for analytics charts.
+* **Over a hundred cards** — assignments, labels, priorities, dates, sub-cards, cross-references, checklists, comments, and rich Markdown bodies (bugs with reproduction steps, features with acceptance criteria).
+* **Discussion topics** — threaded conversations inside projects.
+* **Direct and group conversations** — realistic message history for messaging UI and notifications.
+* **Customers and contracts** — CRM-style data tied to projects.
+* **User groups** — e.g. _Frontend Team_, _DevOps Team_, with memberships and access patterns.
+* **Time entries** — weeks of sample data for the time-reporting and weekly grid views.
+
+The script is **idempotent**: if it finds an existing `demo.admin` user, it exits without duplicating data, unless you pass `--reset`.
+
+== How to run it
+
+=== From the repository (development)
+
+Run from the `backend` directory so the module path resolves correctly:
+
+[source,bash]
+----
+cd backend
+go run ./cmd/seed
+----
+
+Optional flags:
+
+[source,bash]
+----
+go run ./cmd/seed --config /path/to/warmdesk.yaml   # use a specific config file
+go run ./cmd/seed --reset                           # remove demo data first, then re-seed
+----
+
+The `--reset` path deletes records associated with the known demo users and projects (by username and project slug), then rebuilds the demo world.
+
+=== From a release bundle
+
+Release archives ship **`warmdesk-seed`** alongside **`warmdesk`**. Use the same working directory and config as the server (so the database DSN matches):
+
+[source,bash]
+----
+cd dist
+./warmdesk-seed
+./warmdesk-seed --reset
+----
+
+== Example: first-time seed output
+
+Below is **real output** from `go run ./cmd/seed` against a local SQLite database.
+Timestamps and row counts may differ slightly as the dataset evolves between releases.
+
+[source,text]
+----
+2026/05/10 13:25:56 Connected to sqlite database
+🌱 Seeding demo data…
+
+→ Configuring system settings…
+→ Creating users…
+   Created system admin: tonk (tonk@smartowl.nl)
+   Created 10 demo users (password for all: demo1234)
+→ Creating projects…
+   Created 6 projects
+→ Starring projects…
+   Starred 23 project–user pairs
+→ Creating cards…
+   Created 115 cards
+→ Creating sprints for scrum projects…
+   Created 11 sprints
+→ Creating card history for CFD chart…
+   Created 123 card history records
+→ Creating releases…
+   Created 3 releases
+→ Creating card cross-references…
+   Created 6 card cross-references
+→ Creating topics…
+   Created 9 topics
+→ Creating conversations…
+   Created 6 conversations (49 messages)
+→ Creating customers and contracts…
+   Created 3 customers with contracts
+→ Creating groups…
+   Created 3 groups
+→ Creating time entries…
+   Created 60 time entries for 5 users
+
+✅ Demo data seeded successfully!
+
+  Accounts (password: demo1234)
+  ┌─────────────────────┬─────────────────────┬────────┐
+  │ Username            │ Display name        │ Role   │
+  ├─────────────────────┼─────────────────────┼────────┤
+  │ tonk                │ Ton Kersten         │ admin  │  ← system admin (not reset)
+  │ demo.admin          │ Alex Admin          │ admin  │
+  │ demo.sarah          │ Sarah Chen          │ user   │  ← project admin: website-redesign
+  │ demo.marc           │ Marc Dubois         │ user   │  ← project admin: mobile-app-v2
+  │ demo.lisa           │ Lisa Park           │ user   │  ← project admin: devops-infra
+  │ demo.priya          │ Priya Nair          │ user   │
+  │ demo.james          │ James O'Brien       │ user   │
+  │ demo.elena          │ Elena Kovač         │ user   │
+  │ demo.raj            │ Raj Sharma          │ user   │
+  │ demo.viewer         │ Victor Viewer       │ viewer │
+  └─────────────────────┴─────────────────────┴────────┘
+----
+
+The command ends with a **summary box** of accounts, projects, cards, conversations, customers, groups, and starred projects—handy for checking that everything you care about landed in the database.
+
+== When data is already present
+
+If you run the seed again **without** `--reset`, it stops early:
+
+[source,text]
+----
+✓ Demo data already present (username 'demo.admin' found).
+  Run with --reset to wipe and re-seed.
+----
+
+That guard avoids accidental duplicates and keeps CI or scripted installs predictable.
+
+== Logging in after a seed
+
+All demo users share the same password documented in the summary: **`demo1234`** (change it immediately on any machine exposed to a network).
+
+Start the server, open the WarmDesk URL, and sign in as `demo.admin` or any listed demo user—or as `tonk` if that account was created on your system.
+
+== Why ship a seed program at all?
+
+Self-hosted software is judged in minutes.
+The seed program gets a reviewer from “empty columns and zero charts” to a believable team workspace **in one command**, without importing opaque SQL dumps or clicking through dozens of admin screens.
+
+If you maintain a WarmDesk instance for training or sales demos, keep `warmdesk-seed --reset` in your back pocket: wipe, re-seed, and you are back to a known-good story for every session.

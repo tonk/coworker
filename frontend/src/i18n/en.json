@@ -722,6 +722,13 @@
     "join_call": "Join",
     "no_users_to_invite": "No users to invite",
     "search_users": "Search users…",
+    "share_screen": "Share screen",
+    "stop_share": "Stop sharing",
+    "show_chat": "Show text chat",
+    "hide_chat": "Hide text chat",
+    "chat_while_in_call": "Conversation",
+    "your_screen": "Your screen",
+    "peer_screen": "{name}'s screen",
     "invite_sent": "Invite sent",
     "nobody_online": "No other members are currently online"
   }

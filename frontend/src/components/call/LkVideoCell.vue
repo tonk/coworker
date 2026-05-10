@@ -6,7 +6,7 @@
       class="lk-video"
       autoplay
       playsinline
-      :class="{ mirror: isLocal }"
+      :class="{ mirror: isLocal && !isScreenShare, 'lk-video--screen': isScreenShare }"
     />
     <div v-else class="lk-placeholder">
       <img v-if="avatar" :src="avatar" class="lk-avatar" @error="onAvatarError" />
@@ -33,6 +33,8 @@ const props = defineProps({
   isLocal: { type: Boolean, default: false },
   /** Publication muted (camera off) but track object may still exist */
   cameraOff: { type: Boolean, default: false },
+  /** Screen share — fit entire frame, no mirror */
+  isScreenShare: { type: Boolean, default: false },
 })
 
 const videoEl = ref(null)
@@ -107,6 +109,10 @@ function onAvatarError() {
 }
 .lk-video.mirror {
   transform: scaleX(-1);
+}
+.lk-video--screen {
+  object-fit: contain;
+  background: #0a0a0a;
 }
 .lk-placeholder {
   position: absolute;

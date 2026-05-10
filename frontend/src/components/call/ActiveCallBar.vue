@@ -3,7 +3,13 @@
     <div v-if="showWebRTC || showLiveKit">
 
       <!-- ── LiveKit: connecting bar ───────────────────────────────────────── -->
-      <div v-if="lkState.phase === 'connecting'" class="active-call-bar lk-connecting-bar">
+      <CallChatSidebar
+        v-if="showCallChat && activeCallConvId"
+        :conversation-id="activeCallConvId"
+        fixed
+        @close="setCallChat(false)"
+      />
+      <div v-if="lkState.phase === 'connecting'" class="active-call-bar lk-connecting-bar" :class="{ 'bar-with-chat': showCallChat }">
         <div class="call-bar-info">
           <div class="call-bar-name">{{ lkState.title || $t('call.group_call') }}</div>
           <div class="call-bar-status"><span class="status-calling">{{ $t('call.joining_group') }}</span></div>
@@ -11,7 +17,8 @@
       </div>
 
       <!-- ── LiveKit: active (grid) ───────────────────────────────────────── -->
-      <div v-else-if="lkState.phase === 'active'" class="video-overlay lk-grid-overlay" @click.self="closeInvitePicker">
+      <div v-else-if="lkState.phase === 'active'" class="call-video-chat-row">
+        <div class="call-stage lk-grid-overlay" @click.self="closeInvitePicker">
         <div class="lk-grid-top">
           <div class="remote-name">{{ lkState.title || $t('call.group_call') }}</div>
           <div class="call-duration">{{ formattedLkDuration }}</div>
@@ -25,6 +32,7 @@
             :avatar="t.avatar"
             :is-local="t.isLocal"
             :camera-off="t.cameraOff"
+            :is-screen-share="t.isScreenShare || false"
           />
         </div>
 
@@ -54,12 +62,32 @@
         </div>
 
         <div class="video-controls">
+          <button
+            :class="['vc-btn', { active: showCallChat }]"
+            :title="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            @click.stop="toggleCallChat"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
           <button class="vc-btn invite-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePicker">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="8.5" cy="7" r="4"/>
               <line x1="20" y1="8" x2="20" y2="14"/>
               <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+          </button>
+          <button
+            :class="['vc-btn', { active: lkState.isScreenSharing }]"
+            :title="lkState.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            @click.stop="lkToggleScreenShare"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
           </button>
           <button :class="['vc-btn', { active: lkState.isMuted }]" :title="lkState.isMuted ? $t('call.unmute') : $t('call.mute')" @click="lkToggleMute">
@@ -91,10 +119,17 @@
             </svg>
           </button>
         </div>
+        </div>
+        <CallChatSidebar
+          v-if="showCallChat && activeCallConvId"
+          :conversation-id="activeCallConvId"
+          @close="setCallChat(false)"
+        />
       </div>
 
       <!-- ── VIDEO OVERLAY (active + video) — WebRTC 1:1 ─────────────────────── -->
-      <div v-else-if="state.phase === 'active' && state.hasVideo" class="video-overlay">
+      <div v-else-if="state.phase === 'active' && state.hasVideo" class="call-video-chat-row">
+        <div class="call-stage video-overlay">
         <!-- Remote video fills the background -->
         <video ref="remoteVideo" autoplay playsinline class="remote-video"></video>
 
@@ -135,12 +170,33 @@
 
         <!-- Controls bar -->
         <div class="video-controls">
+          <button
+            :class="['vc-btn', { active: showCallChat }]"
+            :title="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            @click.stop="toggleCallChat"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
           <button class="vc-btn invite-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePickerWebRTC">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="8.5" cy="7" r="4"/>
               <line x1="20" y1="8" x2="20" y2="14"/>
               <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+          </button>
+
+          <button
+            :class="['vc-btn', { active: state.isScreenSharing }]"
+            :title="state.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            @click.stop="toggleScreenShare"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
           </button>
           <button :class="['vc-btn', { active: state.isMuted }]" :title="state.isMuted ? $t('call.unmute') : $t('call.mute')" @click="toggleMute">
@@ -174,10 +230,22 @@
             </svg>
           </button>
         </div>
+        </div>
+        <CallChatSidebar
+          v-if="showCallChat && activeCallConvId"
+          :conversation-id="activeCallConvId"
+          @close="setCallChat(false)"
+        />
       </div>
 
       <!-- ── AUDIO BAR (calling phase or active without video) — WebRTC ─────── -->
-      <div v-else-if="showWebRTC" class="active-call-bar">
+      <CallChatSidebar
+        v-if="showCallChat && activeCallConvId"
+        :conversation-id="activeCallConvId"
+        fixed
+        @close="setCallChat(false)"
+      />
+      <div v-else-if="showWebRTC" class="active-call-bar" :class="{ 'bar-with-chat': showCallChat }">
         <!-- Hidden audio element for remote stream in audio-only mode -->
         <audio ref="remoteAudio" autoplay playsinline></audio>
 
@@ -210,12 +278,33 @@
         </div>
 
         <div class="call-bar-actions">
+          <button
+            :class="['call-bar-btn', { active: showCallChat }]"
+            :title="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            @click.stop="toggleCallChat"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
           <button v-if="state.phase === 'active'" class="call-bar-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePickerWebRTC">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="8.5" cy="7" r="4"/>
               <line x1="20" y1="8" x2="20" y2="14"/>
               <line x1="23" y1="11" x2="17" y2="11"/>
+            </svg>
+          </button>
+          <button
+            v-if="state.hasVideo && state.phase === 'active'"
+            :class="['call-bar-btn', { active: state.isScreenSharing }]"
+            :title="state.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            @click.stop="toggleScreenShare"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
           </button>
           <button :class="['call-bar-btn', { active: state.isMuted }]" :title="state.isMuted ? $t('call.unmute') : $t('call.mute')" @click="toggleMute">
@@ -263,12 +352,15 @@ import { useAuthStore } from '@/stores/auth'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
 import { useLiveKitGroupCall } from '@/composables/useLiveKitGroupCall'
 import { useCallSettings } from '@/composables/useCallSettings'
+import { useCallChatPanel } from '@/composables/useCallChatPanel'
 import { messagesApi } from '@/api/messages'
 import LkVideoCell from '@/components/call/LkVideoCell.vue'
+import CallChatSidebar from '@/components/call/CallChatSidebar.vue'
 
 const { t } = useI18n()
 const ui = useUIStore()
 const auth = useAuthStore()
+const { showCallChat, toggleCallChat, setCallChat } = useCallChatPanel()
 
 const {
   state: lkState,
@@ -276,6 +368,7 @@ const {
   leaveGroupCall,
   toggleMute: lkToggleMute,
   toggleCamera: lkToggleCamera,
+  toggleScreenShare: lkToggleScreenShare,
   inviteUsers,
   sendGroupInvite,
   joinGroupCall,
@@ -371,7 +464,7 @@ function inviteAvatarBg(u) {
   return { background: AVATAR_COLORS[idx] }
 }
 
-const { state, toggleMute, toggleCamera, endCall, setRemoteStreamCallback, setLocalStreamCallback } = useWebRTCCall()
+const { state, toggleMute, toggleCamera, toggleScreenShare, endCall, setRemoteStreamCallback, setLocalStreamCallback } = useWebRTCCall()
 
 const showLiveKit = computed(
   () => lkState.phase === 'connecting' || lkState.phase === 'active'
@@ -381,6 +474,13 @@ const showWebRTC = computed(
     !showLiveKit.value &&
     (state.phase === 'calling' || state.phase === 'active')
 )
+
+/** Conversation used for optional text chat (same as open DM / group room). */
+const activeCallConvId = computed(() => {
+  if (lkState.phase === 'connecting' || lkState.phase === 'active') return lkState.convId
+  if (state.phase === 'calling' || state.phase === 'ringing' || state.phase === 'active') return state.convId
+  return null
+})
 const { audioOutputId } = useCallSettings()
 
 const remoteVideo = ref(null)
@@ -471,6 +571,11 @@ function lkEnd() {
 }
 
 function tileLabel(tile) {
+  if (tile.isScreenShare) {
+    if (tile.isLocal) return t('call.your_screen')
+    const n = tile.name || t('call.group_peer', { id: tile.identity })
+    return t('call.peer_screen', { name: n })
+  }
   if (tile.isLocal) return t('call.group_you')
   return tile.name || t('call.group_peer', { id: tile.identity })
 }
@@ -525,6 +630,32 @@ onUnmounted(() => {
 
 <style scoped>
 /* ── VIDEO OVERLAY ─────────────────────────────────────────────────────────── */
+.call-video-chat-row {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  background: #000;
+}
+.call-stage {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+}
+.call-stage.video-overlay {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  width: 100%;
+  height: 100%;
+}
+.call-stage.lk-grid-overlay {
+  height: 100%;
+}
+
 .video-overlay {
   position: fixed;
   inset: 0;
@@ -594,11 +725,15 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 20px;
+  gap: 12px 14px;
+  padding: 16px 12px 20px;
   background: linear-gradient(transparent, rgba(0,0,0,0.65));
+  z-index: 25;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .vc-btn {
@@ -635,6 +770,9 @@ onUnmounted(() => {
   padding: 10px 24px;
   box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
   height: 56px;
+}
+.active-call-bar.bar-with-chat {
+  right: 340px;
 }
 .call-bar-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .call-bar-name { font-size: 14px; font-weight: 600; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -711,6 +849,7 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   width: 300px;
+  max-width: calc(100vw - 24px);
   background: var(--color-surface, #1e1e2e);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 12px;
@@ -719,7 +858,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 10;
+  z-index: 30;
 }
 .invite-picker-header {
   font-size: 13px;

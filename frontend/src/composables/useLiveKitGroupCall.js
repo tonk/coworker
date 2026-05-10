@@ -1,14 +1,22 @@
 /**
  * LiveKit-based group video/audio for conversations with 3+ members.
  * Uses GET /conversations/:id/livekit-token from the backend.
+ *
+ * livekit-client is loaded dynamically so it ships in a separate chunk (~lazy).
  */
 
 import { reactive, readonly } from 'vue'
-import { Room, RoomEvent, Track } from 'livekit-client'
 import { messagesApi } from '@/api/messages'
 import { useCallSettings } from './useCallSettings'
 import { setLiveKitCallActive } from './callsGate'
 import { isWebRTCCallBusy } from './useWebRTCCall'
+
+/** Loaded on first group join; keeps initial bundle small. */
+let _lkMod = null
+async function _ensureLk() {
+  if (!_lkMod) _lkMod = await import('livekit-client')
+  return _lkMod
+}
 
 const _s = reactive({
   phase: 'idle', // idle | connecting | active | ended
@@ -17,6 +25,7 @@ const _s = reactive({
   hasVideo: false,
   isMuted: false,
   isCameraOff: false,
+  isScreenSharing: false,
   errorMsg: '',
 })
 
@@ -32,7 +41,7 @@ let _sendFn = null
 function setSendFn(fn) { _sendFn = fn }
 function _send(msg) { if (_sendFn) _sendFn(msg) }
 
-/** @type {Room | null} */
+/** @type {import('livekit-client').Room | null} */
 let _room = null
 
 const _tiles = reactive([])
@@ -49,49 +58,66 @@ function _lkVideoOptions() {
 }
 
 function _syncLocalFlags() {
-  if (!_room) return
+  if (!_room || !_lkMod) return
+  const { Track } = _lkMod
   const lp = _room.localParticipant
   const mic = lp.getTrackPublication(Track.Source.Microphone)
   const cam = lp.getTrackPublication(Track.Source.Camera)
+  const ss = lp.getTrackPublication(Track.Source.ScreenShare)
   _s.isMuted = mic ? mic.isMuted : false
   _s.isCameraOff = cam ? cam.isMuted : true
+  _s.isScreenSharing = !!(ss?.track && !ss.isMuted)
+}
+
+function _pushParticipantTiles(participant, isLocal) {
+  if (!_lkMod) return
+  const { Track } = _lkMod
+  const sidPrefix = isLocal ? 'local' : participant.sid
+  const prof = _profilesByIdentity[String(participant.identity)] || {}
+  const name = isLocal ? (prof.name || '') : (prof.name || participant.name || '')
+  const avatar = prof.avatar || ''
+
+  const camPub = participant.getTrackPublication(Track.Source.Camera)
+  const camTrack = camPub?.videoTrack ?? null
+  _tiles.push({
+    sid: `${sidPrefix}-cam`,
+    identity: participant.identity,
+    name,
+    avatar,
+    videoTrack: camTrack,
+    cameraOff: camPub ? camPub.isMuted : true,
+    isLocal,
+    isScreenShare: false,
+  })
+
+  const screenPub = participant.getTrackPublication(Track.Source.ScreenShare)
+  const scTrack = screenPub?.videoTrack ?? null
+  if (scTrack) {
+    _tiles.push({
+      sid: `${sidPrefix}-scr`,
+      identity: participant.identity,
+      name,
+      avatar,
+      videoTrack: scTrack,
+      cameraOff: false,
+      isLocal,
+      isScreenShare: true,
+    })
+  }
 }
 
 function _syncTiles() {
   _tiles.splice(0, _tiles.length)
   if (!_room) return
   const lp = _room.localParticipant
-  const localPub = lp.getTrackPublication(Track.Source.Camera)
-  const localCam = localPub?.videoTrack ?? null
-  const localProfile = _profilesByIdentity[String(lp.identity)] || {}
-  _tiles.push({
-    sid: 'local',
-    identity: lp.identity,
-    name: localProfile.name || '',
-    avatar: localProfile.avatar || '',
-    videoTrack: localCam,
-    cameraOff: localPub ? localPub.isMuted : true,
-    isLocal: true,
-  })
+  _pushParticipantTiles(lp, true)
   const remotes = [..._room.remoteParticipants.values()].sort((a, b) =>
     String(a.identity).localeCompare(String(b.identity))
   )
-  for (const p of remotes) {
-    const pub = p.getTrackPublication(Track.Source.Camera)
-    const vt = pub?.videoTrack ?? null
-    _tiles.push({
-      sid: p.sid,
-      identity: p.identity,
-      name: _profilesByIdentity[String(p.identity)]?.name || p.name || '',
-      avatar: _profilesByIdentity[String(p.identity)]?.avatar || '',
-      videoTrack: vt,
-      cameraOff: pub ? pub.isMuted : true,
-      isLocal: false,
-    })
-  }
+  for (const p of remotes) _pushParticipantTiles(p, false)
 }
 
-function _wireRoom(room) {
+function _wireRoom(room, RoomEvent) {
   const bump = () => {
     _syncTiles()
     _syncLocalFlags()
@@ -117,6 +143,9 @@ async function _disconnectRoom() {
   _tiles.splice(0, _tiles.length)
   if (!r) return
   try {
+    try {
+      await r.localParticipant.setScreenShareEnabled(false)
+    } catch {}
     r.removeAllListeners()
     await r.disconnect()
   } catch {}
@@ -130,6 +159,7 @@ function _clearToIdle() {
   _s.errorMsg = ''
   _s.isMuted = false
   _s.isCameraOff = false
+  _s.isScreenSharing = false
   _profilesByIdentity = {}
 }
 
@@ -179,9 +209,21 @@ async function joinGroupCall(convId, title = '', participantProfiles = []) {
     return
   }
 
-  const room = new Room({ adaptiveStream: true, dynacast: true })
+  let lk
+  try {
+    lk = await _ensureLk()
+  } catch {
+    setLiveKitCallActive(false)
+    _s.phase = 'idle'
+    _s.convId = null
+    _s.title = ''
+    _s.errorMsg = 'livekit_connect_failed'
+    return
+  }
+
+  const room = new lk.Room({ adaptiveStream: true, dynacast: true })
   _room = room
-  _wireRoom(room)
+  _wireRoom(room, lk.RoomEvent)
 
   try {
     await room.connect(url, token)
@@ -224,7 +266,8 @@ async function toggleMute() {
 }
 
 async function toggleCamera() {
-  if (!_room || _s.phase !== 'active') return
+  if (!_room || _s.phase !== 'active' || !_lkMod) return
+  const { Track } = _lkMod
   const pub = _room.localParticipant.getTrackPublication(Track.Source.Camera)
   const wantOn = pub ? pub.isMuted : !_s.hasVideo
   try {
@@ -232,6 +275,18 @@ async function toggleCamera() {
     _s.hasVideo = !!_room.localParticipant.getTrackPublication(Track.Source.Camera)?.videoTrack
   } catch {
     _s.hasVideo = false
+  }
+  _syncLocalFlags()
+  _syncTiles()
+}
+
+async function toggleScreenShare() {
+  if (!_room || _s.phase !== 'active') return
+  const next = !_s.isScreenSharing
+  try {
+    await _room.localParticipant.setScreenShareEnabled(next)
+  } catch {
+    return
   }
   _syncLocalFlags()
   _syncTiles()
@@ -294,6 +349,7 @@ export function useLiveKitGroupCall() {
     leaveGroupCall,
     toggleMute,
     toggleCamera,
+    toggleScreenShare,
     inviteUsers,
     sendGroupInvite,
     handleGroupInvite,

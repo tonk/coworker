@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.9.36 — 2026-05-10
+
+### Added
+- **Screen sharing in video calls** — share your display in one-to-one (WebRTC) and group (LiveKit) calls; remote sees the shared content while your camera preview stays in the picture-in-picture when applicable
+- **Optional text chat during calls** — toggle a right-hand conversation panel (same DM or group as the call) to type without leaving the call UI; preference can persist via local storage
+- **Website: seed program blog post** — documents `warmdesk-seed` / `go run ./cmd/seed`, idempotency, `--reset`, and example terminal output (`website/content/blog/warmdesk-seed-program.adoc`)
+
+### Changed
+- **Frontend bundle** — `livekit-client` is loaded on demand when joining a group call so the main call UI chunk stays smaller and build chunk-size warnings are avoided
+
+### Fixed
+- **Call control bar** — the bottom control strip wraps on narrow layouts (e.g. with the chat sidebar open) so the camera toggle and other buttons are no longer clipped off-screen
+
 ## v0.9.34 — 2026-05-06
 
 ### Added

@@ -715,6 +715,13 @@
     "join_call": "Deltag",
     "no_users_to_invite": "Ingen brugere at invitere",
     "search_users": "Søg efter brugere…",
+    "share_screen": "Del skærm",
+    "stop_share": "Stop deling",
+    "show_chat": "Vis tekstchat",
+    "hide_chat": "Skjul tekstchat",
+    "chat_while_in_call": "Samtale",
+    "your_screen": "Din skærm",
+    "peer_screen": "{name}s skærm",
     "invite_sent": "Invitation sendt",
     "nobody_online": "No other members are currently online"
   }

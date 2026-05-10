@@ -715,6 +715,13 @@
     "join_call": "Liity",
     "no_users_to_invite": "Ei kutsuttavia käyttäjiä",
     "search_users": "Etsi käyttäjiä…",
+    "share_screen": "Jaa näyttö",
+    "stop_share": "Lopeta jakaminen",
+    "show_chat": "Näytä tekstichat",
+    "hide_chat": "Piilota tekstichat",
+    "chat_while_in_call": "Keskustelu",
+    "your_screen": "Näyttösi",
+    "peer_screen": "Henkilön {name} näyttö",
     "invite_sent": "Kutsu lähetetty",
     "nobody_online": "No other members are currently online"
   }

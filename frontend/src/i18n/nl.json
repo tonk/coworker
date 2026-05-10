@@ -722,6 +722,13 @@
     "join_call": "Deelnemen",
     "no_users_to_invite": "Geen gebruikers om uit te nodigen",
     "search_users": "Gebruikers zoeken…",
+    "share_screen": "Scherm delen",
+    "stop_share": "Delen stoppen",
+    "show_chat": "Tekstchat tonen",
+    "hide_chat": "Tekstchat verbergen",
+    "chat_while_in_call": "Gesprek",
+    "your_screen": "Jouw scherm",
+    "peer_screen": "Scherm van {name}",
     "invite_sent": "Uitnodiging verzonden",
     "nobody_online": "No other members are currently online"
   }

@@ -715,6 +715,13 @@
     "join_call": "Entrar",
     "no_users_to_invite": "Nenhum utilizador para convidar",
     "search_users": "Pesquisar utilizadores…",
+    "share_screen": "Partilhar ecrã",
+    "stop_share": "Parar partilha",
+    "show_chat": "Mostrar chat de texto",
+    "hide_chat": "Ocultar chat de texto",
+    "chat_while_in_call": "Conversa",
+    "your_screen": "O seu ecrã",
+    "peer_screen": "Ecrã de {name}",
     "invite_sent": "Convite enviado",
     "nobody_online": "No other members are currently online"
   }

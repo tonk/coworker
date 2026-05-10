@@ -715,6 +715,13 @@
     "join_call": "Delta",
     "no_users_to_invite": "Inga användare att bjuda in",
     "search_users": "Sök användare…",
+    "share_screen": "Dela skärm",
+    "stop_share": "Sluta dela",
+    "show_chat": "Visa textchatt",
+    "hide_chat": "Dölj textchatt",
+    "chat_while_in_call": "Konversation",
+    "your_screen": "Din skärm",
+    "peer_screen": "{name}s skärm",
     "invite_sent": "Inbjudan skickad",
     "nobody_online": "No other members are currently online"
   }

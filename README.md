@@ -8,11 +8,13 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.35)
+## Latest release (v0.9.36)
 
-- **Fix scrum chart rendering** — Burndown, Burnup, Cumulative Flow, and Release Burndown charts now render correctly; a Vue timing bug caused the canvas element to be absent from the DOM when Chart.js tried to draw.
-- **Demo seed descriptions** — all ~101 seeded demo cards now include rich Markdown descriptions with context, acceptance criteria, technical notes, and reproduction steps for bugs.
-- **New screenshots** — Gantt chart, Scrum backlog, CFD, sprint throughput, burndown, burnup, and release burndown screenshots added to the website homepage, blog post, user guide, and README.
+- **Screen sharing** — share your screen in 1:1 and group video calls (WebRTC and LiveKit).
+- **Optional chat column in calls** — open a text chat for the same conversation beside the video overlay.
+- **Call controls** — toolbar wraps so the camera and other buttons stay visible when the layout is tight.
+- **Faster first load** — LiveKit’s client library loads only when you join a group video room.
+- **Website** — new blog post explaining the demo seed program (`warmdesk-seed`).
 
 ## Build status
 

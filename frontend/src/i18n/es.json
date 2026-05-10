@@ -722,6 +722,13 @@
     "join_call": "Unirse",
     "no_users_to_invite": "No hay usuarios para invitar",
     "search_users": "Buscar usuarios…",
+    "share_screen": "Compartir pantalla",
+    "stop_share": "Dejar de compartir",
+    "show_chat": "Mostrar chat de texto",
+    "hide_chat": "Ocultar chat de texto",
+    "chat_while_in_call": "Conversación",
+    "your_screen": "Tu pantalla",
+    "peer_screen": "Pantalla de {name}",
     "invite_sent": "Invitación enviada",
     "nobody_online": "No other members are currently online"
   }

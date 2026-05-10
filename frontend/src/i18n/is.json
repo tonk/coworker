@@ -715,6 +715,13 @@
     "join_call": "Taka þátt",
     "no_users_to_invite": "Engir notendur að bjóða",
     "search_users": "Leita að notendum…",
+    "share_screen": "Deila skjá",
+    "stop_share": "Stöðva deilingu",
+    "show_chat": "Sýna textaspjall",
+    "hide_chat": "Fela textaspjall",
+    "chat_while_in_call": "Samtal",
+    "your_screen": "Skjárinn þinn",
+    "peer_screen": "Skjár {name}",
     "invite_sent": "Boð sent",
     "nobody_online": "No other members are currently online"
   }
