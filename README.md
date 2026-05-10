@@ -16,10 +16,6 @@ collaboration, direct messaging with 1:1 and group video chat, time tracking, an
 - **Faster first load** — LiveKit’s client library loads only when you join a group video room.
 - **Website** — new blog post explaining the demo seed program (`warmdesk-seed`).
 
-## Build status
-
-[![Release](https://github.com/tonk/warmdesk/actions/workflows/release.yml/badge.svg)](https://github.com/tonk/warmdesk/actions/workflows/release.yml)
-
 ## Experiment
 
 This is an experiment, and a biggie :-)
