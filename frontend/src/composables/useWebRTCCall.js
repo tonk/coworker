@@ -10,6 +10,8 @@
 import { reactive, readonly } from 'vue'
 import { useCallSettings } from './useCallSettings'
 import { isLiveKitCallActive } from './callsGate'
+import { useUIStore } from '@/stores/ui'
+import { i18n } from '@/i18n'
 
 // ── Module-level singleton ──────────────────────────────────────────────────
 
@@ -348,12 +350,10 @@ async function toggleScreenShare() {
       _screenStream.getTracks().forEach(t => t.stop())
       _screenStream = null
     }
-    const cam = _localStream?.getVideoTracks?.()[0]
-    if (cam) {
-      try {
-        await sender.replaceTrack(cam)
-      } catch {}
-    }
+    const cam = _localStream?.getVideoTracks?.()[0] ?? null
+    try {
+      await sender.replaceTrack(cam)
+    } catch {}
     _s.isScreenSharing = false
     return
   }
@@ -361,7 +361,10 @@ async function toggleScreenShare() {
   let stream
   try {
     stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false })
-  } catch {
+  } catch (err) {
+    if (err?.name !== 'AbortError' && err?.name !== 'NotAllowedError') {
+      useUIStore().error(i18n.global.t('call.screen_share_failed'))
+    }
     return
   }
   const v = stream.getVideoTracks()[0]
@@ -379,6 +382,7 @@ async function toggleScreenShare() {
   } catch {
     stream.getTracks().forEach(t => t.stop())
     _screenStream = null
+    useUIStore().error(i18n.global.t('call.screen_share_failed'))
   }
 }
 

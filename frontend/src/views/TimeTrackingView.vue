@@ -720,50 +720,14 @@ function fmtDecimal(minutes) {
 
 // Weekly timesheet → XLSX: rows are customer/project combos, columns are days.
 async function exportSheetXLSX() {
-  const XLSX = await import('xlsx')
-  const wb = XLSX.utils.book_new()
-
-  const weekLabel = `${t('timeTracking.week')} ${weekInfo.value.week} · ${weekInfo.value.year}`
-  const header = [
-    t('timeTracking.customer') + ' / ' + t('timeTracking.project'),
-    t('timeTracking.activity'),
-    ...weekDays.value.map(d => d.abbr + ' ' + d.mmdd),
-    t('timeTracking.total'),
-  ]
-
-  const rows = [
-    [t('timeTracking.title') + ' — ' + displayName.value],
-    [weekLabel],
-    [],
-    header,
-  ]
-
-  for (const row of allRows.value) {
-    const dayCells = weekDays.value.map(d => {
-      const e = getEntry(row, d.iso)
-      return e ? parseFloat((e.minutes / 60).toFixed(2)) : ''
-    })
-    const total = weekDays.value.reduce((s, d) => s + (getEntry(row, d.iso)?.minutes || 0), 0)
-    rows.push([
-      (row.customer_name ? row.customer_name + ' / ' : '') + (row.project_name || ''),
-      row.description || '',
-      ...dayCells,
-      total ? parseFloat((total / 60).toFixed(2)) : '',
-    ])
+  try {
+    const params = { year: weekInfo.value.year, week: weekInfo.value.week }
+    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const { data } = await timeEntriesApi.sheetXLSX(params)
+    triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  } catch {
+    ui.error(t('timeTracking.export_error'))
   }
-
-  // Totals row
-  const dayTotals = weekDays.value.map(d => {
-    const m = allRows.value.reduce((s, row) => s + (getEntry(row, d.iso)?.minutes || 0), 0)
-    return m ? parseFloat((m / 60).toFixed(2)) : ''
-  })
-  const grandM = rawEntries.value.reduce((s, e) => s + e.minutes, 0)
-  rows.push([t('timeTracking.total'), '', ...dayTotals, parseFloat((grandM / 60).toFixed(2))])
-
-  const ws = XLSX.utils.aoa_to_sheet(rows)
-  ws['!cols'] = [{ wch: 35 }, { wch: 28 }, ...weekDays.value.map(() => ({ wch: 9 })), { wch: 9 }]
-  XLSX.utils.book_append_sheet(wb, ws, weekLabel)
-  XLSX.writeFile(wb, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.xlsx`)
 }
 
 // Weekly timesheet → PDF: delegates to backend report with period=week.
@@ -781,47 +745,20 @@ async function exportSheetPDF() {
 // Report tab → XLSX: date-list grouped by period.
 async function exportReportXLSX() {
   if (!report.value) return
-  const XLSX = await import('xlsx')
-  const wb = XLSX.utils.book_new()
-
-  const header = [
-    t('timeTracking.date'),
-    t('timeTracking.customer'),
-    t('timeTracking.project'),
-    t('timeTracking.activity'),
-    t('timeTracking.time'),
-  ]
-
-  const rows = [
-    [t('timeTracking.title') + ' — ' + displayName.value],
-    [report.value.period_label],
-    [],
-    header,
-  ]
-
-  for (const grp of report.value.groups) {
-    if (!grp.entries.length) continue
-    rows.push([grp.label])
-    for (const e of grp.entries) {
-      rows.push([
-        e.date.slice(0, 10),
-        e.customer?.name || '',
-        e.project?.name || '',
-        e.description || '',
-        parseFloat((e.minutes / 60).toFixed(2)),
-      ])
+  try {
+    const params = {
+      period: rpt.value.period,
+      year:   rpt.value.year,
+      month:  rpt.value.month,
+      week:   rpt.value.week,
     }
-    rows.push(['', '', '', t('timeTracking.total'), parseFloat((grp.total_minutes / 60).toFixed(2))])
-    rows.push([])
+    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const { data } = await timeEntriesApi.reportXLSX(params)
+    const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
+    triggerDownload(data, `time-tracking-${slug}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  } catch {
+    ui.error(t('timeTracking.export_error'))
   }
-
-  rows.push(['', '', '', t('timeTracking.total'), parseFloat((report.value.total_minutes / 60).toFixed(2))])
-
-  const ws = XLSX.utils.aoa_to_sheet(rows)
-  ws['!cols'] = [{ wch: 14 }, { wch: 25 }, { wch: 25 }, { wch: 35 }, { wch: 10 }]
-  const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
-  XLSX.utils.book_append_sheet(wb, ws, report.value.period_label.slice(0, 31))
-  XLSX.writeFile(wb, `time-tracking-${slug}.xlsx`)
 }
 
 // Report tab → PDF: delegates to backend.

@@ -32,8 +32,7 @@
     "sortablejs": "^1.15.3",
     "vue": "^3.5.12",
     "vue-i18n": "^9.14.1",
-    "vue-router": "^4.4.5",
-    "xlsx": "^0.18.5"
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",

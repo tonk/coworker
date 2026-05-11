@@ -7,4 +7,6 @@ export const timeEntriesApi = {
   remove: (id) => client.delete(`/time-entries/${id}`),
   report: (params) => client.get('/time-entries/report', { params }),
   reportPDF: (params) => client.get('/time-entries/report/pdf', { params, responseType: 'blob' }),
+  reportXLSX: (params) => client.get('/time-entries/report/xlsx', { params, responseType: 'blob' }),
+  sheetXLSX: (params) => client.get('/time-entries/sheet/xlsx', { params, responseType: 'blob' }),
 }

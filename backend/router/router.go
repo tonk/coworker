@@ -188,6 +188,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		// Reports
 		protected.GET("/reports/time", handlers.GetTimeReport)
 		protected.GET("/reports/time/pdf", handlers.GetTimeReportPDF)
+		protected.GET("/reports/time/xlsx", handlers.GetTimeReportXLSX)
 
 		// Time entries (personal time registration)
 		protected.GET("/time-entries", handlers.ListTimeEntries)
@@ -196,6 +197,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.DELETE("/time-entries/:id", handlers.DeleteTimeEntry)
 		protected.GET("/time-entries/report", handlers.GetTimeEntryReport)
 		protected.GET("/time-entries/report/pdf", handlers.GetTimeEntryReportPDF)
+		protected.GET("/time-entries/report/xlsx", handlers.GetTimeEntryReportXLSX)
+		protected.GET("/time-entries/sheet/xlsx", handlers.GetTimeEntrySheetXLSX)
 
 		// Prometheus metrics (admin or metrics role)
 		protected.GET("/metrics", middleware.MetricsAuth(), handlers.GetMetrics)

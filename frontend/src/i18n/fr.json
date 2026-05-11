@@ -724,6 +724,7 @@
     "search_users": "Rechercher des utilisateurs…",
     "share_screen": "Partager l'écran",
     "stop_share": "Arrêter le partage",
+    "screen_share_failed": "Échec du partage d'écran",
     "show_chat": "Afficher le chat texte",
     "hide_chat": "Masquer le chat texte",
     "chat_while_in_call": "Conversation",

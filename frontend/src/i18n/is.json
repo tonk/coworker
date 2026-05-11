@@ -717,6 +717,7 @@
     "search_users": "Leita að notendum…",
     "share_screen": "Deila skjá",
     "stop_share": "Stöðva deilingu",
+    "screen_share_failed": "Skjásdeling mistókst",
     "show_chat": "Sýna textaspjall",
     "hide_chat": "Fela textaspjall",
     "chat_while_in_call": "Samtal",

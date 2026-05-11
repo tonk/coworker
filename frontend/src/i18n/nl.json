@@ -724,6 +724,7 @@
     "search_users": "Gebruikers zoeken…",
     "share_screen": "Scherm delen",
     "stop_share": "Delen stoppen",
+    "screen_share_failed": "Scherm delen mislukt",
     "show_chat": "Tekstchat tonen",
     "hide_chat": "Tekstchat verbergen",
     "chat_while_in_call": "Gesprek",

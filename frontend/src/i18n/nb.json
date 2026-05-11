@@ -717,6 +717,7 @@
     "search_users": "Søk etter brukere…",
     "share_screen": "Del skjerm",
     "stop_share": "Stopp deling",
+    "screen_share_failed": "Skjermdeling mislyktes",
     "show_chat": "Vis tekstchat",
     "hide_chat": "Skjul tekstchat",
     "chat_while_in_call": "Samtale",

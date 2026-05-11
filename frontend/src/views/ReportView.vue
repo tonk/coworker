@@ -199,9 +199,11 @@ import { reportsApi } from '@/api/reports'
 import { messagesApi } from '@/api/messages'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { resolveAssetUrl } from '@/api/serverConfig'
+import { useUIStore } from '@/stores/ui'
 
 const { t, locale } = useI18n()
 const { formatDateTime } = useDateFormat()
+const ui = useUIStore()
 
 const loading = ref(false)
 const report = ref(null)
@@ -312,45 +314,28 @@ async function exportPDF() {
 
 async function exportXLSX() {
   if (!report.value) return
-  const XLSX = await import('xlsx')
-  const wb = XLSX.utils.book_new()
-
-  // Summary sheet
-  const summaryData = [
-    [(report.value.company_name || 'Time Report') + ' — ' + report.value.period_label],
-    ['Generated: ' + formatUTCTimestamp(report.value.generated_at)],
-    [],
-    ['Project', 'Task', 'Ref', 'Assignees', 'Date', 'Time (min)', 'Time']
-  ]
-
-  for (const proj of report.value.projects) {
-    for (const card of proj.cards) {
-      summaryData.push([
-        proj.project_name,
-        card.title,
-        card.card_ref || '',
-        card.assignees.join(', '),
-        card.updated_at,
-        card.time_spent_minutes,
-        formatMinutes(card.time_spent_minutes)
-      ])
-    }
-    summaryData.push(['', '', '', '', 'Subtotal', proj.total_minutes, formatMinutes(proj.total_minutes)])
-    summaryData.push([])
+  try {
+    const params = { period: filters.value.period }
+    if (filters.value.period !== 'all') params.year = filters.value.year
+    if (filters.value.period === 'month') params.month = filters.value.month
+    if (filters.value.period === 'week') params.week = filters.value.week
+    if (filters.value.project !== 'all') params.project = filters.value.project
+    if (filters.value.assignees.length) params.assignees = filters.value.assignees.join(',')
+    const { data } = await reportsApi.getTimeReportXLSX(params)
+    const filename = `time-report-${report.value.period_label.replace(/\s+/g, '-').toLowerCase()}.xlsx`
+    triggerDownload(data, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  } catch {
+    ui.error(t('timeTracking.export_error'))
   }
+}
 
-  summaryData.push(['', '', '', '', 'Grand Total', report.value.total_minutes, formatMinutes(report.value.total_minutes)])
-
-  const ws = XLSX.utils.aoa_to_sheet(summaryData)
-
-  // Column widths
-  ws['!cols'] = [
-    { wch: 25 }, { wch: 45 }, { wch: 10 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 10 }
-  ]
-
-  XLSX.utils.book_append_sheet(wb, ws, 'Time Report')
-  const filename = `time-report-${report.value.period_label.replace(/\s+/g, '-').toLowerCase()}.xlsx`
-  XLSX.writeFile(wb, filename)
+function triggerDownload(blob, filename, type) {
+  const url = URL.createObjectURL(new Blob([blob], { type }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 onMounted(async () => {

@@ -717,6 +717,7 @@
     "search_users": "Etsi käyttäjiä…",
     "share_screen": "Jaa näyttö",
     "stop_share": "Lopeta jakaminen",
+    "screen_share_failed": "Näytön jakaminen epäonnistui",
     "show_chat": "Näytä tekstichat",
     "hide_chat": "Piilota tekstichat",
     "chat_while_in_call": "Keskustelu",

@@ -10,6 +10,8 @@ import { messagesApi } from '@/api/messages'
 import { useCallSettings } from './useCallSettings'
 import { setLiveKitCallActive } from './callsGate'
 import { isWebRTCCallBusy } from './useWebRTCCall'
+import { useUIStore } from '@/stores/ui'
+import { i18n } from '@/i18n'
 
 /** Loaded on first group join; keeps initial bundle small. */
 let _lkMod = null
@@ -286,6 +288,7 @@ async function toggleScreenShare() {
   try {
     await _room.localParticipant.setScreenShareEnabled(next)
   } catch {
+    useUIStore().error(i18n.global.t('call.screen_share_failed'))
     return
   }
   _syncLocalFlags()

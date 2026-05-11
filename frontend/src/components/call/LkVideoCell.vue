@@ -1,5 +1,5 @@
 <template>
-  <div class="lk-cell">
+  <div class="lk-cell" :class="{ 'lk-cell--screen': isScreenShare }">
     <video
       v-if="track"
       ref="videoEl"
@@ -109,6 +109,9 @@ function onAvatarError() {
 }
 .lk-video.mirror {
   transform: scaleX(-1);
+}
+.lk-cell--screen {
+  aspect-ratio: 16 / 9;
 }
 .lk-video--screen {
   object-fit: contain;
