@@ -99,20 +99,20 @@
           </div>
         </button>
         <div class="dropdown" v-if="menuOpen" role="menu">
-          <div class="dropdown-item" role="menuitem" @click="router.push('/')">{{ $t('nav.dashboard') }}</div>
-          <div class="dropdown-item" role="menuitem" @click="router.push('/settings')">{{ $t('nav.settings') }}</div>
-          <div class="dropdown-item" role="menuitem" v-if="auth.isAdmin" @click="router.push('/admin')">{{ $t('nav.admin') }}</div>
+          <div class="dropdown-item" role="menuitem" @click="navigate('/')">{{ $t('nav.dashboard') }}</div>
+          <div class="dropdown-item" role="menuitem" @click="navigate('/settings')">{{ $t('nav.settings') }}</div>
+          <div class="dropdown-item" role="menuitem" v-if="auth.isAdmin" @click="navigate('/admin')">{{ $t('nav.admin') }}</div>
           <div class="dropdown-divider" role="separator"></div>
-          <div class="dropdown-item" role="menuitem" @click="router.push('/chats')">
+          <div class="dropdown-item" role="menuitem" @click="navigate('/chats')">
             {{ $t('nav.messages') }}
             <span v-if="notificationsStore.hasUnread" class="msg-unread-dot" aria-hidden="true"></span>
             <span v-if="notificationsStore.hasUnread" class="sr-only">({{ $t('sidebar.unread_messages') }})</span>
           </div>
-          <div class="dropdown-item" role="menuitem" v-if="auth.canViewReports" @click="router.push('/reports')">{{ $t('report.nav') }}</div>
-          <div class="dropdown-item" role="menuitem" v-if="auth.timeTrackingEnabled" @click="router.push('/time-tracking')">{{ $t('timeTracking.nav') }}</div>
+          <div class="dropdown-item" role="menuitem" v-if="auth.canViewReports" @click="navigate('/reports')">{{ $t('report.nav') }}</div>
+          <div class="dropdown-item" role="menuitem" v-if="auth.timeTrackingEnabled" @click="navigate('/time-tracking')">{{ $t('timeTracking.nav') }}</div>
           <div class="dropdown-divider" role="separator"></div>
-          <div class="dropdown-item" role="menuitem" @click="$emit('open-shortcuts')">{{ $t('nav.keyboard_shortcuts') }}</div>
-          <div class="dropdown-item" role="menuitem" @click="showAbout = true">{{ $t('nav.about') }}</div>
+          <div class="dropdown-item" role="menuitem" @click="openShortcuts">{{ $t('nav.keyboard_shortcuts') }}</div>
+          <div class="dropdown-item" role="menuitem" @click="openAbout">{{ $t('nav.about') }}</div>
           <div class="dropdown-item dropdown-item-danger" role="menuitem" @click="handleLogout">{{ $t('nav.logout') }}</div>
         </div>
       </div>
@@ -168,7 +168,23 @@ function onLocaleChange(e) {
   if (auth.isLoggedIn) auth.updateProfile({ locale: lang })
 }
 
+function navigate(path) {
+  menuOpen.value = false
+  router.push(path)
+}
+
+function openShortcuts() {
+  menuOpen.value = false
+  emit('open-shortcuts')
+}
+
+function openAbout() {
+  menuOpen.value = false
+  showAbout.value = true
+}
+
 function handleLogout() {
+  menuOpen.value = false
   auth.logout()
   router.push('/login')
 }

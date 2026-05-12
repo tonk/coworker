@@ -301,14 +301,10 @@ async function exportPDF() {
     params.font = pdfFont.value
     params.lang = pdfLang.value === 'auto' ? locale.value : pdfLang.value
     const { data } = await reportsApi.getTimeReportPDF(params)
-    const url = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'time-report.pdf'
-    a.click()
-    URL.revokeObjectURL(url)
+    await triggerDownload(data, 'time-report.pdf', 'application/pdf')
   } catch (e) {
     console.error(e)
+    ui.error(t('report.export_error'))
   }
 }
 
@@ -323,14 +319,28 @@ async function exportXLSX() {
     if (filters.value.assignees.length) params.assignees = filters.value.assignees.join(',')
     const { data } = await reportsApi.getTimeReportXLSX(params)
     const filename = `time-report-${report.value.period_label.replace(/\s+/g, '-').toLowerCase()}.xlsx`
-    triggerDownload(data, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    await triggerDownload(data, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   } catch {
     ui.error(t('timeTracking.export_error'))
   }
 }
 
-function triggerDownload(blob, filename, type) {
-  const url = URL.createObjectURL(new Blob([blob], { type }))
+async function triggerDownload(blob, filename, type) {
+  const blobObj = new Blob([blob], { type })
+  if (window.__TAURI_INTERNALS__) {
+    const { save } = await import('@tauri-apps/plugin-dialog')
+    const { writeFile } = await import('@tauri-apps/plugin-fs')
+    const ext = filename.split('.').pop()
+    const path = await save({
+      defaultPath: filename,
+      filters: [{ name: ext.toUpperCase(), extensions: [ext] }]
+    })
+    if (!path) return
+    const buf = await blobObj.arrayBuffer()
+    await writeFile(path, new Uint8Array(buf))
+    return
+  }
+  const url = URL.createObjectURL(blobObj)
   const a = document.createElement('a')
   a.href = url
   a.download = filename
