@@ -62,6 +62,7 @@ The reference lists shortcuts grouped by context:
 | Ctrl/⌘ 0 | Reset zoom
 | Ctrl/⌘ K | Focus search bar
 | ? | Open keyboard shortcuts
+| Alt A | Open accessibility status
 | Esc | Close dialog / card / suggestions
 | Tab / Shift+Tab | Cycle focus in dialogs
 | ↑ / ↓ | Navigate search results or suggestions
@@ -70,8 +71,9 @@ The reference lists shortcuts grouped by context:
 | :name: | Emoji shortcode
 |===
 
-== What remains
+== Color contrast
 
-The one open WCAG 2.1 AA item is *color contrast for muted text*.
-The `--color-text-muted` value in the light theme sits at approximately 3.4:1 against white backgrounds, below the 4.5:1 minimum for normal-weight text.
-Adjusting this color affects the whole UI and will be addressed in an upcoming release once a replacement value has been validated against all light and dark theme combinations.
+The `--color-text-muted` CSS variable in the light theme was updated in v0.9.40 from `#64748b` (slate-500, 4.34:1 on the app background) to `#475569` (slate-600, 6.91:1), bringing all text in all three themes above the 4.5:1 WCAG AA minimum for normal-weight text.
+Dark and black themes were already compliant (`#94a3b8` on their respective backgrounds yields 5.70:1 and above).
+
+WarmDesk now satisfies all audited WCAG 2.1 AA success criteria.

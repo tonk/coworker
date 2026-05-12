@@ -11,7 +11,7 @@
         <li>✓ Heading hierarchy (h1 on every page)</li>
         <li>✓ Form error announcements</li>
         <li>✓ Alt text on all images</li>
-        <li class="a11y-open">◌ Color contrast (muted text pending)</li>
+        <li>✓ Color contrast (all text meets 4.5:1)</li>
       </ul>
       <button class="link-btn" @click="openShortcuts">{{ $t('dashboard.view_shortcuts') }} →</button>
     </div>
@@ -101,7 +101,6 @@ function openShortcuts() {
 }
 
 .a11y-list li { color: var(--color-text); }
-.a11y-open { opacity: 0.65; }
 
 .link-btn {
   background: none;
