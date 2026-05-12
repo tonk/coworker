@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.9.39 — 2026-05-12
+
+### Added
+- **Markdown in news** — admin news editor has a Write/Preview tab pair; dashboard news tiles render body text as Markdown (using `marked` + `DOMPurify`)
+- **Ansible `news` module** — `ansilabnl.warmdesk.news` manages news items (create, update, delete) with full idempotency on `title` and ISO-8601 date normalisation
+- **`from_vars.py` news support** — `news_items:` list in `warmdesk_vars.yml` is processed as Phase 6 alongside existing resource types
+
+### Fixed
+- **News "not found" on edit** — `NewsItem` model now serialises `id` (lowercase) instead of `ID`; corrected a GORM model embedding issue that caused `PUT /admin/news/undefined`
+
 ## v0.9.38 — 2026-05-12
 
 ### Added

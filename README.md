@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.38)
+## Latest release (v0.9.39)
 
-- **Admin News management** — create, edit, and delete news items with title, body, and show-from/show-until dates; shown as dismissible tiles on the dashboard.
-- **Format-aware date input** — `DateTimeInput` component respects the configured `date_time_format` from admin settings throughout the app.
-- **WarmDesk logo on news tiles** — brand mark shown in the header of each dashboard news widget.
+- **Markdown in news** — news body text is authored and rendered as Markdown in the admin editor (with live preview) and on dashboard tiles.
+- **Ansible `news` module** — `ansilabnl.warmdesk.news` provides idempotent CRUD for news items via the API.
+- **News edit fix** — corrected a GORM JSON serialisation bug (`id` vs `ID`) that caused "not found" errors when saving edits.
 
 ## Experiment
 
