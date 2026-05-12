@@ -122,7 +122,16 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.DELETE("/groups/:groupId/projects/:projectId", handlers.AdminRemoveGroupProjectAccess)
 			admin.PUT("/groups/:groupId/customers/:customerId", handlers.AdminSetGroupCustomerAccess)
 			admin.DELETE("/groups/:groupId/customers/:customerId", handlers.AdminRemoveGroupCustomerAccess)
+
+			// News items
+			admin.GET("/news", handlers.AdminListNews)
+			admin.POST("/news", handlers.AdminCreateNews)
+			admin.PUT("/news/:id", handlers.AdminUpdateNews)
+			admin.DELETE("/news/:id", handlers.AdminDeleteNews)
 		}
+
+		// News (active items visible to all authenticated users)
+		protected.GET("/news", handlers.ListActiveNews)
 
 		// Users (for direct messages / user lookup)
 		protected.GET("/users", handlers.ListAllUsers)

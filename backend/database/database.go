@@ -408,6 +408,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.GroupProjectAccess{},
 		&models.GroupCustomerAccess{},
 		&models.TimeEntry{},
+		&models.NewsItem{},
 	)
 	if err != nil {
 		return err

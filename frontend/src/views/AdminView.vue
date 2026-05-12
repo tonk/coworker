@@ -10,6 +10,7 @@
           <button :class="['tab', { active: tab === 'projects' }]" @click="tab = 'projects'; loadProjects()">{{ $t('admin.projects') }}</button>
           <button :class="['tab', { active: tab === 'settings' }]" @click="tab = 'settings'; loadSettings()">{{ $t('admin.settings') }}</button>
           <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()">{{ $t('admin.backup_tab') }}</button>
+          <button :class="['tab', { active: tab === 'news' }]" @click="tab = 'news'; loadNews()">{{ $t('admin.news_tab') }}</button>
         </div>
 
         <!-- Users tab -->
@@ -650,6 +651,47 @@
           <p v-else class="form-hint">{{ $t('admin.backup_list_empty') }}</p>
         </div>
       </div>
+
+        <!-- News tab -->
+        <div v-if="tab === 'news'">
+          <div class="tab-toolbar">
+            <button class="btn btn-primary btn-sm" @click="openCreateNews">+ {{ $t('admin.news_create') }}</button>
+          </div>
+          <div v-if="newsLoading" class="loading-state">
+            <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
+          </div>
+          <div v-else-if="!newsItems.length" class="empty-hint">{{ $t('admin.news_empty') }}</div>
+          <table v-else class="data-table">
+            <thead>
+              <tr>
+                <th>{{ $t('admin.news_title_col') }}</th>
+                <th>{{ $t('admin.news_start_date') }}</th>
+                <th>{{ $t('admin.news_end_date') }}</th>
+                <th>{{ $t('admin.news_active') }}</th>
+                <th>{{ $t('common.actions') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in newsItems" :key="item.id">
+                <td><strong>{{ item.title }}</strong><br><small style="color:var(--color-text-muted);white-space:pre-wrap">{{ item.text?.slice(0, 80) }}{{ item.text?.length > 80 ? '…' : '' }}</small></td>
+                <td><small>{{ item.start_date ? formatNewsDate(item.start_date) : '—' }}</small></td>
+                <td><small>{{ item.end_date ? formatNewsDate(item.end_date) : '—' }}</small></td>
+                <td>
+                  <span :class="['badge', item.active ? 'badge-active' : 'badge-inactive']">
+                    {{ item.active ? $t('admin.active') : $t('admin.inactive') }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn btn-ghost btn-sm" @click="openEditNews(item)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-ghost btn-sm btn-danger" @click="deleteNewsItem(item)">{{ $t('common.delete') }}</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
   </main>
 
   <!-- Create User Modal -->
@@ -1083,6 +1125,43 @@
       </button>
     </template>
   </BaseModal>
+
+  <!-- News create/edit modal -->
+  <BaseModal
+    v-if="showNewsModal"
+    :title="editingNews ? $t('admin.news_edit') : $t('admin.news_create')"
+    @close="showNewsModal = false; editingNews = null"
+  >
+    <div class="form-group">
+      <label class="form-label">{{ $t('admin.news_title_col') }}</label>
+      <input class="form-input" v-model="newsForm.title" required autofocus />
+    </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('admin.news_text') }}</label>
+      <textarea class="form-input" v-model="newsForm.text" rows="5" required></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">{{ $t('admin.news_start_date') }}</label>
+        <input class="form-input" type="datetime-local" v-model="newsForm.start_date_local" />
+        <p class="form-hint">{{ $t('admin.news_date_hint') }}</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ $t('admin.news_end_date') }}</label>
+        <input class="form-input" type="datetime-local" v-model="newsForm.end_date_local" />
+      </div>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px">
+      <input type="checkbox" id="news-active" v-model="newsForm.active" style="width:auto" />
+      <label for="news-active" class="form-label" style="margin:0">{{ $t('admin.news_active') }}</label>
+    </div>
+    <template #footer>
+      <button class="btn btn-secondary" @click="showNewsModal = false; editingNews = null">{{ $t('common.cancel') }}</button>
+      <button class="btn btn-primary" :disabled="!newsForm.title.trim() || !newsForm.text.trim() || newsSaving" @click="saveNews">
+        {{ editingNews ? $t('common.save') : $t('common.create') }}
+      </button>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup>
@@ -1094,6 +1173,7 @@ import { adminApi } from '@/api/admin'
 import { groupsApi } from '@/api/groups'
 import { customersApi } from '@/api/customers'
 import { attachmentsApi } from '@/api/attachments'
+import { newsApi } from '@/api/news'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import { useUIStore } from '@/stores/ui'
 import { useSystemStore } from '@/stores/system'
@@ -1108,6 +1188,83 @@ const systemStore = useSystemStore()
 const auth = useAuthStore()
 const { formatDateTime } = useDateFormat()
 const tab = ref('users')
+
+// ── News ─────────────────────────────────────────────────────────────────────
+const newsItems = ref([])
+const newsLoading = ref(false)
+const showNewsModal = ref(false)
+const editingNews = ref(null)
+const newsSaving = ref(false)
+const newsForm = ref({ title: '', text: '', start_date_local: '', end_date_local: '', active: true })
+
+function formatNewsDate(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+function toLocalInput(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+function fromLocalInput(local) {
+  return local ? new Date(local).toISOString() : null
+}
+
+async function loadNews() {
+  newsLoading.value = true
+  try {
+    const r = await newsApi.adminList()
+    newsItems.value = r.data || []
+  } finally {
+    newsLoading.value = false
+  }
+}
+function openCreateNews() {
+  editingNews.value = null
+  newsForm.value = { title: '', text: '', start_date_local: '', end_date_local: '', active: true }
+  showNewsModal.value = true
+}
+function openEditNews(item) {
+  editingNews.value = item
+  newsForm.value = {
+    title: item.title,
+    text: item.text,
+    start_date_local: toLocalInput(item.start_date),
+    end_date_local: toLocalInput(item.end_date),
+    active: item.active,
+  }
+  showNewsModal.value = true
+}
+async function saveNews() {
+  newsSaving.value = true
+  try {
+    const payload = {
+      title: newsForm.value.title,
+      text: newsForm.value.text,
+      start_date: fromLocalInput(newsForm.value.start_date_local),
+      end_date: fromLocalInput(newsForm.value.end_date_local),
+      active: newsForm.value.active,
+    }
+    if (editingNews.value) {
+      await newsApi.adminUpdate(editingNews.value.id, payload)
+    } else {
+      await newsApi.adminCreate(payload)
+    }
+    showNewsModal.value = false
+    editingNews.value = null
+    await loadNews()
+  } catch (e) {
+    ui.error(e.response?.data?.error || t('common.error'))
+  } finally {
+    newsSaving.value = false
+  }
+}
+async function deleteNewsItem(item) {
+  if (!confirm(t('admin.news_delete_confirm', { title: item.title }))) return
+  await newsApi.adminDelete(item.id)
+  await loadNews()
+}
 
 const users = ref([])
 const loading = ref(true)
