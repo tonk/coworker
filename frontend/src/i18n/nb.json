@@ -230,7 +230,8 @@
     "send": "Send",
     "edited": "redigert",
     "deleted": "Denne meldingen er slettet",
-    "load_more": "Last inn flere meldinger"
+    "load_more": "Last inn flere meldinger",
+    "discard_draft": "Forkaste usendt melding?"
   },
   "admin": {
     "panel": "Adminpanel",

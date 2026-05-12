@@ -230,7 +230,8 @@
     "send": "Skicka",
     "edited": "redigerad",
     "deleted": "Det här meddelandet har tagits bort",
-    "load_more": "Ladda fler meddelanden"
+    "load_more": "Ladda fler meddelanden",
+    "discard_draft": "Kasta icke-skickat meddelande?"
   },
   "admin": {
     "panel": "Adminpanel",

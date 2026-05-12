@@ -231,7 +231,8 @@
     "send": "Versturen",
     "edited": "bewerkt",
     "deleted": "Dit bericht is verwijderd",
-    "load_more": "Meer berichten laden"
+    "load_more": "Meer berichten laden",
+    "discard_draft": "Niet-verzonden bericht weggooien?"
   },
   "admin": {
     "panel": "Beheerpaneel",

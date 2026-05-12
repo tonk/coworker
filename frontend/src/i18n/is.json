@@ -230,7 +230,8 @@
     "send": "Senda",
     "edited": "breytt",
     "deleted": "Þessi skilaboð hafa verið eytt",
-    "load_more": "Hlaða fleiri skilaboðum"
+    "load_more": "Hlaða fleiri skilaboðum",
+    "discard_draft": "Henda ósendu skilaboðin?"
   },
   "admin": {
     "panel": "Stjórnborð",

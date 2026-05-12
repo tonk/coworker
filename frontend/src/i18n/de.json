@@ -231,7 +231,8 @@
     "send": "Senden",
     "edited": "bearbeitet",
     "deleted": "Diese Nachricht wurde gelöscht",
-    "load_more": "Mehr Nachrichten laden"
+    "load_more": "Mehr Nachrichten laden",
+    "discard_draft": "Nicht gesendete Nachricht verwerfen?"
   },
   "admin": {
     "panel": "Verwaltungsbereich",

@@ -208,14 +208,19 @@ function testSpeaker() {
   } catch {}
 }
 
-// ── Click-outside to close ────────────────────────────────────────────────
+// ── Click-outside / Escape to close ──────────────────────────────────────
 function onPointerDown(e) {
   if (panelEl.value && !panelEl.value.contains(e.target)) emit('close')
+}
+
+function onKeyDown(e) {
+  if (e.key === 'Escape') emit('close')
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────
 onMounted(async () => {
   document.addEventListener('pointerdown', onPointerDown)
+  document.addEventListener('keydown', onKeyDown)
   await loadDevices(true)
   localAudioIn.value  = audioDeviceId.value || devices.audioInputs[0]?.deviceId  || ''
   localVideoIn.value  = videoDeviceId.value || devices.videoInputs[0]?.deviceId  || ''
@@ -227,6 +232,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('pointerdown', onPointerDown)
+  document.removeEventListener('keydown', onKeyDown)
   stopMic()
   stopCamera()
 })

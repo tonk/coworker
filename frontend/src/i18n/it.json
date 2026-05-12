@@ -230,7 +230,8 @@
     "send": "Invia",
     "edited": "modificato",
     "deleted": "Questo messaggio è stato eliminato",
-    "load_more": "Carica altri messaggi"
+    "load_more": "Carica altri messaggi",
+    "discard_draft": "Eliminare il messaggio non inviato?"
   },
   "admin": {
     "panel": "Pannello di amministrazione",

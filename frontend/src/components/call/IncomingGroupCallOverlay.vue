@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useLiveKitGroupCall } from '@/composables/useLiveKitGroupCall'
 
 const { invite, acceptGroupInvite, declineGroupInvite } = useLiveKitGroupCall()
@@ -55,6 +55,12 @@ const initials = computed(() => {
 watch(() => invite.pending, (pending) => {
   if (pending) nextTick(() => acceptBtnEl.value?.focus())
 })
+
+function onKeyDown(e) {
+  if (e.key === 'Escape' && invite.pending) declineGroupInvite()
+}
+onMounted(() => document.addEventListener('keydown', onKeyDown))
+onUnmounted(() => document.removeEventListener('keydown', onKeyDown))
 </script>
 
 <style scoped>

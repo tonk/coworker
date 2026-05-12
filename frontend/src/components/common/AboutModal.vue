@@ -48,21 +48,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import client from '@/api/client'
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
 
 const appVersion = __APP_VERSION__
 const serverVersion = ref('')
 const loading = ref(true)
 const year = new Date().getFullYear()
 
+function onKeyDown(e) {
+  if (e.key === 'Escape') emit('close')
+}
+
 onMounted(() => {
+  document.addEventListener('keydown', onKeyDown)
   client.get('/version')
     .then(r => { serverVersion.value = r.data.version })
     .catch(() => {})
     .finally(() => { loading.value = false })
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeyDown)
 })
 </script>
 

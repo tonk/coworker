@@ -229,7 +229,8 @@
     "send": "Lähetä",
     "edited": "muokattu",
     "deleted": "Tämä viesti on poistettu",
-    "load_more": "Lataa lisää viestejä"
+    "load_more": "Lataa lisää viestejä",
+    "discard_draft": "Hylätäänkö lähettämätön viesti?"
   },
   "admin": {
     "panel": "Hallintapaneeli",

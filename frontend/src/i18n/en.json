@@ -231,7 +231,8 @@
     "send": "Send",
     "edited": "edited",
     "deleted": "This message was deleted",
-    "load_more": "Load more messages"
+    "load_more": "Load more messages",
+    "discard_draft": "Discard unsaved message?"
   },
   "admin": {
     "panel": "Admin Panel",

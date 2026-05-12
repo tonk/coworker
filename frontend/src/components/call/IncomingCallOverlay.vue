@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, nextTick, onUnmounted } from 'vue'
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
 
@@ -118,7 +118,14 @@ watch(() => state.phase, (phase) => {
   if (phase === 'ringing') _startRingtone()
   else _stopRingtone()
 })
-onUnmounted(_stopRingtone)
+function onKeyDown(e) {
+  if (e.key === 'Escape' && state.phase === 'ringing') rejectCall()
+}
+onMounted(() => document.addEventListener('keydown', onKeyDown))
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeyDown)
+  _stopRingtone()
+})
 </script>
 
 <style scoped>

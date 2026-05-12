@@ -230,7 +230,8 @@
     "send": "Enviar",
     "edited": "editado",
     "deleted": "Esta mensagem foi eliminada",
-    "load_more": "Carregar mais mensagens"
+    "load_more": "Carregar mais mensagens",
+    "discard_draft": "Descartar mensagem não enviada?"
   },
   "admin": {
     "panel": "Painel de administração",

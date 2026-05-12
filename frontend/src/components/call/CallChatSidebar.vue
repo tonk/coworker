@@ -1,5 +1,5 @@
 <template>
-  <aside class="call-chat-sidebar" :class="{ 'call-chat-sidebar--fixed': fixed }" @click.stop>
+  <aside class="call-chat-sidebar" :class="{ 'call-chat-sidebar--fixed': fixed }" @click.stop @keydown.esc.stop="onEsc">
     <div class="call-chat-head">
       <span class="call-chat-title">{{ $t('call.chat_while_in_call') }}</span>
       <button type="button" class="call-chat-close" :title="$t('call.hide_chat')" @click="$emit('close')">
@@ -19,6 +19,13 @@
           </div>
         </div>
       </template>
+    </div>
+    <div v-if="showDiscardWarning" class="call-chat-discard-warn">
+      <span>{{ $t('chat.discard_draft') }}</span>
+      <div class="call-chat-discard-actions">
+        <button type="button" class="btn btn-danger btn-sm" @click="$emit('close')">{{ $t('common.discard') }}</button>
+        <button type="button" class="btn btn-secondary btn-sm" @click="showDiscardWarning = false">{{ $t('common.cancel') }}</button>
+      </div>
     </div>
     <div class="call-chat-compose">
       <textarea
@@ -50,7 +57,7 @@ const props = defineProps({
   fixed: { type: Boolean, default: false },
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
 
 const auth = useAuthStore()
 const messages = ref([])
@@ -58,6 +65,15 @@ const loading = ref(true)
 const draft = ref('')
 const sending = ref(false)
 const msgsEl = ref(null)
+const showDiscardWarning = ref(false)
+
+function onEsc() {
+  if (draft.value.trim()) {
+    showDiscardWarning.value = true
+  } else {
+    emit('close')
+  }
+}
 
 let pollTimer = null
 
@@ -211,6 +227,22 @@ onUnmounted(() => {
 }
 .cc-body :deep(p + p) {
   margin-top: 4px;
+}
+
+.call-chat-discard-warn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-danger, #ef4444) 10%, var(--color-surface));
+  border-top: 1px solid color-mix(in srgb, var(--color-danger, #ef4444) 30%, var(--color-border));
+  font-size: 13px;
+  color: var(--color-text);
+}
+.call-chat-discard-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .call-chat-compose {

@@ -231,7 +231,8 @@
     "send": "Envoyer",
     "edited": "modifié",
     "deleted": "Ce message a été supprimé",
-    "load_more": "Charger plus de messages"
+    "load_more": "Charger plus de messages",
+    "discard_draft": "Abandonner le message non envoyé ?"
   },
   "admin": {
     "panel": "Panneau d'administration",

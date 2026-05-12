@@ -230,7 +230,8 @@
     "send": "Send",
     "edited": "redigeret",
     "deleted": "Denne besked er slettet",
-    "load_more": "Indlæs flere beskeder"
+    "load_more": "Indlæs flere beskeder",
+    "discard_draft": "Kassér ikke-sendt besked?"
   },
   "admin": {
     "panel": "Administratorpanel",
