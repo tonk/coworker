@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.40 — 2026-05-12
+
+### Added
+- **`Alt+A` — accessibility status modal** — press `Alt+A` anywhere in the app to open the WCAG 2.1 AA compliance status overlay; also listed in the keyboard shortcuts reference
+
+### Fixed
+- **WCAG AA color contrast** — light theme `--color-text-muted` raised from `#64748b` (4.34:1) to `#475569` (6.91:1); all text in all three themes now meets the 4.5:1 AA minimum
+
 ## v0.9.39 — 2026-05-12
 
 ### Added
