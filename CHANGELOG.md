@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.9.38 — 2026-05-12
+
+### Added
+- **Admin News management** — admins can create, edit, and delete news items (title, body text, show-from / show-until dates, active toggle) via a new "News" tab in the admin panel
+- **Dynamic dashboard news tiles** — active news items (within their date window) are shown as dismissible "What's new" tiles on the dashboard, fetched from the API; dismissed items stored per-ID in localStorage
+- **WarmDesk logo on news tiles** — the app logo appears in the header row of each dashboard news widget
+- **`DateTimeInput` component** — reusable text input that formats and parses dates using the user's configured `date_time_format`, so date fields follow admin settings instead of browser locale
+- **Website: WCAG highlight dismissible** — the accessibility highlight on the website homepage can be closed with an × button or toggled with `Alt+A`; dismissed state persists in localStorage
+
+### Fixed
+- **News date display** — admin news table and dashboard widgets now use `useDateFormat` (respects `date_time_format` setting) instead of `toLocaleDateString`
+- **News form date pickers** — replaced `<input type="datetime-local">` with `DateTimeInput` so the show-from/show-until fields honour the configured date format
+
 ## v0.9.37 — 2026-05-12
 
 ### Added

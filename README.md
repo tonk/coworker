@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.37)
+## Latest release (v0.9.38)
 
-- **WCAG 2.1 AA accessibility** — skip link, modal focus traps, call overlay alertdialog roles, chat live region, full combobox ARIA on search, heading hierarchy on every view, alt text on all images.
-- **Keyboard shortcuts modal** — press `?` or open the user menu; `Ctrl/⌘+K` focuses search.
-- **Dashboard tiles** — dismissible "What’s New" announcement card and a live WCAG compliance status tile.
+- **Admin News management** — create, edit, and delete news items with title, body, and show-from/show-until dates; shown as dismissible tiles on the dashboard.
+- **Format-aware date input** — `DateTimeInput` component respects the configured `date_time_format` from admin settings throughout the app.
+- **WarmDesk logo on news tiles** — brand mark shown in the header of each dashboard news widget.
 
 ## Experiment
 
