@@ -23,7 +23,7 @@
               <button class="widget-dismiss" :aria-label="$t('common.close')" @click="dismissNewsItem(item.id)">×</button>
               <div class="widget-tag">{{ $t('dashboard.news_title') }}</div>
               <h2 class="widget-title">{{ item.title }}</h2>
-              <p class="widget-date">{{ formatNewsDate(item.created_at) }}</p>
+              <p class="widget-date">{{ formatDate(item.created_at) }}</p>
               <p class="widget-body">{{ item.text }}</p>
             </div>
           </div>
@@ -136,12 +136,14 @@ import { useAuthStore } from '@/stores/auth'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import { customersApi } from '@/api/customers'
 import { newsApi } from '@/api/news'
+import { useDateFormat } from '@/composables/useDateFormat'
 
 const router = useRouter()
 const projectStore = useProjectStore()
 const ui = useUIStore()
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
+const { formatDate } = useDateFormat()
 const showCreate = ref(false)
 
 // ── News widgets ──────────────────────────────────────────────────────────────
@@ -162,10 +164,6 @@ function dismissNewsItem(id) {
   try { localStorage.setItem(NEWS_DISMISSED_KEY, JSON.stringify([...dismissedIds.value])) } catch {}
 }
 
-function formatNewsDate(iso) {
-  if (!iso) return ''
-  return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-}
 const gridEl = ref(null)
 let sortable = null
 

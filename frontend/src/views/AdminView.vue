@@ -674,8 +674,8 @@
             <tbody>
               <tr v-for="item in newsItems" :key="item.id">
                 <td><strong>{{ item.title }}</strong><br><small style="color:var(--color-text-muted);white-space:pre-wrap">{{ item.text?.slice(0, 80) }}{{ item.text?.length > 80 ? '…' : '' }}</small></td>
-                <td><small>{{ item.start_date ? formatNewsDate(item.start_date) : '—' }}</small></td>
-                <td><small>{{ item.end_date ? formatNewsDate(item.end_date) : '—' }}</small></td>
+                <td><small>{{ item.start_date ? formatDateTime(item.start_date) : '—' }}</small></td>
+                <td><small>{{ item.end_date ? formatDateTime(item.end_date) : '—' }}</small></td>
                 <td>
                   <span :class="['badge', item.active ? 'badge-active' : 'badge-inactive']">
                     {{ item.active ? $t('admin.active') : $t('admin.inactive') }}
@@ -1197,10 +1197,6 @@ const editingNews = ref(null)
 const newsSaving = ref(false)
 const newsForm = ref({ title: '', text: '', start_date_local: '', end_date_local: '', active: true })
 
-function formatNewsDate(iso) {
-  if (!iso) return ''
-  return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-}
 function toLocalInput(iso) {
   if (!iso) return ''
   const d = new Date(iso)
