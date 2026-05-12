@@ -90,6 +90,41 @@
         <p>Go backend + Vue 3 SPA bundled in one statically-linked binary. SQLite out of the box; PostgreSQL or MySQL with one config key. Desktop apps via Tauri 2 for Linux, macOS, and Windows.</p>
       </div>
 
+      <div class="feature-card">
+        <span class="feature-icon">♿</span>
+        <h3>WCAG 2.1 AA Accessible</h3>
+        <p>Full keyboard navigation, skip-to-content, focus traps in every modal, screen reader live regions for chat and call alerts, heading hierarchy on every page, and a built-in keyboard shortcuts reference.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ACCESSIBILITY HIGHLIGHT ===================== -->
+<section class="section section--alt">
+  <div class="container" style="max-width:860px;margin:0 auto;">
+    <div class="a11y-highlight">
+      <div class="a11y-highlight-badge">
+        <span class="a11y-badge-label">WCAG 2.1 AA</span>
+        <span class="a11y-badge-icon">♿</span>
+      </div>
+      <div class="a11y-highlight-body">
+        <h2>Accessibility improvements in v0.9.37</h2>
+        <p>
+          WarmDesk now ships a comprehensive WCAG 2.1 AA accessibility pass:
+          skip-to-content navigation, focus traps with return focus in all modals,
+          <code>alertdialog</code> roles on call overlays with auto-focus on the accept button,
+          <code>role="log"</code> on chat for live message announcements,
+          full combobox ARIA on global search, heading hierarchy on every view,
+          and alt text on all images.
+        </p>
+        <p>
+          Press <kbd>?</kbd> anywhere in the app — or <kbd>Ctrl</kbd>+<kbd>K</kbd> to jump straight to search.
+        </p>
+        <a href="{{ "blog/accessibility-wcag-2.1-aa/" | absURL }}" class="btn btn-primary" style="margin-top:12px;">
+          Read the full write-up →
+        </a>
+      </div>
     </div>
   </div>
 </section>
