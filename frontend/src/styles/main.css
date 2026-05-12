@@ -1,6 +1,56 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #app { height: 100%; }
 
+/* Visually hidden but readable by screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 var(--color-border);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+/* Skip-to-content link — invisible until focused */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 8px;
+  z-index: 10000;
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+.skip-link:focus { top: 8px; }
+
+/* Global keyboard focus ring for all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Programmatic focus target for route transitions — suppress visible ring */
+#main-content:focus { outline: none; }
+
 /* Suppress WebView2's built-in password-reveal button — it triggers a
    synchronous IPC round-trip on focus that causes typing lag on Windows. */
 ::-ms-reveal { display: none; }

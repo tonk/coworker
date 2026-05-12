@@ -9,7 +9,9 @@
     "logout": "Logout",
     "profile": "Profile",
     "messages": "Chats",
-    "about": "About"
+    "about": "About",
+    "user_menu": "User menu",
+    "keyboard_shortcuts": "Keyboard Shortcuts"
   },
   "auth": {
     "login": "Login",
@@ -418,7 +420,11 @@
     "add": "Add",
     "pick_date": "Pick date",
     "no_results": "No results",
-    "close": "Close"
+    "close": "Close",
+    "skip_to_content": "Skip to main content",
+    "go_back": "Go back",
+    "go_forward": "Go forward",
+    "or": "or"
   },
   "about": {
     "repository": "Repository",
@@ -732,5 +738,36 @@
     "peer_screen": "{name}'s screen",
     "invite_sent": "Invite sent",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "section_global": "Global",
+    "section_navigation": "Navigation",
+    "section_modals": "Modals",
+    "section_board": "Board",
+    "section_chat": "Chat",
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out",
+    "zoom_reset": "Reset zoom",
+    "focus_search": "Focus search",
+    "show_shortcuts": "Show shortcuts",
+    "reload_desktop": "Reload (desktop)",
+    "skip_to_main": "Skip to main content",
+    "navigate_results": "Navigate results",
+    "select_result": "Select result",
+    "close": "Close",
+    "next_focus": "Next focusable element",
+    "prev_focus": "Previous focusable element",
+    "close_card": "Close card",
+    "send_message": "Send message",
+    "cancel_edit": "Cancel edit",
+    "mention": "Mention a user",
+    "emoji_shortcode": "Insert emoji shortcode",
+    "pick_suggestion": "Pick suggestion"
+  },
+  "dashboard": {
+    "news_title": "What's new",
+    "a11y_title": "Accessibility",
+    "view_shortcuts": "View keyboard shortcuts"
   }
 }

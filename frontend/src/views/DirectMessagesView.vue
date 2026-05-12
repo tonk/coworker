@@ -5,7 +5,7 @@
     <aside class="dm-sidebar">
 
       <div class="dm-sidebar-header">
-        <h2>{{ $t('dm.title') }}</h2>
+        <h1>{{ $t('dm.title') }}</h1>
         <button class="new-chat-btn" @click="toggleNewConv" :class="{ active: showNewConv }" title="New conversation">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
@@ -1351,7 +1351,7 @@ function dayLabel(dateStr) {
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
-.dm-sidebar-header h2 { font-size: 15px; font-weight: 700; }
+.dm-sidebar-header h1 { font-size: 15px; font-weight: 700; }
 
 .new-chat-btn {
   width: 28px;

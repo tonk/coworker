@@ -9,7 +9,8 @@
     "logout": "Kirjaudu ulos",
     "profile": "Profiili",
     "messages": "Chatit",
-    "about": "Tietoja"
+    "about": "Tietoja",
+    "user_menu": "Käyttäjävalikko"
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -412,7 +413,11 @@
     "add": "Lisää",
     "pick_date": "Valitse päivämäärä",
     "no_results": "Ei tuloksia",
-    "close": "Sulje"
+    "close": "Sulje",
+    "skip_to_content": "Siirry pääsisältöön",
+    "go_back": "Takaisin",
+    "go_forward": "Eteenpäin",
+    "or": "tai"
   },
   "about": {
     "repository": "Tietovarasto",
@@ -725,5 +730,36 @@
     "peer_screen": "Henkilön {name} näyttö",
     "invite_sent": "Kutsu lähetetty",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Pikanäppäimet",
+    "section_global": "Yleiset",
+    "section_navigation": "Navigointi",
+    "section_modals": "Modaalit",
+    "section_board": "Taulu",
+    "section_chat": "Chat",
+    "zoom_in": "Lähennä",
+    "zoom_out": "Loitonna",
+    "zoom_reset": "Nollaa zoom",
+    "focus_search": "Kohdista haku",
+    "show_shortcuts": "Näytä pikanäppäimet",
+    "reload_desktop": "Lataa uudelleen (työpöytä)",
+    "skip_to_main": "Siirry pääsisältöön",
+    "navigate_results": "Selaa tuloksia",
+    "select_result": "Valitse tulos",
+    "close": "Sulje",
+    "next_focus": "Seuraava kohdistettava elementti",
+    "prev_focus": "Edellinen kohdistettava elementti",
+    "close_card": "Sulje kortti",
+    "send_message": "Lähetä viesti",
+    "cancel_edit": "Peruuta muokkaus",
+    "mention": "Mainitse käyttäjä",
+    "emoji_shortcode": "Lisää emoji-lyhytkoodi",
+    "pick_suggestion": "Valitse ehdotus"
+  },
+  "dashboard": {
+    "news_title": "Uutiset",
+    "a11y_title": "Saavutettavuus",
+    "view_shortcuts": "Näytä pikanäppäimet"
   }
 }

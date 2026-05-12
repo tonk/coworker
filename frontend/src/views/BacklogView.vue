@@ -3,7 +3,7 @@
     <div class="backlog-toolbar">
       <div class="backlog-toolbar-left">
         <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="board-project-avatar" alt="" />
-        <span class="board-project-name">{{ projectStore.currentProject?.name }}</span>
+        <h1 class="board-project-name">{{ projectStore.currentProject?.name }}</h1>
       </div>
       <div class="backlog-toolbar-right">
         <RouterLink :to="`/projects/${slug}`" class="btn btn-ghost btn-sm">

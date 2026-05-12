@@ -49,7 +49,7 @@
             <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
               <input type="checkbox" :value="u.id" v-model="selectedInviteIds" class="invite-check" />
               <div class="invite-avatar" :style="inviteAvatarBg(u)">
-                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" @error="e => e.target.style.display='none'" />
+                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" alt="" aria-hidden="true" @error="e => e.target.style.display='none'" />
                 <span v-else class="invite-avatar-initials">{{ inviteInitials(u) }}</span>
               </div>
               <span class="invite-user-name">{{ u.display_name || u.username }}</span>
@@ -64,15 +64,16 @@
         <div class="video-controls">
           <button
             :class="['vc-btn', { active: showCallChat }]"
-            :title="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            :aria-label="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            :aria-pressed="showCallChat"
             @click.stop="toggleCallChat"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           </button>
-          <button class="vc-btn invite-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePicker">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="vc-btn invite-btn" :aria-label="$t('call.invite_to_call')" @click.stop="openInvitePicker">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="8.5" cy="7" r="4"/>
               <line x1="20" y1="8" x2="20" y2="14"/>
@@ -81,40 +82,41 @@
           </button>
           <button
             :class="['vc-btn', { active: lkState.isScreenSharing }]"
-            :title="lkState.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            :aria-label="lkState.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            :aria-pressed="lkState.isScreenSharing"
             @click.stop="lkToggleScreenShare"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
               <line x1="8" y1="21" x2="16" y2="21"/>
               <line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
           </button>
-          <button :class="['vc-btn', { active: lkState.isMuted }]" :title="lkState.isMuted ? $t('call.unmute') : $t('call.mute')" @click="lkToggleMute">
-            <svg v-if="!lkState.isMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button :class="['vc-btn', { active: lkState.isMuted }]" :aria-label="lkState.isMuted ? $t('call.unmute') : $t('call.mute')" :aria-pressed="lkState.isMuted" @click="lkToggleMute">
+            <svg v-if="!lkState.isMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
               <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
             </svg>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="1" y1="1" x2="23" y2="23"/>
               <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
               <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
               <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
             </svg>
           </button>
-          <button :class="['vc-btn', { active: lkState.isCameraOff }]" :title="lkState.isCameraOff ? $t('call.camera_on') : $t('call.camera_off')" @click="lkToggleCamera">
-            <svg v-if="!lkState.isCameraOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button :class="['vc-btn', { active: lkState.isCameraOff }]" :aria-label="lkState.isCameraOff ? $t('call.camera_on') : $t('call.camera_off')" :aria-pressed="lkState.isCameraOff" @click="lkToggleCamera">
+            <svg v-if="!lkState.isCameraOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="23 7 16 12 23 17 23 7"/>
               <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
             </svg>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="1" y1="1" x2="23" y2="23"/>
               <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34"/>
             </svg>
           </button>
-          <button class="vc-btn end-btn" :title="$t('call.hangup')" @click="lkEnd">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <button class="vc-btn end-btn" :aria-label="$t('call.hangup')" @click="lkEnd">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91M1 1l22 22"/>
             </svg>
           </button>
@@ -156,7 +158,7 @@
             <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
               <input type="checkbox" :value="u.id" v-model="selectedInviteIds" class="invite-check" />
               <div class="invite-avatar" :style="inviteAvatarBg(u)">
-                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" @error="e => e.target.style.display='none'" />
+                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" alt="" aria-hidden="true" @error="e => e.target.style.display='none'" />
                 <span v-else class="invite-avatar-initials">{{ inviteInitials(u) }}</span>
               </div>
               <span class="invite-user-name">{{ u.display_name || u.username }}</span>
@@ -172,15 +174,16 @@
         <div class="video-controls">
           <button
             :class="['vc-btn', { active: showCallChat }]"
-            :title="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            :aria-label="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            :aria-pressed="showCallChat"
             @click.stop="toggleCallChat"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           </button>
-          <button class="vc-btn invite-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePickerWebRTC">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="vc-btn invite-btn" :aria-label="$t('call.invite_to_call')" @click.stop="openInvitePickerWebRTC">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="8.5" cy="7" r="4"/>
               <line x1="20" y1="8" x2="20" y2="14"/>
@@ -190,22 +193,23 @@
 
           <button
             :class="['vc-btn', { active: state.isScreenSharing }]"
-            :title="state.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            :aria-label="state.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            :aria-pressed="state.isScreenSharing"
             @click.stop="toggleScreenShare"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
               <line x1="8" y1="21" x2="16" y2="21"/>
               <line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
           </button>
-          <button :class="['vc-btn', { active: state.isMuted }]" :title="state.isMuted ? $t('call.unmute') : $t('call.mute')" @click="toggleMute">
-            <svg v-if="!state.isMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button :class="['vc-btn', { active: state.isMuted }]" :aria-label="state.isMuted ? $t('call.unmute') : $t('call.mute')" :aria-pressed="state.isMuted" @click="toggleMute">
+            <svg v-if="!state.isMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
               <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
             </svg>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="1" y1="1" x2="23" y2="23"/>
               <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
               <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
@@ -213,19 +217,19 @@
             </svg>
           </button>
 
-          <button :class="['vc-btn', { active: state.isCameraOff }]" :title="state.isCameraOff ? $t('call.camera_on') : $t('call.camera_off')" @click="toggleCamera">
-            <svg v-if="!state.isCameraOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button :class="['vc-btn', { active: state.isCameraOff }]" :aria-label="state.isCameraOff ? $t('call.camera_on') : $t('call.camera_off')" :aria-pressed="state.isCameraOff" @click="toggleCamera">
+            <svg v-if="!state.isCameraOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="23 7 16 12 23 17 23 7"/>
               <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
             </svg>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="1" y1="1" x2="23" y2="23"/>
               <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34"/>
             </svg>
           </button>
 
-          <button class="vc-btn end-btn" :title="$t('call.hangup')" @click="endCall()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <button class="vc-btn end-btn" :aria-label="$t('call.hangup')" @click="endCall()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91M1 1l22 22"/>
             </svg>
           </button>
@@ -257,7 +261,7 @@
             <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
               <input type="checkbox" :value="u.id" v-model="selectedInviteIds" class="invite-check" />
               <div class="invite-avatar" :style="inviteAvatarBg(u)">
-                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" @error="e => e.target.style.display='none'" />
+                <img v-if="u.avatar_url" :src="u.avatar_url" class="invite-avatar-img" alt="" aria-hidden="true" @error="e => e.target.style.display='none'" />
                 <span v-else class="invite-avatar-initials">{{ inviteInitials(u) }}</span>
               </div>
               <span class="invite-user-name">{{ u.display_name || u.username }}</span>
@@ -280,15 +284,16 @@
         <div class="call-bar-actions">
           <button
             :class="['call-bar-btn', { active: showCallChat }]"
-            :title="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            :aria-label="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
+            :aria-pressed="showCallChat"
             @click.stop="toggleCallChat"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           </button>
-          <button v-if="state.phase === 'active'" class="call-bar-btn" :title="$t('call.invite_to_call')" @click.stop="openInvitePickerWebRTC">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button v-if="state.phase === 'active'" class="call-bar-btn" :aria-label="$t('call.invite_to_call')" @click.stop="openInvitePickerWebRTC">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="8.5" cy="7" r="4"/>
               <line x1="20" y1="8" x2="20" y2="14"/>
@@ -298,22 +303,23 @@
           <button
             v-if="state.hasVideo && state.phase === 'active'"
             :class="['call-bar-btn', { active: state.isScreenSharing }]"
-            :title="state.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            :aria-label="state.isScreenSharing ? $t('call.stop_share') : $t('call.share_screen')"
+            :aria-pressed="state.isScreenSharing"
             @click.stop="toggleScreenShare"
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
               <line x1="8" y1="21" x2="16" y2="21"/>
               <line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
           </button>
-          <button :class="['call-bar-btn', { active: state.isMuted }]" :title="state.isMuted ? $t('call.unmute') : $t('call.mute')" @click="toggleMute">
-            <svg v-if="!state.isMuted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button :class="['call-bar-btn', { active: state.isMuted }]" :aria-label="state.isMuted ? $t('call.unmute') : $t('call.mute')" :aria-pressed="state.isMuted" @click="toggleMute">
+            <svg v-if="!state.isMuted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
               <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
             </svg>
-            <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="1" y1="1" x2="23" y2="23"/>
               <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
               <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
@@ -321,19 +327,19 @@
             </svg>
           </button>
 
-          <button v-if="state.hasVideo" :class="['call-bar-btn', { active: state.isCameraOff }]" :title="state.isCameraOff ? $t('call.camera_on') : $t('call.camera_off')" @click="toggleCamera">
-            <svg v-if="!state.isCameraOff" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button v-if="state.hasVideo" :class="['call-bar-btn', { active: state.isCameraOff }]" :aria-label="state.isCameraOff ? $t('call.camera_on') : $t('call.camera_off')" :aria-pressed="state.isCameraOff" @click="toggleCamera">
+            <svg v-if="!state.isCameraOff" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polygon points="23 7 16 12 23 17 23 7"/>
               <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
             </svg>
-            <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="1" y1="1" x2="23" y2="23"/>
               <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34"/>
             </svg>
           </button>
 
-          <button class="call-bar-btn end-btn" :title="$t('call.hangup')" @click="endCall()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <button class="call-bar-btn end-btn" :aria-label="$t('call.hangup')" @click="endCall()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91M1 1l22 22"/>
             </svg>
           </button>

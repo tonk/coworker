@@ -9,7 +9,9 @@
     "logout": "Uitloggen",
     "profile": "Profiel",
     "messages": "Chats",
-    "about": "Over"
+    "about": "Over",
+    "user_menu": "Gebruikersmenu",
+    "keyboard_shortcuts": "Sneltoetsen"
   },
   "auth": {
     "login": "Inloggen",
@@ -383,7 +385,11 @@
     "add": "Toevoegen",
     "pick_date": "Datum kiezen",
     "no_results": "Geen resultaten",
-    "close": "Sluiten"
+    "close": "Sluiten",
+    "skip_to_content": "Ga naar hoofdinhoud",
+    "go_back": "Ga terug",
+    "go_forward": "Ga vooruit",
+    "or": "of"
   },
   "about": {
     "repository": "Repository",
@@ -732,5 +738,36 @@
     "peer_screen": "Scherm van {name}",
     "invite_sent": "Uitnodiging verzonden",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Sneltoetsen",
+    "section_global": "Globaal",
+    "section_navigation": "Navigatie",
+    "section_modals": "Modals",
+    "section_board": "Bord",
+    "section_chat": "Chat",
+    "zoom_in": "Inzoomen",
+    "zoom_out": "Uitzoomen",
+    "zoom_reset": "Zoom terugzetten",
+    "focus_search": "Zoeken focussen",
+    "show_shortcuts": "Sneltoetsen tonen",
+    "reload_desktop": "Herladen (desktop)",
+    "skip_to_main": "Naar hoofdinhoud",
+    "navigate_results": "Door resultaten navigeren",
+    "select_result": "Resultaat selecteren",
+    "close": "Sluiten",
+    "next_focus": "Volgend focusbaar element",
+    "prev_focus": "Vorig focusbaar element",
+    "close_card": "Kaart sluiten",
+    "send_message": "Bericht verzenden",
+    "cancel_edit": "Bewerken annuleren",
+    "mention": "Gebruiker vermelden",
+    "emoji_shortcode": "Emoji-shortcode invoegen",
+    "pick_suggestion": "Suggestie kiezen"
+  },
+  "dashboard": {
+    "news_title": "Wat is er nieuw",
+    "a11y_title": "Toegankelijkheid",
+    "view_shortcuts": "Sneltoetsen bekijken"
   }
 }

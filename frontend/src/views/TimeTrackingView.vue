@@ -1,5 +1,6 @@
 <template>
   <div class="tt-view">
+    <h1 class="sr-only">{{ $t('timeTracking.nav') }}</h1>
 
     <!-- ── Top bar ─────────────────────────────────────────────────────────── -->
     <div class="tt-bar">

@@ -1,5 +1,6 @@
 <template>
   <div class="gantt-layout">
+    <h1 class="sr-only">{{ projectStore.currentProject?.name }} — {{ $t('gantt.title') }}</h1>
     <div class="gantt-toolbar">
       <div class="gantt-toolbar-left">
         <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="project-avatar" alt="" />

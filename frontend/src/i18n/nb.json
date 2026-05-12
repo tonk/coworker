@@ -9,7 +9,9 @@
     "logout": "Logg ut",
     "profile": "Profil",
     "messages": "Chatter",
-    "about": "Om"
+    "about": "Om",
+    "user_menu": "Brukermeny",
+    "keyboard_shortcuts": "Tastatursnarveier"
   },
   "auth": {
     "login": "Logg inn",
@@ -412,7 +414,11 @@
     "add": "Legg til",
     "pick_date": "Velg dato",
     "no_results": "Ingen resultater",
-    "close": "Lukk"
+    "close": "Lukk",
+    "skip_to_content": "Hopp til hovedinnhold",
+    "go_back": "Gå tilbake",
+    "go_forward": "Gå fremover",
+    "or": "eller"
   },
   "about": {
     "repository": "Repository",
@@ -725,5 +731,36 @@
     "peer_screen": "{name} sin skjerm",
     "invite_sent": "Invitasjon sendt",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Tastatursnarveier",
+    "section_global": "Global",
+    "section_navigation": "Navigasjon",
+    "section_modals": "Modaler",
+    "section_board": "Tavle",
+    "section_chat": "Chat",
+    "zoom_in": "Zoom inn",
+    "zoom_out": "Zoom ut",
+    "zoom_reset": "Tilbakestill zoom",
+    "focus_search": "Fokuser søk",
+    "show_shortcuts": "Vis snarveier",
+    "reload_desktop": "Last inn på nytt (skrivebord)",
+    "skip_to_main": "Hopp til hovedinnhold",
+    "navigate_results": "Naviger resultater",
+    "select_result": "Velg resultat",
+    "close": "Lukk",
+    "next_focus": "Neste fokuserbare element",
+    "prev_focus": "Forrige fokuserbare element",
+    "close_card": "Lukk kort",
+    "send_message": "Send melding",
+    "cancel_edit": "Avbryt redigering",
+    "mention": "Nevn en bruker",
+    "emoji_shortcode": "Sett inn emoji-snarvei",
+    "pick_suggestion": "Velg forslag"
+  },
+  "dashboard": {
+    "news_title": "Nyheter",
+    "a11y_title": "Tilgjengelighet",
+    "view_shortcuts": "Se tastatursnarveier"
   }
 }

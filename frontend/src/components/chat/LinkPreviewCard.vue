@@ -1,6 +1,6 @@
 <template>
   <a v-if="preview" :href="url" target="_blank" rel="noopener noreferrer" class="link-preview-card">
-    <img v-if="previewImage && !imgBroken" :src="previewImage" class="preview-thumb" @error="imgBroken = true" />
+    <img v-if="previewImage && !imgBroken" :src="previewImage" class="preview-thumb" alt="" aria-hidden="true" @error="imgBroken = true" />
     <div class="preview-text">
       <div v-if="preview.title" class="preview-title">{{ preview.title }}</div>
       <div v-if="preview.description" class="preview-desc">{{ preview.description }}</div>

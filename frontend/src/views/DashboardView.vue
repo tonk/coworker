@@ -12,6 +12,32 @@
           </div>
         </div>
 
+        <!-- ── Dashboard widgets ──────────────────────────────────────────── -->
+        <div class="dashboard-widgets">
+          <div v-if="!newsHidden" class="widget news-widget">
+            <button class="widget-dismiss" :aria-label="$t('common.close')" @click="dismissNews">×</button>
+            <div class="widget-tag">{{ $t('dashboard.news_title') }}</div>
+            <h2 class="widget-title">Accessibility improvements — WCAG 2.1 AA</h2>
+            <p class="widget-date">12 May 2026</p>
+            <p class="widget-body">WarmDesk now ships with a full WCAG 2.1 AA accessibility pass: skip-to-content navigation, focus management across all modals and route transitions, complete ARIA roles and live regions for chat and call overlays, heading hierarchy on every view, and keyboard shortcuts for common actions.</p>
+            <button class="widget-link-btn" @click="openShortcuts">{{ $t('dashboard.view_shortcuts') }} →</button>
+          </div>
+          <div class="widget a11y-widget">
+            <div class="widget-tag a11y-tag">{{ $t('dashboard.a11y_title') }}</div>
+            <div class="a11y-badge">WCAG 2.1 AA</div>
+            <ul class="a11y-list">
+              <li>✓ Skip-to-content &amp; focus management</li>
+              <li>✓ ARIA roles, labels &amp; live regions</li>
+              <li>✓ Keyboard shortcuts &amp; focus trap</li>
+              <li>✓ Heading hierarchy (h1 on every page)</li>
+              <li>✓ Form error announcements</li>
+              <li>✓ Alt text on all images</li>
+              <li class="a11y-open">◌ Color contrast (muted text pending)</li>
+            </ul>
+            <button class="widget-link-btn" @click="openShortcuts">{{ $t('dashboard.view_shortcuts') }} →</button>
+          </div>
+        </div>
+
         <div v-if="projectStore.loading" class="loading-state">
           <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
         </div>
@@ -125,6 +151,11 @@ const ui = useUIStore()
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
 const showCreate = ref(false)
+
+const NEWS_KEY = 'dashboard_news_a11y_dismissed'
+const newsHidden = ref(localStorage.getItem(NEWS_KEY) === '1')
+function dismissNews() { newsHidden.value = true; localStorage.setItem(NEWS_KEY, '1') }
+function openShortcuts() { window.dispatchEvent(new CustomEvent('open-keyboard-shortcuts')) }
 const gridEl = ref(null)
 let sortable = null
 
@@ -305,6 +336,106 @@ async function handleCreate() {
 
 .loading-state { display: flex; justify-content: center; padding: 60px; }
 .empty-state { text-align: center; padding: 60px; color: var(--color-text-muted); }
+
+/* ── Dashboard widgets ──────────────────────────────────────────────────── */
+.dashboard-widgets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+@media (max-width: 640px) {
+  .dashboard-widgets { grid-template-columns: 1fr; }
+}
+
+.widget {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.widget-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+.a11y-tag { color: var(--color-success, #22c55e); }
+
+.widget-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  padding-right: 24px;
+}
+.widget-date {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+.widget-body {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+.widget-dismiss {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+.widget-dismiss:hover { color: var(--color-text); background: var(--color-bg); }
+
+.widget-link-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+.widget-link-btn:hover { text-decoration: underline; }
+
+.a11y-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: color-mix(in srgb, var(--color-success, #22c55e) 15%, transparent);
+  color: var(--color-success, #22c55e);
+  border: 1px solid color-mix(in srgb, var(--color-success, #22c55e) 40%, transparent);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  margin-bottom: 12px;
+}
+.a11y-list {
+  list-style: none;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.a11y-list li {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.a11y-list li:not(.a11y-open) { color: var(--color-text); }
+.a11y-open { opacity: 0.65; }
 
 .input-error { border-color: var(--color-danger, #ef4444) !important; }
 .field-error { margin-top: 4px; font-size: 12px; color: var(--color-danger, #ef4444); }

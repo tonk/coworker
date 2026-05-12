@@ -1,10 +1,11 @@
 <template>
   <div v-if="auth.isLoggedIn" class="app-shell">
+    <a href="#main-content" class="skip-link">{{ $t('common.skip_to_content') }}</a>
     <UpdateBanner v-if="updateAvailable" :latest-version="latestVersion" :release-url="releaseUrl" />
-    <AppHeader class="app-shell-header" />
+    <AppHeader class="app-shell-header" @open-shortcuts="showShortcuts = true" />
     <nav v-if="showBreadcrumbs" class="app-breadcrumbs" aria-label="Breadcrumb">
-      <button class="crumb-nav-btn" @click="goBack" :disabled="!canGoBack" title="Back">←</button>
-      <button class="crumb-nav-btn" @click="goForward" title="Forward">→</button>
+      <button class="crumb-nav-btn" @click="goBack" :disabled="!canGoBack" :aria-label="$t('common.go_back')">←</button>
+      <button class="crumb-nav-btn" @click="goForward" :aria-label="$t('common.go_forward')">→</button>
       <RouterLink to="/" class="crumb-link">Home</RouterLink>
       <template v-for="(crumb, idx) in routeCrumbs" :key="crumb.to || `${crumb.label}-${idx}`">
         <span class="crumb-sep">›</span>
@@ -16,13 +17,13 @@
     </nav>
     <div class="app-shell-body" :class="sidebarPos === 'right' ? 'sidebar-right' : 'sidebar-left'">
       <AppSidebar />
-      <div class="app-shell-content">
+      <main class="app-shell-content" id="main-content" tabindex="-1">
         <RouterView />
         <footer class="app-footer">
           <span class="footer-left">WarmDesk v{{ appVersion }}<span v-if="serverVersion" class="footer-server"> · server {{ serverVersion }}</span></span>
           <span class="footer-right">{{ userFullName }}</span>
         </footer>
-      </div>
+      </main>
     </div>
   </div>
   <RouterView v-else />
@@ -30,6 +31,7 @@
   <IncomingCallOverlay />
   <IncomingGroupCallOverlay />
   <ActiveCallBar />
+  <KeyboardShortcutsModal v-if="showShortcuts" @close="showShortcuts = false" />
 </template>
 
 <script setup>
@@ -58,11 +60,13 @@ import { useLiveKitGroupCall } from '@/composables/useLiveKitGroupCall'
 import IncomingCallOverlay from '@/components/call/IncomingCallOverlay.vue'
 import IncomingGroupCallOverlay from '@/components/call/IncomingGroupCallOverlay.vue'
 import ActiveCallBar from '@/components/call/ActiveCallBar.vue'
+import KeyboardShortcutsModal from '@/components/common/KeyboardShortcutsModal.vue'
 
 const auth = useAuthStore()
 const systemStore = useSystemStore()
 const ui = useUIStore()
 const notificationsStore = useNotificationsStore()
+const showShortcuts = ref(false)
 const { projectChatUnread } = useProjectChatUnread()
 const call = useWebRTCCall()
 const lkGroupCall = useLiveKitGroupCall()
@@ -274,6 +278,23 @@ function onKeyZoom(e) {
     location.reload()
     return
   }
+  // Ctrl/⌘+K — focus global search
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    const tag = document.activeElement?.tagName
+    if (!['INPUT', 'TEXTAREA'].includes(tag)) {
+      e.preventDefault()
+      document.dispatchEvent(new CustomEvent('focus-global-search'))
+      return
+    }
+  }
+  // ? — open keyboard shortcuts (when not typing)
+  if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const tag = document.activeElement?.tagName
+    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) && !document.activeElement?.isContentEditable) {
+      showShortcuts.value = true
+      return
+    }
+  }
   if (!e.ctrlKey && !e.metaKey) return
   if (e.key === '+' || e.key === '=') {
     if (!isTauri) e.preventDefault()
@@ -315,10 +336,13 @@ watch([() => auth.isLoggedIn, () => systemStore.sessionTimeoutMinutes], ([logged
   }
 }, { immediate: true })
 
+function onOpenShortcuts() { showShortcuts.value = true }
+
 onMounted(() => {
   ACTIVITY_EVENTS.forEach(e => window.addEventListener(e, onActivity, { passive: true }))
   window.addEventListener('keydown', onKeyZoom, { passive: isTauri })
   window.addEventListener('wheel', onWheelZoom, { passive: false })
+  window.addEventListener('open-keyboard-shortcuts', onOpenShortcuts)
   const savedZoom = localStorage.getItem(ZOOM_KEY)
   if (savedZoom) applyZoom(parseFloat(savedZoom))
 })
@@ -327,6 +351,7 @@ onUnmounted(() => {
   ACTIVITY_EVENTS.forEach(e => window.removeEventListener(e, onActivity))
   window.removeEventListener('keydown', onKeyZoom)
   window.removeEventListener('wheel', onWheelZoom)
+  window.removeEventListener('open-keyboard-shortcuts', onOpenShortcuts)
   auth.stopIdleTimer()
   disconnectUserWs()
 })

@@ -9,7 +9,9 @@
     "logout": "Log ud",
     "profile": "Profil",
     "messages": "Chats",
-    "about": "Om"
+    "about": "Om",
+    "user_menu": "Brugermenu",
+    "keyboard_shortcuts": "Tastaturgenveje"
   },
   "auth": {
     "login": "Log ind",
@@ -412,7 +414,11 @@
     "add": "Tilføj",
     "pick_date": "Vælg dato",
     "no_results": "Ingen resultater",
-    "close": "Luk"
+    "close": "Luk",
+    "skip_to_content": "Gå til hovedindhold",
+    "go_back": "Gå tilbage",
+    "go_forward": "Gå frem",
+    "or": "eller"
   },
   "about": {
     "repository": "Repository",
@@ -725,5 +731,36 @@
     "peer_screen": "{name}s skærm",
     "invite_sent": "Invitation sendt",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Tastaturgenveje",
+    "section_global": "Global",
+    "section_navigation": "Navigation",
+    "section_modals": "Modaler",
+    "section_board": "Tavle",
+    "section_chat": "Chat",
+    "zoom_in": "Zoom ind",
+    "zoom_out": "Zoom ud",
+    "zoom_reset": "Nulstil zoom",
+    "focus_search": "Fokuser søgning",
+    "show_shortcuts": "Vis genveje",
+    "reload_desktop": "Genindlæs (desktop)",
+    "skip_to_main": "Gå til hovedindhold",
+    "navigate_results": "Naviger resultater",
+    "select_result": "Vælg resultat",
+    "close": "Luk",
+    "next_focus": "Næste fokuserbare element",
+    "prev_focus": "Forrige fokuserbare element",
+    "close_card": "Luk kort",
+    "send_message": "Send besked",
+    "cancel_edit": "Annuller redigering",
+    "mention": "Nævn en bruger",
+    "emoji_shortcode": "Indsæt emoji-genvej",
+    "pick_suggestion": "Vælg forslag"
+  },
+  "dashboard": {
+    "news_title": "Nyheder",
+    "a11y_title": "Tilgængelighed",
+    "view_shortcuts": "Se tastaturgenveje"
   }
 }

@@ -9,7 +9,7 @@
       :class="{ mirror: isLocal && !isScreenShare, 'lk-video--screen': isScreenShare }"
     />
     <div v-else class="lk-placeholder">
-      <img v-if="avatar" :src="avatar" class="lk-avatar" @error="onAvatarError" />
+      <img v-if="avatar" :src="avatar" class="lk-avatar" alt="" aria-hidden="true" @error="onAvatarError" />
       <span v-else class="lk-initial">{{ initial }}</span>
     </div>
     <div v-if="track && cameraOff" class="lk-off-overlay">

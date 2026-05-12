@@ -1,32 +1,37 @@
 <template>
   <Transition name="call-overlay">
-    <div v-if="state.phase === 'ringing'" class="incoming-call-overlay">
+    <div
+      v-if="state.phase === 'ringing'"
+      class="incoming-call-overlay"
+      role="alertdialog"
+      aria-modal="true"
+      :aria-labelledby="labelId"
+    >
       <div class="call-avatar">
         <img
           v-if="state.remoteAvatar"
           :src="state.remoteAvatar"
           class="avatar-img"
+          aria-hidden="true"
           @error="e => e.target.style.display = 'none'"
         />
-        <span v-else class="avatar-initials">{{ initials }}</span>
+        <span v-else class="avatar-initials" aria-hidden="true">{{ initials }}</span>
       </div>
       <div class="call-info">
-        <div class="call-label">
-          <svg v-if="state.hasVideo" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:4px;vertical-align:middle"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <div class="call-label" aria-hidden="true">
+          <svg v-if="state.hasVideo" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:4px;vertical-align:middle" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
           {{ state.hasVideo ? $t('call.incoming_video') : $t('call.incoming') }}
         </div>
-        <div class="call-name">{{ state.remoteName || $t('common.unknown') }}</div>
+        <div :id="labelId" class="call-name">{{ state.remoteName || $t('common.unknown') }}</div>
       </div>
       <div class="call-actions">
-        <button class="call-btn accept-btn" :title="$t('call.accept')" @click="acceptCall">
-          <!-- Phone handset accept -->
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button ref="acceptBtnEl" class="call-btn accept-btn" :aria-label="$t('call.accept')" @click="acceptCall">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.22-1.22a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
           </svg>
         </button>
-        <button class="call-btn decline-btn" :title="$t('call.decline')" @click="rejectCall">
-          <!-- Phone handset decline / end -->
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button class="call-btn decline-btn" :aria-label="$t('call.decline')" @click="rejectCall">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91M1 1l22 22"/>
           </svg>
         </button>
@@ -36,16 +41,23 @@
 </template>
 
 <script setup>
-import { computed, watch, onUnmounted } from 'vue'
+import { computed, ref, watch, nextTick, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useWebRTCCall } from '@/composables/useWebRTCCall'
 
 const { t } = useI18n()
 const { state, acceptCall, rejectCall } = useWebRTCCall()
 
+const labelId = 'incoming-call-label-' + Math.random().toString(36).slice(2, 8)
+const acceptBtnEl = ref(null)
+
 const initials = computed(() => {
   const name = state.remoteName || '?'
   return name.slice(0, 2).toUpperCase()
+})
+
+watch(() => state.phase, (phase) => {
+  if (phase === 'ringing') nextTick(() => acceptBtnEl.value?.focus())
 })
 
 // ── Ringtone (Web Audio API oscillator) ──────────────────────────────────────

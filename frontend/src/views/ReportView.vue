@@ -3,7 +3,7 @@
     <!-- Filter panel (hidden when printing) -->
     <div class="report-filters no-print">
       <div class="filters-inner">
-        <h2 class="filters-title">{{ $t('report.title') }}</h2>
+        <h1 class="filters-title">{{ $t('report.title') }}</h1>
         <div class="filters-row">
           <div class="filter-group">
             <label class="filter-label">{{ $t('report.period') }}</label>

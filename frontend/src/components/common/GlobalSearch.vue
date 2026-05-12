@@ -1,11 +1,17 @@
 <template>
   <div class="search-container" ref="containerEl">
     <div class="search-input-wrap">
-      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input
         class="search-input"
         v-model="query"
-        placeholder="Search..."
+        :placeholder="$t('common.search')"
+        :aria-label="$t('common.search')"
+        role="combobox"
+        :aria-expanded="open && (results.length > 0 || query.length >= 2)"
+        aria-autocomplete="list"
+        aria-controls="global-search-listbox"
+        :aria-activedescendant="activeResultId"
         @focus="open = true"
         @keydown.escape="close"
         @keydown.down.prevent="moveDown"
@@ -13,17 +19,26 @@
         @keydown.enter.prevent="selectCurrent"
         ref="inputEl"
       />
-      <span v-if="loading" class="search-spinner"></span>
+      <span v-if="loading" class="search-spinner" role="status" :aria-label="$t('common.loading')"></span>
     </div>
 
-    <div v-if="open && (results.length || query.length >= 2)" class="search-results">
-      <div v-if="!results.length && query.length >= 2 && !loading" class="search-empty">No results</div>
+    <div
+      v-if="open && (results.length || query.length >= 2)"
+      class="search-results"
+      id="global-search-listbox"
+      role="listbox"
+      :aria-label="$t('common.search')"
+    >
+      <div v-if="!results.length && query.length >= 2 && !loading" class="search-empty" role="option" aria-disabled="true">{{ $t('common.no_results') }}</div>
 
       <template v-for="(group, gName) in grouped" :key="gName">
-        <div class="result-group-label">{{ groupLabel(gName) }}</div>
+        <div class="result-group-label" role="presentation">{{ groupLabel(gName) }}</div>
         <div
           v-for="(r, idx) in group"
           :key="r.item.id + gName"
+          :id="`search-result-${globalIdx(gName, idx)}`"
+          role="option"
+          :aria-selected="activeIdx === globalIdx(gName, idx)"
           :class="['result-item', { active: activeIdx === globalIdx(gName, idx) }]"
           @mousedown.prevent="navigate(r)"
           @mouseover="activeIdx = globalIdx(gName, idx)"
@@ -45,8 +60,11 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { searchApi } from '@/api/search'
 import { projectsApi } from '@/api/projects'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const query = ref('')
@@ -84,7 +102,13 @@ const grouped = computed(() => {
 })
 
 function groupLabel(type) {
-  return { card: 'Cards', chat_message: 'Chat', dm_message: 'Messages', card_comment: 'Comments' }[type] || type
+  const map = {
+    card: t('board.cards', 'Cards'),
+    chat_message: t('nav.messages', 'Chat'),
+    dm_message: t('dm.messages', t('nav.messages', 'Messages')),
+    card_comment: t('board.comments', 'Comments'),
+  }
+  return map[type] || type
 }
 
 function resultTitle(r) {
@@ -114,6 +138,10 @@ const flatResults = computed(() => {
   }
   return flat
 })
+
+const activeResultId = computed(() =>
+  flatResults.value.length ? `search-result-${activeIdx.value}` : undefined
+)
 
 function globalIdx(gName, idx) {
   let n = 0
@@ -184,8 +212,19 @@ function onClickOutside(e) {
   }
 }
 
-onMounted(() => document.addEventListener('mousedown', onClickOutside))
-onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
+function focusInput() {
+  inputEl.value?.focus()
+  open.value = true
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', onClickOutside)
+  document.addEventListener('focus-global-search', focusInput)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', onClickOutside)
+  document.removeEventListener('focus-global-search', focusInput)
+})
 </script>
 
 <style scoped>

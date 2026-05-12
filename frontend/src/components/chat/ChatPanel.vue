@@ -35,7 +35,7 @@
     </div>
 
     <!-- Message list -->
-    <div class="chat-messages" :class="'layout-' + layout" ref="messagesEl" @click="onMessagesClick" @auxclick="handleCardRefClick">
+    <div class="chat-messages" :class="'layout-' + layout" ref="messagesEl" role="log" aria-live="polite" aria-relevant="additions text" @click="onMessagesClick" @auxclick="handleCardRefClick">
       <button v-if="chatStore.hasMore && !chatStore.loading" class="load-more-btn" @click="loadMore">
         {{ $t('chat.load_more') }}
       </button>

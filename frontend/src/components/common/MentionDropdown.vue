@@ -9,7 +9,7 @@
       @mousemove="$emit('update:activeIndex', i)"
     >
       <div class="mention-avatar" :style="avatarBg(user)">
-        <img v-if="avatarSrc(user)" :src="avatarSrc(user)" class="avatar-img" @error="e => e.target.style.display='none'" />
+        <img v-if="avatarSrc(user)" :src="avatarSrc(user)" class="avatar-img" alt="" aria-hidden="true" @error="e => e.target.style.display='none'" />
         <span v-else class="avatar-initials">{{ initials(user) }}</span>
       </div>
       <span class="mention-name">{{ user.display_name || user.username }}</span>

@@ -35,7 +35,7 @@
                 spellcheck="false" autocorrect="off" autocapitalize="off"
                 v-model="form.password" required />
             </div>
-            <p v-if="error" class="auth-error">{{ error }}</p>
+            <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
             <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
               <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
               {{ $t('auth.login') }}
@@ -61,7 +61,7 @@
                 inputmode="numeric" autocomplete="one-time-code" maxlength="6"
                 required autofocus placeholder="000000" />
             </div>
-            <p v-if="error" class="auth-error">{{ error }}</p>
+            <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
             <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
               <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
               {{ $t('auth.login') }}
@@ -94,7 +94,7 @@
               spellcheck="false" autocorrect="off" autocapitalize="off"
               v-model="form.password" required />
           </div>
-          <p v-if="error" class="auth-error">{{ error }}</p>
+          <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
           <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
             <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
             {{ $t('auth.login') }}
@@ -120,7 +120,7 @@
               inputmode="numeric" autocomplete="one-time-code" maxlength="6"
               required autofocus placeholder="000000" />
           </div>
-          <p v-if="error" class="auth-error">{{ error }}</p>
+          <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
           <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
             <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
             {{ $t('auth.login') }}

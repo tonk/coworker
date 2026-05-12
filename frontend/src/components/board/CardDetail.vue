@@ -65,7 +65,7 @@
             />
             <label class="picker-wrap" :title="$t('common.pick_date')">
               <span class="btn-icon-xs">&#128197;</span>
-              <input type="date" class="date-picker-overlay" :value="form.start_date" @change="onStartDatePickerChange" />
+              <input type="date" class="date-picker-overlay" :aria-label="$t('board.start_date')" :value="form.start_date" @change="onStartDatePickerChange" />
             </label>
             <button v-if="displayStartDate" class="btn-icon-xs" @click="displayStartDate = ''; form.start_date = ''" title="Clear">×</button>
           </div>
@@ -82,7 +82,7 @@
             />
             <label class="picker-wrap" :title="$t('common.pick_date')">
               <span class="btn-icon-xs">&#128197;</span>
-              <input type="date" class="date-picker-overlay" :value="form.due_date" @change="onDatePickerChange" />
+              <input type="date" class="date-picker-overlay" :aria-label="$t('board.due_date')" :value="form.due_date" @change="onDatePickerChange" />
             </label>
             <button v-if="displayDueDate" class="btn-icon-xs" @click="displayDueDate = ''; form.due_date = ''" title="Clear">×</button>
           </div>
@@ -108,6 +108,7 @@
               class="form-input"
               type="text"
               v-model="form.external_issue_ref"
+              :aria-label="$t('board.external_issue')"
               placeholder="#42"
               style="width:72px"
             />

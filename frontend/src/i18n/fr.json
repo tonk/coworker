@@ -9,7 +9,9 @@
     "logout": "Déconnexion",
     "profile": "Profil",
     "messages": "Chats",
-    "about": "À propos"
+    "about": "À propos",
+    "user_menu": "Menu utilisateur",
+    "keyboard_shortcuts": "Raccourcis clavier"
   },
   "auth": {
     "login": "Connexion",
@@ -383,7 +385,11 @@
     "add": "Ajouter",
     "pick_date": "Choisir une date",
     "no_results": "Aucun résultat",
-    "close": "Fermer"
+    "close": "Fermer",
+    "skip_to_content": "Aller au contenu principal",
+    "go_back": "Retour",
+    "go_forward": "Avancer",
+    "or": "ou"
   },
   "about": {
     "repository": "Dépôt",
@@ -732,5 +738,36 @@
     "peer_screen": "Écran de {name}",
     "invite_sent": "Invitation envoyée",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "section_global": "Global",
+    "section_navigation": "Navigation",
+    "section_modals": "Modales",
+    "section_board": "Tableau",
+    "section_chat": "Chat",
+    "zoom_in": "Zoomer",
+    "zoom_out": "Dézoomer",
+    "zoom_reset": "Réinitialiser le zoom",
+    "focus_search": "Focaliser la recherche",
+    "show_shortcuts": "Afficher les raccourcis",
+    "reload_desktop": "Recharger (bureau)",
+    "skip_to_main": "Aller au contenu principal",
+    "navigate_results": "Naviguer dans les résultats",
+    "select_result": "Sélectionner le résultat",
+    "close": "Fermer",
+    "next_focus": "Élément focalisable suivant",
+    "prev_focus": "Élément focalisable précédent",
+    "close_card": "Fermer la carte",
+    "send_message": "Envoyer le message",
+    "cancel_edit": "Annuler la modification",
+    "mention": "Mentionner un utilisateur",
+    "emoji_shortcode": "Insérer un shortcode emoji",
+    "pick_suggestion": "Choisir une suggestion"
+  },
+  "dashboard": {
+    "news_title": "Nouveautés",
+    "a11y_title": "Accessibilité",
+    "view_shortcuts": "Voir les raccourcis clavier"
   }
 }

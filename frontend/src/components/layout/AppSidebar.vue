@@ -9,12 +9,12 @@
       :class="{ 'section-drag-over': sectionDragOver === 'starred' }"
       data-section-key="starred"
     >
-      <button class="section-header" @click="toggle('starred')">
-        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'starred')">⠿</span>
+      <button class="section-header" @click="toggle('starred')" :aria-expanded="open.starred" aria-controls="section-body-starred">
+        <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'starred')">⠿</span>
         <span class="section-title">{{ $t('sidebar.starred') }}</span>
-        <span class="chevron" :class="{ open: open.starred }">›</span>
+        <span class="chevron" :class="{ open: open.starred }" aria-hidden="true">›</span>
       </button>
-      <div v-show="open.starred" class="section-body">
+      <div v-show="open.starred" class="section-body" id="section-body-starred">
         <div v-if="!orderedStarredProjects.length" class="section-empty">
           {{ $t('sidebar.no_starred') }}
         </div>
@@ -33,7 +33,7 @@
             <img v-if="projectAvatar(project) && !avatarErrors.has('p'+project.id)" :src="projectAvatar(project)" class="project-avatar" alt="" @error="avatarErrors.add('p'+project.id)" />
             <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
             <span class="link-text">{{ project.name }}</span>
-            <button class="fav-btn fav-btn-active" @click.prevent="sidebarStore.unstarProject(project.slug)" :title="$t('project.unstar')">★</button>
+            <button class="fav-btn fav-btn-active" @click.prevent="sidebarStore.unstarProject(project.slug)" :aria-label="$t('project.unstar')"><span aria-hidden="true">★</span></button>
           </RouterLink>
         </nav>
       </div>
@@ -46,12 +46,12 @@
       :class="{ 'section-drag-over': sectionDragOver === 'projects' }"
       data-section-key="projects"
     >
-      <button class="section-header" @click="toggle('projects')">
-        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'projects')">⠿</span>
+      <button class="section-header" @click="toggle('projects')" :aria-expanded="open.projects" aria-controls="section-body-projects">
+        <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'projects')">⠿</span>
         <span class="section-title">{{ $t('sidebar.all_projects') }}</span>
-        <span class="chevron" :class="{ open: open.projects }">›</span>
+        <span class="chevron" :class="{ open: open.projects }" aria-hidden="true">›</span>
       </button>
-      <div v-show="open.projects" class="section-body indented">
+      <div v-show="open.projects" class="section-body indented" id="section-body-projects">
         <div v-if="!sortedProjects.length" class="section-empty">
           {{ $t('sidebar.no_projects') }}
         </div>
@@ -78,12 +78,12 @@
       :class="{ 'section-drag-over': sectionDragOver === 'customers' }"
       data-section-key="customers"
     >
-      <button class="section-header" @click="toggle('customers')">
-        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'customers')">⠿</span>
+      <button class="section-header" @click="toggle('customers')" :aria-expanded="open.customers" aria-controls="section-body-customers">
+        <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'customers')">⠿</span>
         <span class="section-title">{{ $t('sidebar.customers') }}</span>
-        <span class="chevron" :class="{ open: open.customers }">›</span>
+        <span class="chevron" :class="{ open: open.customers }" aria-hidden="true">›</span>
       </button>
-      <div v-show="open.customers" class="section-body">
+      <div v-show="open.customers" class="section-body" id="section-body-customers">
         <div v-if="!orderedStarredCustomers.length" class="section-empty">
           {{ $t('sidebar.no_customers') }}
         </div>
@@ -102,7 +102,7 @@
             <img v-if="customerAvatar(c) && !avatarErrors.has('c'+c.id)" :src="customerAvatar(c)" class="customer-avatar" alt="" @error="avatarErrors.add('c'+c.id)" />
             <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
             <span class="link-text">{{ c.name }}</span>
-            <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :title="$t('customer.unstar')">★</button>
+            <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :aria-label="$t('customer.unstar')"><span aria-hidden="true">★</span></button>
           </RouterLink>
         </nav>
       </div>
@@ -115,12 +115,12 @@
       :class="{ 'section-drag-over': sectionDragOver === 'allCustomers' }"
       data-section-key="allCustomers"
     >
-      <button class="section-header" @click="toggle('allCustomers')">
-        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'allCustomers')">⠿</span>
+      <button class="section-header" @click="toggle('allCustomers')" :aria-expanded="open.allCustomers" aria-controls="section-body-allcustomers">
+        <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'allCustomers')">⠿</span>
         <span class="section-title">{{ $t('customer.all_customers') }}</span>
-        <span class="chevron" :class="{ open: open.allCustomers }">›</span>
+        <span class="chevron" :class="{ open: open.allCustomers }" aria-hidden="true">›</span>
       </button>
-      <div v-show="open.allCustomers" class="section-body indented">
+      <div v-show="open.allCustomers" class="section-body indented" id="section-body-allcustomers">
         <div v-if="!sortedCustomers.length" class="section-empty">
           {{ $t('sidebar.no_customers') }}
         </div>
@@ -147,12 +147,12 @@
       :class="{ 'section-drag-over': sectionDragOver === 'favorites' }"
       data-section-key="favorites"
     >
-      <button class="section-header" @click="toggle('favorites')">
-        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'favorites')">⠿</span>
+      <button class="section-header" @click="toggle('favorites')" :aria-expanded="open.favorites" aria-controls="section-body-favorites">
+        <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'favorites')">⠿</span>
         <span class="section-title">{{ $t('sidebar.favorites') }}</span>
-        <span class="chevron" :class="{ open: open.favorites }">›</span>
+        <span class="chevron" :class="{ open: open.favorites }" aria-hidden="true">›</span>
       </button>
-      <div v-show="open.favorites" class="section-body">
+      <div v-show="open.favorites" class="section-body" id="section-body-favorites">
         <div v-if="!favoritedUsers.length" class="section-empty">
           {{ $t('sidebar.no_favorites') }}
         </div>
@@ -163,11 +163,12 @@
             :to="{ name: 'chats', query: { user: user.id } }"
             class="user-row"
           >
-            <span class="presence-dot" :class="{ online: isOnline(user.id) }" :title="isOnline(user.id) ? $t('sidebar.online') : $t('sidebar.offline')"></span>
+            <span class="presence-dot" :class="{ online: isOnline(user.id) }" aria-hidden="true"></span>
+            <span class="sr-only">{{ isOnline(user.id) ? $t('sidebar.online') : $t('sidebar.offline') }}</span>
             <img v-if="userAvatar(user) && !avatarErrors.has('u'+user.id)" :src="userAvatar(user)" class="user-avatar" alt="" @error="avatarErrors.add('u'+user.id)" />
             <span v-else class="user-avatar-fallback">{{ userInitials(user) }}</span>
             <span class="user-row-name">{{ user.display_name || user.username }}</span>
-            <button class="fav-btn fav-btn-active" @click.prevent="unfavorite(user)" :title="$t('sidebar.unfavorite')">★</button>
+            <button class="fav-btn fav-btn-active" @click.prevent="unfavorite(user)" :aria-label="$t('sidebar.unfavorite')"><span aria-hidden="true">★</span></button>
           </RouterLink>
         </div>
       </div>
@@ -180,13 +181,13 @@
       :class="{ 'section-drag-over': sectionDragOver === 'people' }"
       data-section-key="people"
     >
-      <button class="section-header" @click="toggle('people')">
-        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'people')">⠿</span>
+      <button class="section-header" @click="toggle('people')" :aria-expanded="open.people" aria-controls="section-body-people">
+        <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'people')">⠿</span>
         <span class="section-title">{{ $t('sidebar.users') }}</span>
-        <span class="badge-count" v-if="onlineCount">{{ onlineCount }}</span>
-        <span class="chevron" :class="{ open: open.people }">›</span>
+        <span class="badge-count" v-if="onlineCount" aria-hidden="true">{{ onlineCount }}</span>
+        <span class="chevron" :class="{ open: open.people }" aria-hidden="true">›</span>
       </button>
-      <div v-show="open.people" class="section-body indented">
+      <div v-show="open.people" class="section-body indented" id="section-body-people">
         <div class="user-list">
           <RouterLink
             v-for="user in sortedUsers"
@@ -194,7 +195,8 @@
             :to="{ name: 'chats', query: { user: user.id } }"
             class="user-row"
           >
-            <span class="presence-dot" :class="{ online: user.online }" :title="user.online ? $t('sidebar.online') : $t('sidebar.offline')"></span>
+            <span class="presence-dot" :class="{ online: user.online }" aria-hidden="true"></span>
+            <span class="sr-only">{{ user.online ? $t('sidebar.online') : $t('sidebar.offline') }}</span>
             <img v-if="userAvatar(user) && !avatarErrors.has('u'+user.id)" :src="userAvatar(user)" class="user-avatar" alt="" @error="avatarErrors.add('u'+user.id)" />
             <span v-else class="user-avatar-fallback">{{ userInitials(user) }}</span>
             <span class="user-row-name">{{ user.display_name || user.username }}</span>
@@ -202,8 +204,8 @@
               class="fav-btn"
               :class="{ 'fav-btn-active': sidebarStore.isFavorite(user.id) }"
               @click.prevent="toggleFavorite(user)"
-              :title="sidebarStore.isFavorite(user.id) ? $t('sidebar.unfavorite') : $t('sidebar.favorite')"
-            >{{ sidebarStore.isFavorite(user.id) ? '★' : '☆' }}</button>
+              :aria-label="sidebarStore.isFavorite(user.id) ? $t('sidebar.unfavorite') : $t('sidebar.favorite')"
+            ><span aria-hidden="true">{{ sidebarStore.isFavorite(user.id) ? '★' : '☆' }}</span></button>
           </RouterLink>
           <div v-if="!sortedUsers.length" class="section-empty">
             {{ $t('sidebar.no_users') }}
@@ -219,13 +221,14 @@
       :class="{ 'section-drag-over': sectionDragOver === 'chats' }"
       data-section-key="chats"
     >
-      <button class="section-header" @click="toggle('chats')">
-        <span class="section-drag-handle" @pointerdown.prevent.stop="onSectionHandleDown($event, 'chats')">⠿</span>
+      <button class="section-header" @click="toggle('chats')" :aria-expanded="open.chats" aria-controls="section-body-chats">
+        <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'chats')">⠿</span>
         <span class="section-title">{{ $t('nav.messages') }}</span>
-        <span v-if="notificationsStore.hasUnread" class="unread-dot" :title="$t('sidebar.unread_messages')"></span>
-        <span class="chevron" :class="{ open: open.chats }">›</span>
+        <span v-if="notificationsStore.hasUnread" class="unread-dot" aria-hidden="true"></span>
+        <span class="sr-only" v-if="notificationsStore.hasUnread">{{ $t('sidebar.unread_messages') }}</span>
+        <span class="chevron" :class="{ open: open.chats }" aria-hidden="true">›</span>
       </button>
-      <div v-show="open.chats" class="section-body indented">
+      <div v-show="open.chats" class="section-body indented" id="section-body-chats">
         <nav class="sidebar-nav">
           <RouterLink
             v-for="conv in recentConversations"
@@ -233,7 +236,8 @@
             :to="convLink(conv)"
             class="sidebar-link conv-link"
           >
-            <span class="conv-indicator" :class="{ unread: notificationsStore.isConvUnread(conv) }"></span>
+            <span class="conv-indicator" :class="{ unread: notificationsStore.isConvUnread(conv) }" aria-hidden="true"></span>
+            <span v-if="notificationsStore.isConvUnread(conv)" class="sr-only">{{ $t('sidebar.unread_messages') }}</span>
             <img v-if="conversationAvatar(conv) && !avatarErrors.has('cv'+conv.id)" :src="conversationAvatar(conv)" class="conv-avatar" alt="" @error="avatarErrors.add('cv'+conv.id)" />
             <span v-else class="conv-avatar-fallback">{{ conversationInitials(conv) }}</span>
             <span class="link-text">{{ convSidebarName(conv) }}</span>

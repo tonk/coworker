@@ -9,7 +9,9 @@
     "logout": "Abmelden",
     "profile": "Profil",
     "messages": "Chats",
-    "about": "Über"
+    "about": "Über",
+    "user_menu": "Benutzermenü",
+    "keyboard_shortcuts": "Tastenkürzel"
   },
   "auth": {
     "login": "Anmelden",
@@ -383,7 +385,11 @@
     "add": "Hinzufügen",
     "pick_date": "Datum wählen",
     "no_results": "Keine Ergebnisse",
-    "close": "Schließen"
+    "close": "Schließen",
+    "skip_to_content": "Zum Hauptinhalt springen",
+    "go_back": "Zurück",
+    "go_forward": "Vorwärts",
+    "or": "oder"
   },
   "about": {
     "repository": "Repository",
@@ -732,5 +738,36 @@
     "peer_screen": "Bildschirm von {name}",
     "invite_sent": "Einladung gesendet",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Tastenkürzel",
+    "section_global": "Global",
+    "section_navigation": "Navigation",
+    "section_modals": "Modals",
+    "section_board": "Board",
+    "section_chat": "Chat",
+    "zoom_in": "Vergrößern",
+    "zoom_out": "Verkleinern",
+    "zoom_reset": "Zoom zurücksetzen",
+    "focus_search": "Suche fokussieren",
+    "show_shortcuts": "Tastenkürzel anzeigen",
+    "reload_desktop": "Neu laden (Desktop)",
+    "skip_to_main": "Zum Hauptinhalt springen",
+    "navigate_results": "Ergebnisse navigieren",
+    "select_result": "Ergebnis auswählen",
+    "close": "Schließen",
+    "next_focus": "Nächstes fokussierbares Element",
+    "prev_focus": "Vorheriges fokussierbares Element",
+    "close_card": "Karte schließen",
+    "send_message": "Nachricht senden",
+    "cancel_edit": "Bearbeitung abbrechen",
+    "mention": "Benutzer erwähnen",
+    "emoji_shortcode": "Emoji-Shortcode einfügen",
+    "pick_suggestion": "Vorschlag wählen"
+  },
+  "dashboard": {
+    "news_title": "Was ist neu",
+    "a11y_title": "Barrierefreiheit",
+    "view_shortcuts": "Tastenkürzel anzeigen"
   }
 }

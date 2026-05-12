@@ -14,7 +14,7 @@
         <span class="presence-dot"></span>{{ presenceCount }}
       </span>
       <div class="lang-switcher">
-        <select class="form-input lang-select" :value="locale" @change="onLocaleChange">
+        <select class="form-input lang-select" :value="locale" @change="onLocaleChange" :aria-label="$t('common.language')">
           <option value="en">EN</option>
           <option value="nl">NL</option>
           <option value="de">DE</option>
@@ -30,7 +30,13 @@
         </select>
       </div>
       <div class="theme-switcher" ref="themeRef">
-        <button class="btn-icon" @click.stop="themeOpen = !themeOpen" :title="$t('settings.theme')">
+        <button
+          class="btn-icon"
+          @click.stop="themeOpen = !themeOpen"
+          :aria-label="$t('settings.theme')"
+          :aria-expanded="themeOpen"
+          aria-haspopup="listbox"
+        >
           <!-- sun: light mode -->
           <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"/>
@@ -53,8 +59,8 @@
             <polyline points="8 21 12 17 16 21"/>
           </svg>
         </button>
-        <div class="dropdown theme-dropdown" v-if="themeOpen">
-          <div class="dropdown-item" :class="{ 'dropdown-item-active': theme === 'light' }" @click="selectTheme('light')">
+        <div class="dropdown theme-dropdown" v-if="themeOpen" role="listbox" :aria-label="$t('settings.theme')">
+          <div class="dropdown-item" role="option" :aria-selected="theme === 'light'" :class="{ 'dropdown-item-active': theme === 'light' }" @click="selectTheme('light')">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"/>
               <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
@@ -64,13 +70,13 @@
             </svg>
             {{ $t('settings.theme_light') }}
           </div>
-          <div class="dropdown-item" :class="{ 'dropdown-item-active': theme === 'dark' }" @click="selectTheme('dark')">
+          <div class="dropdown-item" role="option" :aria-selected="theme === 'dark'" :class="{ 'dropdown-item-active': theme === 'dark' }" @click="selectTheme('dark')">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
             {{ $t('settings.theme_dark') }}
           </div>
-          <div class="dropdown-item" :class="{ 'dropdown-item-active': theme === 'system' }" @click="selectTheme('system')">
+          <div class="dropdown-item" role="option" :aria-selected="theme === 'system'" :class="{ 'dropdown-item-active': theme === 'system' }" @click="selectTheme('system')">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="3" width="20" height="14" rx="2"/>
               <polyline points="8 21 12 17 16 21"/>
@@ -79,25 +85,35 @@
           </div>
         </div>
       </div>
-      <div class="user-menu" v-if="auth.user" @click="menuOpen = !menuOpen" ref="menuRef">
-        <div class="avatar">
-          <img v-if="userAvatar" :src="userAvatar" :alt="initials" class="avatar-img" @error="avatarErr = true" />
-          <span v-else>{{ initials }}</span>
-        </div>
-        <div class="dropdown" v-if="menuOpen">
-          <div class="dropdown-item" @click="router.push('/')">{{ $t('nav.dashboard') }}</div>
-          <div class="dropdown-item" @click="router.push('/settings')">{{ $t('nav.settings') }}</div>
-          <div class="dropdown-item" v-if="auth.isAdmin" @click="router.push('/admin')">{{ $t('nav.admin') }}</div>
-          <div class="dropdown-divider"></div>
-          <div class="dropdown-item" @click="router.push('/chats')">
-            {{ $t('nav.messages') }}
-            <span v-if="notificationsStore.hasUnread" class="msg-unread-dot"></span>
+      <div class="user-menu" v-if="auth.user" ref="menuRef">
+        <button
+          class="avatar-btn"
+          @click.stop="menuOpen = !menuOpen"
+          :aria-expanded="menuOpen"
+          aria-haspopup="menu"
+          :aria-label="$t('nav.user_menu')"
+        >
+          <div class="avatar">
+            <img v-if="userAvatar" :src="userAvatar" :alt="initials" class="avatar-img" @error="avatarErr = true" />
+            <span v-else aria-hidden="true">{{ initials }}</span>
           </div>
-          <div class="dropdown-item" v-if="auth.canViewReports" @click="router.push('/reports')">{{ $t('report.nav') }}</div>
-          <div class="dropdown-item" v-if="auth.timeTrackingEnabled" @click="router.push('/time-tracking')">{{ $t('timeTracking.nav') }}</div>
-          <div class="dropdown-divider"></div>
-          <div class="dropdown-item" @click="showAbout = true">{{ $t('nav.about') }}</div>
-          <div class="dropdown-item dropdown-item-danger" @click="handleLogout">{{ $t('nav.logout') }}</div>
+        </button>
+        <div class="dropdown" v-if="menuOpen" role="menu">
+          <div class="dropdown-item" role="menuitem" @click="router.push('/')">{{ $t('nav.dashboard') }}</div>
+          <div class="dropdown-item" role="menuitem" @click="router.push('/settings')">{{ $t('nav.settings') }}</div>
+          <div class="dropdown-item" role="menuitem" v-if="auth.isAdmin" @click="router.push('/admin')">{{ $t('nav.admin') }}</div>
+          <div class="dropdown-divider" role="separator"></div>
+          <div class="dropdown-item" role="menuitem" @click="router.push('/chats')">
+            {{ $t('nav.messages') }}
+            <span v-if="notificationsStore.hasUnread" class="msg-unread-dot" aria-hidden="true"></span>
+            <span v-if="notificationsStore.hasUnread" class="sr-only">({{ $t('sidebar.unread_messages') }})</span>
+          </div>
+          <div class="dropdown-item" role="menuitem" v-if="auth.canViewReports" @click="router.push('/reports')">{{ $t('report.nav') }}</div>
+          <div class="dropdown-item" role="menuitem" v-if="auth.timeTrackingEnabled" @click="router.push('/time-tracking')">{{ $t('timeTracking.nav') }}</div>
+          <div class="dropdown-divider" role="separator"></div>
+          <div class="dropdown-item" role="menuitem" @click="$emit('open-shortcuts')">{{ $t('nav.keyboard_shortcuts') }}</div>
+          <div class="dropdown-item" role="menuitem" @click="showAbout = true">{{ $t('nav.about') }}</div>
+          <div class="dropdown-item dropdown-item-danger" role="menuitem" @click="handleLogout">{{ $t('nav.logout') }}</div>
         </div>
       </div>
     </div>
@@ -118,6 +134,7 @@ import GlobalSearch from '@/components/common/GlobalSearch.vue'
 import AboutModal from '@/components/common/AboutModal.vue'
 
 const props = defineProps({ presenceCount: { type: Number, default: 0 } })
+const emit = defineEmits(['open-shortcuts'])
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -145,8 +162,10 @@ const initials = computed(() => {
 })
 
 function onLocaleChange(e) {
-  setLocale(e.target.value)
-  if (auth.isLoggedIn) auth.updateProfile({ locale: e.target.value })
+  const lang = e.target.value
+  setLocale(lang)
+  document.documentElement.lang = lang
+  if (auth.isLoggedIn) auth.updateProfile({ locale: lang })
 }
 
 function handleLogout() {
@@ -159,8 +178,22 @@ function handleClick(e) {
   if (themeRef.value && !themeRef.value.contains(e.target)) themeOpen.value = false
 }
 
-onMounted(() => document.addEventListener('click', handleClick))
-onBeforeUnmount(() => document.removeEventListener('click', handleClick))
+function handleKeyDown(e) {
+  if (e.key === 'Escape') {
+    menuOpen.value = false
+    themeOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClick)
+  document.addEventListener('keydown', handleKeyDown)
+  document.documentElement.lang = locale.value
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClick)
+  document.removeEventListener('keydown', handleKeyDown)
+})
 </script>
 
 <style scoped>
@@ -185,6 +218,18 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClick))
 .logo-img { height: 28px; width: auto; display: block; }
 
 .lang-select { width: 60px; padding: 4px 6px; font-size: 12px; }
+
+.avatar-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-btn:focus-visible { outline-offset: 3px; }
 
 .avatar {
   width: 32px;

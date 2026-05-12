@@ -1,28 +1,35 @@
 <template>
   <Transition name="call-overlay">
-    <div v-if="invite.pending" class="incoming-call-overlay">
+    <div
+      v-if="invite.pending"
+      class="incoming-call-overlay"
+      role="alertdialog"
+      aria-modal="true"
+      :aria-labelledby="labelId"
+    >
       <div class="call-avatar">
         <img
           v-if="invite.fromAvatar"
           :src="invite.fromAvatar"
           class="avatar-img"
+          aria-hidden="true"
           @error="e => e.target.style.display = 'none'"
         />
-        <span v-else class="avatar-initials">{{ initials }}</span>
+        <span v-else class="avatar-initials" aria-hidden="true">{{ initials }}</span>
       </div>
       <div class="call-info">
-        <div class="call-label">{{ $t('call.group_invite') }}</div>
-        <div class="call-name">{{ invite.fromName || $t('common.unknown') }}</div>
+        <div class="call-label" aria-hidden="true">{{ $t('call.group_invite') }}</div>
+        <div :id="labelId" class="call-name">{{ invite.fromName || $t('common.unknown') }}</div>
       </div>
       <div class="call-actions">
-        <button class="call-btn accept-btn" :title="$t('call.join_call')" @click="acceptGroupInvite">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button ref="acceptBtnEl" class="call-btn accept-btn" :aria-label="$t('call.join_call')" @click="acceptGroupInvite">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polygon points="23 7 16 12 23 17 23 7"/>
             <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
           </svg>
         </button>
-        <button class="call-btn decline-btn" :title="$t('call.decline')" @click="declineGroupInvite">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button class="call-btn decline-btn" :aria-label="$t('call.decline')" @click="declineGroupInvite">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91M1 1l22 22"/>
           </svg>
         </button>
@@ -32,14 +39,21 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { useLiveKitGroupCall } from '@/composables/useLiveKitGroupCall'
 
 const { invite, acceptGroupInvite, declineGroupInvite } = useLiveKitGroupCall()
 
+const labelId = 'incoming-group-call-label-' + Math.random().toString(36).slice(2, 8)
+const acceptBtnEl = ref(null)
+
 const initials = computed(() => {
   const name = invite.fromName || '?'
   return name.slice(0, 2).toUpperCase()
+})
+
+watch(() => invite.pending, (pending) => {
+  if (pending) nextTick(() => acceptBtnEl.value?.focus())
 })
 </script>
 

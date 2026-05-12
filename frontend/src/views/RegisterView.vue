@@ -22,7 +22,7 @@
           <label class="form-label">{{ $t('auth.password') }}</label>
           <input class="form-input" type="password" v-model="form.password" required minlength="8" />
         </div>
-        <p v-if="error" class="auth-error">{{ error }}</p>
+        <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
         <p v-if="serverReachabilityError" class="auth-warning">{{ serverReachabilityError }}</p>
         <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
           <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>

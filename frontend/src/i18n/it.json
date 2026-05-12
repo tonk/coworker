@@ -9,7 +9,9 @@
     "logout": "Esci",
     "profile": "Profilo",
     "messages": "Chat",
-    "about": "Informazioni"
+    "about": "Informazioni",
+    "user_menu": "Menu utente",
+    "keyboard_shortcuts": "Scorciatoie da tastiera"
   },
   "auth": {
     "login": "Accedi",
@@ -412,7 +414,11 @@
     "add": "Aggiungi",
     "pick_date": "Seleziona data",
     "no_results": "Nessun risultato",
-    "close": "Chiudi"
+    "close": "Chiudi",
+    "skip_to_content": "Vai al contenuto principale",
+    "go_back": "Indietro",
+    "go_forward": "Avanti",
+    "or": "o"
   },
   "about": {
     "repository": "Repository",
@@ -725,5 +731,36 @@
     "peer_screen": "Schermo di {name}",
     "invite_sent": "Invito inviato",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Scorciatoie da tastiera",
+    "section_global": "Globale",
+    "section_navigation": "Navigazione",
+    "section_modals": "Finestre modali",
+    "section_board": "Bacheca",
+    "section_chat": "Chat",
+    "zoom_in": "Ingrandisci",
+    "zoom_out": "Riduci",
+    "zoom_reset": "Reimposta zoom",
+    "focus_search": "Focalizza ricerca",
+    "show_shortcuts": "Mostra scorciatoie",
+    "reload_desktop": "Ricarica (desktop)",
+    "skip_to_main": "Vai al contenuto principale",
+    "navigate_results": "Naviga risultati",
+    "select_result": "Seleziona risultato",
+    "close": "Chiudi",
+    "next_focus": "Elemento focalizzabile successivo",
+    "prev_focus": "Elemento focalizzabile precedente",
+    "close_card": "Chiudi scheda",
+    "send_message": "Invia messaggio",
+    "cancel_edit": "Annulla modifica",
+    "mention": "Menziona un utente",
+    "emoji_shortcode": "Inserisci shortcode emoji",
+    "pick_suggestion": "Scegli suggerimento"
+  },
+  "dashboard": {
+    "news_title": "Novità",
+    "a11y_title": "Accessibilità",
+    "view_shortcuts": "Visualizza scorciatoie da tastiera"
   }
 }

@@ -3,7 +3,7 @@
     <div class="board-toolbar">
       <div class="board-toolbar-left">
         <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="board-project-avatar" alt="" />
-        <span class="board-project-name">{{ projectStore.currentProject?.name }}</span>
+        <h1 class="board-project-name">{{ projectStore.currentProject?.name }}</h1>
         <button class="btn btn-ghost btn-sm star-btn" :class="{ starred: sidebarStore.isStarred(slug) }" @click="toggleStar" :title="sidebarStore.isStarred(slug) ? $t('board.unstar') : $t('board.star')">
           {{ sidebarStore.isStarred(slug) ? '★' : '☆' }}
         </button>

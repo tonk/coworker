@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.9.37 — 2026-05-12
+
+### Added
+- **WCAG 2.1 AA accessibility pass** — skip-to-content link, focus trap in all modals with focus return, `role="alertdialog"` on call overlays with auto-focus on accept button, `role="log"` on chat message lists, `role="alert"` on form errors, full combobox ARIA on global search, `aria-expanded`/`aria-controls` on all sidebar sections and menus
+- **Keyboard shortcuts modal** — press `?` or use the user menu to open a two-column reference of all shortcuts grouped by context (Global, Navigation & Search, Dialogs, Board & Cards, Chat & Messages)
+- **`Ctrl/⌘ + K`** — focuses the global search bar from anywhere in the app
+- **Dashboard widget tiles** — a dismissible "What's New" blog tile and a persistent WCAG 2.1 AA compliance status tile on the home page
+- **Heading hierarchy** — every view now has exactly one `<h1>`; Board, Backlog, SprintBoard, Charts, DM, Topics, Report, Gantt, and Time Tracking all corrected
+- **Alt text** — all decorative images (`aria-hidden="true" alt=""`) and meaningful images given descriptive labels across call overlays, mention dropdown, link preview card, and video cells
+- **i18n** — `shortcuts.*` (25 keys) and `dashboard.*` (3 keys) namespaces added to all 12 language files
+
+### Fixed
+- **Date picker inputs** in card detail had no accessible label; now carry `aria-label` for Start Date and Due Date
+- **External issue ref** input in card detail labelled with `board.external_issue` i18n key
+
 ## v0.9.36 — 2026-05-10
 
 ### Added

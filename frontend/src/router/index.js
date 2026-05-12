@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { isServerConfigured } from '@/api/serverConfig'
 import { lazyWithReload } from '@/router/lazyWithReload'
@@ -47,6 +48,15 @@ router.beforeEach((to) => {
   if (to.meta.timeTrackingOnly && !auth.timeTrackingEnabled) return '/'
   if (to.meta.public && auth.isLoggedIn && (to.name === 'login' || to.name === 'register')) return '/'
   return true
+})
+
+// After each navigation, move focus to main content so screen readers
+// announce the new page without re-reading the sidebar/header.
+router.afterEach(() => {
+  nextTick(() => {
+    const main = document.getElementById('main-content')
+    if (main) main.focus()
+  })
 })
 
 export default router

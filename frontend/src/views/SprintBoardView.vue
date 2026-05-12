@@ -3,7 +3,7 @@
     <div class="board-toolbar">
       <div class="board-toolbar-left">
         <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="board-project-avatar" alt="" />
-        <span class="board-project-name">{{ projectStore.currentProject?.name }}</span>
+        <h1 class="board-project-name">{{ projectStore.currentProject?.name }}</h1>
         <template v-if="sprintStore.activeSprint">
           <span class="sprint-badge active">{{ $t('sprint.status_active') }}</span>
           <span class="sprint-name-label">{{ sprintStore.activeSprint.name }}</span>

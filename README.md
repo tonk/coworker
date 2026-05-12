@@ -8,13 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.36)
+## Latest release (v0.9.37)
 
-- **Screen sharing** — share your screen in 1:1 and group video calls (WebRTC and LiveKit).
-- **Optional chat column in calls** — open a text chat for the same conversation beside the video overlay.
-- **Call controls** — toolbar wraps so the camera and other buttons stay visible when the layout is tight.
-- **Faster first load** — LiveKit’s client library loads only when you join a group video room.
-- **Website** — new blog post explaining the demo seed program (`warmdesk-seed`).
+- **WCAG 2.1 AA accessibility** — skip link, modal focus traps, call overlay alertdialog roles, chat live region, full combobox ARIA on search, heading hierarchy on every view, alt text on all images.
+- **Keyboard shortcuts modal** — press `?` or open the user menu; `Ctrl/⌘+K` focuses search.
+- **Dashboard tiles** — dismissible "What’s New" announcement card and a live WCAG compliance status tile.
 
 ## Experiment
 

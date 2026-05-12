@@ -13,7 +13,7 @@
       <!-- ── Topics list ──────────────────────────────────── -->
       <aside class="topics-sidebar">
         <div class="topics-sidebar-header">
-          <h2>{{ $t('topics.title') }}</h2>
+          <h1>{{ $t('topics.title') }}</h1>
           <button class="btn btn-primary btn-sm" @click="showNew = true">
             + {{ $t('topics.new_topic') }}
           </button>
@@ -624,7 +624,7 @@ function renderMarkdown(text) {
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
-.topics-sidebar-header h2 { margin: 0; font-size: 16px; }
+.topics-sidebar-header h1 { margin: 0; font-size: 16px; }
 
 .topics-loading, .topics-empty {
   display: flex; align-items: center; justify-content: center;

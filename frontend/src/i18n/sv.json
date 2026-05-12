@@ -9,7 +9,9 @@
     "logout": "Logga ut",
     "profile": "Profil",
     "messages": "Chattar",
-    "about": "Om"
+    "about": "Om",
+    "user_menu": "Användarmeny",
+    "keyboard_shortcuts": "Tangentbordsgenvägar"
   },
   "auth": {
     "login": "Logga in",
@@ -412,7 +414,11 @@
     "add": "Lägg till",
     "pick_date": "Välj datum",
     "no_results": "Inga resultat",
-    "close": "Stäng"
+    "close": "Stäng",
+    "skip_to_content": "Hoppa till huvudinnehåll",
+    "go_back": "Gå tillbaka",
+    "go_forward": "Gå framåt",
+    "or": "eller"
   },
   "about": {
     "repository": "Arkiv",
@@ -725,5 +731,36 @@
     "peer_screen": "{name}s skärm",
     "invite_sent": "Inbjudan skickad",
     "nobody_online": "No other members are currently online"
+  },
+  "shortcuts": {
+    "title": "Tangentbordsgenvägar",
+    "section_global": "Global",
+    "section_navigation": "Navigation",
+    "section_modals": "Modaler",
+    "section_board": "Tavla",
+    "section_chat": "Chatt",
+    "zoom_in": "Zooma in",
+    "zoom_out": "Zooma ut",
+    "zoom_reset": "Återställ zoom",
+    "focus_search": "Fokusera sökning",
+    "show_shortcuts": "Visa genvägar",
+    "reload_desktop": "Ladda om (skrivbord)",
+    "skip_to_main": "Hoppa till huvudinnehåll",
+    "navigate_results": "Navigera resultat",
+    "select_result": "Välj resultat",
+    "close": "Stäng",
+    "next_focus": "Nästa fokuserbara element",
+    "prev_focus": "Föregående fokuserbara element",
+    "close_card": "Stäng kort",
+    "send_message": "Skicka meddelande",
+    "cancel_edit": "Avbryt redigering",
+    "mention": "Nämn en användare",
+    "emoji_shortcode": "Infoga emoji-genvägskod",
+    "pick_suggestion": "Välj förslag"
+  },
+  "dashboard": {
+    "news_title": "Nyheter",
+    "a11y_title": "Tillgänglighet",
+    "view_shortcuts": "Visa tangentbordsgenvägar"
   }
 }
