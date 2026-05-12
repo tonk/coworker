@@ -777,7 +777,8 @@
     "cancel_edit": "Bewerken annuleren",
     "mention": "Gebruiker vermelden",
     "emoji_shortcode": "Emoji-shortcode invoegen",
-    "pick_suggestion": "Suggestie kiezen"
+    "pick_suggestion": "Suggestie kiezen",
+    "show_a11y": "Show accessibility status"
   },
   "dashboard": {
     "news_title": "Wat is er nieuw",

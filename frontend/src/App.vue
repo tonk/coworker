@@ -32,6 +32,7 @@
   <IncomingGroupCallOverlay />
   <ActiveCallBar />
   <KeyboardShortcutsModal v-if="showShortcuts" @close="showShortcuts = false" />
+  <A11yStatusModal v-if="showA11y" @close="showA11y = false" />
 </template>
 
 <script setup>
@@ -61,12 +62,14 @@ import IncomingCallOverlay from '@/components/call/IncomingCallOverlay.vue'
 import IncomingGroupCallOverlay from '@/components/call/IncomingGroupCallOverlay.vue'
 import ActiveCallBar from '@/components/call/ActiveCallBar.vue'
 import KeyboardShortcutsModal from '@/components/common/KeyboardShortcutsModal.vue'
+import A11yStatusModal from '@/components/common/A11yStatusModal.vue'
 
 const auth = useAuthStore()
 const systemStore = useSystemStore()
 const ui = useUIStore()
 const notificationsStore = useNotificationsStore()
 const showShortcuts = ref(false)
+const showA11y = ref(false)
 const { projectChatUnread } = useProjectChatUnread()
 const call = useWebRTCCall()
 const lkGroupCall = useLiveKitGroupCall()
@@ -294,6 +297,12 @@ function onKeyZoom(e) {
       showShortcuts.value = true
       return
     }
+  }
+  // Alt+A — open accessibility status
+  if (e.altKey && e.key === 'a') {
+    e.preventDefault()
+    showA11y.value = !showA11y.value
+    return
   }
   if (!e.ctrlKey && !e.metaKey) return
   if (e.key === '+' || e.key === '=') {

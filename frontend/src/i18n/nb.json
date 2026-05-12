@@ -770,7 +770,8 @@
     "cancel_edit": "Avbryt redigering",
     "mention": "Nevn en bruker",
     "emoji_shortcode": "Sett inn emoji-snarvei",
-    "pick_suggestion": "Velg forslag"
+    "pick_suggestion": "Velg forslag",
+    "show_a11y": "Show accessibility status"
   },
   "dashboard": {
     "news_title": "Nyheter",

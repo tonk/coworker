@@ -770,7 +770,8 @@
     "cancel_edit": "Avbryt redigering",
     "mention": "Nämn en användare",
     "emoji_shortcode": "Infoga emoji-genvägskod",
-    "pick_suggestion": "Välj förslag"
+    "pick_suggestion": "Välj förslag",
+    "show_a11y": "Show accessibility status"
   },
   "dashboard": {
     "news_title": "Nyheter",

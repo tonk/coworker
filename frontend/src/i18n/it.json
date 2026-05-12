@@ -770,7 +770,8 @@
     "cancel_edit": "Annulla modifica",
     "mention": "Menziona un utente",
     "emoji_shortcode": "Inserisci shortcode emoji",
-    "pick_suggestion": "Scegli suggerimento"
+    "pick_suggestion": "Scegli suggerimento",
+    "show_a11y": "Show accessibility status"
   },
   "dashboard": {
     "news_title": "Novità",

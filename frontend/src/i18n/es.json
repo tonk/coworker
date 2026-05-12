@@ -777,7 +777,8 @@
     "cancel_edit": "Cancelar edición",
     "mention": "Mencionar un usuario",
     "emoji_shortcode": "Insertar shortcode de emoji",
-    "pick_suggestion": "Elegir sugerencia"
+    "pick_suggestion": "Elegir sugerencia",
+    "show_a11y": "Show accessibility status"
   },
   "dashboard": {
     "news_title": "Novedades",

@@ -765,6 +765,7 @@
     "zoom_reset": "Reset zoom",
     "focus_search": "Focus search",
     "show_shortcuts": "Show shortcuts",
+    "show_a11y": "Show accessibility status",
     "reload_desktop": "Reload (desktop)",
     "skip_to_main": "Skip to main content",
     "navigate_results": "Navigate results",

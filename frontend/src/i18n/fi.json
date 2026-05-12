@@ -769,7 +769,8 @@
     "cancel_edit": "Peruuta muokkaus",
     "mention": "Mainitse käyttäjä",
     "emoji_shortcode": "Lisää emoji-lyhytkoodi",
-    "pick_suggestion": "Valitse ehdotus"
+    "pick_suggestion": "Valitse ehdotus",
+    "show_a11y": "Show accessibility status"
   },
   "dashboard": {
     "news_title": "Uutiset",

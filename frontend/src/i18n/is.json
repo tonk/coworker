@@ -770,7 +770,8 @@
     "cancel_edit": "Hætta við breytingu",
     "mention": "Nefna notanda",
     "emoji_shortcode": "Setja inn emoji-flýtikóða",
-    "pick_suggestion": "Velja tillögu"
+    "pick_suggestion": "Velja tillögu",
+    "show_a11y": "Show accessibility status"
   },
   "dashboard": {
     "news_title": "Hvað er nýtt",

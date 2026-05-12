@@ -52,6 +52,7 @@ const sections = computed(() => [
       { chord: [mod, '0'], action: 'shortcuts.zoom_reset' },
       { chord: [mod, 'K'], action: 'shortcuts.focus_search' },
       { chord: ['?'], action: 'shortcuts.show_shortcuts' },
+      { chord: ['Alt', 'A'], action: 'shortcuts.show_a11y' },
       { chord: ['F5'], action: 'shortcuts.reload_desktop' },
     ],
   },
