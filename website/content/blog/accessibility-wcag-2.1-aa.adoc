@@ -1,0 +1,77 @@
+---
+title: "Accessibility: WCAG 2.1 AA"
+date: "2026-05-12"
+author: "Ton Kersten"
+description: "WarmDesk v0.9.37 ships a comprehensive WCAG 2.1 AA accessibility pass — skip navigation, focus management, ARIA roles, keyboard shortcuts, and more."
+draft: false
+---
+:doctype: article
+:icons!:
+
+WarmDesk v0.9.37 ships a comprehensive *WCAG 2.1 AA accessibility pass* across the entire frontend.
+The goal: every feature usable with a keyboard and a screen reader, without breaking anything for pointer users.
+
+== Skip navigation and focus management
+
+A *skip-to-content link* appears at the top of the page when you press Tab for the first time.
+Activating it jumps focus directly to the main content area, bypassing the header and sidebar on every page.
+
+After each route change the browser focus moves automatically to the main content landmark, so screen readers announce the new page without re-reading the navigation chrome.
+
+All modals now implement a *focus trap*: Tab and Shift+Tab cycle only within the open dialog, focus moves to the first interactive element when the modal opens, and returns to the trigger element when it closes.
+Pressing Escape closes the dialog from anywhere.
+
+== Call overlays
+
+Incoming call and group call notifications are marked as `alertdialog`, which causes screen readers to interrupt and announce them immediately.
+Focus moves to the Accept button when the overlay appears so a keyboard user can answer or decline without any extra navigation.
+
+== ARIA roles and live regions
+
+* *Chat message lists* use `role="log"` — new messages are announced politely as they arrive without interrupting the user.
+* *Toast notifications* use `role="status"` with `aria-live="polite"`.
+* *Global search* follows the combobox pattern (`role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`) so results are announced as the list updates.
+* *Sidebar sections* expose `aria-expanded` and `aria-controls` so their collapsed/expanded state is communicated.
+* *Form errors* on login and registration carry `role="alert"` so they are read immediately when they appear.
+
+== Heading hierarchy
+
+Every view now has exactly one `<h1>`.
+Board, Backlog, Sprint Board, Charts, Gantt, Time Tracking, Direct Messages, Topics, and Reports all had their page titles promoted or corrected.
+Views that only show a toolbar (Gantt, Time Tracking) received a visually hidden `<h1>` so the document outline is complete without affecting the visual layout.
+
+== Images and icon buttons
+
+All decorative images carry `alt=""` and `aria-hidden="true"`.
+Every icon-only button — call controls, sidebar toggles, invite pickers, mention avatars — has an `aria-label`.
+SVG icons inside buttons are hidden from the accessibility tree.
+
+== Keyboard shortcuts
+
+A new keyboard shortcuts reference is built into the app.
+Press `?` from anywhere (outside an input field) or open the user menu and choose *Keyboard Shortcuts*.
+`Ctrl`/`⌘` + `K` focuses the global search bar.
+
+The reference lists shortcuts grouped by context:
+
+[cols="1,2", options="header"]
+|===
+| Keys | Action
+| Ctrl/⌘ + | Zoom in
+| Ctrl/⌘ − | Zoom out
+| Ctrl/⌘ 0 | Reset zoom
+| Ctrl/⌘ K | Focus search bar
+| ? | Open keyboard shortcuts
+| Esc | Close dialog / card / suggestions
+| Tab / Shift+Tab | Cycle focus in dialogs
+| ↑ / ↓ | Navigate search results or suggestions
+| Enter | Select result / send message
+| @ | Mention a person in chat
+| :name: | Emoji shortcode
+|===
+
+== What remains
+
+The one open WCAG 2.1 AA item is *color contrast for muted text*.
+The `--color-text-muted` value in the light theme sits at approximately 3.4:1 against white backgrounds, below the 4.5:1 minimum for normal-weight text.
+Adjusting this color affects the whole UI and will be addressed in an upcoming release once a replacement value has been validated against all light and dark theme combinations.
