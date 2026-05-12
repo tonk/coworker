@@ -1138,7 +1138,37 @@
     </div>
     <div class="form-group">
       <label class="form-label">{{ $t('admin.news_text') }}</label>
-      <textarea class="form-input" v-model="newsForm.text" rows="5" required></textarea>
+      <div class="md-editor">
+        <div class="md-editor-tabs" role="tablist">
+          <button
+            role="tab"
+            :aria-selected="newsEditorTab === 'edit'"
+            :class="['md-tab', { active: newsEditorTab === 'edit' }]"
+            type="button"
+            @click="newsEditorTab = 'edit'"
+          >{{ $t('common.edit') }}</button>
+          <button
+            role="tab"
+            :aria-selected="newsEditorTab === 'preview'"
+            :class="['md-tab', { active: newsEditorTab === 'preview' }]"
+            type="button"
+            @click="newsEditorTab = 'preview'"
+          >{{ $t('common.preview') }}</button>
+        </div>
+        <textarea
+          v-if="newsEditorTab === 'edit'"
+          class="form-input md-textarea"
+          v-model="newsForm.text"
+          rows="8"
+          :placeholder="$t('admin.news_text_placeholder')"
+          required
+        ></textarea>
+        <div
+          v-else
+          class="md-preview markdown-body"
+          v-html="renderMarkdown(newsForm.text)"
+        ></div>
+      </div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -1173,6 +1203,8 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { RouterLink } from 'vue-router'
 import BaseModal from '@/components/common/BaseModal.vue'
 import DateTimeInput from '@/components/common/DateTimeInput.vue'
@@ -1196,6 +1228,10 @@ const auth = useAuthStore()
 const { formatDateTime } = useDateFormat()
 const tab = ref('users')
 
+function renderMarkdown(text) {
+  return DOMPurify.sanitize(marked.parse(text || ''))
+}
+
 // ── News ─────────────────────────────────────────────────────────────────────
 const newsItems = ref([])
 const newsLoading = ref(false)
@@ -1203,6 +1239,7 @@ const showNewsModal = ref(false)
 const editingNews = ref(null)
 const newsSaving = ref(false)
 const newsForm = ref({ title: '', text: '', start_date: null, end_date: null, active: true })
+const newsEditorTab = ref('edit')
 
 async function loadNews() {
   newsLoading.value = true
@@ -1215,11 +1252,13 @@ async function loadNews() {
 }
 function openCreateNews() {
   editingNews.value = null
+  newsEditorTab.value = 'edit'
   newsForm.value = { title: '', text: '', start_date: null, end_date: null, active: true }
   showNewsModal.value = true
 }
 function openEditNews(item) {
   editingNews.value = item
+  newsEditorTab.value = 'edit'
   newsForm.value = {
     title: item.title,
     text: item.text,
@@ -2464,4 +2503,38 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
   color: var(--color-text-muted);
   font-size: 14px;
 }
+
+/* ── Markdown editor ── */
+.md-editor { border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
+.md-editor-tabs { display: flex; background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border); }
+.md-tab {
+  background: none; border: none; padding: 6px 16px; font-size: 13px; cursor: pointer;
+  color: var(--color-text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.md-tab:hover { color: var(--color-text); }
+.md-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 600; }
+.md-textarea { border: none !important; border-radius: 0 !important; resize: vertical; min-height: 160px; }
+.md-preview {
+  min-height: 160px; padding: 12px 14px;
+  font-size: 14px; line-height: 1.6; color: var(--color-text);
+  background: var(--color-surface);
+}
+
+/* ── Markdown body (shared by editor preview + dashboard) ── */
+:deep(.markdown-body) h1,:deep(.markdown-body) h2,:deep(.markdown-body) h3 { font-weight: 700; margin: 12px 0 6px; line-height: 1.3; }
+:deep(.markdown-body) h1 { font-size: 1.2em; }
+:deep(.markdown-body) h2 { font-size: 1.1em; }
+:deep(.markdown-body) h3 { font-size: 1em; }
+:deep(.markdown-body) p { margin: 0 0 8px; }
+:deep(.markdown-body) ul,:deep(.markdown-body) ol { padding-left: 20px; margin: 0 0 8px; }
+:deep(.markdown-body) li { margin: 2px 0; }
+:deep(.markdown-body) code { background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: 3px; padding: 1px 5px; font-size: .9em; font-family: var(--font-mono); }
+:deep(.markdown-body) pre { background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 10px 12px; overflow-x: auto; margin: 0 0 8px; }
+:deep(.markdown-body) pre code { background: none; border: none; padding: 0; }
+:deep(.markdown-body) blockquote { border-left: 3px solid var(--color-border); padding-left: 12px; color: var(--color-text-muted); margin: 0 0 8px; }
+:deep(.markdown-body) a { color: var(--color-primary); text-decoration: underline; }
+:deep(.markdown-body) strong { font-weight: 700; }
+:deep(.markdown-body) em { font-style: italic; }
+:deep(.markdown-body) hr { border: none; border-top: 1px solid var(--color-border); margin: 12px 0; }
+:deep(.markdown-body) > *:last-child { margin-bottom: 0; }
 </style>

@@ -27,7 +27,7 @@
               </div>
               <h2 class="widget-title">{{ item.title }}</h2>
               <p class="widget-date">{{ formatDate(item.created_at) }}</p>
-              <p class="widget-body">{{ item.text }}</p>
+              <div class="widget-body markdown-body" v-html="renderMarkdown(item.text)"></div>
             </div>
           </div>
         </template>
@@ -140,6 +140,8 @@ import { resolveAssetUrl } from '@/api/serverConfig'
 import { customersApi } from '@/api/customers'
 import { newsApi } from '@/api/news'
 import { useDateFormat } from '@/composables/useDateFormat'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 const router = useRouter()
 const projectStore = useProjectStore()
@@ -152,6 +154,10 @@ const showCreate = ref(false)
 // ── News widgets ──────────────────────────────────────────────────────────────
 const NEWS_DISMISSED_KEY = 'dashboard_news_dismissed_ids'
 const allNews = ref([])
+
+function renderMarkdown(text) {
+  return DOMPurify.sanitize(marked.parse(text || ''))
+}
 
 function getDismissedIds() {
   try { return new Set(JSON.parse(localStorage.getItem(NEWS_DISMISSED_KEY) || '[]')) } catch { return new Set() }
@@ -402,8 +408,21 @@ async function handleCreate() {
   font-size: 13px;
   color: var(--color-text-muted);
   line-height: 1.55;
-  white-space: pre-wrap;
 }
+.widget-body :deep(p)   { margin: 0 0 6px; }
+.widget-body :deep(h1),.widget-body :deep(h2),.widget-body :deep(h3) { font-weight: 700; margin: 8px 0 4px; color: var(--color-text); }
+.widget-body :deep(h1) { font-size: 1.05em; }
+.widget-body :deep(h2) { font-size: 1em; }
+.widget-body :deep(ul),.widget-body :deep(ol) { padding-left: 18px; margin: 0 0 6px; }
+.widget-body :deep(li) { margin: 2px 0; }
+.widget-body :deep(code) { background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: 3px; padding: 1px 4px; font-size: .85em; font-family: var(--font-mono); }
+.widget-body :deep(pre) { background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 8px 10px; overflow-x: auto; margin: 0 0 6px; font-size: .85em; }
+.widget-body :deep(pre code) { background: none; border: none; padding: 0; }
+.widget-body :deep(blockquote) { border-left: 3px solid var(--color-border); padding-left: 10px; color: var(--color-text-muted); margin: 0 0 6px; }
+.widget-body :deep(a) { color: var(--color-primary); text-decoration: underline; }
+.widget-body :deep(strong) { font-weight: 700; color: var(--color-text); }
+.widget-body :deep(hr) { border: none; border-top: 1px solid var(--color-border); margin: 8px 0; }
+.widget-body :deep(> *:last-child) { margin-bottom: 0; }
 
 .widget-dismiss {
   position: absolute;
