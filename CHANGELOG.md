@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.41 — 2026-05-12
+
+### Fixed
+- **User menu closes on selection** — selecting any item from the top-right user menu now closes the dropdown immediately instead of requiring an extra click elsewhere
+- **PDF and XLSX export in desktop app** — report exports now open a native OS save dialog in the Tauri desktop app (using `tauri-plugin-dialog` + `tauri-plugin-fs`); previously the download was silently dropped because the WebView has no built-in download manager
+- **Escape closes all popups and overlays** — all modals, dropdowns, and overlays now respond to Escape: About dialog, Call Settings panel, Emoji reaction picker, and incoming call / group call notifications; the call chat sidebar shows an inline discard-draft confirmation before closing when a message is in progress
+
 ## v0.9.40 — 2026-05-12
 
 ### Added

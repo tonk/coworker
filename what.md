@@ -503,4 +503,7 @@ Create an application that has all these features and requirements
 - Fix customer logo proxy 400 when hostname resolves to internal IP: return 302 redirect to original URL instead of 400 when resolveAndVerify rejects a host; browser loads the image directly, server-side SSRF protection still holds
 - Show "no one online" error for group video call: clicking the group call button when no other members are online now shows a toast message instead of silently joining an empty room
 - Replace theme cycle button in app navbar with a Light / Dark / System dropdown; active option highlighted; persisted to user profile
+- Close user menu immediately when any item is selected instead of requiring an extra click elsewhere to dismiss it
+- Fix PDF and XLSX report export in the Tauri desktop app: open a native OS save dialog using tauri-plugin-dialog and tauri-plugin-fs; the previous anchor-download approach was silently ignored by the WebView
+- Close all popups and overlays with Escape: About dialog, Call Settings panel, Emoji reaction picker, and incoming call / group call notifications; the call chat sidebar shows an inline discard-draft confirmation before closing when a message has been typed
 - Add Light / Dark / System theme switcher to marketing website navbar; dark mode CSS variables applied throughout; system mode follows OS preference; choice persisted in localStorage
