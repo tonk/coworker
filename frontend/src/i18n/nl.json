@@ -395,6 +395,7 @@
     "language": "Taal",
     "add": "Toevoegen",
     "pick_date": "Datum kiezen",
+    "invalid_date": "Verwacht formaat: {fmt}",
     "no_results": "Geen resultaten",
     "close": "Sluiten",
     "skip_to_content": "Ga naar hoofdinhoud",

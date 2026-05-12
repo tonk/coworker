@@ -430,6 +430,7 @@
     "language": "Language",
     "add": "Add",
     "pick_date": "Pick date",
+    "invalid_date": "Expected format: {fmt}",
     "no_results": "No results",
     "close": "Close",
     "skip_to_content": "Skip to main content",

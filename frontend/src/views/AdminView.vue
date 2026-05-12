@@ -1143,12 +1143,18 @@
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">{{ $t('admin.news_start_date') }}</label>
-        <input class="form-input" type="datetime-local" v-model="newsForm.start_date_local" />
-        <p class="form-hint">{{ $t('admin.news_date_hint') }}</p>
+        <DateTimeInput
+          v-model="newsForm.start_date"
+          :label="$t('admin.news_start_date')"
+          :hint="$t('admin.news_date_hint')"
+        />
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('admin.news_end_date') }}</label>
-        <input class="form-input" type="datetime-local" v-model="newsForm.end_date_local" />
+        <DateTimeInput
+          v-model="newsForm.end_date"
+          :label="$t('admin.news_end_date')"
+        />
       </div>
     </div>
     <div class="form-group" style="display:flex;align-items:center;gap:10px">
@@ -1169,6 +1175,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import BaseModal from '@/components/common/BaseModal.vue'
+import DateTimeInput from '@/components/common/DateTimeInput.vue'
 import { adminApi } from '@/api/admin'
 import { groupsApi } from '@/api/groups'
 import { customersApi } from '@/api/customers'
@@ -1195,17 +1202,7 @@ const newsLoading = ref(false)
 const showNewsModal = ref(false)
 const editingNews = ref(null)
 const newsSaving = ref(false)
-const newsForm = ref({ title: '', text: '', start_date_local: '', end_date_local: '', active: true })
-
-function toLocalInput(iso) {
-  if (!iso) return ''
-  const d = new Date(iso)
-  const pad = n => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-function fromLocalInput(local) {
-  return local ? new Date(local).toISOString() : null
-}
+const newsForm = ref({ title: '', text: '', start_date: null, end_date: null, active: true })
 
 async function loadNews() {
   newsLoading.value = true
@@ -1218,7 +1215,7 @@ async function loadNews() {
 }
 function openCreateNews() {
   editingNews.value = null
-  newsForm.value = { title: '', text: '', start_date_local: '', end_date_local: '', active: true }
+  newsForm.value = { title: '', text: '', start_date: null, end_date: null, active: true }
   showNewsModal.value = true
 }
 function openEditNews(item) {
@@ -1226,8 +1223,8 @@ function openEditNews(item) {
   newsForm.value = {
     title: item.title,
     text: item.text,
-    start_date_local: toLocalInput(item.start_date),
-    end_date_local: toLocalInput(item.end_date),
+    start_date: item.start_date || null,
+    end_date: item.end_date || null,
     active: item.active,
   }
   showNewsModal.value = true
@@ -1238,8 +1235,8 @@ async function saveNews() {
     const payload = {
       title: newsForm.value.title,
       text: newsForm.value.text,
-      start_date: fromLocalInput(newsForm.value.start_date_local),
-      end_date: fromLocalInput(newsForm.value.end_date_local),
+      start_date: newsForm.value.start_date,
+      end_date: newsForm.value.end_date,
       active: newsForm.value.active,
     }
     if (editingNews.value) {

@@ -424,6 +424,7 @@
     "language": "Lingua",
     "add": "Aggiungi",
     "pick_date": "Seleziona data",
+    "invalid_date": "Formato atteso: {fmt}",
     "no_results": "Nessun risultato",
     "close": "Chiudi",
     "skip_to_content": "Vai al contenuto principale",

@@ -424,6 +424,7 @@
     "language": "Tungumál",
     "add": "Bæta við",
     "pick_date": "Velja dagsetningu",
+    "invalid_date": "Vænt snið: {fmt}",
     "no_results": "Engar niðurstöður",
     "close": "Loka",
     "skip_to_content": "Fara í aðalefni",

@@ -423,6 +423,7 @@
     "language": "Kieli",
     "add": "Lisää",
     "pick_date": "Valitse päivämäärä",
+    "invalid_date": "Odotettu muoto: {fmt}",
     "no_results": "Ei tuloksia",
     "close": "Sulje",
     "skip_to_content": "Siirry pääsisältöön",

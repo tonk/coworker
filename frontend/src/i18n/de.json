@@ -395,6 +395,7 @@
     "language": "Sprache",
     "add": "Hinzufügen",
     "pick_date": "Datum wählen",
+    "invalid_date": "Erwartetes Format: {fmt}",
     "no_results": "Keine Ergebnisse",
     "close": "Schließen",
     "skip_to_content": "Zum Hauptinhalt springen",

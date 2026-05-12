@@ -424,6 +424,7 @@
     "language": "Sprog",
     "add": "Tilføj",
     "pick_date": "Vælg dato",
+    "invalid_date": "Forventet format: {fmt}",
     "no_results": "Ingen resultater",
     "close": "Luk",
     "skip_to_content": "Gå til hovedindhold",
