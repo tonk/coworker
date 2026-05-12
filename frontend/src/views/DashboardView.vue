@@ -21,7 +21,10 @@
               class="widget news-widget"
             >
               <button class="widget-dismiss" :aria-label="$t('common.close')" @click="dismissNewsItem(item.id)">×</button>
-              <div class="widget-tag">{{ $t('dashboard.news_title') }}</div>
+              <div class="widget-header">
+                <img src="/logo-full.svg" alt="WarmDesk" class="widget-logo" />
+                <span class="widget-tag">{{ $t('dashboard.news_title') }}</span>
+              </div>
               <h2 class="widget-title">{{ item.title }}</h2>
               <p class="widget-date">{{ formatDate(item.created_at) }}</p>
               <p class="widget-body">{{ item.text }}</p>
@@ -363,13 +366,24 @@ async function handleCreate() {
   padding: 18px 20px;
 }
 
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.widget-logo {
+  height: 18px;
+  width: auto;
+  display: block;
+  opacity: 0.85;
+}
 .widget-tag {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .07em;
   color: var(--color-primary);
-  margin-bottom: 8px;
 }
 
 .widget-title {
