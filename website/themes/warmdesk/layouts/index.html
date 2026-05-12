@@ -101,9 +101,10 @@
 </section>
 
 <!-- ===================== ACCESSIBILITY HIGHLIGHT ===================== -->
-<section class="section section--alt">
+<section id="a11y-section" class="section section--alt">
   <div class="container" style="max-width:860px;margin:0 auto;">
     <div class="a11y-highlight">
+      <button id="a11y-close-btn" class="a11y-close-btn" aria-label="Dismiss accessibility highlight (Alt+A to toggle)">×</button>
       <div class="a11y-highlight-badge">
         <span class="a11y-badge-label">WCAG 2.1 AA</span>
         <span class="a11y-badge-icon">♿</span>
@@ -128,6 +129,43 @@
     </div>
   </div>
 </section>
+<div id="a11y-restore" class="a11y-restore" hidden>
+  <div class="container" style="max-width:860px;margin:0 auto;">
+    <button id="a11y-restore-btn" class="a11y-restore-btn" aria-label="Show accessibility highlight">
+      <span class="a11y-restore-icon">♿</span>
+      <span>Show accessibility info</span>
+      <kbd>Alt+A</kbd>
+    </button>
+  </div>
+</div>
+<script>
+(function () {
+  var STORE_KEY = 'a11y_highlight_hidden';
+  var section   = document.getElementById('a11y-section');
+  var restore   = document.getElementById('a11y-restore');
+
+  function hide() {
+    section.hidden = true;
+    restore.hidden = false;
+    try { localStorage.setItem(STORE_KEY, '1'); } catch(e) {}
+  }
+  function show() {
+    section.hidden = false;
+    restore.hidden = true;
+    try { localStorage.removeItem(STORE_KEY); } catch(e) {}
+    section.querySelector('.a11y-highlight').focus();
+  }
+  function toggle() { section.hidden ? show() : hide(); }
+
+  if (localStorage.getItem(STORE_KEY)) { section.hidden = true; restore.hidden = false; }
+
+  document.getElementById('a11y-close-btn').addEventListener('click', hide);
+  document.getElementById('a11y-restore-btn').addEventListener('click', show);
+  document.addEventListener('keydown', function (e) {
+    if (e.altKey && !e.ctrlKey && !e.metaKey && e.key === 'a') { e.preventDefault(); toggle(); }
+  });
+})();
+</script>
 
 <!-- ===================== SCREENSHOTS ===================== -->
 <section class="section" id="screenshots">
