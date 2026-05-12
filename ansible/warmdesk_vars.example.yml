@@ -147,3 +147,22 @@ system_settings:
   # smtp_host: mail.example.com
   # smtp_port: "587"
   # smtp_username: noreply@example.com
+
+# ── News items ───────────────────────────────────────────────────────────────
+# Admin-only. Idempotency key is 'title'.
+# Dates are ISO-8601; omit start_date / end_date to show immediately / forever.
+news_items:
+  - title: "WarmDesk v0.9.38 released"
+    text: >-
+      Version 0.9.38 adds admin-managed dashboard news items, a format-aware
+      date input that respects your configured date_time_format, and the
+      WarmDesk logo on dashboard news tiles.
+    active: true
+
+  - title: Scheduled maintenance — 2026-06-15
+    text: >-
+      The server will be unavailable on 15 June 2026 from 02:00 to 04:00 UTC
+      for a database upgrade.  No data will be lost.
+    start_date: "2026-06-14T00:00:00Z"
+    end_date:   "2026-06-15T23:59:59Z"
+    active: true

@@ -45,7 +45,8 @@ options:
       - One or more YAML files to load.
       - |
           Each file may contain any combination of the supported top-level keys
-          (C(users), C(customers), C(groups), C(projects), C(system_settings)).
+          (C(users), C(customers), C(groups), C(projects), C(system_settings),
+          C(news_items)).
       - |
           Use C({{ playbook_dir }}/vars/warmdesk.yml) for paths relative to the
           playbook.
@@ -230,7 +231,7 @@ def _load_var_files(paths):
 _RESOURCE_TYPES = (
     'users', 'customers', 'contracts', 'customer_members',
     'projects', 'columns', 'labels', 'project_members', 'cards',
-    'groups', 'system_settings',
+    'groups', 'system_settings', 'news_items',
 )
 
 
@@ -932,6 +933,49 @@ class Provisioner(object):
         else:
             self._counts['system_settings'].unchanged += 1
 
+    def ensure_news_item(self, defn):
+        title = defn.get('title', '').strip()
+        if not title:
+            return
+        all_items = self.client.get('/admin/news') or []
+        existing = next((n for n in all_items if n.get('title') == title), None)
+
+        payload = dict(
+            title=title,
+            text=defn.get('text', ''),
+            start_date=defn.get('start_date') or None,
+            end_date=defn.get('end_date') or None,
+            active=defn.get('active', True),
+        )
+
+        if existing is None:
+            if not self.check_mode:
+                self.client.post('/admin/news', payload)
+            self._counts['news_items'].created += 1
+            return
+
+        # Check if any field changed (compare dates after normalisation).
+        def _nd(v):
+            if not v:
+                return None
+            s = str(v).strip().rstrip('Z').split('+')[0]
+            if '.' in s:
+                s = s[:s.index('.')]
+            return s
+
+        changed = (
+            existing.get('text') != payload['text']
+            or _nd(existing.get('start_date')) != _nd(payload['start_date'])
+            or _nd(existing.get('end_date')) != _nd(payload['end_date'])
+            or existing.get('active') != payload['active']
+        )
+        if changed:
+            if not self.check_mode:
+                self.client.put('/admin/news/%d' % existing['id'], payload)
+            self._counts['news_items'].updated += 1
+        else:
+            self._counts['news_items'].unchanged += 1
+
     # ── Main entry point ──────────────────────────────────────────────────────
 
     def run(self, data):
@@ -984,6 +1028,10 @@ class Provisioner(object):
 
         # Phase 5 — system settings (admin only)
         self.ensure_system_settings(data.get('system_settings', {}))
+
+        # Phase 6 — news items (admin only)
+        for defn in data.get('news_items', []):
+            self.ensure_news_item(defn)
 
 
 # ---------------------------------------------------------------------------
