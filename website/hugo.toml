@@ -65,6 +65,11 @@ enableEmoji = true
   weight = 40
 
 [[menus.main]]
+  name = "Download"
+  url = "/download/"
+  weight = 45
+
+[[menus.main]]
   name = "GitHub"
   url = "https://github.com/tonk/warmdesk"
   weight = 50

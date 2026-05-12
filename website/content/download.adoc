@@ -1,0 +1,61 @@
+---
+title: "Download"
+description: "Get the WarmDesk server binary or desktop apps for Linux, macOS, and Windows"
+---
+:icons!:
+:url-releases-latest: https://github.com/tonk/warmdesk/releases/latest
+:url-download-latest: https://github.com/tonk/warmdesk/releases/latest/download
+
+All official binaries and installers are attached to each GitHub release; the hub for current downloads is the {url-releases-latest}[latest release page »].
+
+[#server]
+== Server
+
+The server is a single statically-linked Go binary with the web UI embedded.
+SQLite is bundled; PostgreSQL or MySQL are optional.
+You run it on a machine or VM you control and reach it through your browser — there is no separate “cloud” SaaS installer.
+
+Official CI builds publish **Linux x86-64** and **Linux ARM64** tarballs for each `{warmdesk-version}` tag on the {url-releases-latest}[latest release »].
+Pick your architecture below (`latest/download` always resolves to files for the newest tag):
+
+[cols="1,3", options="header"]
+|===
+|Platform |Download (latest)
+
+|Linux amd64 (x86-64)
+|link:{url-download-latest}/warmdesk-{warmdesk-version}-linux-amd64.tar.gz[`.tar.gz`], companion link:{url-download-latest}/warmdesk-{warmdesk-version}-linux-amd64.tar.gz.asc[GPG `.asc`] if published
+
+|Linux ARM64 (aarch64)
+|link:{url-download-latest}/warmdesk-{warmdesk-version}-linux-arm64.tar.gz[`.tar.gz`], companion link:{url-download-latest}/warmdesk-{warmdesk-version}-linux-arm64.tar.gz.asc[GPG `.asc`] if published
+|===
+
+Unpack the tarball, copy `warmdesk.yaml.example` to `warmdesk.yaml`, set `jwt_secret` to a safe value (the server rejects the demo default), and run `./warmdesk`.
+TLS, systemd, and reverse proxies are covered in link:../docs/install/[Installation guide].
+macOS or Windows hosts: build from source — see link:../docs/install/#_build_from_source[Build from source] in Installation — release tarballs are Linux-only.
+
+[#desktop-client]
+== Desktop client
+
+WarmDesk ships **link:../docs/install/#_desktop_apps[Tauri]** desktop builds for Linux, macOS, and Windows.
+The desktop app is **only the client**: it wraps the same web UI as the browser and connects to **your** WarmDesk server URL (configured on first launch).
+The server binary is never bundled inside the desktop package.
+
+Pre-built installers are uploaded to the {url-releases-latest}[latest release »].
+Click an asset below to download the current `{warmdesk-version}` build (URLs use GitHub’s `latest/download` redirects):
+
+[cols="1,3", options="header"]
+|===
+|Platform |Download (latest)
+
+|Linux
+|link:{url-download-latest}/WarmDesk-{warmdesk-version}-x86_64.AppImage[`.AppImage` (x86_64)], link:{url-download-latest}/WarmDesk-{warmdesk-version}-amd64.deb[`.deb`], link:{url-download-latest}/WarmDesk-{warmdesk-version}-x86_64.rpm[`.rpm`]
+
+|Windows
+|link:{url-download-latest}/WarmDesk-{warmdesk-version}-x64-setup.exe[NSIS installer], link:{url-download-latest}/WarmDesk-{warmdesk-version}-x64-portable.zip[portable `.zip`]
+
+|macOS
+|link:{url-download-latest}/WarmDesk-{warmdesk-version}-universal.dmg[universal `.dmg`]
+|===
+
+Most release files ship with a matching `.asc` detached GPG signature.
+See link:../docs/install/#_desktop_apps[Installation — Desktop apps] and the link:../blog/gpg-signed-releases/[GPG-signed releases] blog post for verifying downloads.

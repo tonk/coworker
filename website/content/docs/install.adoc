@@ -9,6 +9,8 @@ weight: 10
 :toc-title: Contents
 :toclevels: 3
 :sectanchors:
+:url-releases-latest: https://github.com/tonk/warmdesk/releases/latest
+:url-download-latest: https://github.com/tonk/warmdesk/releases/latest/download
 
 == Requirements
 
@@ -28,7 +30,7 @@ No runtime dependencies are required on the host.
 === 1. Download
 
 Download the latest release archive for your platform from the
-https://github.com/tonk/warmdesk/releases[releases page].
+{url-releases-latest}[latest GitHub release page].
 
 Linux releases are distributed as `.tar.gz` archives containing the server binary and the bundled web frontend.
 Extract the archive before running:
@@ -36,12 +38,12 @@ Extract the archive before running:
 [source,bash,subs="attributes+"]
 ----
 # Linux x86-64
-wget https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-{warmdesk-version}-linux-amd64.tar.gz
+wget {url-download-latest}/warmdesk-{warmdesk-version}-linux-amd64.tar.gz
 mkdir warmdesk && tar -xzf warmdesk-{warmdesk-version}-linux-amd64.tar.gz -C warmdesk
 cd warmdesk
 
 # Linux ARM64
-wget https://github.com/tonk/warmdesk/releases/latest/download/warmdesk-{warmdesk-version}-linux-arm64.tar.gz
+wget {url-download-latest}/warmdesk-{warmdesk-version}-linux-arm64.tar.gz
 mkdir warmdesk && tar -xzf warmdesk-{warmdesk-version}-linux-arm64.tar.gz -C warmdesk
 cd warmdesk
 ----
@@ -250,12 +252,14 @@ It must appear *before* the catch-all `ProxyPass /` so Apache routes WebSocket t
 
 == Desktop apps
 
-Pre-built Tauri 2 desktop apps are available on the
-https://github.com/tonk/warmdesk/releases[releases page]:
+Pre-built Tauri 2 desktop apps are attached to the
+{url-releases-latest}[latest release]
+(file names match the release tag `{warmdesk-version}`):
 
-* `warmdesk-linux-amd64.AppImage` — Linux (no install required)
-* `warmdesk-mac-universal.dmg` — macOS (Intel + Apple Silicon)
-* `warmdesk-windows-installer.exe` — Windows NSIS installer
+* link:{url-download-latest}/WarmDesk-{warmdesk-version}-x86_64.AppImage[Linux AppImage] — portable, no install
+* link:{url-download-latest}/WarmDesk-{warmdesk-version}-amd64.deb[`.deb`] / link:{url-download-latest}/WarmDesk-{warmdesk-version}-x86_64.rpm[`.rpm`] — Linux packages
+* link:{url-download-latest}/WarmDesk-{warmdesk-version}-universal.dmg[macOS universal `.dmg`] — Intel + Apple Silicon
+* link:{url-download-latest}/WarmDesk-{warmdesk-version}-x64-setup.exe[Windows NSIS installer] / link:{url-download-latest}/WarmDesk-{warmdesk-version}-x64-portable.zip[portable `.zip`]
 
 The desktop app wraps the same Vue 3 frontend.
 On launch it prompts for the server URL and stores credentials in `sessionStorage`.
