@@ -678,8 +678,8 @@ const deletingRow = ref(null)
 const editRowProjects = computed(() => {
   if (!editForm.value.customer_id) return allProjects.value
   if (ttCustomers.value.some(c => c.id === editForm.value.customer_id))
-    return ttProjects.value.filter(p => !p.customer_id || p.customer_id === editForm.value.customer_id)
-  return projects.value.filter(p => p.customer_id === editForm.value.customer_id)
+    return ttProjects.value
+  return [...projects.value.filter(p => p.customer_id === editForm.value.customer_id), ...ttProjects.value]
 })
 
 function startEditRow(row) {
@@ -768,8 +768,8 @@ const newRow      = ref({ customer_id: null, project_id: null, description: '' }
 const newRowProjects = computed(() => {
   if (!newRow.value.customer_id) return allProjects.value
   if (ttCustomers.value.some(c => c.id === newRow.value.customer_id))
-    return ttProjects.value.filter(p => !p.customer_id || p.customer_id === newRow.value.customer_id)
-  return projects.value.filter(p => p.customer_id === newRow.value.customer_id)
+    return ttProjects.value
+  return [...projects.value.filter(p => p.customer_id === newRow.value.customer_id), ...ttProjects.value]
 })
 
 function startAddRow() {

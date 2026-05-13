@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.44 — 2026-05-13
+
+### Changed
+- **TT projects always available when a customer is selected** — in the time-tracking row form, selecting any customer now keeps all time-tracking-only projects (e.g. "Travel time") visible in the project dropdown, plus the customer's own regular projects; previously only exact customer-linked projects were shown
+
 ## v0.9.43 — 2026-05-13
 
 ### Added
