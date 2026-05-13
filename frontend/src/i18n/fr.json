@@ -11,7 +11,8 @@
     "messages": "Chats",
     "about": "À propos",
     "user_menu": "Menu utilisateur",
-    "keyboard_shortcuts": "Raccourcis clavier"
+    "keyboard_shortcuts": "Raccourcis clavier",
+    "news": "Actualités"
   },
   "auth": {
     "login": "Connexion",
@@ -343,6 +344,8 @@
     "news_start_date": "Afficher à partir du",
     "news_end_date": "Afficher jusqu'au",
     "news_active": "Actif",
+    "news_sidebar_color": "Couleur de la barre latérale",
+    "news_sidebar_color_custom": "Couleur personnalisée",
     "news_date_hint": "Laisser vide pour afficher immédiatement / indéfiniment",
     "news_delete_confirm": "Supprimer « {title} » ?",
     "backup_schedule_title": "Sauvegardes planifiées",
@@ -374,7 +377,8 @@
     "login_branding_hint": "Affiche le nom et le logo de l'entreprise au-dessus de la carte de connexion.",
     "allowed_ips_label": "Adresses IP autorisées pour l'API",
     "allowed_ips_placeholder": "ex. 10.0.0.0/8, 192.168.1.5",
-    "allowed_ips_hint": "Adresses IPv4/IPv6 ou plages CIDR séparées par des virgules. Laisser vide pour tout autoriser. Attention : une valeur incorrecte bloquera tout accès à l'API."
+    "allowed_ips_hint": "Adresses IPv4/IPv6 ou plages CIDR séparées par des virgules. Laisser vide pour tout autoriser. Attention : une valeur incorrecte bloquera tout accès à l'API.",
+    "news_show_on_login": "Afficher comme message de bienvenue à la connexion"
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",
@@ -785,5 +789,28 @@
     "news_title": "Nouveautés",
     "a11y_title": "Accessibilité",
     "view_shortcuts": "Voir les raccourcis clavier"
+  },
+  "news": {
+    "page_title": "Actualités",
+    "filter_label": "Filtre",
+    "filter_active": "Actif",
+    "filter_all": "Tout",
+    "sort_label": "Trier par",
+    "sort_created": "Date de création",
+    "sort_start": "Date de début",
+    "sort_end": "Date de fin",
+    "sort_title": "Titre",
+    "sort_asc": "Croissant",
+    "sort_desc": "Décroissant",
+    "empty": "Aucune actualité trouvée.",
+    "badge_inactive": "Inactif",
+    "badge_expired": "Expiré",
+    "badge_future": "Planifié",
+    "badge_read": "Lu",
+    "restore": "Marquer comme non lu",
+    "mark_read": "Marquer comme lu",
+    "mark_unread": "Marquer comme non lu",
+    "welcome_got_it": "Compris",
+    "welcome_next": "Suivant"
   }
 }

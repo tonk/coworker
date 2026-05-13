@@ -11,7 +11,8 @@
     "messages": "Chats",
     "about": "Over",
     "user_menu": "Gebruikersmenu",
-    "keyboard_shortcuts": "Sneltoetsen"
+    "keyboard_shortcuts": "Sneltoetsen",
+    "news": "Nieuws"
   },
   "auth": {
     "login": "Inloggen",
@@ -343,6 +344,8 @@
     "news_start_date": "Tonen vanaf",
     "news_end_date": "Tonen tot",
     "news_active": "Actief",
+    "news_sidebar_color": "Zijbalkkleur",
+    "news_sidebar_color_custom": "Aangepaste kleur",
     "news_date_hint": "Leeg laten om direct / onbeperkt te tonen",
     "news_delete_confirm": "\"{title}\" verwijderen?",
     "backup_schedule_title": "Geplande back-ups",
@@ -374,7 +377,8 @@
     "login_branding_hint": "Toont de bedrijfsnaam en het logo boven de inlogkaart.",
     "allowed_ips_label": "Toegestane IP-adressen voor de API",
     "allowed_ips_placeholder": "bijv. 10.0.0.0/8, 192.168.1.5",
-    "allowed_ips_hint": "Komma-gescheiden IPv4/IPv6-adressen of CIDR-bereiken. Leeg laten om alles toe te staan. Waarschuwing: een onjuiste waarde sluit iedereen buiten de API."
+    "allowed_ips_hint": "Komma-gescheiden IPv4/IPv6-adressen of CIDR-bereiken. Leeg laten om alles toe te staan. Waarschuwing: een onjuiste waarde sluit iedereen buiten de API.",
+    "news_show_on_login": "Toon als welkomstbericht bij inloggen"
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",
@@ -785,5 +789,28 @@
     "news_title": "Wat is er nieuw",
     "a11y_title": "Toegankelijkheid",
     "view_shortcuts": "Sneltoetsen bekijken"
+  },
+  "news": {
+    "page_title": "Nieuws",
+    "filter_label": "Filter",
+    "filter_active": "Actief",
+    "filter_all": "Alles",
+    "sort_label": "Sorteren op",
+    "sort_created": "Aanmaakdatum",
+    "sort_start": "Startdatum",
+    "sort_end": "Einddatum",
+    "sort_title": "Titel",
+    "sort_asc": "Oplopend",
+    "sort_desc": "Aflopend",
+    "empty": "Geen nieuwsberichten gevonden.",
+    "badge_inactive": "Inactief",
+    "badge_expired": "Verlopen",
+    "badge_future": "Gepland",
+    "badge_read": "Gelezen",
+    "restore": "Markeer als ongelezen",
+    "mark_read": "Markeer als gelezen",
+    "mark_unread": "Markeer als ongelezen",
+    "welcome_got_it": "Begrepen",
+    "welcome_next": "Volgende"
   }
 }

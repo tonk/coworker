@@ -1,7 +1,7 @@
 import client from './client'
 
 export const newsApi = {
-  listActive: () => client.get('/news'),
+  listActive: (params) => params ? client.get('/news', { params }) : client.get('/news'),
 
   adminList: () => client.get('/admin/news'),
   adminCreate: (data) => client.post('/admin/news', data),

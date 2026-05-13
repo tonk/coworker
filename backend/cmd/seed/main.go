@@ -2505,7 +2505,140 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d time entries for 5 users\n", totalTimeEntries)
 
-	// ── 9. Summary ──────────────────────────────────────────────────────────────
+	// ── 9. News items ─────────────────────────────────────────────────────────
+	fmt.Println("→ Creating news items…")
+
+	type newsSpec struct {
+		title        string
+		text         string
+		sidebarColor string
+		startDate    *time.Time
+		endDate      *time.Time
+		active       bool
+		showOnLogin  bool
+	}
+
+	newsSpecs := []newsSpec{
+		{
+			title:        "Welcome to WarmDesk 🎉",
+			sidebarColor: "#6366f1",
+			active:       true,
+			showOnLogin:  true,
+			text: `We're excited to have you on board! WarmDesk brings all your project management tools into one place — Kanban boards, sprint planning, team chat, and voice & video calls.
+
+**Getting started:**
+
+- Browse your projects on the dashboard
+- Open a board and drag cards between columns
+- Start a conversation with a colleague in **Chats**
+- Check the **Admin** panel to invite your team
+
+If you have questions, reach out to your administrator. Happy shipping! 🚀`,
+		},
+		{
+			title:        "New feature: Gantt chart view",
+			sidebarColor: "#22c55e",
+			active:       true,
+			startDate:    days(-7),
+			text: `You can now visualise your project timeline as a **Gantt chart**.
+
+Open any project and click **Gantt** in the sidebar to see cards plotted by start and due date. Drag the bars to reschedule, or resize them to adjust duration.
+
+**Tips:**
+- Assign a *start date* and *due date* to a card for it to appear on the chart
+- Use the zoom controls to switch between day, week, and month views
+- Cards without dates are listed in the panel on the right
+
+Available for all project types — Kanban and Scrum alike.`,
+		},
+		{
+			title:        "Scheduled maintenance — Sunday 02:00–04:00 UTC",
+			sidebarColor: "#f59e0b",
+			active:       true,
+			startDate:    days(-1),
+			endDate:      days(3),
+			text: `We will perform routine infrastructure maintenance this **Sunday between 02:00 and 04:00 UTC**.
+
+During this window the service may be briefly unavailable. We expect total downtime to be under 10 minutes.
+
+**What's happening:**
+- Database engine upgrade
+- TLS certificate renewal
+- Dependency security patches
+
+No data loss is expected. We recommend saving any open drafts before the window begins.
+
+Apologies for the inconvenience — this is necessary to keep WarmDesk fast and secure.`,
+		},
+		{
+			title:        "Q2 retrospective highlights",
+			sidebarColor: "#8b5cf6",
+			active:       true,
+			startDate:    days(-14),
+			text: `The Q2 all-hands retrospective is behind us. Here's a summary of what the team surfaced:
+
+**What went well:**
+- Shipped 3 major features ahead of schedule
+- Customer satisfaction score up 12 points to 4.6 / 5
+- Zero critical incidents in production
+
+**What we're improving:**
+- Clearer sprint goals before planning sessions start
+- Faster PR review turnaround (target: < 24 h)
+- Better async update culture to reduce meeting load
+
+Full notes and action items have been added to the *Team Processes* board. Thanks to everyone who participated!`,
+		},
+		{
+			title:        "Security reminder: enable MFA on your account",
+			sidebarColor: "#ef4444",
+			active:       true,
+			text: `Protecting your account with **multi-factor authentication (MFA)** takes less than two minutes and significantly reduces the risk of unauthorised access.
+
+**To enable MFA:**
+
+1. Go to **Settings → Security**
+2. Click *Set up authenticator app*
+3. Scan the QR code with Google Authenticator, Authy, or any TOTP app
+4. Enter the 6-digit code to confirm
+
+Once enabled, you'll be asked for the code each time you log in from a new device.
+
+If you have any trouble, contact your administrator.`,
+		},
+		{
+			title:        "Team lunch — Friday 12:30",
+			sidebarColor: "#06b6d4",
+			active:       true,
+			startDate:    days(-2),
+			endDate:      days(5),
+			text: `Join us for a team lunch this **Friday at 12:30** in the main meeting room (or the garden if the weather holds ☀️).
+
+The agenda is deliberately light — good food, good company, and a chance to catch up outside of Slack and standups.
+
+**Please RSVP** by Thursday EOD so we can get the catering right. Reply in the *#general* chat or ping @demo.admin directly.
+
+Hope to see you there!`,
+		},
+	}
+
+	totalNewsItems := 0
+	for _, s := range newsSpecs {
+		item := models.NewsItem{
+			Title:        s.title,
+			Text:         s.text,
+			SidebarColor: s.sidebarColor,
+			Active:       s.active,
+			StartDate:    s.startDate,
+			EndDate:      s.endDate,
+			ShowOnLogin:  s.showOnLogin,
+		}
+		must(db.Create(&item).Error)
+		totalNewsItems++
+	}
+	fmt.Printf("   Created %d news items\n", totalNewsItems)
+
+	// ── 10. Summary ──────────────────────────────────────────────────────────────
 	fmt.Println()
 	fmt.Println("✅ Demo data seeded successfully!")
 	fmt.Println()
@@ -2533,6 +2666,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Printf("  Customers     : %d (Acme Corporation, Globex Systems, Initech Ltd)\n", len(demoCustomers))
 	fmt.Printf("  Groups        : %d (Frontend Team, DevOps Team, Acme Stakeholders)\n", len(demoGroupSpecs))
 	fmt.Printf("  Time entries  : %d (tonk, demo.admin, demo.sarah, demo.marc, demo.lisa)\n", totalTimeEntries)
+	fmt.Printf("  News items    : %d\n", totalNewsItems)
 	fmt.Println()
 	fmt.Println("  Starred projects")
 	fmt.Println("  ┌─────────────────────┬──────────────────────────────────────────────────────────────┐")
@@ -2729,6 +2863,17 @@ func removeDemoData(db *gorm.DB) {
 		db.Where("customer_id IN ?", custIDs).Delete(&models.Contract{})
 		db.Where("id IN ?", custIDs).Delete(&models.Customer{})
 	}
+
+	// News items (matched by title so re-seeding is clean)
+	demoNewsTitles := []string{
+		"Welcome to WarmDesk 🎉",
+		"New feature: Gantt chart view",
+		"Scheduled maintenance — Sunday 02:00–04:00 UTC",
+		"Q2 retrospective highlights",
+		"Security reminder: enable MFA on your account",
+		"Team lunch — Friday 12:30",
+	}
+	db.Unscoped().Where("title IN ?", demoNewsTitles).Delete(&models.NewsItem{})
 
 	fmt.Println("   Done.")
 }

@@ -33,6 +33,7 @@
   <ActiveCallBar />
   <KeyboardShortcutsModal v-if="showShortcuts" @close="showShortcuts = false" />
   <A11yStatusModal v-if="showA11y" @close="showA11y = false" />
+  <NewsWelcomeModal v-if="welcomeItems.length" :items="welcomeItems" @close="dismissWelcome" />
 </template>
 
 <script setup>
@@ -63,6 +64,8 @@ import IncomingGroupCallOverlay from '@/components/call/IncomingGroupCallOverlay
 import ActiveCallBar from '@/components/call/ActiveCallBar.vue'
 import KeyboardShortcutsModal from '@/components/common/KeyboardShortcutsModal.vue'
 import A11yStatusModal from '@/components/common/A11yStatusModal.vue'
+import NewsWelcomeModal from '@/components/common/NewsWelcomeModal.vue'
+import { newsApi } from '@/api/news'
 
 const auth = useAuthStore()
 const systemStore = useSystemStore()
@@ -70,6 +73,34 @@ const ui = useUIStore()
 const notificationsStore = useNotificationsStore()
 const showShortcuts = ref(false)
 const showA11y = ref(false)
+
+// ── Welcome news modal ───────────────────────────────────────────────────────
+const welcomeItems = ref([])
+
+function getWelcomeSeen(userID) {
+  try { return new Set(JSON.parse(localStorage.getItem(`news_login_seen_${userID}`) || '[]')) } catch { return new Set() }
+}
+
+function markWelcomeSeen(userID, ids) {
+  const seen = getWelcomeSeen(userID)
+  ids.forEach(id => seen.add(id))
+  try { localStorage.setItem(`news_login_seen_${userID}`, JSON.stringify([...seen])) } catch {}
+}
+
+function dismissWelcome() {
+  const userID = auth.user?.id
+  if (userID) markWelcomeSeen(userID, welcomeItems.value.map(n => n.id))
+  welcomeItems.value = []
+}
+
+async function checkWelcomeNews(userID) {
+  try {
+    const r = await newsApi.listActive()
+    const seen = getWelcomeSeen(userID)
+    const unseen = (r.data || []).filter(n => n.show_on_login && !seen.has(n.id))
+    if (unseen.length) welcomeItems.value = unseen
+  } catch {}
+}
 const { projectChatUnread } = useProjectChatUnread()
 const call = useWebRTCCall()
 const lkGroupCall = useLiveKitGroupCall()
@@ -140,7 +171,18 @@ watch(() => auth.isLoggedIn, (loggedIn) => {
   } else {
     clearInterval(versionTimer)
     versionTimer = null
+    welcomeItems.value = []
   }
+}, { immediate: true })
+
+// Fire the welcome check once per login session as soon as the user ID is known.
+let welcomeCheckedForUser = null
+watch(() => auth.user?.id, (userID) => {
+  if (userID && userID !== welcomeCheckedForUser) {
+    welcomeCheckedForUser = userID
+    checkWelcomeNews(userID)
+  }
+  if (!userID) welcomeCheckedForUser = null
 }, { immediate: true })
 
 const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.getItem('sidebar_position') || 'left')

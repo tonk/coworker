@@ -11,7 +11,8 @@
     "messages": "Spjall",
     "about": "Um",
     "user_menu": "Notendavalmynd",
-    "keyboard_shortcuts": "Lyklaborðsflýtilyklar"
+    "keyboard_shortcuts": "Lyklaborðsflýtilyklar",
+    "news": "Fréttir"
   },
   "auth": {
     "login": "Skrá inn",
@@ -339,6 +340,8 @@
     "news_start_date": "Sýna frá",
     "news_end_date": "Sýna til",
     "news_active": "Virkt",
+    "news_sidebar_color": "Hliðarslásalitur",
+    "news_sidebar_color_custom": "Sérsniðinn litur",
     "news_date_hint": "Skildu eftir autt til að sýna strax / endalaust",
     "news_delete_confirm": "Eyða \"{title}\"?",
     "backup_schedule_title": "Áætluð afrit",
@@ -368,7 +371,8 @@
     "login_branding_hint": "Sýnir nafn og merki fyrirtækis fyrir ofan innskráningarspjaldið.",
     "allowed_ips_label": "Leyfðar IP-tölur fyrir API",
     "allowed_ips_placeholder": "t.d. 10.0.0.0/8, 192.168.1.5",
-    "allowed_ips_hint": "Kommuaðskildar IPv4/IPv6-tölur eða CIDR-svið. Skildu eftir tómt til að leyfa allt. Viðvörun: röng gildi munu loka öllum á útaf API."
+    "allowed_ips_hint": "Kommuaðskildar IPv4/IPv6-tölur eða CIDR-svið. Skildu eftir tómt til að leyfa allt. Viðvörun: röng gildi munu loka öllum á útaf API.",
+    "news_show_on_login": "Sýna sem velkomnarskilaboð við innskráningu"
   },
   "report": {
     "title": "Tímaskýrsla",
@@ -778,5 +782,28 @@
     "news_title": "Hvað er nýtt",
     "a11y_title": "Aðgengi",
     "view_shortcuts": "Skoða lyklaborðsflýtilykla"
+  },
+  "news": {
+    "page_title": "Fréttir",
+    "filter_label": "Sía",
+    "filter_active": "Virkar",
+    "filter_all": "Allar",
+    "sort_label": "Raða eftir",
+    "sort_created": "Stofndagsetning",
+    "sort_start": "Upphafsdagur",
+    "sort_end": "Lokadagur",
+    "sort_title": "Titill",
+    "sort_asc": "Hækkandi",
+    "sort_desc": "Lækkandi",
+    "empty": "Engar fréttir fundust.",
+    "badge_inactive": "Óvirkt",
+    "badge_expired": "Útrunnið",
+    "badge_future": "Áætlað",
+    "badge_read": "Lesið",
+    "restore": "Merkja sem ólæst",
+    "mark_read": "Merkja sem lesið",
+    "mark_unread": "Merkja sem ólesið",
+    "welcome_got_it": "Skiljið",
+    "welcome_next": "Næsta"
   }
 }

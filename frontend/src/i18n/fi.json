@@ -10,7 +10,8 @@
     "profile": "Profiili",
     "messages": "Chatit",
     "about": "Tietoja",
-    "user_menu": "Käyttäjävalikko"
+    "user_menu": "Käyttäjävalikko",
+    "news": "Uutiset"
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -338,6 +339,8 @@
     "news_start_date": "Näytä alkaen",
     "news_end_date": "Näytä saakka",
     "news_active": "Aktiivinen",
+    "news_sidebar_color": "Sivupalkin väri",
+    "news_sidebar_color_custom": "Mukautettu väri",
     "news_date_hint": "Jätä tyhjäksi näyttääksesi heti / rajoittamattomasti",
     "news_delete_confirm": "Poistetaanko \"{title}\"?",
     "backup_schedule_title": "Ajoitetut varmuuskopiot",
@@ -367,7 +370,8 @@
     "login_branding_hint": "Näyttää yrityksen nimen ja logon kirjautumiskortin yläpuolella.",
     "allowed_ips_label": "Sallitut IP-osoitteet API:lle",
     "allowed_ips_placeholder": "esim. 10.0.0.0/8, 192.168.1.5",
-    "allowed_ips_hint": "Pilkuilla erotetut IPv4/IPv6-osoitteet tai CIDR-alueet. Jätä tyhjäksi salliaksesi kaikki. Varoitus: virheellinen arvo sulkee kaikki ulos API:sta."
+    "allowed_ips_hint": "Pilkuilla erotetut IPv4/IPv6-osoitteet tai CIDR-alueet. Jätä tyhjäksi salliaksesi kaikki. Varoitus: virheellinen arvo sulkee kaikki ulos API:sta.",
+    "news_show_on_login": "Näytä tervetuloviestinä kirjautumisessa"
   },
   "report": {
     "title": "Aikaraportti",
@@ -777,5 +781,28 @@
     "news_title": "Uutiset",
     "a11y_title": "Saavutettavuus",
     "view_shortcuts": "Näytä pikanäppäimet"
+  },
+  "news": {
+    "page_title": "Uutiset",
+    "filter_label": "Suodatin",
+    "filter_active": "Aktiiviset",
+    "filter_all": "Kaikki",
+    "sort_label": "Lajittele",
+    "sort_created": "Luontipäivä",
+    "sort_start": "Alkamispäivä",
+    "sort_end": "Päättymispäivä",
+    "sort_title": "Otsikko",
+    "sort_asc": "Nouseva",
+    "sort_desc": "Laskeva",
+    "empty": "Uutisia ei löydetty.",
+    "badge_inactive": "Ei aktiivinen",
+    "badge_expired": "Vanhentunut",
+    "badge_future": "Ajastettu",
+    "badge_read": "Luettu",
+    "restore": "Merkitse lukemattomaksi",
+    "mark_read": "Merkitse luetuksi",
+    "mark_unread": "Merkitse lukemattomaksi",
+    "welcome_got_it": "Selvä",
+    "welcome_next": "Seuraava"
   }
 }

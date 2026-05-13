@@ -100,6 +100,7 @@
         </button>
         <div class="dropdown" v-if="menuOpen" role="menu">
           <div class="dropdown-item" role="menuitem" @click="navigate('/')">{{ $t('nav.dashboard') }}</div>
+          <div class="dropdown-item" role="menuitem" @click="navigate('/news')">{{ $t('nav.news') }}</div>
           <div class="dropdown-item" role="menuitem" @click="navigate('/settings')">{{ $t('nav.settings') }}</div>
           <div class="dropdown-item" role="menuitem" v-if="auth.isAdmin" @click="navigate('/admin')">{{ $t('nav.admin') }}</div>
           <div class="dropdown-divider" role="separator"></div>

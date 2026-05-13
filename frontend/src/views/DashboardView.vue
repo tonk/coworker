@@ -19,10 +19,11 @@
               v-for="item in visibleNews"
               :key="item.id"
               class="widget news-widget"
+              :style="item.sidebar_color ? { borderLeftColor: item.sidebar_color } : {}"
             >
               <button class="widget-dismiss" :aria-label="$t('common.close')" @click="dismissNewsItem(item.id)">×</button>
               <div class="widget-header">
-                <img src="/logo-full.svg" alt="WarmDesk" class="widget-logo" />
+                <img src="/logo.svg" alt="WarmDesk" class="widget-logo" />
                 <span class="widget-tag">{{ $t('dashboard.news_title') }}</span>
               </div>
               <h2 class="widget-title">{{ item.title }}</h2>
@@ -221,7 +222,16 @@ onMounted(async () => {
   await projectStore.fetchProjects()
   sidebarStore.fetchStarred()
   customersApi.list().then(r => { createCustomers.value = r.data || [] }).catch(() => {})
-  newsApi.listActive().then(r => { allNews.value = r.data || [] }).catch(() => {})
+  newsApi.listActive().then(r => {
+    const fetched = r.data || []
+    allNews.value = fetched
+    const activeIds = new Set(fetched.map(n => n.id))
+    const pruned = new Set([...dismissedIds.value].filter(id => activeIds.has(id)))
+    if (pruned.size !== dismissedIds.value.size) {
+      dismissedIds.value = pruned
+      try { localStorage.setItem(NEWS_DISMISSED_KEY, JSON.stringify([...pruned])) } catch {}
+    }
+  }).catch(() => {})
   if (isAdmin.value && gridEl.value) {
     sortable = Sortable.create(gridEl.value, {
       handle: '.drag-handle',

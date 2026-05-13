@@ -11,7 +11,8 @@
     "messages": "Chat",
     "about": "Informazioni",
     "user_menu": "Menu utente",
-    "keyboard_shortcuts": "Scorciatoie da tastiera"
+    "keyboard_shortcuts": "Scorciatoie da tastiera",
+    "news": "Notizie"
   },
   "auth": {
     "login": "Accedi",
@@ -339,6 +340,8 @@
     "news_start_date": "Mostra dal",
     "news_end_date": "Mostra fino al",
     "news_active": "Attivo",
+    "news_sidebar_color": "Colore barra laterale",
+    "news_sidebar_color_custom": "Colore personalizzato",
     "news_date_hint": "Lascia vuoto per mostrare immediatamente / indefinitamente",
     "news_delete_confirm": "Eliminare \"{title}\"?",
     "backup_schedule_title": "Backup pianificati",
@@ -368,7 +371,8 @@
     "login_branding_hint": "Visualizza il nome e il logo dell'azienda sopra la scheda di accesso.",
     "allowed_ips_label": "Indirizzi IP consentiti per l'API",
     "allowed_ips_placeholder": "es. 10.0.0.0/8, 192.168.1.5",
-    "allowed_ips_hint": "Indirizzi IPv4/IPv6 o intervalli CIDR separati da virgole. Lasciare vuoto per consentire tutti. Attenzione: un valore errato bloccherà l'accesso di tutti all'API."
+    "allowed_ips_hint": "Indirizzi IPv4/IPv6 o intervalli CIDR separati da virgole. Lasciare vuoto per consentire tutti. Attenzione: un valore errato bloccherà l'accesso di tutti all'API.",
+    "news_show_on_login": "Mostra come messaggio di benvenuto al login"
   },
   "report": {
     "title": "Report ore",
@@ -778,5 +782,28 @@
     "news_title": "Novità",
     "a11y_title": "Accessibilità",
     "view_shortcuts": "Visualizza scorciatoie da tastiera"
+  },
+  "news": {
+    "page_title": "Notizie",
+    "filter_label": "Filtro",
+    "filter_active": "Attivo",
+    "filter_all": "Tutti",
+    "sort_label": "Ordina per",
+    "sort_created": "Data creazione",
+    "sort_start": "Data inizio",
+    "sort_end": "Data fine",
+    "sort_title": "Titolo",
+    "sort_asc": "Crescente",
+    "sort_desc": "Decrescente",
+    "empty": "Nessuna notizia trovata.",
+    "badge_inactive": "Inattivo",
+    "badge_expired": "Scaduto",
+    "badge_future": "Programmato",
+    "badge_read": "Letto",
+    "restore": "Segna come non letto",
+    "mark_read": "Segna come letto",
+    "mark_unread": "Segna come non letto",
+    "welcome_got_it": "Capito",
+    "welcome_next": "Avanti"
   }
 }

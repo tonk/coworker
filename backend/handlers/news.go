@@ -10,16 +10,21 @@ import (
 )
 
 // ListActiveNews returns news items visible right now (active + within date window).
+// Pass ?all=true to receive every item regardless of active/date state.
 // Available to all authenticated users.
 func ListActiveNews(c *gin.Context) {
-	now := time.Now()
 	var items []models.NewsItem
-	database.DB.
-		Where("active = ?", true).
-		Where("start_date IS NULL OR start_date <= ?", now).
-		Where("end_date IS NULL OR end_date >= ?", now).
-		Order("created_at desc").
-		Find(&items)
+	if c.Query("all") == "true" {
+		database.DB.Order("created_at desc").Find(&items)
+	} else {
+		now := time.Now()
+		database.DB.
+			Where("active = ?", true).
+			Where("start_date IS NULL OR start_date <= ?", now).
+			Where("end_date IS NULL OR end_date >= ?", now).
+			Order("created_at desc").
+			Find(&items)
+	}
 	c.JSON(http.StatusOK, items)
 }
 
@@ -31,11 +36,13 @@ func AdminListNews(c *gin.Context) {
 }
 
 type newsInput struct {
-	Title     string     `json:"title" binding:"required"`
-	Text      string     `json:"text" binding:"required"`
-	StartDate *time.Time `json:"start_date"`
-	EndDate   *time.Time `json:"end_date"`
-	Active    *bool      `json:"active"`
+	Title        string     `json:"title" binding:"required"`
+	Text         string     `json:"text" binding:"required"`
+	StartDate    *time.Time `json:"start_date"`
+	EndDate      *time.Time `json:"end_date"`
+	Active       *bool      `json:"active"`
+	SidebarColor string     `json:"sidebar_color"`
+	ShowOnLogin  *bool      `json:"show_on_login"`
 }
 
 // AdminCreateNews creates a news item.
@@ -49,12 +56,18 @@ func AdminCreateNews(c *gin.Context) {
 	if in.Active != nil {
 		active = *in.Active
 	}
+	showOnLogin := false
+	if in.ShowOnLogin != nil {
+		showOnLogin = *in.ShowOnLogin
+	}
 	item := models.NewsItem{
-		Title:     in.Title,
-		Text:      in.Text,
-		StartDate: in.StartDate,
-		EndDate:   in.EndDate,
-		Active:    active,
+		Title:        in.Title,
+		Text:         in.Text,
+		StartDate:    in.StartDate,
+		EndDate:      in.EndDate,
+		Active:       active,
+		SidebarColor: in.SidebarColor,
+		ShowOnLogin:  showOnLogin,
 	}
 	if err := database.DB.Create(&item).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create news item"})
@@ -80,8 +93,12 @@ func AdminUpdateNews(c *gin.Context) {
 	item.Text = in.Text
 	item.StartDate = in.StartDate
 	item.EndDate = in.EndDate
+	item.SidebarColor = in.SidebarColor
 	if in.Active != nil {
 		item.Active = *in.Active
+	}
+	if in.ShowOnLogin != nil {
+		item.ShowOnLogin = *in.ShowOnLogin
 	}
 	if err := database.DB.Save(&item).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update news item"})

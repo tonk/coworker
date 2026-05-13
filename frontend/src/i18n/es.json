@@ -11,7 +11,8 @@
     "messages": "Chats",
     "about": "Acerca de",
     "user_menu": "Menú de usuario",
-    "keyboard_shortcuts": "Atajos de teclado"
+    "keyboard_shortcuts": "Atajos de teclado",
+    "news": "Noticias"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -343,6 +344,8 @@
     "news_start_date": "Mostrar desde",
     "news_end_date": "Mostrar hasta",
     "news_active": "Activo",
+    "news_sidebar_color": "Color de barra lateral",
+    "news_sidebar_color_custom": "Color personalizado",
     "news_date_hint": "Dejar vacío para mostrar inmediatamente / indefinidamente",
     "news_delete_confirm": "¿Eliminar \"{title}\"?",
     "backup_schedule_title": "Copias de seguridad programadas",
@@ -374,7 +377,8 @@
     "login_branding_hint": "Muestra el nombre y el logotipo de la empresa sobre la tarjeta de inicio de sesión.",
     "allowed_ips_label": "Direcciones IP permitidas para la API",
     "allowed_ips_placeholder": "ej. 10.0.0.0/8, 192.168.1.5",
-    "allowed_ips_hint": "Direcciones IPv4/IPv6 o rangos CIDR separados por comas. Dejar vacío para permitir todas. Advertencia: un valor incorrecto bloqueará el acceso de todos a la API."
+    "allowed_ips_hint": "Direcciones IPv4/IPv6 o rangos CIDR separados por comas. Dejar vacío para permitir todas. Advertencia: un valor incorrecto bloqueará el acceso de todos a la API.",
+    "news_show_on_login": "Mostrar como mensaje de bienvenida al iniciar sesión"
   },
   "update": {
     "available": "Hay una nueva versión de WarmDesk disponible: v{version}.",
@@ -785,5 +789,28 @@
     "news_title": "Novedades",
     "a11y_title": "Accesibilidad",
     "view_shortcuts": "Ver atajos de teclado"
+  },
+  "news": {
+    "page_title": "Noticias",
+    "filter_label": "Filtro",
+    "filter_active": "Activo",
+    "filter_all": "Todo",
+    "sort_label": "Ordenar por",
+    "sort_created": "Fecha de creación",
+    "sort_start": "Fecha de inicio",
+    "sort_end": "Fecha de fin",
+    "sort_title": "Título",
+    "sort_asc": "Ascendente",
+    "sort_desc": "Descendente",
+    "empty": "No se encontraron noticias.",
+    "badge_inactive": "Inactivo",
+    "badge_expired": "Expirado",
+    "badge_future": "Programado",
+    "badge_read": "Leído",
+    "restore": "Marcar como no leído",
+    "mark_read": "Marcar como leído",
+    "mark_unread": "Marcar como no leído",
+    "welcome_got_it": "Entendido",
+    "welcome_next": "Siguiente"
   }
 }

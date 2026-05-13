@@ -11,7 +11,8 @@
     "messages": "Chats",
     "about": "Über",
     "user_menu": "Benutzermenü",
-    "keyboard_shortcuts": "Tastenkürzel"
+    "keyboard_shortcuts": "Tastenkürzel",
+    "news": "Neuigkeiten"
   },
   "auth": {
     "login": "Anmelden",
@@ -343,6 +344,8 @@
     "news_start_date": "Anzeigen ab",
     "news_end_date": "Anzeigen bis",
     "news_active": "Aktiv",
+    "news_sidebar_color": "Seitenleistenfarbe",
+    "news_sidebar_color_custom": "Benutzerdefinierte Farbe",
     "news_date_hint": "Leer lassen, um sofort / unbegrenzt anzuzeigen",
     "news_delete_confirm": "\"{title}\" löschen?",
     "backup_schedule_title": "Geplante Sicherungen",
@@ -374,7 +377,8 @@
     "login_branding_hint": "Zeigt Firmenname und Logo über der Anmeldekarte an.",
     "allowed_ips_label": "Erlaubte IP-Adressen für die API",
     "allowed_ips_placeholder": "z.B. 10.0.0.0/8, 192.168.1.5",
-    "allowed_ips_hint": "Kommagetrennte IPv4/IPv6-Adressen oder CIDR-Bereiche. Leer lassen, um alle zuzulassen. Warnung: ein falscher Wert sperrt alle aus der API aus."
+    "allowed_ips_hint": "Kommagetrennte IPv4/IPv6-Adressen oder CIDR-Bereiche. Leer lassen, um alle zuzulassen. Warnung: ein falscher Wert sperrt alle aus der API aus.",
+    "news_show_on_login": "Als Willkommensnachricht beim Login anzeigen"
   },
   "update": {
     "available": "Eine neue Version von WarmDesk ist verfügbar: v{version}.",
@@ -785,5 +789,28 @@
     "news_title": "Was ist neu",
     "a11y_title": "Barrierefreiheit",
     "view_shortcuts": "Tastenkürzel anzeigen"
+  },
+  "news": {
+    "page_title": "Neuigkeiten",
+    "filter_label": "Filter",
+    "filter_active": "Aktiv",
+    "filter_all": "Alle",
+    "sort_label": "Sortieren nach",
+    "sort_created": "Erstellungsdatum",
+    "sort_start": "Startdatum",
+    "sort_end": "Enddatum",
+    "sort_title": "Titel",
+    "sort_asc": "Aufsteigend",
+    "sort_desc": "Absteigend",
+    "empty": "Keine Neuigkeiten gefunden.",
+    "badge_inactive": "Inaktiv",
+    "badge_expired": "Abgelaufen",
+    "badge_future": "Geplant",
+    "badge_read": "Gelesen",
+    "restore": "Als ungelesen markieren",
+    "mark_read": "Als gelesen markieren",
+    "mark_unread": "Als ungelesen markieren",
+    "welcome_got_it": "Verstanden",
+    "welcome_next": "Weiter"
   }
 }

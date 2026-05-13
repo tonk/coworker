@@ -1187,9 +1187,47 @@
         />
       </div>
     </div>
+    <div class="form-group">
+      <label class="form-label">{{ $t('admin.news_sidebar_color') }}</label>
+      <div class="news-color-picker">
+        <button
+          v-for="c in newsColorPresets"
+          :key="c"
+          type="button"
+          class="news-color-swatch"
+          :class="{ selected: newsForm.sidebar_color === c }"
+          :style="{ background: c }"
+          :title="c"
+          @click="newsForm.sidebar_color = newsForm.sidebar_color === c ? '' : c"
+        ></button>
+        <label class="news-color-custom" :title="$t('admin.news_sidebar_color_custom')">
+          <span
+            class="news-color-swatch"
+            :class="{ selected: newsForm.sidebar_color && !newsColorPresets.includes(newsForm.sidebar_color) }"
+            :style="{ background: newsForm.sidebar_color && !newsColorPresets.includes(newsForm.sidebar_color) ? newsForm.sidebar_color : 'transparent', border: '2px dashed var(--color-border)' }"
+          >+</span>
+          <input type="color" class="news-color-hidden" @input="newsForm.sidebar_color = $event.target.value" />
+        </label>
+        <button
+          v-if="newsForm.sidebar_color"
+          type="button"
+          class="btn btn-ghost btn-sm"
+          style="padding:2px 8px;font-size:11px"
+          @click="newsForm.sidebar_color = ''"
+        >&#x2715;</button>
+      </div>
+      <div v-if="newsForm.sidebar_color" class="news-color-preview">
+        <div class="news-color-preview-bar" :style="{ borderLeftColor: newsForm.sidebar_color }"></div>
+        <span style="font-size:12px;color:var(--color-text-muted)">{{ newsForm.sidebar_color }}</span>
+      </div>
+    </div>
     <div class="form-group" style="display:flex;align-items:center;gap:10px">
       <input type="checkbox" id="news-active" v-model="newsForm.active" style="width:auto" />
       <label for="news-active" class="form-label" style="margin:0">{{ $t('admin.news_active') }}</label>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px">
+      <input type="checkbox" id="news-show-on-login" v-model="newsForm.show_on_login" style="width:auto" />
+      <label for="news-show-on-login" class="form-label" style="margin:0">{{ $t('admin.news_show_on_login') }}</label>
     </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showNewsModal = false; editingNews = null">{{ $t('common.cancel') }}</button>
@@ -1238,8 +1276,9 @@ const newsLoading = ref(false)
 const showNewsModal = ref(false)
 const editingNews = ref(null)
 const newsSaving = ref(false)
-const newsForm = ref({ title: '', text: '', start_date: null, end_date: null, active: true })
+const newsForm = ref({ title: '', text: '', start_date: null, end_date: null, active: true, sidebar_color: '' })
 const newsEditorTab = ref('edit')
+const newsColorPresets = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#64748b']
 
 async function loadNews() {
   newsLoading.value = true
@@ -1253,7 +1292,7 @@ async function loadNews() {
 function openCreateNews() {
   editingNews.value = null
   newsEditorTab.value = 'edit'
-  newsForm.value = { title: '', text: '', start_date: null, end_date: null, active: true }
+  newsForm.value = { title: '', text: '', start_date: null, end_date: null, active: true, sidebar_color: '', show_on_login: false }
   showNewsModal.value = true
 }
 function openEditNews(item) {
@@ -1265,6 +1304,8 @@ function openEditNews(item) {
     start_date: item.start_date || null,
     end_date: item.end_date || null,
     active: item.active,
+    sidebar_color: item.sidebar_color || '',
+    show_on_login: !!item.show_on_login,
   }
   showNewsModal.value = true
 }
@@ -1277,6 +1318,8 @@ async function saveNews() {
       start_date: newsForm.value.start_date,
       end_date: newsForm.value.end_date,
       active: newsForm.value.active,
+      sidebar_color: newsForm.value.sidebar_color,
+      show_on_login: newsForm.value.show_on_login,
     }
     if (editingNews.value) {
       await newsApi.adminUpdate(editingNews.value.id, payload)
@@ -2537,4 +2580,56 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 :deep(.markdown-body) em { font-style: italic; }
 :deep(.markdown-body) hr { border: none; border-top: 1px solid var(--color-border); margin: 12px 0; }
 :deep(.markdown-body) > *:last-child { margin-bottom: 0; }
+
+/* ── News sidebar color picker ── */
+.news-color-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.news-color-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  transition: transform .1s, border-color .1s;
+  flex-shrink: 0;
+}
+.news-color-swatch:hover { transform: scale(1.15); }
+.news-color-swatch.selected { border-color: var(--color-text); transform: scale(1.1); }
+.news-color-custom {
+  cursor: pointer;
+  position: relative;
+}
+.news-color-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.news-color-custom:hover .news-color-swatch { transform: scale(1.15); }
+.news-color-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.news-color-preview-bar {
+  width: 48px;
+  height: 20px;
+  border-left: 4px solid var(--color-primary);
+  border-radius: 2px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+}
 </style>

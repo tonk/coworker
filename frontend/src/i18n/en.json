@@ -11,7 +11,8 @@
     "messages": "Chats",
     "about": "About",
     "user_menu": "User menu",
-    "keyboard_shortcuts": "Keyboard Shortcuts"
+    "keyboard_shortcuts": "Keyboard Shortcuts",
+    "news": "News"
   },
   "auth": {
     "login": "Login",
@@ -349,6 +350,8 @@
     "news_start_date": "Show from",
     "news_end_date": "Show until",
     "news_active": "Active",
+    "news_sidebar_color": "Sidebar color",
+    "news_sidebar_color_custom": "Custom color",
     "news_date_hint": "Leave empty to show immediately / indefinitely",
     "news_delete_confirm": "Delete \"{title}\"?",
     "backup_schedule_title": "Scheduled Backups",
@@ -374,7 +377,8 @@
     "login_branding_hint": "Displays the company name and logo above the login card.",
     "allowed_ips_label": "API allowed IP addresses",
     "allowed_ips_placeholder": "e.g. 10.0.0.0/8, 192.168.1.5",
-    "allowed_ips_hint": "Comma-separated IPv4/IPv6 addresses or CIDR ranges. Leave empty to allow all. Warning: an incorrect value will lock everyone out of the API."
+    "allowed_ips_hint": "Comma-separated IPv4/IPv6 addresses or CIDR ranges. Leave empty to allow all. Warning: an incorrect value will lock everyone out of the API.",
+    "news_show_on_login": "Show as welcome message on login"
   },
   "report": {
     "title": "Time Report",
@@ -785,5 +789,28 @@
     "news_title": "What's new",
     "a11y_title": "Accessibility",
     "view_shortcuts": "View keyboard shortcuts"
+  },
+  "news": {
+    "page_title": "News",
+    "filter_label": "Filter",
+    "filter_active": "Active",
+    "filter_all": "All",
+    "sort_label": "Sort by",
+    "sort_created": "Date created",
+    "sort_start": "Start date",
+    "sort_end": "End date",
+    "sort_title": "Title",
+    "sort_asc": "Ascending",
+    "sort_desc": "Descending",
+    "empty": "No news items found.",
+    "badge_inactive": "Inactive",
+    "badge_expired": "Expired",
+    "badge_future": "Scheduled",
+    "badge_read": "Read",
+    "restore": "Mark as unread",
+    "mark_read": "Mark as read",
+    "mark_unread": "Mark as unread",
+    "welcome_got_it": "Got it",
+    "welcome_next": "Next"
   }
 }

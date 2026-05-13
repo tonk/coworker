@@ -15,5 +15,7 @@ type NewsItem struct {
 	Text      string         `gorm:"type:text;not null" json:"text"`
 	StartDate *time.Time     `json:"start_date"`
 	EndDate   *time.Time     `json:"end_date"`
-	Active    bool           `gorm:"default:true;not null" json:"active"`
+	Active       bool           `gorm:"default:true;not null" json:"active"`
+	SidebarColor string         `gorm:"size:20" json:"sidebar_color"`
+	ShowOnLogin  bool           `gorm:"default:false;not null" json:"show_on_login"`
 }
