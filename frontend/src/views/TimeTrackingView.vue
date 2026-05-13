@@ -234,6 +234,15 @@
             {{ $t('timeTracking.week') }} {{ w }}
           </option>
         </select>
+        <div class="rpt-filter-group">
+          <label class="filter-label" for="rpt-group-by">{{ $t('timeTracking.group_by') }}</label>
+          <select id="rpt-group-by" class="form-input fi-sm" v-model="rpt.group_by" @change="loadReport">
+            <option value="period">{{ $t('timeTracking.group_by_period') }}</option>
+            <option value="customer">{{ $t('timeTracking.group_by_customer') }}</option>
+            <option value="project">{{ $t('timeTracking.group_by_project') }}</option>
+            <option value="customer_project">{{ $t('timeTracking.group_by_customer_project') }}</option>
+          </select>
+        </div>
         <button class="btn btn-secondary" @click="loadReport">{{ $t('timeTracking.refresh') }}</button>
         <div class="tt-export-group" v-if="report && report.total_minutes > 0">
           <div class="pdf-font-group">
@@ -802,7 +811,7 @@ function cancelNewRow() {
 
 // ── Report ────────────────────────────────────────────────────────────────
 const now  = new Date()
-const rpt  = ref({ period: 'month', year: now.getFullYear(), month: now.getMonth() + 1, week: currentISOWeek() })
+const rpt  = ref({ period: 'month', year: now.getFullYear(), month: now.getMonth() + 1, week: currentISOWeek(), group_by: 'period' })
 const report       = ref(null)
 const loadingReport = ref(false)
 
@@ -822,10 +831,11 @@ async function loadReport() {
   loadingReport.value = true
   try {
     const params = {
-      period: rpt.value.period,
-      year:   rpt.value.year,
-      month:  rpt.value.month,
-      week:   rpt.value.week,
+      period:   rpt.value.period,
+      year:     rpt.value.year,
+      month:    rpt.value.month,
+      week:     rpt.value.week,
+      group_by: rpt.value.group_by,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const { data } = await timeEntriesApi.report(params)
@@ -874,10 +884,11 @@ async function exportReportXLSX() {
   if (!report.value) return
   try {
     const params = {
-      period: rpt.value.period,
-      year:   rpt.value.year,
-      month:  rpt.value.month,
-      week:   rpt.value.week,
+      period:   rpt.value.period,
+      year:     rpt.value.year,
+      month:    rpt.value.month,
+      week:     rpt.value.week,
+      group_by: rpt.value.group_by,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const { data } = await timeEntriesApi.reportXLSX(params)
@@ -893,12 +904,13 @@ async function exportReportPDF() {
   if (!report.value) return
   try {
     const params = {
-      period: rpt.value.period,
-      year:   rpt.value.year,
-      month:  rpt.value.month,
-      week:   rpt.value.week,
-      font:   pdfFont.value,
-      lang:   pdfLang.value,
+      period:   rpt.value.period,
+      year:     rpt.value.year,
+      month:    rpt.value.month,
+      week:     rpt.value.week,
+      group_by: rpt.value.group_by,
+      font:     pdfFont.value,
+      lang:     pdfLang.value,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const { data } = await timeEntriesApi.reportPDF(params)
@@ -1388,9 +1400,10 @@ onMounted(async () => {
 
 /* ── Report ── */
 .tt-report-outer { flex: 1; overflow: auto; padding: 20px 24px; }
-.report-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.report-filters { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
 .fi-sm { min-width: 80px; width: auto; }
 .fi-year { width: 80px; }
+.rpt-filter-group { display: flex; flex-direction: column; gap: 4px; }
 
 /* Report header: logo + company name + period */
 .rpt-header {

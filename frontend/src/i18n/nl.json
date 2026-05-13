@@ -736,7 +736,12 @@
     "tt_customer_global": "Globaal (aangemaakt door beheerder)",
     "tt_customers_empty": "Nog geen tijdregistratieklanten.",
     "tt_tab_projects": "Projecten",
-    "tt_tab_customers": "Klanten"
+    "tt_tab_customers": "Klanten",
+    "group_by": "Groeperen op",
+    "group_by_period": "Periode",
+    "group_by_customer": "Klant",
+    "group_by_project": "Project",
+    "group_by_customer_project": "Klant & Project"
   },
   "call": {
     "incoming": "Inkomende oproep",

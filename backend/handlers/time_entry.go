@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -234,7 +236,18 @@ func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryRepor
 		return nil, http.StatusInternalServerError, "internal error"
 	}
 
-	groups := buildGroups(period, from, to, entries)
+	groupBy := c.DefaultQuery("group_by", "period")
+	var groups []timeEntryGroup
+	switch groupBy {
+	case "customer":
+		groups = buildGroupsByCustomer(entries)
+	case "project":
+		groups = buildGroupsByProject(entries)
+	case "customer_project":
+		groups = buildGroupsByCustomerProject(entries)
+	default:
+		groups = buildGroups(period, from, to, entries)
+	}
 
 	total := 0
 	for _, g := range groups {
@@ -374,4 +387,115 @@ func intOrDefault(s string, def int) int {
 func isoWeek(t time.Time) int {
 	_, w := t.ISOWeek()
 	return w
+}
+
+func buildGroupsByCustomer(entries []models.TimeEntry) []timeEntryGroup {
+	const none = "(no customer)"
+	buckets := map[string]*timeEntryGroup{}
+	var order []string
+	for i := range entries {
+		e := entries[i]
+		label := none
+		if e.Customer != nil && e.Customer.Name != "" {
+			label = e.Customer.Name
+		}
+		if _, ok := buckets[label]; !ok {
+			buckets[label] = &timeEntryGroup{Label: label}
+			order = append(order, label)
+		}
+		b := buckets[label]
+		b.Entries = append(b.Entries, e)
+		b.TotalMinutes += e.Minutes
+	}
+	sort.Slice(order, func(i, j int) bool {
+		a, b := order[i], order[j]
+		if a == none { return false }
+		if b == none { return true }
+		return strings.ToLower(a) < strings.ToLower(b)
+	})
+	result := make([]timeEntryGroup, 0, len(order))
+	for _, l := range order {
+		b := buckets[l]
+		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
+		result = append(result, *b)
+	}
+	return result
+}
+
+func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
+	const none = "(no project)"
+	buckets := map[string]*timeEntryGroup{}
+	var order []string
+	for i := range entries {
+		e := entries[i]
+		label := none
+		if e.Project != nil && e.Project.Name != "" {
+			label = e.Project.Name
+		}
+		if _, ok := buckets[label]; !ok {
+			buckets[label] = &timeEntryGroup{Label: label}
+			order = append(order, label)
+		}
+		b := buckets[label]
+		b.Entries = append(b.Entries, e)
+		b.TotalMinutes += e.Minutes
+	}
+	sort.Slice(order, func(i, j int) bool {
+		a, b := order[i], order[j]
+		if a == none { return false }
+		if b == none { return true }
+		return strings.ToLower(a) < strings.ToLower(b)
+	})
+	result := make([]timeEntryGroup, 0, len(order))
+	for _, l := range order {
+		b := buckets[l]
+		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
+		result = append(result, *b)
+	}
+	return result
+}
+
+func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
+	const noCust = "(no customer)"
+	const noProj = "(no project)"
+	type cpKey struct{ cust, proj string }
+	buckets := map[cpKey]*timeEntryGroup{}
+	var order []cpKey
+	for i := range entries {
+		e := entries[i]
+		cust := noCust
+		if e.Customer != nil && e.Customer.Name != "" {
+			cust = e.Customer.Name
+		}
+		proj := noProj
+		if e.Project != nil && e.Project.Name != "" {
+			proj = e.Project.Name
+		}
+		k := cpKey{cust, proj}
+		if _, ok := buckets[k]; !ok {
+			buckets[k] = &timeEntryGroup{Label: cust + " › " + proj}
+			order = append(order, k)
+		}
+		b := buckets[k]
+		b.Entries = append(b.Entries, e)
+		b.TotalMinutes += e.Minutes
+	}
+	sort.Slice(order, func(i, j int) bool {
+		a, b := order[i], order[j]
+		if a.cust == noCust && b.cust != noCust { return false }
+		if b.cust == noCust && a.cust != noCust { return true }
+		if cl := strings.Compare(strings.ToLower(a.cust), strings.ToLower(b.cust)); cl != 0 {
+			return cl < 0
+		}
+		if a.proj == noProj { return false }
+		if b.proj == noProj { return true }
+		return strings.ToLower(a.proj) < strings.ToLower(b.proj)
+	})
+	result := make([]timeEntryGroup, 0, len(order))
+	for _, k := range order {
+		b := buckets[k]
+		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
+		result = append(result, *b)
+	}
+	return result
 }

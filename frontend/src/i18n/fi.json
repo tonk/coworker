@@ -729,7 +729,12 @@
     "tt_customer_global": "Yleinen (järjestelmänvalvojan luoma)",
     "tt_customers_empty": "Ei ajanseuranta-asiakkaita vielä.",
     "tt_tab_projects": "Projektit",
-    "tt_tab_customers": "Asiakkaat"
+    "tt_tab_customers": "Asiakkaat",
+    "group_by": "Ryhmittele",
+    "group_by_period": "Ajanjakso",
+    "group_by_customer": "Asiakas",
+    "group_by_project": "Projekti",
+    "group_by_customer_project": "Asiakas & Projekti"
   },
   "call": {
     "incoming": "Saapuva puhelu",

@@ -148,6 +148,7 @@ Create an application that has all these features and requirements
 - Show version number on the login page
 - Frontend version number must follow the git tag automatically (no manual updates)
 - Time-tracking project dropdown always shows all TT-only projects when a customer is selected, in addition to the customer's own regular projects
+- Time-tracking report can be grouped by Period, Customer, Project, or Customer & Project; grouping applies to PDF and XLSX exports
 - All projects visible to admins in the sidebar
 - PDF time report must print only the report content (no sidebar, header, or footer)
 - Time in reports displayed as H:MM (hours unbounded, minutes zero-padded)

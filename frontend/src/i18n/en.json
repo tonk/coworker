@@ -736,7 +736,12 @@
     "tt_customer_global": "Global (created by admin)",
     "tt_customers_empty": "No time tracking customers yet.",
     "tt_tab_projects": "Projects",
-    "tt_tab_customers": "Customers"
+    "tt_tab_customers": "Customers",
+    "group_by": "Group by",
+    "group_by_period": "Period",
+    "group_by_customer": "Customer",
+    "group_by_project": "Project",
+    "group_by_customer_project": "Customer & Project"
   },
   "call": {
     "incoming": "Incoming call",

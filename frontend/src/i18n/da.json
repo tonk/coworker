@@ -730,7 +730,12 @@
     "tt_customer_global": "Global (oprettet af administrator)",
     "tt_customers_empty": "Ingen tidssporingskunder endnu.",
     "tt_tab_projects": "Projekter",
-    "tt_tab_customers": "Kunder"
+    "tt_tab_customers": "Kunder",
+    "group_by": "Grupper efter",
+    "group_by_period": "Periode",
+    "group_by_customer": "Kunde",
+    "group_by_project": "Projekt",
+    "group_by_customer_project": "Kunde & Projekt"
   },
   "call": {
     "incoming": "Indgående opkald",

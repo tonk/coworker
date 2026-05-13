@@ -730,7 +730,12 @@
     "tt_customer_global": "Global (criado pelo administrador)",
     "tt_customers_empty": "Nenhum cliente de controle de tempo ainda.",
     "tt_tab_projects": "Projetos",
-    "tt_tab_customers": "Clientes"
+    "tt_tab_customers": "Clientes",
+    "group_by": "Agrupar por",
+    "group_by_period": "Período",
+    "group_by_customer": "Cliente",
+    "group_by_project": "Projeto",
+    "group_by_customer_project": "Cliente & Projeto"
   },
   "call": {
     "incoming": "Chamada recebida",

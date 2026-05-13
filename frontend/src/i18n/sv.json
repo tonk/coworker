@@ -730,7 +730,12 @@
     "tt_customer_global": "Global (skapad av administratör)",
     "tt_customers_empty": "Inga tidsspårningskunder ännu.",
     "tt_tab_projects": "Projekt",
-    "tt_tab_customers": "Kunder"
+    "tt_tab_customers": "Kunder",
+    "group_by": "Gruppera efter",
+    "group_by_period": "Period",
+    "group_by_customer": "Kund",
+    "group_by_project": "Projekt",
+    "group_by_customer_project": "Kund & Projekt"
   },
   "call": {
     "incoming": "Inkommande samtal",

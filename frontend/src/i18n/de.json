@@ -736,7 +736,12 @@
     "tt_customer_global": "Global (erstellt von Administrator)",
     "tt_customers_empty": "Noch keine Zeiterfassungskunden.",
     "tt_tab_projects": "Projekte",
-    "tt_tab_customers": "Kunden"
+    "tt_tab_customers": "Kunden",
+    "group_by": "Gruppieren nach",
+    "group_by_period": "Zeitraum",
+    "group_by_customer": "Kunde",
+    "group_by_project": "Projekt",
+    "group_by_customer_project": "Kunde & Projekt"
   },
   "call": {
     "incoming": "Eingehender Anruf",

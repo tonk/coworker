@@ -730,7 +730,12 @@
     "tt_customer_global": "Globale (creato dall'amministratore)",
     "tt_customers_empty": "Nessun cliente di monitoraggio del tempo ancora.",
     "tt_tab_projects": "Progetti",
-    "tt_tab_customers": "Clienti"
+    "tt_tab_customers": "Clienti",
+    "group_by": "Raggruppa per",
+    "group_by_period": "Periodo",
+    "group_by_customer": "Cliente",
+    "group_by_project": "Progetto",
+    "group_by_customer_project": "Cliente & Progetto"
   },
   "call": {
     "incoming": "Chiamata in arrivo",

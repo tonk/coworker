@@ -736,7 +736,12 @@
     "tt_customer_global": "Global (creado por administrador)",
     "tt_customers_empty": "Aún no hay clientes de seguimiento de tiempo.",
     "tt_tab_projects": "Proyectos",
-    "tt_tab_customers": "Clientes"
+    "tt_tab_customers": "Clientes",
+    "group_by": "Agrupar por",
+    "group_by_period": "Período",
+    "group_by_customer": "Cliente",
+    "group_by_project": "Proyecto",
+    "group_by_customer_project": "Cliente & Proyecto"
   },
   "call": {
     "incoming": "Llamada entrante",

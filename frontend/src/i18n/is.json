@@ -730,7 +730,12 @@
     "tt_customer_global": "Alþjóðlegt (búið til af kerfisstjóra)",
     "tt_customers_empty": "Engir tímaskráningarviðskiptavinir enn.",
     "tt_tab_projects": "Verkefni",
-    "tt_tab_customers": "Viðskiptavinir"
+    "tt_tab_customers": "Viðskiptavinir",
+    "group_by": "Flokka eftir",
+    "group_by_period": "Tímabil",
+    "group_by_customer": "Viðskiptavinur",
+    "group_by_project": "Verkefni",
+    "group_by_customer_project": "Viðskiptavinur & Verkefni"
   },
   "call": {
     "incoming": "Móttekið símtal",

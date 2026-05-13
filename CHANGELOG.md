@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.45 — 2026-05-13
+
+### Added
+- **Time-tracking report grouping** — a new "Group by" selector in the time-tracking report tab lets users group entries by Period (existing behaviour), Customer, Project, or Customer & Project; the selected grouping is preserved in PDF and XLSX exports; customer+project pairs are shown as composite group headers (e.g. "Acme Corp › Travel time")
+
 ## v0.9.44 — 2026-05-13
 
 ### Changed
