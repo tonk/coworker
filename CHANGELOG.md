@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.9.42 — 2026-05-13
+
+### Added
+- **News read/unread toggle** — every item in the News overview now has a toggle button; marking an item "read" hides it from the dashboard, marking it "unread" restores it; replaces the old conditional "Mark as unread" button that only appeared on already-dismissed items
+- **Welcome message on login** — news items can be flagged "Show as welcome message on login" in the admin panel; flagged items appear in a modal overlay immediately after login, paginated if there are multiple; each item is shown only once per user per browser (seen state stored in localStorage keyed by user ID)
+- **Sidebar color for news tiles** — admin news form has a color picker (preset swatches + custom color input) that controls the left-border color of dashboard and News-view tiles
+- **News overview page** — `/news` route accessible from the user menu shows all news items with an Active / All filter, sort by creation date / start date / end date / title (ascending or descending), and status badges (Inactive, Expired, Scheduled, Read)
+- **Demo news items in seed** — `go run ./cmd/seed` now creates six realistic news items covering welcome, feature announcement, maintenance window, retrospective, security reminder, and team event; the welcome item is marked `show_on_login`
+
+### Fixed
+- **Dashboard news not appearing after DB reset** — dismissed item IDs (stored in localStorage) are now pruned against the live API response on each page load; stale IDs for items that no longer exist are removed so new items with recycled IDs are not incorrectly hidden
+
 ## v0.9.41 — 2026-05-12
 
 ### Fixed
