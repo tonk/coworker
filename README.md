@@ -281,7 +281,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Close / reopen cards** — mark cards as closed; closed cards stay on the board with a strikethrough and muted style and can be reopened at any time
 - **Linked cards (cross-references)** — link any two cards across projects; linked cards appear in the card detail with their reference, title, current column, and open/closed status; opening a linked card shows a ← back link to return to the originating card; remove a link at any time
 - **Comment replies** — reply to any comment; replies are visually indented
-- **Time tracking** — log hours and minutes spent directly on a card
+- **Time tracking** — log hours and minutes spent directly on a card; the weekly timesheet also supports time-tracking-only projects and customers (lightweight entries that don't create a board or CRM record), managed via the ⚙ button in the time-tracking view
 - **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
 - **Role-based access** — global roles (admin / user / viewer / metrics / backup) and per-project roles (owner / admin / member / viewer); project admins can manage columns
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket

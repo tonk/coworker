@@ -90,7 +90,7 @@ func ListCustomers(c *gin.Context) {
 	isAdmin := middleware.GetGlobalRole(c) == "admin"
 
 	var customers []models.Customer
-	database.DB.Order("position asc, id asc").Find(&customers)
+	database.DB.Where("time_tracking_only = false").Order("position asc, id asc").Find(&customers)
 
 	// myRoles maps customerID → effective role (direct or via group) for the current user.
 	myRoles := make(map[uint]string)

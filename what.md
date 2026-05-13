@@ -507,3 +507,8 @@ Create an application that has all these features and requirements
 - Fix PDF and XLSX report export in the Tauri desktop app: open a native OS save dialog using tauri-plugin-dialog and tauri-plugin-fs; the previous anchor-download approach was silently ignored by the WebView
 - Close all popups and overlays with Escape: About dialog, Call Settings panel, Emoji reaction picker, and incoming call / group call notifications; the call chat sidebar shows an inline discard-draft confirmation before closing when a message has been typed
 - Add Light / Dark / System theme switcher to marketing website navbar; dark mode CSS variables applied throughout; system mode follows OS preference; choice persisted in localStorage
+
+- Allow users and admins to create time-tracking-only projects (no board created) for use in the weekly timesheet
+- Allow users and admins to create time-tracking-only customers (no CRM record created) that can be associated with time-tracking-only projects
+- Manage time-tracking projects and customers via a tabbed modal (⚙ button) in the time-tracking view with full CRUD support
+- All UI must be WCAG 2.1 AA compliant

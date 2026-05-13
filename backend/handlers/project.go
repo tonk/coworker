@@ -93,10 +93,10 @@ func ListProjects(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	globalRole := middleware.GetGlobalRole(c)
 
-	// Admins and global viewers see all non-deleted projects
+	// Admins and global viewers see all non-deleted, non-time-tracking-only projects
 	if globalRole == "admin" || globalRole == "viewer" {
 		var projects []models.Project
-		database.DB.Preload("Customer").Preload("Contract").Where("deleted_at IS NULL").Order("position asc, id asc").Find(&projects)
+		database.DB.Preload("Customer").Preload("Contract").Where("deleted_at IS NULL AND time_tracking_only = false").Order("position asc, id asc").Find(&projects)
 		c.JSON(http.StatusOK, projectsWithCounts(projects))
 		return
 	}
@@ -107,7 +107,7 @@ func ListProjects(c *gin.Context) {
 	seen := make(map[uint]struct{})
 	projects := make([]models.Project, 0, len(members))
 	for _, m := range members {
-		if m.Project.DeletedAt.Valid {
+		if m.Project.DeletedAt.Valid || m.Project.TimeTrackingOnly {
 			continue
 		}
 		seen[m.Project.ID] = struct{}{}

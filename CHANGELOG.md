@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.9.43 — 2026-05-13
+
+### Added
+- **Time-tracking-only projects** — users and admins can create lightweight projects used exclusively for time tracking; no Kanban/Scrum board, columns, or members are created; managed via the new ⚙ button in the time-tracking top bar; personal projects are visible only to their creator, admin-created projects are visible to everyone
+- **Time-tracking-only customers** — same concept for customers; personal time-tracking customers are not added to the CRM customer list; managed in the same modal under the Customers tab
+- **Manage modal with tabs** — the ⚙ gear button in the time-tracking view opens a Projects / Customers tabbed modal for full CRUD (add, rename, recolour, delete) of time-tracking-only entities
+- **WCAG 2.1 AA enforcement** — accessibility requirement added to `CLAUDE.md`; the new manage modal is fully compliant: `aria-modal` dialog, labelled inputs, proper tab ARIA roles, `aria-label` on icon buttons, focus management on open
+
+### Fixed
+- **Time-tracking customer not selectable in time-tracking view** — new-row customer dropdown was still bound to the regular customers list; all customer dropdowns now use the merged regular + TT customers list
+- **Time-tracking project not selectable after choosing a TT customer** — selecting a time-tracking customer now shows TT projects that are unassigned or explicitly linked to that customer
+- **Customer / project column shows "—" after saving a TT entry** — row name resolution in `confirmNewRow` and `confirmEditRow` searched only the regular customers list; both now search the full merged list
+
 ## v0.9.42 — 2026-05-13
 
 ### Added

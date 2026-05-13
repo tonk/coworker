@@ -2,6 +2,13 @@ import client from './client'
 
 export const projectsApi = {
   list: () => client.get('/projects'),
+
+  // Time-tracking-only projects (no board)
+  listTimeTracking: () => client.get('/time-tracking-projects'),
+  createTimeTracking: (data) => client.post('/time-tracking-projects', data),
+  updateTimeTracking: (id, data) => client.put(`/time-tracking-projects/${id}`, data),
+  deleteTimeTracking: (id) => client.delete(`/time-tracking-projects/${id}`),
+
   create: (data) => client.post('/projects', data),
   reorder: (items) => client.patch('/projects/reorder', items),
   get: (slug) => client.get(`/projects/${slug}`),

@@ -24,8 +24,9 @@ type Project struct {
 	Customer     *Customer       `json:"customer,omitempty"`
 	ContractID   *uint           `gorm:"index" json:"contract_id,omitempty"`
 	Contract     *Contract       `json:"contract,omitempty"`
-	BoardType    string          `gorm:"size:20;default:'kanban'" json:"board_type"` // "kanban" | "scrum"
-	CreatedByID  uint            `gorm:"not null" json:"created_by_id"`
+	BoardType        string          `gorm:"size:20;default:'kanban'" json:"board_type"` // "kanban" | "scrum"
+	TimeTrackingOnly bool            `gorm:"default:false" json:"time_tracking_only"`
+	CreatedByID      uint            `gorm:"not null" json:"created_by_id"`
 	CreatedBy    User            `json:"created_by"`
 	Members      []ProjectMember `json:"members,omitempty"`
 	Columns      []Column        `json:"columns,omitempty"`

@@ -4,13 +4,15 @@ import "time"
 
 // Customer represents a client organisation that can own projects and contracts.
 type Customer struct {
-	ID          uint      `gorm:"primaryKey" json:"id"`
-	Name        string    `gorm:"not null;size:200" json:"name"`
-	Description string    `gorm:"type:text" json:"description"`
-	LogoURL     string    `gorm:"size:500" json:"logo_url"`
-	Position    int       `gorm:"default:0" json:"position"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID               uint      `gorm:"primaryKey" json:"id"`
+	Name             string    `gorm:"not null;size:200" json:"name"`
+	Description      string    `gorm:"type:text" json:"description"`
+	LogoURL          string    `gorm:"size:500" json:"logo_url"`
+	Position         int       `gorm:"default:0" json:"position"`
+	TimeTrackingOnly bool      `gorm:"default:false" json:"time_tracking_only"`
+	CreatedByID      *uint     `gorm:"index" json:"created_by_id,omitempty"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
 // Contract is an agreement between a Customer and the organisation, under which

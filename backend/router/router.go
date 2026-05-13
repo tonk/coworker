@@ -199,6 +199,18 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.GET("/reports/time/pdf", handlers.GetTimeReportPDF)
 		protected.GET("/reports/time/xlsx", handlers.GetTimeReportXLSX)
 
+		// Time-tracking-only customers and projects (no board/CRM created)
+		protected.GET("/time-tracking-customers", handlers.ListTimeTrackingCustomers)
+		protected.POST("/time-tracking-customers", handlers.CreateTimeTrackingCustomer)
+		protected.PUT("/time-tracking-customers/:id", handlers.UpdateTimeTrackingCustomer)
+		protected.DELETE("/time-tracking-customers/:id", handlers.DeleteTimeTrackingCustomer)
+
+		// Time-tracking-only projects (no board created)
+		protected.GET("/time-tracking-projects", handlers.ListTimeTrackingProjects)
+		protected.POST("/time-tracking-projects", handlers.CreateTimeTrackingProject)
+		protected.PUT("/time-tracking-projects/:id", handlers.UpdateTimeTrackingProject)
+		protected.DELETE("/time-tracking-projects/:id", handlers.DeleteTimeTrackingProject)
+
 		// Time entries (personal time registration)
 		protected.GET("/time-entries", handlers.ListTimeEntries)
 		protected.POST("/time-entries", handlers.CreateTimeEntry)

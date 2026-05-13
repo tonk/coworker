@@ -26,6 +26,7 @@
         <button class="tt-mode-btn" :class="{ active: mode === 'report' }" @click="mode = 'report'">
           {{ $t('timeTracking.tab_report') }}
         </button>
+        <button class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
       </div>
     </div>
 
@@ -61,7 +62,7 @@
                 <td class="c-info tt-editing">
                   <select class="nr-sel" v-model="editForm.customer_id" @change="editForm.project_id = null">
                     <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
-                    <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                    <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
                   </select>
                   <select class="nr-sel" v-model="editForm.project_id">
                     <option :value="null">{{ $t('timeTracking.no_project') }}</option>
@@ -129,7 +130,7 @@
               <td class="c-info">
                 <select class="nr-sel" v-model="newRow.customer_id" @change="newRow.project_id = null">
                   <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
-                  <option v-for="c in customers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                  <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
                 <select class="nr-sel" v-model="newRow.project_id">
                   <option :value="null">{{ $t('timeTracking.no_project') }}</option>
@@ -327,6 +328,121 @@
     </div>
 
   </div>
+
+  <!-- ── Manage time-tracking projects & customers modal ───────────────── -->
+  <Teleport to="body">
+    <div v-if="managingProjects" class="tt-modal-backdrop" @click.self="closeManageProjects" @keydown.escape="closeManageProjects">
+      <div class="tt-modal" role="dialog" aria-modal="true" aria-labelledby="tt-modal-title" ref="modalRef">
+        <div class="tt-modal-hd">
+          <h2 id="tt-modal-title" class="tt-modal-title">{{ $t('timeTracking.manage_tt_projects') }}</h2>
+          <button class="tt-modal-close" @click="closeManageProjects" :aria-label="$t('common.close')">✕</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="ttp-tabs" role="tablist">
+          <button
+            class="ttp-tab"
+            role="tab"
+            :aria-selected="manageTab === 'projects'"
+            :aria-controls="'ttp-panel-projects'"
+            id="ttp-tab-projects"
+            :class="{ active: manageTab === 'projects' }"
+            @click="manageTab = 'projects'"
+          >{{ $t('timeTracking.tt_tab_projects') }}</button>
+          <button
+            class="ttp-tab"
+            role="tab"
+            :aria-selected="manageTab === 'customers'"
+            :aria-controls="'ttp-panel-customers'"
+            id="ttp-tab-customers"
+            :class="{ active: manageTab === 'customers' }"
+            @click="manageTab = 'customers'"
+          >{{ $t('timeTracking.tt_tab_customers') }}</button>
+        </div>
+
+        <!-- Projects tab -->
+        <div v-if="manageTab === 'projects'" role="tabpanel" id="ttp-panel-projects" aria-labelledby="ttp-tab-projects">
+          <p class="tt-modal-sub">{{ $t('timeTracking.tt_projects_subtitle') }}</p>
+          <ul class="ttp-list" :aria-label="$t('timeTracking.tt_projects_title')">
+            <li v-if="ttProjects.length === 0" class="ttp-empty">{{ $t('timeTracking.tt_projects_empty') }}</li>
+            <li v-for="p in ttProjects" :key="p.id" class="ttp-item">
+              <template v-if="editingTTProject && editingTTProject.id === p.id">
+                <label class="sr-only" :for="'ttp-proj-name-' + p.id">{{ $t('timeTracking.tt_project_name') }}</label>
+                <input :id="'ttp-proj-name-' + p.id" class="ttp-name-input" v-model="editingTTProject.name" @keydown.enter="saveTTProject" @keydown.escape="cancelEditTTProject" />
+                <label class="sr-only" :for="'ttp-proj-color-' + p.id">{{ $t('timeTracking.tt_project_color') }}</label>
+                <input :id="'ttp-proj-color-' + p.id" type="color" class="ttp-color-input" v-model="editingTTProject.color" />
+                <button class="act-btn act-ok ttp-act" @click="saveTTProject" :aria-label="$t('common.save')">✓</button>
+                <button class="act-btn act-no ttp-act" @click="cancelEditTTProject" :aria-label="$t('common.cancel')">✕</button>
+              </template>
+              <template v-else>
+                <span class="ttp-dot" :aria-hidden="true" :style="p.color ? { background: p.color } : {}"></span>
+                <span class="ttp-name">{{ p.name }}</span>
+                <span v-if="isGlobalTTProject(p)" class="ttp-badge">{{ $t('timeTracking.tt_project_global') }}</span>
+                <template v-if="canEditTTProject(p)">
+                  <button class="act-btn act-edit ttp-act" @click="startEditTTProject(p)" :aria-label="$t('common.edit') + ' ' + p.name">✎</button>
+                  <button class="act-btn act-del ttp-act" @click="deleteTTProject(p)" :aria-label="$t('common.delete') + ' ' + p.name">🗑</button>
+                </template>
+              </template>
+            </li>
+          </ul>
+          <div class="ttp-add-form" v-if="!addingTTProject">
+            <button class="btn-add-row" @click="addingTTProject = true">＋ {{ $t('timeTracking.tt_project_add') }}</button>
+          </div>
+          <div class="ttp-add-form ttp-add-active" v-else>
+            <label class="sr-only" for="ttp-new-proj-name">{{ $t('timeTracking.tt_project_name') }}</label>
+            <input id="ttp-new-proj-name" class="ttp-name-input" v-model="newTTProject.name"
+              :placeholder="$t('timeTracking.tt_project_name')"
+              @keydown.enter="confirmAddTTProject"
+              @keydown.escape="addingTTProject = false"
+              ref="newTTNameRef"
+            />
+            <label class="sr-only" for="ttp-new-proj-color">{{ $t('timeTracking.tt_project_color') }}</label>
+            <input id="ttp-new-proj-color" type="color" class="ttp-color-input" v-model="newTTProject.color" :aria-label="$t('timeTracking.tt_project_color')" />
+            <button class="btn btn-primary btn-sm" @click="confirmAddTTProject">{{ $t('timeTracking.tt_project_save') }}</button>
+            <button class="btn btn-secondary btn-sm" @click="addingTTProject = false">{{ $t('timeTracking.tt_project_cancel') }}</button>
+          </div>
+        </div>
+
+        <!-- Customers tab -->
+        <div v-if="manageTab === 'customers'" role="tabpanel" id="ttp-panel-customers" aria-labelledby="ttp-tab-customers">
+          <p class="tt-modal-sub">{{ $t('timeTracking.tt_customers_subtitle') }}</p>
+          <ul class="ttp-list" :aria-label="$t('timeTracking.tt_customers_title')">
+            <li v-if="ttCustomers.length === 0" class="ttp-empty">{{ $t('timeTracking.tt_customers_empty') }}</li>
+            <li v-for="c in ttCustomers" :key="c.id" class="ttp-item">
+              <template v-if="editingTTCustomer && editingTTCustomer.id === c.id">
+                <label class="sr-only" :for="'ttp-cust-name-' + c.id">{{ $t('timeTracking.tt_customer_name') }}</label>
+                <input :id="'ttp-cust-name-' + c.id" class="ttp-name-input" v-model="editingTTCustomer.name" @keydown.enter="saveTTCustomer" @keydown.escape="cancelEditTTCustomer" />
+                <button class="act-btn act-ok ttp-act" @click="saveTTCustomer" :aria-label="$t('common.save')">✓</button>
+                <button class="act-btn act-no ttp-act" @click="cancelEditTTCustomer" :aria-label="$t('common.cancel')">✕</button>
+              </template>
+              <template v-else>
+                <span class="ttp-name">{{ c.name }}</span>
+                <span v-if="isGlobalTTCustomer(c)" class="ttp-badge">{{ $t('timeTracking.tt_customer_global') }}</span>
+                <template v-if="canEditTTCustomer(c)">
+                  <button class="act-btn act-edit ttp-act" @click="startEditTTCustomer(c)" :aria-label="$t('common.edit') + ' ' + c.name">✎</button>
+                  <button class="act-btn act-del ttp-act" @click="deleteTTCustomer(c)" :aria-label="$t('common.delete') + ' ' + c.name">🗑</button>
+                </template>
+              </template>
+            </li>
+          </ul>
+          <div class="ttp-add-form" v-if="!addingTTCustomer">
+            <button class="btn-add-row" @click="addingTTCustomer = true">＋ {{ $t('timeTracking.tt_customer_add') }}</button>
+          </div>
+          <div class="ttp-add-form ttp-add-active" v-else>
+            <label class="sr-only" for="ttp-new-cust-name">{{ $t('timeTracking.tt_customer_name') }}</label>
+            <input id="ttp-new-cust-name" class="ttp-name-input" v-model="newTTCustomer.name"
+              :placeholder="$t('timeTracking.tt_customer_name')"
+              @keydown.enter="confirmAddTTCustomer"
+              @keydown.escape="addingTTCustomer = false"
+              ref="newTTCustomerNameRef"
+            />
+            <button class="btn btn-primary btn-sm" @click="confirmAddTTCustomer">{{ $t('timeTracking.tt_customer_save') }}</button>
+            <button class="btn btn-secondary btn-sm" @click="addingTTCustomer = false">{{ $t('timeTracking.tt_customer_cancel') }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -345,8 +461,14 @@ const auth = useAuthStore()
 const ui = useUIStore()
 
 // ── Shared lookup data ────────────────────────────────────────────────────
-const customers = ref([])
-const projects  = ref([])
+const customers    = ref([])    // regular CRM customers
+const ttCustomers  = ref([])    // time-tracking-only customers
+const projects     = ref([])    // regular board projects
+const ttProjects   = ref([])    // time-tracking-only projects
+
+// Merged lists for dropdowns
+const allCustomers = computed(() => [...customers.value, ...ttCustomers.value])
+const allProjects  = computed(() => [...projects.value, ...ttProjects.value])
 
 // ── User switching (admin / time_tracking_viewer only) ────────────────────
 const canViewOtherUsers = computed(() => auth.isAdmin || !!auth.user?.time_tracking_viewer)
@@ -554,7 +676,9 @@ const editForm   = ref({ customer_id: null, project_id: null, description: '' })
 const deletingRow = ref(null)
 
 const editRowProjects = computed(() => {
-  if (!editForm.value.customer_id) return projects.value
+  if (!editForm.value.customer_id) return allProjects.value
+  if (ttCustomers.value.some(c => c.id === editForm.value.customer_id))
+    return ttProjects.value.filter(p => !p.customer_id || p.customer_id === editForm.value.customer_id)
   return projects.value.filter(p => p.customer_id === editForm.value.customer_id)
 })
 
@@ -570,8 +694,8 @@ function cancelEditRow() {
 
 async function confirmEditRow(row) {
   const r = editForm.value
-  const cust = customers.value.find(c => c.id === r.customer_id)
-  const proj = projects.value.find(p => p.id === r.project_id)
+  const cust = allCustomers.value.find(c => c.id === r.customer_id)
+  const proj = allProjects.value.find(p => p.id === r.project_id)
   const newKey = rowKey(r.customer_id, r.project_id, r.description)
 
   const toUpdate = rawEntries.value.filter(
@@ -642,7 +766,9 @@ const newDescRef  = ref(null)
 const newRow      = ref({ customer_id: null, project_id: null, description: '' })
 
 const newRowProjects = computed(() => {
-  if (!newRow.value.customer_id) return projects.value
+  if (!newRow.value.customer_id) return allProjects.value
+  if (ttCustomers.value.some(c => c.id === newRow.value.customer_id))
+    return ttProjects.value.filter(p => !p.customer_id || p.customer_id === newRow.value.customer_id)
   return projects.value.filter(p => p.customer_id === newRow.value.customer_id)
 })
 
@@ -654,8 +780,8 @@ function startAddRow() {
 
 function confirmNewRow() {
   const r = newRow.value
-  const cust = customers.value.find(c => c.id === r.customer_id)
-  const proj = projects.value.find(p => p.id === r.project_id)
+  const cust = allCustomers.value.find(c => c.id === r.customer_id)
+  const proj = allProjects.value.find(p => p.id === r.project_id)
   const k = rowKey(r.customer_id, r.project_id, r.description)
   if (!allRows.value.find(x => x.key === k)) {
     localRows.value.push({
@@ -792,20 +918,179 @@ function triggerDownload(blob, filename, type) {
   URL.revokeObjectURL(url)
 }
 
+// ── Time-tracking-only project & customer management ─────────────────────
+const managingProjects     = ref(false)
+const manageTab            = ref('projects')
+const modalRef             = ref(null)
+
+// Projects
+const addingTTProject      = ref(false)
+const newTTProject         = ref({ name: '', color: '#6366f1' })
+const editingTTProject     = ref(null)
+const newTTNameRef         = ref(null)
+
+// Customers
+const addingTTCustomer     = ref(false)
+const newTTCustomer        = ref({ name: '' })
+const editingTTCustomer    = ref(null)
+const newTTCustomerNameRef = ref(null)
+
+function openManageProjects() {
+  managingProjects.value = true
+  nextTick(() => {
+    const first = modalRef.value?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+    first?.focus()
+  })
+}
+
+function closeManageProjects() {
+  managingProjects.value = false
+  addingTTProject.value = false
+  editingTTProject.value = null
+  addingTTCustomer.value = false
+  editingTTCustomer.value = null
+}
+
+watch(addingTTProject, (v) => {
+  if (v) nextTick(() => newTTNameRef.value?.focus())
+})
+
+async function loadTTProjects() {
+  try {
+    const { data } = await projectsApi.listTimeTracking()
+    ttProjects.value = data
+  } catch {
+    ui.error(t('timeTracking.tt_project_load_error'))
+  }
+}
+
+function isGlobalTTProject(p) {
+  return p.created_by_id !== auth.user?.id
+}
+
+function canEditTTProject(p) {
+  return auth.isAdmin || p.created_by_id === auth.user?.id
+}
+
+async function confirmAddTTProject() {
+  const name = newTTProject.value.name.trim()
+  if (!name) return
+  try {
+    const { data } = await projectsApi.createTimeTracking({ name, color: newTTProject.value.color })
+    ttProjects.value.push(data)
+    newTTProject.value = { name: '', color: '#6366f1' }
+    addingTTProject.value = false
+  } catch {
+    ui.error(t('timeTracking.tt_project_save_error'))
+  }
+}
+
+function startEditTTProject(p) {
+  editingTTProject.value = { id: p.id, name: p.name, color: p.color || '#6366f1' }
+}
+
+function cancelEditTTProject() {
+  editingTTProject.value = null
+}
+
+async function saveTTProject() {
+  const e = editingTTProject.value
+  if (!e || !e.name.trim()) return
+  try {
+    const { data } = await projectsApi.updateTimeTracking(e.id, { name: e.name.trim(), color: e.color })
+    const idx = ttProjects.value.findIndex(p => p.id === e.id)
+    if (idx >= 0) ttProjects.value[idx] = data
+    editingTTProject.value = null
+  } catch {
+    ui.error(t('timeTracking.tt_project_save_error'))
+  }
+}
+
+async function deleteTTProject(p) {
+  if (!confirm(t('timeTracking.tt_project_delete_confirm'))) return
+  try {
+    await projectsApi.deleteTimeTracking(p.id)
+    ttProjects.value = ttProjects.value.filter(x => x.id !== p.id)
+  } catch {
+    ui.error(t('timeTracking.tt_project_delete_error'))
+  }
+}
+
+// TT Customer helpers
+function isGlobalTTCustomer(c) {
+  return c.created_by_id !== auth.user?.id
+}
+
+function canEditTTCustomer(c) {
+  return auth.isAdmin || c.created_by_id === auth.user?.id
+}
+
+watch(addingTTCustomer, (v) => {
+  if (v) nextTick(() => newTTCustomerNameRef.value?.focus())
+})
+
+async function confirmAddTTCustomer() {
+  const name = newTTCustomer.value.name.trim()
+  if (!name) return
+  try {
+    const { data } = await customersApi.createTimeTracking({ name })
+    ttCustomers.value.push(data)
+    newTTCustomer.value = { name: '' }
+    addingTTCustomer.value = false
+  } catch {
+    ui.error(t('timeTracking.tt_customer_save_error'))
+  }
+}
+
+function startEditTTCustomer(c) {
+  editingTTCustomer.value = { id: c.id, name: c.name }
+}
+
+function cancelEditTTCustomer() {
+  editingTTCustomer.value = null
+}
+
+async function saveTTCustomer() {
+  const e = editingTTCustomer.value
+  if (!e || !e.name.trim()) return
+  try {
+    const { data } = await customersApi.updateTimeTracking(e.id, { name: e.name.trim() })
+    const idx = ttCustomers.value.findIndex(c => c.id === e.id)
+    if (idx >= 0) ttCustomers.value[idx] = data
+    editingTTCustomer.value = null
+  } catch {
+    ui.error(t('timeTracking.tt_customer_save_error'))
+  }
+}
+
+async function deleteTTCustomer(c) {
+  if (!confirm(t('timeTracking.tt_customer_delete_confirm'))) return
+  try {
+    await customersApi.deleteTimeTracking(c.id)
+    ttCustomers.value = ttCustomers.value.filter(x => x.id !== c.id)
+  } catch {
+    ui.error(t('timeTracking.tt_customer_delete_error'))
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────
 onMounted(async () => {
   const fetches = [
     customersApi.list().catch(() => ({ data: [] })),
+    customersApi.listTimeTracking().catch(() => ({ data: [] })),
     projectsApi.list().catch(() => ({ data: [] })),
+    projectsApi.listTimeTracking().catch(() => ({ data: [] })),
   ]
   if (canViewOtherUsers.value) {
     fetches.push(client.get('/users').catch(() => ({ data: [] })))
   }
   const results = await Promise.all(fetches)
-  customers.value = results[0].data
-  projects.value  = results[1].data.filter(p => !p.archived)
+  customers.value   = results[0].data
+  ttCustomers.value = results[1].data
+  projects.value    = results[2].data.filter(p => !p.archived)
+  ttProjects.value  = results[3].data
   if (canViewOtherUsers.value) {
-    allUsers.value = results[2].data
+    allUsers.value = results[4].data
     selectedUserId.value = auth.user?.id ?? null
   }
   await loadWeek()
@@ -1068,6 +1353,9 @@ onMounted(async () => {
 .act-no  { opacity: 1 !important; color: var(--color-danger); }
 .act-no:hover { background: color-mix(in srgb, var(--color-danger) 12%, transparent); }
 
+/* Modal action buttons are always visible (no hover-parent needed) */
+.ttp-act { opacity: 1 !important; }
+
 /* Deleting row highlight */
 .tt-row-deleting td { background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface)) !important; }
 
@@ -1175,4 +1463,162 @@ onMounted(async () => {
   font-size: 14px;
 }
 .rpt-empty { color: var(--color-text-muted); padding: 20px 0; text-align: center; }
+
+/* ── Modal tabs ── */
+.ttp-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  flex-shrink: 0;
+}
+.ttp-tab {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color .15s;
+}
+.ttp-tab.active {
+  color: var(--color-primary);
+  font-weight: 700;
+  border-bottom-color: var(--color-primary);
+}
+.ttp-tab:hover:not(.active) { color: var(--color-text); }
+
+/* ── Manage-projects button ── */
+.tt-manage-btn {
+  padding: 5px 10px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ── Modal backdrop & dialog ── */
+.tt-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.tt-modal {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  width: 480px;
+  max-width: 96vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.tt-modal-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.tt-modal-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin: 0;
+}
+.tt-modal-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.tt-modal-close:hover { background: var(--color-bg); color: var(--color-text); }
+.tt-modal-sub {
+  padding: 8px 16px 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* ── TT project list ── */
+.ttp-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+.ttp-empty {
+  padding: 20px 16px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+.ttp-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+.ttp-item:last-child { border-bottom: none; }
+.ttp-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+.ttp-name { flex: 1; font-weight: 500; }
+.ttp-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+.ttp-name-input {
+  flex: 1;
+  font-size: 13px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+.ttp-name-input:focus { outline: none; border-color: var(--color-primary); }
+.ttp-color-input {
+  width: 32px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  cursor: pointer;
+  background: none;
+}
+
+/* ── Add form ── */
+.ttp-add-form {
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.ttp-add-active {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-sm { padding: 4px 12px; font-size: 12px; }
 </style>

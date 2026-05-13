@@ -268,3 +268,20 @@ When running more than one WarmDesk instance behind a load balancer, two subsyst
 |---|---|---|
 | **WebSocket broadcasts** | Board/chat updates only reach clients connected to the same instance | Set `redis_url` — broadcasts are routed through Redis pub/sub |
 | **Rate limiter** (`middleware/ratelimit.go`) | Login/register/reset attempt counts are per-instance; an attacker can hit multiple instances to bypass the limit | Set `redis_url` — currently no Redis-backed rate limiter is implemented; this is a known gap for multi-instance deployments |
+
+---
+
+## Accessibility
+
+**All frontend changes must be WCAG 2.1 AA compliant.** Check every new or modified UI element against the following before considering it done:
+
+- **Icon-only buttons** — always add `aria-label` (not just `title`)
+- **Modals / dialogs** — `role="dialog"`, `aria-modal="true"`, `aria-labelledby` pointing to a heading element (`<h2>`/`<h3>`); Escape closes the dialog; focus moves to the first focusable element on open
+- **Inputs** — always paired with a `<label>` (use a `.sr-only` visually-hidden label when space is tight); `placeholder` alone is not a label
+- **Color inputs** — need both a `<label>` and an `aria-label`
+- **Custom tabs** — `role="tablist"` on the container, `role="tab"` + `aria-selected` + `aria-controls` on each tab, `role="tabpanel"` + `aria-labelledby` on each panel
+- **Hover-only visibility** — elements revealed only via `opacity`/`visibility` on a parent hover are invisible to keyboard users; any interactive element inside a modal or inline form must be unconditionally visible
+- **Decorative elements** — add `aria-hidden="true"` to purely visual icons and decorative spans
+- **Every interactive element** must have a programmatic accessible name: visible text, `aria-label`, or `aria-labelledby`
+
+Key success criteria: 1.3.1 Info and Relationships, 2.1.1 Keyboard, 2.4.3 Focus Order, 3.3.2 Labels or Instructions, 4.1.2 Name / Role / Value.
