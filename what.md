@@ -514,3 +514,7 @@ Create an application that has all these features and requirements
 - Allow users and admins to create time-tracking-only customers (no CRM record created) that can be associated with time-tracking-only projects
 - Manage time-tracking projects and customers via a tabbed modal (⚙ button) in the time-tracking view with full CRUD support
 - All UI must be WCAG 2.1 AA compliant
+- Group time-tracking report entries by Period, Customer, Project, or Customer & Project via a selector in the report filters; grouping is applied in PDF and XLSX exports
+- Copy previous week rows to the current week in the Log Time tab with a single button; only the row definitions are copied (no hours), and copying is scoped to the displayed week
+- Add a Today button to the week navigator to jump back to the current week in one click
+- Sort Log Time rows by Customer/Project or Activity by clicking the column header; clicking again toggles direction; the day columns always follow their row

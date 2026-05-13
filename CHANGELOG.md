@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.46 — 2026-05-13
+
+### Added
+- **Sortable columns in Log Time** — clicking the Customer/Project or Activity column header sorts all rows by that column; clicking again reverses direction; the day-hour cells always follow their row correctly
+
+### Fixed
+- **"Customer & Project" grouping showed only the first day** — the report grouped entries by relation name rather than by ID; GORM only populates the preloaded relation on the first occurrence of a given ID, so later entries with the same customer or project had a nil relation and were bucketed separately; grouping now uses numeric IDs as map keys and reads the label once from the first populated entry
+- **Copied rows persisted across all weeks** — rows copied from the previous week survived navigation to other weeks because `localRows` was only cleaned up via a filter that kept anything not yet in the fetched entries; `loadWeek` now always resets `localRows` at the start, so copied rows belong exclusively to the week where the copy was triggered
+
 ## v0.9.45 — 2026-05-13
 
 ### Added

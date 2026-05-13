@@ -389,91 +389,47 @@ func isoWeek(t time.Time) int {
 	return w
 }
 
+// custKey encodes a nullable customer_id: 0 == no customer.
+// projKey encodes a nullable project_id: 0 == no project.
+// Using integer IDs as map keys avoids false splits when GORM's Preload
+// populates the relation struct for only the first entry sharing a given ID.
+
+func custIDKey(e models.TimeEntry) uint {
+	if e.CustomerID != nil {
+		return *e.CustomerID
+	}
+	return 0
+}
+
+func projIDKey(e models.TimeEntry) uint {
+	if e.ProjectID != nil {
+		return *e.ProjectID
+	}
+	return 0
+}
+
+func custLabel(e models.TimeEntry) string {
+	if e.Customer != nil && e.Customer.Name != "" {
+		return e.Customer.Name
+	}
+	return "(no customer)"
+}
+
+func projLabel(e models.TimeEntry) string {
+	if e.Project != nil && e.Project.Name != "" {
+		return e.Project.Name
+	}
+	return "(no project)"
+}
+
 func buildGroupsByCustomer(entries []models.TimeEntry) []timeEntryGroup {
-	const none = "(no customer)"
-	buckets := map[string]*timeEntryGroup{}
-	var order []string
+	buckets := map[uint]*timeEntryGroup{}
+	var order []uint
 	for i := range entries {
 		e := entries[i]
-		label := none
-		if e.Customer != nil && e.Customer.Name != "" {
-			label = e.Customer.Name
-		}
-		if _, ok := buckets[label]; !ok {
-			buckets[label] = &timeEntryGroup{Label: label}
-			order = append(order, label)
-		}
-		b := buckets[label]
-		b.Entries = append(b.Entries, e)
-		b.TotalMinutes += e.Minutes
-	}
-	sort.Slice(order, func(i, j int) bool {
-		a, b := order[i], order[j]
-		if a == none { return false }
-		if b == none { return true }
-		return strings.ToLower(a) < strings.ToLower(b)
-	})
-	result := make([]timeEntryGroup, 0, len(order))
-	for _, l := range order {
-		b := buckets[l]
-		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
-		result = append(result, *b)
-	}
-	return result
-}
-
-func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
-	const none = "(no project)"
-	buckets := map[string]*timeEntryGroup{}
-	var order []string
-	for i := range entries {
-		e := entries[i]
-		label := none
-		if e.Project != nil && e.Project.Name != "" {
-			label = e.Project.Name
-		}
-		if _, ok := buckets[label]; !ok {
-			buckets[label] = &timeEntryGroup{Label: label}
-			order = append(order, label)
-		}
-		b := buckets[label]
-		b.Entries = append(b.Entries, e)
-		b.TotalMinutes += e.Minutes
-	}
-	sort.Slice(order, func(i, j int) bool {
-		a, b := order[i], order[j]
-		if a == none { return false }
-		if b == none { return true }
-		return strings.ToLower(a) < strings.ToLower(b)
-	})
-	result := make([]timeEntryGroup, 0, len(order))
-	for _, l := range order {
-		b := buckets[l]
-		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
-		result = append(result, *b)
-	}
-	return result
-}
-
-func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
-	const noCust = "(no customer)"
-	const noProj = "(no project)"
-	type cpKey struct{ cust, proj string }
-	buckets := map[cpKey]*timeEntryGroup{}
-	var order []cpKey
-	for i := range entries {
-		e := entries[i]
-		cust := noCust
-		if e.Customer != nil && e.Customer.Name != "" {
-			cust = e.Customer.Name
-		}
-		proj := noProj
-		if e.Project != nil && e.Project.Name != "" {
-			proj = e.Project.Name
-		}
-		k := cpKey{cust, proj}
+		k := custIDKey(e)
 		if _, ok := buckets[k]; !ok {
-			buckets[k] = &timeEntryGroup{Label: cust + " › " + proj}
+			buckets[k] = &timeEntryGroup{Label: custLabel(e)}
 			order = append(order, k)
 		}
 		b := buckets[k]
@@ -482,14 +438,71 @@ func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
-		if a.cust == noCust && b.cust != noCust { return false }
-		if b.cust == noCust && a.cust != noCust { return true }
-		if cl := strings.Compare(strings.ToLower(a.cust), strings.ToLower(b.cust)); cl != 0 {
-			return cl < 0
+		if a == 0 { return false }
+		if b == 0 { return true }
+		return strings.ToLower(buckets[a].Label) < strings.ToLower(buckets[b].Label)
+	})
+	result := make([]timeEntryGroup, 0, len(order))
+	for _, k := range order {
+		b := buckets[k]
+		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
+		result = append(result, *b)
+	}
+	return result
+}
+
+func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
+	buckets := map[uint]*timeEntryGroup{}
+	var order []uint
+	for i := range entries {
+		e := entries[i]
+		k := projIDKey(e)
+		if _, ok := buckets[k]; !ok {
+			buckets[k] = &timeEntryGroup{Label: projLabel(e)}
+			order = append(order, k)
 		}
-		if a.proj == noProj { return false }
-		if b.proj == noProj { return true }
-		return strings.ToLower(a.proj) < strings.ToLower(b.proj)
+		b := buckets[k]
+		b.Entries = append(b.Entries, e)
+		b.TotalMinutes += e.Minutes
+	}
+	sort.Slice(order, func(i, j int) bool {
+		a, b := order[i], order[j]
+		if a == 0 { return false }
+		if b == 0 { return true }
+		return strings.ToLower(buckets[a].Label) < strings.ToLower(buckets[b].Label)
+	})
+	result := make([]timeEntryGroup, 0, len(order))
+	for _, k := range order {
+		b := buckets[k]
+		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
+		result = append(result, *b)
+	}
+	return result
+}
+
+func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
+	type cpKey struct{ cid, pid uint }
+	buckets := map[cpKey]*timeEntryGroup{}
+	var order []cpKey
+	for i := range entries {
+		e := entries[i]
+		k := cpKey{custIDKey(e), projIDKey(e)}
+		if _, ok := buckets[k]; !ok {
+			buckets[k] = &timeEntryGroup{Label: custLabel(e) + " › " + projLabel(e)}
+			order = append(order, k)
+		}
+		b := buckets[k]
+		b.Entries = append(b.Entries, e)
+		b.TotalMinutes += e.Minutes
+	}
+	sort.Slice(order, func(i, j int) bool {
+		a, b := order[i], order[j]
+		la, lb := buckets[a].Label, buckets[b].Label
+		if a.cid == 0 && b.cid != 0 { return false }
+		if b.cid == 0 && a.cid != 0 { return true }
+		if a.pid == 0 && b.pid != 0 { return false }
+		if b.pid == 0 && a.pid != 0 { return true }
+		return strings.ToLower(la) < strings.ToLower(lb)
 	})
 	result := make([]timeEntryGroup, 0, len(order))
 	for _, k := range order {

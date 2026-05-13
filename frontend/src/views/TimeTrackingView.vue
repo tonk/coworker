@@ -14,9 +14,10 @@
       </div>
 
       <div class="tt-week-nav">
-        <button class="nav-btn" @click="shiftWeek(-1)" :title="$t('timeTracking.prev_week')">&#9664;</button>
+        <button class="nav-btn" @click="shiftWeek(-1)" :title="$t('timeTracking.prev_week')" :aria-label="$t('timeTracking.prev_week')">&#9664;</button>
         <span class="wk-label">{{ $t('timeTracking.week') }} &nbsp; {{ weekInfo.week }} &nbsp; {{ weekInfo.year }}</span>
-        <button class="nav-btn" @click="shiftWeek(1)" :title="$t('timeTracking.next_week')">&#9654;</button>
+        <button class="nav-btn" @click="shiftWeek(1)" :title="$t('timeTracking.next_week')" :aria-label="$t('timeTracking.next_week')">&#9654;</button>
+        <button class="nav-btn nav-today" @click="goToToday" :title="$t('timeTracking.today')" :aria-label="$t('timeTracking.today')" :disabled="isCurrentWeek">{{ $t('timeTracking.today') }}</button>
       </div>
 
       <div class="tt-mode-tabs">
@@ -39,10 +40,20 @@
             <tr class="tt-head">
               <th class="c-nr"></th>
               <th class="c-info">
-                <span>{{ $t('timeTracking.customer') }}</span>
-                <span class="sub">{{ $t('timeTracking.project') }}</span>
+                <button class="sort-btn" :class="{ 'sort-active': sortCol === 'info' }" @click="toggleSort('info')" :title="$t('timeTracking.sort_by_customer')">
+                  <span class="sort-label">
+                    <span>{{ $t('timeTracking.customer') }}</span>
+                    <span class="sub">{{ $t('timeTracking.project') }}</span>
+                  </span>
+                  <span class="sort-icon" aria-hidden="true">{{ sortCol === 'info' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                </button>
               </th>
-              <th class="c-desc">{{ $t('timeTracking.activity') }}</th>
+              <th class="c-desc">
+                <button class="sort-btn" :class="{ 'sort-active': sortCol === 'desc' }" @click="toggleSort('desc')" :title="$t('timeTracking.sort_by_activity')">
+                  <span class="sort-label">{{ $t('timeTracking.activity') }}</span>
+                  <span class="sort-icon" aria-hidden="true">{{ sortCol === 'desc' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                </button>
+              </th>
               <th v-for="d in weekDays" :key="d.iso" class="c-day">
                 <div class="dh-abbr">{{ d.abbr }}</div>
                 <div class="dh-date">{{ d.mmdd }}</div>
@@ -53,7 +64,7 @@
           </thead>
 
           <tbody>
-            <tr v-for="(row, idx) in allRows" :key="row.key"
+            <tr v-for="(row, idx) in sortedRows" :key="row.key"
                 :class="['tt-row', idx % 2 === 1 ? 'alt' : '', deletingRow === row.key ? 'tt-row-deleting' : '']">
               <td class="c-nr">{{ idx + 1 }}</td>
 
@@ -171,6 +182,9 @@
         <template v-if="!viewingOther && !addingRow">
           <button class="btn-add-row" @click="startAddRow">
             ＋ {{ $t('timeTracking.add_row') }}
+          </button>
+          <button class="btn-copy-prev" @click="copyPrevWeek" :disabled="copyingPrevWeek" :aria-label="$t('timeTracking.copy_prev_week')">
+            {{ copyingPrevWeek ? '…' : '⇐' }} {{ $t('timeTracking.copy_prev_week') }}
           </button>
         </template>
         <template v-else-if="!viewingOther">
@@ -549,6 +563,29 @@ function shiftWeek(delta) {
   const d = new Date(anchor.value)
   d.setDate(d.getDate() + delta * 7)
   anchor.value = d
+  localRows.value = []
+  editingRow.value = null
+  deletingRow.value = null
+  addingRow.value = false
+  loadWeek()
+}
+
+const isCurrentWeek = computed(() => {
+  const { week, year } = weekInfo.value
+  const today = new Date()
+  const d = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()))
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
+  const y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  const todayWeek = Math.ceil(((d - y0) / 86400000 + 1) / 7)
+  return week === todayWeek && year === d.getUTCFullYear()
+})
+
+function goToToday() {
+  anchor.value = new Date()
+  localRows.value = []
+  editingRow.value = null
+  deletingRow.value = null
+  addingRow.value = false
   loadWeek()
 }
 
@@ -588,6 +625,36 @@ const allRows = computed(() => {
   return [...entryRows.value, ...extras]
 })
 
+// ── Sorting ───────────────────────────────────────────────────────────────
+const sortCol = ref(null)   // null | 'info' | 'desc'
+const sortDir = ref('asc')  // 'asc' | 'desc'
+
+function toggleSort(col) {
+  if (sortCol.value === col) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortCol.value = col
+    sortDir.value = 'asc'
+  }
+}
+
+const sortedRows = computed(() => {
+  if (!sortCol.value) return allRows.value
+  return [...allRows.value].sort((a, b) => {
+    let va, vb
+    if (sortCol.value === 'info') {
+      va = ((a.customer_name || '') + '\x00' + (a.project_name || '')).toLowerCase()
+      vb = ((b.customer_name || '') + '\x00' + (b.project_name || '')).toLowerCase()
+    } else {
+      va = (a.description || '').toLowerCase()
+      vb = (b.description || '').toLowerCase()
+    }
+    if (va < vb) return sortDir.value === 'asc' ? -1 : 1
+    if (va > vb) return sortDir.value === 'asc' ? 1 : -1
+    return 0
+  })
+})
+
 function getEntry(row, dateISO) {
   return rawEntries.value.find(
     e => rowKey(e.customer_id, e.project_id, e.description) === row.key
@@ -617,6 +684,7 @@ const grandTotal = computed(() => {
 
 // ── Load week ─────────────────────────────────────────────────────────────
 async function loadWeek() {
+  localRows.value = []
   loading.value = true
   try {
     const from = weekDays.value[0].iso
@@ -625,9 +693,6 @@ async function loadWeek() {
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const { data } = await timeEntriesApi.list(params)
     rawEntries.value = data
-    // Drop any local rows that now have entries
-    const keys = new Set(data.map(e => rowKey(e.customer_id, e.project_id, e.description)))
-    localRows.value = localRows.value.filter(r => !keys.has(r.key))
   } catch {
     ui.error(t('timeTracking.load_error'))
   } finally {
@@ -807,6 +872,69 @@ function confirmNewRow() {
 
 function cancelNewRow() {
   addingRow.value = false
+}
+
+// ── Copy previous week ────────────────────────────────────────────────────
+const copyingPrevWeek = ref(false)
+
+async function copyPrevWeek() {
+  copyingPrevWeek.value = true
+  try {
+    const prevStart = new Date(weekStart.value)
+    prevStart.setDate(prevStart.getDate() - 7)
+    const prevEnd = new Date(prevStart)
+    prevEnd.setDate(prevEnd.getDate() + 6)
+
+    const params = {
+      from: prevStart.toISOString().slice(0, 10),
+      to:   prevEnd.toISOString().slice(0, 10),
+    }
+    // Mirror the active user selection, but never "all employees" (0)
+    if (canViewOtherUsers.value) {
+      params.user_id = selectedUserId.value || auth.user?.id
+    }
+
+    const { data } = await timeEntriesApi.list(params)
+
+    if (!data.length) {
+      ui.info(t('timeTracking.copy_prev_nothing'))
+      return
+    }
+
+    // Collect unique rows from previous week, preserving insertion order
+    const prevRows = new Map()
+    for (const e of data) {
+      const k = rowKey(e.customer_id, e.project_id, e.description)
+      if (!prevRows.has(k)) {
+        prevRows.set(k, {
+          key:           k,
+          customer_id:   e.customer_id,
+          customer_name: e.customer?.name || '',
+          project_id:    e.project_id,
+          project_name:  e.project?.name || '',
+          description:   e.description || '',
+        })
+      }
+    }
+
+    // Only add rows not already present in the current week
+    const existing = new Set(allRows.value.map(r => r.key))
+    let added = 0
+    for (const [k, row] of prevRows) {
+      if (!existing.has(k)) {
+        localRows.value.push(row)
+        added++
+      }
+    }
+
+    if (added === 0) {
+      ui.info(t('timeTracking.copy_prev_nothing'))
+    }
+  } catch {
+    ui.error(t('timeTracking.copy_prev_error'))
+  } finally {
+    copyingPrevWeek.value = false
+  }
 }
 
 // ── Report ────────────────────────────────────────────────────────────────
@@ -1169,6 +1297,9 @@ onMounted(async () => {
   line-height: 1;
 }
 .nav-btn:hover { background: rgba(255,255,255,.35); }
+.nav-today { width: auto; padding: 0 8px; font-size: 11px; font-weight: 600; letter-spacing: .03em; }
+.nav-today:disabled { opacity: .4; cursor: default; }
+.nav-today:disabled:hover { background: rgba(255,255,255,.2); }
 
 .tt-mode-tabs { display: flex; gap: 2px; }
 .tt-mode-btn {
@@ -1245,6 +1376,34 @@ onMounted(async () => {
 .tt-head .c-info .sub { display: block; font-weight: 400; font-size: 11px; color: var(--color-text-muted); }
 .tt-head .c-desc { text-align: left; }
 
+.sort-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+}
+.sort-btn:hover { color: var(--color-primary); }
+.sort-label { flex: 1; }
+.sort-icon {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  opacity: .35;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.sort-btn.sort-active .sort-icon {
+  color: var(--color-primary);
+  opacity: 1;
+}
+
 .dh-abbr { font-weight: 600; }
 .dh-date { font-size: 11px; color: var(--color-text-muted); }
 
@@ -1320,6 +1479,17 @@ onMounted(async () => {
   color: var(--color-primary);
 }
 .btn-add-row:hover { background: var(--color-bg); border-color: var(--color-primary); }
+.btn-copy-prev {
+  background: none;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: 5px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.btn-copy-prev:hover:not(:disabled) { background: var(--color-bg); border-color: var(--color-text-muted); color: var(--color-text); }
+.btn-copy-prev:disabled { opacity: 0.5; cursor: not-allowed; }
 .tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
 .pdf-font-group { display: flex; flex-direction: column; gap: 4px; }
 .filter-label {
