@@ -246,6 +246,49 @@
           </div>
         </div>
 
+        <!-- Passkeys card -->
+        <div class="settings-card">
+          <h2>{{ $t('passkey.title') }}</h2>
+          <p class="form-hint" style="margin-bottom:16px">{{ $t('passkey.description') }}</p>
+
+          <div v-if="passkeys.length > 0" style="margin-bottom:16px">
+            <div v-for="pk in passkeys" :key="pk.id" class="passkey-row">
+              <div class="passkey-info">
+                <span class="passkey-name">{{ pk.name }}</span>
+                <span class="passkey-date">{{ $t('passkey.added') }}: {{ formatDateTime(pk.created_at) }}</span>
+                <span v-if="pk.last_used_at" class="passkey-date">{{ $t('passkey.last_used') }}: {{ formatDateTime(pk.last_used_at) }}</span>
+              </div>
+              <button class="btn btn-danger btn-sm" @click="deletePasskey(pk)"
+                :aria-label="$t('passkey.delete_aria', { name: pk.name })">
+                {{ $t('common.delete') }}
+              </button>
+            </div>
+          </div>
+          <p v-else class="form-hint" style="margin-bottom:16px">{{ $t('passkey.no_passkeys') }}</p>
+
+          <div v-if="!addingPasskey">
+            <button class="btn btn-primary btn-sm" @click="addingPasskey = true" :disabled="passkeyLoading">
+              {{ $t('passkey.add') }}
+            </button>
+          </div>
+          <div v-else>
+            <div class="form-group" style="max-width:320px">
+              <label class="form-label" for="passkey-name-input">{{ $t('passkey.name') }}</label>
+              <input id="passkey-name-input" class="form-input" v-model="newPasskeyName"
+                :placeholder="$t('passkey.name_placeholder')" maxlength="100" autofocus />
+            </div>
+            <div class="form-actions" style="gap:8px">
+              <button class="btn btn-secondary" @click="addingPasskey = false; newPasskeyName = ''">
+                {{ $t('common.cancel') }}
+              </button>
+              <button class="btn btn-primary" @click="registerPasskey"
+                :disabled="passkeyLoading || !newPasskeyName.trim()">
+                {{ passkeyLoading ? $t('common.loading') : $t('passkey.register') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="settings-card">
           <h2>{{ $t('apikeys.personal_title') }}</h2>
           <p class="form-hint" style="margin-bottom:16px">{{ $t('apikeys.personal_description') }}</p>
@@ -311,6 +354,11 @@ import { useUIStore } from '@/stores/ui'
 import { useTheme } from '@/composables/useTheme'
 import { authApi } from '@/api/auth'
 import { systemApi } from '@/api/system'
+import {
+  passkeysApi,
+  decodeCreationOptions,
+  serializeRegistrationCredential,
+} from '@/api/passkeys'
 import { attachmentsApi } from '@/api/attachments'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import { applyUserPreferences } from '@/composables/useUserPreferences'
@@ -391,8 +439,15 @@ const mfaDisablePassword = ref('')
 const mfaLoading = ref(false)
 const qrCanvas = ref(null)
 
+// Passkeys
+const passkeys = ref([])
+const addingPasskey = ref(false)
+const newPasskeyName = ref('')
+const passkeyLoading = ref(false)
+
 onMounted(async () => {
   loadPersonalKeys()
+  loadPasskeys()
   try {
     const { data } = await systemApi.getSettings()
     if (data.password_policy) passwordPolicy.value = data.password_policy
@@ -487,6 +542,51 @@ async function revokePersonalKey(key) {
 function copyPersonalKey() {
   navigator.clipboard.writeText(generatedPersonalKey.value)
   ui.success('Copied!')
+}
+
+async function loadPasskeys() {
+  try {
+    const { data } = await passkeysApi.list()
+    passkeys.value = data
+  } catch {}
+}
+
+async function registerPasskey() {
+  if (!newPasskeyName.value.trim()) return
+  passkeyLoading.value = true
+  try {
+    const { data: beginData } = await passkeysApi.registerBegin()
+    const pkOptions = decodeCreationOptions(beginData.options.publicKey)
+    const credential = await navigator.credentials.create({ publicKey: pkOptions })
+    await passkeysApi.registerFinish({
+      name: newPasskeyName.value.trim(),
+      challenge_token: beginData.challenge_token,
+      credential: serializeRegistrationCredential(credential),
+    })
+    await loadPasskeys()
+    addingPasskey.value = false
+    newPasskeyName.value = ''
+    ui.success($t('passkey.registered'))
+  } catch (e) {
+    if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
+      ui.error($t('passkey.cancelled'))
+    } else {
+      ui.error(e.response?.data?.error || e.message || $t('passkey.error'))
+    }
+  } finally {
+    passkeyLoading.value = false
+  }
+}
+
+async function deletePasskey(pk) {
+  if (!confirm($t('passkey.confirm_delete', { name: pk.name }))) return
+  try {
+    await passkeysApi.delete(pk.id)
+    passkeys.value = passkeys.value.filter((p) => p.id !== pk.id)
+    ui.success($t('passkey.deleted'))
+  } catch {
+    ui.error($t('passkey.delete_error'))
+  }
 }
 
 async function savePassword() {
@@ -621,6 +721,36 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 }
 .new-key-notice { font-size: 13px; color: var(--color-warning); margin: 0; }
 .new-key-value { font-size: 13px; word-break: break-all; }
+
+.passkey-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+.passkey-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.passkey-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.passkey-date {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
 
 .mfa-status {
   display: inline-block;

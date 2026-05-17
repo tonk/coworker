@@ -43,7 +43,8 @@
     "new_password": "Nieuw wachtwoord",
     "change_password": "Wachtwoord wijzigen",
     "password_expired": "Uw wachtwoord is verlopen. Wijzig het in uw accountinstellingen.",
-    "password_expired_title": "Wachtwoord verlopen"
+    "password_expired_title": "Wachtwoord verlopen",
+    "remember_me": "Onthoud mij"
   },
   "project": {
     "projects": "Projecten",
@@ -851,5 +852,24 @@
     "mark_unread": "Markeer als ongelezen",
     "welcome_got_it": "Begrepen",
     "welcome_next": "Volgende"
+  },
+  "passkey": {
+    "title": "Passkeys",
+    "description": "Passkeys laten je veilig inloggen zonder wachtwoord via biometrie of pincode van je apparaat.",
+    "add": "Passkey toevoegen",
+    "register": "Passkey registreren",
+    "name": "Naam",
+    "name_placeholder": "bijv. MacBook Touch ID",
+    "no_passkeys": "Nog geen passkeys geregistreerd.",
+    "added": "Toegevoegd",
+    "last_used": "Laatst gebruikt",
+    "sign_in": "Inloggen met passkey",
+    "registered": "Passkey succesvol geregistreerd",
+    "deleted": "Passkey verwijderd",
+    "cancelled": "Passkey-actie geannuleerd",
+    "error": "Passkey-actie mislukt",
+    "delete_error": "Verwijderen mislukt",
+    "confirm_delete": "Passkey \"{name}\" verwijderen?",
+    "delete_aria": "Passkey {name} verwijderen"
   }
 }

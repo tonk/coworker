@@ -43,7 +43,8 @@
     "new_password": "Nýtt lykilorð",
     "change_password": "Breyta lykilorði",
     "password_expired": "Lykilorðið þitt er útrunnið. Breyttu því í stillingunum þínum.",
-    "password_expired_title": "Lykilorð útrunnið"
+    "password_expired_title": "Lykilorð útrunnið",
+    "remember_me": "Muna mig"
   },
   "project": {
     "projects": "Verkefni",
@@ -845,5 +846,24 @@
     "mark_unread": "Merkja sem ólesið",
     "welcome_got_it": "Skiljið",
     "welcome_next": "Næsta"
+  },
+  "passkey": {
+    "title": "Aðgangslyklar",
+    "description": "Aðgangslyklar leyfa þér að skrá þig inn örugglega án lykilorðs með líffræðilegum auðkenningum eða PIN.",
+    "add": "Bæta við aðgangslykli",
+    "register": "Skrá aðgangslykil",
+    "name": "Nafn",
+    "name_placeholder": "td. MacBook Touch ID",
+    "no_passkeys": "Engir aðgangslyklar skráðir.",
+    "added": "Bætt við",
+    "last_used": "Síðast notað",
+    "sign_in": "Skrá inn með aðgangslykli",
+    "registered": "Aðgangslykill skráður",
+    "deleted": "Aðgangslykill fjarlægður",
+    "cancelled": "Aðgerð hætt við",
+    "error": "Aðgerð mistókst",
+    "delete_error": "Fjarlæging mistókst",
+    "confirm_delete": "Fjarlægja aðgangslykil \"{name}\"?",
+    "delete_aria": "Fjarlægja aðgangslykil {name}"
   }
 }

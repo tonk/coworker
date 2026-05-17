@@ -43,7 +43,8 @@
     "new_password": "Neues Passwort",
     "change_password": "Passwort ändern",
     "password_expired": "Ihr Passwort ist abgelaufen. Bitte ändern Sie es in Ihren Kontoeinstellungen.",
-    "password_expired_title": "Passwort abgelaufen"
+    "password_expired_title": "Passwort abgelaufen",
+    "remember_me": "Benutzername merken"
   },
   "project": {
     "projects": "Projekte",
@@ -851,5 +852,24 @@
     "mark_unread": "Als ungelesen markieren",
     "welcome_got_it": "Verstanden",
     "welcome_next": "Weiter"
+  },
+  "passkey": {
+    "title": "Passkeys",
+    "description": "Passkeys ermöglichen eine sichere Anmeldung ohne Passwort über die Biometrie oder PIN des Geräts.",
+    "add": "Passkey hinzufügen",
+    "register": "Passkey registrieren",
+    "name": "Name",
+    "name_placeholder": "z. B. MacBook Touch ID",
+    "no_passkeys": "Noch keine Passkeys registriert.",
+    "added": "Hinzugefügt",
+    "last_used": "Zuletzt verwendet",
+    "sign_in": "Mit Passkey anmelden",
+    "registered": "Passkey erfolgreich registriert",
+    "deleted": "Passkey entfernt",
+    "cancelled": "Passkey-Vorgang abgebrochen",
+    "error": "Passkey-Vorgang fehlgeschlagen",
+    "delete_error": "Entfernen fehlgeschlagen",
+    "confirm_delete": "Passkey „{name}\" entfernen?",
+    "delete_aria": "Passkey {name} entfernen"
   }
 }

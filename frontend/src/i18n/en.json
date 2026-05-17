@@ -43,7 +43,8 @@
     "new_password": "New Password",
     "change_password": "Change Password",
     "password_expired": "Your password has expired. Please change it in your account settings.",
-    "password_expired_title": "Password Expired"
+    "password_expired_title": "Password Expired",
+    "remember_me": "Remember me"
   },
   "project": {
     "projects": "Projects",
@@ -851,5 +852,24 @@
     "mark_unread": "Mark as unread",
     "welcome_got_it": "Got it",
     "welcome_next": "Next"
+  },
+  "passkey": {
+    "title": "Passkeys",
+    "description": "Passkeys let you sign in securely without a password using your device biometrics or PIN.",
+    "add": "Add passkey",
+    "register": "Register passkey",
+    "name": "Name",
+    "name_placeholder": "e.g. MacBook Touch ID",
+    "no_passkeys": "No passkeys registered yet.",
+    "added": "Added",
+    "last_used": "Last used",
+    "sign_in": "Sign in with passkey",
+    "registered": "Passkey registered successfully",
+    "deleted": "Passkey removed",
+    "cancelled": "Passkey operation was cancelled",
+    "error": "Passkey operation failed",
+    "delete_error": "Failed to remove passkey",
+    "confirm_delete": "Remove passkey \"{name}\"?",
+    "delete_aria": "Remove passkey {name}"
   }
 }

@@ -43,7 +43,8 @@
     "new_password": "Nova palavra-passe",
     "change_password": "Alterar palavra-passe",
     "password_expired": "A sua palavra-passe expirou. Por favor, altere-a nas definições da sua conta.",
-    "password_expired_title": "Palavra-passe expirada"
+    "password_expired_title": "Palavra-passe expirada",
+    "remember_me": "Lembrar de mim"
   },
   "project": {
     "projects": "Projetos",
@@ -845,5 +846,24 @@
     "mark_unread": "Marcar como não lido",
     "welcome_got_it": "Entendido",
     "welcome_next": "Seguinte"
+  },
+  "passkey": {
+    "title": "Chaves de acesso",
+    "description": "As chaves de acesso permitem entrar com segurança sem senha usando biometria ou PIN do dispositivo.",
+    "add": "Adicionar chave de acesso",
+    "register": "Registar chave de acesso",
+    "name": "Nome",
+    "name_placeholder": "ex. Touch ID do MacBook",
+    "no_passkeys": "Nenhuma chave de acesso registada.",
+    "added": "Adicionado",
+    "last_used": "Último uso",
+    "sign_in": "Entrar com chave de acesso",
+    "registered": "Chave de acesso registada",
+    "deleted": "Chave de acesso removida",
+    "cancelled": "Operação cancelada",
+    "error": "Operação falhou",
+    "delete_error": "Falha ao remover",
+    "confirm_delete": "Remover chave de acesso \"{name}\"?",
+    "delete_aria": "Remover chave de acesso {name}"
   }
 }

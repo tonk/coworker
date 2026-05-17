@@ -43,7 +43,8 @@
     "new_password": "Nytt passord",
     "change_password": "Endre passord",
     "password_expired": "Passordet ditt har utløpt. Endre det i kontoinnstillingene dine.",
-    "password_expired_title": "Passord utløpt"
+    "password_expired_title": "Passord utløpt",
+    "remember_me": "Husk meg"
   },
   "project": {
     "projects": "Prosjekter",
@@ -845,5 +846,24 @@
     "mark_unread": "Merk som ulest",
     "welcome_got_it": "Forstått",
     "welcome_next": "Neste"
+  },
+  "passkey": {
+    "title": "Passordnøkler",
+    "description": "Passordnøkler lar deg logge inn sikkert uten passord via enhetens biometri eller PIN.",
+    "add": "Legg til passordnøkkel",
+    "register": "Registrer passordnøkkel",
+    "name": "Navn",
+    "name_placeholder": "f.eks. MacBook Touch ID",
+    "no_passkeys": "Ingen passordnøkler registrert ennå.",
+    "added": "Lagt til",
+    "last_used": "Sist brukt",
+    "sign_in": "Logg inn med passordnøkkel",
+    "registered": "Passordnøkkel registrert",
+    "deleted": "Passordnøkkel fjernet",
+    "cancelled": "Handlingen ble avbrutt",
+    "error": "Handlingen mislyktes",
+    "delete_error": "Fjerning mislyktes",
+    "confirm_delete": "Fjern passordnøkkel \"{name}\"?",
+    "delete_aria": "Fjern passordnøkkel {name}"
   }
 }

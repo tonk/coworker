@@ -22,8 +22,10 @@ type Claims struct {
 	Username   string `json:"username"`
 	GlobalRole string `json:"global_role"`
 	MFAPending bool   `json:"mfa_pending,omitempty"`
-	// Purpose restricts a token to a specific subsystem ("ws" | "media"). Empty = normal access token.
-	Purpose string `json:"purpose,omitempty"`
+	// Purpose restricts a token to a specific subsystem ("ws" | "media" | "passkey_reg" | "passkey_auth").
+	// Empty = normal access token.
+	Purpose        string `json:"purpose,omitempty"`
+	PasskeySession string `json:"passkey_session,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -176,6 +178,35 @@ func (s *AuthService) ValidateWSTicket(tokenStr string) (*Claims, error) {
 		return nil, err
 	}
 	if claims.Purpose != "ws" {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
+// IssuePasskeyChallenge issues a 5-minute JWT carrying the serialized WebAuthn SessionData.
+// purpose must be "passkey_reg" (registration) or "passkey_auth" (authentication).
+// userID may be 0 for passkey_auth tokens when the user is not yet known.
+func (s *AuthService) IssuePasskeyChallenge(userID uint, purpose, sessionJSON string) (string, error) {
+	claims := Claims{
+		UserID:         userID,
+		Purpose:        purpose,
+		PasskeySession: sessionJSON,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(s.secret)
+}
+
+// ValidatePasskeyChallenge validates a passkey challenge token and checks the purpose.
+func (s *AuthService) ValidatePasskeyChallenge(tokenStr, purpose string) (*Claims, error) {
+	claims, err := s.parseToken(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Purpose != purpose {
 		return nil, ErrInvalidToken
 	}
 	return claims, nil

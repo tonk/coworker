@@ -43,7 +43,8 @@
     "new_password": "Ny adgangskode",
     "change_password": "Skift adgangskode",
     "password_expired": "Din adgangskode er udløbet. Skift den i dine kontoindstillinger.",
-    "password_expired_title": "Adgangskode udløbet"
+    "password_expired_title": "Adgangskode udløbet",
+    "remember_me": "Husk mig"
   },
   "project": {
     "projects": "Projekter",
@@ -845,5 +846,24 @@
     "mark_unread": "Markér som ulæst",
     "welcome_got_it": "Forstået",
     "welcome_next": "Næste"
+  },
+  "passkey": {
+    "title": "Adgangsnøgler",
+    "description": "Adgangsnøgler giver sikker login uden adgangskode via enhedens biometri eller PIN.",
+    "add": "Tilføj adgangsnøgle",
+    "register": "Registrer adgangsnøgle",
+    "name": "Navn",
+    "name_placeholder": "fx MacBook Touch ID",
+    "no_passkeys": "Ingen adgangsnøgler registreret endnu.",
+    "added": "Tilføjet",
+    "last_used": "Sidst brugt",
+    "sign_in": "Log ind med adgangsnøgle",
+    "registered": "Adgangsnøgle registreret",
+    "deleted": "Adgangsnøgle fjernet",
+    "cancelled": "Handling annulleret",
+    "error": "Handling mislykkedes",
+    "delete_error": "Fjernelse mislykkedes",
+    "confirm_delete": "Fjern adgangsnøgle \"{name}\"?",
+    "delete_aria": "Fjern adgangsnøgle {name}"
   }
 }

@@ -43,7 +43,8 @@
     "new_password": "Nytt lösenord",
     "change_password": "Ändra lösenord",
     "password_expired": "Ditt lösenord har gått ut. Byt det i dina kontoinställningar.",
-    "password_expired_title": "Lösenord utgånget"
+    "password_expired_title": "Lösenord utgånget",
+    "remember_me": "Kom ihåg mig"
   },
   "project": {
     "projects": "Projekt",
@@ -845,5 +846,24 @@
     "mark_unread": "Markera som oläst",
     "welcome_got_it": "Förstått",
     "welcome_next": "Nästa"
+  },
+  "passkey": {
+    "title": "Lösennycklar",
+    "description": "Lösennycklar låter dig logga in säkert utan lösenord via enhetens biometri eller PIN.",
+    "add": "Lägg till lösennyckel",
+    "register": "Registrera lösennyckel",
+    "name": "Namn",
+    "name_placeholder": "t.ex. MacBook Touch ID",
+    "no_passkeys": "Inga lösennycklar registrerade ännu.",
+    "added": "Tillagd",
+    "last_used": "Senast använd",
+    "sign_in": "Logga in med lösennyckel",
+    "registered": "Lösennyckel registrerad",
+    "deleted": "Lösennyckel borttagen",
+    "cancelled": "Åtgärden avbröts",
+    "error": "Åtgärden misslyckades",
+    "delete_error": "Borttagning misslyckades",
+    "confirm_delete": "Ta bort lösennyckeln \"{name}\"?",
+    "delete_aria": "Ta bort lösennyckel {name}"
   }
 }

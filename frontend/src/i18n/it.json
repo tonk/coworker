@@ -43,7 +43,8 @@
     "new_password": "Nuova password",
     "change_password": "Cambia password",
     "password_expired": "La tua password è scaduta. Cambiala nelle impostazioni del tuo account.",
-    "password_expired_title": "Password scaduta"
+    "password_expired_title": "Password scaduta",
+    "remember_me": "Ricordami"
   },
   "project": {
     "projects": "Progetti",
@@ -845,5 +846,24 @@
     "mark_unread": "Segna come non letto",
     "welcome_got_it": "Capito",
     "welcome_next": "Avanti"
+  },
+  "passkey": {
+    "title": "Passkey",
+    "description": "Le passkey consentono di accedere in modo sicuro senza password tramite biometria o PIN del dispositivo.",
+    "add": "Aggiungi passkey",
+    "register": "Registra passkey",
+    "name": "Nome",
+    "name_placeholder": "es. Touch ID di MacBook",
+    "no_passkeys": "Nessuna passkey registrata.",
+    "added": "Aggiunto",
+    "last_used": "Ultimo utilizzo",
+    "sign_in": "Accedi con passkey",
+    "registered": "Passkey registrata con successo",
+    "deleted": "Passkey rimossa",
+    "cancelled": "Operazione annullata",
+    "error": "Operazione non riuscita",
+    "delete_error": "Rimozione non riuscita",
+    "confirm_delete": "Rimuovere la passkey \"{name}\"?",
+    "delete_aria": "Rimuovi passkey {name}"
   }
 }

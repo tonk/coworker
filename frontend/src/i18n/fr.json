@@ -43,7 +43,8 @@
     "new_password": "Nouveau mot de passe",
     "change_password": "Changer le mot de passe",
     "password_expired": "Votre mot de passe a expiré. Veuillez le changer dans les paramètres de votre compte.",
-    "password_expired_title": "Mot de passe expiré"
+    "password_expired_title": "Mot de passe expiré",
+    "remember_me": "Se souvenir de moi"
   },
   "project": {
     "projects": "Projets",
@@ -851,5 +852,24 @@
     "mark_unread": "Marquer comme non lu",
     "welcome_got_it": "Compris",
     "welcome_next": "Suivant"
+  },
+  "passkey": {
+    "title": "Clés d'accès",
+    "description": "Les clés d'accès permettent de se connecter sans mot de passe via la biométrie ou le code PIN de l'appareil.",
+    "add": "Ajouter une clé d'accès",
+    "register": "Enregistrer la clé d'accès",
+    "name": "Nom",
+    "name_placeholder": "ex. Touch ID MacBook",
+    "no_passkeys": "Aucune clé d'accès enregistrée.",
+    "added": "Ajouté",
+    "last_used": "Dernière utilisation",
+    "sign_in": "Se connecter avec une clé d'accès",
+    "registered": "Clé d'accès enregistrée avec succès",
+    "deleted": "Clé d'accès supprimée",
+    "cancelled": "Opération annulée",
+    "error": "Opération échouée",
+    "delete_error": "Échec de la suppression",
+    "confirm_delete": "Supprimer la clé d'accès « {name} » ?",
+    "delete_aria": "Supprimer la clé d'accès {name}"
   }
 }

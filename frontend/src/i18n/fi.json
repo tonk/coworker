@@ -42,7 +42,8 @@
     "new_password": "Uusi salasana",
     "change_password": "Vaihda salasana",
     "password_expired": "Salasanasi on vanhentunut. Vaihda se tilisi asetuksissa.",
-    "password_expired_title": "Salasana vanhentunut"
+    "password_expired_title": "Salasana vanhentunut",
+    "remember_me": "Muista minut"
   },
   "project": {
     "projects": "Projektit",
@@ -844,5 +845,24 @@
     "mark_unread": "Merkitse lukemattomaksi",
     "welcome_got_it": "Selvä",
     "welcome_next": "Seuraava"
+  },
+  "passkey": {
+    "title": "Salasanaton kirjautuminen",
+    "description": "Salausavaimet mahdollistavat turvallisen kirjautumisen ilman salasanaa laitteen biometrian tai PIN-koodin avulla.",
+    "add": "Lisää salausavain",
+    "register": "Rekisteröi salausavain",
+    "name": "Nimi",
+    "name_placeholder": "esim. MacBook Touch ID",
+    "no_passkeys": "Salausavaimia ei ole rekisteröity.",
+    "added": "Lisätty",
+    "last_used": "Viimeksi käytetty",
+    "sign_in": "Kirjaudu salausavaimella",
+    "registered": "Salausavain rekisteröity",
+    "deleted": "Salausavain poistettu",
+    "cancelled": "Toiminto peruutettiin",
+    "error": "Toiminto epäonnistui",
+    "delete_error": "Poistaminen epäonnistui",
+    "confirm_delete": "Poistetaanko salausavain \"{name}\"?",
+    "delete_aria": "Poista salausavain {name}"
   }
 }

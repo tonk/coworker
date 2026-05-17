@@ -35,12 +35,32 @@
                 spellcheck="false" autocorrect="off" autocapitalize="off"
                 v-model="form.password" required />
             </div>
+            <label class="form-check">
+              <input type="checkbox" v-model="rememberMe" class="remember-checkbox" />
+              {{ $t('auth.remember_me') }}
+            </label>
             <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
             <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
               <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
               {{ $t('auth.login') }}
             </button>
           </form>
+          <div v-if="passkeySupported" class="passkey-divider" aria-hidden="true">
+            <span>{{ $t('common.or') }}</span>
+          </div>
+          <button v-if="passkeySupported" type="button" class="btn btn-secondary passkey-btn"
+            :disabled="passkeyLoading" @click="handlePasskeyLogin"
+            :aria-label="$t('passkey.sign_in')">
+            <span v-if="passkeyLoading" class="spinner" style="width:14px;height:14px;border-width:2px"></span>
+            <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4"/>
+              <path d="M6 21v-1a6 6 0 0 1 6-6"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="20.83" y1="16.17" x2="22" y2="15"/>
+            </svg>
+            {{ $t('passkey.sign_in') }}
+          </button>
           <p class="auth-link"><RouterLink to="/forgot-password">{{ $t('auth.forgot_password') }}</RouterLink></p>
           <p v-if="registrationEnabled" class="auth-link">
             {{ $t('auth.no_account') }} <RouterLink to="/register">{{ $t('auth.register') }}</RouterLink>
@@ -94,12 +114,32 @@
               spellcheck="false" autocorrect="off" autocapitalize="off"
               v-model="form.password" required />
           </div>
+          <label class="form-check">
+            <input type="checkbox" v-model="rememberMe" class="remember-checkbox" />
+            {{ $t('auth.remember_me') }}
+          </label>
           <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
           <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
             <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
             {{ $t('auth.login') }}
           </button>
         </form>
+        <div v-if="passkeySupported" class="passkey-divider" aria-hidden="true">
+          <span>{{ $t('common.or') }}</span>
+        </div>
+        <button v-if="passkeySupported" type="button" class="btn btn-secondary passkey-btn"
+          :disabled="passkeyLoading" @click="handlePasskeyLogin"
+          :aria-label="$t('passkey.sign_in')">
+          <span v-if="passkeyLoading" class="spinner" style="width:14px;height:14px;border-width:2px"></span>
+          <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4"/>
+            <path d="M6 21v-1a6 6 0 0 1 6-6"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="20.83" y1="16.17" x2="22" y2="15"/>
+          </svg>
+          {{ $t('passkey.sign_in') }}
+        </button>
         <p class="auth-link"><RouterLink to="/forgot-password">{{ $t('auth.forgot_password') }}</RouterLink></p>
         <p v-if="registrationEnabled" class="auth-link">
           {{ $t('auth.no_account') }} <RouterLink to="/register">{{ $t('auth.register') }}</RouterLink>
@@ -170,11 +210,18 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { systemApi } from '@/api/system'
 import { getServerUrl, resolveAssetUrl, setExternalImageProxyEnabled } from '@/api/serverConfig'
+import {
+  passkeysApi,
+  decodeRequestOptions,
+  serializeAuthenticationCredential,
+} from '@/api/passkeys'
 
 const { t: $t } = useI18n()
 const auth = useAuthStore()
 const router = useRouter()
 const form = ref({ login: '', password: '' })
+const rememberMe = ref(!!localStorage.getItem('remembered_login'))
+const passkeyLoading = ref(false)
 const mfaStep = ref(false)
 const mfaCode = ref('')
 const error = ref('')
@@ -182,6 +229,7 @@ const loading = ref(false)
 const registrationEnabled = ref(true)
 const branding = ref({ enabled: false, name: '', logo: '', logoDark: '' })
 const isTauri = !!window.__TAURI_INTERNALS__
+const passkeySupported = !isTauri && !!window.PublicKeyCredential
 const currentServer = getServerUrl()
 const serverReachabilityError = ref('')
 
@@ -232,6 +280,8 @@ onUnmounted(() => {
 
 onMounted(async () => {
   osMediaQuery.addEventListener('change', onOSThemeChange)
+  const savedLogin = localStorage.getItem('remembered_login')
+  if (savedLogin) form.value.login = savedLogin
   if (isTauri) {
     if (currentServer) {
       try {
@@ -268,8 +318,38 @@ onMounted(async () => {
   } catch {}
 })
 
+async function handlePasskeyLogin() {
+  passkeyLoading.value = true
+  error.value = ''
+  try {
+    const { data: beginData } = await passkeysApi.loginBegin()
+    const pkOptions = decodeRequestOptions(beginData.options.publicKey)
+    const credential = await navigator.credentials.get({ publicKey: pkOptions })
+    const { data } = await passkeysApi.loginFinish({
+      challenge_token: beginData.challenge_token,
+      credential: serializeAuthenticationCredential(credential),
+    })
+    router.push('/')
+    // data contains access_token / refresh_token; cookies are set by the server for browser clients
+    void data
+  } catch (e) {
+    if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
+      // User dismissed the browser prompt — no error shown
+    } else {
+      error.value = e.response?.data?.error || e.message || $t('passkey.error')
+    }
+  } finally {
+    passkeyLoading.value = false
+  }
+}
+
 async function handleSubmit() {
   error.value = ''
+  if (rememberMe.value) {
+    localStorage.setItem('remembered_login', form.value.login)
+  } else {
+    localStorage.removeItem('remembered_login')
+  }
   loading.value = true
   try {
     const result = await auth.login(form.value.login, form.value.password)
@@ -453,6 +533,42 @@ async function handleMFASubmit() {
   text-align: center;
   margin-bottom: 28px;
   color: var(--color-text);
+}
+
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.remember-checkbox { accent-color: var(--color-primary); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+
+.passkey-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 12px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+.passkey-divider::before,
+.passkey-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+.passkey-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .auth-error { color: var(--color-danger); font-size: 13px; margin-bottom: 12px; }

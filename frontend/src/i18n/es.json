@@ -43,7 +43,8 @@
     "new_password": "Nueva contraseña",
     "change_password": "Cambiar contraseña",
     "password_expired": "Su contraseña ha caducado. Cámbiela en la configuración de su cuenta.",
-    "password_expired_title": "Contraseña caducada"
+    "password_expired_title": "Contraseña caducada",
+    "remember_me": "Recuérdame"
   },
   "project": {
     "projects": "Proyectos",
@@ -851,5 +852,24 @@
     "mark_unread": "Marcar como no leído",
     "welcome_got_it": "Entendido",
     "welcome_next": "Siguiente"
+  },
+  "passkey": {
+    "title": "Claves de acceso",
+    "description": "Las claves de acceso permiten iniciar sesión sin contraseña mediante la biometría o PIN del dispositivo.",
+    "add": "Añadir clave de acceso",
+    "register": "Registrar clave de acceso",
+    "name": "Nombre",
+    "name_placeholder": "ej. Touch ID de MacBook",
+    "no_passkeys": "Aún no hay claves de acceso registradas.",
+    "added": "Añadido",
+    "last_used": "Último uso",
+    "sign_in": "Iniciar sesión con clave de acceso",
+    "registered": "Clave de acceso registrada correctamente",
+    "deleted": "Clave de acceso eliminada",
+    "cancelled": "Operación cancelada",
+    "error": "La operación falló",
+    "delete_error": "Error al eliminar",
+    "confirm_delete": "¿Eliminar la clave de acceso «{name}»?",
+    "delete_aria": "Eliminar clave de acceso {name}"
   }
 }

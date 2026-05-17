@@ -25,6 +25,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 	r.Use(middleware.SecurityHeaders())
 
 	authHandler := handlers.NewAuthHandler(authSvc)
+	passkeyHandler := handlers.NewPasskeyHandler(authSvc)
 	wsHandler := handlers.NewWSHandler(authSvc, allowedOrigins)
 	handlers.InitAttachmentAuth(authSvc)
 
@@ -54,6 +55,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		auth.POST("/mfa/verify", middleware.AuthRateLimit(), authHandler.MFAVerify)
 		auth.POST("/forgot-password", middleware.ResetRateLimit(), authHandler.ForgotPassword)
 		auth.POST("/reset-password", middleware.ResetRateLimit(), authHandler.ResetPassword)
+
+		// Passkey authentication (public — identity resolved from credential)
+		auth.POST("/passkey/login/begin", passkeyHandler.PasskeyLoginBegin)
+		auth.POST("/passkey/login/finish", middleware.AuthRateLimit(), passkeyHandler.PasskeyLoginFinish)
 	}
 
 	// Authenticated routes
@@ -69,6 +74,12 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.GET("/auth/mfa/setup", authHandler.MFASetup)
 		protected.POST("/auth/mfa/enable", authHandler.MFAEnable)
 		protected.POST("/auth/mfa/disable", authHandler.MFADisable)
+
+		// Passkey management (registration requires an authenticated session)
+		protected.GET("/auth/passkey/register/begin", passkeyHandler.PasskeyRegisterBegin)
+		protected.POST("/auth/passkey/register/finish", passkeyHandler.PasskeyRegisterFinish)
+		protected.GET("/auth/passkeys", passkeyHandler.PasskeyList)
+		protected.DELETE("/auth/passkeys/:id", passkeyHandler.PasskeyDelete)
 
 		// Short-lived purpose-limited tickets (keep long-lived JWTs out of URLs)
 		protected.POST("/auth/ws-ticket", authHandler.IssueWSTicket)
