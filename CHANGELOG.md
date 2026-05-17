@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.9.47 — 2026-05-17
+
+### Added
+- **"Remember me" on login** — checking the box saves the email/username to the browser's local storage and pre-fills it on the next visit; unchecking removes the saved value
+- **Passkey sign-in** — browser clients can register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings → Passkeys and sign in from the login page without a password; uses discoverable credentials so no username entry is needed before the prompt; the Tauri desktop app is excluded (platform authenticator support is too inconsistent across Linux/macOS/Windows WebViews)
+
 ## v0.9.46 — 2026-05-13
 
 ### Added

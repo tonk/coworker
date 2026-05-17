@@ -294,6 +294,8 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Accent colour** — per-user accent colour (blue, red, green, or orange) applied throughout the UI; saved as a user setting
 - **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français), Danish (Dansk), Swedish (Svenska), Norwegian (Norsk), Finnish (Suomi), Icelandic (Íslenska), Portuguese (Português), Italian (Italiano)
 - **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, password change
+- **Remember me** — optional checkbox on the login page saves the email/username to the browser's local storage and pre-fills it on the next visit
+- **Passkey sign-in** — register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page; uses WebAuthn discoverable credentials so no username is required before the authenticator prompt; browser-only (Tauri desktop excluded)
 - **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
 - **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
 - **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create and restore database backups; restrict API access to specific IPs or CIDR ranges

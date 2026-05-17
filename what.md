@@ -518,3 +518,5 @@ Create an application that has all these features and requirements
 - Copy previous week rows to the current week in the Log Time tab with a single button; only the row definitions are copied (no hours), and copying is scoped to the displayed week
 - Add a Today button to the week navigator to jump back to the current week in one click
 - Sort Log Time rows by Customer/Project or Activity by clicking the column header; clicking again toggles direction; the day columns always follow their row
+- Add a "Remember me" checkbox to the login page that saves the email/username in the browser's local storage and restores it on the next visit
+- Add passkey (WebAuthn) sign-in: register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page using discoverable credentials; browser-only (Tauri desktop excluded)
