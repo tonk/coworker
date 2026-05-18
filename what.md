@@ -523,3 +523,4 @@ Create an application that has all these features and requirements
 - Add time notation user setting: choose between decimal (8.25) and HH:MM (8:15) for the weekly timesheet; preference saved to user profile; all calculations remain in minutes
 - Fix time-tracking PDF: "Date" column header now translated in all 12 languages; month names in period labels translated; DMY date order used for all non-English locales
 - Fix desktop app time-tracking PDF and XLSX export: all four export buttons now open a native OS save dialog via tauri-plugin-dialog and tauri-plugin-fs; previously silently dropped (XLSX) or errored (PDF)
+- Fix desktop app PDF/XLSX export error: switch binary download endpoints from responseType:'blob' to responseType:'arraybuffer' to avoid unreliable response.blob() in Tauri's HTTP plugin

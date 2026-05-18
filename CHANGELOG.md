@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.50 — 2026-05-18
+
+### Fixed
+- **Desktop app — PDF and XLSX export error** — Axios's `responseType: 'blob'` calls `response.blob()` on the fetch Response, which is unreliable in Tauri's HTTP plugin for binary responses; switched all binary download endpoints to `responseType: 'arraybuffer'` (`response.arrayBuffer()`) which the plugin handles correctly; also removed a redundant Blob→arrayBuffer conversion in the Tauri write path
+
 ## v0.9.49 — 2026-05-18
 
 ### Fixed
