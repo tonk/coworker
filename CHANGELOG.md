@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.49 — 2026-05-18
+
+### Fixed
+- **Desktop app — time-tracking PDF and XLSX export** — all four export buttons (weekly sheet PDF/XLSX and report tab PDF/XLSX) now open a native OS save dialog in the Tauri desktop app; previously the buttons did nothing (XLSX) or threw an error (PDF) because the browser-anchor download approach is silently ignored by the WebView
+
 ## v0.9.48 — 2026-05-18
 
 ### Added
