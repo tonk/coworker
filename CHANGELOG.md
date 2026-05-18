@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.51 — 2026-05-18
+
+### Changed
+- **Export error toast now shows the actual error message** — instead of a generic "Export failed." the toast displays the real JavaScript exception, making it possible to diagnose remaining export issues in the desktop app without DevTools access
+
 ## v0.9.50 — 2026-05-18
 
 ### Fixed

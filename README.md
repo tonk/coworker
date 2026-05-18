@@ -8,7 +8,7 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.50)
+## Latest release (v0.9.51)
 
 - **`Alt+A` accessibility status** — press `Alt+A` anywhere to open the WCAG 2.1 AA compliance overlay; shortcut listed in the keyboard shortcuts reference.
 - **Full WCAG 2.1 AA color contrast** — light theme muted text raised to 6.91:1; all three themes now meet the 4.5:1 AA minimum.
