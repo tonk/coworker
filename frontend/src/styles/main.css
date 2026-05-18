@@ -171,7 +171,8 @@ input, textarea, select {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  height: 36px;
+  padding: 0 16px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   font-weight: 500;
@@ -207,7 +208,7 @@ input, textarea, select {
 }
 .btn-ghost:hover { background: var(--color-bg); color: var(--color-text); }
 
-.btn-sm { padding: 4px 10px; font-size: 13px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 13px; }
 
 .form-group { margin-bottom: 16px; }
 .form-label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 13px; }
@@ -222,6 +223,7 @@ input, textarea, select {
   transition: border-color .15s;
   outline: none;
 }
+input.form-input, select.form-input { height: 36px; }
 .form-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
 .form-input::placeholder { color: var(--color-text-muted); }
 

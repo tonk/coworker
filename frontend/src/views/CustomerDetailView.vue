@@ -762,7 +762,7 @@ async function deleteContract(grp) {
 .btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: 13px; }
 .btn-primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
 .btn-danger { background: var(--color-danger, #ef4444); color: #fff; border-color: var(--color-danger, #ef4444); }
-.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .form-group { margin-bottom: 12px; }

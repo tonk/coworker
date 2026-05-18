@@ -1338,7 +1338,11 @@ onMounted(async () => {
 
 .tt-mode-tabs { display: flex; gap: 2px; }
 .tt-mode-btn {
-  padding: 5px 14px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
   border: 1px solid rgba(255,255,255,.4);
   border-radius: 4px;
   background: transparent;
@@ -1710,9 +1714,8 @@ onMounted(async () => {
 
 /* ── Manage-projects button ── */
 .tt-manage-btn {
-  padding: 5px 10px;
+  padding: 0 10px;
   font-size: 14px;
-  line-height: 1;
 }
 
 /* ── Modal backdrop & dialog ── */
@@ -1838,5 +1841,5 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
 }
-.btn-sm { padding: 4px 12px; font-size: 12px; }
+.btn-sm { height: 28px; padding: 0 12px; font-size: 12px; }
 </style>
