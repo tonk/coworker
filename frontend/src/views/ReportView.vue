@@ -320,13 +320,13 @@ async function exportXLSX() {
     const { data } = await reportsApi.getTimeReportXLSX(params)
     const filename = `time-report-${report.value.period_label.replace(/\s+/g, '-').toLowerCase()}.xlsx`
     await triggerDownload(data, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-  } catch {
+  } catch (e) {
+    console.error('[export] report XLSX failed:', e)
     ui.error(t('timeTracking.export_error'))
   }
 }
 
-async function triggerDownload(blob, filename, type) {
-  const blobObj = new Blob([blob], { type })
+async function triggerDownload(data, filename, type) {
   if (window.__TAURI_INTERNALS__) {
     const { save } = await import('@tauri-apps/plugin-dialog')
     const { writeFile } = await import('@tauri-apps/plugin-fs')
@@ -336,11 +336,11 @@ async function triggerDownload(blob, filename, type) {
       filters: [{ name: ext.toUpperCase(), extensions: [ext] }]
     })
     if (!path) return
-    const buf = await blobObj.arrayBuffer()
-    await writeFile(path, new Uint8Array(buf))
+    const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(await new Blob([data]).arrayBuffer())
+    await writeFile(path, bytes)
     return
   }
-  const url = URL.createObjectURL(blobObj)
+  const url = URL.createObjectURL(new Blob([data], { type }))
   const a = document.createElement('a')
   a.href = url
   a.download = filename

@@ -1004,7 +1004,8 @@ async function exportSheetXLSX() {
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const { data } = await timeEntriesApi.sheetXLSX(params)
     await triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-  } catch {
+  } catch (e) {
+    console.error('[export] sheet XLSX failed:', e)
     ui.error(t('timeTracking.export_error'))
   }
 }
@@ -1016,7 +1017,8 @@ async function exportSheetPDF() {
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const { data } = await timeEntriesApi.reportPDF(params)
     await triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.pdf`, 'application/pdf')
-  } catch {
+  } catch (e) {
+    console.error('[export] sheet PDF failed:', e)
     ui.error(t('timeTracking.export_error'))
   }
 }
@@ -1036,7 +1038,8 @@ async function exportReportXLSX() {
     const { data } = await timeEntriesApi.reportXLSX(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-  } catch {
+  } catch (e) {
+    console.error('[export] report XLSX failed:', e)
     ui.error(t('timeTracking.export_error'))
   }
 }
@@ -1058,13 +1061,13 @@ async function exportReportPDF() {
     const { data } = await timeEntriesApi.reportPDF(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
-  } catch {
+  } catch (e) {
+    console.error('[export] report PDF failed:', e)
     ui.error(t('timeTracking.export_error'))
   }
 }
 
-async function triggerDownload(blob, filename, type) {
-  const blobObj = new Blob([blob], { type })
+async function triggerDownload(data, filename, type) {
   if (window.__TAURI_INTERNALS__) {
     const { save } = await import('@tauri-apps/plugin-dialog')
     const { writeFile } = await import('@tauri-apps/plugin-fs')
@@ -1074,11 +1077,11 @@ async function triggerDownload(blob, filename, type) {
       filters: [{ name: ext.toUpperCase(), extensions: [ext] }]
     })
     if (!path) return
-    const buf = await blobObj.arrayBuffer()
-    await writeFile(path, new Uint8Array(buf))
+    const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(await new Blob([data]).arrayBuffer())
+    await writeFile(path, bytes)
     return
   }
-  const url = URL.createObjectURL(blobObj)
+  const url = URL.createObjectURL(new Blob([data], { type }))
   const a = document.createElement('a')
   a.href = url
   a.download = filename
