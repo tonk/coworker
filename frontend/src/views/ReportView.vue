@@ -300,7 +300,7 @@ async function exportPDF() {
     if (filters.value.assignees.length) params.assignees = filters.value.assignees.join(',')
     params.font = pdfFont.value
     params.lang = pdfLang.value === 'auto' ? locale.value : pdfLang.value
-    const { data } = await reportsApi.getTimeReportPDF(params)
+    const data = await reportsApi.getTimeReportPDF(params)
     await triggerDownload(data, 'time-report.pdf', 'application/pdf')
   } catch (e) {
     console.error('[export] PDF failed:', e)
@@ -317,7 +317,7 @@ async function exportXLSX() {
     if (filters.value.period === 'week') params.week = filters.value.week
     if (filters.value.project !== 'all') params.project = filters.value.project
     if (filters.value.assignees.length) params.assignees = filters.value.assignees.join(',')
-    const { data } = await reportsApi.getTimeReportXLSX(params)
+    const data = await reportsApi.getTimeReportXLSX(params)
     const filename = `time-report-${report.value.period_label.replace(/\s+/g, '-').toLowerCase()}.xlsx`
     await triggerDownload(data, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   } catch (e) {
@@ -330,12 +330,16 @@ async function triggerDownload(data, filename, type) {
   if (window.__TAURI_INTERNALS__) {
     const { save } = await import('@tauri-apps/plugin-dialog')
     const { writeFile } = await import('@tauri-apps/plugin-fs')
+    const { homeDir, dirname } = await import('@tauri-apps/api/path')
     const ext = filename.split('.').pop()
+    const lastDir = localStorage.getItem('warmdesk_last_export_dir')
+    const baseDir = lastDir || await homeDir()
     const path = await save({
-      defaultPath: filename,
+      defaultPath: `${baseDir}/${filename}`,
       filters: [{ name: ext.toUpperCase(), extensions: [ext] }]
     })
     if (!path) return
+    localStorage.setItem('warmdesk_last_export_dir', await dirname(path))
     const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(await new Blob([data]).arrayBuffer())
     await writeFile(path, bytes)
     return

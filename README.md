@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.51)
+## Latest release (v0.9.52)
 
-- **`Alt+A` accessibility status** — press `Alt+A` anywhere to open the WCAG 2.1 AA compliance overlay; shortcut listed in the keyboard shortcuts reference.
-- **Full WCAG 2.1 AA color contrast** — light theme muted text raised to 6.91:1; all three themes now meet the 4.5:1 AA minimum.
+- **Desktop app — PDF and XLSX export fixed** — export buttons now work in the Linux AppImage; resolved a WebKit GTK2 `TypeError` on all response body methods by routing binary downloads through a new Rust command (`fetch_binary_b64`) that fetches via reqwest outside WebKit entirely.
+- **Desktop app — save dialog defaults to home directory** — the native save dialog no longer opens in the AppImage mount path.
+- **Desktop app — save dialog remembers last export directory** — the chosen export folder is remembered across exports.
 
 ## Experiment
 

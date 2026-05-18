@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -114,6 +115,10 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 		return
 	}
 
+	if c.Query("base64") == "1" {
+		c.JSON(http.StatusOK, gin.H{"data": base64.StdEncoding.EncodeToString(buf.Bytes())})
+		return
+	}
 	c.Header("Content-Disposition", `attachment; filename="`+xlsxFilename("time-tracking", report.PeriodLabel)+`"`)
 	c.Data(http.StatusOK, xlsxMIME, buf.Bytes())
 }
@@ -287,6 +292,10 @@ func GetTimeEntrySheetXLSX(c *gin.Context) {
 	}
 
 	filename := fmt.Sprintf("time-tracking-week%d-%d.xlsx", week, year)
+	if c.Query("base64") == "1" {
+		c.JSON(http.StatusOK, gin.H{"data": base64.StdEncoding.EncodeToString(buf.Bytes())})
+		return
+	}
 	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
 	c.Data(http.StatusOK, xlsxMIME, buf.Bytes())
 }

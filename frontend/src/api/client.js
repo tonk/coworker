@@ -126,4 +126,34 @@ client.interceptors.response.use(
   }
 )
 
+// Binary downloads via Axios's fetch adapter fail in WebKit (Tauri/AppImage) because
+// tauri-plugin-http returns a ReadableStream-backed Response and GTK WebKit2 throws
+// TypeError("Type error") on all response body methods (arrayBuffer, text, getReader).
+// Workaround: invoke a Rust command that fetches via reqwest (bypasses WebKit entirely)
+// and returns base64; JavaScript decodes it with atob() — no WebKit HTTP API needed.
+export async function fetchBinary(path, params) {
+  if (isTauri) {
+    const entries = params ? Object.entries(params).filter(([, v]) => v != null) : []
+    const qs = entries.length ? '?' + new URLSearchParams(Object.fromEntries(entries)) : ''
+    const url = `${apiBase()}${path}${qs}`
+
+    const reqHeaders = [
+      ['User-Agent', navigator.userAgent],
+      ['X-WarmDesk-Client', `tauri/${__APP_VERSION__}/${navigator.platform || 'unknown'}`],
+    ]
+    const token = sessionStorage.getItem('access_token')
+      || (client.defaults.headers.common.Authorization || '').replace('Bearer ', '')
+    if (token) reqHeaders.push(['Authorization', `Bearer ${token}`])
+
+    const { invoke } = await import('@tauri-apps/api/core')
+    const b64 = await invoke('fetch_binary_b64', { url, headers: reqHeaders })
+    const binaryString = atob(b64)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i)
+    return bytes.buffer
+  }
+  const response = await client.get(path, { params, responseType: 'arraybuffer' })
+  return response.data
+}
+
 export default client

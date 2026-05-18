@@ -1002,7 +1002,7 @@ async function exportSheetXLSX() {
   try {
     const params = { year: weekInfo.value.year, week: weekInfo.value.week }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
-    const { data } = await timeEntriesApi.sheetXLSX(params)
+    const data = await timeEntriesApi.sheetXLSX(params)
     await triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   } catch (e) {
     console.error('[export] sheet XLSX failed:', e)
@@ -1015,7 +1015,7 @@ async function exportSheetPDF() {
   try {
     const params = { period: 'week', year: weekInfo.value.year, week: weekInfo.value.week, font: pdfFont.value, lang: pdfLang.value }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
-    const { data } = await timeEntriesApi.reportPDF(params)
+    const data = await timeEntriesApi.reportPDF(params)
     await triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.pdf`, 'application/pdf')
   } catch (e) {
     console.error('[export] sheet PDF failed:', e)
@@ -1035,7 +1035,7 @@ async function exportReportXLSX() {
       group_by: rpt.value.group_by,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
-    const { data } = await timeEntriesApi.reportXLSX(params)
+    const data = await timeEntriesApi.reportXLSX(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   } catch (e) {
@@ -1058,7 +1058,7 @@ async function exportReportPDF() {
       lang:     pdfLang.value,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
-    const { data } = await timeEntriesApi.reportPDF(params)
+    const data = await timeEntriesApi.reportPDF(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
   } catch (e) {
@@ -1071,12 +1071,16 @@ async function triggerDownload(data, filename, type) {
   if (window.__TAURI_INTERNALS__) {
     const { save } = await import('@tauri-apps/plugin-dialog')
     const { writeFile } = await import('@tauri-apps/plugin-fs')
+    const { homeDir, dirname } = await import('@tauri-apps/api/path')
     const ext = filename.split('.').pop()
+    const lastDir = localStorage.getItem('warmdesk_last_export_dir')
+    const baseDir = lastDir || await homeDir()
     const path = await save({
-      defaultPath: filename,
+      defaultPath: `${baseDir}/${filename}`,
       filters: [{ name: ext.toUpperCase(), extensions: [ext] }]
     })
     if (!path) return
+    localStorage.setItem('warmdesk_last_export_dir', await dirname(path))
     const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(await new Blob([data]).arrayBuffer())
     await writeFile(path, bytes)
     return

@@ -524,3 +524,6 @@ Create an application that has all these features and requirements
 - Fix time-tracking PDF: "Date" column header now translated in all 12 languages; month names in period labels translated; DMY date order used for all non-English locales
 - Fix desktop app time-tracking PDF and XLSX export: all four export buttons now open a native OS save dialog via tauri-plugin-dialog and tauri-plugin-fs; previously silently dropped (XLSX) or errored (PDF)
 - Fix desktop app PDF/XLSX export error: switch binary download endpoints from responseType:'blob' to responseType:'arraybuffer' to avoid unreliable response.blob() in Tauri's HTTP plugin
+- Fix desktop app PDF and XLSX export in Linux AppImage: WebKit GTK2 throws TypeError on all response body methods (arrayBuffer, text, blob, getReader) for ReadableStream-backed Responses produced by tauri-plugin-http; bypass WebKit entirely with a new fetch_binary_b64 Rust command that fetches via reqwest and returns base64; JS decodes with atob()
+- Fix desktop app save dialog default path: open in user home directory instead of AppImage mount path
+- Desktop app remembers last export directory: save dialog opens in the last-used export folder (stored in localStorage); falls back to home directory on first use

@@ -221,9 +221,18 @@ Files are stored in `upload_dir` (default `./uploads`) with randomised hex names
 
 ## Time reporting
 
-`GET /api/v1/reports/time` returns JSON grouped by project. The frontend (`ReportView.vue`) renders the table and exports:
-- **PDF**: `window.print()` + `@media print` CSS (filters hidden, table styled)
-- **XLSX**: SheetJS (`xlsx` npm package, dynamically imported)
+Two reporting surfaces exist:
+
+- **`ReportView.vue`** — project-board time report. `GET /api/v1/reports/time` returns JSON; the table is rendered in Vue. Exports call the backend PDF/XLSX endpoints.
+- **`TimeTrackingView.vue`** — personal time-tracking sheet and report. Uses `/api/v1/time-entries/*` endpoints.
+
+All PDF and XLSX files are **generated server-side** (Go/excelize for XLSX, Go/gofpdf for PDF) and downloaded as binary. The frontend never builds documents itself.
+
+Binary downloads go through `fetchBinary` (`src/api/client.js`):
+- **Browser**: Axios `GET` with `responseType: 'arraybuffer'` — returns `ArrayBuffer`.
+- **Tauri**: invokes the `fetch_binary_b64` Rust command (`src-tauri/src/lib.rs`) which fetches via reqwest and returns base64. JavaScript decodes with `atob()`. This bypasses WebKit GTK2's broken `ReadableStream`-backed `Response` body methods (`arrayBuffer()`, `text()`, etc. all throw `TypeError` on Linux).
+
+Saving in Tauri uses `@tauri-apps/plugin-dialog` `save()` + `@tauri-apps/plugin-fs` `writeFile()`. The last-used export directory is persisted in `localStorage` under `warmdesk_last_export_dir`; falls back to `homeDir()` on first use.
 
 ---
 
@@ -251,6 +260,12 @@ Mitigations already in place:
 - WebSocket connections use a 30-second `ws` ticket (`IssueWSTicket`) instead of the access token in the URL.
 
 **Proper fix (not yet implemented):** move token storage into Rust `tauri::State`, intercept all API requests at the Rust/reqwest layer to inject the `Authorization` header, and never expose the raw token to JavaScript. This requires replacing the Axios-based `api/client.js` Tauri path with `invoke('api_request', …)` calls routed through a custom Rust command — a significant refactor of the HTTP client layer.
+
+### Tauri desktop — WebKit binary download workaround
+
+On Linux, WebKit GTK2 constructs `Response` objects with a `ReadableStream` body (via tauri-plugin-http / reqwest). All body-reading methods on such a `Response` (`arrayBuffer()`, `text()`, `blob()`, `body.getReader()`) throw `TypeError("Type error")` — this affects Axios's fetch adapter regardless of `responseType`.
+
+**Workaround:** `fetchBinary` in `src/api/client.js` detects Tauri and calls `invoke('fetch_binary_b64', { url, headers })`. The `fetch_binary_b64` command in `src-tauri/src/lib.rs` performs the HTTP request using reqwest directly (no WebKit involved), encodes the response bytes as base64, and returns the string to JS. JavaScript decodes with `atob()` — no WebKit HTTP API needed at any point.
 
 ---
 

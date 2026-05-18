@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.52 — 2026-05-18
+
+### Fixed
+- **Desktop app — PDF and XLSX export** — all export buttons now work in the Linux AppImage; previous attempts using `response.arrayBuffer()`, `response.text()`, and `ReadableStream` readers all failed because WebKit GTK2 throws `TypeError("Type error")` on any body-read method of a `ReadableStream`-backed `Response` (the form tauri-plugin-http uses); fixed by routing binary downloads through a new `fetch_binary_b64` Rust command that fetches via reqwest entirely outside WebKit and returns base64, decoded in JS with `atob()`
+
+### Changed
+- **Desktop app — save dialog opens in home directory** — the native file-save dialog for PDF/XLSX exports now defaults to the user's home directory instead of the AppImage mount path
+- **Desktop app — save dialog remembers last export directory** — after each successful export the chosen directory is stored in `localStorage`; the next export opens the dialog in the same location
+
 ## v0.9.51 — 2026-05-18
 
 ### Changed

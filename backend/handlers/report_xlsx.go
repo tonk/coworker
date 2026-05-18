@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"math"
 	"net/http"
@@ -97,6 +98,10 @@ func GetTimeReportXLSX(c *gin.Context) {
 	}
 
 	filename := "time-report-" + strings.ToLower(strings.ReplaceAll(report.PeriodLabel, " ", "-")) + ".xlsx"
+	if c.Query("base64") == "1" {
+		c.JSON(http.StatusOK, gin.H{"data": base64.StdEncoding.EncodeToString(buf.Bytes())})
+		return
+	}
 	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
 	c.Data(http.StatusOK, xlsxMIME, buf.Bytes())
 }

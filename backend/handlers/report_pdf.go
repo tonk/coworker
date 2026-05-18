@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"embed"
+	"encoding/base64"
 	"fmt"
 	"image"
 	"image/color"
@@ -1026,6 +1027,10 @@ func GetTimeReportPDF(c *gin.Context) {
 		return
 	}
 
+	if c.Query("base64") == "1" {
+		c.JSON(http.StatusOK, gin.H{"data": base64.StdEncoding.EncodeToString(buf.Bytes())})
+		return
+	}
 	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
 	c.Data(http.StatusOK, "application/pdf", buf.Bytes())
 }

@@ -93,7 +93,7 @@ pub fn run() {
         .manage(RuntimeSettings {
             runtime_server_url: runtime_server_url_override.clone(),
         })
-        .invoke_handler(tauri::generate_handler![runtime_server_url])
+        .invoke_handler(tauri::generate_handler![runtime_server_url, fetch_binary_b64])
         .on_page_load(move |window, _payload| {
             if let Some(url) = &runtime_server_url_for_page_load {
                 // Ensure the override is present in every page context.
@@ -213,6 +213,42 @@ fn normalize_server_url(raw: &str) -> Option<String> {
     } else {
         None
     }
+}
+
+// Download a binary resource from `url` using reqwest (bypasses WebKit's
+// broken Response.arrayBuffer() / ReadableStream handling on Linux GTK WebKit2)
+// and return the bytes as a standard base64 string.
+#[tauri::command]
+async fn fetch_binary_b64(url: String, headers: Vec<(String, String)>) -> Result<String, String> {
+    let mut req = reqwest::Client::new().get(&url);
+    for (k, v) in &headers {
+        req = req.header(k.as_str(), v.as_str());
+    }
+    let bytes = req
+        .send()
+        .await
+        .map_err(|e| e.to_string())?
+        .bytes()
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(b64_encode(&bytes))
+}
+
+fn b64_encode(data: &[u8]) -> String {
+    const A: &[u8; 64] =
+        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut s = String::with_capacity((data.len() + 2) / 3 * 4);
+    for c in data.chunks(3) {
+        let n = c.len();
+        let v = (c[0] as u32) << 16
+            | if n > 1 { (c[1] as u32) << 8 } else { 0 }
+            | if n > 2 { c[2] as u32 } else { 0 };
+        s.push(A[((v >> 18) & 63) as usize] as char);
+        s.push(A[((v >> 12) & 63) as usize] as char);
+        s.push(if n > 1 { A[((v >> 6) & 63) as usize] as char } else { '=' });
+        s.push(if n > 2 { A[(v & 63) as usize] as char } else { '=' });
+    }
+    s
 }
 
 fn print_help() {
