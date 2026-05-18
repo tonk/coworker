@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.9.48 — 2026-05-18
+
+### Added
+- **Time notation setting** — users can choose between decimal notation (e.g. 8.25) and HH:MM notation (e.g. 8:15) for the weekly timesheet; the preference is saved to the user profile and applied to all display and input; all calculations remain in minutes internally
+
+### Fixed
+- **PDF time report — "Date" column not translated** — the date column header in the time-tracking PDF export now uses the correct translated label in all 12 supported languages
+- **PDF time report — month names not translated** — month names and abbreviated month names in period labels (e.g. "Apr 28 – May 4, 2026") are now fully localised in all 12 supported languages
+- **PDF time report — DMY date order for European languages** — period labels and group headers now use day-month order ("17 mei") instead of the English month-day order ("mei 17") for all non-English locales
+
 ## v0.9.47 — 2026-05-17
 
 ### Added

@@ -146,6 +146,13 @@
                 <span>{{ $t('timeTracking.toggle_hint') }}</span>
               </label>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="time-notation-select">{{ $t('settings.time_notation') }}</label>
+              <select id="time-notation-select" class="form-input" v-model="form.time_notation">
+                <option value="decimal">{{ $t('settings.time_notation_decimal') }}</option>
+                <option value="hhmm">{{ $t('settings.time_notation_hhmm') }}</option>
+              </select>
+            </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingProfile">
                 {{ savingProfile ? $t('common.loading') : $t('common.save') }}
@@ -396,7 +403,8 @@ const form = ref({
   sidebar_position: 'left',
   show_breadcrumbs: true,
   email_notifications: true,
-  time_tracking_enabled: false
+  time_tracking_enabled: false,
+  time_notation: 'decimal'
 })
 
 const timezones = [
@@ -475,7 +483,8 @@ onMounted(async () => {
       sidebar_position: u.sidebar_position || 'left',
       show_breadcrumbs: u.show_breadcrumbs !== undefined ? u.show_breadcrumbs : true,
       email_notifications: u.email_notifications !== undefined ? u.email_notifications : true,
-      time_tracking_enabled: !!u.time_tracking_enabled
+      time_tracking_enabled: !!u.time_tracking_enabled,
+      time_notation: u.time_notation || 'decimal'
     }
   }
 })
@@ -504,7 +513,8 @@ async function saveProfile() {
       sidebar_position: form.value.sidebar_position,
       show_breadcrumbs: form.value.show_breadcrumbs,
       email_notifications: form.value.email_notifications,
-      time_tracking_enabled: form.value.time_tracking_enabled
+      time_tracking_enabled: form.value.time_tracking_enabled,
+      time_notation: form.value.time_notation
     })
     applyUserPreferences(auth.user)
     setTheme(form.value.theme)

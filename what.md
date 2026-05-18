@@ -520,3 +520,5 @@ Create an application that has all these features and requirements
 - Sort Log Time rows by Customer/Project or Activity by clicking the column header; clicking again toggles direction; the day columns always follow their row
 - Add a "Remember me" checkbox to the login page that saves the email/username in the browser's local storage and restores it on the next visit
 - Add passkey (WebAuthn) sign-in: register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page using discoverable credentials; browser-only (Tauri desktop excluded)
+- Add time notation user setting: choose between decimal (8.25) and HH:MM (8:15) for the weekly timesheet; preference saved to user profile; all calculations remain in minutes
+- Fix time-tracking PDF: "Date" column header now translated in all 12 languages; month names in period labels translated; DMY date order used for all non-English locales

@@ -308,6 +308,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		AccentColor        string  `json:"accent_color"`
 		EmailNotifications  *bool   `json:"email_notifications"`
 		TimeTrackingEnabled *bool   `json:"time_tracking_enabled"`
+		TimeNotation         string  `json:"time_notation"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -364,6 +365,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.TimeTrackingEnabled != nil {
 		updates["time_tracking_enabled"] = *req.TimeTrackingEnabled
+	}
+	if req.TimeNotation == "decimal" || req.TimeNotation == "hhmm" {
+		updates["time_notation"] = req.TimeNotation
 	}
 
 	now := time.Now()

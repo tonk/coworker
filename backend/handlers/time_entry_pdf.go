@@ -135,7 +135,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 
 	pdf.SetFont(fontFamily, "", 10)
 	setTxt(pdf, clrMuted)
-	pdf.CellFormat(textW, 6, report.PeriodLabel, "", 2, "L", false, 0, "")
+	pdf.CellFormat(textW, 6, pdfTranslateLabel(report.PeriodLabel, tr), "", 2, "L", false, 0, "")
 	pdf.SetX(textX)
 
 	pdf.SetFont(fontFamily, "", 9)
@@ -165,7 +165,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		setTxt(pdf, rgb{255, 255, 255})
 		pdf.SetFont(fontFamily, "B", 8)
 		const rowH = 6.0
-		pdf.CellFormat(colDate, rowH, "Date", "0", 0, "L", true, 0, "")
+		pdf.CellFormat(colDate, rowH, tr.Date, "0", 0, "L", true, 0, "")
 		pdf.CellFormat(colCust, rowH, tr.Customer, "0", 0, "L", true, 0, "")
 		pdf.CellFormat(colProj, rowH, tr.Project, "0", 0, "L", true, 0, "")
 		pdf.CellFormat(colDesc, rowH, tr.Activity, "0", 0, "L", true, 0, "")
@@ -195,7 +195,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.Rect(pdfMargin, grpY, pdfBodyW, 5.5, "FD")
 		pdf.SetFont(fontFamily, "B", 8.5)
 		setTxt(pdf, clrText)
-		pdf.CellFormat(pdfBodyW-20, 5.5, grp.Label, "", 0, "L", false, 0, "")
+		pdf.CellFormat(pdfBodyW-20, 5.5, pdfTranslateLabel(grp.Label, tr), "", 0, "L", false, 0, "")
 		pdf.SetFont(fontFamily, "B", 8.5)
 		setTxt(pdf, clrPrimary)
 		pdf.CellFormat(20, 5.5, fmtDecimalH(grp.TotalMinutes), "", 1, "R", false, 0, "")
@@ -234,7 +234,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.SetFont(fontFamily, "B", 8)
 		setTxt(pdf, clrMuted)
 		setFill(pdf, rgb{238, 242, 248})
-		pdf.CellFormat(pdfBodyW-colHours, rowH, "  "+grp.Label+" total", "0", 0, "R", true, 0, "")
+		pdf.CellFormat(pdfBodyW-colHours, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" "+tr.Total, "0", 0, "R", true, 0, "")
 		setTxt(pdf, clrPrimary)
 		pdf.CellFormat(colHours, rowH, fmtDecimalH(grp.TotalMinutes), "0", 1, "R", true, 0, "")
 

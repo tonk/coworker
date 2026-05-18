@@ -101,12 +101,10 @@
 
               <td v-for="d in weekDays" :key="d.iso" class="c-day">
                 <input
-                  type="number"
+                  :type="timeNotation === 'hhmm' ? 'text' : 'number'"
                   class="h-inp"
                   :class="{ 'h-inp-filled': !!cellVal(row, d.iso) }"
-                  step="0.25"
-                  min="0"
-                  :placeholder="savingCell === row.key + d.iso ? '…' : ''"
+                  v-bind="timeNotation === 'hhmm' ? { placeholder: savingCell === row.key + d.iso ? '…' : '0:00' } : { step: '0.25', min: '0', placeholder: savingCell === row.key + d.iso ? '…' : '' }"
                   :value="cellVal(row, d.iso)"
                   :disabled="viewingOther || savingCell === row.key + d.iso || editingRow === row.key"
                   @focus="$event.target.select()"
@@ -157,7 +155,7 @@
                 />
               </td>
               <td v-for="d in weekDays" :key="d.iso" class="c-day">
-                <input class="h-inp" type="number" step="0.25" min="0" value="" disabled />
+                <input class="h-inp" :type="timeNotation === 'hhmm' ? 'text' : 'number'" value="" disabled />
               </td>
               <td class="c-total"></td>
               <td class="c-act"></td>
@@ -312,7 +310,7 @@
         <div v-for="grp in report.groups" :key="grp.label" class="rpt-group">
           <div class="rpt-group-hd">
             <span>{{ grp.label }}</span>
-            <span class="rpt-grp-total">{{ fmtDecimal(grp.total_minutes) }}</span>
+            <span class="rpt-grp-total">{{ fmtTime(grp.total_minutes) }}</span>
           </div>
           <table v-if="grp.entries.length" class="rpt-table">
             <colgroup>
@@ -337,7 +335,7 @@
                 <td>{{ e.customer?.name || '—' }}</td>
                 <td>{{ e.project?.name || '—' }}</td>
                 <td>{{ e.description || '—' }}</td>
-                <td class="rpt-th-time">{{ fmtDecimal(e.minutes) }}</td>
+                <td class="rpt-th-time">{{ fmtTime(e.minutes) }}</td>
               </tr>
             </tbody>
           </table>
@@ -345,7 +343,7 @@
         </div>
         <div class="rpt-grand-total">
           <span>{{ $t('timeTracking.total') }}</span>
-          <span>{{ fmtDecimal(report.total_minutes) }}</span>
+          <span>{{ fmtTime(report.total_minutes) }}</span>
         </div>
       </template>
     </div>
@@ -664,22 +662,22 @@ function getEntry(row, dateISO) {
 
 function cellVal(row, dateISO) {
   const e = getEntry(row, dateISO)
-  return e ? fmtDecimal(e.minutes) : ''
+  return e ? fmtTime(e.minutes) : ''
 }
 
 function rowTotal(row) {
   const m = weekDays.value.reduce((s, d) => s + (getEntry(row, d.iso)?.minutes || 0), 0)
-  return m ? fmtDecimal(m) : '0.00'
+  return fmtTime(m)
 }
 
 function dayTotal(dateISO) {
   const m = allRows.value.reduce((s, row) => s + (getEntry(row, dateISO)?.minutes || 0), 0)
-  return m ? fmtDecimal(m) : '0.00'
+  return fmtTime(m)
 }
 
 const grandTotal = computed(() => {
   const m = rawEntries.value.reduce((s, e) => s + e.minutes, 0)
-  return fmtDecimal(m)
+  return fmtTime(m)
 })
 
 // ── Load week ─────────────────────────────────────────────────────────────
@@ -702,8 +700,7 @@ async function loadWeek() {
 
 // ── Cell save ─────────────────────────────────────────────────────────────
 async function onCellBlur(row, dateISO, rawVal) {
-  const hours   = parseFloat(rawVal) || 0
-  const minutes = Math.round(hours * 60)
+  const minutes = parseTimeInput(rawVal)
   const existing = getEntry(row, dateISO)
 
   if (minutes === (existing?.minutes || 0)) return   // no change
@@ -975,10 +972,27 @@ async function loadReport() {
   }
 }
 
-// ── Formatting ────────────────────────────────────────────────────────────
-function fmtDecimal(minutes) {
-  if (!minutes) return '0.00'
+// ── Time notation ─────────────────────────────────────────────────────────
+const timeNotation = computed(() => auth.user?.time_notation || 'decimal')
+
+function fmtTime(minutes) {
+  if (!minutes) return timeNotation.value === 'hhmm' ? '0:00' : '0.00'
+  if (timeNotation.value === 'hhmm') {
+    const h = Math.floor(minutes / 60)
+    const m = minutes % 60
+    return `${h}:${String(m).padStart(2, '0')}`
+  }
   return (minutes / 60).toFixed(2)
+}
+
+function parseTimeInput(val) {
+  if (!val && val !== 0) return 0
+  const s = String(val)
+  if (timeNotation.value === 'hhmm' && s.includes(':')) {
+    const [h, m] = s.split(':')
+    return (parseInt(h) || 0) * 60 + (parseInt(m) || 0)
+  }
+  return Math.round((parseFloat(s) || 0) * 60)
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────

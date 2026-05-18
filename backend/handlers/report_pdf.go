@@ -165,6 +165,20 @@ type pdfI18n struct {
 	Hours        string // e.g. "Hours"
 	Total        string // e.g. "Total"
 	AllEmployees string // e.g. "All Employees"
+	Date         string // e.g. "Date"
+	// Period-label words used in board and time-entry PDFs
+	AllTime    string // e.g. "All Time"
+	YearPrefix string // e.g. "Year" (followed by the year number)
+	WeekLabel  string // e.g. "Week" (followed by week number)
+	// Month and day names — used by pdfTranslateLabel to localise period labels.
+	// Index order: months 0=January…11=December; days 0=Monday…6=Sunday.
+	MonthsFull [12]string
+	MonthsAbbr [12]string
+	DaysFull   [7]string
+	// DMY signals that dates should be rendered in day-month order ("17 mei")
+	// rather than the American month-day order ("May 17") that Go's time.Format
+	// always produces. Set to true for every non-English locale.
+	DMY bool
 }
 
 // pdfTranslations provides label sets for each supported language code.
@@ -186,6 +200,13 @@ var pdfTranslations = map[string]pdfI18n{
 		Hours:        "Hours",
 		Total:        "Total",
 		AllEmployees: "All Employees",
+		Date:         "Date",
+		AllTime:      "All Time",
+		YearPrefix:   "Year",
+		WeekLabel:    "Week",
+		MonthsFull:   [12]string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"},
+		MonthsAbbr:   [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"},
+		DaysFull:     [7]string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"},
 	},
 	"nl": {
 		TimeReport:   "Tijdrapport",
@@ -203,6 +224,14 @@ var pdfTranslations = map[string]pdfI18n{
 		Hours:        "Uren",
 		Total:        "Totaal",
 		AllEmployees: "Alle medewerkers",
+		Date:         "Datum",
+		AllTime:      "Gehele periode",
+		YearPrefix:   "Jaar",
+		WeekLabel:    "Week",
+		MonthsFull:   [12]string{"januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"},
+		MonthsAbbr:   [12]string{"jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
+		DaysFull:     [7]string{"maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"},
+		DMY:          true,
 	},
 	"de": {
 		TimeReport:   "Zeitbericht",
@@ -220,6 +249,14 @@ var pdfTranslations = map[string]pdfI18n{
 		Hours:        "Stunden",
 		Total:        "Gesamt",
 		AllEmployees: "Alle Mitarbeiter",
+		Date:         "Datum",
+		AllTime:      "Gesamter Zeitraum",
+		YearPrefix:   "Jahr",
+		WeekLabel:    "Woche",
+		MonthsFull:   [12]string{"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"},
+		MonthsAbbr:   [12]string{"Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"},
+		DaysFull:     [7]string{"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"},
+		DMY:          true,
 	},
 	"fr": {
 		TimeReport:   "Rapport de temps",
@@ -237,6 +274,14 @@ var pdfTranslations = map[string]pdfI18n{
 		Hours:        "Heures",
 		Total:        "Total",
 		AllEmployees: "Tous les employés",
+		Date:         "Date",
+		AllTime:      "Toute la période",
+		YearPrefix:   "Année",
+		WeekLabel:    "Semaine",
+		MonthsFull:   [12]string{"janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"},
+		MonthsAbbr:   [12]string{"janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."},
+		DaysFull:     [7]string{"lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"},
+		DMY:          true,
 	},
 	"es": {
 		TimeReport:   "Informe de tiempo",
@@ -254,6 +299,189 @@ var pdfTranslations = map[string]pdfI18n{
 		Hours:        "Horas",
 		Total:        "Total",
 		AllEmployees: "Todos los empleados",
+		Date:         "Fecha",
+		AllTime:      "Todo el período",
+		YearPrefix:   "Año",
+		WeekLabel:    "Semana",
+		MonthsFull:   [12]string{"enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"},
+		MonthsAbbr:   [12]string{"ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"},
+		DaysFull:     [7]string{"lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"},
+		DMY:          true,
+	},
+	"da": {
+		TimeReport:   "Tidsrapport",
+		ColRef:       "Ref",
+		ColTask:      "Opgave",
+		ColAssign:    "Tildelt",
+		ColTime:      "Tid",
+		Subtotal:     "Subtotal:",
+		GrandTotal:   "Samlet total:",
+		Page:         "Side",
+		Generated:    "Genereret:",
+		Customer:     "Kunde",
+		Project:      "Projekt",
+		Activity:     "Aktivitet",
+		Hours:        "Timer",
+		Total:        "Total",
+		AllEmployees: "Alle medarbejdere",
+		Date:         "Dato",
+		AllTime:      "Hele perioden",
+		YearPrefix:   "År",
+		WeekLabel:    "Uge",
+		MonthsFull:   [12]string{"januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"},
+		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
+		DaysFull:     [7]string{"mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"},
+		DMY:          true,
+	},
+	"sv": {
+		TimeReport:   "Tidsrapport",
+		ColRef:       "Ref",
+		ColTask:      "Uppgift",
+		ColAssign:    "Tilldelad",
+		ColTime:      "Tid",
+		Subtotal:     "Delsumma:",
+		GrandTotal:   "Totalsumma:",
+		Page:         "Sida",
+		Generated:    "Genererad:",
+		Customer:     "Kund",
+		Project:      "Projekt",
+		Activity:     "Aktivitet",
+		Hours:        "Timmar",
+		Total:        "Totalt",
+		AllEmployees: "Alla anställda",
+		Date:         "Datum",
+		AllTime:      "Hela perioden",
+		YearPrefix:   "År",
+		WeekLabel:    "Vecka",
+		MonthsFull:   [12]string{"januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"},
+		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
+		DaysFull:     [7]string{"måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag", "söndag"},
+		DMY:          true,
+	},
+	"nb": {
+		TimeReport:   "Tidsrapport",
+		ColRef:       "Ref",
+		ColTask:      "Oppgave",
+		ColAssign:    "Tildelt",
+		ColTime:      "Tid",
+		Subtotal:     "Delsum:",
+		GrandTotal:   "Totalsum:",
+		Page:         "Side",
+		Generated:    "Generert:",
+		Customer:     "Kunde",
+		Project:      "Prosjekt",
+		Activity:     "Aktivitet",
+		Hours:        "Timer",
+		Total:        "Totalt",
+		AllEmployees: "Alle ansatte",
+		Date:         "Dato",
+		AllTime:      "Hele perioden",
+		YearPrefix:   "År",
+		WeekLabel:    "Uke",
+		MonthsFull:   [12]string{"januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"},
+		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"},
+		DaysFull:     [7]string{"mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"},
+		DMY:          true,
+	},
+	"fi": {
+		TimeReport:   "Tuntiraportti",
+		ColRef:       "Viite",
+		ColTask:      "Tehtävä",
+		ColAssign:    "Vastuuhenkilöt",
+		ColTime:      "Aika",
+		Subtotal:     "Välisumma:",
+		GrandTotal:   "Kokonaissumma:",
+		Page:         "Sivu",
+		Generated:    "Luotu:",
+		Customer:     "Asiakas",
+		Project:      "Projekti",
+		Activity:     "Toiminto",
+		Hours:        "Tunnit",
+		Total:        "Yhteensä",
+		AllEmployees: "Kaikki työntekijät",
+		Date:         "Päivämäärä",
+		AllTime:      "Koko aika",
+		YearPrefix:   "Vuosi",
+		WeekLabel:    "Viikko",
+		MonthsFull:   [12]string{"tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu", "heinäkuu", "elokuu", "syyskuu", "lokakuu", "marraskuu", "joulukuu"},
+		MonthsAbbr:   [12]string{"tammi", "helmi", "maalis", "huhti", "touko", "kesä", "heinä", "elo", "syys", "loka", "marras", "joulu"},
+		DaysFull:     [7]string{"maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"},
+		DMY:          true,
+	},
+	"is": {
+		TimeReport:   "Tímaskýrsla",
+		ColRef:       "Tilvísun",
+		ColTask:      "Verkefni",
+		ColAssign:    "Úthlutað til",
+		ColTime:      "Tími",
+		Subtotal:     "Millisamtala:",
+		GrandTotal:   "Heildarsamtala:",
+		Page:         "Síða",
+		Generated:    "Útbúið:",
+		Customer:     "Viðskiptavinur",
+		Project:      "Verkefni",
+		Activity:     "Verkþáttur",
+		Hours:        "Klukkustundir",
+		Total:        "Samtals",
+		AllEmployees: "Allir starfsmenn",
+		Date:         "Dagsetning",
+		AllTime:      "Allur tíminn",
+		YearPrefix:   "Ár",
+		WeekLabel:    "Vika",
+		MonthsFull:   [12]string{"janúar", "febrúar", "mars", "apríl", "maí", "júní", "júlí", "ágúst", "september", "október", "nóvember", "desember"},
+		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maí", "jún", "júl", "ágú", "sep", "okt", "nóv", "des"},
+		DaysFull:     [7]string{"mánudagur", "þriðjudagur", "miðvikudagur", "fimmtudagur", "föstudagur", "laugardagur", "sunnudagur"},
+		DMY:          true,
+	},
+	"pt": {
+		TimeReport:   "Relatório de tempo",
+		ColRef:       "Ref",
+		ColTask:      "Tarefa",
+		ColAssign:    "Atribuídos",
+		ColTime:      "Tempo",
+		Subtotal:     "Subtotal:",
+		GrandTotal:   "Total geral:",
+		Page:         "Página",
+		Generated:    "Gerado em:",
+		Customer:     "Cliente",
+		Project:      "Projeto",
+		Activity:     "Atividade",
+		Hours:        "Horas",
+		Total:        "Total",
+		AllEmployees: "Todos os funcionários",
+		Date:         "Data",
+		AllTime:      "Todo o período",
+		YearPrefix:   "Ano",
+		WeekLabel:    "Semana",
+		MonthsFull:   [12]string{"janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"},
+		MonthsAbbr:   [12]string{"jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"},
+		DaysFull:     [7]string{"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado", "domingo"},
+		DMY:          true,
+	},
+	"it": {
+		TimeReport:   "Rapporto ore",
+		ColRef:       "Rif",
+		ColTask:      "Attività",
+		ColAssign:    "Assegnatari",
+		ColTime:      "Tempo",
+		Subtotal:     "Subtotale:",
+		GrandTotal:   "Totale generale:",
+		Page:         "Pagina",
+		Generated:    "Generato il:",
+		Customer:     "Cliente",
+		Project:      "Progetto",
+		Activity:     "Attività",
+		Hours:        "Ore",
+		Total:        "Totale",
+		AllEmployees: "Tutti i dipendenti",
+		Date:         "Data",
+		AllTime:      "Tutto il periodo",
+		YearPrefix:   "Anno",
+		WeekLabel:    "Settimana",
+		MonthsFull:   [12]string{"gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"},
+		MonthsAbbr:   [12]string{"gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"},
+		DaysFull:     [7]string{"lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"},
+		DMY:          true,
 	},
 }
 
@@ -269,6 +497,149 @@ func pdfI18nFromLang(lang string) pdfI18n {
 		return tr
 	}
 	return pdfTranslations["en"]
+}
+
+// enMonthsForReorder lists English month names in the order they should be
+// tried when scanning for "MonthName DayNumber" patterns. Full names come
+// first so that e.g. "September" is matched before "Sep".
+var enMonthsForReorder = []string{
+	"September", "November", "December", "February",
+	"October", "January", "August", "March", "April", "June", "July",
+	// "May" is identical in full and abbreviated forms.
+	"May",
+	// Abbreviated forms that differ from the full name.
+	"Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+}
+
+// reorderMonthDay rewrites every "MonthName DD" occurrence in s to "DD MonthName"
+// (DMY order). It operates on English source strings produced by Go's
+// time.Format, so only ASCII boundaries are needed. Four-digit year numbers
+// (YYYY) are never reordered because the digit-count check stops at two digits.
+func reorderMonthDay(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	i := 0
+	for i < len(s) {
+		matched := false
+		for _, month := range enMonthsForReorder {
+			mlen := len(month)
+			// Need "Month " at position i.
+			if !strings.HasPrefix(s[i:], month+" ") {
+				continue
+			}
+			// Not preceded by an ASCII letter (avoids matching inside a word).
+			if i > 0 && ((s[i-1] >= 'a' && s[i-1] <= 'z') || (s[i-1] >= 'A' && s[i-1] <= 'Z')) {
+				continue
+			}
+			// Collect 1-2 digit characters after "Month ".
+			j := i + mlen + 1
+			k := j
+			for k < len(s) && s[k] >= '0' && s[k] <= '9' {
+				k++
+			}
+			digits := k - j
+			if digits == 0 || digits > 2 {
+				// No digits, or too many (e.g. a year "2026") — not a day number.
+				break
+			}
+			// Must not be followed by another digit (guards against matching "20" in "2026").
+			if k < len(s) && s[k] >= '0' && s[k] <= '9' {
+				break
+			}
+			// Reorder: emit "DD Month" instead of "Month DD".
+			b.WriteString(s[j:k]) // day digits
+			b.WriteByte(' ')
+			b.WriteString(month)
+			i = k
+			matched = true
+			break
+		}
+		if !matched {
+			b.WriteByte(s[i])
+			i++
+		}
+	}
+	return b.String()
+}
+
+// replaceWord replaces each occurrence of old in s that is not immediately
+// preceded or followed by an ASCII letter (whole-word match). This prevents
+// replacing prefixes inside already-translated words (e.g. "Jan" inside
+// "Januar"). Source strings from Go's time.Format are always ASCII, so
+// byte-level boundary checks are sufficient.
+func replaceWord(s, old, rep string) string {
+	if old == "" || old == rep {
+		return s
+	}
+	n := len(old)
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); {
+		if strings.HasPrefix(s[i:], old) {
+			prevLetter := i > 0 && ((s[i-1] >= 'a' && s[i-1] <= 'z') || (s[i-1] >= 'A' && s[i-1] <= 'Z'))
+			nextLetter := (i+n) < len(s) && ((s[i+n] >= 'a' && s[i+n] <= 'z') || (s[i+n] >= 'A' && s[i+n] <= 'Z'))
+			if !prevLetter && !nextLetter {
+				b.WriteString(rep)
+				i += n
+				continue
+			}
+		}
+		b.WriteByte(s[i])
+		i++
+	}
+	return b.String()
+}
+
+// pdfTranslateLabel rewrites English month/day names and period keywords in a
+// label string produced by Go's time.Format (which is always English). It is
+// safe to call on customer/project names because those are never identical to
+// English month or day names as whole words.
+func pdfTranslateLabel(s string, tr pdfI18n) string {
+	// Replace period keywords (exact, case-sensitive).
+	if tr.AllTime != "" {
+		s = strings.ReplaceAll(s, "All Time", tr.AllTime)
+	}
+	if tr.YearPrefix != "" && tr.YearPrefix != "Year" {
+		s = replaceWord(s, "Year", tr.YearPrefix)
+	}
+	if tr.WeekLabel != "" && tr.WeekLabel != "Week" {
+		s = replaceWord(s, "Week", tr.WeekLabel)
+	}
+	// Reorder "MonthName DD" → "DD MonthName" for DMY locales before translating names.
+	if tr.DMY {
+		s = reorderMonthDay(s)
+	}
+	// Full month names (longest first to avoid prefix clashes like Sep/September).
+	enFull := [12]string{
+		"September", "November", "December", "February",
+		"October", "January", "August", "March",
+		"April", "June", "July", "May",
+	}
+	trFull := [12]string{
+		tr.MonthsFull[8], tr.MonthsFull[10], tr.MonthsFull[11], tr.MonthsFull[1],
+		tr.MonthsFull[9], tr.MonthsFull[0], tr.MonthsFull[7], tr.MonthsFull[2],
+		tr.MonthsFull[3], tr.MonthsFull[5], tr.MonthsFull[6], tr.MonthsFull[4],
+	}
+	for i, en := range enFull {
+		if trFull[i] != "" && trFull[i] != en {
+			s = replaceWord(s, en, trFull[i])
+		}
+	}
+	// Abbreviated month names (same length-descending order where needed).
+	enAbbr := [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+	for i, en := range enAbbr {
+		if tr.MonthsAbbr[i] != "" && tr.MonthsAbbr[i] != en {
+			s = replaceWord(s, en, tr.MonthsAbbr[i])
+		}
+	}
+	// Full day names.
+	enDays := [7]string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
+	for i, en := range enDays {
+		if tr.DaysFull[i] != "" && tr.DaysFull[i] != en {
+			s = replaceWord(s, en, tr.DaysFull[i])
+		}
+	}
+	return s
 }
 
 // fmtMinutes formats a minute count as H:MM.
@@ -465,8 +836,11 @@ func GetTimeReportPDF(c *gin.Context) {
 		pdf.AddUTF8FontFromBytes(fam, "B", mustFont(files[1]))
 	}
 
+	// Translate any English month/period words in the period label.
+	localPeriodLabel := pdfTranslateLabel(report.PeriodLabel, tr)
+
 	// PDF metadata.
-	title := tr.TimeReport + " — " + report.PeriodLabel
+	title := tr.TimeReport + " — " + localPeriodLabel
 	author := user.DisplayName
 	if author == "" {
 		author = user.Username
@@ -530,7 +904,7 @@ func GetTimeReportPDF(c *gin.Context) {
 
 	pdf.SetFont(fontFamily, "", 10)
 	setTxt(pdf, clrMuted)
-	pdf.CellFormat(textW, 5.5, report.PeriodLabel, "", 2, "L", false, 0, "")
+	pdf.CellFormat(textW, 5.5, localPeriodLabel, "", 2, "L", false, 0, "")
 	pdf.SetX(textX)
 
 	pdf.SetFont(fontFamily, "", 8)

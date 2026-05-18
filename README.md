@@ -8,7 +8,7 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.40)
+## Latest release (v0.9.48)
 
 - **`Alt+A` accessibility status** — press `Alt+A` anywhere to open the WCAG 2.1 AA compliance overlay; shortcut listed in the keyboard shortcuts reference.
 - **Full WCAG 2.1 AA color contrast** — light theme muted text raised to 6.91:1; all three themes now meet the 4.5:1 AA minimum.
@@ -293,7 +293,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Dark / light / system theme** — defaults to light
 - **Accent colour** — per-user accent colour (blue, red, green, or orange) applied throughout the UI; saved as a user setting
 - **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français), Danish (Dansk), Swedish (Svenska), Norwegian (Norsk), Finnish (Suomi), Icelandic (Íslenska), Portuguese (Português), Italian (Italiano)
-- **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, password change
+- **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, time notation (decimal or HH:MM), password change
 - **Remember me** — optional checkbox on the login page saves the email/username to the browser's local storage and pre-fills it on the next visit
 - **Passkey sign-in** — register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page; uses WebAuthn discoverable credentials so no username is required before the authenticator prompt; browser-only (Tauri desktop excluded)
 - **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured

@@ -41,6 +41,7 @@ type User struct {
 	EmailNotifications  bool           `gorm:"default:true" json:"email_notifications"`
 	TimeTrackingEnabled bool           `gorm:"default:false" json:"time_tracking_enabled"`
 	TimeTrackingViewer  bool           `gorm:"default:false" json:"time_tracking_viewer"`
+	TimeNotation        string         `gorm:"size:10;default:'decimal'" json:"time_notation"` // "decimal" | "hhmm"
 	TOTPSecret          string         `gorm:"size:64" json:"-"`
 	TOTPEnabled         bool           `gorm:"default:false" json:"totp_enabled"`
 	PasswordResetToken  string         `gorm:"size:64;index" json:"-"`
