@@ -1006,7 +1006,7 @@ async function exportSheetXLSX() {
     await triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   } catch (e) {
     console.error('[export] sheet XLSX failed:', e)
-    ui.error(t('timeTracking.export_error'))
+    ui.error(String(e?.message || e))
   }
 }
 
@@ -1019,7 +1019,7 @@ async function exportSheetPDF() {
     await triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.pdf`, 'application/pdf')
   } catch (e) {
     console.error('[export] sheet PDF failed:', e)
-    ui.error(t('timeTracking.export_error'))
+    ui.error(String(e?.message || e))
   }
 }
 
@@ -1040,7 +1040,7 @@ async function exportReportXLSX() {
     await triggerDownload(data, `time-tracking-${slug}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   } catch (e) {
     console.error('[export] report XLSX failed:', e)
-    ui.error(t('timeTracking.export_error'))
+    ui.error(String(e?.message || e))
   }
 }
 
@@ -1063,7 +1063,7 @@ async function exportReportPDF() {
     await triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
   } catch (e) {
     console.error('[export] report PDF failed:', e)
-    ui.error(t('timeTracking.export_error'))
+    ui.error(String(e?.message || e))
   }
 }
 

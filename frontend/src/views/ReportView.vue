@@ -303,8 +303,8 @@ async function exportPDF() {
     const { data } = await reportsApi.getTimeReportPDF(params)
     await triggerDownload(data, 'time-report.pdf', 'application/pdf')
   } catch (e) {
-    console.error(e)
-    ui.error(t('report.export_error'))
+    console.error('[export] PDF failed:', e)
+    ui.error(String(e?.message || e))
   }
 }
 
@@ -322,7 +322,7 @@ async function exportXLSX() {
     await triggerDownload(data, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   } catch (e) {
     console.error('[export] report XLSX failed:', e)
-    ui.error(t('timeTracking.export_error'))
+    ui.error(String(e?.message || e))
   }
 }
 
