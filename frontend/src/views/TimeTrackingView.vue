@@ -446,7 +446,7 @@
           <p class="tt-modal-sub">{{ $t('timeTracking.tt_customers_subtitle') }}</p>
           <ul class="ttp-list" :aria-label="$t('timeTracking.tt_customers_title')">
             <li v-if="ttCustomers.length === 0" class="ttp-empty">{{ $t('timeTracking.tt_customers_empty') }}</li>
-            <li v-for="c in ttCustomers" :key="c.id" class="ttp-item">
+            <li v-for="c in sortedTTCustomers" :key="c.id" class="ttp-item">
               <template v-if="editingTTCustomer && editingTTCustomer.id === c.id">
                 <label class="sr-only" :for="'ttp-cust-name-' + c.id">{{ $t('timeTracking.tt_customer_name') }}</label>
                 <input :id="'ttp-cust-name-' + c.id" class="ttp-name-input" v-model="editingTTCustomer.name" @keydown.enter="saveTTCustomer" @keydown.escape="cancelEditTTCustomer" />
@@ -506,6 +506,9 @@ const ttProjects   = ref([])    // time-tracking-only projects
 
 const sortedTTProjects = computed(() =>
   [...ttProjects.value].sort((a, b) => a.name.localeCompare(b.name))
+)
+const sortedTTCustomers = computed(() =>
+  [...ttCustomers.value].sort((a, b) => a.name.localeCompare(b.name))
 )
 
 // Merged lists for dropdowns
