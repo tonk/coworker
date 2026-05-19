@@ -9,6 +9,17 @@
     <div class="header-center">
       <GlobalSearch />
     </div>
+    <nav class="header-nav" aria-label="Main navigation">
+      <RouterLink to="/" class="header-nav-link" :class="{ active: route.path === '/' }">{{ $t('nav.dashboard') }}</RouterLink>
+      <RouterLink to="/news" class="header-nav-link" :class="{ active: route.path === '/news' }">{{ $t('nav.news') }}</RouterLink>
+      <RouterLink to="/chats" class="header-nav-link" :class="{ active: route.path === '/chats' }">
+        {{ $t('nav.messages') }}
+        <span v-if="notificationsStore.hasUnread" class="nav-unread-dot" aria-hidden="true"></span>
+        <span v-if="notificationsStore.hasUnread" class="sr-only">({{ $t('sidebar.unread_messages') }})</span>
+      </RouterLink>
+      <RouterLink v-if="auth.canViewReports" to="/reports" class="header-nav-link" :class="{ active: route.path === '/reports' }">{{ $t('report.nav') }}</RouterLink>
+      <RouterLink v-if="auth.timeTrackingEnabled" to="/time-tracking" class="header-nav-link" :class="{ active: route.path.startsWith('/time-tracking') }">{{ $t('timeTracking.nav') }}</RouterLink>
+    </nav>
     <div class="header-right">
       <span class="presence-count" v-if="presenceCount > 0" :title="`${presenceCount} ${$t('presence.online')}`">
         <span class="presence-dot"></span>{{ presenceCount }}
@@ -124,7 +135,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { setLocale } from '@/i18n'
@@ -139,6 +150,7 @@ const emit = defineEmits(['open-shortcuts'])
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 const { locale } = useI18n()
 const { theme, setTheme } = useTheme()
 const notificationsStore = useNotificationsStore()
@@ -334,5 +346,50 @@ onBeforeUnmount(() => {
 .dropdown-item-active {
   color: var(--color-primary);
   font-weight: 600;
+}
+
+/* ── Header nav strip ────────────────────────────────────────────────── */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 8px;
+}
+
+.header-nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.header-nav-link:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+.header-nav-link.active {
+  background: var(--color-primary-subtle, color-mix(in srgb, var(--color-primary) 12%, transparent));
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.header-nav-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.nav-unread-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  flex-shrink: 0;
+  animation: hdr-pulse 1.4s ease-in-out infinite;
 }
 </style>
