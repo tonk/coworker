@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.9.54 — 2026-05-19
+
+### Fixed
+- **Time-tracking sheet — rows no longer re-sort while entering time** — entering or saving a time value no longer causes all rows to jump to new positions; the sort order is now stable and only changes when the user explicitly clicks a column header to sort
+- **Time-tracking projects list — sorted alphabetically** — the personal (time-tracking-only) projects list in the ⚙ manage modal is now sorted alphabetically by name; the order updates automatically when a project is added, renamed, or removed
+
 ## v0.9.53 — 2026-05-19
 
 ### Security

@@ -540,3 +540,5 @@ Create an application that has all these features and requirements
 - Add full ARIA tablist/tab/tabpanel roles to time-tracking mode tabs and chat layout picker
 - Make hover-only interactive elements keyboard-accessible via focus-visible and focus-within CSS rules
 - Replace hard-coded colour values with CSS custom properties in frontend components
+- Fix time-tracking sheet row sorting: rows no longer re-sort while entering time; order is stable and only changes when the user clicks a column header
+- Sort personal time-tracking projects alphabetically by name in the manage modal

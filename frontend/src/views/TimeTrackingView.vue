@@ -403,7 +403,7 @@
           <p class="tt-modal-sub">{{ $t('timeTracking.tt_projects_subtitle') }}</p>
           <ul class="ttp-list" :aria-label="$t('timeTracking.tt_projects_title')">
             <li v-if="ttProjects.length === 0" class="ttp-empty">{{ $t('timeTracking.tt_projects_empty') }}</li>
-            <li v-for="p in ttProjects" :key="p.id" class="ttp-item">
+            <li v-for="p in sortedTTProjects" :key="p.id" class="ttp-item">
               <template v-if="editingTTProject && editingTTProject.id === p.id">
                 <label class="sr-only" :for="'ttp-proj-name-' + p.id">{{ $t('timeTracking.tt_project_name') }}</label>
                 <input :id="'ttp-proj-name-' + p.id" class="ttp-name-input" v-model="editingTTProject.name" @keydown.enter="saveTTProject" @keydown.escape="cancelEditTTProject" />
@@ -503,6 +503,10 @@ const customers    = ref([])    // regular CRM customers
 const ttCustomers  = ref([])    // time-tracking-only customers
 const projects     = ref([])    // regular board projects
 const ttProjects   = ref([])    // time-tracking-only projects
+
+const sortedTTProjects = computed(() =>
+  [...ttProjects.value].sort((a, b) => a.name.localeCompare(b.name))
+)
 
 // Merged lists for dropdowns
 const allCustomers = computed(() => [...customers.value, ...ttCustomers.value])
@@ -644,18 +648,24 @@ const allRows = computed(() => {
 const sortCol = ref(null)   // null | 'info' | 'desc'
 const sortDir = ref('asc')  // 'asc' | 'desc'
 
-function toggleSort(col) {
-  if (sortCol.value === col) {
-    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortCol.value = col
-    sortDir.value = 'asc'
-  }
-}
+// Stable display order — only re-sorted when the user explicitly clicks a
+// sort header; data updates (cell saves) preserve the current order so rows
+// don't jump while the user is entering time.
+const _keyOrder = ref(null)
 
-const sortedRows = computed(() => {
-  if (!sortCol.value) return allRows.value
-  return [...allRows.value].sort((a, b) => {
+watch(allRows, (rows) => {
+  if (_keyOrder.value === null) {
+    _keyOrder.value = rows.map(r => r.key)
+    return
+  }
+  const keySet = new Set(rows.map(r => r.key))
+  const stable = _keyOrder.value.filter(k => keySet.has(k))
+  const fresh  = rows.map(r => r.key).filter(k => !stable.includes(k))
+  _keyOrder.value = [...stable, ...fresh]
+}, { immediate: true })
+
+function applySortOrder() {
+  const sorted = [...allRows.value].sort((a, b) => {
     let va, vb
     if (sortCol.value === 'info') {
       va = ((a.customer_name || '') + '\x00' + (a.project_name || '')).toLowerCase()
@@ -668,6 +678,23 @@ const sortedRows = computed(() => {
     if (va > vb) return sortDir.value === 'asc' ? 1 : -1
     return 0
   })
+  _keyOrder.value = sorted.map(r => r.key)
+}
+
+function toggleSort(col) {
+  if (sortCol.value === col) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortCol.value = col
+    sortDir.value = 'asc'
+  }
+  applySortOrder()
+}
+
+const sortedRows = computed(() => {
+  if (!_keyOrder.value) return allRows.value
+  const byKey = Object.fromEntries(allRows.value.map(r => [r.key, r]))
+  return _keyOrder.value.map(k => byKey[k]).filter(Boolean)
 })
 
 function getEntry(row, dateISO) {
