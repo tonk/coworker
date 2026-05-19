@@ -355,6 +355,9 @@ onBeforeUnmount(() => {
   gap: 2px;
   margin-right: 8px;
 }
+@media (max-width: 960px) {
+  .header-nav { display: none; }
+}
 
 .header-nav-link {
   position: relative;
