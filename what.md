@@ -542,3 +542,4 @@ Create an application that has all these features and requirements
 - Replace hard-coded colour values with CSS custom properties in frontend components
 - Fix time-tracking sheet row sorting: rows no longer re-sort while entering time; order is stable and only changes when the user clicks a column header
 - Sort personal time-tracking projects alphabetically by name in the manage modal
+- Add quick-nav strip to the app header with links to Dashboard, News, Chats, Reports, and Time Tracking; active page highlighted; permission-gated items hidden for users without access; strip hidden below 960px viewport width

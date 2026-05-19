@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.55 — 2026-05-19
+
+### Added
+- **Quick-nav strip in the header** — Dashboard, News, Chats, Reports, and Time Tracking links appear directly in the header bar between the search field and the right-side controls; the active page is highlighted; Reports and Time Tracking are only shown to users who have access; the strip is hidden automatically on viewports narrower than 960 px (the user-menu dropdown remains the fallback on small screens); the unread-messages dot appears on the Chats link when there are unread direct messages
+
 ## v0.9.54 — 2026-05-19
 
 ### Fixed
