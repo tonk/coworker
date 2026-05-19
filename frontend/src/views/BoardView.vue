@@ -4,10 +4,10 @@
       <div class="board-toolbar-left">
         <img v-if="projectAvatar(projectStore.currentProject)" :src="projectAvatar(projectStore.currentProject)" class="board-project-avatar" alt="" />
         <h1 class="board-project-name">{{ projectStore.currentProject?.name }}</h1>
-        <button class="btn btn-ghost btn-sm star-btn" :class="{ starred: sidebarStore.isStarred(slug) }" @click="toggleStar" :title="sidebarStore.isStarred(slug) ? $t('board.unstar') : $t('board.star')">
+        <button class="btn btn-ghost btn-sm star-btn" :class="{ starred: sidebarStore.isStarred(slug) }" @click="toggleStar" :title="sidebarStore.isStarred(slug) ? $t('board.unstar') : $t('board.star')" :aria-label="sidebarStore.isStarred(slug) ? 'Unstar project' : 'Star project'">
           {{ sidebarStore.isStarred(slug) ? '★' : '☆' }}
         </button>
-        <RouterLink v-if="canManageColumns" :to="`/projects/${slug}/settings`" class="btn btn-ghost btn-sm settings-link" :title="$t('project.settings')">
+        <RouterLink v-if="canManageColumns" :to="`/projects/${slug}/settings`" class="btn btn-ghost btn-sm settings-link" :title="$t('project.settings')" aria-label="Project settings">
           ⚙
         </RouterLink>
       </div>
@@ -68,7 +68,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('project.color') }}</label>
-          <input type="color" class="form-input" v-model="newColumn.color" style="height:40px;padding:4px" />
+          <input type="color" class="form-input" v-model="newColumn.color" style="height:40px;padding:4px" aria-label="Column color" />
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('board.wip_limit') }}</label>
@@ -91,7 +91,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('project.color') }}</label>
-          <input type="color" class="form-input" v-model="editColumn.color" style="height:40px;padding:4px" />
+          <input type="color" class="form-input" v-model="editColumn.color" style="height:40px;padding:4px" aria-label="Column color" />
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('board.wip_limit') }}</label>
@@ -405,7 +405,7 @@ async function onCardMoved({ cardId, fromColumnId, toColumnId, newIndex }) {
 }
 .board-project-name { font-size: 15px; font-weight: 600; color: var(--color-text); padding: 0 4px; }
 .star-btn { font-size: 18px; line-height: 1; color: var(--color-text-muted); }
-.star-btn.starred { color: #f59e0b; }
+.star-btn.starred { color: var(--color-warning); }
 .settings-link { font-size: 15px; color: var(--color-text-muted); }
 
 .board-body {

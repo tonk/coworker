@@ -2,8 +2,8 @@
   <aside class="call-chat-sidebar" :class="{ 'call-chat-sidebar--fixed': fixed }" @click.stop @keydown.esc.stop="onEsc">
     <div class="call-chat-head">
       <span class="call-chat-title">{{ $t('call.chat_while_in_call') }}</span>
-      <button type="button" class="call-chat-close" :title="$t('call.hide_chat')" @click="$emit('close')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button type="button" class="call-chat-close" aria-label="Close sidebar" :title="$t('call.hide_chat')" @click="$emit('close')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
@@ -32,6 +32,7 @@
         v-model="draft"
         rows="2"
         class="call-chat-input"
+        aria-label="Message"
         :placeholder="$t('chat.placeholder')"
         :disabled="sending"
         spellcheck="true"

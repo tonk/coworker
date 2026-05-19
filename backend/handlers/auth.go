@@ -640,7 +640,11 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 			_ = emailSvc.SendHTML(user.Email, subject,
 				services.WrapHTML("Password Reset", htmlContent),
 				services.WrapText("Password Reset", plainBody))
-			authLogRaw(ip, client, "password_reset_email_sent", user.ID, user.Username, "")
+			tokenPrefix := token
+			if len(tokenPrefix) > 8 {
+				tokenPrefix = tokenPrefix[:8]
+			}
+			authLogRaw(ip, client, "password_reset_email_sent", user.ID, user.Username, "token="+tokenPrefix+"...")
 		}
 	}()
 

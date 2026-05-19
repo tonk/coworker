@@ -835,11 +835,12 @@ onUnmounted(() => {
   transition: opacity .1s, color .1s;
 }
 .user-row:hover .fav-btn { opacity: 1; }
+.fav-btn:focus-visible { opacity: 1; }
 .fav-btn.fav-btn-active {
-  color: #f59e0b;
+  color: var(--color-warning);
   opacity: 1;
 }
-.fav-btn:hover { color: #f59e0b; }
+.fav-btn:hover { color: var(--color-warning); }
 
 /* Chats section */
 .conv-link { gap: 8px; }

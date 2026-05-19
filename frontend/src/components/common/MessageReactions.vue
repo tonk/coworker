@@ -5,22 +5,23 @@
         v-for="r in reactions"
         :key="r.emoji"
         :class="['reaction-pill', { 'reacted': hasReacted(r) }]"
+        :aria-label="`${r.emoji} ${reactionTooltip(r)}, ${r.count} reaction${r.count === 1 ? '' : 's'}`"
         @click="$emit('toggle', r.emoji)"
       >
-        {{ r.emoji }} <span class="reaction-count">{{ r.count }}</span>
-        <span class="reaction-tooltip">{{ reactionTooltip(r) }}</span>
+        <span aria-hidden="true">{{ r.emoji }}</span> <span class="reaction-count">{{ r.count }}</span>
+        <span class="reaction-tooltip" aria-hidden="true">{{ reactionTooltip(r) }}</span>
       </button>
     </div>
     <div class="add-reaction-wrap">
-      <button class="add-reaction-btn" @click.stop="showPicker = !showPicker" title="Add reaction">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      <button class="add-reaction-btn" @click.stop="showPicker = !showPicker" title="Add reaction" aria-label="Add reaction">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
       </button>
       <EmojiPicker v-if="showPicker" @pick="onPick" @close="showPicker = false" />
     </div>
   </div>
   <div class="add-reaction-wrap" v-else>
-    <button class="add-reaction-btn" @click.stop="showPicker = !showPicker" title="Add reaction">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+    <button class="add-reaction-btn" @click.stop="showPicker = !showPicker" title="Add reaction" aria-label="Add reaction">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
     </button>
     <EmojiPicker v-if="showPicker" @pick="onPick" @close="showPicker = false" />
   </div>

@@ -8,6 +8,7 @@
         class="emoji-cat-btn"
         :class="{ active: activeCat === cat.name }"
         :title="cat.name"
+        :aria-label="cat.name"
         @click="activeCat = cat.name"
       >{{ cat.icon }}</button>
     </div>
@@ -17,6 +18,7 @@
         class="emoji-search"
         v-model="search"
         placeholder="Search…"
+        aria-label="Search emoji"
         ref="searchEl"
         @keydown.enter.prevent="onEnterSearch"
         @keydown.escape.prevent.stop="onEscapeSearch"

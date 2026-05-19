@@ -8,12 +8,12 @@
       </template>
       <template v-else>
         <a :href="attachmentsApi.url(a.id)" target="_blank" class="attachment-file">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           <span class="attachment-name">{{ a.filename }}</span>
           <span class="attachment-size">{{ formatSize(a.size_bytes) }}</span>
         </a>
       </template>
-      <button v-if="canDelete" class="attachment-remove" @click="$emit('remove', a)" title="Remove">×</button>
+      <button v-if="canDelete" class="attachment-remove" @click="$emit('remove', a)" title="Remove" aria-label="Remove attachment">×</button>
     </div>
   </div>
 </template>

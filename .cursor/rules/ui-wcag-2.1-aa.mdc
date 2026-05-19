@@ -1,0 +1,10 @@
+---
+description: Require WCAG 2.1 AA compliance for all frontend UI changes
+alwaysApply: true
+---
+
+# UI changes — WCAG 2.1 AA
+
+All UI work under `frontend/` (and any user-facing desktop/Tauri surfaces) must meet **WCAG 2.1 Level AA** before the change is considered complete.
+
+Use the **Accessibility** section in the WarmDesk developer guide (`.cursor/rules/warmdesk-developer-guide.mdc` / `CLAUDE.md`) for the full checklist: icon-only `aria-label`, modals/dialog semantics and keyboard behavior, labelled inputs, color inputs, custom tabs, hover-only traps, decorative `aria-hidden`, and programmatic names for every interactive control.

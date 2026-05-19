@@ -2,7 +2,7 @@
   <BaseModal :title="isNew ? $t('board.add_card') : $t('board.edit_card')" @close="handleClose" :resizable="true" style="--modal-width: 700px">
     <div class="card-detail">
       <div v-if="!isNew" class="sections-menu-wrap" ref="sectionsMenuEl">
-        <button class="sections-menu-btn" @click.stop="sectionsMenuOpen = !sectionsMenuOpen" :title="$t('board.toggle_sections')">⋮</button>
+        <button class="sections-menu-btn" @click.stop="sectionsMenuOpen = !sectionsMenuOpen" :title="$t('board.toggle_sections')" aria-label="Card menu">⋮</button>
         <div v-if="sectionsMenuOpen" class="sections-menu-dropdown">
           <div v-for="sec in sectionsConfig" :key="sec.key" class="sections-menu-item" :class="{ 'sections-menu-item--locked': !sectionEmpty[sec.key] }">
             <label class="sections-menu-label">
@@ -20,7 +20,7 @@
       <div v-if="cardRef && !isNew" class="card-ref-badge">{{ cardRef }}</div>
       <div class="form-group">
         <label class="form-label">{{ $t('board.card_title') }}</label>
-        <input v-if="!locked" class="form-input" v-model="form.title" spellcheck="true" :lang="auth.user?.locale || 'en'" :autofocus="isNew" />
+        <input v-if="!locked" class="form-input" v-model="form.title" aria-label="Card title" spellcheck="true" :lang="auth.user?.locale || 'en'" :autofocus="isNew" />
         <div v-else class="description-text">{{ form.title }}</div>
       </div>
 
@@ -61,13 +61,14 @@
               type="text"
               v-model="displayStartDate"
               :placeholder="dateOnlyFormat()"
+              aria-label="Start date"
               @blur="parseStartDate"
             />
             <label class="picker-wrap" :title="$t('common.pick_date')">
-              <span class="btn-icon-xs">&#128197;</span>
+              <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
               <input type="date" class="date-picker-overlay" :aria-label="$t('board.start_date')" :value="form.start_date" @change="onStartDatePickerChange" />
             </label>
-            <button v-if="displayStartDate" class="btn-icon-xs" @click="displayStartDate = ''; form.start_date = ''" title="Clear">×</button>
+            <button v-if="displayStartDate" class="btn-icon-xs" @click="displayStartDate = ''; form.start_date = ''" title="Clear" aria-label="Clear start date">×</button>
           </div>
         </div>
         <div class="form-group half">
@@ -78,13 +79,14 @@
               type="text"
               v-model="displayDueDate"
               :placeholder="dateOnlyFormat()"
+              aria-label="Due date"
               @blur="parseDueDate"
             />
             <label class="picker-wrap" :title="$t('common.pick_date')">
-              <span class="btn-icon-xs">&#128197;</span>
+              <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
               <input type="date" class="date-picker-overlay" :aria-label="$t('board.due_date')" :value="form.due_date" @change="onDatePickerChange" />
             </label>
-            <button v-if="displayDueDate" class="btn-icon-xs" @click="displayDueDate = ''; form.due_date = ''" title="Clear">×</button>
+            <button v-if="displayDueDate" class="btn-icon-xs" @click="displayDueDate = ''; form.due_date = ''" title="Clear" aria-label="Clear due date">×</button>
           </div>
         </div>
       </div>
@@ -92,7 +94,7 @@
       <div class="detail-row">
         <div v-if="systemStore.scrumStorypointsEnabled" class="form-group half">
           <label class="form-label">{{ $t('board.story_points') }}</label>
-          <input class="form-input" type="number" min="0" step="1" v-model.number="form.story_points" style="width:90px" />
+          <input class="form-input" type="number" min="0" step="1" v-model.number="form.story_points" style="width:90px" aria-label="Story points" />
         </div>
         <div v-if="!isNew && isSectionVisible('externalIssue')" class="form-group half">
           <label class="form-label">{{ $t('board.external_issue') }}</label>
@@ -103,6 +105,7 @@
               v-model="form.external_issue_url"
               :placeholder="$t('board.external_issue_url_placeholder')"
               style="flex:1;min-width:0"
+              aria-label="External issue URL"
             />
             <input
               class="form-input"
@@ -119,11 +122,13 @@
               rel="noopener noreferrer"
               class="btn-icon-xs"
               :title="$t('board.external_issue_open')"
+              aria-label="Open external issue"
             >↗</a>
             <button
               v-if="form.external_issue_url"
               class="btn-icon-xs"
               type="button"
+              aria-label="Clear external issue"
               @click="form.external_issue_url = ''; form.external_issue_ref = ''"
             >×</button>
           </div>
@@ -171,7 +176,7 @@
           <div class="tags-list" v-if="card.tags?.length">
             <span v-for="tag in card.tags" :key="tag.id" class="tag-chip">
               #{{ tag.name }}
-              <button class="tag-remove" @click="removeTag(tag)" title="Remove tag">×</button>
+              <button class="tag-remove" @click="removeTag(tag)" title="Remove tag" aria-label="Remove tag">×</button>
             </span>
           </div>
           <div class="tag-input-row">
@@ -181,6 +186,7 @@
               :placeholder="$t('board.add_tag_placeholder')"
               @keydown.enter.prevent="addTag"
               @keydown.comma.prevent="addTag"
+              aria-label="Add tag"
             />
             <button class="btn btn-secondary btn-sm" @click="addTag" :disabled="!newTagName.trim()">
               {{ $t('common.add') }}
@@ -213,7 +219,7 @@
           @drop.prevent="onDrop"
           @click="fileInput.click()"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span>Click or drop files to attach</span>
         </div>
         <input ref="fileInput" type="file" multiple style="display:none" @change="onFileSelected" />
@@ -233,17 +239,18 @@
         </div>
         <div class="checklist-items" ref="checklistListEl">
           <div v-for="item in checklist" :key="item.id" class="checklist-item" :data-id="item.id">
-            <span class="checklist-drag-handle" title="Drag to reorder">⠿</span>
+            <span class="checklist-drag-handle" title="Drag to reorder" aria-hidden="true">⠿</span>
             <input
               type="checkbox"
               class="checklist-checkbox"
               :checked="item.is_completed"
+              :aria-label="item.body"
               @change="toggleChecklistItem(item)"
             />
             <span v-if="editingItemId !== item.id" class="checklist-body" :class="{ completed: item.is_completed }">{{ item.body }}</span>
-            <input v-else class="form-input checklist-edit-input" v-model="editItemBody" @blur="saveItemEdit(item)" @keydown.enter.prevent="saveItemEdit(item)" @keydown.esc="cancelItemEdit" />
-            <button v-if="editingItemId !== item.id" class="btn-icon-xs" @click="startItemEdit(item)" title="Edit">✏</button>
-            <button class="btn-icon-xs btn-danger" @click="removeChecklistItem(item)" title="Delete">×</button>
+            <input v-else class="form-input checklist-edit-input" v-model="editItemBody" aria-label="Edit checklist item" @blur="saveItemEdit(item)" @keydown.enter.prevent="saveItemEdit(item)" @keydown.esc="cancelItemEdit" />
+            <button v-if="editingItemId !== item.id" class="btn-icon-xs" @click="startItemEdit(item)" title="Edit" aria-label="Edit checklist item">✏</button>
+            <button class="btn-icon-xs btn-danger" @click="removeChecklistItem(item)" title="Delete" aria-label="Delete checklist item">×</button>
           </div>
         </div>
         <div class="checklist-add-row">
@@ -252,6 +259,7 @@
             v-model="newChecklistItem"
             :placeholder="$t('checklist.add_item_placeholder')"
             @keydown.enter.prevent="addChecklistItem"
+            aria-label="New checklist item"
           />
           <button class="btn btn-secondary btn-sm" @click="addChecklistItem" :disabled="!newChecklistItem.trim()">
             {{ $t('checklist.add_item') }}
@@ -272,12 +280,12 @@
         </div>
         <div class="subcard-list">
           <div v-for="sc in subCards" :key="sc.id" class="subcard-row">
-            <input type="checkbox" class="subcard-check" :checked="sc.closed" @change="toggleSubCard(sc)" />
+            <input type="checkbox" class="subcard-check" :checked="sc.closed" :aria-label="sc.title" @change="toggleSubCard(sc)" />
             <span class="subcard-title" :class="{ 'subcard-closed': sc.closed }">
               {{ sc.title }}
               <span class="subcard-ref">{{ cardRefString(sc) }}</span>
             </span>
-            <button class="btn-icon-xs" @click="openSubCard(sc)" :title="$t('subcard.open')">↗</button>
+            <button class="btn-icon-xs" @click="openSubCard(sc)" :title="$t('subcard.open')" aria-label="Open subcard">↗</button>
           </div>
         </div>
         <div class="subcard-add-row">
@@ -286,6 +294,7 @@
             v-model="newSubCardTitle"
             :placeholder="$t('subcard.add_sub_card')"
             @keydown.enter.prevent="addSubCard"
+            aria-label="Add subcard"
           />
           <button class="btn btn-secondary btn-sm" @click="addSubCard" :disabled="!newSubCardTitle.trim()">
             {{ $t('common.add') }}
@@ -307,7 +316,7 @@
             <span class="linked-card-title" :class="{ 'ref-closed': lc.closed }">{{ lc.title }}</span>
             <span class="linked-card-col">{{ lc.column_name }}</span>
             <span v-if="lc.project_slug !== projectSlug" class="linked-card-project">{{ lc.project_name }}</span>
-            <button class="btn-icon-xs" @click.stop="removeLinkedCard(lc)" :title="$t('card_ref.remove_link')">✕</button>
+            <button class="btn-icon-xs" @click.stop="removeLinkedCard(lc)" :title="$t('card_ref.remove_link')" aria-label="Remove linked card">✕</button>
           </div>
         </div>
         <div v-if="!locked" class="linked-card-add-row">
@@ -316,6 +325,7 @@
             v-model="newLinkedCardRef"
             :placeholder="$t('card_ref.add_link_placeholder')"
             @keydown.enter.prevent="addLinkedCard"
+            aria-label="Link card"
           />
           <button class="btn btn-secondary btn-sm" @click="addLinkedCard" :disabled="!newLinkedCardRef.trim()">
             {{ $t('common.add') }}
@@ -340,7 +350,7 @@
               <div class="comment-meta">
                 <strong>{{ comment.user.display_name || comment.user.username }}</strong>
                 <span class="comment-time">{{ formatDateTime(comment.created_at) }}</span>
-                <span v-if="comment.is_edited" class="edited-badge">✎</span>
+                <span v-if="comment.is_edited" class="edited-badge" aria-hidden="true">✎</span>
                 <span v-if="comment.time_spent_minutes > 0" class="comment-time-badge">
                   ⏱ {{ fmtCardTime(comment.time_spent_minutes) }}
                 </span>
@@ -377,9 +387,9 @@
           </div>
           <div v-if="auth.timeTrackingEnabled" class="log-time-row">
             <span class="log-time-label">{{ $t('board.log_time') }}</span>
-            <input class="form-input time-input" type="number" min="0" v-model.number="newCommentHours" />
+            <input class="form-input time-input" type="number" min="0" v-model.number="newCommentHours" aria-label="Hours" />
             <span class="time-sep">{{ $t('board.time_hours') }}</span>
-            <input class="form-input time-input" type="number" min="0" max="59" v-model.number="newCommentMinutes" />
+            <input class="form-input time-input" type="number" min="0" max="59" v-model.number="newCommentMinutes" aria-label="Minutes" />
             <span class="time-sep">{{ $t('board.time_minutes') }}</span>
           </div>
           <button class="btn btn-primary btn-sm" @click="submitComment" :disabled="!newComment.trim()">
@@ -398,7 +408,7 @@
             style="cursor: pointer"
             @click="openLink(link.url)"
           >
-            <span class="git-link-icon">
+            <span class="git-link-icon" aria-hidden="true">
               <template v-if="link.link_type === 'commit'">⬡</template>
               <template v-else-if="link.link_type === 'pr'">⤵</template>
               <template v-else>◎</template>

@@ -31,27 +31,28 @@ func InitAttachmentAuth(svc *services.AuthService) {
 	attachmentAuthSvc = svc
 }
 
-// isAuthedForAttachment checks cookie, Bearer header, or short-lived media ticket.
-func isAuthedForAttachment(c *gin.Context) bool {
+// claimsForAttachment resolves the caller's identity from cookie, Bearer header,
+// or short-lived media ticket. Returns nil when the request is unauthenticated.
+func claimsForAttachment(c *gin.Context) *services.Claims {
 	if attachmentAuthSvc == nil {
-		return true
+		return nil
 	}
 	if cookieToken, err := c.Cookie("access_token"); err == nil && cookieToken != "" {
-		if _, err := attachmentAuthSvc.ValidateToken(cookieToken); err == nil {
-			return true
+		if claims, err := attachmentAuthSvc.ValidateToken(cookieToken); err == nil {
+			return claims
 		}
 	}
 	if auth := c.GetHeader("Authorization"); strings.HasPrefix(auth, "Bearer ") {
-		if _, err := attachmentAuthSvc.ValidateToken(auth[7:]); err == nil {
-			return true
+		if claims, err := attachmentAuthSvc.ValidateToken(auth[7:]); err == nil {
+			return claims
 		}
 	}
 	if ticket := c.Query("ticket"); ticket != "" {
-		if _, err := attachmentAuthSvc.ValidateMediaTicket(ticket); err == nil {
-			return true
+		if claims, err := attachmentAuthSvc.ValidateMediaTicket(ticket); err == nil {
+			return claims
 		}
 	}
-	return false
+	return nil
 }
 
 func randomHex(n int) string {
@@ -148,7 +149,8 @@ func UploadAttachment(c *gin.Context) {
 // This route is registered outside the protected middleware group so it can handle
 // all three auth paths without putting the JWT in the URL.
 func DownloadAttachment(c *gin.Context) {
-	if !isAuthedForAttachment(c) {
+	callerClaims := claimsForAttachment(c)
+	if callerClaims == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
@@ -164,19 +166,73 @@ func DownloadAttachment(c *gin.Context) {
 		return
 	}
 
+	// IDOR check: verify that the requesting user has access to the parent entity.
+	// Admins bypass all membership checks.
+	if callerClaims.GlobalRole != "admin" {
+		if err := checkAttachmentAccess(a, callerClaims.UserID); err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+	}
+
 	uploadDir := "./uploads"
 	if attachmentCfg != nil && attachmentCfg.UploadDir != "" {
 		uploadDir = attachmentCfg.UploadDir
 	}
 	path := filepath.Join(uploadDir, a.StoredName)
 
+	safe := strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(a.Filename)
 	if strings.HasPrefix(a.MimeType, "image/") {
-		c.Header("Content-Disposition", "inline; filename=\""+a.Filename+"\"")
+		c.Header("Content-Disposition", fmt.Sprintf(`inline; filename="%s"`, safe))
 	} else {
-		c.Header("Content-Disposition", "attachment; filename=\""+a.Filename+"\"")
+		c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, safe))
 	}
 	c.Header("Content-Type", a.MimeType)
 	c.File(path)
+}
+
+// checkAttachmentAccess verifies that userID is allowed to access attachment a
+// based on its owner_type and owner_id.
+func checkAttachmentAccess(a models.Attachment, userID uint) error {
+	switch a.OwnerType {
+	case "card":
+		var card models.Card
+		if err := database.DB.Select("project_id").First(&card, a.OwnerID).Error; err != nil {
+			return services.ErrForbidden
+		}
+		return services.RequireProjectRole(card.ProjectID, userID, "", "viewer")
+	case "card_comment":
+		var comment models.CardComment
+		if err := database.DB.Select("card_id").First(&comment, a.OwnerID).Error; err != nil {
+			return services.ErrForbidden
+		}
+		var card models.Card
+		if err := database.DB.Select("project_id").First(&card, comment.CardID).Error; err != nil {
+			return services.ErrForbidden
+		}
+		return services.RequireProjectRole(card.ProjectID, userID, "", "viewer")
+	case "chat_message":
+		var msg models.ChatMessage
+		if err := database.DB.Select("project_id").First(&msg, a.OwnerID).Error; err != nil {
+			return services.ErrForbidden
+		}
+		return services.RequireProjectRole(msg.ProjectID, userID, "", "viewer")
+	case "conv_message":
+		var msg models.ConversationMessage
+		if err := database.DB.Select("conversation_id").First(&msg, a.OwnerID).Error; err != nil {
+			return services.ErrForbidden
+		}
+		var count int64
+		database.DB.Model(&models.ConversationMember{}).
+			Where("conversation_id = ? AND user_id = ?", msg.ConversationID, userID).
+			Count(&count)
+		if count == 0 {
+			return services.ErrForbidden
+		}
+		return nil
+	default:
+		return services.ErrForbidden
+	}
 }
 
 // DeleteAttachment DELETE /api/v1/attachments/:id

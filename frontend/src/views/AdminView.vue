@@ -921,7 +921,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">{{ $t('project.color') }}</label>
-      <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px;width:80px" />
+      <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px;width:80px" aria-label="Project color" />
     </div>
     <div class="form-group">
       <label class="form-label">Avatar</label>
@@ -957,7 +957,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('project.color') }}</label>
-        <input type="color" class="form-input" v-model="editProject.color" style="height:40px;padding:4px" />
+        <input type="color" class="form-input" v-model="editProject.color" style="height:40px;padding:4px" aria-label="Project color" />
       </div>
       <div class="form-group">
         <label class="form-label">Avatar</label>
@@ -1206,7 +1206,7 @@
             :class="{ selected: newsForm.sidebar_color && !newsColorPresets.includes(newsForm.sidebar_color) }"
             :style="{ background: newsForm.sidebar_color && !newsColorPresets.includes(newsForm.sidebar_color) ? newsForm.sidebar_color : 'transparent', border: '2px dashed var(--color-border)' }"
           >+</span>
-          <input type="color" class="news-color-hidden" @input="newsForm.sidebar_color = $event.target.value" />
+          <input type="color" class="news-color-hidden" aria-label="Custom news item color" @input="newsForm.sidebar_color = $event.target.value" />
         </label>
         <button
           v-if="newsForm.sidebar_color"

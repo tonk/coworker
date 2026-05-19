@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.9.53 — 2026-05-19
+
+### Security
+- **Fix attachment IDOR** — `GET /api/v1/attachments/:id` now verifies that the requesting user is a member of the parent project (for card, comment, and chat attachments) or a participant in the conversation (for direct-message attachments) before serving the file; previously any authenticated user could download any attachment by ID
+- **Fix `Content-Disposition` header injection** — user-supplied attachment filenames are now escaped before being inserted into the `Content-Disposition` header, preventing header injection via filenames containing quotes or backslashes
+- **Add HSTS and CSP response headers** — `Strict-Transport-Security` (1 year, includeSubDomains) and `Content-Security-Policy` (same-origin scripts/styles/fonts, `frame-ancestors 'none'`, `form-action 'self'`) are now sent on every response by `middleware/security_headers.go`
+- **Block CORS wildcard at middleware level** — a wildcard `allowed_origins` value is now rejected at request time in addition to the existing startup check; no `Access-Control-Allow-Origin` header is set when a wildcard config is detected
+- **Enforce minimum JWT secret length** — the server refuses to start if `jwt_secret` is shorter than 32 characters
+- **Rate-limit message-send endpoints** — `POST /direct-messages/:userId` and `POST /conversations/:id/messages` are now covered by a 60 req/min rate limiter via `middleware.MessageRateLimit()`
+- **Mask password-reset token in logs** — the audit log entry for a sent password-reset email now includes only the first 8 characters of the token followed by `...` instead of the full URL
+
+### Changed
+- **WCAG 2.1 AA compliance** — all icon-only buttons, unlabelled inputs, and selects across the board, card detail, chat, call, time-tracking, dashboard, admin, and layout components now have `aria-label`; decorative SVGs have `aria-hidden="true"`; custom tab patterns in `TimeTrackingView` and `ChatPanel` use full `tablist`/`tab`/`tabpanel` ARIA roles; hover-only interactive elements (sidebar star button, chat message actions) are now keyboard-accessible via `:focus-visible` / `:focus-within` CSS rules; hard-coded colour values replaced with CSS custom properties
+
 ## v0.9.52 — 2026-05-18
 
 ### Fixed

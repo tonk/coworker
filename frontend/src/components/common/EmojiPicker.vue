@@ -1,6 +1,6 @@
 <template>
   <div class="emoji-picker" ref="el">
-    <button v-for="e in emojis" :key="e" class="emoji-btn" @click="$emit('pick', e)">{{ e }}</button>
+    <button v-for="e in emojis" :key="e" class="emoji-btn" :aria-label="emojiLabel(e)" @click="$emit('pick', e)">{{ e }}</button>
   </div>
 </template>
 
@@ -10,6 +10,19 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 const emit = defineEmits(['pick', 'close'])
 
 const emojis = ['👍', '❤️', '😂', '😮', '😢', '👎']
+
+const EMOJI_LABELS = {
+  '👍': 'Thumbs up',
+  '❤️': 'Heart',
+  '😂': 'Laughing',
+  '😮': 'Surprised',
+  '😢': 'Sad',
+  '👎': 'Thumbs down',
+}
+
+function emojiLabel(e) {
+  return EMOJI_LABELS[e] || e
+}
 const el = ref(null)
 
 function onClickOutside(e) {

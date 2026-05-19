@@ -94,6 +94,9 @@ func main() {
 	if cfg.JWTSecret == "change-me-in-production" {
 		log.Fatal("refusing to start: jwt_secret is still the default value — set a strong random secret via JWT_SECRET or jwt_secret in your config file")
 	}
+	if len(cfg.JWTSecret) < 32 {
+		log.Fatal("jwt_secret must be at least 32 characters")
+	}
 	if cfg.GinMode == "release" && strings.Contains(cfg.AllowedOrigins, "*") {
 		log.Fatal("refusing to start: allowed_origins contains '*' which disables CORS protection — remove the wildcard or restrict to specific origins")
 	}

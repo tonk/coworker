@@ -43,6 +43,7 @@
             v-model="inviteSearch"
             class="invite-picker-search"
             :placeholder="$t('call.search_users')"
+            aria-label="Search participants to invite"
             autofocus
           />
           <div class="invite-picker-list">
@@ -139,7 +140,7 @@
         <div class="local-pip">
           <video ref="localVideo" autoplay playsinline muted class="local-video"></video>
           <div v-if="state.isCameraOff" class="pip-off">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="1" y1="1" x2="23" y2="23"/>
               <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34"/>
             </svg>
@@ -153,7 +154,7 @@
         <!-- Invite picker for 1:1 → group upgrade -->
         <div v-if="showInvitePicker && upgradeMode" class="invite-picker" @click.stop>
           <div class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
-          <input v-model="inviteSearch" class="invite-picker-search" :placeholder="$t('call.search_users')" autofocus />
+          <input v-model="inviteSearch" class="invite-picker-search" :placeholder="$t('call.search_users')" aria-label="Search participants to invite" autofocus />
           <div class="invite-picker-list">
             <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
               <input type="checkbox" :value="u.id" v-model="selectedInviteIds" class="invite-check" />
@@ -256,7 +257,7 @@
         <!-- Invite picker anchored above the audio bar -->
         <div v-if="showInvitePicker && upgradeMode" class="invite-picker invite-picker-above-bar" @click.stop>
           <div class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
-          <input v-model="inviteSearch" class="invite-picker-search" :placeholder="$t('call.search_users')" autofocus />
+          <input v-model="inviteSearch" class="invite-picker-search" :placeholder="$t('call.search_users')" aria-label="Search participants to invite" autofocus />
           <div class="invite-picker-list">
             <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
               <input type="checkbox" :value="u.id" v-model="selectedInviteIds" class="invite-check" />

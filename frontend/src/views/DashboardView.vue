@@ -4,7 +4,7 @@
         <div class="dashboard-header">
           <h1>{{ $t('project.projects') }}</h1>
           <div class="dashboard-header-controls">
-            <select v-if="customerOptions.length > 1" class="form-input customer-filter" v-model="selectedCustomer">
+            <select v-if="customerOptions.length > 1" class="form-input customer-filter" v-model="selectedCustomer" aria-label="Filter by customer">
               <option value="">{{ $t('customer.all_customers') }}</option>
               <option v-for="c in customerOptions" :key="c.value" :value="c.value">{{ c.label }}</option>
             </select>
@@ -66,8 +66,9 @@
                   :class="{ starred: sidebarStore.isStarred(project.slug) }"
                   @click.stop="toggleStar(project)"
                   :title="sidebarStore.isStarred(project.slug) ? $t('project.unstar') : $t('project.star')"
+                  :aria-label="sidebarStore.isStarred(project.slug) ? 'Unstar ' + project.name : 'Star ' + project.name"
                 >★</button>
-                <RouterLink :to="`/projects/${project.slug}/settings`" class="btn btn-ghost btn-sm" @click.stop>
+                <RouterLink :to="`/projects/${project.slug}/settings`" class="btn btn-ghost btn-sm" @click.stop aria-label="Project settings">
                   ⚙
                 </RouterLink>
               </div>
@@ -80,8 +81,8 @@
   <BaseModal v-if="showCreate" :title="$t('project.new_project')" @close="showCreate = false; newProject.key_prefix = ''; prefixTouched = false; customerError = false">
       <form @submit.prevent="handleCreate">
         <div class="form-group">
-          <label class="form-label">{{ $t('project.project_name') }}</label>
-          <input class="form-input" v-model="newProject.name" required autofocus />
+          <label class="form-label" for="dash-new-project-name">{{ $t('project.project_name') }}</label>
+          <input id="dash-new-project-name" class="form-input" v-model="newProject.name" required autofocus aria-label="Project name" />
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('project.key_prefix') }} *</label>
@@ -91,6 +92,7 @@
               style="width:120px;text-transform:uppercase;font-family:monospace"
               :value="newProject.key_prefix"
               maxlength="10"
+              aria-label="Project key prefix"
               @input="e => { const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); e.target.value = v; newProject.key_prefix = v; prefixTouched = true }"
             />
             <span style="font-size:13px;color:var(--color-text-muted)">{{ $t('project.key_prefix_hint') }} &nbsp;<code style="color:var(--color-primary)">{{ newProject.key_prefix || '???' }}-1</code></span>
@@ -102,7 +104,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('project.color') }}</label>
-          <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px" />
+          <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px" aria-label="Project color" />
         </div>
         <div class="form-group">
           <label class="form-label">{{ $t('project.customer') }} *</label>
@@ -298,7 +300,7 @@ async function handleCreate() {
 }
 
 .star-btn { color: var(--color-text-muted); }
-.star-btn.starred { color: #f59e0b; }
+.star-btn.starred { color: var(--color-warning); }
 
 .project-card {
   background: var(--color-surface);

@@ -527,3 +527,16 @@ Create an application that has all these features and requirements
 - Fix desktop app PDF and XLSX export in Linux AppImage: WebKit GTK2 throws TypeError on all response body methods (arrayBuffer, text, blob, getReader) for ReadableStream-backed Responses produced by tauri-plugin-http; bypass WebKit entirely with a new fetch_binary_b64 Rust command that fetches via reqwest and returns base64; JS decodes with atob()
 - Fix desktop app save dialog default path: open in user home directory instead of AppImage mount path
 - Desktop app remembers last export directory: save dialog opens in the last-used export folder (stored in localStorage); falls back to home directory on first use
+- Fix attachment IDOR: verify project membership or conversation participation before serving any attachment download
+- Fix Content-Disposition header injection: escape quotes and backslashes in attachment filenames before inserting into the header
+- Add HSTS and Content-Security-Policy response headers to every server response
+- Block CORS wildcard origin at middleware level in addition to startup check
+- Enforce minimum 32-character length for jwt_secret at startup
+- Rate-limit direct-message and conversation message-send endpoints (60 req/min per IP)
+- Mask password-reset token in audit log: log only the first 8 characters followed by ellipsis
+- Make all icon-only buttons WCAG 2.1 AA compliant with aria-label across board, card detail, chat, call, time-tracking, dashboard, admin, and layout components
+- Add aria-label to all unlabelled inputs and selects
+- Add aria-hidden to decorative SVGs throughout the frontend
+- Add full ARIA tablist/tab/tabpanel roles to time-tracking mode tabs and chat layout picker
+- Make hover-only interactive elements keyboard-accessible via focus-visible and focus-within CSS rules
+- Replace hard-coded colour values with CSS custom properties in frontend components

@@ -1,6 +1,11 @@
-# WarmDesk — Developer Guide for Claude
+---
+description: WarmDesk developer guide — architecture, conventions, dev/build, accessibility
+alwaysApply: true
+---
 
-Cursor loads the same content automatically via [.cursor/rules/warmdesk-developer-guide.mdc](.cursor/rules/warmdesk-developer-guide.mdc). Update both files when you change this documentation.
+Keep this file in sync with `CLAUDE.md` at the repository root.
+
+# WarmDesk — Developer Guide
 
 WarmDesk is a self-hosted project management tool (Kanban boards, team chat with one-to-one WebRTC voice & video, LiveKit-based group calls for conversations with 3+ members, discussions, time reporting). It has a Go backend and a Vue 3 frontend; both live in this repository. A Tauri wrapper produces native desktop apps from the same frontend code.
 

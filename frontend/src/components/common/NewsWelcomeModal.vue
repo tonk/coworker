@@ -19,7 +19,7 @@
         <div class="welcome-footer">
           <button v-if="idx < items.length - 1" class="btn btn-primary" @click="next">
             {{ $t('news.welcome_next') }}
-            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px" aria-hidden="true">
               <polyline points="6,3 11,8 6,13"/>
             </svg>
           </button>

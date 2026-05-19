@@ -20,11 +20,27 @@
         <button class="nav-btn nav-today" @click="goToToday" :title="$t('timeTracking.today')" :aria-label="$t('timeTracking.today')" :disabled="isCurrentWeek">{{ $t('timeTracking.today') }}</button>
       </div>
 
-      <div class="tt-mode-tabs">
-        <button class="tt-mode-btn" :class="{ active: mode === 'sheet' }" @click="mode = 'sheet'">
+      <div class="tt-mode-tabs" role="tablist" aria-label="Time tracking mode">
+        <button
+          id="tab-sheet"
+          class="tt-mode-btn"
+          role="tab"
+          :aria-selected="mode === 'sheet'"
+          aria-controls="panel-sheet"
+          :class="{ active: mode === 'sheet' }"
+          @click="mode = 'sheet'"
+        >
           {{ $t('timeTracking.tab_log') }}
         </button>
-        <button class="tt-mode-btn" :class="{ active: mode === 'report' }" @click="mode = 'report'">
+        <button
+          id="tab-report"
+          class="tt-mode-btn"
+          role="tab"
+          :aria-selected="mode === 'report'"
+          aria-controls="panel-report"
+          :class="{ active: mode === 'report' }"
+          @click="mode = 'report'"
+        >
           {{ $t('timeTracking.tab_report') }}
         </button>
         <button class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
@@ -32,7 +48,7 @@
     </div>
 
     <!-- ── Weekly timesheet ────────────────────────────────────────────────── -->
-    <div v-show="mode === 'sheet'" class="tt-sheet-outer">
+    <div v-show="mode === 'sheet'" id="panel-sheet" role="tabpanel" aria-labelledby="tab-sheet" class="tt-sheet-outer">
       <div v-if="loading" class="tt-loading">{{ $t('common.loading') }}</div>
       <div v-else class="tt-scroll">
         <table class="tt-table">
@@ -40,7 +56,7 @@
             <tr class="tt-head">
               <th class="c-nr"></th>
               <th class="c-info">
-                <button class="sort-btn" :class="{ 'sort-active': sortCol === 'info' }" @click="toggleSort('info')" :title="$t('timeTracking.sort_by_customer')">
+                <button class="sort-btn" :class="{ 'sort-active': sortCol === 'info' }" @click="toggleSort('info')" :title="$t('timeTracking.sort_by_customer')" :aria-label="sortCol === 'info' ? (sortDir === 'asc' ? 'Sort by customer/project descending' : 'Sort by customer/project ascending') : 'Sort by customer/project ascending'">
                   <span class="sort-label">
                     <span>{{ $t('timeTracking.customer') }}</span>
                     <span class="sub">{{ $t('timeTracking.project') }}</span>
@@ -49,7 +65,7 @@
                 </button>
               </th>
               <th class="c-desc">
-                <button class="sort-btn" :class="{ 'sort-active': sortCol === 'desc' }" @click="toggleSort('desc')" :title="$t('timeTracking.sort_by_activity')">
+                <button class="sort-btn" :class="{ 'sort-active': sortCol === 'desc' }" @click="toggleSort('desc')" :title="$t('timeTracking.sort_by_activity')" :aria-label="sortCol === 'desc' ? (sortDir === 'asc' ? 'Sort by activity descending' : 'Sort by activity ascending') : 'Sort by activity ascending'">
                   <span class="sort-label">{{ $t('timeTracking.activity') }}</span>
                   <span class="sort-icon" aria-hidden="true">{{ sortCol === 'desc' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
                 </button>
@@ -71,11 +87,11 @@
               <!-- Edit mode -->
               <template v-if="editingRow === row.key">
                 <td class="c-info tt-editing">
-                  <select class="nr-sel" v-model="editForm.customer_id" @change="editForm.project_id = null">
+                  <select class="nr-sel" v-model="editForm.customer_id" @change="editForm.project_id = null" aria-label="Customer">
                     <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
                     <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
                   </select>
-                  <select class="nr-sel" v-model="editForm.project_id">
+                  <select class="nr-sel" v-model="editForm.project_id" aria-label="Project">
                     <option :value="null">{{ $t('timeTracking.no_project') }}</option>
                     <option v-for="p in editRowProjects" :key="p.id" :value="p.id">{{ p.name }}</option>
                   </select>
@@ -106,6 +122,7 @@
                   :class="{ 'h-inp-filled': !!cellVal(row, d.iso) }"
                   v-bind="timeNotation === 'hhmm' ? { placeholder: savingCell === row.key + d.iso ? '…' : '0:00' } : { step: '0.25', min: '0', placeholder: savingCell === row.key + d.iso ? '…' : '' }"
                   :value="cellVal(row, d.iso)"
+                  :aria-label="timeNotation === 'hhmm' ? 'Hours and minutes for ' + d.abbr + ' ' + d.mmdd : 'Hours for ' + d.abbr + ' ' + d.mmdd"
                   :disabled="viewingOther || savingCell === row.key + d.iso || editingRow === row.key"
                   @focus="$event.target.select()"
                   @blur="onCellBlur(row, d.iso, $event.target.value)"
@@ -118,16 +135,16 @@
               <td class="c-act">
                 <template v-if="!viewingOther">
                   <template v-if="editingRow === row.key">
-                    <button class="act-btn act-ok" @click="confirmEditRow(row)" :title="$t('common.save')">✓</button>
-                    <button class="act-btn act-no" @click="cancelEditRow" :title="$t('common.cancel')">✕</button>
+                    <button class="act-btn act-ok" @click="confirmEditRow(row)" :title="$t('common.save')" aria-label="Save">✓</button>
+                    <button class="act-btn act-no" @click="cancelEditRow" :title="$t('common.cancel')" aria-label="Cancel">✕</button>
                   </template>
                   <template v-else-if="deletingRow === row.key">
-                    <button class="act-btn act-ok" @click="confirmDeleteRow(row)" :title="$t('common.yes')">✓</button>
-                    <button class="act-btn act-no" @click="cancelDeleteRow" :title="$t('common.no')">✕</button>
+                    <button class="act-btn act-ok" @click="confirmDeleteRow(row)" :title="$t('common.yes')" aria-label="Confirm delete">✓</button>
+                    <button class="act-btn act-no" @click="cancelDeleteRow" :title="$t('common.no')" aria-label="Cancel delete">✕</button>
                   </template>
                   <template v-else>
-                    <button class="act-btn act-edit" @click="startEditRow(row)" :title="$t('common.edit')">✎</button>
-                    <button class="act-btn act-del" @click="startDeleteRow(row)" :title="$t('common.delete')">🗑</button>
+                    <button class="act-btn act-edit" @click="startEditRow(row)" :title="$t('common.edit')" aria-label="Edit time entry">✎</button>
+                    <button class="act-btn act-del" @click="startDeleteRow(row)" :title="$t('common.delete')" aria-label="Delete time entry">🗑</button>
                   </template>
                 </template>
               </td>
@@ -137,11 +154,11 @@
             <tr v-if="addingRow" class="tt-row tt-newrow">
               <td class="c-nr">{{ allRows.length + 1 }}</td>
               <td class="c-info">
-                <select class="nr-sel" v-model="newRow.customer_id" @change="newRow.project_id = null">
+                <select class="nr-sel" v-model="newRow.customer_id" @change="newRow.project_id = null" aria-label="Customer">
                   <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
                   <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
-                <select class="nr-sel" v-model="newRow.project_id">
+                <select class="nr-sel" v-model="newRow.project_id" aria-label="Project">
                   <option :value="null">{{ $t('timeTracking.no_project') }}</option>
                   <option v-for="p in newRowProjects" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
@@ -227,7 +244,7 @@
     </div>
 
     <!-- ── Report ──────────────────────────────────────────────────────────── -->
-    <div v-if="mode === 'report'" class="tt-report-outer">
+    <div v-if="mode === 'report'" id="panel-report" role="tabpanel" aria-labelledby="tab-report" class="tt-report-outer">
       <div class="report-filters">
         <select class="form-input fi-sm" v-model="rpt.period" @change="loadReport">
           <option value="week">{{ $t('report.week') }}</option>
@@ -1565,6 +1582,7 @@ onMounted(async () => {
   transition: opacity .15s, background .1s;
 }
 .tt-row:hover .act-btn { opacity: 1; }
+.act-btn:focus-visible { opacity: 1; }
 .act-btn:hover { background: var(--color-bg); color: var(--color-text); }
 
 .act-edit:hover { color: var(--color-primary); }

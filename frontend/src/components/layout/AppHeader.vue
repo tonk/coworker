@@ -38,7 +38,7 @@
           aria-haspopup="listbox"
         >
           <!-- sun: light mode -->
-          <svg v-if="theme === 'light'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg v-if="theme === 'light'" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"/>
             <line x1="12" y1="1" x2="12" y2="3"/>
             <line x1="12" y1="21" x2="12" y2="23"/>
@@ -50,18 +50,18 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
           <!-- moon: dark mode -->
-          <svg v-else-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg v-else-if="theme === 'dark'" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
           </svg>
           <!-- monitor: system theme -->
-          <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg v-else aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="3" width="20" height="14" rx="2"/>
             <polyline points="8 21 12 17 16 21"/>
           </svg>
         </button>
         <div class="dropdown theme-dropdown" v-if="themeOpen" role="listbox" :aria-label="$t('settings.theme')">
           <div class="dropdown-item" role="option" :aria-selected="theme === 'light'" :class="{ 'dropdown-item-active': theme === 'light' }" @click="selectTheme('light')">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"/>
               <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
               <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -71,13 +71,13 @@
             {{ $t('settings.theme_light') }}
           </div>
           <div class="dropdown-item" role="option" :aria-selected="theme === 'dark'" :class="{ 'dropdown-item-active': theme === 'dark' }" @click="selectTheme('dark')">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
             {{ $t('settings.theme_dark') }}
           </div>
           <div class="dropdown-item" role="option" :aria-selected="theme === 'system'" :class="{ 'dropdown-item-active': theme === 'system' }" @click="selectTheme('system')">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="3" width="20" height="14" rx="2"/>
               <polyline points="8 21 12 17 16 21"/>
             </svg>
@@ -253,7 +253,7 @@ onBeforeUnmount(() => {
   height: 32px;
   border-radius: 50%;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-on-primary, #fff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -291,7 +291,7 @@ onBeforeUnmount(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-danger, #ef4444);
+  background: var(--color-danger);
   flex-shrink: 0;
   margin-left: auto;
   animation: hdr-pulse 1.4s ease-in-out infinite;

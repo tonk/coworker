@@ -51,7 +51,7 @@ smtp:
   username: ""
   password: ""
 
-jwt_secret: "change-me-for-production"
+jwt_secret: "change-me-for-production-and-some-for-the-minimum-length"
 allowed_origins: "http://localhost:8080"
 #web_dir: "web"
 

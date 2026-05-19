@@ -32,16 +32,17 @@ func ParseOrigins(allowedOrigins string) map[string]struct{} {
 func CORS(allowedOrigins string) gin.HandlerFunc {
 	allowed := ParseOrigins(allowedOrigins)
 
-	// Check if wildcard is configured — allow any origin
-	_, allowAll := allowed["*"]
-	if allowAll {
-		log.Printf("WARNING: CORS allowed_origins contains '*' — cross-origin protection is disabled")
+	// Check if wildcard is configured — refuse to set CORS headers at runtime.
+	_, hasWildcard := allowed["*"]
+	if hasWildcard {
+		log.Printf("WARNING: CORS allowed_origins contains '*' — wildcard CORS is blocked at runtime; no CORS headers will be set")
 	}
 
 	cfg := cors.Config{
 		AllowOriginFunc: func(origin string) bool {
-			if allowAll {
-				return true
+			if hasWildcard {
+				// Wildcard is never honoured at request time regardless of config.
+				return false
 			}
 			_, ok := allowed[origin]
 			return ok

@@ -185,7 +185,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		{
 			dm.GET("/conversations", handlers.ListConversations)
 			dm.GET("/:userId", handlers.ListDirectMessages)
-			dm.POST("/:userId", handlers.SendDirectMessage)
+			dm.POST("/:userId", middleware.MessageRateLimit(), handlers.SendDirectMessage)
 			dm.DELETE("/:userId/:msgId", handlers.DeleteDirectMessage)
 		}
 
@@ -244,7 +244,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			convs.GET("", handlers.GetConversations)
 			convs.POST("", handlers.CreateConversation)
 			convs.GET("/:id/messages", handlers.GetConversationMessages)
-			convs.POST("/:id/messages", handlers.SendConversationMessage)
+			convs.POST("/:id/messages", middleware.MessageRateLimit(), handlers.SendConversationMessage)
 			convs.PATCH("/:id/messages/:msgId", handlers.EditConversationMessage)
 			convs.DELETE("/:id/messages/:msgId", handlers.DeleteConversationMessage)
 			convs.POST("/:id/members", handlers.AddConversationMember)
