@@ -25,7 +25,7 @@ cd ${CRD} || {
 }
 
 # Build all
-make clean all || {
+make all || {
 	echo "Building WarmDesk failed" >&2
 	exit 1
 }
