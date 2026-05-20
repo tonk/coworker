@@ -549,3 +549,4 @@ Create an application that has all these features and requirements
 - Add day-of-week abbreviation option to PDF time-tracking export: prepend localised day abbreviation (Mon–Sun) before each date; abbreviation rendered in a fixed-width sub-cell so dates stay aligned for all 12 supported languages
 - Group PDF export options in a dropdown button (Export options) with all settings persisted to localStorage; day-of-week toggle and per-customer page-break toggle shown together
 - Add personal TT-only seed data for tonk: customers Smart Owl Consulting and Personal, projects Travel (45 min undeclarable), Holidays (480 min), Study & Training, Internal (60 min), with 14 sample time entries; --reset cleans them up
+- Fix time-tracking week header date mismatch in UTC+ timezones: use local date components instead of toISOString() so column dates and day abbreviations always agree

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.58 — 2026-05-20
+
+### Fixed
+- **Time-tracking week header date mismatch** — in UTC+ timezones the column dates were one day behind the displayed day abbreviation because `Date.toISOString()` returns UTC time; dates are now derived from local date components so the header, date keys, and stored entries all agree
+
 ## v0.9.57 — 2026-05-20
 
 ### Added

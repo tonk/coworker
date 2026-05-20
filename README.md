@@ -8,10 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.57)
+## Latest release (v0.9.58)
 
-- **Day-of-week abbreviation in PDF export** — toggle *Show day of week before date* in the export options panel to prepend the localised abbreviation to every date; fixed-width cell keeps dates aligned for all 12 languages.
-- **PDF export options dropdown** — the export controls are now grouped in a single dropdown button with all options persisted to `localStorage` between sessions.
+- **Time-tracking week header date fix** — column dates and day abbreviations now always agree in UTC+ timezones; previously the date shown was one day behind the actual weekday.
 
 ## Experiment
 
