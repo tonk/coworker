@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.60)
+## Latest release (v0.10.1)
 
-- **Calendar week-picker** — click the *Week 14 2026* label in time tracking to open a calendar popover; pick any day or week number to jump there instantly.
-- **Cleaner time sheet** — zero-minute cells are now blank instead of showing *0:00*, reducing visual noise.
-- **Flag badges everywhere** — the holidays dropdown now uses CSS gradient badges instead of emoji flags, so they render correctly on Linux too.
+- **Full dependency refresh** — Go 1.26, Vue 3.5, Pinia 3, Vue Router 5, vue-i18n 11, Tauri 2.11, and all other packages updated to latest.
+- **Faster AppImage builds** — sccache + mold linker cut repeated Rust build times significantly.
+- **Time sheet fix** — zero-minute cells no longer show `0:00` on the Tauri desktop app.
 
 ## Experiment
 

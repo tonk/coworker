@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.10.1 — 2026-05-20
+
+### Fixed
+- **Time entry cells blank on Tauri desktop** — placeholder text (`0:00`) was rendering at full opacity in GTK WebKit, indistinguishable from real values; placeholder is now transparent by default and only appears faintly on focus
+
+### Changed
+- **Go upgraded to 1.26** — `go.mod` and CI workflows updated
+- **All frontend dependencies updated to latest** — Vue 3.5.34, Pinia 3, Vue Router 5, vue-i18n 11, marked 18, Vite 8.0.13, Tauri 2.11.2, axios 1.16.1, dompurify 3.4.5, livekit-client 2.19.0, and more
+- **Faster AppImage builds** — `sccache` caches compiled Rust objects between builds; `mold` replaces the GNU linker for the link step; first build unchanged, subsequent builds significantly faster
+
 ## v0.9.60 — 2026-05-20
 
 ### Added

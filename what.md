@@ -556,3 +556,6 @@ Create an application that has all these features and requirements
 - Leave time entry cells blank when value is 0:00 to reduce visual noise; placeholder still shows on focus
 - Replace emoji flag characters in holidays dropdown with CSS gradient badges approximating each country's flag colours; works on Linux without a colour emoji font
 - Add calendar date-picker to week label in time tracking: clicking "Week 14 2026" opens a month calendar popover with week numbers; click any day or week number to jump to that week
+- Fix time entry cell placeholder rendering on Tauri/GTK WebKit: hide placeholder by default, show faintly on focus only
+- Update all dependencies to latest: Go 1.26, Vue 3.5.34, Pinia 3, Vue Router 5, vue-i18n 11, marked 18, Vite 8, Tauri 2.11, and all npm packages
+- Speed up AppImage builds with sccache (Rust compilation cache) and mold linker
