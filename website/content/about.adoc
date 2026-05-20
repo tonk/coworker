@@ -24,10 +24,10 @@ The result is a ~30,000 line Go backend and a ~30,000 line Vue 3 frontend that a
 |Go 1.25, Gin, GORM, SQLite / PostgreSQL / MySQL
 
 |Frontend
-|Vue 3, Vite, Pinia, Vue Router
+|Vue 3.5, Vite 8, Pinia 3, Vue Router 5, vue-i18n 11
 
 |Desktop
-|Tauri 2 (Linux, macOS, Windows)
+|Tauri 2.11 · Rust 1.94 (Linux, macOS, Windows)
 
 |Real-time
 |WebSocket hub (optional Redis pub/sub for multi-instance)
