@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.52)
+## Latest release (v0.9.56)
 
-- **Desktop app — PDF and XLSX export fixed** — export buttons now work in the Linux AppImage; resolved a WebKit GTK2 `TypeError` on all response body methods by routing binary downloads through a new Rust command (`fetch_binary_b64`) that fetches via reqwest outside WebKit entirely.
-- **Desktop app — save dialog defaults to home directory** — the native save dialog no longer opens in the AppImage mount path.
-- **Desktop app — save dialog remembers last export directory** — the chosen export folder is remembered across exports.
+- **Undeclarable time per time-tracking project** — set a non-billable minutes value (HH:MM) on any time-tracking project; the sheet, report, PDF, and XLSX export automatically subtract it and show declarable time as the primary figure.
+- **PDF page-break per customer** — a *New page per customer* checkbox in the PDF export controls repeats the full document header on each customer's page; grand total is omitted in this mode.
 
 ## Experiment
 

@@ -24,6 +24,7 @@ Add a new section at the top (below the `# Changelog` heading) in this format:
 Only include sections that have entries. Be specific and user-facing in the descriptions — same style as existing entries.
 
 ## 3. Update README.md
+- Update the `## Latest release (v{old_version})` heading to `## Latest release (v{version})` and replace the bullet points beneath it with the highlights of this release (one to three short bullets, user-facing, same style as the existing entries).
 - If any new features were added, update the **Features** list to reflect them.
 - If the seed tool changed, update the **Load demo data** section.
 - No other sections need changing for a routine release.
