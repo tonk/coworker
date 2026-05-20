@@ -28,7 +28,7 @@
             <button v-for="c in holidayLocales" :key="c.locale"
               class="hol-country-btn" role="menuitem"
               @click="addHolidays(c.locale)">
-              <span class="hol-flag" aria-hidden="true">{{ c.flag }}</span>{{ c.label }}
+              <span class="hol-flag" :data-country="c.flag" aria-hidden="true"></span>{{ c.label }}
             </button>
           </div>
         </div>
@@ -707,18 +707,18 @@ const holidaysDropOpen = ref(false)
 const holidaysDropRef  = ref(null)
 
 const holidayLocales = [
-  { locale: 'en', flag: '🇬🇧', label: 'United Kingdom' },
-  { locale: 'nl', flag: '🇳🇱', label: 'Nederland' },
-  { locale: 'de', flag: '🇩🇪', label: 'Deutschland' },
-  { locale: 'fr', flag: '🇫🇷', label: 'France' },
-  { locale: 'es', flag: '🇪🇸', label: 'España' },
-  { locale: 'da', flag: '🇩🇰', label: 'Danmark' },
-  { locale: 'sv', flag: '🇸🇪', label: 'Sverige' },
-  { locale: 'nb', flag: '🇳🇴', label: 'Norge' },
-  { locale: 'fi', flag: '🇫🇮', label: 'Suomi' },
-  { locale: 'is', flag: '🇮🇸', label: 'Ísland' },
-  { locale: 'pt', flag: '🇵🇹', label: 'Portugal' },
-  { locale: 'it', flag: '🇮🇹', label: 'Italia' },
+  { locale: 'en', flag: 'GB', label: 'United Kingdom' },
+  { locale: 'nl', flag: 'NL', label: 'Nederland' },
+  { locale: 'de', flag: 'DE', label: 'Deutschland' },
+  { locale: 'fr', flag: 'FR', label: 'France' },
+  { locale: 'es', flag: 'ES', label: 'España' },
+  { locale: 'da', flag: 'DK', label: 'Danmark' },
+  { locale: 'sv', flag: 'SE', label: 'Sverige' },
+  { locale: 'nb', flag: 'NO', label: 'Norge' },
+  { locale: 'fi', flag: 'FI', label: 'Suomi' },
+  { locale: 'is', flag: 'IS', label: 'Ísland' },
+  { locale: 'pt', flag: 'PT', label: 'Portugal' },
+  { locale: 'it', flag: 'IT', label: 'Italia' },
 ]
 
 function onHolidaysDocClick(e) {
@@ -1592,7 +1592,26 @@ onMounted(async () => {
   font-size: 13px; color: var(--color-text); cursor: pointer; text-align: left;
 }
 .hol-country-btn:hover { background: var(--color-surface-2); }
-.hol-flag { font-size: 16px; line-height: 1; flex-shrink: 0; }
+.hol-flag {
+  display: inline-block; width: 26px; height: 17px; border-radius: 2px; flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.18);
+}
+/* Horizontal tricolors */
+.hol-flag[data-country="NL"] { background: linear-gradient(to bottom, #AE1C28 0% 33.4%, #fff 33.4% 66.6%, #21468B 66.6% 100%); }
+.hol-flag[data-country="DE"] { background: linear-gradient(to bottom, #222 0% 33.4%, #DD0000 33.4% 66.6%, #FFCE00 66.6% 100%); }
+.hol-flag[data-country="ES"] { background: linear-gradient(to bottom, #AA151B 0% 25%, #F1BF00 25% 75%, #AA151B 75% 100%); }
+/* Vertical tricolors */
+.hol-flag[data-country="FR"] { background: linear-gradient(to right, #002395 0% 33.4%, #fff 33.4% 66.6%, #ED2939 66.6% 100%); }
+.hol-flag[data-country="IT"] { background: linear-gradient(to right, #009246 0% 33.4%, #fff 33.4% 66.6%, #CE2B37 66.6% 100%); }
+.hol-flag[data-country="PT"] { background: linear-gradient(to right, #006600 0% 38%, #CC0000 38% 100%); }
+/* Nordic cross / other — approximated as bicolour split */
+.hol-flag[data-country="GB"] { background: linear-gradient(135deg, #012169 0% 50%, #CF101A 50% 100%); }
+.hol-flag[data-country="DK"] { background: linear-gradient(to right, #C60C30 0% 35%, #fff 35% 45%, #C60C30 45% 100%); }
+.hol-flag[data-country="SE"] { background: linear-gradient(to right, #006AA7 0% 35%, #FECC00 35% 45%, #006AA7 45% 100%); }
+.hol-flag[data-country="NO"] { background: linear-gradient(to right, #EF2B2D 0% 30%, #fff 30% 40%, #002868 40% 48%, #fff 48% 58%, #EF2B2D 58% 100%); }
+.hol-flag[data-country="FI"] { background: linear-gradient(to right, #fff 0% 35%, #003580 35% 45%, #fff 45% 100%); }
+.hol-flag[data-country="IS"] { background: linear-gradient(to right, #003897 0% 30%, #fff 30% 40%, #DC143C 40% 48%, #fff 48% 58%, #003897 58% 100%); }
+
 
 /* Holiday highlights */
 .c-day-holiday { background: color-mix(in srgb, var(--color-warning, #f59e0b) 30%, transparent); }
