@@ -40,8 +40,9 @@ func CreateTimeTrackingProject(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
 	var req struct {
-		Name  string `json:"name"`
-		Color string `json:"color"`
+		Name                string `json:"name"`
+		Color               string `json:"color"`
+		UndeclarableMinutes int    `json:"undeclarable_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -56,15 +57,19 @@ func CreateTimeTrackingProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "name too long"})
 		return
 	}
+	if req.UndeclarableMinutes < 0 {
+		req.UndeclarableMinutes = 0
+	}
 
 	project := models.Project{
-		Name:             name,
-		Color:            req.Color,
-		Slug:             services.GenerateSlug(name),
-		KeyPrefix:        services.GenerateKeyPrefix(name),
-		BoardType:        "kanban",
-		TimeTrackingOnly: true,
-		CreatedByID:      userID,
+		Name:                name,
+		Color:               req.Color,
+		Slug:                services.GenerateSlug(name),
+		KeyPrefix:           services.GenerateKeyPrefix(name),
+		BoardType:           "kanban",
+		TimeTrackingOnly:    true,
+		UndeclarableMinutes: req.UndeclarableMinutes,
+		CreatedByID:         userID,
 	}
 	if err := database.DB.Create(&project).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -97,8 +102,9 @@ func UpdateTimeTrackingProject(c *gin.Context) {
 	}
 
 	var req struct {
-		Name  string `json:"name"`
-		Color string `json:"color"`
+		Name                string `json:"name"`
+		Color               string `json:"color"`
+		UndeclarableMinutes int    `json:"undeclarable_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -113,9 +119,13 @@ func UpdateTimeTrackingProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "name too long"})
 		return
 	}
+	if req.UndeclarableMinutes < 0 {
+		req.UndeclarableMinutes = 0
+	}
 
 	project.Name = name
 	project.Color = req.Color
+	project.UndeclarableMinutes = req.UndeclarableMinutes
 	if err := database.DB.Save(&project).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return

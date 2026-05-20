@@ -178,19 +178,23 @@ func DeleteTimeEntry(c *gin.Context) {
 
 // timeEntryGroup is a single period bucket in the report.
 type timeEntryGroup struct {
-	Label       string             `json:"label"`
-	Entries     []models.TimeEntry `json:"entries"`
-	TotalMinutes int               `json:"total_minutes"`
+	Label               string             `json:"label"`
+	Entries             []models.TimeEntry `json:"entries"`
+	TotalMinutes        int                `json:"total_minutes"`
+	UndeclarableMinutes int                `json:"undeclarable_minutes"`
+	DeclarableMinutes   int                `json:"declarable_minutes"`
 }
 
 // TimeEntryReportResponse is the shape returned by GetTimeEntryReport.
 type TimeEntryReportResponse struct {
-	Period       string           `json:"period"`
-	PeriodLabel  string           `json:"period_label"`
-	Groups       []timeEntryGroup `json:"groups"`
-	TotalMinutes int              `json:"total_minutes"`
-	CompanyName  string           `json:"company_name"`
-	CompanyLogo  string           `json:"company_logo"`
+	Period              string           `json:"period"`
+	PeriodLabel         string           `json:"period_label"`
+	Groups              []timeEntryGroup `json:"groups"`
+	TotalMinutes        int              `json:"total_minutes"`
+	UndeclarableMinutes int              `json:"undeclarable_minutes"`
+	DeclarableMinutes   int              `json:"declarable_minutes"`
+	CompanyName         string           `json:"company_name"`
+	CompanyLogo         string           `json:"company_logo"`
 }
 
 // assembleTimeEntryReport builds the report data from query parameters.
@@ -249,19 +253,26 @@ func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryRepor
 		groups = buildGroups(period, from, to, entries)
 	}
 
-	total := 0
+	total, undeclarable := 0, 0
 	for _, g := range groups {
 		total += g.TotalMinutes
+		undeclarable += g.UndeclarableMinutes
+	}
+	declarable := total - undeclarable
+	if declarable < 0 {
+		declarable = 0
 	}
 
 	settings := loadAllSettings()
 	return &TimeEntryReportResponse{
-		Period:       period,
-		PeriodLabel:  periodLabel,
-		Groups:       groups,
-		TotalMinutes: total,
-		CompanyName:  settings["company_name"],
-		CompanyLogo:  settings["company_logo"],
+		Period:              period,
+		PeriodLabel:         periodLabel,
+		Groups:              groups,
+		TotalMinutes:        total,
+		UndeclarableMinutes: undeclarable,
+		DeclarableMinutes:   declarable,
+		CompanyName:         settings["company_name"],
+		CompanyLogo:         settings["company_logo"],
 	}, 0, ""
 }
 
@@ -333,6 +344,7 @@ func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) 
 		b := buckets[l]
 		b.Entries = append(b.Entries, entries[i])
 		b.TotalMinutes += entries[i].Minutes
+		b.UndeclarableMinutes += projUndecl(entries[i])
 	}
 
 	// Fill empty buckets for periods with no entries so the report always
@@ -374,7 +386,7 @@ func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) 
 		}
 		result = append(result, *b)
 	}
-	return result
+	return setDeclarable(result)
 }
 
 func intOrDefault(s string, def int) int {
@@ -435,6 +447,7 @@ func buildGroupsByCustomer(entries []models.TimeEntry) []timeEntryGroup {
 		b := buckets[k]
 		b.Entries = append(b.Entries, e)
 		b.TotalMinutes += e.Minutes
+		b.UndeclarableMinutes += projUndecl(e)
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
@@ -448,7 +461,7 @@ func buildGroupsByCustomer(entries []models.TimeEntry) []timeEntryGroup {
 		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
 		result = append(result, *b)
 	}
-	return result
+	return setDeclarable(result)
 }
 
 func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
@@ -464,6 +477,7 @@ func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
 		b := buckets[k]
 		b.Entries = append(b.Entries, e)
 		b.TotalMinutes += e.Minutes
+		b.UndeclarableMinutes += projUndecl(e)
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
@@ -477,7 +491,7 @@ func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
 		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
 		result = append(result, *b)
 	}
-	return result
+	return setDeclarable(result)
 }
 
 func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
@@ -494,6 +508,7 @@ func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
 		b := buckets[k]
 		b.Entries = append(b.Entries, e)
 		b.TotalMinutes += e.Minutes
+		b.UndeclarableMinutes += projUndecl(e)
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
@@ -510,5 +525,29 @@ func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
 		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
 		result = append(result, *b)
 	}
-	return result
+	return setDeclarable(result)
+}
+
+// projUndecl returns how many minutes of a single entry are undeclarable,
+// derived from the project's UndeclarableMinutes setting (never exceeds entry.Minutes).
+func projUndecl(e models.TimeEntry) int {
+	if e.Project == nil || e.Project.UndeclarableMinutes <= 0 {
+		return 0
+	}
+	if e.Project.UndeclarableMinutes >= e.Minutes {
+		return e.Minutes
+	}
+	return e.Project.UndeclarableMinutes
+}
+
+// setDeclarable computes DeclarableMinutes = max(0, Total - Undeclarable) for each group.
+func setDeclarable(groups []timeEntryGroup) []timeEntryGroup {
+	for i := range groups {
+		d := groups[i].TotalMinutes - groups[i].UndeclarableMinutes
+		if d < 0 {
+			d = 0
+		}
+		groups[i].DeclarableMinutes = d
+	}
+	return groups
 }

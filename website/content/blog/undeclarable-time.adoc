@@ -1,0 +1,54 @@
+---
+title: "Undeclarable Time and Per-Customer PDF Pages"
+date: "2026-05-20"
+author: "Ton Kersten"
+description: "Time-tracking projects now support an undeclarable minutes field. Reports, PDFs, and XLSX exports automatically subtract non-billable time. The PDF export also gains a per-customer page-break option."
+draft: false
+---
+:doctype: article
+:icons!:
+
+Two new features land in the time-tracking module: *undeclarable time* per project and *per-customer pages* in the PDF export.
+
+== Undeclarable time
+
+Not every minute you log is billable.
+Travel to a client site, public holidays, internal meetings — these are real hours that belong in your timesheet but should not appear on an invoice.
+
+You can now attach an *undeclarable minutes* value to any time-tracking project.
+Open the ⚙ manage modal, find the project, and enter the non-billable portion in HH:MM format next to the project name.
+
+=== How it works
+
+The value is stored at the project level, not on individual entries.
+Every entry in that project contributes its full logged minutes to the sheet total, but when the report or export is generated the undeclarable portion is subtracted automatically:
+
+* *Declarable per entry* = max(0, logged minutes − project undeclarable minutes)
+* The result is capped at zero — it can never go negative, so setting a large undeclarable value (e.g. for a full holiday day) simply makes the entire entry non-declarable.
+
+=== Weekly sheet
+
+The row total column gains a small red ↓ badge showing how much of that row is undeclarable.
+The sheet footer shows a red *Undeclarable* row and a green *Declarable* row when any project in the week carries undeclarable time.
+
+=== Report tab
+
+Group headers and individual entry rows show declarable hours.
+When the report is grouped by *Customer*, an extra *Undeclarable* line appears below each customer's subtotal and a total undeclarable row is shown at the bottom of the report.
+
+=== PDF and XLSX export
+
+The same declarable figures flow through to both export formats.
+The PDF shows the undeclarable line below each customer subtotal (customer grouping only) and uses the declarable amount as the grand total.
+The XLSX appends undeclarable and declarable rows below the grand total when applicable.
+
+All labels are translated into the 12 supported languages (English, Dutch, German, French, Spanish, Danish, Swedish, Norwegian, Finnish, Icelandic, Portuguese, Italian) and follow the selected PDF language setting independently of the UI language.
+
+== Per-customer PDF pages
+
+When the time-tracking report is grouped by *Customer*, a *New page per customer* checkbox appears in the export controls.
+
+Check it before clicking *Export PDF* and each customer's entries are rendered on their own page.
+The full document header — company logo, company name, report title, period, and employee name — is repeated at the top of every page, making the result suitable for sending individual pages directly to clients.
+
+The grand total is omitted in this mode: each customer's page already ends with that customer's subtotal, so a combined total on the last page would be misleading.

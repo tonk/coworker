@@ -745,7 +745,11 @@
     "group_by_period": "Tímabil",
     "group_by_customer": "Viðskiptavinur",
     "group_by_project": "Verkefni",
-    "group_by_customer_project": "Viðskiptavinur & Verkefni"
+    "group_by_customer_project": "Viðskiptavinur & Verkefni",
+    "undeclarable": "Ekki reikningshæft",
+    "declarable": "Reikningshæft",
+    "undeclarable_per_entry": "Ekki reikningshæfur tími á færslu",
+    "pdf_page_break_customer": "Ný síða á viðskiptavin"
   },
   "call": {
     "incoming": "Móttekið símtal",

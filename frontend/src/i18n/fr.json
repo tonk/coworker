@@ -751,7 +751,11 @@
     "group_by_period": "Période",
     "group_by_customer": "Client",
     "group_by_project": "Projet",
-    "group_by_customer_project": "Client & Projet"
+    "group_by_customer_project": "Client & Projet",
+    "undeclarable": "Non facturable",
+    "declarable": "Facturable",
+    "undeclarable_per_entry": "Temps non facturable par entrée",
+    "pdf_page_break_customer": "Nouvelle page par client"
   },
   "call": {
     "incoming": "Appel entrant",

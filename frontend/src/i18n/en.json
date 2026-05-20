@@ -751,7 +751,11 @@
     "group_by_period": "Period",
     "group_by_customer": "Customer",
     "group_by_project": "Project",
-    "group_by_customer_project": "Customer & Project"
+    "group_by_customer_project": "Customer & Project",
+    "undeclarable": "Undeclarable",
+    "declarable": "Declarable",
+    "undeclarable_per_entry": "Undeclarable time per entry",
+    "pdf_page_break_customer": "New page per customer"
   },
   "call": {
     "incoming": "Incoming call",

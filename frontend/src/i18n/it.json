@@ -745,7 +745,11 @@
     "group_by_period": "Periodo",
     "group_by_customer": "Cliente",
     "group_by_project": "Progetto",
-    "group_by_customer_project": "Cliente & Progetto"
+    "group_by_customer_project": "Cliente & Progetto",
+    "undeclarable": "Non dichiarabile",
+    "declarable": "Dichiarabile",
+    "undeclarable_per_entry": "Tempo non dichiarabile per voce",
+    "pdf_page_break_customer": "Nuova pagina per cliente"
   },
   "call": {
     "incoming": "Chiamata in arrivo",

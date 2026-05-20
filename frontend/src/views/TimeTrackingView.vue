@@ -129,7 +129,10 @@
                   @keydown.enter="$event.target.blur()"
                 />
               </td>
-              <td class="c-total c-rowtotal">{{ rowTotal(row) }}</td>
+              <td class="c-total c-rowtotal">
+                <span>{{ rowTotal(row) }}</span>
+                <span v-if="rowUndecl(row) > 0" class="row-undecl-badge" :title="$t('timeTracking.undeclarable') + ': ' + fmtTime(rowUndecl(row))">↓{{ fmtTime(rowUndecl(row)) }}</span>
+              </td>
 
               <!-- Actions -->
               <td class="c-act">
@@ -186,6 +189,22 @@
                 {{ dayTotal(d.iso) }}
               </td>
               <td class="c-total grand-total">{{ grandTotal }}</td>
+              <td class="c-act"></td>
+            </tr>
+            <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-undecl">
+              <td colspan="3" class="foot-lbl foot-undecl-lbl">{{ $t('timeTracking.undeclarable') }}</td>
+              <td v-for="d in weekDays" :key="d.iso" class="c-day c-total c-dttotal foot-undecl">
+                {{ dayUndecl(d.iso) || '' }}
+              </td>
+              <td class="c-total foot-undecl">{{ fmtTime(grandUndeclTotal) }}</td>
+              <td class="c-act"></td>
+            </tr>
+            <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-decl">
+              <td colspan="3" class="foot-lbl foot-decl-lbl">{{ $t('timeTracking.declarable') }}</td>
+              <td v-for="d in weekDays" :key="d.iso" class="c-day c-total c-dttotal foot-decl">
+                {{ dayDeclarable(d.iso) || '' }}
+              </td>
+              <td class="c-total grand-total foot-decl">{{ fmtTime(grandDeclarable) }}</td>
               <td class="c-act"></td>
             </tr>
           </tfoot>
@@ -304,6 +323,13 @@
               <option value="it">Italiano</option>
             </select>
           </div>
+          <div v-if="rpt.group_by === 'customer'" class="pdf-font-group">
+            <span class="filter-label">&nbsp;</span>
+            <label class="pdf-page-break-label">
+              <input type="checkbox" v-model="pdfPageBreak" />
+              {{ $t('timeTracking.pdf_page_break_customer') }}
+            </label>
+          </div>
           <button class="btn btn-secondary" @click="exportReportXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
           <button class="btn btn-secondary" @click="exportReportPDF">{{ $t('timeTracking.export_pdf') }}</button>
         </div>
@@ -327,7 +353,7 @@
         <div v-for="grp in report.groups" :key="grp.label" class="rpt-group">
           <div class="rpt-group-hd">
             <span>{{ grp.label }}</span>
-            <span class="rpt-grp-total">{{ fmtTime(grp.total_minutes) }}</span>
+            <span class="rpt-grp-total">{{ fmtTime(grp.declarable_minutes) }}</span>
           </div>
           <table v-if="grp.entries.length" class="rpt-table">
             <colgroup>
@@ -352,15 +378,23 @@
                 <td>{{ e.customer?.name || '—' }}</td>
                 <td>{{ e.project?.name || '—' }}</td>
                 <td>{{ e.description || '—' }}</td>
-                <td class="rpt-th-time">{{ fmtTime(e.minutes) }}</td>
+                <td class="rpt-th-time">{{ fmtTime(reportEntryDeclarable(e)) }}</td>
               </tr>
             </tbody>
           </table>
           <div v-else class="rpt-grp-empty">{{ $t('timeTracking.no_entries_group') }}</div>
+          <div v-if="rpt.group_by === 'customer' && grp.undeclarable_minutes > 0" class="rpt-grp-undecl-line">
+            <span>{{ $t('timeTracking.undeclarable') }}</span>
+            <span>−{{ fmtTime(grp.undeclarable_minutes) }}</span>
+          </div>
         </div>
         <div class="rpt-grand-total">
           <span>{{ $t('timeTracking.total') }}</span>
-          <span>{{ fmtTime(report.total_minutes) }}</span>
+          <span>{{ fmtTime(report.undeclarable_minutes > 0 ? report.declarable_minutes : report.total_minutes) }}</span>
+        </div>
+        <div v-if="rpt.group_by === 'customer' && report.undeclarable_minutes > 0" class="rpt-undeclarable">
+          <span>{{ $t('timeTracking.undeclarable') }}</span>
+          <span>{{ fmtTime(report.undeclarable_minutes) }}</span>
         </div>
       </template>
     </div>
@@ -408,13 +442,22 @@
                 <label class="sr-only" :for="'ttp-proj-name-' + p.id">{{ $t('timeTracking.tt_project_name') }}</label>
                 <input :id="'ttp-proj-name-' + p.id" class="ttp-name-input" v-model="editingTTProject.name" @keydown.enter="saveTTProject" @keydown.escape="cancelEditTTProject" />
                 <label class="sr-only" :for="'ttp-proj-color-' + p.id">{{ $t('timeTracking.tt_project_color') }}</label>
-                <input :id="'ttp-proj-color-' + p.id" type="color" class="ttp-color-input" v-model="editingTTProject.color" />
+                <input :id="'ttp-proj-color-' + p.id" type="color" class="ttp-color-input" v-model="editingTTProject.color" :aria-label="$t('timeTracking.tt_project_color')" />
+                <label class="sr-only" :for="'ttp-proj-undecl-' + p.id">{{ $t('timeTracking.undeclarable') }}</label>
+                <input :id="'ttp-proj-undecl-' + p.id" class="ttp-undecl-input"
+                  v-model="editingTTProject.undeclStr"
+                  :placeholder="timeNotation === 'hhmm' ? '0:00' : '0.00'"
+                  :title="$t('timeTracking.undeclarable_per_entry')"
+                  @keydown.enter="saveTTProject"
+                  @keydown.escape="cancelEditTTProject"
+                />
                 <button class="act-btn act-ok ttp-act" @click="saveTTProject" :aria-label="$t('common.save')">✓</button>
                 <button class="act-btn act-no ttp-act" @click="cancelEditTTProject" :aria-label="$t('common.cancel')">✕</button>
               </template>
               <template v-else>
                 <span class="ttp-dot" :aria-hidden="true" :style="p.color ? { background: p.color } : {}"></span>
                 <span class="ttp-name">{{ p.name }}</span>
+                <span v-if="p.undeclarable_minutes > 0" class="ttp-undecl-badge" :title="$t('timeTracking.undeclarable_per_entry')">↓{{ fmtTime(p.undeclarable_minutes) }}</span>
                 <span v-if="isGlobalTTProject(p)" class="ttp-badge">{{ $t('timeTracking.tt_project_global') }}</span>
                 <template v-if="canEditTTProject(p)">
                   <button class="act-btn act-edit ttp-act" @click="startEditTTProject(p)" :aria-label="$t('common.edit') + ' ' + p.name">✎</button>
@@ -436,6 +479,14 @@
             />
             <label class="sr-only" for="ttp-new-proj-color">{{ $t('timeTracking.tt_project_color') }}</label>
             <input id="ttp-new-proj-color" type="color" class="ttp-color-input" v-model="newTTProject.color" :aria-label="$t('timeTracking.tt_project_color')" />
+            <label class="sr-only" for="ttp-new-proj-undecl">{{ $t('timeTracking.undeclarable') }}</label>
+            <input id="ttp-new-proj-undecl" class="ttp-undecl-input"
+              v-model="newTTProject.undeclStr"
+              :placeholder="timeNotation === 'hhmm' ? '0:00' : '0.00'"
+              :title="$t('timeTracking.undeclarable_per_entry')"
+              @keydown.enter="confirmAddTTProject"
+              @keydown.escape="addingTTProject = false"
+            />
             <button class="btn btn-primary btn-sm" @click="confirmAddTTProject">{{ $t('timeTracking.tt_project_save') }}</button>
             <button class="btn btn-secondary btn-sm" @click="addingTTProject = false">{{ $t('timeTracking.tt_project_cancel') }}</button>
           </div>
@@ -548,6 +599,7 @@ const pdfFont = ref(localStorage.getItem('timeTracking.pdfFont') || 'inter')
 watch(pdfFont, v => localStorage.setItem('timeTracking.pdfFont', v))
 const pdfLang = ref(localStorage.getItem('timeTracking.pdfLang') || 'auto')
 watch(pdfLang, v => localStorage.setItem('timeTracking.pdfLang', v))
+const pdfPageBreak = ref(false)
 
 // ── Mode ──────────────────────────────────────────────────────────────────
 const mode = ref('sheet')
@@ -727,6 +779,53 @@ const grandTotal = computed(() => {
   return fmtTime(m)
 })
 
+// ── Undeclarable helpers — derived from the project's undeclarable_minutes ─
+// For each entry: undecl = min(entry.minutes, project.undeclarable_minutes)
+function reportEntryDeclarable(entry) {
+  const pu = entry.project?.undeclarable_minutes || 0
+  return pu > 0 ? Math.max(0, entry.minutes - pu) : entry.minutes
+}
+
+function entryUndecl(entry) {
+  const pu = entry.project?.undeclarable_minutes || 0
+  if (pu <= 0) return 0
+  return Math.min(entry.minutes, pu)
+}
+
+function rowUndecl(row) {
+  return weekDays.value.reduce((s, d) => {
+    const e = getEntry(row, d.iso)
+    return s + (e ? entryUndecl(e) : 0)
+  }, 0)
+}
+
+function dayUndecl(dateISO) {
+  const m = allRows.value.reduce((s, row) => {
+    const e = getEntry(row, dateISO)
+    return s + (e ? entryUndecl(e) : 0)
+  }, 0)
+  return m > 0 ? fmtTime(m) : ''
+}
+
+function dayDeclarable(dateISO) {
+  const total = allRows.value.reduce((s, row) => s + (getEntry(row, dateISO)?.minutes || 0), 0)
+  const undecl = allRows.value.reduce((s, row) => {
+    const e = getEntry(row, dateISO)
+    return s + (e ? entryUndecl(e) : 0)
+  }, 0)
+  const m = Math.max(0, total - undecl)
+  return m > 0 ? fmtTime(m) : ''
+}
+
+const grandUndeclTotal = computed(() =>
+  rawEntries.value.reduce((s, e) => s + entryUndecl(e), 0)
+)
+
+const grandDeclarable = computed(() => {
+  const total = rawEntries.value.reduce((s, e) => s + e.minutes, 0)
+  return Math.max(0, total - grandUndeclTotal.value)
+})
+
 // ── Load week ─────────────────────────────────────────────────────────────
 async function loadWeek() {
   localRows.value = []
@@ -761,11 +860,11 @@ async function onCellBlur(row, dateISO, rawVal) {
       rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
     } else if (minutes > 0 && existing) {
       const { data } = await timeEntriesApi.update(existing.id, {
-        customer_id:  row.customer_id  || null,
-        project_id:   row.project_id   || null,
-        date:         dateISO,
+        customer_id: row.customer_id || null,
+        project_id:  row.project_id  || null,
+        date:        dateISO,
         minutes,
-        description:  row.description,
+        description: row.description,
       })
       const idx = rawEntries.value.findIndex(e => e.id === existing.id)
       rawEntries.value[idx] = data
@@ -1105,6 +1204,7 @@ async function exportReportPDF() {
       lang:     pdfLang.value,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    if (pdfPageBreak.value && rpt.value.group_by === 'customer') params.page_break = 'customer'
     const data = await timeEntriesApi.reportPDF(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
@@ -1147,7 +1247,7 @@ const modalRef             = ref(null)
 
 // Projects
 const addingTTProject      = ref(false)
-const newTTProject         = ref({ name: '', color: '#6366f1' })
+const newTTProject         = ref({ name: '', color: '#6366f1', undeclStr: '' })
 const editingTTProject     = ref(null)
 const newTTNameRef         = ref(null)
 
@@ -1169,6 +1269,7 @@ function closeManageProjects() {
   managingProjects.value = false
   addingTTProject.value = false
   editingTTProject.value = null
+  newTTProject.value = { name: '', color: '#6366f1', undeclStr: '' }
   addingTTCustomer.value = false
   editingTTCustomer.value = null
 }
@@ -1198,9 +1299,13 @@ async function confirmAddTTProject() {
   const name = newTTProject.value.name.trim()
   if (!name) return
   try {
-    const { data } = await projectsApi.createTimeTracking({ name, color: newTTProject.value.color })
+    const { data } = await projectsApi.createTimeTracking({
+      name,
+      color: newTTProject.value.color,
+      undeclarable_minutes: parseTimeInput(newTTProject.value.undeclStr),
+    })
     ttProjects.value.push(data)
-    newTTProject.value = { name: '', color: '#6366f1' }
+    newTTProject.value = { name: '', color: '#6366f1', undeclStr: '' }
     addingTTProject.value = false
   } catch {
     ui.error(t('timeTracking.tt_project_save_error'))
@@ -1208,7 +1313,8 @@ async function confirmAddTTProject() {
 }
 
 function startEditTTProject(p) {
-  editingTTProject.value = { id: p.id, name: p.name, color: p.color || '#6366f1' }
+  const undeclStr = p.undeclarable_minutes > 0 ? fmtTime(p.undeclarable_minutes) : ''
+  editingTTProject.value = { id: p.id, name: p.name, color: p.color || '#6366f1', undeclStr }
 }
 
 function cancelEditTTProject() {
@@ -1219,7 +1325,11 @@ async function saveTTProject() {
   const e = editingTTProject.value
   if (!e || !e.name.trim()) return
   try {
-    const { data } = await projectsApi.updateTimeTracking(e.id, { name: e.name.trim(), color: e.color })
+    const { data } = await projectsApi.updateTimeTracking(e.id, {
+      name: e.name.trim(),
+      color: e.color,
+      undeclarable_minutes: parseTimeInput(e.undeclStr),
+    })
     const idx = ttProjects.value.findIndex(p => p.id === e.id)
     if (idx >= 0) ttProjects.value[idx] = data
     editingTTProject.value = null
@@ -1533,6 +1643,16 @@ onMounted(async () => {
 .c-total { text-align: right; font-weight: 600; font-size: 13px; padding: 4px 10px; }
 .c-rowtotal { color: var(--color-text); }
 
+/* Undeclarable row-total badge */
+.row-undecl-badge {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-danger, #e53e3e);
+  opacity: .75;
+  line-height: 1.2;
+}
+
 /* Footer */
 .tt-foot td {
   background: var(--color-surface);
@@ -1544,6 +1664,14 @@ onMounted(async () => {
 .foot-lbl { text-align: right; }
 .c-dttotal { text-align: right; font-size: 13px; }
 .grand-total { color: var(--color-primary); font-size: 14px; }
+
+/* Undeclarable & declarable footer rows */
+.tt-foot-undecl td { border-top: 1px solid var(--color-border); }
+.tt-foot-decl td { border-top: 1px dashed var(--color-border); }
+.foot-undecl-lbl { text-align: right; font-size: 12px; font-weight: 500; color: var(--color-danger, #e53e3e); opacity: .85; }
+.foot-undecl { color: var(--color-danger, #e53e3e); font-size: 12px; font-weight: 500; opacity: .85; }
+.foot-decl-lbl { text-align: right; font-size: 12px; font-weight: 600; color: var(--color-success, #38a169); }
+.foot-decl { color: var(--color-success, #38a169); font-size: 12px; font-weight: 600; }
 
 /* Add-row bar */
 .tt-add-bar {
@@ -1578,6 +1706,15 @@ onMounted(async () => {
 .btn-copy-prev:disabled { opacity: 0.5; cursor: not-allowed; }
 .tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
 .pdf-font-group { display: flex; flex-direction: column; gap: 4px; }
+.pdf-page-break-label {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 36px; padding: 8px 12px;
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  font-size: 13px; color: var(--color-text); cursor: pointer;
+  white-space: nowrap; user-select: none;
+}
+.pdf-page-break-label input[type="checkbox"] { accent-color: var(--color-primary); cursor: pointer; }
 .filter-label {
   font-size: 12px;
   font-weight: 600;
@@ -1697,6 +1834,17 @@ onMounted(async () => {
 }
 .rpt-grp-total { color: var(--color-primary); }
 .rpt-grp-empty { padding: 10px 14px; color: var(--color-text-muted); font-size: 12px; }
+.rpt-grp-undecl-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-danger, #e53e3e);
+  background: color-mix(in srgb, var(--color-danger, #e53e3e) 6%, var(--color-surface));
+  border-top: 1px dashed color-mix(in srgb, var(--color-danger, #e53e3e) 30%, var(--color-border));
+  opacity: .9;
+}
 
 .rpt-table {
   width: 100%;
@@ -1731,6 +1879,20 @@ onMounted(async () => {
   border-radius: var(--radius);
   margin-top: 8px;
   font-size: 14px;
+}
+.rpt-undeclarable {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--color-danger, #e53e3e) 10%, var(--color-surface));
+  color: var(--color-danger, #e53e3e);
+  font-weight: 500;
+  border-radius: var(--radius);
+  margin-top: 4px;
+  font-size: 13px;
+}
+.rpt-declarable {
+  background: color-mix(in srgb, var(--color-success, #38a169) 80%, #1a5c38);
 }
 .rpt-empty { color: var(--color-text-muted); padding: 20px 0; text-align: center; }
 
@@ -1868,6 +2030,24 @@ onMounted(async () => {
   color: var(--color-text);
 }
 .ttp-name-input:focus { outline: none; border-color: var(--color-primary); }
+.ttp-undecl-input {
+  width: 62px;
+  font-size: 12px;
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--color-danger, #e53e3e) 50%, var(--color-border));
+  border-radius: 3px;
+  background: var(--color-bg);
+  color: var(--color-danger, #e53e3e);
+  text-align: right;
+}
+.ttp-undecl-input:focus { outline: none; border-color: var(--color-danger, #e53e3e); }
+.ttp-undecl-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-danger, #e53e3e);
+  opacity: .8;
+  white-space: nowrap;
+}
 .ttp-color-input {
   width: 32px;
   height: 28px;

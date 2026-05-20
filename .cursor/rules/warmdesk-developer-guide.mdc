@@ -269,6 +269,17 @@ Two reporting surfaces exist:
 - **`ReportView.vue`** — project-board time report. `GET /api/v1/reports/time` returns JSON; the table is rendered in Vue. Exports call the backend PDF/XLSX endpoints.
 - **`TimeTrackingView.vue`** — personal time-tracking sheet and report. Uses `/api/v1/time-entries/*` endpoints.
 
+### Undeclarable time
+
+Time-tracking-only projects (`Project.TimeTrackingOnly = true`) carry an `UndeclarableMinutes int` field (GORM default 0). This represents time that cannot be billed — e.g. a "Travel" project with 45 undeclarable minutes means every entry logs the full time but only `max(0, entry.minutes − 45)` counts as declarable.
+
+- **Per-entry declarable** = `max(0, entry.minutes − project.undeclarable_minutes)` (capped so it never goes negative).
+- **Per-group totals** — `TotalMinutes`, `UndeclarableMinutes`, `DeclarableMinutes` are all carried in `timeEntryGroup` (handlers/time_entry.go) and in `TimeEntryReportResponse`.
+- **On-screen report** — group headers and entry rows show declarable time; when `group_by=customer` an undeclarable line appears below each customer subtotal and below the grand total.
+- **PDF** (`handlers/time_entry_pdf.go`) — same display logic; when `?page_break=customer` each customer gets its own page with the full document header (`drawDocHeader` closure) repeated via `SetHeaderFunc` registered *after* the first page so it fires only on explicit `AddPage()` calls; grand total is omitted in page-per-customer mode.
+- **XLSX** (`handlers/time_entry_xlsx.go`) — undeclarable and declarable rows appended after the grand total when `UndeclarableMinutes > 0`.
+- **`pdfI18n`** (`handlers/report_pdf.go`) — `Undeclarable` and `Declarable` string fields, populated for all 12 languages.
+
 All PDF and XLSX files are **generated server-side** (Go/excelize for XLSX, Go/gofpdf for PDF) and downloaded as binary. The frontend never builds documents itself.
 
 Binary downloads go through `fetchBinary` (`src/api/client.js`):

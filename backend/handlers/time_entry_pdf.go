@@ -106,50 +106,57 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		_ = emp
 	})
 
-	pdf.AddPage()
+	// ── Determine paging mode before building the header func ────────────────
+	groupBy := c.DefaultQuery("group_by", "period")
+	pageBreakPerCustomer := groupBy == "customer" && c.Query("page_break") == "customer"
 
-	// ── Document header ───────────────────────────────────────────────────────
-	logoY := pdfMargin
-	logoLoaded := false
-	if rawBytes, ext, ok := resolveLogoBytes(report.CompanyLogo); ok {
-		logoLoaded = renderLogoIntoPDF(pdf, rawBytes, ext, pdfMargin, logoY)
+	// Pre-load logo once so the header closure doesn't hit disk on every page.
+	var cachedLogoBytes []byte
+	var cachedLogoExt string
+	var cachedLogoOK bool
+	if b, ext, ok := resolveLogoBytes(report.CompanyLogo); ok {
+		cachedLogoBytes, cachedLogoExt, cachedLogoOK = b, ext, true
 	}
 
-	textX := pdfMargin
-	if logoLoaded {
-		textX = pdfMargin + 32
-	}
-	textW := pdfPageW - pdfMargin - textX
-
-	pdf.SetXY(textX, logoY)
-	if report.CompanyName != "" {
-		pdf.SetFont(fontFamily, "B", 13)
-		setTxt(pdf, clrPrimary)
-		pdf.CellFormat(textW, 7, report.CompanyName, "", 2, "L", false, 0, "")
+	// drawDocHeader renders the logo / company / title / period block and
+	// leaves the cursor just below the rule line, ready for the table header.
+	drawDocHeader := func() {
+		logoY := pdfMargin
+		logoLoaded := false
+		if cachedLogoOK {
+			logoLoaded = renderLogoIntoPDF(pdf, cachedLogoBytes, cachedLogoExt, pdfMargin, logoY)
+		}
+		textX := pdfMargin
+		if logoLoaded {
+			textX = pdfMargin + 32
+		}
+		textW := pdfPageW - pdfMargin - textX
+		pdf.SetXY(textX, logoY)
+		if report.CompanyName != "" {
+			pdf.SetFont(fontFamily, "B", 13)
+			setTxt(pdf, clrPrimary)
+			pdf.CellFormat(textW, 7, report.CompanyName, "", 2, "L", false, 0, "")
+			pdf.SetX(textX)
+		}
+		pdf.SetFont(fontFamily, "B", 16)
+		setTxt(pdf, clrText)
+		pdf.CellFormat(textW, 9, tr.TimeReport, "", 2, "L", false, 0, "")
 		pdf.SetX(textX)
+		pdf.SetFont(fontFamily, "", 10)
+		setTxt(pdf, clrMuted)
+		pdf.CellFormat(textW, 6, pdfTranslateLabel(report.PeriodLabel, tr), "", 2, "L", false, 0, "")
+		pdf.SetX(textX)
+		pdf.SetFont(fontFamily, "", 9)
+		pdf.CellFormat(textW, 5, employeeName, "", 2, "L", false, 0, "")
+		ruleY := pdf.GetY() + 2
+		if logoLoaded && ruleY < logoY+22 {
+			ruleY = logoY + 22
+		}
+		setDraw(pdf, clrPrimary)
+		pdf.SetLineWidth(0.4)
+		pdf.Line(pdfMargin, ruleY, pdfMargin+pdfBodyW, ruleY)
+		pdf.SetY(ruleY + 4)
 	}
-
-	pdf.SetFont(fontFamily, "B", 16)
-	setTxt(pdf, clrText)
-	pdf.CellFormat(textW, 9, tr.TimeReport, "", 2, "L", false, 0, "")
-	pdf.SetX(textX)
-
-	pdf.SetFont(fontFamily, "", 10)
-	setTxt(pdf, clrMuted)
-	pdf.CellFormat(textW, 6, pdfTranslateLabel(report.PeriodLabel, tr), "", 2, "L", false, 0, "")
-	pdf.SetX(textX)
-
-	pdf.SetFont(fontFamily, "", 9)
-	pdf.CellFormat(textW, 5, employeeName, "", 2, "L", false, 0, "")
-
-	ruleY := pdf.GetY() + 2
-	if logoLoaded && ruleY < logoY+22 {
-		ruleY = logoY + 22
-	}
-	setDraw(pdf, clrPrimary)
-	pdf.SetLineWidth(0.4)
-	pdf.Line(pdfMargin, ruleY, pdfMargin+pdfBodyW, ruleY)
-	pdf.SetY(ruleY + 4)
 
 	// ── Column widths (mm) ────────────────────────────────────────────────────
 	const (
@@ -173,21 +180,42 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.CellFormat(colHours, rowH, tr.Hours, "0", 1, "R", true, 0, "")
 		setTxt(pdf, clrText)
 	}
-	pdf.SetHeaderFunc(drawTableHeader)
+
+	pdf.AddPage()
+
+	// Page 1 — draw header manually. SetHeaderFunc is registered below, AFTER
+	// this page, so it does not fire here and there is no duplication.
+	drawDocHeader()
 	drawTableHeader()
 
+	// For page-per-customer breaks the header func replays the full header so
+	// every customer page looks identical to the first. For continuous reports
+	// only the column-header bar repeats on auto page breaks.
+	if pageBreakPerCustomer {
+		pdf.SetHeaderFunc(func() {
+			drawDocHeader()
+			drawTableHeader()
+		})
+	} else {
+		pdf.SetHeaderFunc(drawTableHeader)
+	}
+
 	// ── Group sections ────────────────────────────────────────────────────────
+
+	var activeGroups []timeEntryGroup
+	for _, g := range report.Groups {
+		if len(g.Entries) > 0 {
+			activeGroups = append(activeGroups, g)
+		}
+	}
+
 	const rowH = 5.5
 	altRow := false
 
 	clrAlt := rgb{245, 247, 250}
 	clrWhite := rgb{255, 255, 255}
 
-	for _, grp := range report.Groups {
-		if len(grp.Entries) == 0 {
-			continue
-		}
-
+	for gi, grp := range activeGroups {
 		// Group header bar
 		grpY := pdf.GetY()
 		setFill(pdf, rgb{230, 235, 242})
@@ -199,7 +227,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.CellFormat(pdfBodyW-20, 5.5, pdfTranslateLabel(grp.Label, tr), "", 0, "L", false, 0, "")
 		pdf.SetFont(fontFamily, "B", 8.5)
 		setTxt(pdf, clrPrimary)
-		pdf.CellFormat(20, 5.5, fmtDecimalH(grp.TotalMinutes), "", 1, "R", false, 0, "")
+		pdf.CellFormat(20, 5.5, fmtDecimalH(grp.DeclarableMinutes), "", 1, "R", false, 0, "")
 
 		altRow = false
 		for _, e := range grp.Entries {
@@ -228,7 +256,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 			pdf.CellFormat(colCust, rowH, customerName, "B", 0, "L", true, 0, "")
 			pdf.CellFormat(colProj, rowH, projectName, "B", 0, "L", true, 0, "")
 			pdf.CellFormat(colDesc, rowH, truncate(e.Description, 32), "B", 0, "L", true, 0, "")
-			pdf.CellFormat(colHours, rowH, fmtDecimalH(e.Minutes), "B", 1, "R", true, 0, "")
+			pdf.CellFormat(colHours, rowH, fmtDecimalH(pdfEntryDeclarable(e)), "B", 1, "R", true, 0, "")
 		}
 
 		// Group subtotal
@@ -237,17 +265,47 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		setFill(pdf, rgb{238, 242, 248})
 		pdf.CellFormat(pdfBodyW-colHours, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" "+tr.Total, "0", 0, "R", true, 0, "")
 		setTxt(pdf, clrPrimary)
-		pdf.CellFormat(colHours, rowH, fmtDecimalH(grp.TotalMinutes), "0", 1, "R", true, 0, "")
+		pdf.CellFormat(colHours, rowH, fmtDecimalH(grp.DeclarableMinutes), "0", 1, "R", true, 0, "")
 
-		pdf.Ln(2)
+		// Per-group undeclarable line (customer grouping only)
+		if groupBy == "customer" && grp.UndeclarableMinutes > 0 {
+			setFill(pdf, rgb{252, 245, 245})
+			setTxt(pdf, clrMuted)
+			pdf.SetFont(fontFamily, "", 8)
+			pdf.CellFormat(pdfBodyW-colHours, rowH, "  "+tr.Undeclarable, "0", 0, "R", true, 0, "")
+			setTxt(pdf, rgb{180, 80, 80})
+			pdf.CellFormat(colHours, rowH, "−"+fmtDecimalH(grp.UndeclarableMinutes), "0", 1, "R", true, 0, "")
+		}
+
+		if pageBreakPerCustomer && gi < len(activeGroups)-1 {
+			pdf.AddPage()
+		} else {
+			pdf.Ln(2)
+		}
 	}
 
-	// ── Grand total ───────────────────────────────────────────────────────────
-	setFill(pdf, clrPrimary)
-	setTxt(pdf, rgb{255, 255, 255})
-	pdf.SetFont(fontFamily, "B", 9)
-	pdf.CellFormat(pdfBodyW-colHours, rowH+1, "  "+tr.Total, "0", 0, "L", true, 0, "")
-	pdf.CellFormat(colHours, rowH+1, fmtDecimalH(report.TotalMinutes), "0", 1, "R", true, 0, "")
+	// ── Grand total (omitted for page-per-customer — each customer already has
+	// its own subtotal and a grand total on the last page would be confusing) ──
+	if !pageBreakPerCustomer {
+		grandMinutes := report.TotalMinutes
+		if report.UndeclarableMinutes > 0 {
+			grandMinutes = report.DeclarableMinutes
+		}
+		setFill(pdf, clrPrimary)
+		setTxt(pdf, rgb{255, 255, 255})
+		pdf.SetFont(fontFamily, "B", 9)
+		pdf.CellFormat(pdfBodyW-colHours, rowH+1, "  "+tr.Total, "0", 0, "L", true, 0, "")
+		pdf.CellFormat(colHours, rowH+1, fmtDecimalH(grandMinutes), "0", 1, "R", true, 0, "")
+
+		if groupBy == "customer" && report.UndeclarableMinutes > 0 {
+			setFill(pdf, rgb{252, 245, 245})
+			setTxt(pdf, clrMuted)
+			pdf.SetFont(fontFamily, "", 8.5)
+			pdf.CellFormat(pdfBodyW-colHours, rowH, "  "+tr.Undeclarable, "0", 0, "L", true, 0, "")
+			setTxt(pdf, rgb{180, 80, 80})
+			pdf.CellFormat(colHours, rowH, "−"+fmtDecimalH(report.UndeclarableMinutes), "0", 1, "R", true, 0, "")
+		}
+	}
 
 	// ── Output ────────────────────────────────────────────────────────────────
 	var buf bytes.Buffer
@@ -263,6 +321,18 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	}
 	c.Header("Content-Disposition", `attachment; filename="`+filename+`"`)
 	c.Data(http.StatusOK, "application/pdf", buf.Bytes())
+}
+
+// pdfEntryDeclarable returns the declarable minutes for a single entry.
+func pdfEntryDeclarable(e models.TimeEntry) int {
+	if e.Project == nil || e.Project.UndeclarableMinutes <= 0 {
+		return e.Minutes
+	}
+	d := e.Minutes - e.Project.UndeclarableMinutes
+	if d < 0 {
+		return 0
+	}
+	return d
 }
 
 // fmtDecimalH formats minutes as decimal hours ("8.00", "7.50").

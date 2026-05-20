@@ -103,6 +103,16 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 	f.SetCellValue(sheetName, cell(5, row), decimalHours(report.TotalMinutes))
 	f.SetCellStyle(sheetName, cell(1, row), cell(5, row), bold)
 
+	if report.UndeclarableMinutes > 0 {
+		row++
+		f.SetCellValue(sheetName, cell(4, row), "Undeclarable")
+		f.SetCellValue(sheetName, cell(5, row), decimalHours(report.UndeclarableMinutes))
+		row++
+		f.SetCellValue(sheetName, cell(4, row), "Declarable")
+		f.SetCellValue(sheetName, cell(5, row), decimalHours(report.DeclarableMinutes))
+		f.SetCellStyle(sheetName, cell(1, row), cell(5, row), bold)
+	}
+
 	f.SetColWidth(sheetName, "A", "A", 14)
 	f.SetColWidth(sheetName, "B", "B", 25)
 	f.SetColWidth(sheetName, "C", "C", 25)

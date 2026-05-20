@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.56 — 2026-05-20
+
+### Added
+- **Undeclarable time per time-tracking project** — each time-tracking-only project can now have an *undeclarable minutes* value set in the ⚙ manage modal (displayed as HH:MM); this represents time that cannot be billed (e.g. travel, holidays); in the weekly sheet the row total shows an ↓ badge with the undeclarable portion and the footer shows an undeclarable row (red) and declarable row (green) when any undeclarable time exists
+- **Undeclarable time in reports** — the time-tracking report tab subtracts undeclarable time from each entry and group total; when grouping by Customer an *Undeclarable* line is shown per customer and a total undeclarable row appears at the bottom; declarable time is shown as the primary value throughout
+- **Undeclarable time in PDF export** — the PDF time-tracking report applies the same undeclarable/declarable logic as the on-screen report; when grouping by Customer an undeclarable line is added below each customer subtotal; the grand total shows declarable time
+- **PDF page-break per customer** — a *New page per customer* checkbox appears in the PDF export controls when the report is grouped by Customer; when checked each customer gets its own page with the full document header (logo, company name, report title, period, employee name) repeated at the top; the grand total is omitted in this mode as each customer's page already contains its own subtotal
+- **Undeclarable time in XLSX export** — the XLSX time-tracking report export shows undeclarable and declarable totals below the grand total row when undeclarable time is present
+
 ## v0.9.55 — 2026-05-19
 
 ### Added

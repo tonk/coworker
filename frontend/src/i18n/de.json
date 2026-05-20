@@ -751,7 +751,11 @@
     "group_by_period": "Zeitraum",
     "group_by_customer": "Kunde",
     "group_by_project": "Projekt",
-    "group_by_customer_project": "Kunde & Projekt"
+    "group_by_customer_project": "Kunde & Projekt",
+    "undeclarable": "Nicht abrechenbar",
+    "declarable": "Abrechenbar",
+    "undeclarable_per_entry": "Nicht abrechenbare Zeit pro Eintrag",
+    "pdf_page_break_customer": "Neue Seite pro Kunde"
   },
   "call": {
     "incoming": "Eingehender Anruf",

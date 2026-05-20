@@ -751,7 +751,11 @@
     "group_by_period": "Periode",
     "group_by_customer": "Klant",
     "group_by_project": "Project",
-    "group_by_customer_project": "Klant & Project"
+    "group_by_customer_project": "Klant & Project",
+    "undeclarable": "Niet declarabel",
+    "declarable": "Declarabel",
+    "undeclarable_per_entry": "Niet-declarabele tijd per entry",
+    "pdf_page_break_customer": "Nieuwe pagina per klant"
   },
   "call": {
     "incoming": "Inkomende oproep",

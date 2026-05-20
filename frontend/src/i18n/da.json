@@ -745,7 +745,11 @@
     "group_by_period": "Periode",
     "group_by_customer": "Kunde",
     "group_by_project": "Projekt",
-    "group_by_customer_project": "Kunde & Projekt"
+    "group_by_customer_project": "Kunde & Projekt",
+    "undeclarable": "Ikke fakturerbar",
+    "declarable": "Fakturerbar",
+    "undeclarable_per_entry": "Ikke-fakturerbar tid per post",
+    "pdf_page_break_customer": "Ny side per kunde"
   },
   "call": {
     "incoming": "Indgående opkald",

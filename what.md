@@ -543,3 +543,6 @@ Create an application that has all these features and requirements
 - Fix time-tracking sheet row sorting: rows no longer re-sort while entering time; order is stable and only changes when the user clicks a column header
 - Sort personal time-tracking projects alphabetically by name in the manage modal
 - Add quick-nav strip to the app header with links to Dashboard, News, Chats, Reports, and Time Tracking; active page highlighted; permission-gated items hidden for users without access; strip hidden below 960px viewport width
+- Add undeclarable minutes field to time-tracking-only projects: set in the ⚙ manage modal as HH:MM; automatically subtracted from totals in the weekly sheet (row badge, sheet footer), report tab, PDF, and XLSX export; result is never below zero
+- Show undeclarable and declarable rows in time-tracking report when grouped by Customer: per-customer undeclarable line below each group subtotal, grand total undeclarable line at the bottom
+- Add PDF page-break per customer option: checkbox in export controls (visible when group_by=customer); each customer page repeats the full document header (logo, company, title, period, employee); grand total omitted in page-per-customer mode

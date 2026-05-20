@@ -744,7 +744,11 @@
     "group_by_period": "Ajanjakso",
     "group_by_customer": "Asiakas",
     "group_by_project": "Projekti",
-    "group_by_customer_project": "Asiakas & Projekti"
+    "group_by_customer_project": "Asiakas & Projekti",
+    "undeclarable": "Ei laskutettava",
+    "declarable": "Laskutettava",
+    "undeclarable_per_entry": "Ei-laskutettava aika per merkintä",
+    "pdf_page_break_customer": "Uusi sivu per asiakas"
   },
   "call": {
     "incoming": "Saapuva puhelu",
