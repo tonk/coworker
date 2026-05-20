@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.59 — 2026-05-20
+
+### Added
+- **Public holidays in time tracking** — an *Add holidays* dropdown in the week navigation bar lists 12 countries (UK, Netherlands, Germany, France, Spain, Denmark, Sweden, Norway, Finland, Iceland, Portugal, Italy) by flag and native name; clicking a country creates 0-minute holiday entries for the selected year with all national public holidays; entries already on a date are skipped and the result is reported as added / skipped
+- **Holiday highlighting in the sheet** — day column headers with a holiday show an amber background and a glowing dot; the holiday row has a distinct amber background; the specific day cell within the row is highlighted more strongly
+
+### Fixed
+- **Backup download in Tauri desktop app** — the *Download* button in the Admin → Backup tab now opens the native save dialog correctly; previously it did nothing because it used the WebKit blob API which is broken on Linux GTK WebKit
+
 ## v0.9.58 — 2026-05-20
 
 ### Fixed

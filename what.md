@@ -550,3 +550,6 @@ Create an application that has all these features and requirements
 - Group PDF export options in a dropdown button (Export options) with all settings persisted to localStorage; day-of-week toggle and per-customer page-break toggle shown together
 - Add personal TT-only seed data for tonk: customers Smart Owl Consulting and Personal, projects Travel (45 min undeclarable), Holidays (480 min), Study & Training, Internal (60 min), with 14 sample time entries; --reset cleans them up
 - Fix time-tracking week header date mismatch in UTC+ timezones: use local date components instead of toISOString() so column dates and day abbreviations always agree
+- Add public holidays to time tracking: dropdown in the week navigation bar lists 12 countries by flag and native name; clicking a country adds 0-minute holiday entries for the current year; skip existing entries and report added vs. skipped count
+- Highlight holiday entries in the sheet: amber background on day column headers (with glowing dot), amber row background, and stronger amber on the specific day cell
+- Fix backup download in Tauri desktop app: use fetchBinary + triggerDownload so the native save dialog opens correctly on Linux

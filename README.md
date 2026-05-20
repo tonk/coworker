@@ -8,9 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.58)
+## Latest release (v0.9.59)
 
-- **Time-tracking week header date fix** — column dates and day abbreviations now always agree in UTC+ timezones; previously the date shown was one day behind the actual weekday.
+- **Public holidays** — *Add holidays* dropdown in the time-tracking week view adds 0-minute holiday entries for 12 countries; holidays are highlighted in amber in the sheet.
+- **Backup download fix (Tauri)** — the Download button in Admin → Backup now opens the native save dialog on the desktop app.
 
 ## Experiment
 
