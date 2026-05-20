@@ -28,13 +28,18 @@
               <button class="wk-cal-nav" @click.stop="calShiftMonth(1)" aria-label="Next month">&#9654;</button>
             </div>
             <div class="wk-cal-grid">
+              <span class="wk-cal-dn"></span>
               <span v-for="n in calDayNames" :key="n" class="wk-cal-dn">{{ n }}</span>
-              <button v-for="(cell, i) in calCells" :key="i"
-                class="wk-cal-day"
-                :class="{ 'wk-cal-other': cell.otherMonth, 'wk-cal-sel': cell.inSelectedWeek, 'wk-cal-today': cell.isToday }"
-                @click.stop="goToDate(cell.date)"
-                :aria-label="cell.date.toLocaleDateString()"
-                :aria-pressed="cell.inSelectedWeek">{{ cell.day }}</button>
+              <template v-for="(row, ri) in calCells" :key="ri">
+                <button class="wk-cal-wn" :class="{ 'wk-cal-wn-sel': row.isSelectedWeek }"
+                  @click.stop="goToDate(row.monday)" :aria-label="$t('timeTracking.week') + ' ' + row.weekNum">{{ row.weekNum }}</button>
+                <button v-for="(cell, ci) in row.days" :key="ci"
+                  class="wk-cal-day"
+                  :class="{ 'wk-cal-other': cell.otherMonth, 'wk-cal-sel': cell.inSelectedWeek, 'wk-cal-today': cell.isToday }"
+                  @click.stop="goToDate(cell.date)"
+                  :aria-label="cell.date.toLocaleDateString()"
+                  :aria-pressed="cell.inSelectedWeek">{{ cell.day }}</button>
+              </template>
             </div>
           </div>
         </div>
@@ -754,6 +759,12 @@ const calDayNames = computed(() => {
   return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2024, 0, 1 + i))) // 2024-01-01 is Monday
 })
 
+function isoWeekNum(d) {
+  const thu = new Date(d); thu.setDate(d.getDate() + 4 - (d.getDay() || 7))
+  const y0 = new Date(Date.UTC(thu.getFullYear(), 0, 1))
+  return Math.ceil(((thu - y0) / 86400000 + 1) / 7)
+}
+
 const calCells = computed(() => {
   if (!calAnchor.value) return []
   const year = calAnchor.value.getFullYear()
@@ -765,10 +776,14 @@ const calCells = computed(() => {
   const ws = weekStart.value
   const we = new Date(ws); we.setDate(we.getDate() + 7)
   const today = new Date(); today.setHours(0, 0, 0, 0)
-  return Array.from({ length: 42 }, (_, i) => {
-    const d = new Date(start); d.setDate(d.getDate() + i)
-    return { date: d, day: d.getDate(), otherMonth: d.getMonth() !== month,
-      inSelectedWeek: d >= ws && d < we, isToday: d.getTime() === today.getTime() }
+  return Array.from({ length: 6 }, (_, row) => {
+    const monday = new Date(start); monday.setDate(monday.getDate() + row * 7)
+    const days = Array.from({ length: 7 }, (_, col) => {
+      const d = new Date(monday); d.setDate(d.getDate() + col)
+      return { date: d, day: d.getDate(), otherMonth: d.getMonth() !== month,
+        inSelectedWeek: d >= ws && d < we, isToday: d.getTime() === today.getTime() }
+    })
+    return { weekNum: isoWeekNum(monday), monday, days, isSelectedWeek: days.some(c => c.inSelectedWeek) }
   })
 })
 
@@ -1665,8 +1680,15 @@ onMounted(async () => {
   color: var(--color-text-muted); font-size: 10px; border-radius: 3px;
 }
 .wk-cal-nav:hover { background: var(--color-surface-2); }
-.wk-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.wk-cal-grid { display: grid; grid-template-columns: auto repeat(7, 1fr); gap: 2px; }
 .wk-cal-dn { font-size: 10px; font-weight: 600; color: var(--color-text-muted); text-align: center; padding: 2px 0 4px; }
+.wk-cal-wn {
+  background: none; border: none; cursor: pointer; padding: 4px 5px 4px 2px;
+  font-size: 10px; font-weight: 600; color: var(--color-text-muted);
+  text-align: right; border-radius: 3px; line-height: 1.4; white-space: nowrap;
+}
+.wk-cal-wn:hover { background: var(--color-surface-2); color: var(--color-text); }
+.wk-cal-wn.wk-cal-wn-sel { color: var(--color-primary); }
 .wk-cal-day {
   background: none; border: none; cursor: pointer; padding: 4px 0;
   font-size: 12px; text-align: center; border-radius: 3px; color: var(--color-text);
