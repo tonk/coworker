@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.57 — 2026-05-20
+
+### Added
+- **Day-of-week abbreviation in PDF export** — a new *Show day of week before date* toggle in the PDF export options panel prepends the localised day abbreviation (Mon–Sun in the report language) to each date column entry; the abbreviation is rendered in a fixed-width cell so dates stay aligned regardless of 2- or 3-character abbreviations across all 12 supported languages
+- **Personal TT-only projects and customers in seed data** — the demo seed now creates TT-only customers (Smart Owl Consulting, Personal) and projects (Travel with 45 min undeclarable, Holidays with 480 min, Study & Training, Internal with 60 min) for the `tonk` user, with 14 sample time entries; `--reset` cleans them up correctly
+
+### Changed
+- **PDF export controls replaced with dropdown** — the bare *New page per customer* checkbox is now grouped inside an *Export options* dropdown button alongside the new day-of-week toggle; all settings are persisted to `localStorage` between sessions
+
 ## v0.9.56 — 2026-05-20
 
 ### Added

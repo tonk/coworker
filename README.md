@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.56)
+## Latest release (v0.9.57)
 
-- **Undeclarable time per time-tracking project** — set a non-billable minutes value (HH:MM) on any time-tracking project; the sheet, report, PDF, and XLSX export automatically subtract it and show declarable time as the primary figure.
-- **PDF page-break per customer** — a *New page per customer* checkbox in the PDF export controls repeats the full document header on each customer's page; grand total is omitted in this mode.
+- **Day-of-week abbreviation in PDF export** — toggle *Show day of week before date* in the export options panel to prepend the localised abbreviation to every date; fixed-width cell keeps dates aligned for all 12 languages.
+- **PDF export options dropdown** — the export controls are now grouped in a single dropdown button with all options persisted to `localStorage` between sessions.
 
 ## Experiment
 
