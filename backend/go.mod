@@ -1,6 +1,6 @@
 module github.com/tonk/warmdesk
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/gabriel-vasile/mimetype v1.4.3

@@ -29,7 +29,7 @@ No database setup required: SQLite is the default and the file (`warmdesk.db`) i
 
 | Tool | Min version | Notes |
 |---|---|---|
-| Go | 1.25 | Install from go.dev/dl; add `/usr/local/go/bin` to `PATH` |
+| Go | 1.26 | Install from go.dev/dl; add `/usr/local/go/bin` to `PATH` |
 | Node.js | 20 LTS | Via NodeSource or nvm; npm is bundled |
 | Rust + Cargo | 1.85 | Already present on most systems; needed for AppImage/desktop |
 

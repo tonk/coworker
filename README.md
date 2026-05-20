@@ -167,7 +167,7 @@ See [INSTALL.md](INSTALL.md) for full options and deployment instructions.
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Go 1.25, Gin, GORM, gorilla/websocket |
+| Backend | Go 1.26, Gin, GORM, gorilla/websocket |
 | Frontend | Vue 3.5, Vite 8, Pinia 3, Vue Router 5, vue-i18n 11, EasyMDE, SheetJS |
 | Database | SQLite / PostgreSQL / MySQL |
 | Auth | JWT (access + refresh tokens), bcrypt |
