@@ -1,4 +1,4 @@
-import client from './client'
+import client, { fetchBinary } from './client'
 
 export const adminApi = {
   listUsers: () => client.get('/admin/users'),
@@ -26,7 +26,7 @@ export const adminApi = {
   backupDatabase: () => client.post('/admin/system/backup'),
   listBackups: () => client.get('/admin/system/backups'),
   restoreBackup: (filename) => client.post('/admin/system/backups/restore', { filename }),
-  downloadBackup: (filename) => client.get(`/admin/system/backups/${encodeURIComponent(filename)}`, { responseType: 'blob' }),
+  downloadBackup: (filename) => fetchBinary(`/admin/system/backups/${encodeURIComponent(filename)}`),
   deleteBackup: (filename) => client.delete(`/admin/system/backups/${encodeURIComponent(filename)}`),
   disableUserMFA: (id) => client.post(`/admin/users/${id}/mfa/disable`)
 }

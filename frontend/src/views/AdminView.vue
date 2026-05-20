@@ -1247,6 +1247,7 @@ import { RouterLink } from 'vue-router'
 import BaseModal from '@/components/common/BaseModal.vue'
 import DateTimeInput from '@/components/common/DateTimeInput.vue'
 import { adminApi } from '@/api/admin'
+import { triggerDownload } from '@/api/client'
 import { groupsApi } from '@/api/groups'
 import { customersApi } from '@/api/customers'
 import { attachmentsApi } from '@/api/attachments'
@@ -1996,13 +1997,8 @@ async function restoreBackup(b) {
 
 async function downloadBackup(b) {
   try {
-    const { data } = await adminApi.downloadBackup(b.filename)
-    const url = URL.createObjectURL(data)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = b.filename
-    a.click()
-    URL.revokeObjectURL(url)
+    const data = await adminApi.downloadBackup(b.filename)
+    await triggerDownload(data, b.filename, 'application/octet-stream')
   } catch {
     ui.error('Failed to download backup')
   }

@@ -751,7 +751,13 @@
     "undeclarable_per_entry": "Ikke-fakturerbar tid per oppføring",
     "pdf_page_break_customer": "Ny side per kunde",
     "pdf_export_options": "Eksportalternativer",
-    "pdf_show_abbr": "Vis ukedag før dato"
+    "pdf_show_abbr": "Vis ukedag før dato",
+    "add_holidays": "Legg til helligdager",
+    "add_holidays_title": "Legg til helligdager for {year}",
+    "holidays_added": "{count} helligdager lagt til for {year}",
+    "holidays_all_exist": "Alle {count} helligdager for {year} finnes allerede",
+    "holidays_added_skipped": "{added} helligdager lagt til for {year} ({skipped} fantes allerede)",
+    "holidays_error": "Kunne ikke legge til helligdager"
   },
   "call": {
     "incoming": "Innkommende anrop",

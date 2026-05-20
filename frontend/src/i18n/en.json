@@ -757,7 +757,13 @@
     "undeclarable_per_entry": "Undeclarable time per entry",
     "pdf_page_break_customer": "New page per customer",
     "pdf_export_options": "Export options",
-    "pdf_show_abbr": "Show day of week before date"
+    "pdf_show_abbr": "Show day of week before date",
+    "add_holidays": "Add holidays",
+    "add_holidays_title": "Add public holidays for {year}",
+    "holidays_added": "Added {count} public holidays for {year}",
+    "holidays_all_exist": "All {count} public holidays for {year} already exist",
+    "holidays_added_skipped": "Added {added} public holidays for {year} ({skipped} already existed)",
+    "holidays_error": "Failed to add holidays"
   },
   "call": {
     "incoming": "Incoming call",

@@ -757,7 +757,13 @@
     "undeclarable_per_entry": "Niet-declarabele tijd per entry",
     "pdf_page_break_customer": "Nieuwe pagina per klant",
     "pdf_export_options": "Exportopties",
-    "pdf_show_abbr": "Dag van de week voor datum weergeven"
+    "pdf_show_abbr": "Dag van de week voor datum weergeven",
+    "add_holidays": "Feestdagen toevoegen",
+    "add_holidays_title": "Feestdagen toevoegen voor {year}",
+    "holidays_added": "{count} feestdagen toegevoegd voor {year}",
+    "holidays_all_exist": "Alle {count} feestdagen voor {year} bestaan al",
+    "holidays_added_skipped": "{added} feestdagen toegevoegd voor {year} ({skipped} bestonden al)",
+    "holidays_error": "Feestdagen toevoegen mislukt"
   },
   "call": {
     "incoming": "Inkomende oproep",

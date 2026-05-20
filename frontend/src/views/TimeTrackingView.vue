@@ -18,6 +18,20 @@
         <span class="wk-label">{{ $t('timeTracking.week') }} &nbsp; {{ weekInfo.week }} &nbsp; {{ weekInfo.year }}</span>
         <button class="nav-btn" @click="shiftWeek(1)" :title="$t('timeTracking.next_week')" :aria-label="$t('timeTracking.next_week')">&#9654;</button>
         <button class="nav-btn nav-today" @click="goToToday" :title="$t('timeTracking.today')" :aria-label="$t('timeTracking.today')" :disabled="isCurrentWeek">{{ $t('timeTracking.today') }}</button>
+        <div class="nav-holidays-wrap" ref="holidaysDropRef">
+          <button class="nav-btn nav-holidays" @click="holidaysDropOpen = !holidaysDropOpen"
+            :aria-expanded="String(holidaysDropOpen)" aria-haspopup="true"
+            :aria-label="$t('timeTracking.add_holidays_title', { year: weekInfo.year })">
+            {{ $t('timeTracking.add_holidays') }}<span class="nav-hol-chevron" :class="{ open: holidaysDropOpen }" aria-hidden="true">›</span>
+          </button>
+          <div v-if="holidaysDropOpen" class="holidays-drop" role="menu">
+            <button v-for="c in holidayLocales" :key="c.locale"
+              class="hol-country-btn" role="menuitem"
+              @click="addHolidays(c.locale)">
+              <span class="hol-flag" aria-hidden="true">{{ c.flag }}</span>{{ c.label }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="tt-mode-tabs" role="tablist" aria-label="Time tracking mode">
@@ -70,9 +84,10 @@
                   <span class="sort-icon" aria-hidden="true">{{ sortCol === 'desc' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
                 </button>
               </th>
-              <th v-for="d in weekDays" :key="d.iso" class="c-day">
+              <th v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
                 <div class="dh-abbr">{{ d.abbr }}</div>
                 <div class="dh-date">{{ d.mmdd }}</div>
+                <div v-if="holidayDates.has(d.iso)" class="dh-holiday-dot" aria-hidden="true"></div>
               </th>
               <th class="c-total">{{ $t('timeTracking.total') }}</th>
               <th class="c-act"></th>
@@ -81,7 +96,7 @@
 
           <tbody>
             <tr v-for="(row, idx) in sortedRows" :key="row.key"
-                :class="['tt-row', idx % 2 === 1 ? 'alt' : '', deletingRow === row.key ? 'tt-row-deleting' : '']">
+                :class="['tt-row', idx % 2 === 1 ? 'alt' : '', deletingRow === row.key ? 'tt-row-deleting' : '', row.is_holiday ? 'tt-row-holiday' : '']">
               <td class="c-nr">{{ idx + 1 }}</td>
 
               <!-- Edit mode -->
@@ -115,7 +130,7 @@
                 <td class="c-desc">{{ row.description || '—' }}</td>
               </template>
 
-              <td v-for="d in weekDays" :key="d.iso" class="c-day">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', row.is_holiday && getEntry(row, d.iso) ? 'c-day-holiday-cell' : '']">
                 <input
                   :type="timeNotation === 'hhmm' ? 'text' : 'number'"
                   class="h-inp"
@@ -560,7 +575,7 @@ import { useUIStore } from '@/stores/ui'
 import { timeEntriesApi } from '@/api/timeEntries'
 import { customersApi } from '@/api/customers'
 import { projectsApi } from '@/api/projects'
-import client from '@/api/client'
+import client, { triggerDownload } from '@/api/client'
 import { resolveAssetUrl } from '@/api/serverConfig'
 
 const { t } = useI18n()
@@ -688,6 +703,48 @@ function goToToday() {
   loadWeek()
 }
 
+const holidaysDropOpen = ref(false)
+const holidaysDropRef  = ref(null)
+
+const holidayLocales = [
+  { locale: 'en', flag: '🇬🇧', label: 'United Kingdom' },
+  { locale: 'nl', flag: '🇳🇱', label: 'Nederland' },
+  { locale: 'de', flag: '🇩🇪', label: 'Deutschland' },
+  { locale: 'fr', flag: '🇫🇷', label: 'France' },
+  { locale: 'es', flag: '🇪🇸', label: 'España' },
+  { locale: 'da', flag: '🇩🇰', label: 'Danmark' },
+  { locale: 'sv', flag: '🇸🇪', label: 'Sverige' },
+  { locale: 'nb', flag: '🇳🇴', label: 'Norge' },
+  { locale: 'fi', flag: '🇫🇮', label: 'Suomi' },
+  { locale: 'is', flag: '🇮🇸', label: 'Ísland' },
+  { locale: 'pt', flag: '🇵🇹', label: 'Portugal' },
+  { locale: 'it', flag: '🇮🇹', label: 'Italia' },
+]
+
+function onHolidaysDocClick(e) {
+  if (holidaysDropRef.value && !holidaysDropRef.value.contains(e.target)) {
+    holidaysDropOpen.value = false
+  }
+}
+
+async function addHolidays(loc) {
+  holidaysDropOpen.value = false
+  const year = weekInfo.value.year
+  try {
+    const { data } = await timeEntriesApi.addHolidays({ year, locale: loc })
+    if (data.added === 0 && data.skipped > 0) {
+      ui.info(t('timeTracking.holidays_all_exist', { year, count: data.skipped }))
+    } else if (data.skipped === 0) {
+      ui.success(t('timeTracking.holidays_added', { year, count: data.added }))
+    } else {
+      ui.success(t('timeTracking.holidays_added_skipped', { year, added: data.added, skipped: data.skipped }))
+    }
+    if (data.added > 0) loadWeek()
+  } catch {
+    ui.error(t('timeTracking.holidays_error'))
+  }
+}
+
 // ── Entry state ───────────────────────────────────────────────────────────
 const rawEntries = ref([])  // TimeEntry[] from API for this week
 const localRows  = ref([])  // rows added locally but with no entries yet
@@ -711,10 +768,20 @@ const entryRows = computed(() => {
         project_id:    e.project_id,
         project_name:  e.project?.name || '',
         description:   e.description || '',
+        is_holiday:    e.is_holiday || false,
       })
     }
   }
   return [...seen.values()]
+})
+
+// ISO dates that have a holiday entry this week
+const holidayDates = computed(() => {
+  const s = new Set()
+  for (const e of rawEntries.value) {
+    if (e.is_holiday) s.add(e.date?.slice(0, 10) ?? '')
+  }
+  return s
 })
 
 // All rows = entry-derived rows + locally-added rows not yet in entries
@@ -1241,31 +1308,6 @@ async function exportReportPDF() {
   }
 }
 
-async function triggerDownload(data, filename, type) {
-  if (window.__TAURI_INTERNALS__) {
-    const { save } = await import('@tauri-apps/plugin-dialog')
-    const { writeFile } = await import('@tauri-apps/plugin-fs')
-    const { homeDir, dirname } = await import('@tauri-apps/api/path')
-    const ext = filename.split('.').pop()
-    const lastDir = localStorage.getItem('warmdesk_last_export_dir')
-    const baseDir = lastDir || await homeDir()
-    const path = await save({
-      defaultPath: `${baseDir}/${filename}`,
-      filters: [{ name: ext.toUpperCase(), extensions: [ext] }]
-    })
-    if (!path) return
-    localStorage.setItem('warmdesk_last_export_dir', await dirname(path))
-    const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(await new Blob([data]).arrayBuffer())
-    await writeFile(path, bytes)
-    return
-  }
-  const url = URL.createObjectURL(new Blob([data], { type }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 // ── Time-tracking-only project & customer management ─────────────────────
 const managingProjects     = ref(false)
@@ -1438,8 +1480,14 @@ function onDocClick(e) {
     pdfOptionsOpen.value = false
   }
 }
-onMounted(() => document.addEventListener('mousedown', onDocClick))
-onUnmounted(() => document.removeEventListener('mousedown', onDocClick))
+onMounted(() => {
+  document.addEventListener('mousedown', onDocClick)
+  document.addEventListener('mousedown', onHolidaysDocClick)
+})
+onUnmounted(() => {
+  document.removeEventListener('mousedown', onDocClick)
+  document.removeEventListener('mousedown', onHolidaysDocClick)
+})
 
 // ── Init ──────────────────────────────────────────────────────────────────
 onMounted(async () => {
@@ -1528,6 +1576,34 @@ onMounted(async () => {
 .nav-today { width: auto; padding: 0 8px; font-size: 11px; font-weight: 600; letter-spacing: .03em; }
 .nav-today:disabled { opacity: .4; cursor: default; }
 .nav-today:disabled:hover { background: rgba(255,255,255,.2); }
+.nav-holidays-wrap { position: relative; margin-left: 4px; }
+.nav-holidays { width: auto; padding: 0 10px; font-size: 11px; font-weight: 600; letter-spacing: .03em; display: inline-flex; align-items: center; gap: 4px; }
+.nav-hol-chevron { display: inline-block; font-style: normal; font-size: 11px; transform: rotate(90deg); transition: transform .15s; line-height: 1; }
+.nav-hol-chevron.open { transform: rotate(-90deg); }
+.holidays-drop {
+  position: absolute; top: calc(100% + 4px); right: 0;
+  min-width: 180px; padding: 4px 0;
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,.15); z-index: 200;
+}
+.hol-country-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 7px 14px; border: none; background: none;
+  font-size: 13px; color: var(--color-text); cursor: pointer; text-align: left;
+}
+.hol-country-btn:hover { background: var(--color-surface-2); }
+.hol-flag { font-size: 16px; line-height: 1; flex-shrink: 0; }
+
+/* Holiday highlights */
+.c-day-holiday { background: color-mix(in srgb, var(--color-warning, #f59e0b) 30%, transparent); }
+.dh-holiday-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-warning, #f59e0b); margin: 3px auto 0;
+  box-shadow: 0 0 4px var(--color-warning, #f59e0b);
+}
+.tt-row-holiday { background: color-mix(in srgb, var(--color-warning, #f59e0b) 22%, transparent) !important; }
+.tt-row-holiday .c-info, .tt-row-holiday .c-desc { font-style: italic; opacity: .9; }
+.c-day-holiday-cell { background: color-mix(in srgb, var(--color-warning, #f59e0b) 45%, transparent); }
 
 .tt-mode-tabs { display: flex; gap: 2px; }
 .tt-mode-btn {

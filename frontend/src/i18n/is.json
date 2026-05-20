@@ -751,7 +751,13 @@
     "undeclarable_per_entry": "Ekki reikningshæfur tími á færslu",
     "pdf_page_break_customer": "Ný síða á viðskiptavin",
     "pdf_export_options": "Útflutningsstillingar",
-    "pdf_show_abbr": "Sýna vikudag fyrir dagsetningu"
+    "pdf_show_abbr": "Sýna vikudag fyrir dagsetningu",
+    "add_holidays": "Bæta við frídögum",
+    "add_holidays_title": "Bæta við frídögum fyrir {year}",
+    "holidays_added": "{count} frídagar bættir við fyrir {year}",
+    "holidays_all_exist": "Allir {count} frídagar fyrir {year} eru þegar til",
+    "holidays_added_skipped": "{added} frídagar bættir við fyrir {year} ({skipped} voru þegar til)",
+    "holidays_error": "Mistókst að bæta við frídögum"
   },
   "call": {
     "incoming": "Móttekið símtal",

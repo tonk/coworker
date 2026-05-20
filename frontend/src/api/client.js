@@ -156,4 +156,32 @@ export async function fetchBinary(path, params) {
   return response.data
 }
 
+// Unified file-save helper — works in both browser and Tauri.
+// `data` must be ArrayBuffer (from fetchBinary) or a Blob/ArrayBuffer-compatible value.
+export async function triggerDownload(data, filename, type = 'application/octet-stream') {
+  if (isTauri) {
+    const { save } = await import('@tauri-apps/plugin-dialog')
+    const { writeFile } = await import('@tauri-apps/plugin-fs')
+    const { homeDir, dirname } = await import('@tauri-apps/api/path')
+    const ext = filename.split('.').pop()
+    const lastDir = localStorage.getItem('warmdesk_last_export_dir')
+    const baseDir = lastDir || await homeDir()
+    const path = await save({
+      defaultPath: `${baseDir}/${filename}`,
+      filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
+    })
+    if (!path) return
+    localStorage.setItem('warmdesk_last_export_dir', await dirname(path))
+    const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : new Uint8Array(await new Blob([data]).arrayBuffer())
+    await writeFile(path, bytes)
+    return
+  }
+  const url = URL.createObjectURL(new Blob([data], { type }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default client

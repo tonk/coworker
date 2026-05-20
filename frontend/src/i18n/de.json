@@ -757,7 +757,13 @@
     "undeclarable_per_entry": "Nicht abrechenbare Zeit pro Eintrag",
     "pdf_page_break_customer": "Neue Seite pro Kunde",
     "pdf_export_options": "Exportoptionen",
-    "pdf_show_abbr": "Wochentag vor Datum anzeigen"
+    "pdf_show_abbr": "Wochentag vor Datum anzeigen",
+    "add_holidays": "Feiertage hinzufügen",
+    "add_holidays_title": "Feiertage für {year} hinzufügen",
+    "holidays_added": "{count} Feiertage für {year} hinzugefügt",
+    "holidays_all_exist": "Alle {count} Feiertage für {year} existieren bereits",
+    "holidays_added_skipped": "{added} Feiertage für {year} hinzugefügt ({skipped} bereits vorhanden)",
+    "holidays_error": "Feiertage konnten nicht hinzugefügt werden"
   },
   "call": {
     "incoming": "Eingehender Anruf",

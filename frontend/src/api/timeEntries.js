@@ -9,4 +9,5 @@ export const timeEntriesApi = {
   reportPDF: (params) => fetchBinary('/time-entries/report/pdf', params),
   reportXLSX: (params) => fetchBinary('/time-entries/report/xlsx', params),
   sheetXLSX: (params) => fetchBinary('/time-entries/sheet/xlsx', params),
+  addHolidays: (data) => client.post('/time-entries/holidays', data),
 }

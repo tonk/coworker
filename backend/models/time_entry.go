@@ -12,6 +12,7 @@ type TimeEntry struct {
 	Date        time.Time `gorm:"not null;index" json:"date"`
 	Minutes     int    `gorm:"not null" json:"minutes"`
 	Description string `json:"description"`
+	IsHoliday   bool   `gorm:"default:false" json:"is_holiday"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

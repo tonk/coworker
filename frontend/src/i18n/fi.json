@@ -750,7 +750,13 @@
     "undeclarable_per_entry": "Ei-laskutettava aika per merkintä",
     "pdf_page_break_customer": "Uusi sivu per asiakas",
     "pdf_export_options": "Vientiasetukset",
-    "pdf_show_abbr": "Näytä viikonpäivä ennen päivämäärää"
+    "pdf_show_abbr": "Näytä viikonpäivä ennen päivämäärää",
+    "add_holidays": "Lisää pyhäpäivät",
+    "add_holidays_title": "Lisää pyhäpäivät vuodelle {year}",
+    "holidays_added": "{count} pyhäpäivää lisätty vuodelle {year}",
+    "holidays_all_exist": "Kaikki {count} pyhäpäivää vuodelle {year} ovat jo olemassa",
+    "holidays_added_skipped": "{added} pyhäpäivää lisätty vuodelle {year} ({skipped} oli jo olemassa)",
+    "holidays_error": "Pyhäpäivien lisääminen epäonnistui"
   },
   "call": {
     "incoming": "Saapuva puhelu",

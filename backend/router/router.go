@@ -231,6 +231,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.GET("/time-entries/report/pdf", handlers.GetTimeEntryReportPDF)
 		protected.GET("/time-entries/report/xlsx", handlers.GetTimeEntryReportXLSX)
 		protected.GET("/time-entries/sheet/xlsx", handlers.GetTimeEntrySheetXLSX)
+		protected.POST("/time-entries/holidays", handlers.AddHolidays)
 
 		// Prometheus metrics (admin or metrics role)
 		protected.GET("/metrics", middleware.MetricsAuth(), handlers.GetMetrics)

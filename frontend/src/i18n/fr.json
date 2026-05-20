@@ -757,7 +757,13 @@
     "undeclarable_per_entry": "Temps non facturable par entrée",
     "pdf_page_break_customer": "Nouvelle page par client",
     "pdf_export_options": "Options d'export",
-    "pdf_show_abbr": "Afficher le jour de la semaine avant la date"
+    "pdf_show_abbr": "Afficher le jour de la semaine avant la date",
+    "add_holidays": "Ajouter les jours fériés",
+    "add_holidays_title": "Ajouter les jours fériés pour {year}",
+    "holidays_added": "{count} jours fériés ajoutés pour {year}",
+    "holidays_all_exist": "Tous les {count} jours fériés de {year} existent déjà",
+    "holidays_added_skipped": "{added} jours fériés ajoutés pour {year} ({skipped} existaient déjà)",
+    "holidays_error": "Impossible d'ajouter les jours fériés"
   },
   "call": {
     "incoming": "Appel entrant",

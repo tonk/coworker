@@ -751,7 +751,13 @@
     "undeclarable_per_entry": "Tempo non dichiarabile per voce",
     "pdf_page_break_customer": "Nuova pagina per cliente",
     "pdf_export_options": "Opzioni di esportazione",
-    "pdf_show_abbr": "Mostra giorno della settimana prima della data"
+    "pdf_show_abbr": "Mostra giorno della settimana prima della data",
+    "add_holidays": "Aggiungi festività",
+    "add_holidays_title": "Aggiungi festività per {year}",
+    "holidays_added": "{count} festività aggiunte per {year}",
+    "holidays_all_exist": "Tutte le {count} festività del {year} esistono già",
+    "holidays_added_skipped": "{added} festività aggiunte per {year} ({skipped} già esistenti)",
+    "holidays_error": "Impossibile aggiungere le festività"
   },
   "call": {
     "incoming": "Chiamata in arrivo",

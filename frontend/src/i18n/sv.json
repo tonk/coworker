@@ -751,7 +751,13 @@
     "undeclarable_per_entry": "Ej fakturerbar tid per post",
     "pdf_page_break_customer": "Ny sida per kund",
     "pdf_export_options": "Exportalternativ",
-    "pdf_show_abbr": "Visa veckodag före datum"
+    "pdf_show_abbr": "Visa veckodag före datum",
+    "add_holidays": "Lägg till helgdagar",
+    "add_holidays_title": "Lägg till helgdagar för {year}",
+    "holidays_added": "{count} helgdagar tillagda för {year}",
+    "holidays_all_exist": "Alla {count} helgdagar för {year} finns redan",
+    "holidays_added_skipped": "{added} helgdagar tillagda för {year} ({skipped} fanns redan)",
+    "holidays_error": "Det gick inte att lägga till helgdagar"
   },
   "call": {
     "incoming": "Inkommande samtal",

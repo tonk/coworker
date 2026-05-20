@@ -757,7 +757,13 @@
     "undeclarable_per_entry": "Tiempo no declarable por entrada",
     "pdf_page_break_customer": "Nueva página por cliente",
     "pdf_export_options": "Opciones de exportación",
-    "pdf_show_abbr": "Mostrar día de la semana antes de la fecha"
+    "pdf_show_abbr": "Mostrar día de la semana antes de la fecha",
+    "add_holidays": "Añadir festivos",
+    "add_holidays_title": "Añadir festivos para {year}",
+    "holidays_added": "{count} festivos añadidos para {year}",
+    "holidays_all_exist": "Todos los {count} festivos de {year} ya existen",
+    "holidays_added_skipped": "{added} festivos añadidos para {year} ({skipped} ya existían)",
+    "holidays_error": "No se pudieron añadir los festivos"
   },
   "call": {
     "incoming": "Llamada entrante",
