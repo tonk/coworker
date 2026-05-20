@@ -162,7 +162,7 @@
                   :type="timeNotation === 'hhmm' ? 'text' : 'number'"
                   class="h-inp"
                   :class="{ 'h-inp-filled': !!cellVal(row, d.iso) }"
-                  v-bind="timeNotation === 'hhmm' ? { placeholder: savingCell === row.key + d.iso ? '…' : '0:00' } : { step: '0.25', min: '0', placeholder: savingCell === row.key + d.iso ? '…' : '' }"
+                  v-bind="timeNotation === 'hhmm' ? { placeholder: savingCell === row.key + d.iso ? '…' : '' } : { step: '0.25', min: '0', placeholder: savingCell === row.key + d.iso ? '…' : '' }"
                   :value="cellVal(row, d.iso)"
                   :aria-label="timeNotation === 'hhmm' ? 'Hours and minutes for ' + d.abbr + ' ' + d.mmdd : 'Hours for ' + d.abbr + ' ' + d.mmdd"
                   :disabled="viewingOther || savingCell === row.key + d.iso || editingRow === row.key"
@@ -1910,6 +1910,8 @@ onMounted(async () => {
 .h-inp:focus { border-color: var(--color-primary); background: var(--color-surface); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent); }
 .h-inp.h-inp-filled { background: var(--color-surface); font-weight: 600; }
 .h-inp:disabled { background: var(--color-bg); cursor: not-allowed; }
+.h-inp::placeholder { color: transparent; }
+.h-inp:focus::placeholder { color: var(--color-text-muted); opacity: .5; }
 
 /* Totals */
 .c-total { text-align: right; font-weight: 600; font-size: 13px; padding: 4px 10px; }
