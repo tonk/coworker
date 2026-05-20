@@ -553,3 +553,6 @@ Create an application that has all these features and requirements
 - Add public holidays to time tracking: dropdown in the week navigation bar lists 12 countries by flag and native name; clicking a country adds 0-minute holiday entries for the current year; skip existing entries and report added vs. skipped count
 - Highlight holiday entries in the sheet: amber background on day column headers (with glowing dot), amber row background, and stronger amber on the specific day cell
 - Fix backup download in Tauri desktop app: use fetchBinary + triggerDownload so the native save dialog opens correctly on Linux
+- Leave time entry cells blank when value is 0:00 to reduce visual noise; placeholder still shows on focus
+- Replace emoji flag characters in holidays dropdown with CSS gradient badges approximating each country's flag colours; works on Linux without a colour emoji font
+- Add calendar date-picker to week label in time tracking: clicking "Week 14 2026" opens a month calendar popover with week numbers; click any day or week number to jump to that week

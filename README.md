@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.9.59)
+## Latest release (v0.9.60)
 
-- **Public holidays** — *Add holidays* dropdown in the time-tracking week view adds 0-minute holiday entries for 12 countries; holidays are highlighted in amber in the sheet.
-- **Backup download fix (Tauri)** — the Download button in Admin → Backup now opens the native save dialog on the desktop app.
+- **Calendar week-picker** — click the *Week 14 2026* label in time tracking to open a calendar popover; pick any day or week number to jump there instantly.
+- **Cleaner time sheet** — zero-minute cells are now blank instead of showing *0:00*, reducing visual noise.
+- **Flag badges everywhere** — the holidays dropdown now uses CSS gradient badges instead of emoji flags, so they render correctly on Linux too.
 
 ## Experiment
 

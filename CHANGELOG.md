@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.60 — 2026-05-20
+
+### Added
+- **Calendar date-picker on week label** — clicking *Week 14 2026* in the time-tracking navigation bar opens a month calendar popover; click any day to jump to its week, or click a week number in the left column to jump directly to that ISO week; month navigation arrows browse forward and backward; the current week is highlighted in primary colour, today is bold; closes on outside click
+
+### Fixed
+- **Empty time cells show blank instead of 0:00** — time entry cells with no logged time (or a 0-minute holiday stub) are now left blank for a quieter visual; the `0:00` placeholder still appears on focus
+- **Holiday dropdown flag badges** — emoji flag characters rendered as letter boxes on Linux without a colour emoji font; replaced with CSS gradient badges approximating each country's flag colours (gradient stripes for tricolors, simplified patterns for Nordic-cross and Union Jack)
+
 ## v0.9.59 — 2026-05-20
 
 ### Added

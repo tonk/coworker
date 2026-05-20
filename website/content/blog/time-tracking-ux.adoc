@@ -1,0 +1,56 @@
+---
+title: "Time Tracking: Cleaner Sheet, Smarter Week Navigation"
+date: "2026-05-20"
+author: "Ton Kersten"
+description: "Three small quality-of-life improvements to the time-tracking module: blank cells instead of 0:00, a clickable week label that opens a calendar date-picker with week numbers, and CSS flag badges that work everywhere."
+draft: false
+---
+:doctype: article
+:icons!:
+
+A handful of focused improvements to the time-tracking module land in v0.9.60.
+None of them change how data is stored — they all make the interface quieter and faster to navigate.
+
+== Blank cells for zero entries
+
+Every row in the weekly sheet used to show *0:00* in each day column that had no time logged.
+On a sheet with many projects, that added up to a wall of identical zeros — visual noise that made it harder to spot the cells that actually contained work.
+
+Cells with no time are now left blank.
+The `0:00` placeholder still appears inside the input field when you click into an empty cell, so the expected format is always clear.
+Rows with a 0-minute holiday stub (inserted by *Add holidays*) are also blank, which keeps the amber holiday highlight readable without a redundant zero cluttering it.
+
+== Calendar date-picker on the week label
+
+The *Week 14 2026* label in the navigation bar is now a button.
+Click it and a calendar popover opens, centred below the label, showing the current month.
+
+image::screenshots/week-picker.png[Week picker calendar,480,role="screenshot"]
+
+From the calendar you can:
+
+* Click any *day* to jump directly to the week that contains that day.
+* Click any *week number* in the left column to jump to that ISO week — useful when you already know the week number from a report or a colleague's message.
+* Navigate month by month with the *◀* and *▶* arrows in the calendar header.
+
+The selected week is highlighted in the primary colour so you always know where you are.
+Today's date is shown in bold.
+Clicking outside the popover closes it.
+
+The *◀* and *▶* navigation arrows beside the label still work exactly as before for stepping one week at a time.
+The *Today* button likewise remains unchanged.
+
+=== Week numbers
+
+The calendar column shows ISO 8601 week numbers.
+These match the week numbers shown in the sheet header and in all reports, so you can cross-reference a time report (e.g. *W14*) and land on the right week in one click.
+
+== Flag badges in the holidays dropdown
+
+The *Add holidays* dropdown previously used Unicode emoji flag characters (🇳🇱, 🇩🇪, …) to identify each country.
+On Linux desktop environments without a colour emoji font installed those characters rendered as pairs of letter boxes — `[N][L]`, `[D][E]` — which was clearly not the intent.
+
+The flags are now CSS gradient badges that approximate the colours of each country's flag.
+Tricolor countries (Netherlands, Germany, France, Spain, Italy, Portugal) get an accurate horizontal or vertical stripe gradient.
+Nordic-cross countries (Denmark, Sweden, Norway, Finland, Iceland) and the United Kingdom get a simplified but instantly recognisable colour pattern.
+No external font or image asset is required, so the badges look sharp in every environment — browser, Linux AppImage, and macOS desktop app alike.
