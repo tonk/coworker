@@ -853,7 +853,7 @@ function getEntry(row, dateISO) {
 
 function cellVal(row, dateISO) {
   const e = getEntry(row, dateISO)
-  return e ? fmtTime(e.minutes) : ''
+  return e && e.minutes ? fmtTime(e.minutes) : ''
 }
 
 function rowTotal(row) {
