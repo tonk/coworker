@@ -32,7 +32,7 @@
             </tr>
             <tr>
               <td>{{ $t('about.built_with') }}</td>
-              <td>Go · Vue 3 · SQLite / PostgreSQL / MySQL</td>
+              <td>Go · Vue 3 · Rust / Tauri · SQLite / PostgreSQL / MySQL</td>
             </tr>
           </tbody>
         </table>
