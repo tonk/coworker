@@ -755,7 +755,9 @@
     "undeclarable": "No declarable",
     "declarable": "Declarable",
     "undeclarable_per_entry": "Tiempo no declarable por entrada",
-    "pdf_page_break_customer": "Nueva página por cliente"
+    "pdf_page_break_customer": "Nueva página por cliente",
+    "pdf_export_options": "Opciones de exportación",
+    "pdf_show_abbr": "Mostrar día de la semana antes de la fecha"
   },
   "call": {
     "incoming": "Llamada entrante",

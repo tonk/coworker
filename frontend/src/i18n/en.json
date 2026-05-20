@@ -755,7 +755,9 @@
     "undeclarable": "Undeclarable",
     "declarable": "Declarable",
     "undeclarable_per_entry": "Undeclarable time per entry",
-    "pdf_page_break_customer": "New page per customer"
+    "pdf_page_break_customer": "New page per customer",
+    "pdf_export_options": "Export options",
+    "pdf_show_abbr": "Show day of week before date"
   },
   "call": {
     "incoming": "Incoming call",

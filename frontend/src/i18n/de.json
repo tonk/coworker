@@ -755,7 +755,9 @@
     "undeclarable": "Nicht abrechenbar",
     "declarable": "Abrechenbar",
     "undeclarable_per_entry": "Nicht abrechenbare Zeit pro Eintrag",
-    "pdf_page_break_customer": "Neue Seite pro Kunde"
+    "pdf_page_break_customer": "Neue Seite pro Kunde",
+    "pdf_export_options": "Exportoptionen",
+    "pdf_show_abbr": "Wochentag vor Datum anzeigen"
   },
   "call": {
     "incoming": "Eingehender Anruf",

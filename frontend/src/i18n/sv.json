@@ -749,7 +749,9 @@
     "undeclarable": "Ej fakturerbar",
     "declarable": "Fakturerbar",
     "undeclarable_per_entry": "Ej fakturerbar tid per post",
-    "pdf_page_break_customer": "Ny sida per kund"
+    "pdf_page_break_customer": "Ny sida per kund",
+    "pdf_export_options": "Exportalternativ",
+    "pdf_show_abbr": "Visa veckodag före datum"
   },
   "call": {
     "incoming": "Inkommande samtal",

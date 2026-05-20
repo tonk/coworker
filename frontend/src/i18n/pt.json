@@ -749,7 +749,9 @@
     "undeclarable": "Não declarável",
     "declarable": "Declarável",
     "undeclarable_per_entry": "Tempo não declarável por entrada",
-    "pdf_page_break_customer": "Nova página por cliente"
+    "pdf_page_break_customer": "Nova página por cliente",
+    "pdf_export_options": "Opções de exportação",
+    "pdf_show_abbr": "Mostrar dia da semana antes da data"
   },
   "call": {
     "incoming": "Chamada recebida",

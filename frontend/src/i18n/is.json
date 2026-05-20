@@ -749,7 +749,9 @@
     "undeclarable": "Ekki reikningshæft",
     "declarable": "Reikningshæft",
     "undeclarable_per_entry": "Ekki reikningshæfur tími á færslu",
-    "pdf_page_break_customer": "Ný síða á viðskiptavin"
+    "pdf_page_break_customer": "Ný síða á viðskiptavin",
+    "pdf_export_options": "Útflutningsstillingar",
+    "pdf_show_abbr": "Sýna vikudag fyrir dagsetningu"
   },
   "call": {
     "incoming": "Móttekið símtal",

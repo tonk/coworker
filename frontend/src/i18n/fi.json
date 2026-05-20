@@ -748,7 +748,9 @@
     "undeclarable": "Ei laskutettava",
     "declarable": "Laskutettava",
     "undeclarable_per_entry": "Ei-laskutettava aika per merkintä",
-    "pdf_page_break_customer": "Uusi sivu per asiakas"
+    "pdf_page_break_customer": "Uusi sivu per asiakas",
+    "pdf_export_options": "Vientiasetukset",
+    "pdf_show_abbr": "Näytä viikonpäivä ennen päivämäärää"
   },
   "call": {
     "incoming": "Saapuva puhelu",

@@ -755,7 +755,9 @@
     "undeclarable": "Niet declarabel",
     "declarable": "Declarabel",
     "undeclarable_per_entry": "Niet-declarabele tijd per entry",
-    "pdf_page_break_customer": "Nieuwe pagina per klant"
+    "pdf_page_break_customer": "Nieuwe pagina per klant",
+    "pdf_export_options": "Exportopties",
+    "pdf_show_abbr": "Dag van de week voor datum weergeven"
   },
   "call": {
     "incoming": "Inkomende oproep",

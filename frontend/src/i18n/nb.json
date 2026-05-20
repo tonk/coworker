@@ -749,7 +749,9 @@
     "undeclarable": "Ikke fakturerbar",
     "declarable": "Fakturerbar",
     "undeclarable_per_entry": "Ikke-fakturerbar tid per oppføring",
-    "pdf_page_break_customer": "Ny side per kunde"
+    "pdf_page_break_customer": "Ny side per kunde",
+    "pdf_export_options": "Eksportalternativer",
+    "pdf_show_abbr": "Vis ukedag før dato"
   },
   "call": {
     "incoming": "Innkommende anrop",

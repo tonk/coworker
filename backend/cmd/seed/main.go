@@ -2505,6 +2505,106 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d time entries for 5 users\n", totalTimeEntries)
 
+	// ── 8b. Personal TT-only projects and customers for tonk ─────────────────
+	fmt.Println("→ Creating personal TT-only projects and customers for tonk…")
+
+	// TT-only customers owned by tonk
+	type ttCustomerSpec struct {
+		name string
+		desc string
+	}
+	ttCustomers := []ttCustomerSpec{
+		{name: "Smart Owl Consulting", desc: "Internal employer — used for travel, holidays, and internal hours."},
+		{name: "Personal", desc: "Purely personal time: study, training, and other non-billable activities."},
+	}
+	ttCustIDByName := map[string]uint{}
+	for _, cs := range ttCustomers {
+		cust := &models.Customer{
+			Name:             cs.name,
+			Description:      cs.desc,
+			TimeTrackingOnly: true,
+			CreatedByID:      &tonk.ID,
+		}
+		must(db.Create(cust).Error)
+		ttCustIDByName[cs.name] = cust.ID
+		must(db.Create(&models.CustomerFavorite{UserID: tonk.ID, CustomerID: cust.ID}).Error)
+	}
+
+	// TT-only projects owned by tonk
+	type ttProjectSpec struct {
+		name         string
+		slug         string
+		color        string
+		undeclarable int // minutes per entry that cannot be declared
+		customer     string
+	}
+	ttProjectSpecs := []ttProjectSpec{
+		{name: "Travel", slug: "travel-tt", color: "#f59e0b", undeclarable: 45, customer: "Smart Owl Consulting"},
+		{name: "Holidays", slug: "holidays-tt", color: "#10b981", undeclarable: 480, customer: "Smart Owl Consulting"},
+		{name: "Study & Training", slug: "study-tt", color: "#6366f1", undeclarable: 0, customer: "Personal"},
+		{name: "Internal", slug: "internal-tt", color: "#8b5cf6", undeclarable: 60, customer: "Smart Owl Consulting"},
+	}
+	ttProjIDBySlug := map[string]uint{}
+	for _, ps := range ttProjectSpecs {
+		proj := &models.Project{
+			Name:                ps.name,
+			Slug:                ps.slug,
+			Color:               ps.color,
+			TimeTrackingOnly:    true,
+			UndeclarableMinutes: ps.undeclarable,
+			CreatedByID:         tonk.ID,
+		}
+		must(db.Create(proj).Error)
+		ttProjIDBySlug[ps.slug] = proj.ID
+	}
+
+	// Time entries for tonk's personal projects
+	type ttTeSpec struct {
+		slug     string
+		customer string
+		daysAgo  int
+		minutes  int
+		desc     string
+	}
+	ttEntries := []ttTeSpec{
+		// Travel
+		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 1, minutes: 120, desc: "Travel to customer site"},
+		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 3, minutes: 90, desc: "Travel to Amsterdam office"},
+		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 8, minutes: 120, desc: "Travel to and from training location"},
+		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 15, minutes: 90, desc: "Travel to customer workshop"},
+		// Holidays
+		{slug: "holidays-tt", customer: "Smart Owl Consulting", daysAgo: 5, minutes: 480, desc: "Annual leave"},
+		{slug: "holidays-tt", customer: "Smart Owl Consulting", daysAgo: 6, minutes: 480, desc: "Annual leave"},
+		{slug: "holidays-tt", customer: "Smart Owl Consulting", daysAgo: 20, minutes: 480, desc: "Bank holiday"},
+		// Study & Training
+		{slug: "study-tt", customer: "Personal", daysAgo: 2, minutes: 180, desc: "Go concurrency patterns — self-study"},
+		{slug: "study-tt", customer: "Personal", daysAgo: 9, minutes: 240, desc: "Cloud-native training course"},
+		{slug: "study-tt", customer: "Personal", daysAgo: 14, minutes: 120, desc: "Read: The Pragmatic Programmer"},
+		// Internal
+		{slug: "internal-tt", customer: "Smart Owl Consulting", daysAgo: 1, minutes: 60, desc: "Team standup and weekly sync"},
+		{slug: "internal-tt", customer: "Smart Owl Consulting", daysAgo: 4, minutes: 90, desc: "Internal retrospective meeting"},
+		{slug: "internal-tt", customer: "Smart Owl Consulting", daysAgo: 7, minutes: 60, desc: "Department all-hands"},
+		{slug: "internal-tt", customer: "Smart Owl Consulting", daysAgo: 11, minutes: 120, desc: "Quarterly planning session"},
+	}
+	for _, te := range ttEntries {
+		date := time.Now().UTC().AddDate(0, 0, -te.daysAgo).Truncate(24 * time.Hour)
+		entry := models.TimeEntry{
+			UserID:      tonk.ID,
+			Date:        date,
+			Minutes:     te.minutes,
+			Description: te.desc,
+		}
+		if cid, ok := ttCustIDByName[te.customer]; ok {
+			entry.CustomerID = pUint(cid)
+		}
+		if pid, ok := ttProjIDBySlug[te.slug]; ok {
+			entry.ProjectID = pUint(pid)
+		}
+		must(db.Create(&entry).Error)
+	}
+	fmt.Printf("   Created %d TT-only customers, %d TT-only projects, %d personal time entries for tonk\n",
+		len(ttCustomers), len(ttProjectSpecs), len(ttEntries))
+
 	// ── 9. News items ─────────────────────────────────────────────────────────
 	fmt.Println("→ Creating news items…")
 
@@ -2779,8 +2879,8 @@ func joinNames(arr []string) string {
 // demo users and projects), then the users themselves,
 func removeDemoData(db *gorm.DB) {
 	demoUsernames := []string{"demo.admin", "demo.sarah", "demo.marc", "demo.lisa", "demo.viewer", "demo.priya", "demo.james", "demo.elena", "demo.raj"}
-	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra", "product-platform", "api-platform", "marketing"}
-	demoCustomerNames := []string{"Acme Corporation", "Globex Systems", "Initech Ltd"}
+	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra", "product-platform", "api-platform", "marketing", "travel-tt", "holidays-tt", "study-tt", "internal-tt"}
+	demoCustomerNames := []string{"Acme Corporation", "Globex Systems", "Initech Ltd", "Smart Owl Consulting", "Personal"}
 
 	// Collect user IDs
 	var userIDs []uint
@@ -2826,6 +2926,8 @@ func removeDemoData(db *gorm.DB) {
 			db.Unscoped().Where("topic_id IN ?", topicIDs).Delete(&models.TopicReply{})
 		}
 		db.Unscoped().Where("project_id IN ?", projectIDs).Delete(&models.Topic{})
+		// Delete time entries referencing these projects (covers tonk's TT entries)
+		db.Where("project_id IN ?", projectIDs).Delete(&models.TimeEntry{})
 		db.Unscoped().Where("id IN ?", projectIDs).Delete(&models.Project{})
 	}
 

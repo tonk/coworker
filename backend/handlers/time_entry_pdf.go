@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/jung-kurt/gofpdf"
 	"github.com/tonk/warmdesk/database"
@@ -109,6 +108,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	// ── Determine paging mode before building the header func ────────────────
 	groupBy := c.DefaultQuery("group_by", "period")
 	pageBreakPerCustomer := groupBy == "customer" && c.Query("page_break") == "customer"
+	showAbbr := c.Query("show_abbr") == "1"
 
 	// Pre-load logo once so the header closure doesn't hit disk on every page.
 	var cachedLogoBytes []byte
@@ -159,13 +159,22 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	}
 
 	// ── Column widths (mm) ────────────────────────────────────────────────────
-	const (
-		colDate  = 25.0
-		colCust  = 45.0
-		colProj  = 45.0
-		colDesc  = 50.0
-		colHours = pdfBodyW - colDate - colCust - colProj - colDesc
+	// When abbreviations are shown the date column is wider; description shrinks
+	// by the same amount so the total stays constant.
+	// colAbbr is a fixed sub-cell inside colDate so dates always align regardless
+	// of whether the language uses 2- or 3-character day abbreviations.
+	const colAbbr = 9.0 // wide enough for 3-char abbreviations in any language
+	var (
+		colDate = 25.0
+		colCust = 45.0
+		colProj = 45.0
+		colDesc = 50.0
 	)
+	if showAbbr {
+		colDate = colAbbr + 25.0
+		colDesc = 40.0
+	}
+	colHours := pdfBodyW - colDate - colCust - colProj - colDesc
 
 	// ── Table header ──────────────────────────────────────────────────────────
 	drawTableHeader := func() {
@@ -252,7 +261,16 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 				projectName = e.Project.Name
 			}
 
-			pdf.CellFormat(colDate, rowH, e.Date.Format("2006-01-02"), "B", 0, "L", true, 0, "")
+			dateCell := e.Date.Format("2006-01-02")
+			if showAbbr {
+				// Render abbreviation in a fixed-width sub-cell so the date
+				// column stays aligned regardless of 2- vs 3-char abbr width.
+				abbrIdx := (int(e.Date.Weekday()) + 6) % 7
+				pdf.CellFormat(colAbbr, rowH, tr.DaysAbbr[abbrIdx], "B", 0, "L", true, 0, "")
+				pdf.CellFormat(colDate-colAbbr, rowH, dateCell, "B", 0, "L", true, 0, "")
+			} else {
+				pdf.CellFormat(colDate, rowH, dateCell, "B", 0, "L", true, 0, "")
+			}
 			pdf.CellFormat(colCust, rowH, customerName, "B", 0, "L", true, 0, "")
 			pdf.CellFormat(colProj, rowH, projectName, "B", 0, "L", true, 0, "")
 			pdf.CellFormat(colDesc, rowH, truncate(e.Description, 32), "B", 0, "L", true, 0, "")

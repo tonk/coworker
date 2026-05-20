@@ -323,12 +323,30 @@
               <option value="it">Italiano</option>
             </select>
           </div>
-          <div v-if="rpt.group_by === 'customer'" class="pdf-font-group">
+          <div class="pdf-font-group" ref="pdfOptionsRef">
             <span class="filter-label">&nbsp;</span>
-            <label class="pdf-page-break-label">
-              <input type="checkbox" v-model="pdfPageBreak" />
-              {{ $t('timeTracking.pdf_page_break_customer') }}
-            </label>
+            <div class="pdf-options-wrapper">
+              <button
+                class="pdf-options-btn"
+                :class="{ 'is-active': pdfShowAbbr || (rpt.group_by === 'customer' && pdfPageBreak) }"
+                @click="pdfOptionsOpen = !pdfOptionsOpen"
+                :aria-expanded="String(pdfOptionsOpen)"
+                aria-haspopup="true"
+                :aria-label="$t('timeTracking.pdf_export_options')"
+              >
+                {{ $t('timeTracking.pdf_export_options') }}<span class="pdf-opts-chevron" :class="{ open: pdfOptionsOpen }">›</span>
+              </button>
+              <div v-if="pdfOptionsOpen" class="pdf-options-panel" role="menu">
+                <label class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowAbbr)">
+                  <input type="checkbox" v-model="pdfShowAbbr" />
+                  {{ $t('timeTracking.pdf_show_abbr') }}
+                </label>
+                <label v-if="rpt.group_by === 'customer'" class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfPageBreak)">
+                  <input type="checkbox" v-model="pdfPageBreak" />
+                  {{ $t('timeTracking.pdf_page_break_customer') }}
+                </label>
+              </div>
+            </div>
           </div>
           <button class="btn btn-secondary" @click="exportReportXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
           <button class="btn btn-secondary" @click="exportReportPDF">{{ $t('timeTracking.export_pdf') }}</button>
@@ -535,7 +553,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
@@ -599,7 +617,12 @@ const pdfFont = ref(localStorage.getItem('timeTracking.pdfFont') || 'inter')
 watch(pdfFont, v => localStorage.setItem('timeTracking.pdfFont', v))
 const pdfLang = ref(localStorage.getItem('timeTracking.pdfLang') || 'auto')
 watch(pdfLang, v => localStorage.setItem('timeTracking.pdfLang', v))
-const pdfPageBreak = ref(false)
+const pdfPageBreak = ref(localStorage.getItem('timeTracking.pdfPageBreak') === '1')
+watch(pdfPageBreak, v => localStorage.setItem('timeTracking.pdfPageBreak', v ? '1' : '0'))
+const pdfShowAbbr = ref(localStorage.getItem('timeTracking.pdfShowAbbr') === '1')
+watch(pdfShowAbbr, v => localStorage.setItem('timeTracking.pdfShowAbbr', v ? '1' : '0'))
+const pdfOptionsOpen = ref(false)
+const pdfOptionsRef = ref(null)
 
 // ── Mode ──────────────────────────────────────────────────────────────────
 const mode = ref('sheet')
@@ -1204,6 +1227,7 @@ async function exportReportPDF() {
       lang:     pdfLang.value,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    if (pdfShowAbbr.value) params.show_abbr = '1'
     if (pdfPageBreak.value && rpt.value.group_by === 'customer') params.page_break = 'customer'
     const data = await timeEntriesApi.reportPDF(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
@@ -1404,6 +1428,15 @@ async function deleteTTCustomer(c) {
     ui.error(t('timeTracking.tt_customer_delete_error'))
   }
 }
+
+// ── PDF options dropdown — close on outside click ─────────────────────────
+function onDocClick(e) {
+  if (pdfOptionsRef.value && !pdfOptionsRef.value.contains(e.target)) {
+    pdfOptionsOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener('mousedown', onDocClick))
+onUnmounted(() => document.removeEventListener('mousedown', onDocClick))
 
 // ── Init ──────────────────────────────────────────────────────────────────
 onMounted(async () => {
@@ -1706,15 +1739,36 @@ onMounted(async () => {
 .btn-copy-prev:disabled { opacity: 0.5; cursor: not-allowed; }
 .tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
 .pdf-font-group { display: flex; flex-direction: column; gap: 4px; }
-.pdf-page-break-label {
-  display: inline-flex; align-items: center; gap: 7px;
-  height: 36px; padding: 8px 12px;
+.pdf-options-wrapper { position: relative; }
+.pdf-options-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 12px;
   border: 1px solid var(--color-border); border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  font-size: 13px; color: var(--color-text); cursor: pointer;
-  white-space: nowrap; user-select: none;
+  background: var(--color-surface); color: var(--color-text);
+  font-size: 13px; cursor: pointer; white-space: nowrap;
+  transition: border-color .15s, color .15s;
 }
-.pdf-page-break-label input[type="checkbox"] { accent-color: var(--color-primary); cursor: pointer; }
+.pdf-options-btn:hover { border-color: var(--color-primary); }
+.pdf-options-btn.is-active { border-color: var(--color-primary); color: var(--color-primary); }
+.pdf-opts-chevron {
+  display: inline-block; font-style: normal; font-size: 11px;
+  transform: rotate(90deg); transition: transform .15s;
+}
+.pdf-opts-chevron.open { transform: rotate(-90deg); }
+.pdf-options-panel {
+  position: absolute; top: calc(100% + 4px); right: 0;
+  min-width: 220px; padding: 6px 0;
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  z-index: 120;
+}
+.pdf-option-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px; font-size: 13px; color: var(--color-text);
+  cursor: pointer; user-select: none;
+}
+.pdf-option-item:hover { background: var(--color-surface-2); }
+.pdf-option-item input[type="checkbox"] { accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0; }
 .filter-label {
   font-size: 12px;
   font-weight: 600;

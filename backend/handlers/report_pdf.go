@@ -178,6 +178,7 @@ type pdfI18n struct {
 	MonthsFull [12]string
 	MonthsAbbr [12]string
 	DaysFull   [7]string
+	DaysAbbr   [7]string // Mon=0 … Sun=6 (same order as DaysFull)
 	// DMY signals that dates should be rendered in day-month order ("17 mei")
 	// rather than the American month-day order ("May 17") that Go's time.Format
 	// always produces. Set to true for every non-English locale.
@@ -212,6 +213,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"},
 		MonthsAbbr:   [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"},
 		DaysFull:     [7]string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"},
+		DaysAbbr:     [7]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"},
 	},
 	"nl": {
 		TimeReport:   "Tijdrapport",
@@ -238,6 +240,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
 		DaysFull:     [7]string{"maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"},
+		DaysAbbr:     [7]string{"ma", "di", "wo", "do", "vr", "za", "zo"},
 		DMY:          true,
 	},
 	"de": {
@@ -265,6 +268,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"},
 		MonthsAbbr:   [12]string{"Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"},
 		DaysFull:     [7]string{"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"},
+		DaysAbbr:     [7]string{"Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"},
 		DMY:          true,
 	},
 	"fr": {
@@ -292,6 +296,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"},
 		MonthsAbbr:   [12]string{"janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."},
 		DaysFull:     [7]string{"lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"},
+		DaysAbbr:     [7]string{"lun", "mar", "mer", "jeu", "ven", "sam", "dim"},
 		DMY:          true,
 	},
 	"es": {
@@ -319,6 +324,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"},
 		MonthsAbbr:   [12]string{"ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"},
 		DaysFull:     [7]string{"lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"},
+		DaysAbbr:     [7]string{"lun", "mar", "mié", "jue", "vie", "sáb", "dom"},
 		DMY:          true,
 	},
 	"da": {
@@ -346,6 +352,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
 		DaysFull:     [7]string{"mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"},
+		DaysAbbr:     [7]string{"man", "tir", "ons", "tor", "fre", "lør", "søn"},
 		DMY:          true,
 	},
 	"sv": {
@@ -373,6 +380,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
 		DaysFull:     [7]string{"måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag", "söndag"},
+		DaysAbbr:     [7]string{"mån", "tis", "ons", "tor", "fre", "lör", "sön"},
 		DMY:          true,
 	},
 	"nb": {
@@ -400,6 +408,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"},
 		DaysFull:     [7]string{"mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"},
+		DaysAbbr:     [7]string{"man", "tir", "ons", "tor", "fre", "lør", "søn"},
 		DMY:          true,
 	},
 	"fi": {
@@ -427,6 +436,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu", "heinäkuu", "elokuu", "syyskuu", "lokakuu", "marraskuu", "joulukuu"},
 		MonthsAbbr:   [12]string{"tammi", "helmi", "maalis", "huhti", "touko", "kesä", "heinä", "elo", "syys", "loka", "marras", "joulu"},
 		DaysFull:     [7]string{"maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"},
+		DaysAbbr:     [7]string{"ma", "ti", "ke", "to", "pe", "la", "su"},
 		DMY:          true,
 	},
 	"is": {
@@ -454,6 +464,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"janúar", "febrúar", "mars", "apríl", "maí", "júní", "júlí", "ágúst", "september", "október", "nóvember", "desember"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maí", "jún", "júl", "ágú", "sep", "okt", "nóv", "des"},
 		DaysFull:     [7]string{"mánudagur", "þriðjudagur", "miðvikudagur", "fimmtudagur", "föstudagur", "laugardagur", "sunnudagur"},
+		DaysAbbr:     [7]string{"mán", "þri", "mið", "fim", "fös", "lau", "sun"},
 		DMY:          true,
 	},
 	"pt": {
@@ -481,6 +492,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"},
 		MonthsAbbr:   [12]string{"jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"},
 		DaysFull:     [7]string{"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado", "domingo"},
+		DaysAbbr:     [7]string{"seg", "ter", "qua", "qui", "sex", "sáb", "dom"},
 		DMY:          true,
 	},
 	"it": {
@@ -508,6 +520,7 @@ var pdfTranslations = map[string]pdfI18n{
 		MonthsFull:   [12]string{"gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"},
 		MonthsAbbr:   [12]string{"gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"},
 		DaysFull:     [7]string{"lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"},
+		DaysAbbr:     [7]string{"lun", "mar", "mer", "gio", "ven", "sab", "dom"},
 		DMY:          true,
 	},
 }

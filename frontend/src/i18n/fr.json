@@ -755,7 +755,9 @@
     "undeclarable": "Non facturable",
     "declarable": "Facturable",
     "undeclarable_per_entry": "Temps non facturable par entrée",
-    "pdf_page_break_customer": "Nouvelle page par client"
+    "pdf_page_break_customer": "Nouvelle page par client",
+    "pdf_export_options": "Options d'export",
+    "pdf_show_abbr": "Afficher le jour de la semaine avant la date"
   },
   "call": {
     "incoming": "Appel entrant",

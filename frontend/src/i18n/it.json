@@ -749,7 +749,9 @@
     "undeclarable": "Non dichiarabile",
     "declarable": "Dichiarabile",
     "undeclarable_per_entry": "Tempo non dichiarabile per voce",
-    "pdf_page_break_customer": "Nuova pagina per cliente"
+    "pdf_page_break_customer": "Nuova pagina per cliente",
+    "pdf_export_options": "Opzioni di esportazione",
+    "pdf_show_abbr": "Mostra giorno della settimana prima della data"
   },
   "call": {
     "incoming": "Chiamata in arrivo",
