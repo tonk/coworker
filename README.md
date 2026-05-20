@@ -20,6 +20,7 @@ This is an experiment, and a biggie :-)
 
 I (almost) haven't written a single line of code, I created and
 updated the `what.md` file and asked Claude Code and Cursor to generate the app.
+The result is a ~30,000 line Go backend and a ~30,000 line Vue 3 frontend that actually works.
 
 ## Screenshots
 
