@@ -651,7 +651,9 @@ const weekDays = computed(() => {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart.value)
     d.setDate(d.getDate() + i)
-    const iso = d.toISOString().slice(0, 10)
+    // Use local date components so the ISO key matches the visible day name;
+    // toISOString() would give the UTC date which is one day behind in UTC+ zones.
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     return { iso, mmdd: iso.slice(5), abbr: abbr.format(d) }
   })
 })
@@ -1051,9 +1053,10 @@ async function copyPrevWeek() {
     const prevEnd = new Date(prevStart)
     prevEnd.setDate(prevEnd.getDate() + 6)
 
+    const toLocalISO = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     const params = {
-      from: prevStart.toISOString().slice(0, 10),
-      to:   prevEnd.toISOString().slice(0, 10),
+      from: toLocalISO(prevStart),
+      to:   toLocalISO(prevEnd),
     }
     // Mirror the active user selection, but never "all employees" (0)
     if (canViewOtherUsers.value) {
