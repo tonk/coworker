@@ -15,7 +15,29 @@
 
       <div class="tt-week-nav">
         <button class="nav-btn" @click="shiftWeek(-1)" :title="$t('timeTracking.prev_week')" :aria-label="$t('timeTracking.prev_week')">&#9664;</button>
-        <span class="wk-label">{{ $t('timeTracking.week') }} &nbsp; {{ weekInfo.week }} &nbsp; {{ weekInfo.year }}</span>
+        <div class="wk-picker-wrap" ref="wkPickerRef">
+          <button class="wk-label" @click="openWkPicker"
+            :aria-expanded="String(wkPickerOpen)" aria-haspopup="true"
+            :aria-label="$t('timeTracking.week') + ' ' + weekInfo.week + ' ' + weekInfo.year">
+            {{ $t('timeTracking.week') }} &nbsp; {{ weekInfo.week }} &nbsp; {{ weekInfo.year }}
+          </button>
+          <div v-if="wkPickerOpen" class="wk-cal" role="dialog" aria-modal="true" :aria-label="$t('timeTracking.week') + ' ' + weekInfo.week">
+            <div class="wk-cal-hdr">
+              <button class="wk-cal-nav" @click.stop="calShiftMonth(-1)" aria-label="Previous month">&#9664;</button>
+              <span class="wk-cal-month">{{ calMonthLabel }}</span>
+              <button class="wk-cal-nav" @click.stop="calShiftMonth(1)" aria-label="Next month">&#9654;</button>
+            </div>
+            <div class="wk-cal-grid">
+              <span v-for="n in calDayNames" :key="n" class="wk-cal-dn">{{ n }}</span>
+              <button v-for="(cell, i) in calCells" :key="i"
+                class="wk-cal-day"
+                :class="{ 'wk-cal-other': cell.otherMonth, 'wk-cal-sel': cell.inSelectedWeek, 'wk-cal-today': cell.isToday }"
+                @click.stop="goToDate(cell.date)"
+                :aria-label="cell.date.toLocaleDateString()"
+                :aria-pressed="cell.inSelectedWeek">{{ cell.day }}</button>
+            </div>
+          </div>
+        </div>
         <button class="nav-btn" @click="shiftWeek(1)" :title="$t('timeTracking.next_week')" :aria-label="$t('timeTracking.next_week')">&#9654;</button>
         <button class="nav-btn nav-today" @click="goToToday" :title="$t('timeTracking.today')" :aria-label="$t('timeTracking.today')" :disabled="isCurrentWeek">{{ $t('timeTracking.today') }}</button>
         <div class="nav-holidays-wrap" ref="holidaysDropRef">
@@ -701,6 +723,67 @@ function goToToday() {
   deletingRow.value = null
   addingRow.value = false
   loadWeek()
+}
+
+// ── Week picker calendar ──────────────────────────────────────────────────
+const wkPickerOpen = ref(false)
+const wkPickerRef  = ref(null)
+const calAnchor    = ref(null)
+
+function openWkPicker() {
+  if (!wkPickerOpen.value) {
+    const s = weekStart.value
+    calAnchor.value = new Date(s.getFullYear(), s.getMonth(), 1)
+  }
+  wkPickerOpen.value = !wkPickerOpen.value
+}
+
+function calShiftMonth(delta) {
+  const d = new Date(calAnchor.value)
+  d.setMonth(d.getMonth() + delta)
+  calAnchor.value = d
+}
+
+const calMonthLabel = computed(() => {
+  if (!calAnchor.value) return ''
+  return new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(calAnchor.value)
+})
+
+const calDayNames = computed(() => {
+  const fmt = new Intl.DateTimeFormat(undefined, { weekday: 'narrow' })
+  return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2024, 0, 1 + i))) // 2024-01-01 is Monday
+})
+
+const calCells = computed(() => {
+  if (!calAnchor.value) return []
+  const year = calAnchor.value.getFullYear()
+  const month = calAnchor.value.getMonth()
+  const first = new Date(year, month, 1)
+  const dayOfWeek = first.getDay()
+  const startOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const start = new Date(year, month, 1 + startOffset)
+  const ws = weekStart.value
+  const we = new Date(ws); we.setDate(we.getDate() + 7)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  return Array.from({ length: 42 }, (_, i) => {
+    const d = new Date(start); d.setDate(d.getDate() + i)
+    return { date: d, day: d.getDate(), otherMonth: d.getMonth() !== month,
+      inSelectedWeek: d >= ws && d < we, isToday: d.getTime() === today.getTime() }
+  })
+})
+
+function goToDate(date) {
+  anchor.value = new Date(date)
+  wkPickerOpen.value = false
+  localRows.value = []
+  editingRow.value = null
+  deletingRow.value = null
+  addingRow.value = false
+  loadWeek()
+}
+
+function onWkPickerDocClick(e) {
+  if (wkPickerRef.value && !wkPickerRef.value.contains(e.target)) wkPickerOpen.value = false
 }
 
 const holidaysDropOpen = ref(false)
@@ -1483,10 +1566,12 @@ function onDocClick(e) {
 onMounted(() => {
   document.addEventListener('mousedown', onDocClick)
   document.addEventListener('mousedown', onHolidaysDocClick)
+  document.addEventListener('mousedown', onWkPickerDocClick)
 })
 onUnmounted(() => {
   document.removeEventListener('mousedown', onDocClick)
   document.removeEventListener('mousedown', onHolidaysDocClick)
+  document.removeEventListener('mousedown', onWkPickerDocClick)
 })
 
 // ── Init ──────────────────────────────────────────────────────────────────
@@ -1557,7 +1642,41 @@ onMounted(async () => {
   align-items: center;
   gap: 10px;
 }
-.wk-label { font-weight: 600; font-size: 14px; letter-spacing: .5px; }
+.wk-picker-wrap { position: relative; }
+.wk-label {
+  font-weight: 600; font-size: 14px; letter-spacing: .5px;
+  background: none; border: none; color: #fff; cursor: pointer; padding: 2px 6px;
+  border-radius: 4px; transition: background .12s;
+}
+.wk-label:hover { background: rgba(255,255,255,.2); }
+.wk-cal {
+  position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm); box-shadow: 0 6px 20px rgba(0,0,0,.18);
+  padding: 10px; z-index: 300; min-width: 220px;
+}
+.wk-cal-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.wk-cal-month { font-size: 13px; font-weight: 600; color: var(--color-text); }
+.wk-cal-nav {
+  background: none; border: none; cursor: pointer; padding: 2px 6px;
+  color: var(--color-text-muted); font-size: 10px; border-radius: 3px;
+}
+.wk-cal-nav:hover { background: var(--color-surface-2); }
+.wk-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.wk-cal-dn { font-size: 10px; font-weight: 600; color: var(--color-text-muted); text-align: center; padding: 2px 0 4px; }
+.wk-cal-day {
+  background: none; border: none; cursor: pointer; padding: 4px 0;
+  font-size: 12px; text-align: center; border-radius: 3px; color: var(--color-text);
+  line-height: 1.4;
+}
+.wk-cal-day:hover { background: var(--color-surface-2); }
+.wk-cal-day.wk-cal-other { color: var(--color-text-muted); opacity: .5; }
+.wk-cal-day.wk-cal-sel { background: var(--color-primary); color: #fff; font-weight: 600; }
+.wk-cal-day.wk-cal-sel:hover { background: var(--color-primary); }
+.wk-cal-day.wk-cal-today:not(.wk-cal-sel) { font-weight: 700; color: var(--color-primary); }
 .nav-btn {
   background: rgba(255,255,255,.2);
   border: none;
