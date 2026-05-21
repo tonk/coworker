@@ -452,10 +452,10 @@
         </div>
       </div>
 
-      <div v-if="!isNew && history.length" class="history-section">
+      <div v-if="!isNew && columnHistory.length" class="history-section">
         <h4>{{ $t('board.column_history') }}</h4>
         <div class="history-list">
-          <div v-for="h in history" :key="h.id" class="history-entry">
+          <div v-for="h in columnHistory" :key="h.id" class="history-entry">
             <span class="history-time">{{ formatDateTime(h.created_at) }}</span>
             <span class="history-who">{{ h.user.display_name || h.user.username }}</span>
             <span class="history-move">
@@ -463,6 +463,19 @@
               →
               <span class="history-col">{{ h.to_column.name }}</span>
             </span>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="!isNew && showActivityPanel" class="activity-section">
+        <h4>{{ $t('board.card_history') }}</h4>
+        <div v-if="!history.length" class="activity-empty">{{ $t('common.no_results') }}</div>
+        <div v-else class="activity-list">
+          <div v-for="h in history" :key="h.id" class="activity-entry">
+            <span class="activity-icon" :class="`activity-type-${h.event_type}`" aria-hidden="true">{{ activityIcon(h.event_type) }}</span>
+            <span class="activity-time">{{ formatDateTime(h.created_at) }}</span>
+            <span class="activity-who">{{ h.user.display_name || h.user.username }}</span>
+            <span class="activity-detail">{{ activityLabel(h) }}</span>
           </div>
         </div>
       </div>
@@ -484,8 +497,9 @@
         <button class="btn btn-secondary btn-sm" @click="toggleClose">{{ isClosed ? $t('board.reopen_card') : $t('board.close_card') }}</button>
         <button class="btn btn-secondary btn-sm" @click="copyCard" :disabled="copying">{{ $t('board.copy_card') }}</button>
         <button class="btn btn-secondary btn-sm" @click="toggleTransferPanel">{{ $t('board.transfer_card') }}</button>
-        <button class="btn btn-secondary" @click="handleClose">{{ $t('common.cancel') }}</button>
-        <button class="btn btn-primary" @click="save" :disabled="saving">{{ saving ? $t('common.loading') : $t('common.save') }}</button>
+        <button class="btn btn-secondary btn-sm" :class="{ 'btn-active': showActivityPanel }" @click="showActivityPanel = !showActivityPanel">{{ $t('board.card_history') }}</button>
+        <button class="btn btn-secondary btn-sm" @click="handleClose">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-primary btn-sm" @click="save" :disabled="saving">{{ saving ? $t('common.loading') : $t('common.save') }}</button>
       </template>
     </template>
   </BaseModal>
@@ -595,6 +609,7 @@ const locked = ref(!!props.card.description)
 const isClosed = ref(!!props.card.closed)
 const newComment = ref('')
 const history = ref([])
+const showActivityPanel = ref(false)
 const saving = ref(false)
 const newTagName = ref('')
 const attachments = ref([...(props.card.attachments || [])])
@@ -690,6 +705,31 @@ const checklistPct = computed(() => {
   if (!checklist.value.length) return 0
   return Math.round(checklist.value.filter(i => i.is_completed).length / checklist.value.length * 100)
 })
+
+const columnHistory = computed(() =>
+  history.value.filter(h => h.event_type === 'column_move' || !h.event_type)
+)
+
+function activityIcon(type) {
+  const icons = {
+    created: '✦', column_move: '→', closed: '✓', reopened: '↑',
+    title_changed: '✎', priority_changed: '⚑', assignee_changed: '◉',
+  }
+  return icons[type] || '•'
+}
+
+function activityLabel(h) {
+  switch (h.event_type) {
+    case 'created': return t('board.history_created')
+    case 'closed': return t('board.history_closed')
+    case 'reopened': return t('board.history_reopened')
+    case 'column_move': return `${h.from_column?.name ?? '?'} → ${h.to_column?.name ?? '?'}`
+    case 'title_changed': return `${t('board.history_title_changed')}: "${h.detail}"`
+    case 'priority_changed': return `${t('board.history_priority_changed')}: ${h.detail}`
+    case 'assignee_changed': return `${t('board.history_assignee_changed')}: ${h.detail}`
+    default: return h.detail || h.event_type
+  }
+}
 
 // Sub-cards
 const subCards = ref([])
@@ -1612,6 +1652,23 @@ function renderMarkdown(text) {
 .history-who { font-weight: 600; flex-shrink: 0; }
 .history-move { display: flex; align-items: center; gap: 6px; color: var(--color-text-muted); }
 .history-col { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 1px 6px; color: var(--color-text); font-size: 11px; }
+
+.activity-section { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
+.activity-section h4 { margin-bottom: 12px; font-size: 14px; color: var(--color-text-muted); }
+.activity-empty { font-size: 12px; color: var(--color-text-muted); }
+.activity-list { display: flex; flex-direction: column; gap: 6px; }
+.activity-entry { display: flex; align-items: baseline; gap: 8px; font-size: 12px; }
+.activity-icon { font-size: 11px; flex-shrink: 0; width: 14px; text-align: center; }
+.activity-time { color: var(--color-text-muted); flex-shrink: 0; }
+.activity-who { font-weight: 600; flex-shrink: 0; }
+.activity-detail { color: var(--color-text-muted); }
+.activity-type-created { color: #22c55e; }
+.activity-type-closed { color: #ef4444; }
+.activity-type-reopened { color: #22c55e; }
+.activity-type-column_move { color: var(--color-primary); }
+.activity-type-title_changed, .activity-type-priority_changed, .activity-type-assignee_changed { color: var(--color-text-muted); }
+
+.btn-active { background: var(--color-primary) !important; color: #fff !important; border-color: var(--color-primary) !important; }
 
 .date-input-row { display: flex; align-items: center; gap: 6px; }
 .date-input-row .form-input { flex: 1; }

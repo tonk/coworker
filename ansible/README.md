@@ -41,6 +41,7 @@ Only one authentication method should be used at a time.
 | `ansilabnl.warmdesk.label` | Manage card labels in a project |
 | `ansilabnl.warmdesk.card` | Manage cards on a Kanban board |
 | `ansilabnl.warmdesk.checklist_item` | Manage checklist items on a card |
+| `ansilabnl.warmdesk.card_comment` | Manage comments on a card |
 | `ansilabnl.warmdesk.customer` | Manage customers |
 | `ansilabnl.warmdesk.customer_member` | Manage customer access and roles |
 | `ansilabnl.warmdesk.contract` | Manage contracts for a customer |

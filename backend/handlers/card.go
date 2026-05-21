@@ -150,6 +150,7 @@ func CreateCard(c *gin.Context) {
 		CardNumber:  updatedProject.CardCounter,
 	}
 	database.DB.Create(&card)
+	database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "created"})
 	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").First(&card, card.ID)
 
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCardCreated, Payload: card})
@@ -320,6 +321,44 @@ func UpdateCard(c *gin.Context) {
 	}
 	if req.ExternalIssueRef != nil {
 		updates["external_issue_ref"] = *req.ExternalIssueRef
+	}
+
+	// Record activity events for tracked field changes
+	if req.Closed != nil && card.Closed != *req.Closed {
+		eventType := "reopened"
+		if *req.Closed {
+			eventType = "closed"
+		}
+		database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: eventType})
+	}
+	if req.Title != "" && req.Title != card.Title {
+		database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "title_changed", Detail: req.Title})
+	}
+	if req.Priority != "" && req.Priority != card.Priority {
+		database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "priority_changed", Detail: req.Priority})
+	}
+	if len(req.AssigneeID) > 0 {
+		var newAID *uint
+		if string(req.AssigneeID) != "null" {
+			var aid uint
+			if json.Unmarshal(req.AssigneeID, &aid) == nil {
+				newAID = &aid
+			}
+		}
+		oldAID := card.AssigneeID
+		if (newAID == nil) != (oldAID == nil) || (newAID != nil && oldAID != nil && *newAID != *oldAID) {
+			detail := "unassigned"
+			if newAID != nil {
+				var u models.User
+				if database.DB.First(&u, *newAID).Error == nil {
+					detail = u.DisplayName
+					if detail == "" {
+						detail = u.Username
+					}
+				}
+			}
+			database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "assignee_changed", Detail: detail})
+		}
 	}
 
 	database.DB.Model(&card).Updates(updates)

@@ -115,15 +115,17 @@ type CardReference struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-// CardHistory records every column change for a card.
+// CardHistory records activity events on a card (creation, column moves, status changes, etc.).
 type CardHistory struct {
 	ID           uint      `gorm:"primaryKey" json:"id"`
 	CreatedAt    time.Time `json:"created_at"`
 	CardID       uint      `gorm:"not null;index" json:"card_id"`
 	UserID       uint      `gorm:"not null" json:"user_id"`
 	User         User      `json:"user"`
+	EventType    string    `gorm:"size:50;default:'column_move'" json:"event_type"`
+	Detail       string    `gorm:"size:500" json:"detail"`
 	FromColumnID uint      `json:"from_column_id"`
 	FromColumn   Column    `gorm:"foreignKey:FromColumnID" json:"from_column"`
-	ToColumnID   uint      `gorm:"not null" json:"to_column_id"`
+	ToColumnID   uint      `json:"to_column_id"`
 	ToColumn     Column    `gorm:"foreignKey:ToColumnID" json:"to_column"`
 }
