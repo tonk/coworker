@@ -32,6 +32,8 @@ jobs:
             librsvg2-dev \
             patchelf \
             file \
+            clang \
+            mold \
             gstreamer1.0-tools \
             gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good \
