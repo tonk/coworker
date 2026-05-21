@@ -1271,9 +1271,12 @@ func main() {
 				ClosedAt:         closedAt,
 			}
 			must(db.Create(card).Error)
+			cardHist := &models.CardHistory{CardID: card.ID, UserID: users["admin"].ID, EventType: "created"}
+			must(db.Create(cardHist).Error)
 			if spec.createdAtDays != nil {
 				createdAt := time.Now().UTC().AddDate(0, 0, *spec.createdAtDays).Truncate(24 * time.Hour)
 				must(db.Model(card).UpdateColumn("created_at", createdAt).Error)
+				must(db.Model(cardHist).UpdateColumn("created_at", createdAt).Error)
 			}
 			createdCards[slug+"/"+spec.title] = card
 
@@ -1313,6 +1316,7 @@ func main() {
 				must(db.Create(&models.CardComment{
 					CardID: card.ID, UserID: author.ID, Body: c.body,
 				}).Error)
+				must(db.Create(&models.CardHistory{CardID: card.ID, UserID: author.ID, EventType: "comment_added"}).Error)
 			}
 
 			// Sub-cards
@@ -1342,6 +1346,7 @@ func main() {
 					CardNumber:   subProj.CardCounter,
 				}
 				must(db.Create(subCard).Error)
+				must(db.Create(&models.CardHistory{CardID: subCard.ID, UserID: users["admin"].ID, EventType: "created"}).Error)
 				if subAssigneeID != nil {
 					must(db.Exec("INSERT OR IGNORE INTO card_assignees (card_id, user_id) VALUES (?, ?)", subCard.ID, *subAssigneeID).Error)
 				}
@@ -1656,6 +1661,7 @@ func main() {
 		hist := &models.CardHistory{
 			CardID:       card.ID,
 			UserID:       users["admin"].ID,
+			EventType:    "column_move",
 			FromColumnID: fromCol.ID,
 			ToColumnID:   toCol.ID,
 		}

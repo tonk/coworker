@@ -78,6 +78,7 @@ func TicketAdd(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "created"})
 	database.DB.Preload("CreatedBy").Preload("Assignee").Preload("Labels").Preload("Tags").First(&card, card.ID)
 
 	appws.BroadcastToProject(project.ID, appws.Message{Type: appws.TypeBoardCardCreated, Payload: card})
@@ -137,6 +138,7 @@ func TicketComment(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "comment_added"})
 	database.DB.Preload("User").First(&comment, comment.ID)
 
 	appws.BroadcastToProject(project.ID, appws.Message{Type: appws.TypeBoardCommentCreated, Payload: comment})
@@ -213,6 +215,7 @@ func TicketMove(c *gin.Context) {
 		database.DB.Create(&models.CardHistory{
 			CardID:       card.ID,
 			UserID:       userID,
+			EventType:    "column_move",
 			FromColumnID: oldColumnID,
 			ToColumnID:   col.ID,
 		})
