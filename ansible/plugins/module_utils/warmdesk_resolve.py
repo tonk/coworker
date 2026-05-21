@@ -20,17 +20,37 @@ from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api im
 )
 
 
-def resolve_user_id(client, username):
-    """Return the numeric ID for *username*.
+def resolve_user_id(client, username, project_slug=None):
+    """Return the numeric ID for *username* (or email address).
 
-    Uses the non-admin /users endpoint so that project members (not just
-    global admins) can look up user IDs for membership operations.
+    Tries GET /users first.  When that returns 403 (project-scoped API key)
+    and *project_slug* is supplied, falls back to GET /projects/{slug}/members
+    which is always accessible to project-scoped keys.  Both endpoints are
+    searched by username and by email address so either form works.
     """
-    users = client.get('/users')
-    for u in users:
-        if u['username'] == username:
-            return u['id']
-    raise WarmDeskAPIError(404, 'User not found: %s' % username)
+    def _match(users, key):
+        for u in users:
+            if u.get('username') == key or u.get('email') == key:
+                return u['id']
+        return None
+
+    try:
+        users = client.get('/users')
+        uid = _match(users, username)
+        if uid is not None:
+            return uid
+    except WarmDeskAPIError as exc:
+        if exc.status != 403 or project_slug is None:
+            raise
+
+    # Fall back to the project members list (works with project-scoped keys)
+    if project_slug is None:
+        raise WarmDeskAPIError(404, 'User not found: %s' % username)
+    members = client.get('/projects/%s/members' % project_slug)
+    uid = _match([m['user'] for m in members if 'user' in m], username)
+    if uid is not None:
+        return uid
+    raise WarmDeskAPIError(404, 'User "%s" not found in project %s' % (username, project_slug))
 
 
 def resolve_customer_id(client, name):

@@ -64,9 +64,11 @@ options:
     required: false
   assignee:
     description:
-      - Username of the user to assign to the card.
-      - The module resolves the username to a numeric user ID via
-        C(GET /api/v1/users).
+      - Username or email address of the user to assign to the card.
+      - The module resolves the value to a numeric user ID.  It first
+        queries C(GET /api/v1/users); if that returns 403 (project-scoped
+        API key) it falls back to C(GET /api/v1/projects/{slug}/members),
+        which is always accessible to project-scoped keys.
     type: str
     required: false
   card_number:
@@ -376,7 +378,7 @@ def run_module():
     assignee_id = _UNSET
     if assignee_username:
         try:
-            assignee_id = resolve_user_id(client, assignee_username)
+            assignee_id = resolve_user_id(client, assignee_username, project_slug=project)
         except WarmDeskAPIError as exc:
             module.fail_json(
                 msg='Cannot resolve assignee "%s": %s (HTTP %s)' % (
