@@ -153,6 +153,13 @@
                 <option value="hhmm">{{ $t('settings.time_notation_hhmm') }}</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="week-start-select">{{ $t('settings.week_start') }}</label>
+              <select id="week-start-select" class="form-input" v-model="form.week_start">
+                <option value="monday">{{ $t('settings.week_start_monday') }}</option>
+                <option value="sunday">{{ $t('settings.week_start_sunday') }}</option>
+              </select>
+            </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingProfile">
                 {{ savingProfile ? $t('common.loading') : $t('common.save') }}
@@ -404,7 +411,8 @@ const form = ref({
   show_breadcrumbs: true,
   email_notifications: true,
   time_tracking_enabled: false,
-  time_notation: 'decimal'
+  time_notation: 'decimal',
+  week_start: 'monday'
 })
 
 const timezones = [
@@ -484,7 +492,8 @@ onMounted(async () => {
       show_breadcrumbs: u.show_breadcrumbs !== undefined ? u.show_breadcrumbs : true,
       email_notifications: u.email_notifications !== undefined ? u.email_notifications : true,
       time_tracking_enabled: !!u.time_tracking_enabled,
-      time_notation: u.time_notation || 'decimal'
+      time_notation: u.time_notation || 'decimal',
+      week_start: u.week_start || 'monday'
     }
   }
 })
@@ -514,7 +523,8 @@ async function saveProfile() {
       show_breadcrumbs: form.value.show_breadcrumbs,
       email_notifications: form.value.email_notifications,
       time_tracking_enabled: form.value.time_tracking_enabled,
-      time_notation: form.value.time_notation
+      time_notation: form.value.time_notation,
+      week_start: form.value.week_start
     })
     applyUserPreferences(auth.user)
     setTheme(form.value.theme)

@@ -151,17 +151,25 @@ func GetTimeEntrySheetXLSX(c *gin.Context) {
 		}
 	}
 
-	now := time.Now()
-	year := intOrDefault(c.Query("year"), now.Year())
-	week := intOrDefault(c.Query("week"), isoWeek(now))
-
-	weekStart := isoWeekStart(year, week)
+	var weekStart time.Time
+	if sd := c.Query("start_date"); sd != "" {
+		if t, err := time.Parse("2006-01-02", sd); err == nil {
+			weekStart = t
+		}
+	}
+	if weekStart.IsZero() {
+		now := time.Now()
+		year := intOrDefault(c.Query("year"), now.Year())
+		week := intOrDefault(c.Query("week"), isoWeek(now))
+		weekStart = isoWeekStart(year, week)
+	}
 	weekEnd := weekStart.AddDate(0, 0, 6)
 
 	days := make([]time.Time, 7)
 	for i := range days {
 		days[i] = weekStart.AddDate(0, 0, i)
 	}
+	startDayIdx := int(weekStart.Weekday()) // 0=Sun, 1=Mon … used to map entry dates to columns
 
 	q := database.DB.
 		Preload("Customer").
@@ -207,14 +215,15 @@ func GetTimeEntrySheetXLSX(c *gin.Context) {
 			rowMap[key] = &sheetRow{customerName: cname, projectName: pname, description: e.Description}
 			rowOrder = append(rowOrder, key)
 		}
-		// (Weekday()+6)%7 maps Mon=0 … Sun=6
-		dayIdx := (int(e.Date.Weekday()) + 6) % 7
+		// Offset from the week's start day (works for both Monday- and Sunday-start weeks)
+		dayIdx := (int(e.Date.Weekday()) - startDayIdx + 7) % 7
 		rowMap[key].minutes[dayIdx] += e.Minutes
 	}
 
 	f := excelize.NewFile()
 	defer f.Close()
-	weekLabel := fmt.Sprintf("Week %d · %d", week, year)
+	isoYear, isoWeekNum := weekStart.AddDate(0, 0, 3).ISOWeek() // Thursday → stable ISO week/year
+	weekLabel := fmt.Sprintf("Week %d · %d", isoWeekNum, isoYear)
 	f.SetSheetName("Sheet1", weekLabel)
 
 	bold, _ := f.NewStyle(&excelize.Style{Font: &excelize.Font{Bold: true}})
@@ -301,7 +310,7 @@ func GetTimeEntrySheetXLSX(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("time-tracking-week%d-%d.xlsx", week, year)
+	filename := fmt.Sprintf("time-tracking-week%d-%d.xlsx", isoWeekNum, isoYear)
 	if c.Query("base64") == "1" {
 		c.JSON(http.StatusOK, gin.H{"data": base64.StdEncoding.EncodeToString(buf.Bytes())})
 		return

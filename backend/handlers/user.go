@@ -57,6 +57,7 @@ func AdminUpdateUser(c *gin.Context) {
 		SidebarPosition     string `json:"sidebar_position"`
 		AccentColor         string `json:"accent_color"`
 		TimeNotation        string `json:"time_notation"`
+		WeekStart           string `json:"week_start"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -113,6 +114,9 @@ func AdminUpdateUser(c *gin.Context) {
 	}
 	if req.TimeNotation == "decimal" || req.TimeNotation == "hhmm" {
 		updates["time_notation"] = req.TimeNotation
+	}
+	if req.WeekStart == "monday" || req.WeekStart == "sunday" {
+		updates["week_start"] = req.WeekStart
 	}
 	if req.Password != "" {
 		if len(req.Password) < 8 {

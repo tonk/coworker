@@ -213,7 +213,14 @@ func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryRepor
 
 	switch period {
 	case "week":
-		from = isoWeekStart(year, week)
+		if sd := c.Query("start_date"); sd != "" {
+			if t, err := time.Parse("2006-01-02", sd); err == nil {
+				from = t
+			}
+		}
+		if from.IsZero() {
+			from = isoWeekStart(year, week)
+		}
 		to = from.AddDate(0, 0, 7)
 		periodLabel = from.Format("Jan 2") + " – " + to.AddDate(0, 0, -1).Format("Jan 2, 2006")
 	case "year":

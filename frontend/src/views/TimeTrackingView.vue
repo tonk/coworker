@@ -32,7 +32,7 @@
               <span v-for="n in calDayNames" :key="n" class="wk-cal-dn">{{ n }}</span>
               <template v-for="(row, ri) in calCells" :key="ri">
                 <button class="wk-cal-wn" :class="{ 'wk-cal-wn-sel': row.isSelectedWeek }"
-                  @click.stop="goToDate(row.monday)" :aria-label="$t('timeTracking.week') + ' ' + row.weekNum">{{ row.weekNum }}</button>
+                  @click.stop="goToDate(row.rowStart)" :aria-label="$t('timeTracking.week') + ' ' + row.weekNum">{{ row.weekNum }}</button>
                 <button v-for="(cell, ci) in row.days" :key="ci"
                   class="wk-cal-day"
                   :class="{ 'wk-cal-other': cell.otherMonth, 'wk-cal-sel': cell.inSelectedWeek, 'wk-cal-today': cell.isToday }"
@@ -672,18 +672,26 @@ const mode = ref('sheet')
 // ── Week navigation ───────────────────────────────────────────────────────
 const anchor = ref(new Date())
 
+// 0 = Sunday-start, 1 = Monday-start (ISO default)
+const weekStartDay = computed(() => auth.user?.week_start === 'sunday' ? 0 : 1)
+
 const weekStart = computed(() => {
   const d = new Date(anchor.value)
   d.setHours(0, 0, 0, 0)
   const day = d.getDay()
-  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day))
+  if (weekStartDay.value === 0) {
+    d.setDate(d.getDate() - day)         // back to most-recent Sunday
+  } else {
+    d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day)) // back to Monday
+  }
   return d
 })
 
 const weekInfo = computed(() => {
-  const s = weekStart.value
-  const d = new Date(Date.UTC(s.getFullYear(), s.getMonth(), s.getDate()))
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
+  // Use the Thursday of the 7-day span to derive a stable ISO week/year label
+  const thu = new Date(weekStart.value)
+  thu.setDate(thu.getDate() + (weekStartDay.value === 0 ? 4 : 3))
+  const d = new Date(Date.UTC(thu.getFullYear(), thu.getMonth(), thu.getDate()))
   const y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
   return { year: d.getUTCFullYear(), week: Math.ceil(((d - y0) / 86400000 + 1) / 7) }
 })
@@ -713,9 +721,18 @@ function shiftWeek(delta) {
 
 const isCurrentWeek = computed(() => {
   const { week, year } = weekInfo.value
-  const today = new Date()
-  const d = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()))
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
+  // Find the week start for today under the current weekStartDay setting
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const todayDay = today.getDay()
+  const todayWS = new Date(today)
+  if (weekStartDay.value === 0) {
+    todayWS.setDate(today.getDate() - todayDay)
+  } else {
+    todayWS.setDate(today.getDate() + (todayDay === 0 ? -6 : 1 - todayDay))
+  }
+  const thu = new Date(todayWS)
+  thu.setDate(todayWS.getDate() + (weekStartDay.value === 0 ? 4 : 3))
+  const d = new Date(Date.UTC(thu.getFullYear(), thu.getMonth(), thu.getDate()))
   const y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
   const todayWeek = Math.ceil(((d - y0) / 86400000 + 1) / 7)
   return week === todayWeek && year === d.getUTCFullYear()
@@ -756,13 +773,18 @@ const calMonthLabel = computed(() => {
 
 const calDayNames = computed(() => {
   const fmt = new Intl.DateTimeFormat(undefined, { weekday: 'narrow' })
-  return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2024, 0, 1 + i))) // 2024-01-01 is Monday
+  // 2024-01-01 is Monday; 2023-12-31 is Sunday — pick start based on preference
+  const base = weekStartDay.value === 0 ? new Date(2023, 11, 31) : new Date(2024, 0, 1)
+  return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(base.getFullYear(), base.getMonth(), base.getDate() + i)))
 })
 
-function isoWeekNum(d) {
-  const thu = new Date(d); thu.setDate(d.getDate() + 4 - (d.getDay() || 7))
+function isoWeekNum(d, startDay = 1) {
+  // Find Thursday of the 7-day week starting on startDay to get the ISO week number
+  const thu = new Date(d)
+  thu.setDate(d.getDate() + (startDay === 0 ? 4 : 3))
   const y0 = new Date(Date.UTC(thu.getFullYear(), 0, 1))
-  return Math.ceil(((thu - y0) / 86400000 + 1) / 7)
+  const td = new Date(Date.UTC(thu.getFullYear(), thu.getMonth(), thu.getDate()))
+  return Math.ceil(((td - y0) / 86400000 + 1) / 7)
 }
 
 const calCells = computed(() => {
@@ -771,19 +793,22 @@ const calCells = computed(() => {
   const month = calAnchor.value.getMonth()
   const first = new Date(year, month, 1)
   const dayOfWeek = first.getDay()
-  const startOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  // Offset back to the nearest week-start day
+  const startOffset = weekStartDay.value === 0
+    ? -dayOfWeek                               // Sunday start
+    : (dayOfWeek === 0 ? -6 : 1 - dayOfWeek)  // Monday start
   const start = new Date(year, month, 1 + startOffset)
   const ws = weekStart.value
   const we = new Date(ws); we.setDate(we.getDate() + 7)
   const today = new Date(); today.setHours(0, 0, 0, 0)
   return Array.from({ length: 6 }, (_, row) => {
-    const monday = new Date(start); monday.setDate(monday.getDate() + row * 7)
+    const rowStart = new Date(start); rowStart.setDate(rowStart.getDate() + row * 7)
     const days = Array.from({ length: 7 }, (_, col) => {
-      const d = new Date(monday); d.setDate(d.getDate() + col)
+      const d = new Date(rowStart); d.setDate(d.getDate() + col)
       return { date: d, day: d.getDate(), otherMonth: d.getMonth() !== month,
         inSelectedWeek: d >= ws && d < we, isToday: d.getTime() === today.getTime() }
     })
-    return { weekNum: isoWeekNum(monday), monday, days, isSelectedWeek: days.some(c => c.inSelectedWeek) }
+    return { weekNum: isoWeekNum(rowStart, weekStartDay.value), rowStart, days, isSelectedWeek: days.some(c => c.inSelectedWeek) }
   })
 })
 
@@ -1283,10 +1308,8 @@ const months = computed(() => {
 })
 
 function currentISOWeek() {
-  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7))
-  const y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  return Math.ceil(((d - y0) / 86400000 + 1) / 7)
+  const today = new Date()
+  return isoWeekNum(today, weekStartDay.value)
 }
 
 async function loadReport() {
@@ -1337,7 +1360,7 @@ function parseTimeInput(val) {
 // Weekly timesheet → XLSX: rows are customer/project combos, columns are days.
 async function exportSheetXLSX() {
   try {
-    const params = { year: weekInfo.value.year, week: weekInfo.value.week }
+    const params = { start_date: weekDays.value[0].iso }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const data = await timeEntriesApi.sheetXLSX(params)
     await triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -1350,7 +1373,7 @@ async function exportSheetXLSX() {
 // Weekly timesheet → PDF: delegates to backend report with period=week.
 async function exportSheetPDF() {
   try {
-    const params = { period: 'week', year: weekInfo.value.year, week: weekInfo.value.week, font: pdfFont.value, lang: pdfLang.value }
+    const params = { period: 'week', start_date: weekDays.value[0].iso, font: pdfFont.value, lang: pdfLang.value }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     const data = await timeEntriesApi.reportPDF(params)
     await triggerDownload(data, `time-tracking-week${weekInfo.value.week}-${weekInfo.value.year}.pdf`, 'application/pdf')
