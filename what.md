@@ -559,3 +559,4 @@ Create an application that has all these features and requirements
 - Fix time entry cell placeholder rendering on Tauri/GTK WebKit: hide placeholder by default, show faintly on focus only
 - Update all dependencies to latest: Go 1.26, Vue 3.5.34, Pinia 3, Vue Router 5, vue-i18n 11, marked 18, Vite 8, Tauri 2.11, and all npm packages
 - Speed up AppImage builds with sccache (Rust compilation cache) and mold linker
+- Fix CI build pipeline broken after dependency upgrade: install clang and mold on GitHub Actions runners, suppress sccache wrapper (not installed on runners) with RUSTC_WRAPPER="" in all client and release workflows

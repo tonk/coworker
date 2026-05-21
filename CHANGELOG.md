@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.2 — 2026-05-21
+
+### Fixed
+- **CI build pipeline broken after dependency upgrade** — `sccache`, `clang`, and `mold` were referenced by `.cargo/config.toml` but not installed on GitHub Actions runners; all three client build workflows and the release workflow now install `clang`/`mold` via apt and suppress the `sccache` wrapper with `RUSTC_WRAPPER=""`
+
+### Changed
+- **All Go dependencies updated to latest**
+
 ## v0.10.1 — 2026-05-20
 
 ### Fixed

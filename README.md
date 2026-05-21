@@ -8,11 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.1)
+## Latest release (v0.10.2)
 
-- **Full dependency refresh** — Go 1.26, Vue 3.5, Pinia 3, Vue Router 5, vue-i18n 11, Tauri 2.11, and all other packages updated to latest.
-- **Faster AppImage builds** — sccache + mold linker cut repeated Rust build times significantly.
-- **Time sheet fix** — zero-minute cells no longer show `0:00` on the Tauri desktop app.
+- **CI build pipeline fixed** — all three client builds and the release workflow now pass after the dependency upgrade that introduced `clang`/`mold`/`sccache` requirements on the runners.
 
 ## Experiment
 
