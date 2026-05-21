@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.10.6 — 2026-05-21
+
+### Added
+- **Card activity history panel** — a new *Card History* button in the card detail footer opens a full activity timeline showing who did what and when: card created, comments added, title/description/priority/assignee/start-date/due-date changes, column moves, and open/close events; all events are logged server-side with timestamps and user attribution
+- **Ansible collection — `card_comment` module** — `ansilabnl.warmdesk.card_comment` creates, updates, or deletes comments on a card identified by project slug and card number; idempotent update via `comment_id`; supports `time_spent_minutes`
+
+### Fixed
+- **Media proxy panic on IPv6 upstreams** — `GET /api/v1/media/proxy` panicked with a nil pointer dereference when the upstream hostname (e.g. `api.dicebear.com`) resolved to an IPv6 address; IPv6 literals are now correctly bracketed in the dial-target URL and the request-construction error is handled instead of silently discarded
+
+### Changed
+- **Vite dev server now proxies `/uploads`** — project avatar images were missing in development mode because the Vite proxy only forwarded `/api`; `/uploads` is now forwarded to the backend so avatars render correctly during local development
+
 ## v0.10.5 — 2026-05-21
 
 ### Added

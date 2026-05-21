@@ -8,9 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.5)
+## Latest release (v0.10.6)
 
-- **Ansible `closed` parameter** — `ansilabnl.warmdesk.card` now accepts `closed: true/false` to open or close a card via Ansible.
+- **Card activity history** — full audit timeline inside every card: created, commented, field changes, column moves, open/close events.
+- **Ansible `card_comment` module** — create, update, or delete card comments from Ansible playbooks.
+- **Fix media proxy panic** — no longer crashes on IPv6 upstream hosts (e.g. DiceBear avatars).
 
 ## Experiment
 
@@ -239,6 +241,7 @@ ansible-galaxy collection install ansiblabnl.warmdesk
 - `ansilabnl.warmdesk.project`: Create and update projects (Kanban/Scrum) and prefixes.
 - `ansilabnl.warmdesk.group`: Manage user groups and their project/customer access.
 - `ansilabnl.warmdesk.customer_member`: Manage membership and roles within a customer.
+- `ansilabnl.warmdesk.card_comment`: Create, update, or delete comments on a card.
 - `ansilabnl.warmdesk.from_vars`: Provision WarmDesk resources from YAML variable files.
 
 ### Available Plugins

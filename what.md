@@ -565,3 +565,7 @@ Create an application that has all these features and requirements
 - Add card_ref to ansilabnl.warmdesk.card return value: the full card reference (e.g. GF00-4) is now returned so it can be passed as card_number in follow-up tasks
 - Fix Ansible assignee lookup with project-scoped API keys: fall back to GET /projects/{slug}/members on 403; accept username or email address as assignee value
 - Add closed parameter to ansilabnl.warmdesk.card Ansible module: set closed: true/false to open or close a card; idempotent
+- Add card activity history panel to card detail: full audit timeline of created, commented, field changes, column moves, and open/close events with timestamps and user attribution
+- Add ansilabnl.warmdesk.card_comment Ansible module: create, update, or delete card comments identified by project slug and card number
+- Fix media proxy panic when upstream hostname resolves to an IPv6 address: bracket IPv6 literals in dial-target URL and handle request-construction errors
+- Proxy /uploads through Vite dev server so project avatar images load correctly during local development
