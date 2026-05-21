@@ -83,9 +83,17 @@ func ProxyImage(c *gin.Context) {
 			port = "80"
 		}
 	}
-	fetchURL.Host = fmt.Sprintf("%s:%s", safeIP, port)
+	if strings.Contains(safeIP, ":") {
+		fetchURL.Host = fmt.Sprintf("[%s]:%s", safeIP, port)
+	} else {
+		fetchURL.Host = fmt.Sprintf("%s:%s", safeIP, port)
+	}
 
-	req, _ := http.NewRequestWithContext(c.Request.Context(), http.MethodGet, fetchURL.String(), nil)
+	req, err := http.NewRequestWithContext(c.Request.Context(), http.MethodGet, fetchURL.String(), nil)
+	if err != nil {
+		c.Redirect(http.StatusFound, u.String())
+		return
+	}
 	req.Host = u.Host // preserve original Host header for SNI / virtual hosting
 	req.Header.Set("User-Agent", "WarmDesk-MediaProxy/1.0")
 	resp, err := mediaProxyClient.Do(req)
