@@ -446,6 +446,8 @@
     "invalid_date": "Vænt snið: {fmt}",
     "no_results": "Engar niðurstöður",
     "close": "Loka",
+    "maximize": "Stækka",
+    "restore": "Endurheimta",
     "skip_to_content": "Fara í aðalefni",
     "go_back": "Fara til baka",
     "go_forward": "Fara áfram",

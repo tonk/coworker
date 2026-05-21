@@ -446,6 +446,8 @@
     "invalid_date": "Forventet format: {fmt}",
     "no_results": "Ingen resultater",
     "close": "Luk",
+    "maximize": "Maksimer",
+    "restore": "Gendan",
     "skip_to_content": "Gå til hovedindhold",
     "go_back": "Gå tilbage",
     "go_forward": "Gå frem",

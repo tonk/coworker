@@ -452,6 +452,8 @@
     "invalid_date": "Expected format: {fmt}",
     "no_results": "No results",
     "close": "Close",
+    "maximize": "Maximize",
+    "restore": "Restore",
     "skip_to_content": "Skip to main content",
     "go_back": "Go back",
     "go_forward": "Go forward",

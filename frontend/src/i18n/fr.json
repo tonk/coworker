@@ -417,6 +417,8 @@
     "invalid_date": "Format attendu : {fmt}",
     "no_results": "Aucun résultat",
     "close": "Fermer",
+    "maximize": "Agrandir",
+    "restore": "Restaurer",
     "skip_to_content": "Aller au contenu principal",
     "go_back": "Retour",
     "go_forward": "Avancer",

@@ -290,9 +290,10 @@ input.form-input, select.form-input { height: 36px; }
   background: rgba(0,0,0,.4);
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 16px;
+  overflow-y: auto;
 }
 
 .modal {
@@ -303,6 +304,7 @@ input.form-input, select.form-input { height: 36px; }
   max-width: var(--modal-width, 560px);
   max-height: 90vh;
   overflow-y: auto;
+  margin: auto 0;
 }
 .modal-resizable {
   resize: both;
@@ -310,14 +312,36 @@ input.form-input, select.form-input { height: 36px; }
   min-width: 400px;
   min-height: 300px;
   max-width: 95vw;
-  max-height: 90vh;
   display: flex;
   flex-direction: column;
+  margin: auto 0;
 }
 .modal-resizable .modal-body {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+}
+.modal-maximized {
+  width: 100% !important;
+  height: calc(100vh - 32px) !important;
+  max-width: none !important;
+  resize: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+.modal-backdrop-maximized {
+  padding: 0;
+  overflow-y: hidden;
+}
+.modal-backdrop-maximized .modal-maximized {
+  height: 100vh !important;
+  border-radius: 0;
+}
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .modal-header {

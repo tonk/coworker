@@ -445,6 +445,8 @@
     "invalid_date": "Odotettu muoto: {fmt}",
     "no_results": "Ei tuloksia",
     "close": "Sulje",
+    "maximize": "Suurenna",
+    "restore": "Palauta",
     "skip_to_content": "Siirry pääsisältöön",
     "go_back": "Takaisin",
     "go_forward": "Eteenpäin",
