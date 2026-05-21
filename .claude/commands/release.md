@@ -43,14 +43,18 @@ In `website/hugo.toml`, update three values:
 
 The params feed the homepage release strip; the AsciiDoc attribute feeds the install docs code blocks.
 
-## 7. Commit and tag
+## 7. Bump Ansible collection version
+In `ansible/galaxy.yml`, increment the `version` field by one patch level (e.g. `0.3.1` → `0.3.2`).
+Only do this if any commits since the last tag touched files under `ansible/`.
+
+## 8. Commit and tag
 ```bash
-git add CHANGELOG.md README.md what.md website/hugo.toml
+git add CHANGELOG.md README.md what.md website/hugo.toml ansible/galaxy.yml
 git commit -m "chore: release v{version} — CHANGELOG, README, what.md\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git tag -a v{version} -m "Release v{version}"
 ```
 
-## 8. Push
+## 9. Push
 ```bash
 git push && git push --tags
 ```
