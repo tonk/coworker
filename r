@@ -24,43 +24,49 @@ cd ${CRD} || {
 	exit 1
 }
 
-# Build all
-make all || {
-	echo "Building WarmDesk failed" >&2
-	exit 1
-}
+if [[ x"${1:-}" == x"run" ]]
+then
+	# Run
+	cd dist
+	./warmdesk
+else
+	# Build all
+	make all || {
+		echo "Building WarmDesk failed" >&2
+		exit 1
+	}
 
-# Fill with demo data
-cd dist
-./warmdesk-seed --reset
-./warmdesk-training --reset
-#./warmdesk-training 4 Salami
+	# Fill with demo data
+	cd dist
+	./warmdesk-seed --reset
+	./warmdesk-training --reset
+	#./warmdesk-training 4 Salami
 
-# Create simple config
-cat << '@EOF' > warmdesk.yaml
----
-base_url: https://warmdesk.example.com
-port: "8080"
-db_driver: sqlite
-db_dsn: "./warmdesk.db"
+	# Create simple config
+	cat <<- '@EOF' > warmdesk.yaml
+		---
+		base_url: https://warmdesk.example.com
+		port: "8080"
+		db_driver: sqlite
+		db_dsn: "./warmdesk.db"
 
-smtp:
-  host: "master.tonkersten.com"
-  port: 25
-  from: ""
-  username: ""
-  password: ""
+		smtp:
+		host: "master.tonkersten.com"
+		port: 25
+		from: ""
+		username: ""
+		password: ""
 
-jwt_secret: "change-me-for-production-and-some-for-the-minimum-length"
-allowed_origins: "http://localhost:8080"
-#web_dir: "web"
+		jwt_secret: "change-me-for-production-and-some-for-the-minimum-length"
+		allowed_origins: "http://localhost:8080"
+		#web_dir: "web"
 
-# All logging in debug mode
-gin_mode: "debug"
-db_log: "info"
-api_log: true
-@EOF
+		# All logging in debug mode
+		gin_mode: "debug"
+		db_log: "info"
+		api_log: true
+	@EOF
 
-# And run
-./warmdesk
-
+	# And run
+	./warmdesk
+fi
