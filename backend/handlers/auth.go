@@ -309,6 +309,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		EmailNotifications  *bool   `json:"email_notifications"`
 		TimeTrackingEnabled *bool   `json:"time_tracking_enabled"`
 		TimeNotation         string  `json:"time_notation"`
+		WeekStart            string  `json:"week_start"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -368,6 +369,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.TimeNotation == "decimal" || req.TimeNotation == "hhmm" {
 		updates["time_notation"] = req.TimeNotation
+	}
+	if req.WeekStart == "monday" || req.WeekStart == "sunday" {
+		updates["week_start"] = req.WeekStart
 	}
 
 	now := time.Now()
