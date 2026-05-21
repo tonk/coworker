@@ -170,6 +170,8 @@ jobs:
             librsvg2-dev \
             patchelf \
             file \
+            clang \
+            mold \
             rpm
 
       - name: Set up Rust
@@ -217,11 +219,17 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         # NO_STRIP=true: linuxdeploy's bundled strip is too old for newer glibc.
         # The Rust release profile already strips the binary.
+        # RUSTC_WRAPPER="": override .cargo/config.toml's sccache wrapper — not installed on CI runners.
+        env:
+          RUSTC_WRAPPER: ""
         run: cd frontend && NO_STRIP=true npm run tauri:build -- --bundles appimage,deb,rpm
 
       - name: Build desktop app (macOS universal)
         if: matrix.os == 'macos-latest'
         # Build a universal binary covering both Intel and Apple Silicon.
+        # RUSTC_WRAPPER="": override .cargo/config.toml's sccache wrapper — not installed on CI runners.
+        env:
+          RUSTC_WRAPPER: ""
         run: cd frontend && npm run tauri:build -- --bundles dmg --target universal-apple-darwin
 
       - name: Collect and rename artifact (Linux)
@@ -347,6 +355,9 @@ jobs:
           VERSION: ${{ github.ref_name }}
 
       - name: Build desktop app (Windows)
+        # RUSTC_WRAPPER="": override .cargo/config.toml's sccache wrapper — not installed on CI runners.
+        env:
+          RUSTC_WRAPPER: ""
         run: cd frontend && npm run tauri:build -- --bundles nsis
 
       - name: Collect unsigned artifacts
