@@ -51,11 +51,11 @@ else
 		db_dsn: "./warmdesk.db"
 
 		smtp:
-		host: "master.tonkersten.com"
-		port: 25
-		from: ""
-		username: ""
-		password: ""
+		  host: "master.tonkersten.com"
+		  port: 25
+		  from: ""
+		  username: ""
+		  password: ""
 
 		jwt_secret: "change-me-for-production-and-some-for-the-minimum-length"
 		allowed_origins: "http://localhost:8080"
