@@ -1,0 +1,83 @@
+---
+title: "v0.10.6: Card Activity History and Ansible card_comment"
+date: "2026-05-21"
+author: "Ton Kersten"
+description: "Every card now keeps a complete audit trail of who did what and when. A new Ansible module lets you manage card comments from your playbooks. Two bug fixes land alongside: a server crash on IPv6 avatar hosts and missing avatars in development mode."
+draft: false
+---
+:doctype: article
+:icons!:
+
+Two new features and two bug fixes in v0.10.6.
+
+== Card activity history
+
+Every card now maintains a complete audit trail, visible from the *Card History* button in the card detail footer.
+
+The timeline shows:
+
+* Card created
+* Comments added
+* Title, description, priority, or assignee changed
+* Start date or due date set or cleared
+* Card moved to a different column
+* Card closed or reopened
+
+Each entry records the timestamp, the user who made the change, and where relevant the new value — for example, which column a card was moved to, or what the new assignee's name is.
+
+The existing *Column History* section at the bottom of the card remains unchanged and focuses exclusively on column moves.
+The new panel shows everything.
+
+=== Why this matters
+
+Teams that use WarmDesk for client work, compliance, or regulated processes need to know not just where a card is now, but the full sequence of events that got it there.
+With activity history you can answer questions like "when was this handed off?", "who changed the priority and when?", or "was this card closed before the deadline?" — directly from the card, without digging through chat logs.
+
+=== Auditability coverage
+
+History is recorded everywhere cards are created or modified: the board UI, the REST API, and the Ticket API (the CI/CD integration endpoints).
+The seed tool also backfills history events with accurate timestamps when loading demo data.
+
+== Ansible collection — `card_comment` module
+
+`ansilabnl.warmdesk.card_comment` is a new module for managing comments on cards.
+
+[source,yaml]
+----
+- name: Post a deployment note
+  ansilabnl.warmdesk.card_comment:
+    project: myproject
+    card_number: "PRJ-42"
+    body: "Deployed to staging at {{ ansible_date_time.iso8601 }}"
+    time_spent_minutes: 15
+----
+
+The module supports three operations:
+
+* *Create* — omit `comment_id` to post a new comment
+* *Update* — provide `comment_id` to update an existing comment; the task is idempotent (no change recorded if body and time are already correct)
+* *Delete* — set `state: absent` with a `comment_id`; a 404 is treated as already absent
+
+Cards are looked up by project slug and card number (e.g. `PRJ-42`), consistent with the rest of the collection.
+
+== Bug fixes
+
+=== Server crash on DiceBear and other IPv6-hosted services
+
+`GET /api/v1/media/proxy` panicked with a nil pointer dereference when the upstream hostname resolved to an IPv6 address.
+
+The media proxy resolves the target host to an IP before making the request (a DNS-rebinding protection measure).
+When that IP was IPv6, the resulting dial-target URL was malformed — IPv6 literals must be wrapped in square brackets inside a URL host (`[2606:4700::1]:443`), but the brackets were missing.
+`http.NewRequestWithContext` rejected the URL, returned a nil request, and the next line dereferenced it.
+
+The server now correctly brackets IPv6 literals and treats a failed request construction as a redirect to the original URL, consistent with the other fallback paths in the proxy.
+
+Services known to use IPv6 addresses include DiceBear (user avatars) and Cloudflare-hosted resources.
+
+=== Project avatars missing in development mode
+
+When running the frontend dev server (`npm run dev` on port 5173) alongside the backend (`go run .` on port 8080), uploaded project avatar images returned 404 because the Vite proxy only forwarded `/api` requests to the backend.
+Uploaded files are served by Go from `/uploads/`, which Vite had no rule for.
+
+The Vite proxy configuration now forwards `/uploads` to the backend.
+This only affects local development; production deployments (single binary or reverse-proxied) are unaffected.
