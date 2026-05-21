@@ -232,6 +232,13 @@ card:
       description: Float used for ordering within the column.
       type: float
       sample: 65536.0
+    card_ref:
+      description: >
+        Full card reference combining the project key prefix and the card
+        number (e.g. C(GF00-4)).  Use this value as I(card_number) in
+        subsequent module calls.
+      type: str
+      sample: "GF00-4"
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -496,6 +503,18 @@ def run_module():
                         move_to_column, exc.message, exc.status)
                 )
             changed = True
+
+    # Enrich the returned card with a card_ref string (e.g. "GF00-4") so
+    # callers can pass it directly as card_number in follow-up tasks.
+    if result_card is not None:
+        try:
+            proj = client.get('/projects/%s' % project)
+            key_prefix = proj.get('key_prefix', '')
+            if key_prefix and result_card.get('card_number') is not None:
+                result_card = dict(result_card)
+                result_card['card_ref'] = '%s-%d' % (key_prefix, result_card['card_number'])
+        except WarmDeskAPIError:
+            pass  # non-fatal; proceed without card_ref
 
     module.exit_json(changed=changed, card=result_card)
 
