@@ -169,6 +169,25 @@ EXAMPLES = r'''
     - {title: "Write runbook",      priority: medium}
     - {title: "Review access list", priority: low}
   register: card_results
+
+- name: Create a card and use its reference in a follow-up task
+  ansilabnl.warmdesk.card:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+    project: my-project
+    column: Backlog
+    title: "Deploy monitoring stack"
+    priority: high
+  register: new_card
+
+- name: Move the newly created card to In Progress
+  ansilabnl.warmdesk.card:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+    project: my-project
+    title: "Deploy monitoring stack"
+    card_number: "{{ new_card.card.card_ref }}"
+    move_to_column: In Progress
 '''
 
 RETURN = r'''
