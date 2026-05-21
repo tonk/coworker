@@ -78,6 +78,13 @@ options:
         title-based search.
     type: str
     required: false
+  closed:
+    description:
+      - Whether the card is closed (done).
+      - C(true) closes the card and sets C(closed_at); C(false) reopens it.
+      - Omit the parameter to leave the closed state unchanged.
+    type: bool
+    required: false
   move_to_column:
     description:
       - Name of the column the card should be moved to.
@@ -148,6 +155,24 @@ EXAMPLES = r'''
     card_number: OPS-7
     priority: urgent
     due_date: "2026-04-30"
+
+- name: Close a card
+  ansilabnl.warmdesk.card:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+    project: my-project
+    title: irrelevant
+    card_number: EDA-42
+    closed: true
+
+- name: Reopen a card
+  ansilabnl.warmdesk.card:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+    project: my-project
+    title: irrelevant
+    card_number: EDA-42
+    closed: false
 
 - name: Delete a card by number
   ansilabnl.warmdesk.card:
@@ -293,7 +318,7 @@ def _find_card_by_title(client, project, column_id, title):
     return None
 
 
-def _card_needs_update(card, title, description, priority, start_date, due_date, assignee_id):
+def _card_needs_update(card, title, description, priority, start_date, due_date, assignee_id, closed):
     """Return True if any supplied field differs from the current card value."""
     if title and card.get('title') != title:
         return True
@@ -315,6 +340,9 @@ def _card_needs_update(card, title, description, priority, start_date, due_date,
     if assignee_id is not _UNSET:
         if card.get('assignee_id') != assignee_id:
             return True
+    if closed is not _UNSET:
+        if card.get('closed') != closed:
+            return True
     return False
 
 
@@ -335,6 +363,7 @@ def run_module():
         due_date=dict(type='str', required=False),
         assignee=dict(type='str', required=False),
         card_number=dict(type='str', required=False),
+        closed=dict(type='bool', required=False),
         move_to_column=dict(type='str', required=False),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
@@ -353,6 +382,8 @@ def run_module():
     due_date_raw = module.params['due_date']
     assignee_username = module.params['assignee']
     card_number = module.params['card_number']
+    closed_raw = module.params['closed']
+    closed = closed_raw if closed_raw is not None else _UNSET
     move_to_column = module.params['move_to_column']
     state = module.params['state']
 
@@ -457,6 +488,8 @@ def run_module():
             body['due_date'] = due_date
         if assignee_id is not _UNSET:
             body['assignee_id'] = assignee_id
+        if closed is not _UNSET:
+            body['closed'] = closed
 
         try:
             result_card = client.post(
@@ -471,7 +504,7 @@ def run_module():
     else:
         # ----- Update if needed -----
         if _card_needs_update(existing, title, description, priority,
-                              start_date, due_date, assignee_id):
+                              start_date, due_date, assignee_id, closed):
             if module.check_mode:
                 module.exit_json(changed=True, card=existing)
 
@@ -486,6 +519,8 @@ def run_module():
                 body['due_date'] = due_date
             if assignee_id is not _UNSET:
                 body['assignee_id'] = assignee_id
+            if closed is not _UNSET:
+                body['closed'] = closed
 
             try:
                 result_card = client.put(
