@@ -55,6 +55,9 @@ jobs:
           " VERSION="$VERSION"
 
       - name: Build universal DMG
+        # RUSTC_WRAPPER="": override .cargo/config.toml's sccache wrapper — not installed on CI runners.
+        env:
+          RUSTC_WRAPPER: ""
         run: cd frontend && npm run tauri:build -- --bundles dmg --target universal-apple-darwin
 
       - name: Collect artifact
