@@ -562,3 +562,5 @@ Create an application that has all these features and requirements
 - Fix CI build pipeline broken after dependency upgrade: install clang and mold on GitHub Actions runners, suppress sccache wrapper (not installed on runners) with RUSTC_WRAPPER="" in all client and release workflows
 - Add week start day preference to time tracking: users can choose Monday or Sunday as the first day of the week in Settings; drives the sheet view, week-picker calendar, current-week detection, and XLSX/PDF exports
 - Fix week start preference not persisting: wire week_start into the PUT /auth/me handler so the setting is actually saved
+- Add card_ref to ansilabnl.warmdesk.card return value: the full card reference (e.g. GF00-4) is now returned so it can be passed as card_number in follow-up tasks
+- Fix Ansible assignee lookup with project-scoped API keys: fall back to GET /projects/{slug}/members on 403; accept username or email address as assignee value

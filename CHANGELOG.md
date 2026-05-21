@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.4 — 2026-05-21
+
+### Added
+- **Ansible collection — `card_ref` return value** — `ansilabnl.warmdesk.card` now returns `card.card_ref` (e.g. `GF00-4`) so the result can be passed directly as `card_number` in follow-up tasks
+
+### Fixed
+- **Ansible collection — assignee lookup with project-scoped API keys** — `GET /api/v1/users` is blocked (403) for project-scoped keys; the resolver now falls back to `GET /projects/{slug}/members` automatically; both username and email address are accepted as the assignee value
+
 ## v0.10.3 — 2026-05-21
 
 ### Added

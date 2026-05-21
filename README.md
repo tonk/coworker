@@ -8,9 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.3)
+## Latest release (v0.10.4)
 
-- **Week start day** — choose Monday or Sunday as the start of your time-tracking week in Settings; affects the sheet, week-picker calendar, and exports.
+- **Ansible `card_ref`** — `ansilabnl.warmdesk.card` now returns `card.card_ref` (e.g. `GF00-4`) for use in follow-up tasks.
+- **Ansible assignee fix** — assignee lookup now works with project-scoped API keys and accepts email addresses in addition to usernames.
 
 ## Experiment
 
