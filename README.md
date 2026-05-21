@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.6)
+## Latest release (v0.10.7)
 
-- **Card activity history** — full audit timeline inside every card: created, commented, field changes, column moves, open/close events.
-- **Ansible `card_comment` module** — create, update, or delete card comments from Ansible playbooks.
-- **Fix media proxy panic** — no longer crashes on IPv6 upstream hosts (e.g. DiceBear avatars).
+- **Card maximize button** — one click fills the full viewport; handy for presenting cards to trainees or reviewing long descriptions.
+- **Fix card modal scrolling at high zoom** — the modal is no longer clipped when zoomed in; the backdrop now scrolls to reveal the full card.
 
 ## Experiment
 

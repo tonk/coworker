@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.7 — 2026-05-21
+
+### Added
+- **Maximize button on card detail** — a maximize/restore button (⤢) appears next to the close button on every card; one click fills the full viewport, a second click returns to the previous size; useful for presenting cards to trainees or reviewing long descriptions
+
+### Fixed
+- **Card modal clipped when zoomed in** — at high browser zoom levels the card detail modal was larger than the viewport with no way to scroll; the modal backdrop is now the scroll container so the full card is always reachable
+
 ## v0.10.6 — 2026-05-21
 
 ### Added

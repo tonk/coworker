@@ -569,3 +569,5 @@ Create an application that has all these features and requirements
 - Add ansilabnl.warmdesk.card_comment Ansible module: create, update, or delete card comments identified by project slug and card number
 - Fix media proxy panic when upstream hostname resolves to an IPv6 address: bracket IPv6 literals in dial-target URL and handle request-construction errors
 - Proxy /uploads through Vite dev server so project avatar images load correctly during local development
+- Add maximize/restore button to card detail modal: fills the full viewport on click; second click restores previous size
+- Fix card modal clipped at high browser zoom: make modal backdrop the scroll container so the full card is always reachable
