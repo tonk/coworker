@@ -564,3 +564,4 @@ Create an application that has all these features and requirements
 - Fix week start preference not persisting: wire week_start into the PUT /auth/me handler so the setting is actually saved
 - Add card_ref to ansilabnl.warmdesk.card return value: the full card reference (e.g. GF00-4) is now returned so it can be passed as card_number in follow-up tasks
 - Fix Ansible assignee lookup with project-scoped API keys: fall back to GET /projects/{slug}/members on 403; accept username or email address as assignee value
+- Add closed parameter to ansilabnl.warmdesk.card Ansible module: set closed: true/false to open or close a card; idempotent

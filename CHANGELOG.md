@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.5 — 2026-05-21
+
+### Added
+- **Ansible collection — `closed` parameter for `card` module** — `ansilabnl.warmdesk.card` now accepts `closed: true/false` to open or close a card; idempotent (only updates when state differs)
+
 ## v0.10.4 — 2026-05-21
 
 ### Added
