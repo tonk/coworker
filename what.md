@@ -560,3 +560,5 @@ Create an application that has all these features and requirements
 - Update all dependencies to latest: Go 1.26, Vue 3.5.34, Pinia 3, Vue Router 5, vue-i18n 11, marked 18, Vite 8, Tauri 2.11, and all npm packages
 - Speed up AppImage builds with sccache (Rust compilation cache) and mold linker
 - Fix CI build pipeline broken after dependency upgrade: install clang and mold on GitHub Actions runners, suppress sccache wrapper (not installed on runners) with RUSTC_WRAPPER="" in all client and release workflows
+- Add week start day preference to time tracking: users can choose Monday or Sunday as the first day of the week in Settings; drives the sheet view, week-picker calendar, current-week detection, and XLSX/PDF exports
+- Fix week start preference not persisting: wire week_start into the PUT /auth/me handler so the setting is actually saved

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.3 — 2026-05-21
+
+### Added
+- **Week start day preference** — users can now choose whether their time-tracking week starts on Monday (ISO default) or Sunday via Settings; the preference affects the sheet view, week-picker calendar, current-week detection, and XLSX/PDF exports
+
+### Fixed
+- **Week start preference not saving** — `week_start` was missing from the `PUT /auth/me` handler, so the setting silently reverted to Monday on every page load
+
 ## v0.10.2 — 2026-05-21
 
 ### Fixed

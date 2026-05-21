@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.2)
+## Latest release (v0.10.3)
 
-- **CI build pipeline fixed** — all three client builds and the release workflow now pass after the dependency upgrade that introduced `clang`/`mold`/`sccache` requirements on the runners.
+- **Week start day** — choose Monday or Sunday as the start of your time-tracking week in Settings; affects the sheet, week-picker calendar, and exports.
 
 ## Experiment
 
