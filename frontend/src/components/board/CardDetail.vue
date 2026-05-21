@@ -714,6 +714,8 @@ function activityIcon(type) {
   const icons = {
     created: '✦', column_move: '→', closed: '✓', reopened: '↑',
     title_changed: '✎', priority_changed: '⚑', assignee_changed: '◉',
+    comment_added: '✉', start_date_changed: '▷', due_date_changed: '⏱',
+    description_changed: '¶',
   }
   return icons[type] || '•'
 }
@@ -727,6 +729,10 @@ function activityLabel(h) {
     case 'title_changed': return `${t('board.history_title_changed')}: "${h.detail}"`
     case 'priority_changed': return `${t('board.history_priority_changed')}: ${h.detail}`
     case 'assignee_changed': return `${t('board.history_assignee_changed')}: ${h.detail}`
+    case 'comment_added': return t('board.history_comment_added')
+    case 'start_date_changed': return `${t('board.history_start_date_changed')}: ${h.detail}`
+    case 'due_date_changed': return `${t('board.history_due_date_changed')}: ${h.detail}`
+    case 'description_changed': return t('board.history_description_changed')
     default: return h.detail || h.event_type
   }
 }
@@ -1666,7 +1672,9 @@ function renderMarkdown(text) {
 .activity-type-closed { color: #ef4444; }
 .activity-type-reopened { color: #22c55e; }
 .activity-type-column_move { color: var(--color-primary); }
-.activity-type-title_changed, .activity-type-priority_changed, .activity-type-assignee_changed { color: var(--color-text-muted); }
+.activity-type-title_changed, .activity-type-priority_changed, .activity-type-assignee_changed,
+.activity-type-comment_added, .activity-type-start_date_changed, .activity-type-due_date_changed,
+.activity-type-description_changed { color: var(--color-text-muted); }
 
 .btn-active { background: var(--color-primary) !important; color: #fff !important; border-color: var(--color-primary) !important; }
 

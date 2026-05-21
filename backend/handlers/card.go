@@ -324,6 +324,43 @@ func UpdateCard(c *gin.Context) {
 	}
 
 	// Record activity events for tracked field changes
+	dateStr := func(t *time.Time) string {
+		if t == nil {
+			return ""
+		}
+		return t.Format("2006-01-02")
+	}
+	if v, ok := parseDate(req.StartDate); ok {
+		var newSD *time.Time
+		if vt, ok2 := v.(time.Time); ok2 {
+			t := vt
+			newSD = &t
+		}
+		if dateStr(card.StartDate) != dateStr(newSD) {
+			detail := dateStr(newSD)
+			if detail == "" {
+				detail = "cleared"
+			}
+			database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "start_date_changed", Detail: detail})
+		}
+	}
+	if v, ok := parseDate(req.DueDate); ok {
+		var newDD *time.Time
+		if vt, ok2 := v.(time.Time); ok2 {
+			t := vt
+			newDD = &t
+		}
+		if dateStr(card.DueDate) != dateStr(newDD) {
+			detail := dateStr(newDD)
+			if detail == "" {
+				detail = "cleared"
+			}
+			database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "due_date_changed", Detail: detail})
+		}
+	}
+	if req.Description != "" && req.Description != card.Description {
+		database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "description_changed"})
+	}
 	if req.Closed != nil && card.Closed != *req.Closed {
 		eventType := "reopened"
 		if *req.Closed {

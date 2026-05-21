@@ -139,6 +139,7 @@ func CreateComment(c *gin.Context) {
 	}
 
 	database.DB.Create(&comment)
+	database.DB.Create(&models.CardHistory{CardID: uint(cardID), UserID: userID, EventType: "comment_added"})
 	if req.TimeSpentMinutes > 0 {
 		recalcCardTimeSpent(uint(cardID))
 	}
