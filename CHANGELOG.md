@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.10.9 — 2026-05-22
+
+### Security
+- **CVE patches** — `golang.org/x/net` updated to v0.55.0 and `golang.org/x/sys` to v0.45.0
+- **CSP hardened** — `object-src 'none'` added to Content-Security-Policy, blocking Flash and other plugin embedding
+
+### Accessibility (WCAG 2.1 AA)
+- **Board cards keyboard-accessible** — card divs now carry `role="button"`, `tabindex="0"`, and Enter/Space handlers so cards can be opened without a mouse
+- **i18n aria-labels** — hardcoded English `aria-label` strings in BoardColumn, CardDetail, and BoardCard replaced with translated `$t()` equivalents; three new keys added to all 12 locales (`board.sort_select_aria`, `board.sort_asc_action`, `board.sort_desc_action`)
+- **A11yStatusModal focus management** — added focus trap (Tab/Shift+Tab cycling), Escape-to-close, and focus-restore on unmount
+- **ProjectSettings colour input** — `aria-label` added to the label colour picker
+
 ## v0.10.8 — 2026-05-22
 
 ### Security
