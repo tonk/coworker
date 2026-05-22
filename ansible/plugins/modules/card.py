@@ -85,6 +85,13 @@ options:
       - Omit the parameter to leave the closed state unchanged.
     type: bool
     required: false
+  time_spent:
+    description:
+      - Total time logged against the card, in minutes (denormalized).
+      - This directly sets the card-level counter, bypassing the
+        comment-based auto-creation path.  Set to C(0) to clear it.
+    type: int
+    required: false
   move_to_column:
     description:
       - Name of the column the card should be moved to.
@@ -173,6 +180,14 @@ EXAMPLES = r'''
     title: irrelevant
     card_number: EDA-42
     closed: false
+
+- name: Set logged time (in minutes) on a card
+  ansilabnl.warmdesk.card:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+    project: my-project
+    card_number: EDA-42
+    time_spent: 120
 
 - name: Delete a card by number
   ansilabnl.warmdesk.card:
@@ -270,6 +285,10 @@ card:
       description: Due date in ISO 8601 format, or C(null).
       type: str
       sample: "2026-05-01T00:00:00Z"
+    time_spent:
+      description: Total time logged against the card, in minutes.
+      type: int
+      sample: 120
     closed:
       description: Whether the card has been marked as done/closed.
       type: bool
@@ -318,7 +337,7 @@ def _find_card_by_title(client, project, column_id, title):
     return None
 
 
-def _card_needs_update(card, title, description, priority, start_date, due_date, assignee_id, closed):
+def _card_needs_update(card, title, description, priority, start_date, due_date, assignee_id, closed, time_spent):
     """Return True if any supplied field differs from the current card value."""
     if title and card.get('title') != title:
         return True
@@ -343,6 +362,8 @@ def _card_needs_update(card, title, description, priority, start_date, due_date,
     if closed is not _UNSET:
         if card.get('closed') != closed:
             return True
+    if time_spent is not None and card.get('time_spent_minutes') != time_spent:
+        return True
     return False
 
 
@@ -364,6 +385,7 @@ def run_module():
         assignee=dict(type='str', required=False),
         card_number=dict(type='str', required=False),
         closed=dict(type='bool', required=False),
+        time_spent=dict(type='int', required=False),
         move_to_column=dict(type='str', required=False),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
@@ -384,6 +406,7 @@ def run_module():
     card_number = module.params['card_number']
     closed_raw = module.params['closed']
     closed = closed_raw if closed_raw is not None else _UNSET
+    time_spent = module.params['time_spent']
     move_to_column = module.params['move_to_column']
     state = module.params['state']
 
@@ -490,6 +513,8 @@ def run_module():
             body['assignee_id'] = assignee_id
         if closed is not _UNSET:
             body['closed'] = closed
+        if time_spent is not None:
+            body['time_spent_minutes'] = time_spent
 
         try:
             result_card = client.post(
@@ -504,7 +529,8 @@ def run_module():
     else:
         # ----- Update if needed -----
         if _card_needs_update(existing, title, description, priority,
-                              start_date, due_date, assignee_id, closed):
+                              start_date, due_date, assignee_id, closed,
+                              time_spent):
             if module.check_mode:
                 module.exit_json(changed=True, card=existing)
 
@@ -521,6 +547,8 @@ def run_module():
                 body['assignee_id'] = assignee_id
             if closed is not _UNSET:
                 body['closed'] = closed
+            if time_spent is not None:
+                body['time_spent_minutes'] = time_spent
 
             try:
                 result_card = client.put(
