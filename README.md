@@ -8,11 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.9)
+## Latest release (v0.10.10)
 
-- **CVE patches** — `golang.org/x/net` v0.55.0 and `golang.org/x/sys` v0.45.0; CSP hardened with `object-src 'none'`.
-- **Board cards keyboard-accessible** — cards can now be opened with Enter or Space, not just a mouse click.
-- **Accessibility polish** — i18n aria-labels across board components, A11yStatusModal focus trap and restore, colour-picker label in ProjectSettings.
+- **Ansible `time_spent` option** — `ansilabnl.warmdesk.card` now supports `time_spent` (in minutes) for logging time against cards.
 
 ## Experiment
 

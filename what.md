@@ -571,3 +571,4 @@ Create an application that has all these features and requirements
 - Proxy /uploads through Vite dev server so project avatar images load correctly during local development
 - Add maximize/restore button to card detail modal: fills the full viewport on click; second click restores previous size
 - Fix card modal clipped at high browser zoom: make modal backdrop the scroll container so the full card is always reachable
+- Ansible card module: added `time_spent` option to log time (in minutes) against a card
