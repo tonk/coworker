@@ -645,6 +645,7 @@ onUnmounted(() => {
 }
 .section-drag-handle:active { cursor: grabbing; }
 .sidebar-section:hover .section-drag-handle { opacity: 1; }
+.sidebar-section:focus-within .section-drag-handle { opacity: 1; }
 
 .section-title {
   font-size: 11px;
@@ -900,6 +901,7 @@ onUnmounted(() => {
 }
 .drag-handle:active { cursor: grabbing; }
 .sidebar-link:hover .drag-handle { opacity: 1; }
+.sidebar-link:focus-within .drag-handle { opacity: 1; }
 .sidebar-link.drag-over {
   background: color-mix(in srgb, var(--color-primary) 15%, transparent);
   border-radius: 4px;

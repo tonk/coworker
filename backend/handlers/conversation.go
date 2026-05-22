@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/middleware"
@@ -431,6 +432,23 @@ func UploadConversationAvatar(c *gin.Context) {
 	if err := c.SaveUploadedFile(fh, dest); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
 		return
+	}
+
+	// Validate MIME type from actual file bytes — reject non-images and SVG (XSS risk).
+	allowedAvatarTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/png":  true,
+		"image/gif":  true,
+		"image/webp": true,
+	}
+	if f, err := os.Open(dest); err == nil {
+		mt, err := mimetype.DetectReader(f)
+		f.Close()
+		if err != nil || !allowedAvatarTypes[mt.String()] {
+			os.Remove(dest)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image (jpeg, png, gif, webp)"})
+			return
+		}
 	}
 
 	avatarURL := "/uploads/" + storedName

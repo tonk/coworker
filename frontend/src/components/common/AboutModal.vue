@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div class="modal-backdrop" @click.self="$emit('close')">
-      <div class="about-modal" role="dialog" aria-label="About WarmDesk">
+      <div class="about-modal" role="dialog" aria-modal="true" aria-label="About WarmDesk">
         <button class="about-close" @click="$emit('close')" aria-label="Close">✕</button>
 
         <div class="about-logo">
@@ -22,6 +22,10 @@
 
         <table class="about-table">
           <tbody>
+            <tr>
+              <td>{{ $t('about.website') }}</td>
+              <td><a href="https://tonk.github.io/warmdesk/" target="_blank" rel="noopener">tonk.github.io/warmdesk</a></td>
+            </tr>
             <tr>
               <td>{{ $t('about.repository') }}</td>
               <td><a href="https://github.com/tonk/warmdesk" target="_blank" rel="noopener">github.com/tonk/warmdesk</a></td>
@@ -58,11 +62,14 @@ const serverVersion = ref('')
 const loading = ref(true)
 const year = new Date().getFullYear()
 
+let previousFocus = null
+
 function onKeyDown(e) {
   if (e.key === 'Escape') emit('close')
 }
 
 onMounted(() => {
+  previousFocus = document.activeElement
   document.addEventListener('keydown', onKeyDown)
   client.get('/version')
     .then(r => { serverVersion.value = r.data.version })
@@ -72,6 +79,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', onKeyDown)
+  if (previousFocus && typeof previousFocus.focus === 'function') {
+    previousFocus.focus()
+  }
 })
 </script>
 

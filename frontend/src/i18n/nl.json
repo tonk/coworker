@@ -427,7 +427,8 @@
   "about": {
     "repository": "Repository",
     "license": "Licentie",
-    "built_with": "Gemaakt met"
+    "built_with": "Gemaakt met",
+    "website": "Website"
   },
   "presence": {
     "online": "online"
@@ -512,7 +513,8 @@
     "open_chat": "Chat openen",
     "no_users_found": "Geen gebruikers gevonden",
     "no_teams": "Geen projecten gevonden",
-    "team_members_count": "{count} leden"
+    "team_members_count": "{count} leden",
+    "new_conversation": "Nieuw gesprek"
   },
   "sidebar": {
     "starred": "Favoriete projecten",

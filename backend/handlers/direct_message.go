@@ -124,6 +124,29 @@ func ListConversations(c *gin.Context) {
 	c.JSON(http.StatusOK, convs)
 }
 
+// userSummary is the minimal user shape returned to non-admin callers from ListAllUsers.
+// Sensitive fields (email, global_role, locale, etc.) are omitted.
+type userSummary struct {
+	ID          uint   `json:"id"`
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
+	AvatarURL   string `json:"avatar_url"`
+	IsOnline    bool   `json:"is_online"`
+}
+
+func toUserSummaries(users []models.User) []userSummary {
+	out := make([]userSummary, len(users))
+	for i, u := range users {
+		out[i] = userSummary{
+			ID:          u.ID,
+			Username:    u.Username,
+			DisplayName: u.DisplayName,
+			AvatarURL:   u.AvatarURL,
+		}
+	}
+	return out
+}
+
 // ListAllUsers godoc
 // @Summary      List all active users
 // @Tags         users
@@ -148,7 +171,7 @@ func ListAllUsers(c *gin.Context) {
 	if len(myRoles) == 0 {
 		// No explicit customer access rows → user sees all customers, so see all users.
 		database.DB.Where("is_active = ?", true).Find(&users)
-		c.JSON(http.StatusOK, users)
+		c.JSON(http.StatusOK, toUserSummaries(users))
 		return
 	}
 
@@ -186,5 +209,5 @@ func ListAllUsers(c *gin.Context) {
 	}
 
 	database.DB.Where("is_active = ? AND id IN ?", true, allIDs).Find(&users)
-	c.JSON(http.StatusOK, users)
+	c.JSON(http.StatusOK, toUserSummaries(users))
 }

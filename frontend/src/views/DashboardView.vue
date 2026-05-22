@@ -362,6 +362,7 @@ async function handleCreate() {
   line-height: 1;
 }
 .project-card:hover .drag-handle { opacity: 0.6; }
+.project-card:focus-within .drag-handle { opacity: 0.6; }
 .drag-handle:active { cursor: grabbing; }
 
 .loading-state { display: flex; justify-content: center; padding: 60px; }

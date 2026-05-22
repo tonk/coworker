@@ -51,13 +51,13 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		auth.POST("/register", middleware.RegisterRateLimit(), authHandler.Register)
 		auth.POST("/login", middleware.AuthRateLimit(), authHandler.Login)
 		auth.POST("/logout", authHandler.Logout)
-		auth.POST("/refresh", authHandler.Refresh)
+		auth.POST("/refresh", middleware.AuthRateLimit(), authHandler.Refresh)
 		auth.POST("/mfa/verify", middleware.AuthRateLimit(), authHandler.MFAVerify)
 		auth.POST("/forgot-password", middleware.ResetRateLimit(), authHandler.ForgotPassword)
 		auth.POST("/reset-password", middleware.ResetRateLimit(), authHandler.ResetPassword)
 
 		// Passkey authentication (public — identity resolved from credential)
-		auth.POST("/passkey/login/begin", passkeyHandler.PasskeyLoginBegin)
+		auth.POST("/passkey/login/begin", middleware.AuthRateLimit(), passkeyHandler.PasskeyLoginBegin)
 		auth.POST("/passkey/login/finish", middleware.AuthRateLimit(), passkeyHandler.PasskeyLoginFinish)
 	}
 

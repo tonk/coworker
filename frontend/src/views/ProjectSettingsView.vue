@@ -6,27 +6,27 @@
           <h1>{{ $t('project.settings') }}: {{ project?.name }}</h1>
         </div>
 
-        <div class="settings-tabs">
-          <button :class="['tab', { active: tab === 'general' }]" @click="tab = 'general'">General</button>
-          <button :class="['tab', { active: tab === 'members' }]" @click="tab = 'members'">{{ $t('project.members') }}</button>
-          <button :class="['tab', { active: tab === 'labels' }]" @click="tab = 'labels'">{{ $t('project.labels') }}</button>
-          <button :class="['tab', { active: tab === 'apikeys' }]" @click="tab = 'apikeys'; loadApiKeys()">{{ $t('apikeys.tab') }}</button>
-          <button :class="['tab', { active: tab === 'webhooks' }]" @click="tab = 'webhooks'; loadWebhooks()">Webhooks</button>
+        <div class="settings-tabs" role="tablist" :aria-label="$t('project.settings')">
+          <button :class="['tab', { active: tab === 'general' }]" @click="tab = 'general'" role="tab" :aria-selected="tab === 'general'" aria-controls="tab-panel-general" id="tab-btn-general">General</button>
+          <button :class="['tab', { active: tab === 'members' }]" @click="tab = 'members'" role="tab" :aria-selected="tab === 'members'" aria-controls="tab-panel-members" id="tab-btn-members">{{ $t('project.members') }}</button>
+          <button :class="['tab', { active: tab === 'labels' }]" @click="tab = 'labels'" role="tab" :aria-selected="tab === 'labels'" aria-controls="tab-panel-labels" id="tab-btn-labels">{{ $t('project.labels') }}</button>
+          <button :class="['tab', { active: tab === 'apikeys' }]" @click="tab = 'apikeys'; loadApiKeys()" role="tab" :aria-selected="tab === 'apikeys'" aria-controls="tab-panel-apikeys" id="tab-btn-apikeys">{{ $t('apikeys.tab') }}</button>
+          <button :class="['tab', { active: tab === 'webhooks' }]" @click="tab = 'webhooks'; loadWebhooks()" role="tab" :aria-selected="tab === 'webhooks'" aria-controls="tab-panel-webhooks" id="tab-btn-webhooks">Webhooks</button>
         </div>
 
         <!-- General Tab -->
-        <div v-if="tab === 'general'" class="tab-content">
+        <div v-show="tab === 'general'" class="tab-content" role="tabpanel" id="tab-panel-general" aria-labelledby="tab-btn-general">
           <div class="form-group">
-            <label class="form-label">{{ $t('project.project_name') }}</label>
-            <input class="form-input" v-model="form.name" style="max-width:400px" />
+            <label class="form-label" for="field-project-name">{{ $t('project.project_name') }}</label>
+            <input id="field-project-name" class="form-input" v-model="form.name" style="max-width:400px" />
           </div>
           <div class="form-group">
-            <label class="form-label">{{ $t('project.description') }}</label>
-            <textarea class="form-input" v-model="form.description" rows="3" style="max-width:400px"></textarea>
+            <label class="form-label" for="field-project-description">{{ $t('project.description') }}</label>
+            <textarea id="field-project-description" class="form-input" v-model="form.description" rows="3" style="max-width:400px"></textarea>
           </div>
           <div class="form-group">
-            <label class="form-label">{{ $t('project.color') }}</label>
-            <input type="color" class="form-input" v-model="form.color" style="height:40px;padding:4px;width:80px" />
+            <label class="form-label" for="field-project-color">{{ $t('project.color') }}</label>
+            <input id="field-project-color" type="color" class="form-input" v-model="form.color" :aria-label="$t('project.color')" style="height:40px;padding:4px;width:80px" />
           </div>
           <div class="form-group">
             <label class="form-label">Avatar</label>
@@ -69,7 +69,7 @@
         </div>
 
         <!-- Members Tab -->
-        <div v-if="tab === 'members'" class="tab-content">
+        <div v-show="tab === 'members'" class="tab-content" role="tabpanel" id="tab-panel-members" aria-labelledby="tab-btn-members">
           <div class="section-action">
             <button class="btn btn-primary btn-sm" @click="showInvite = true; invite.userIds = []; inviteSearch = ''">+ {{ $t('project.invite_member') }}</button>
           </div>
@@ -157,7 +157,7 @@
         </div>
 
         <!-- API Keys Tab -->
-        <div v-if="tab === 'apikeys'" class="tab-content">
+        <div v-show="tab === 'apikeys'" class="tab-content" role="tabpanel" id="tab-panel-apikeys" aria-labelledby="tab-btn-apikeys">
           <p class="tab-description">{{ $t('apikeys.project_description') }}</p>
           <div class="form-group" style="max-width:400px">
             <label class="form-label">{{ $t('apikeys.key_name') }}</label>
@@ -218,7 +218,7 @@
         </div>
 
         <!-- Webhooks Tab -->
-        <div v-if="tab === 'webhooks'" class="tab-content">
+        <div v-show="tab === 'webhooks'" class="tab-content" role="tabpanel" id="tab-panel-webhooks" aria-labelledby="tab-btn-webhooks">
           <div class="form-group" style="max-width:420px">
             <label class="form-label">Webhook name</label>
             <input class="form-input" v-model="newWebhookName" placeholder="e.g. CI Bot" />
@@ -316,7 +316,7 @@
         </div>
 
         <!-- Labels Tab -->
-        <div v-if="tab === 'labels'" class="tab-content">
+        <div v-show="tab === 'labels'" class="tab-content" role="tabpanel" id="tab-panel-labels" aria-labelledby="tab-btn-labels">
           <div class="section-action">
             <button class="btn btn-primary btn-sm" @click="showAddLabel = true">+ Add Label</button>
           </div>

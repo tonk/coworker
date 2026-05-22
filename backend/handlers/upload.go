@@ -15,7 +15,6 @@ var allowedImageTypes = map[string]bool{
 	"image/png":  true,
 	"image/gif":  true,
 	"image/webp": true,
-	"image/svg+xml": true,
 }
 
 // UploadImage POST /api/v1/upload/image
@@ -37,7 +36,7 @@ func UploadImage(c *gin.Context) {
 		mimeType = strings.TrimSpace(mimeType[:idx])
 	}
 	if !allowedImageTypes[mimeType] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image (jpeg, png, gif, webp, svg)"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image (jpeg, png, gif, webp)"})
 		return
 	}
 
@@ -83,8 +82,6 @@ func UploadImage(c *gin.Context) {
 			ext = ".gif"
 		case "image/webp":
 			ext = ".webp"
-		case "image/svg+xml":
-			ext = ".svg"
 		}
 	}
 

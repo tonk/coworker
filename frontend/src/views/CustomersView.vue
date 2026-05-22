@@ -24,6 +24,8 @@
             class="star-btn"
             :class="{ active: c.is_favorite }"
             @click.prevent="toggleFav(c)"
+            :aria-label="c.is_favorite ? $t('customer.unstar') : $t('customer.star')"
+            :aria-pressed="c.is_favorite"
             :title="c.is_favorite ? $t('customer.unstar') : $t('customer.star')"
           >{{ c.is_favorite ? '★' : '☆' }}</button>
         </div>
@@ -39,16 +41,16 @@
     <!-- Create dialog -->
     <BaseModal v-if="showCreate" :title="$t('customer.new_customer')" @close="showCreate = false">
       <div class="form-group">
-        <label class="form-label">{{ $t('customer.name') }}</label>
-        <input class="form-input" v-model="form.name" :placeholder="$t('customer.name')" />
+        <label class="form-label" for="new-cust-name">{{ $t('customer.name') }}</label>
+        <input id="new-cust-name" class="form-input" v-model="form.name" :placeholder="$t('customer.name')" />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('customer.description') }}</label>
-        <textarea class="form-input" v-model="form.description" rows="3"></textarea>
+        <label class="form-label" for="new-cust-desc">{{ $t('customer.description') }}</label>
+        <textarea id="new-cust-desc" class="form-input" v-model="form.description" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('customer.logo_url') }}</label>
-        <input class="form-input" v-model="form.logo_url" placeholder="https://..." />
+        <label class="form-label" for="new-cust-logo">{{ $t('customer.logo_url') }}</label>
+        <input id="new-cust-logo" class="form-input" v-model="form.logo_url" placeholder="https://..." />
       </div>
       <template #footer>
         <button class="btn" @click="showCreate = false">{{ $t('common.cancel') }}</button>

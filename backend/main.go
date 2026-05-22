@@ -100,6 +100,9 @@ func main() {
 	if cfg.GinMode == "release" && strings.Contains(cfg.AllowedOrigins, "*") {
 		log.Fatal("refusing to start: allowed_origins contains '*' which disables CORS protection — remove the wildcard or restrict to specific origins")
 	}
+	if (cfg.DBDriver == "postgres" || cfg.DBDriver == "mysql") && cfg.DBTLSMode == "disable" {
+		log.Println("WARNING: remote database is configured without TLS (db_tls_mode=disable) — set db_tls_mode=verify-full for production to encrypt database connections")
+	}
 
 	if cfg.BaseURL != "" {
 		// Strip scheme so Swagger host is just "host" or "host:port"
@@ -134,6 +137,7 @@ func main() {
 	if err := database.Init(cfg); err != nil {
 		log.Fatalf("database init failed: %v", err)
 	}
+	handlers.MigrateWebhookTokenHashes()
 	handlers.StartBackupScheduler()
 
 	// Initialise pub/sub backend (Redis for horizontal scaling, memory for single instance)

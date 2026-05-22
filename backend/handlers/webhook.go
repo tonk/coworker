@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -20,6 +22,13 @@ func generateWebhookToken() (token, hint string) {
 	token = hex.EncodeToString(b)
 	hint = token[len(token)-8:]
 	return
+}
+
+// hashWebhookToken returns the SHA-256 hex digest of a plaintext webhook token.
+// Tokens are stored as hashes in the DB so a DB dump does not expose usable tokens.
+func hashWebhookToken(token string) string {
+	h := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(h[:])
 }
 
 // ListWebhooks GET /projects/:projectSlug/webhooks
@@ -79,7 +88,7 @@ func CreateWebhook(c *gin.Context) {
 	hook := models.ProjectWebhook{
 		ProjectID:   project.ID,
 		Name:        req.Name,
-		Token:       token,
+		TokenHash:   hashWebhookToken(token),
 		TokenHint:   hint,
 		Type:        hookType,
 		CreatedByID: userID,
@@ -89,7 +98,7 @@ func CreateWebhook(c *gin.Context) {
 		return
 	}
 
-	// Return the token once on creation
+	// Return the plaintext token once on creation — it is not stored server-side.
 	c.JSON(http.StatusCreated, gin.H{
 		"id":         hook.ID,
 		"name":       hook.Name,
@@ -156,8 +165,28 @@ func RegenerateWebhookToken(c *gin.Context) {
 	}
 
 	token, hint := generateWebhookToken()
-	database.DB.Model(&hook).Updates(map[string]interface{}{"token": token, "token_hint": hint})
+	database.DB.Model(&hook).Updates(map[string]interface{}{
+		"token_hash": hashWebhookToken(token),
+		"token_hint": hint,
+		"token":      "", // clear legacy plaintext column
+	})
 	c.JSON(http.StatusOK, gin.H{"token": token, "token_hint": hint})
+}
+
+// MigrateWebhookTokenHashes is a one-time startup migration that hashes any
+// plaintext webhook tokens left over from before hashing was introduced.
+func MigrateWebhookTokenHashes() {
+	var hooks []models.ProjectWebhook
+	database.DB.Where("token != '' AND (token_hash = '' OR token_hash IS NULL)").Find(&hooks)
+	for _, hook := range hooks {
+		database.DB.Model(&hook).Updates(map[string]interface{}{
+			"token_hash": hashWebhookToken(hook.Token),
+			"token":      "",
+		})
+	}
+	if len(hooks) > 0 {
+		log.Printf("migrated %d webhook token(s) to hashed storage", len(hooks))
+	}
 }
 
 // IncomingWebhook POST /api/v1/webhooks/:token (public)
@@ -166,7 +195,8 @@ func IncomingWebhook(c *gin.Context) {
 	token := c.Param("token")
 
 	var hook models.ProjectWebhook
-	if err := database.DB.Where("token = ?", token).First(&hook).Error; err != nil {
+	// Compare by SHA-256 hash — plaintext token is never stored after hashing.
+	if err := database.DB.Where("token_hash = ?", hashWebhookToken(token)).First(&hook).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 		return
 	}

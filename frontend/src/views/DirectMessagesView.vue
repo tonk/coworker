@@ -6,7 +6,7 @@
 
       <div class="dm-sidebar-header">
         <h1>{{ $t('dm.title') }}</h1>
-        <button class="new-chat-btn" @click="toggleNewConv" :class="{ active: showNewConv }" title="New conversation">
+        <button class="new-chat-btn" @click="toggleNewConv" :class="{ active: showNewConv }" :aria-label="$t('dm.new_conversation')" title="New conversation">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
       </div>
@@ -15,11 +15,11 @@
       <div v-if="showNewConv" class="new-conv-panel">
 
         <!-- Tab bar: People / Teams -->
-        <div class="new-conv-tabs">
-          <button :class="['new-conv-tab', { active: newConvTab === 'people' }]" @click="newConvTab = 'people'">
+        <div class="new-conv-tabs" role="tablist" :aria-label="$t('dm.new_conversation')">
+          <button :class="['new-conv-tab', { active: newConvTab === 'people' }]" @click="newConvTab = 'people'" role="tab" :aria-selected="newConvTab === 'people'" aria-controls="new-conv-panel-people" id="new-conv-tab-people">
             {{ $t('dm.tab_people') }}
           </button>
-          <button :class="['new-conv-tab', { active: newConvTab === 'teams' }]" @click="newConvTab = 'teams'">
+          <button :class="['new-conv-tab', { active: newConvTab === 'teams' }]" @click="newConvTab = 'teams'" role="tab" :aria-selected="newConvTab === 'teams'" aria-controls="new-conv-panel-teams" id="new-conv-tab-teams">
             {{ $t('dm.tab_teams') }}
           </button>
         </div>
@@ -41,7 +41,7 @@
           <div v-if="selectedUsers.length" class="selected-chips">
             <span v-for="u in selectedUsers" :key="u.id" class="chip">
               {{ u.display_name || u.username }}
-              <button class="chip-remove" @click="toggleUser(u)">×</button>
+              <button class="chip-remove" @click="toggleUser(u)" aria-label="Remove">×</button>
             </span>
           </div>
 
@@ -84,22 +84,24 @@
 
         <!-- ── Teams tab ── -->
         <template v-else>
-          <div v-if="loadingTeams" class="search-empty" style="padding:16px 12px">{{ $t('common.loading') }}</div>
-          <div v-else class="user-search-results">
-            <div
-              v-for="p in allProjects"
-              :key="p.id"
-              class="user-result team-result"
-              @click="selectProjectTeam(p)"
-            >
-              <div class="team-dot" :style="{ background: p.color || '#94a3b8' }"></div>
-              <div class="conv-info">
-                <div class="conv-name">{{ p.name }}</div>
-                <div class="conv-handle">{{ $t('dm.team_members_count', { count: p.member_count ?? '…' }) }}</div>
+          <div id="new-conv-panel-teams" role="tabpanel" aria-labelledby="new-conv-tab-teams">
+            <div v-if="loadingTeams" class="search-empty" style="padding:16px 12px">{{ $t('common.loading') }}</div>
+            <div v-else class="user-search-results">
+              <div
+                v-for="p in allProjects"
+                :key="p.id"
+                class="user-result team-result"
+                @click="selectProjectTeam(p)"
+              >
+                <div class="team-dot" :style="{ background: p.color || '#94a3b8' }"></div>
+                <div class="conv-info">
+                  <div class="conv-name">{{ p.name }}</div>
+                  <div class="conv-handle">{{ $t('dm.team_members_count', { count: p.member_count ?? '…' }) }}</div>
+                </div>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="team-arrow"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="team-arrow"><polyline points="9 18 15 12 9 6"/></svg>
+              <div v-if="!allProjects.length" class="search-empty">{{ $t('dm.no_teams') }}</div>
             </div>
-            <div v-if="!allProjects.length" class="search-empty">{{ $t('dm.no_teams') }}</div>
           </div>
         </template>
 
@@ -168,7 +170,7 @@
         <div class="dm-chat-header">
           <div class="conv-avatar-wrap">
             <template v-if="activeConv.is_group">
-              <div class="group-avatar group-avatar-md group-avatar-upload" @click="triggerAvatarUpload" title="Change group avatar">
+              <div class="group-avatar group-avatar-md group-avatar-upload" @click="triggerAvatarUpload" @keydown.enter.prevent="triggerAvatarUpload" @keydown.space.prevent="triggerAvatarUpload" role="button" tabindex="0" title="Change group avatar" aria-label="Change group avatar">
                 <img v-if="activeConv.avatar" :src="resolveAssetUrl(activeConv.avatar)" class="avatar-img" @error="e => e.target.style.display='none'" />
                 <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <div class="avatar-upload-overlay">
@@ -210,7 +212,10 @@
           <div class="layout-picker">
             <button v-for="l in ['bubble','comfortable','compact','cozy','grouped']" :key="l"
               :class="['layout-btn', { active: layout === l }]"
-              @click="setLayout(l)" :title="l.charAt(0).toUpperCase() + l.slice(1)">
+              @click="setLayout(l)"
+              :aria-label="l.charAt(0).toUpperCase() + l.slice(1)"
+              :aria-pressed="layout === l"
+              :title="l.charAt(0).toUpperCase() + l.slice(1)">
               <!-- bubble -->
               <svg v-if="l === 'bubble'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M3 9a2 2 0 0 1 2-2h14"/></svg>
               <!-- comfortable -->
@@ -225,6 +230,8 @@
             <!-- Bell: toggle new-message notifications -->
             <button :class="['layout-btn', { active: notifyEnabled }]"
               @click="toggleNotify"
+              :aria-label="notifyEnabled ? 'Mute notifications' : 'Enable notifications'"
+              :aria-pressed="notifyEnabled"
               :title="notifyEnabled ? 'Mute notifications' : 'Enable notifications'">
               <svg v-if="notifyEnabled" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -232,32 +239,32 @@
           </div>
           <!-- Call button — 1-on-1 only -->
           <div v-if="!activeConv.is_group" class="call-btn-group" ref="callBtnGroupRef">
-            <button class="add-member-btn call-btn-header" :title="$t('call.start_call')" @click="initiateCall">
+            <button class="add-member-btn call-btn-header" :aria-label="$t('call.start_call')" :title="$t('call.start_call')" @click="initiateCall">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7"/>
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
               </svg>
             </button>
-            <button class="add-member-btn call-settings-chevron" :title="$t('call.settings')" @click.stop="toggleCallSettings">
+            <button class="add-member-btn call-settings-chevron" :aria-label="$t('call.settings')" :title="$t('call.settings')" @click.stop="toggleCallSettings">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <CallSettingsDropdown v-if="showCallSettings" :pos="callSettingsPos" @close="showCallSettings = false" />
           </div>
           <!-- Group video — LiveKit room -->
           <div v-else-if="activeConv.is_group" class="call-btn-group" ref="groupCallBtnGroupRef">
-            <button class="add-member-btn call-btn-header" :title="$t('call.group_video')" @click="initiateGroupCall">
+            <button class="add-member-btn call-btn-header" :aria-label="$t('call.group_video')" :title="$t('call.group_video')" @click="initiateGroupCall">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7"/>
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
               </svg>
             </button>
-            <button class="add-member-btn call-settings-chevron" :title="$t('call.settings')" @click.stop="toggleGroupCallSettings">
+            <button class="add-member-btn call-settings-chevron" :aria-label="$t('call.settings')" :title="$t('call.settings')" @click.stop="toggleGroupCallSettings">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             <CallSettingsDropdown v-if="showGroupCallSettings" :pos="groupCallSettingsPos" @close="showGroupCallSettings = false" />
           </div>
           <!-- Add member button for group chats -->
-          <button v-if="activeConv.is_group" class="add-member-btn" @click="showAddMember = !showAddMember" title="Add member">
+          <button v-if="activeConv.is_group" class="add-member-btn" @click="showAddMember = !showAddMember" :aria-label="$t('customer.add_member')" title="Add member">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
           </button>
         </div>
@@ -265,7 +272,7 @@
         <!-- Add member dropdown -->
         <div v-if="showAddMember" class="add-member-panel">
           <div class="search-wrap">
-            <input class="search-input" v-model="addMemberSearch" placeholder="Search users…" @input="filterAddMembers" autofocus />
+            <input class="search-input" v-model="addMemberSearch" :aria-label="$t('common.search')" placeholder="Search users…" @input="filterAddMembers" autofocus />
           </div>
           <div class="user-search-results">
             <div v-for="u in filteredAddMembers" :key="u.id" class="user-result" @click="addMember(u)">
@@ -1992,6 +1999,11 @@ function dayLabel(dateStr) {
   transform: translateY(0);
   pointer-events: auto;
 }
+.msg-hover-actions:focus-within {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
 .msg-hover-emoji-btn,
 .msg-hover-more-btn {
   border: none;
@@ -2038,6 +2050,7 @@ function dayLabel(dateStr) {
   transition: opacity .15s;
 }
 .msg-meta:hover .msg-action-btn { opacity: 1; }
+.msg-action-btn:focus-visible { opacity: 1; }
 .msg-action-btn:hover { color: var(--color-danger); background: var(--color-bg); }
 
 /* Edit inline */

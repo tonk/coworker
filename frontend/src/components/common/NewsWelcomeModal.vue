@@ -63,8 +63,18 @@ function onKeyDown(e) {
   }
 }
 
-onMounted(() => document.addEventListener('keydown', onKeyDown))
-onBeforeUnmount(() => document.removeEventListener('keydown', onKeyDown))
+let previousFocus = null
+
+onMounted(() => {
+  previousFocus = document.activeElement
+  document.addEventListener('keydown', onKeyDown)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeyDown)
+  if (previousFocus && typeof previousFocus.focus === 'function') {
+    previousFocus.focus()
+  }
+})
 </script>
 
 <style scoped>

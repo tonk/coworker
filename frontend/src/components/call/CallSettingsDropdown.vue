@@ -7,8 +7,8 @@
     >
       <div class="csp-header">
         <span class="csp-title">{{ $t('call.settings') }}</span>
-        <button class="csp-close" @click="$emit('close')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <button class="csp-close" @click="$emit('close')" :aria-label="$t('common.close')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
@@ -65,7 +65,7 @@
                 {{ d.label || $t('call.speaker') }}
               </option>
             </select>
-            <button class="csp-test-btn" @click="testSpeaker" :title="$t('call.test_speaker')">
+            <button class="csp-test-btn" @click="testSpeaker" :title="$t('call.test_speaker')" :aria-label="$t('call.test_speaker')">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </button>
           </div>

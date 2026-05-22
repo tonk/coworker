@@ -455,7 +455,8 @@
   "about": {
     "repository": "Tietovarasto",
     "license": "Lisenssi",
-    "built_with": "Rakennettu käyttäen"
+    "built_with": "Rakennettu käyttäen",
+    "website": "Verkkosivusto"
   },
   "presence": {
     "online": "online"
@@ -540,7 +541,8 @@
     "open_chat": "Avaa chat",
     "no_users_found": "Käyttäjiä ei löydy",
     "no_teams": "Projekteja ei löydy",
-    "team_members_count": "{count} jäsentä"
+    "team_members_count": "{count} jäsentä",
+    "new_conversation": "Uusi keskustelu"
   },
   "sidebar": {
     "starred": "Suosikkiprojektit",

@@ -19,17 +19,17 @@
     </div>
 
     <!-- Tab bar: Backlog | Velocity -->
-    <div class="backlog-tabs">
-      <button :class="['tab', { active: view === 'backlog' }]" @click="view = 'backlog'">
+    <div class="backlog-tabs" role="tablist" :aria-label="$t('sprint.backlog_title')">
+      <button :class="['tab', { active: view === 'backlog' }]" @click="view = 'backlog'" role="tab" :aria-selected="view === 'backlog'" aria-controls="tab-panel-backlog" id="tab-btn-backlog">
         📋 {{ $t('sprint.backlog_title') }}
       </button>
-      <button :class="['tab', { active: view === 'velocity' }]" @click="view = 'velocity'">
+      <button :class="['tab', { active: view === 'velocity' }]" @click="view = 'velocity'" role="tab" :aria-selected="view === 'velocity'" aria-controls="tab-panel-velocity" id="tab-btn-velocity">
         📈 {{ $t('sprint.velocity_title') }}
       </button>
     </div>
 
     <!-- Backlog view -->
-    <div v-if="view === 'backlog'" class="backlog-body">
+    <div v-show="view === 'backlog'" class="backlog-body" role="tabpanel" id="tab-panel-backlog" aria-labelledby="tab-btn-backlog">
       <!-- Left: Backlog cards -->
       <div class="backlog-column">
         <div class="backlog-column-header">
@@ -126,7 +126,7 @@
                 <span class="sprint-card-title" @click="openCardById(cardId)">{{ boardCardById(cardId).title }}</span>
                 <span v-if="boardCardById(cardId).story_points != null" class="sp-badge sp-sm">{{ boardCardById(cardId).story_points }}</span>
                 <span class="closed-badge" v-if="boardCardById(cardId).closed">✓</span>
-                <button v-if="canManage && sprint.status !== 'completed'" class="btn-icon remove-btn" @click="removeFromSprint(sprint, cardId)" :title="$t('sprint.remove_from_sprint')">✕</button>
+                <button v-if="canManage && sprint.status !== 'completed'" class="btn-icon remove-btn" @click="removeFromSprint(sprint, cardId)" :title="$t('sprint.remove_from_sprint')" :aria-label="$t('sprint.remove_from_sprint')">✕</button>
               </template>
             </div>
           </div>
@@ -135,7 +135,7 @@
     </div>
 
     <!-- Velocity view -->
-    <div v-if="view === 'velocity'" class="velocity-body">
+    <div v-show="view === 'velocity'" class="velocity-body" role="tabpanel" id="tab-panel-velocity" aria-labelledby="tab-btn-velocity">
       <h2>{{ $t('sprint.velocity_title') }}</h2>
       <div v-if="!completedSprints.length" class="backlog-empty">
         {{ $t('sprint.no_completed_sprints') }}

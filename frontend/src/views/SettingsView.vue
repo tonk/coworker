@@ -8,26 +8,26 @@
           <form @submit.prevent="saveProfile">
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">{{ $t('settings.first_name') }}</label>
-                <input class="form-input" v-model="form.first_name" :placeholder="$t('settings.first_name')" />
+                <label class="form-label" for="settings-first-name">{{ $t('settings.first_name') }}</label>
+                <input id="settings-first-name" class="form-input" v-model="form.first_name" :placeholder="$t('settings.first_name')" />
               </div>
               <div class="form-group">
-                <label class="form-label">{{ $t('settings.last_name') }}</label>
-                <input class="form-input" v-model="form.last_name" :placeholder="$t('settings.last_name')" />
+                <label class="form-label" for="settings-last-name">{{ $t('settings.last_name') }}</label>
+                <input id="settings-last-name" class="form-input" v-model="form.last_name" :placeholder="$t('settings.last_name')" />
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.display_name') }}</label>
-              <input class="form-input" v-model="form.display_name" :placeholder="$t('settings.display_name')" />
+              <label class="form-label" for="settings-display-name">{{ $t('settings.display_name') }}</label>
+              <input id="settings-display-name" class="form-input" v-model="form.display_name" :placeholder="$t('settings.display_name')" />
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('auth.email') }}</label>
-              <input class="form-input" v-model="form.email" type="email" :placeholder="$t('auth.email')" />
+              <label class="form-label" for="settings-email">{{ $t('auth.email') }}</label>
+              <input id="settings-email" class="form-input" v-model="form.email" type="email" :placeholder="$t('auth.email')" />
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.avatar_url') }}</label>
+              <label class="form-label" for="settings-avatar-url">{{ $t('settings.avatar_url') }}</label>
               <div style="display:flex;gap:8px;align-items:center">
-                <input class="form-input" v-model="form.avatar_url" :placeholder="$t('settings.avatar_url_placeholder')" style="flex:1" />
+                <input id="settings-avatar-url" class="form-input" v-model="form.avatar_url" :placeholder="$t('settings.avatar_url_placeholder')" style="flex:1" />
                 <button type="button" class="btn btn-secondary btn-sm" @click="$refs.avatarFileInput.click()">{{ $t('settings.upload_avatar') }}</button>
                 <button v-if="form.avatar_url" type="button" class="btn btn-danger btn-sm" @click="clearAvatar">{{ $t('common.clear') }}</button>
               </div>
@@ -37,8 +37,8 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('common.language') }}</label>
-              <select class="form-input" v-model="form.locale">
+              <label class="form-label" for="settings-locale">{{ $t('common.language') }}</label>
+              <select id="settings-locale" class="form-input" v-model="form.locale">
                 <option value="en">English</option>
                 <option value="nl">Nederlands</option>
                 <option value="de">Deutsch</option>
@@ -54,8 +54,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.theme') }}</label>
-              <select class="form-input" v-model="form.theme">
+              <label class="form-label" for="settings-theme">{{ $t('settings.theme') }}</label>
+              <select id="settings-theme" class="form-input" v-model="form.theme">
                 <option value="light">{{ $t('settings.theme_light') }}</option>
                 <option value="dark">{{ $t('settings.theme_dark') }}</option>
                 <option value="black">{{ $t('settings.theme_black') }}</option>
@@ -73,13 +73,15 @@
                   :class="{ active: form.accent_color === c.value }"
                   :style="{ background: c.hex }"
                   :title="c.label"
+                  :aria-label="c.label"
+                  :aria-pressed="form.accent_color === c.value"
                   @click="form.accent_color = c.value"
                 ></button>
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.date_time_format') }}</label>
-              <select class="form-input" v-model="form.date_time_format">
+              <label class="form-label" for="settings-datetime-format">{{ $t('settings.date_time_format') }}</label>
+              <select id="settings-datetime-format" class="form-input" v-model="form.date_time_format">
                 <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm (ISO)</option>
                 <option value="DD/MM/YYYY HH:mm">DD/MM/YYYY HH:mm</option>
                 <option value="MM/DD/YYYY hh:mm a">MM/DD/YYYY hh:mm a</option>
@@ -88,14 +90,14 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.timezone') }}</label>
-              <select class="form-input" v-model="form.timezone">
+              <label class="form-label" for="settings-timezone">{{ $t('settings.timezone') }}</label>
+              <select id="settings-timezone" class="form-input" v-model="form.timezone">
                 <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.font') }}</label>
-              <select class="form-input" v-model="form.font">
+              <label class="form-label" for="settings-font">{{ $t('settings.font') }}</label>
+              <select id="settings-font" class="form-input" v-model="form.font">
                 <option value="system">{{ $t('settings.font_system') }}</option>
                 <option value="Inter, sans-serif">Inter</option>
                 <option value="'Roboto', sans-serif">Roboto</option>
@@ -108,8 +110,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.font_size') }}</label>
-              <select class="form-input" v-model="form.font_size">
+              <label class="form-label" for="settings-font-size">{{ $t('settings.font_size') }}</label>
+              <select id="settings-font-size" class="form-input" v-model="form.font_size">
                 <option value="12">12px</option>
                 <option value="13">13px</option>
                 <option value="14">14px</option>
@@ -119,8 +121,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.sidebar_position') }}</label>
-              <select class="form-input" v-model="form.sidebar_position">
+              <label class="form-label" for="settings-sidebar-pos">{{ $t('settings.sidebar_position') }}</label>
+              <select id="settings-sidebar-pos" class="form-input" v-model="form.sidebar_position">
                 <option value="left">{{ $t('settings.sidebar_left') }}</option>
                 <option value="right">{{ $t('settings.sidebar_right') }}</option>
               </select>
@@ -176,12 +178,12 @@
           <h2>{{ $t('auth.change_password') }}</h2>
           <form @submit.prevent="savePassword">
             <div class="form-group">
-              <label class="form-label">{{ $t('auth.current_password') }}</label>
-              <input class="form-input" type="password" v-model="pwForm.current_password" required />
+              <label class="form-label" for="settings-current-pw">{{ $t('auth.current_password') }}</label>
+              <input id="settings-current-pw" class="form-input" type="password" v-model="pwForm.current_password" required />
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('auth.new_password') }}</label>
-              <input class="form-input" type="password" v-model="pwForm.new_password" required :minlength="passwordPolicy.min_length" />
+              <label class="form-label" for="settings-new-pw">{{ $t('auth.new_password') }}</label>
+              <input id="settings-new-pw" class="form-input" type="password" v-model="pwForm.new_password" required :minlength="passwordPolicy.min_length" />
               <ul class="pw-requirements">
                 <li>{{ $t('settings.req_min_length', { n: passwordPolicy.min_length }) }}</li>
                 <li v-if="passwordPolicy.require_upper">{{ $t('settings.req_upper') }}</li>
@@ -208,8 +210,8 @@
             <div class="mfa-status mfa-status-on">{{ $t('mfa.enabled') }}</div>
             <form @submit.prevent="disableMFA" style="margin-top:16px">
               <div class="form-group" style="max-width:320px">
-                <label class="form-label">{{ $t('mfa.disable_instructions') }}</label>
-                <input class="form-input" type="password" v-model="mfaDisablePassword" required :placeholder="$t('auth.password')" autocomplete="current-password" />
+                <label class="form-label" for="mfa-disable-pw">{{ $t('mfa.disable_instructions') }}</label>
+                <input id="mfa-disable-pw" class="form-input" type="password" v-model="mfaDisablePassword" required :placeholder="$t('auth.password')" autocomplete="current-password" />
               </div>
               <div class="form-actions">
                 <button type="submit" class="btn btn-danger" :disabled="mfaLoading || !mfaDisablePassword">
@@ -238,8 +240,9 @@
               <code class="mfa-secret">{{ mfaSetupData.secret }}</code>
               <form @submit.prevent="confirmMFAEnable" style="margin-top:20px">
                 <div class="form-group" style="max-width:320px">
-                  <label class="form-label">{{ $t('mfa.verify_code') }}</label>
+                  <label class="form-label" for="mfa-verify-code">{{ $t('mfa.verify_code') }}</label>
                   <input
+                    id="mfa-verify-code"
                     class="form-input mfa-code-input"
                     v-model="mfaEnableCode"
                     inputmode="numeric"

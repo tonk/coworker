@@ -1,13 +1,13 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,26 +40,38 @@ func LinkPreview(c *gin.Context) {
 		return
 	}
 
-	// SSRF: reject private IPs after DNS resolution
-	if ips, err := net.LookupHost(parsed.Hostname()); err == nil {
-		for _, ipStr := range ips {
-			if isPrivateIP(net.ParseIP(ipStr)) {
-				c.JSON(http.StatusForbidden, gin.H{"error": "private addresses not allowed"})
-				return
-			}
-		}
+	// SSRF: resolve once, verify the IP is public, then dial by IP to prevent DNS rebinding.
+	safeIP, err := resolveAndVerify(parsed.Hostname())
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "private addresses not allowed"})
+		return
 	}
 
-	cl := &http.Client{Timeout: 5 * time.Second}
-	req, err := http.NewRequest(http.MethodGet, rawURL, nil)
+	port := parsed.Port()
+	if port == "" {
+		if parsed.Scheme == "https" {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+	fetchURL := *parsed
+	if strings.Contains(safeIP, ":") {
+		fetchURL.Host = fmt.Sprintf("[%s]:%s", safeIP, port)
+	} else {
+		fetchURL.Host = fmt.Sprintf("%s:%s", safeIP, port)
+	}
+
+	req, err := http.NewRequest(http.MethodGet, fetchURL.String(), nil)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad url"})
 		return
 	}
+	req.Host = parsed.Host
 	req.Header.Set("User-Agent", "WarmDesk-LinkPreview/1.0")
 	req.Header.Set("Accept", "text/html")
 
-	resp, err := cl.Do(req)
+	resp, err := mediaProxyClient.Do(req)
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": "failed to fetch"})
 		return

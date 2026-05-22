@@ -3,18 +3,18 @@
       <div class="admin-container">
         <h1>{{ $t('admin.panel') }}</h1>
 
-        <div class="tabs">
-          <button :class="['tab', { active: tab === 'users' }]" @click="tab = 'users'">{{ $t('admin.users') }}</button>
-          <button :class="['tab', { active: tab === 'groups' }]" @click="tab = 'groups'; loadGroups()">{{ $t('groups.title') }}</button>
-          <button :class="['tab', { active: tab === 'customers' }]" @click="tab = 'customers'; loadAdminCustomers()">{{ $t('customer.customers') }}</button>
-          <button :class="['tab', { active: tab === 'projects' }]" @click="tab = 'projects'; loadProjects()">{{ $t('admin.projects') }}</button>
-          <button :class="['tab', { active: tab === 'settings' }]" @click="tab = 'settings'; loadSettings()">{{ $t('admin.settings') }}</button>
-          <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()">{{ $t('admin.backup_tab') }}</button>
-          <button :class="['tab', { active: tab === 'news' }]" @click="tab = 'news'; loadNews()">{{ $t('admin.news_tab') }}</button>
+        <div class="tabs" role="tablist" :aria-label="$t('admin.panel')">
+          <button :class="['tab', { active: tab === 'users' }]" @click="tab = 'users'" role="tab" :aria-selected="tab === 'users'" aria-controls="tab-panel-users" id="tab-btn-users">{{ $t('admin.users') }}</button>
+          <button :class="['tab', { active: tab === 'groups' }]" @click="tab = 'groups'; loadGroups()" role="tab" :aria-selected="tab === 'groups'" aria-controls="tab-panel-groups" id="tab-btn-groups">{{ $t('groups.title') }}</button>
+          <button :class="['tab', { active: tab === 'customers' }]" @click="tab = 'customers'; loadAdminCustomers()" role="tab" :aria-selected="tab === 'customers'" aria-controls="tab-panel-customers" id="tab-btn-customers">{{ $t('customer.customers') }}</button>
+          <button :class="['tab', { active: tab === 'projects' }]" @click="tab = 'projects'; loadProjects()" role="tab" :aria-selected="tab === 'projects'" aria-controls="tab-panel-projects" id="tab-btn-projects">{{ $t('admin.projects') }}</button>
+          <button :class="['tab', { active: tab === 'settings' }]" @click="tab = 'settings'; loadSettings()" role="tab" :aria-selected="tab === 'settings'" aria-controls="tab-panel-settings" id="tab-btn-settings">{{ $t('admin.settings') }}</button>
+          <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()" role="tab" :aria-selected="tab === 'backup'" aria-controls="tab-panel-backup" id="tab-btn-backup">{{ $t('admin.backup_tab') }}</button>
+          <button :class="['tab', { active: tab === 'news' }]" @click="tab = 'news'; loadNews()" role="tab" :aria-selected="tab === 'news'" aria-controls="tab-panel-news" id="tab-btn-news">{{ $t('admin.news_tab') }}</button>
         </div>
 
         <!-- Users tab -->
-        <div v-if="tab === 'users'">
+        <div v-show="tab === 'users'" role="tabpanel" id="tab-panel-users" aria-labelledby="tab-btn-users">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="openCreateUser">+ {{ $t('admin.create_user') }}</button>
           </div>
@@ -94,7 +94,7 @@
         </div>
 
         <!-- Projects tab -->
-        <div v-if="tab === 'projects'">
+        <div v-show="tab === 'projects'" role="tabpanel" id="tab-panel-projects" aria-labelledby="tab-btn-projects">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="showCreateProject = true">+ {{ $t('project.new_project') }}</button>
             <label class="toggle-label" style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
@@ -164,7 +164,7 @@
         </div>
 
         <!-- Groups tab -->
-        <div v-if="tab === 'groups'">
+        <div v-show="tab === 'groups'" role="tabpanel" id="tab-panel-groups" aria-labelledby="tab-btn-groups">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="openCreateGroup">+ {{ $t('groups.create') }}</button>
           </div>
@@ -212,7 +212,7 @@
         </div>
 
         <!-- Customers tab -->
-        <div v-if="tab === 'customers'">
+        <div v-show="tab === 'customers'" role="tabpanel" id="tab-panel-customers" aria-labelledby="tab-btn-customers">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="showCreateCustomer = true">+ {{ $t('customer.new_customer') }}</button>
           </div>
@@ -261,7 +261,7 @@
         </div>
 
         <!-- Settings tab -->
-        <div v-if="tab === 'settings'">
+        <div v-show="tab === 'settings'" role="tabpanel" id="tab-panel-settings" aria-labelledby="tab-btn-settings">
           <div class="settings-section">
             <h2>{{ $t('admin.system_settings') }}</h2>
 
@@ -282,8 +282,8 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.allowed_ips_label') }}</label>
-              <input class="form-input" v-model="systemSettings.allowed_ips"
+              <label class="form-label" for="sys-allowed-ips">{{ $t('admin.allowed_ips_label') }}</label>
+              <input id="sys-allowed-ips" class="form-input" v-model="systemSettings.allowed_ips"
                 :placeholder="$t('admin.allowed_ips_placeholder')"
                 spellcheck="false" autocorrect="off" autocapitalize="off"
                 @change="saveSecuritySettings" />
@@ -315,9 +315,9 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.session_timeout') }}</label>
+              <label class="form-label" for="sys-session-timeout">{{ $t('admin.session_timeout') }}</label>
               <div class="form-row" style="align-items:center;gap:8px">
-                <input class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:120px" />
+                <input id="sys-session-timeout" class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:120px" />
                 <span class="form-hint" style="margin:0">{{ $t('admin.session_timeout_unit') }}</span>
               </div>
               <p class="form-hint">{{ $t('admin.session_timeout_hint') }}</p>
@@ -327,8 +327,8 @@
             <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.global_defaults_hint') }}</p>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('settings.date_time_format') }}</label>
-              <select class="form-input" v-model="systemSettings.default_date_time_format" @change="saveGeneralSettings">
+              <label class="form-label" for="sys-datetime-format">{{ $t('settings.date_time_format') }}</label>
+              <select id="sys-datetime-format" class="form-input" v-model="systemSettings.default_date_time_format" @change="saveGeneralSettings">
                 <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm (ISO)</option>
                 <option value="DD/MM/YYYY HH:mm">DD/MM/YYYY HH:mm</option>
                 <option value="MM/DD/YYYY hh:mm a">MM/DD/YYYY hh:mm a</option>
@@ -338,15 +338,15 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('settings.timezone') }}</label>
-              <select class="form-input" v-model="systemSettings.default_timezone" @change="saveGeneralSettings">
+              <label class="form-label" for="sys-timezone">{{ $t('settings.timezone') }}</label>
+              <select id="sys-timezone" class="form-input" v-model="systemSettings.default_timezone" @change="saveGeneralSettings">
                 <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
               </select>
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('settings.theme') }}</label>
-              <select class="form-input" v-model="systemSettings.default_theme" @change="saveGeneralSettings">
+              <label class="form-label" for="sys-theme">{{ $t('settings.theme') }}</label>
+              <select id="sys-theme" class="form-input" v-model="systemSettings.default_theme" @change="saveGeneralSettings">
                 <option value="light">{{ $t('settings.theme_light') }}</option>
                 <option value="dark">{{ $t('settings.theme_dark') }}</option>
                 <option value="system">{{ $t('settings.theme_system') }}</option>
@@ -354,8 +354,8 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('settings.font') }}</label>
-              <select class="form-input" v-model="systemSettings.default_font" @change="saveGeneralSettings">
+              <label class="form-label" for="sys-font">{{ $t('settings.font') }}</label>
+              <select id="sys-font" class="form-input" v-model="systemSettings.default_font" @change="saveGeneralSettings">
                 <option value="system">{{ $t('settings.font_system') }}</option>
                 <option value="Inter, sans-serif">Inter</option>
                 <option value="'Roboto', sans-serif">Roboto</option>
@@ -366,8 +366,8 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('settings.font_size') }}</label>
-              <select class="form-input" v-model="systemSettings.default_font_size" @change="saveGeneralSettings">
+              <label class="form-label" for="sys-font-size">{{ $t('settings.font_size') }}</label>
+              <select id="sys-font-size" class="form-input" v-model="systemSettings.default_font_size" @change="saveGeneralSettings">
                 <option value="12">12px</option>
                 <option value="13">13px</option>
                 <option value="14">14px</option>
@@ -378,8 +378,8 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('common.language') }}</label>
-              <select class="form-input" v-model="systemSettings.default_locale" @change="saveGeneralSettings">
+              <label class="form-label" for="sys-locale">{{ $t('common.language') }}</label>
+              <select id="sys-locale" class="form-input" v-model="systemSettings.default_locale" @change="saveGeneralSettings">
                 <option value="en">English</option>
                 <option value="nl">Nederlands</option>
                 <option value="de">Deutsch</option>
@@ -399,14 +399,14 @@
             <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.default_columns_hint') }}</p>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.default_columns') }}</label>
-              <textarea class="form-input" v-model="systemSettings.default_columns" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Backlog\nIn Progress\nDone'"></textarea>
+              <label class="form-label" for="sys-default-columns">{{ $t('admin.default_columns') }}</label>
+              <textarea id="sys-default-columns" class="form-input" v-model="systemSettings.default_columns" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Backlog\nIn Progress\nDone'"></textarea>
               <p class="form-hint">{{ $t('admin.default_columns_each_line') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.default_labels') }}</label>
-              <textarea class="form-input" v-model="systemSettings.default_labels" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Bug\nFeature\nDesign\nContent'"></textarea>
+              <label class="form-label" for="sys-default-labels">{{ $t('admin.default_labels') }}</label>
+              <textarea id="sys-default-labels" class="form-input" v-model="systemSettings.default_labels" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Bug\nFeature\nDesign\nContent'"></textarea>
               <p class="form-hint">{{ $t('admin.default_labels_each_line') }}</p>
             </div>
 
@@ -419,28 +419,28 @@
 
             <div class="form-row" style="max-width:500px">
               <div class="form-group" style="flex:3">
-                <label class="form-label">{{ $t('admin.smtp_host') }}</label>
-                <input class="form-input" v-model="systemSettings.smtp_host" :placeholder="$t('admin.smtp_host_placeholder')" />
+                <label class="form-label" for="sys-smtp-host">{{ $t('admin.smtp_host') }}</label>
+                <input id="sys-smtp-host" class="form-input" v-model="systemSettings.smtp_host" :placeholder="$t('admin.smtp_host_placeholder')" />
               </div>
               <div class="form-group" style="flex:1">
-                <label class="form-label">{{ $t('admin.smtp_port') }}</label>
-                <input class="form-input" v-model="systemSettings.smtp_port" type="number" placeholder="587" />
+                <label class="form-label" for="sys-smtp-port">{{ $t('admin.smtp_port') }}</label>
+                <input id="sys-smtp-port" class="form-input" v-model="systemSettings.smtp_port" type="number" placeholder="587" />
               </div>
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.smtp_from') }}</label>
-              <input class="form-input" v-model="systemSettings.smtp_from" type="text" placeholder="WarmDesk &lt;noreply@example.com&gt;" />
+              <label class="form-label" for="sys-smtp-from">{{ $t('admin.smtp_from') }}</label>
+              <input id="sys-smtp-from" class="form-input" v-model="systemSettings.smtp_from" type="text" placeholder="WarmDesk &lt;noreply@example.com&gt;" />
             </div>
 
             <div class="form-row" style="max-width:500px">
               <div class="form-group" style="flex:1">
-                <label class="form-label">{{ $t('admin.smtp_username') }}</label>
-                <input class="form-input" v-model="systemSettings.smtp_username" autocomplete="off" />
+                <label class="form-label" for="sys-smtp-username">{{ $t('admin.smtp_username') }}</label>
+                <input id="sys-smtp-username" class="form-input" v-model="systemSettings.smtp_username" autocomplete="off" />
               </div>
               <div class="form-group" style="flex:1">
-                <label class="form-label">{{ $t('admin.smtp_password') }}</label>
-                <input class="form-input" v-model="systemSettings.smtp_password" type="password" autocomplete="new-password" :placeholder="smtpPasswordPlaceholder" />
+                <label class="form-label" for="sys-smtp-password">{{ $t('admin.smtp_password') }}</label>
+                <input id="sys-smtp-password" class="form-input" v-model="systemSettings.smtp_password" type="password" autocomplete="new-password" :placeholder="smtpPasswordPlaceholder" />
               </div>
             </div>
 
@@ -449,9 +449,9 @@
             </div>
 
             <div class="form-group" style="max-width:500px;margin-top:16px">
-              <label class="form-label">{{ $t('admin.smtp_test_title') }}</label>
+              <label class="form-label" for="sys-smtp-test">{{ $t('admin.smtp_test_title') }}</label>
               <div style="display:flex;gap:8px">
-                <input class="form-input" v-model="smtpTestEmail" type="email" :placeholder="$t('admin.smtp_test_placeholder')" style="flex:1" />
+                <input id="sys-smtp-test" class="form-input" v-model="smtpTestEmail" type="email" :placeholder="$t('admin.smtp_test_placeholder')" style="flex:1" />
                 <button class="btn btn-secondary" :disabled="smtpTestSending || !smtpTestEmail" @click="sendSmtpTest">
                   {{ smtpTestSending ? $t('admin.smtp_test_sending') : $t('admin.smtp_test_send') }}
                 </button>
@@ -470,13 +470,13 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.company_name') }}</label>
-              <input class="form-input" v-model="systemSettings.company_name" :placeholder="$t('admin.company_name_placeholder')" />
+              <label class="form-label" for="sys-company-name">{{ $t('admin.company_name') }}</label>
+              <input id="sys-company-name" class="form-input" v-model="systemSettings.company_name" :placeholder="$t('admin.company_name_placeholder')" />
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.company_logo') }}</label>
-              <input class="form-input" v-model="systemSettings.company_logo" :placeholder="'https://...'" style="margin-bottom:8px" />
+              <label class="form-label" for="sys-company-logo">{{ $t('admin.company_logo') }}</label>
+              <input id="sys-company-logo" class="form-input" v-model="systemSettings.company_logo" :placeholder="'https://...'" style="margin-bottom:8px" />
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                 <button class="btn btn-secondary btn-sm" @click="$refs.logoFileInput.click()">{{ $t('admin.company_logo_upload') }}</button>
                 <button v-if="systemSettings.company_logo" class="btn btn-danger btn-sm" @click="clearCompanyLogo">{{ $t('common.clear') }}</button>
@@ -492,8 +492,8 @@
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.company_logo_dark') }}</label>
-              <input class="form-input" v-model="systemSettings.company_logo_dark" :placeholder="'https://...'" style="margin-bottom:8px" />
+              <label class="form-label" for="sys-company-logo-dark">{{ $t('admin.company_logo_dark') }}</label>
+              <input id="sys-company-logo-dark" class="form-input" v-model="systemSettings.company_logo_dark" :placeholder="'https://...'" style="margin-bottom:8px" />
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
                 <button class="btn btn-secondary btn-sm" @click="$refs.logoDarkFileInput.click()">{{ $t('admin.company_logo_upload') }}</button>
                 <button v-if="systemSettings.company_logo_dark" class="btn btn-danger btn-sm" @click="clearCompanyLogoDark">{{ $t('common.clear') }}</button>
@@ -516,8 +516,8 @@
             <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.password_policy_hint') }}</p>
 
             <div class="form-group" style="max-width:240px">
-              <label class="form-label">{{ $t('admin.password_min_length') }}</label>
-              <input class="form-input" type="number" min="8" max="128" v-model.number="systemSettings.password_min_length" style="width:100px" />
+              <label class="form-label" for="sys-pwd-min-len">{{ $t('admin.password_min_length') }}</label>
+              <input id="sys-pwd-min-len" class="form-input" type="number" min="8" max="128" v-model.number="systemSettings.password_min_length" style="width:100px" />
             </div>
 
             <div class="form-group">
@@ -546,9 +546,9 @@
             </div>
 
             <div class="form-group" style="max-width:400px;margin-top:8px">
-              <label class="form-label">{{ $t('admin.password_change_period') }}</label>
+              <label class="form-label" for="sys-pwd-change-period">{{ $t('admin.password_change_period') }}</label>
               <div class="form-row" style="align-items:center;gap:8px">
-                <input class="form-input" type="number" min="0" max="3650" v-model.number="systemSettings.password_change_period_days" style="width:100px" />
+                <input id="sys-pwd-change-period" class="form-input" type="number" min="0" max="3650" v-model.number="systemSettings.password_change_period_days" style="width:100px" />
                 <span class="form-hint" style="margin:0">{{ $t('admin.password_change_period_unit') }}</span>
               </div>
               <p class="form-hint">{{ $t('admin.password_change_period_hint') }}</p>
@@ -562,14 +562,14 @@
         </div>
 
         <!-- Backup / Restore tab -->
-        <div v-if="tab === 'backup'">
+        <div v-show="tab === 'backup'" role="tabpanel" id="tab-panel-backup" aria-labelledby="tab-btn-backup">
           <!-- Scheduled backups -->
           <div style="margin-bottom:24px">
             <h3 class="form-section-title">{{ $t('admin.backup_schedule_title') }}</h3>
             <div class="form-row" style="align-items:flex-end;gap:16px;flex-wrap:wrap">
               <div class="form-group" style="flex:1;min-width:180px">
-                <label class="form-label">{{ $t('admin.backup_schedule_label') }}</label>
-                <select class="form-input" v-model="systemSettings.backup_schedule">
+                <label class="form-label" for="sys-backup-schedule">{{ $t('admin.backup_schedule_label') }}</label>
+                <select id="sys-backup-schedule" class="form-input" v-model="systemSettings.backup_schedule">
                   <option value="disabled">{{ $t('admin.backup_schedule_disabled') }}</option>
                   <option value="6h">{{ $t('admin.backup_schedule_6h') }}</option>
                   <option value="8h">{{ $t('admin.backup_schedule_8h') }}</option>
@@ -578,8 +578,9 @@
                 </select>
               </div>
               <div class="form-group" style="flex:0 0 160px" v-if="systemSettings.backup_schedule !== 'disabled'">
-                <label class="form-label">{{ $t('admin.backup_start_time') }}</label>
+                <label class="form-label" for="sys-backup-time">{{ $t('admin.backup_start_time') }}</label>
                 <input
+                  id="sys-backup-time"
                   class="form-input"
                   type="text"
                   v-model="backupStartTimeDisplay"
@@ -589,8 +590,8 @@
                 />
               </div>
               <div class="form-group" style="flex:0 0 120px">
-                <label class="form-label">{{ $t('admin.backup_keep_label') }}</label>
-                <input class="form-input" type="number" min="1" max="100" v-model.number="systemSettings.backup_keep" />
+                <label class="form-label" for="sys-backup-keep">{{ $t('admin.backup_keep_label') }}</label>
+                <input id="sys-backup-keep" class="form-input" type="number" min="1" max="100" v-model.number="systemSettings.backup_keep" />
               </div>
               <div class="form-group" style="flex:0 0 auto;padding-bottom:1px">
                 <button class="btn btn-primary btn-sm" @click="saveBackupSchedule">{{ $t('admin.backup_schedule_save') }}</button>
@@ -611,8 +612,8 @@
                 </label>
               </div>
               <div class="form-group" style="flex:1;min-width:220px" v-if="systemSettings.backup_email_enabled">
-                <label class="form-label">{{ $t('admin.backup_email_address') }}</label>
-                <input class="form-input" type="email" v-model="systemSettings.backup_email_address" :placeholder="$t('admin.backup_email_address')" />
+                <label class="form-label" for="sys-backup-email">{{ $t('admin.backup_email_address') }}</label>
+                <input id="sys-backup-email" class="form-input" type="email" v-model="systemSettings.backup_email_address" :placeholder="$t('admin.backup_email_address')" />
               </div>
             </div>
           </div>
@@ -653,7 +654,7 @@
       </div>
 
         <!-- News tab -->
-        <div v-if="tab === 'news'">
+        <div v-show="tab === 'news'" role="tabpanel" id="tab-panel-news" aria-labelledby="tab-btn-news">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="openCreateNews">+ {{ $t('admin.news_create') }}</button>
           </div>
@@ -698,29 +699,29 @@
   <BaseModal v-if="showCreateUser" :title="$t('admin.create_user')" @close="showCreateUser = false">
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">{{ $t('settings.first_name') }}</label>
-        <input class="form-input" v-model="newUser.first_name" />
+        <label class="form-label" for="new-user-first">{{ $t('settings.first_name') }}</label>
+        <input id="new-user-first" class="form-input" v-model="newUser.first_name" />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('settings.last_name') }}</label>
-        <input class="form-input" v-model="newUser.last_name" />
+        <label class="form-label" for="new-user-last">{{ $t('settings.last_name') }}</label>
+        <input id="new-user-last" class="form-input" v-model="newUser.last_name" />
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('auth.username') }} *</label>
-      <input class="form-input" v-model="newUser.username" required />
+      <label class="form-label" for="new-user-username">{{ $t('auth.username') }} *</label>
+      <input id="new-user-username" class="form-input" v-model="newUser.username" required />
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('auth.email') }} *</label>
-      <input class="form-input" v-model="newUser.email" type="email" required />
+      <label class="form-label" for="new-user-email">{{ $t('auth.email') }} *</label>
+      <input id="new-user-email" class="form-input" v-model="newUser.email" type="email" required />
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('auth.password') }} *</label>
-      <input class="form-input" v-model="newUser.password" type="password" required minlength="8" />
+      <label class="form-label" for="new-user-password">{{ $t('auth.password') }} *</label>
+      <input id="new-user-password" class="form-input" v-model="newUser.password" type="password" required minlength="8" />
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('admin.global_role') }}</label>
-      <select class="form-input" v-model="newUser.global_role">
+      <label class="form-label" for="new-user-role">{{ $t('admin.global_role') }}</label>
+      <select id="new-user-role" class="form-input" v-model="newUser.global_role">
         <option value="user">{{ $t('admin.role_user') }}</option>
         <option value="admin">{{ $t('admin.role_admin') }}</option>
         <option value="viewer">{{ $t('admin.role_viewer') }}</option>
@@ -781,31 +782,31 @@
         <div style="flex: 1;">
           <div class="form-row" style="margin-bottom: 0;">
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.first_name') }}</label>
-              <input class="form-input" v-model="editUser.first_name" />
+              <label class="form-label" for="edit-user-first">{{ $t('settings.first_name') }}</label>
+              <input id="edit-user-first" class="form-input" v-model="editUser.first_name" />
             </div>
             <div class="form-group">
-              <label class="form-label">{{ $t('settings.last_name') }}</label>
-              <input class="form-input" v-model="editUser.last_name" />
+              <label class="form-label" for="edit-user-last">{{ $t('settings.last_name') }}</label>
+              <input id="edit-user-last" class="form-input" v-model="editUser.last_name" />
             </div>
           </div>
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('settings.display_name') }}</label>
-        <input class="form-input" v-model="editUser.display_name" />
+        <label class="form-label" for="edit-user-display">{{ $t('settings.display_name') }}</label>
+        <input id="edit-user-display" class="form-input" v-model="editUser.display_name" />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('auth.email') }}</label>
-        <input class="form-input" v-model="editUser.email" type="email" />
+        <label class="form-label" for="edit-user-email">{{ $t('auth.email') }}</label>
+        <input id="edit-user-email" class="form-input" v-model="editUser.email" type="email" />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('settings.avatar_url') }}</label>
-        <input class="form-input" v-model="editUser.avatar_url" />
+        <label class="form-label" for="edit-user-avatar">{{ $t('settings.avatar_url') }}</label>
+        <input id="edit-user-avatar" class="form-input" v-model="editUser.avatar_url" />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('common.language') }}</label>
-        <select class="form-input" v-model="editUser.locale">
+        <label class="form-label" for="edit-user-locale">{{ $t('common.language') }}</label>
+        <select id="edit-user-locale" class="form-input" v-model="editUser.locale">
           <option value="en">English</option>
           <option value="nl">Nederlands</option>
           <option value="de">Deutsch</option>
@@ -821,8 +822,8 @@
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('auth.password') }} <span class="form-label-hint">(leave blank to keep current)</span></label>
-        <input class="form-input" v-model="editUser._newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="New password…" />
+        <label class="form-label" for="edit-user-password">{{ $t('auth.password') }} <span class="form-label-hint">(leave blank to keep current)</span></label>
+        <input id="edit-user-password" class="form-input" v-model="editUser._newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="New password…" />
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('admin.timetracking_viewer') }}</label>
@@ -899,13 +900,14 @@
   <!-- Create Project Modal -->
   <BaseModal v-if="showCreateProject" :title="$t('project.new_project')" @close="showCreateProject = false; newProject.key_prefix = ''; prefixTouched = false">
     <div class="form-group">
-      <label class="form-label">{{ $t('project.project_name') }} *</label>
-      <input class="form-input" v-model="newProject.name" autofocus />
+      <label class="form-label" for="new-proj-name">{{ $t('project.project_name') }} *</label>
+      <input id="new-proj-name" class="form-input" v-model="newProject.name" autofocus />
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('project.key_prefix') }} *</label>
+      <label class="form-label" for="new-proj-prefix">{{ $t('project.key_prefix') }} *</label>
       <div style="display:flex;align-items:center;gap:8px">
         <input
+          id="new-proj-prefix"
           class="form-input"
           style="width:120px;text-transform:uppercase;font-family:monospace"
           :value="newProject.key_prefix"
@@ -916,25 +918,25 @@
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('project.description') }}</label>
-      <textarea class="form-input" v-model="newProject.description" rows="3"></textarea>
+      <label class="form-label" for="new-proj-desc">{{ $t('project.description') }}</label>
+      <textarea id="new-proj-desc" class="form-input" v-model="newProject.description" rows="3"></textarea>
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('project.color') }}</label>
-      <input type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px;width:80px" aria-label="Project color" />
+      <label class="form-label" for="new-proj-color">{{ $t('project.color') }}</label>
+      <input id="new-proj-color" type="color" class="form-input" v-model="newProject.color" style="height:40px;padding:4px;width:80px" :aria-label="$t('project.color')" />
     </div>
     <div class="form-group">
-      <label class="form-label">Avatar</label>
+      <label class="form-label" for="new-proj-avatar">Avatar</label>
       <div style="display:flex;gap:8px;align-items:center">
-        <input class="form-input" v-model="newProject.avatar" placeholder="https://... or /uploads/..." />
+        <input id="new-proj-avatar" class="form-input" v-model="newProject.avatar" placeholder="https://... or /uploads/..." />
         <button type="button" class="btn btn-secondary btn-sm" @click="$refs.newProjectAvatarInput.click()">Upload</button>
         <button v-if="newProject.avatar" type="button" class="btn btn-danger btn-sm" @click="newProject.avatar = ''">Clear</button>
       </div>
       <input ref="newProjectAvatarInput" type="file" accept="image/*" style="display:none" @change="onNewProjectAvatarSelected" />
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('sprint.board_type') }}</label>
-      <select class="form-input" v-model="newProject.board_type" style="max-width:280px">
+      <label class="form-label" for="new-proj-type">{{ $t('sprint.board_type') }}</label>
+      <select id="new-proj-type" class="form-input" v-model="newProject.board_type" style="max-width:280px">
         <option value="kanban">{{ $t('sprint.board_type_kanban') }}</option>
         <option value="scrum">{{ $t('sprint.board_type_scrum') }}</option>
       </select>
@@ -948,21 +950,21 @@
   <!-- Edit Project Modal -->
     <BaseModal v-if="editProject" :title="$t('admin.edit_project')" @close="editProject = null">
       <div class="form-group">
-        <label class="form-label">{{ $t('project.project_name') }}</label>
-        <input class="form-input" v-model="editProject.name" />
+        <label class="form-label" for="edit-proj-name">{{ $t('project.project_name') }}</label>
+        <input id="edit-proj-name" class="form-input" v-model="editProject.name" />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('project.description') }}</label>
-        <textarea class="form-input" v-model="editProject.description" rows="3"></textarea>
+        <label class="form-label" for="edit-proj-desc">{{ $t('project.description') }}</label>
+        <textarea id="edit-proj-desc" class="form-input" v-model="editProject.description" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('project.color') }}</label>
-        <input type="color" class="form-input" v-model="editProject.color" style="height:40px;padding:4px" aria-label="Project color" />
+        <label class="form-label" for="edit-proj-color">{{ $t('project.color') }}</label>
+        <input id="edit-proj-color" type="color" class="form-input" v-model="editProject.color" style="height:40px;padding:4px" :aria-label="$t('project.color')" />
       </div>
       <div class="form-group">
-        <label class="form-label">Avatar</label>
+        <label class="form-label" for="edit-proj-avatar">Avatar</label>
         <div style="display:flex;gap:8px;align-items:center">
-          <input class="form-input" v-model="editProject.avatar" placeholder="https://... or /uploads/..." />
+          <input id="edit-proj-avatar" class="form-input" v-model="editProject.avatar" placeholder="https://... or /uploads/..." />
           <button type="button" class="btn btn-secondary btn-sm" @click="$refs.editProjectAvatarInput.click()">Upload</button>
           <button v-if="editProject.avatar" type="button" class="btn btn-danger btn-sm" @click="editProject.avatar = ''">Clear</button>
         </div>
@@ -977,17 +979,17 @@
   <!-- Create / Edit group modal -->
   <BaseModal v-if="showGroupForm" :title="editingGroup ? $t('groups.edit') : $t('groups.create')" @close="showGroupForm = false">
     <div class="form-group">
-      <label class="form-label">{{ $t('groups.name') }}</label>
-      <input class="form-input" v-model="groupForm.name" />
+      <label class="form-label" for="group-form-name">{{ $t('groups.name') }}</label>
+      <input id="group-form-name" class="form-input" v-model="groupForm.name" />
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('groups.description') }}</label>
-      <textarea class="form-input" v-model="groupForm.description" rows="3"></textarea>
+      <label class="form-label" for="group-form-desc">{{ $t('groups.description') }}</label>
+      <textarea id="group-form-desc" class="form-input" v-model="groupForm.description" rows="3"></textarea>
     </div>
     <div class="form-group">
-      <label class="form-label">Avatar</label>
+      <label class="form-label" for="group-form-avatar">Avatar</label>
       <div style="display:flex;gap:8px;align-items:center">
-        <input class="form-input" v-model="groupForm.avatar" placeholder="https://... or /uploads/..." />
+        <input id="group-form-avatar" class="form-input" v-model="groupForm.avatar" placeholder="https://... or /uploads/..." />
         <button type="button" class="btn btn-secondary btn-sm" @click="$refs.groupAvatarInput.click()">Upload</button>
         <button v-if="groupForm.avatar" type="button" class="btn btn-danger btn-sm" @click="groupForm.avatar = ''">Clear</button>
       </div>
@@ -1107,16 +1109,16 @@
     @close="showCreateCustomer = false; editingCustomer = null"
   >
     <div class="form-group">
-      <label class="form-label">{{ $t('customer.name') }}</label>
-      <input class="form-input" v-model="customerForm.name" />
+      <label class="form-label" for="admin-cust-name">{{ $t('customer.name') }}</label>
+      <input id="admin-cust-name" class="form-input" v-model="customerForm.name" />
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('customer.description') }}</label>
-      <textarea class="form-input" v-model="customerForm.description" rows="3"></textarea>
+      <label class="form-label" for="admin-cust-desc">{{ $t('customer.description') }}</label>
+      <textarea id="admin-cust-desc" class="form-input" v-model="customerForm.description" rows="3"></textarea>
     </div>
     <div class="form-group">
-      <label class="form-label">{{ $t('customer.logo_url') }}</label>
-      <input class="form-input" v-model="customerForm.logo_url" placeholder="https://..." />
+      <label class="form-label" for="admin-cust-logo">{{ $t('customer.logo_url') }}</label>
+      <input id="admin-cust-logo" class="form-input" v-model="customerForm.logo_url" placeholder="https://..." />
     </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showCreateCustomer = false; editingCustomer = null">{{ $t('common.cancel') }}</button>
@@ -1143,6 +1145,8 @@
           <button
             role="tab"
             :aria-selected="newsEditorTab === 'edit'"
+            aria-controls="news-md-panel-edit"
+            id="news-md-tab-edit"
             :class="['md-tab', { active: newsEditorTab === 'edit' }]"
             type="button"
             @click="newsEditorTab = 'edit'"
@@ -1150,6 +1154,8 @@
           <button
             role="tab"
             :aria-selected="newsEditorTab === 'preview'"
+            aria-controls="news-md-panel-preview"
+            id="news-md-tab-preview"
             :class="['md-tab', { active: newsEditorTab === 'preview' }]"
             type="button"
             @click="newsEditorTab = 'preview'"
@@ -1157,6 +1163,9 @@
         </div>
         <textarea
           v-if="newsEditorTab === 'edit'"
+          id="news-md-panel-edit"
+          role="tabpanel"
+          aria-labelledby="news-md-tab-edit"
           class="form-input md-textarea"
           v-model="newsForm.text"
           rows="8"
@@ -1165,6 +1174,9 @@
         ></textarea>
         <div
           v-else
+          id="news-md-panel-preview"
+          role="tabpanel"
+          aria-labelledby="news-md-tab-preview"
           class="md-preview markdown-body"
           v-html="renderMarkdown(newsForm.text)"
         ></div>
@@ -1198,6 +1210,8 @@
           :class="{ selected: newsForm.sidebar_color === c }"
           :style="{ background: c }"
           :title="c"
+          :aria-label="c"
+          :aria-pressed="newsForm.sidebar_color === c"
           @click="newsForm.sidebar_color = newsForm.sidebar_color === c ? '' : c"
         ></button>
         <label class="news-color-custom" :title="$t('admin.news_sidebar_color_custom')">

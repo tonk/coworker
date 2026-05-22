@@ -456,7 +456,8 @@
   "about": {
     "repository": "Arkiv",
     "license": "Licens",
-    "built_with": "Byggt med"
+    "built_with": "Byggt med",
+    "website": "Webbplats"
   },
   "presence": {
     "online": "online"
@@ -541,7 +542,8 @@
     "open_chat": "Öppna chatt",
     "no_users_found": "Inga användare hittades",
     "no_teams": "Inga projekt hittades",
-    "team_members_count": "{count} medlemmar"
+    "team_members_count": "{count} medlemmar",
+    "new_conversation": "Ny konversation"
   },
   "sidebar": {
     "starred": "Favoritprojekt",

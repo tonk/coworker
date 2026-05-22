@@ -11,12 +11,13 @@
         <span class="breadcrumb-cur">{{ $t('gantt.title') }}</span>
       </div>
       <div class="gantt-toolbar-right">
-        <div class="view-mode-btns">
+        <div class="view-mode-btns" role="group" :aria-label="$t('gantt.view_mode')">
           <button
             v-for="mode in viewModes"
             :key="mode.value"
             class="btn btn-sm"
             :class="viewMode === mode.value ? 'btn-primary' : 'btn-ghost'"
+            :aria-pressed="viewMode === mode.value"
             @click="setViewMode(mode.value)"
           >{{ $t(mode.label) }}</button>
         </div>

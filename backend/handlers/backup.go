@@ -220,8 +220,9 @@ func doBackupPostgres(filename string) (string, error) {
 	if pgpw != "" {
 		cmd.Env = append(os.Environ(), "PGPASSWORD="+pgpw)
 	}
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return "", fmt.Errorf("pg_dump failed: %s", out)
+	if _, err := cmd.CombinedOutput(); err != nil {
+		// Do not include command output in the error — it may contain connection details.
+		return "", fmt.Errorf("pg_dump failed (check server logs for details)")
 	}
 	return filename + ".sql", nil
 }
@@ -237,8 +238,9 @@ func doBackupMySQL(filename string) (string, error) {
 	if mysqlpw != "" {
 		cmd.Env = append(os.Environ(), "MYSQL_PWD="+mysqlpw)
 	}
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return "", fmt.Errorf("mysqldump failed: %s", out)
+	if _, err := cmd.CombinedOutput(); err != nil {
+		// Do not include command output in the error — it may contain connection details.
+		return "", fmt.Errorf("mysqldump failed (check server logs for details)")
 	}
 	return filename + ".sql", nil
 }

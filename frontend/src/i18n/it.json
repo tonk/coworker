@@ -456,7 +456,8 @@
   "about": {
     "repository": "Repository",
     "license": "Licenza",
-    "built_with": "Realizzato con"
+    "built_with": "Realizzato con",
+    "website": "Sito web"
   },
   "presence": {
     "online": "online"
@@ -541,7 +542,8 @@
     "open_chat": "Apri chat",
     "no_users_found": "Nessun utente trovato",
     "no_teams": "Nessun progetto trovato",
-    "team_members_count": "{count} membri"
+    "team_members_count": "{count} membri",
+    "new_conversation": "Nuova conversazione"
   },
   "sidebar": {
     "starred": "Progetti preferiti",

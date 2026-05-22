@@ -456,7 +456,8 @@
   "about": {
     "repository": "Gagnasafn",
     "license": "Leyfi",
-    "built_with": "Byggt með"
+    "built_with": "Byggt með",
+    "website": "Vefsíða"
   },
   "presence": {
     "online": "á netinu"
@@ -541,7 +542,8 @@
     "open_chat": "Opna spjall",
     "no_users_found": "Engir notendur fundust",
     "no_teams": "Engin verkefni fundin",
-    "team_members_count": "{count} meðlimir"
+    "team_members_count": "{count} meðlimir",
+    "new_conversation": "Ný samtal"
   },
   "sidebar": {
     "starred": "Uppáhalds verkefni",

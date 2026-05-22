@@ -12,10 +12,10 @@
         <div class="cust-info">
           <div v-if="!editingName" class="cust-name-row">
             <h1 class="cust-name">{{ detail.customer.name }}</h1>
-            <button v-if="canManage" class="icon-btn" @click="startEditName" title="Edit">✎</button>
+            <button v-if="canManage" class="icon-btn" @click="startEditName" :aria-label="$t('common.edit')" title="Edit">✎</button>
           </div>
           <div v-else class="cust-name-row">
-            <input class="form-input name-input" v-model="nameEdit" @keydown.enter="saveNameEdit" @keydown.escape="editingName = false" />
+            <input class="form-input name-input" v-model="nameEdit" :aria-label="$t('customer.name')" @keydown.enter="saveNameEdit" @keydown.escape="editingName = false" />
             <button class="btn btn-primary btn-sm" @click="saveNameEdit">{{ $t('common.save') }}</button>
             <button class="btn btn-sm" @click="editingName = false">{{ $t('common.cancel') }}</button>
           </div>
@@ -26,6 +26,8 @@
             class="star-btn"
             :class="{ active: detail.customer.is_favorite }"
             @click="toggleFav"
+            :aria-label="detail.customer.is_favorite ? $t('customer.unstar') : $t('customer.star')"
+            :aria-pressed="detail.customer.is_favorite"
           >{{ detail.customer.is_favorite ? '★' : '☆' }}</button>
           <button v-if="canManage" class="btn btn-sm" @click="openEdit">{{ $t('customer.edit') }}</button>
           <button v-if="auth.isAdmin" class="btn btn-sm btn-danger" @click="doDelete">{{ $t('common.delete') }}</button>
@@ -55,8 +57,8 @@
               </span>
             </div>
             <div class="contract-actions">
-              <button v-if="canManage" class="icon-btn" @click="editContract(grp)" title="Edit">✎</button>
-              <button v-if="auth.isAdmin" class="icon-btn icon-danger" @click="deleteContract(grp)" title="Delete">✕</button>
+              <button v-if="canManage" class="icon-btn" @click="editContract(grp)" :aria-label="$t('contract.edit')" title="Edit">✎</button>
+              <button v-if="auth.isAdmin" class="icon-btn icon-danger" @click="deleteContract(grp)" :aria-label="$t('common.delete')" title="Delete">✕</button>
             </div>
           </div>
           <p v-if="grp.description" class="contract-desc">{{ grp.description }}</p>
@@ -122,18 +124,21 @@
                 v-if="m.role === 'member'"
                 class="btn btn-sm"
                 @click="setMemberRole(m.user_id, 'admin')"
+                :aria-label="$t('customer.promote')"
                 :title="$t('customer.promote')"
               >↑</button>
               <button
                 v-else-if="auth.isAdmin || m.user_id !== authUserId"
                 class="btn btn-sm"
                 @click="setMemberRole(m.user_id, 'member')"
+                :aria-label="$t('customer.demote')"
                 :title="$t('customer.demote')"
               >↓</button>
               <button
                 v-if="auth.isAdmin || m.user_id !== authUserId"
                 class="icon-btn icon-danger"
                 @click="removeMember(m.user_id)"
+                :aria-label="$t('common.delete') + ' ' + (m.display_name || m.username)"
                 title="Remove"
               >✕</button>
             </div>
@@ -153,7 +158,7 @@
               <span class="member-email">{{ g.members.map(m => m.user.display_name || m.user.username).join(', ') || '—' }}</span>
             </div>
             <span :class="['role-badge', g.role === 'admin' ? 'role-admin' : 'role-member']">{{ g.role }}</span>
-            <button v-if="auth.isAdmin" class="icon-btn icon-danger" style="margin-left:8px" @click="removeGroupFromCustomer(g.group_id)" title="Remove">✕</button>
+            <button v-if="auth.isAdmin" class="icon-btn icon-danger" style="margin-left:8px" @click="removeGroupFromCustomer(g.group_id)" :aria-label="$t('common.delete') + ' ' + g.group.name" title="Remove">✕</button>
           </div>
           <div v-if="auth.isAdmin" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
             <select class="form-input" v-model="addGroupId" style="flex:1;min-width:160px">
@@ -174,17 +179,17 @@
     <!-- Edit customer modal -->
     <BaseModal v-if="showEdit" :title="$t('customer.edit')" @close="showEdit = false">
       <div class="form-group">
-        <label class="form-label">{{ $t('customer.name') }}</label>
-        <input class="form-input" v-model="editForm.name" />
+        <label class="form-label" for="edit-cust-name">{{ $t('customer.name') }}</label>
+        <input id="edit-cust-name" class="form-input" v-model="editForm.name" />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('customer.description') }}</label>
-        <textarea class="form-input" v-model="editForm.description" rows="3"></textarea>
+        <label class="form-label" for="edit-cust-desc">{{ $t('customer.description') }}</label>
+        <textarea id="edit-cust-desc" class="form-input" v-model="editForm.description" rows="3"></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('customer.logo_url') }}</label>
+        <label class="form-label" for="edit-cust-logo">{{ $t('customer.logo_url') }}</label>
         <div style="display:flex;gap:8px;align-items:center">
-          <input class="form-input" v-model="editForm.logo_url" placeholder="https://..." style="flex:1" />
+          <input id="edit-cust-logo" class="form-input" v-model="editForm.logo_url" placeholder="https://..." style="flex:1" />
           <button type="button" class="btn btn-secondary btn-sm" @click="$refs.logoFileInput.click()">{{ $t('customer.upload_logo') }}</button>
         </div>
         <input ref="logoFileInput" type="file" accept="image/*" style="display:none" @change="onLogoFileSelected" />
@@ -198,18 +203,18 @@
     <!-- Add / edit contract modal -->
     <BaseModal v-if="showAddContract || editingContract" :title="editingContract ? $t('contract.edit') : $t('contract.new_contract')" @close="closeContractModal">
       <div class="form-group">
-        <label class="form-label">{{ $t('contract.name') }}</label>
-        <input class="form-input" v-model="contractForm.name" />
+        <label class="form-label" for="contract-name">{{ $t('contract.name') }}</label>
+        <input id="contract-name" class="form-input" v-model="contractForm.name" />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('contract.description') }}</label>
-        <textarea class="form-input" v-model="contractForm.description" rows="2"></textarea>
+        <label class="form-label" for="contract-desc">{{ $t('contract.description') }}</label>
+        <textarea id="contract-desc" class="form-input" v-model="contractForm.description" rows="2"></textarea>
       </div>
       <div class="detail-row">
         <div class="form-group half">
-          <label class="form-label">{{ $t('contract.start_date') }}</label>
+          <label class="form-label" for="contract-start">{{ $t('contract.start_date') }}</label>
           <div class="date-input-row">
-            <input class="form-input" type="text" v-model="displayContractStartDate" :placeholder="dateOnlyFormat()" @blur="parseContractStartDate" />
+            <input id="contract-start" class="form-input" type="text" v-model="displayContractStartDate" :placeholder="dateOnlyFormat()" @blur="parseContractStartDate" />
             <label class="picker-wrap" :title="$t('common.pick_date')">
               <span class="btn-icon-xs">&#128197;</span>
               <input type="date" class="date-picker-overlay" :value="contractForm.start_date" @change="onContractStartDateChange" />
@@ -218,9 +223,9 @@
           </div>
         </div>
         <div class="form-group half">
-          <label class="form-label">{{ $t('contract.end_date') }}</label>
+          <label class="form-label" for="contract-end">{{ $t('contract.end_date') }}</label>
           <div class="date-input-row">
-            <input class="form-input" type="text" v-model="displayContractEndDate" :placeholder="dateOnlyFormat()" @blur="parseContractEndDate" />
+            <input id="contract-end" class="form-input" type="text" v-model="displayContractEndDate" :placeholder="dateOnlyFormat()" @blur="parseContractEndDate" />
             <label class="picker-wrap" :title="$t('common.pick_date')">
               <span class="btn-icon-xs">&#128197;</span>
               <input type="date" class="date-picker-overlay" :value="contractForm.end_date" @change="onContractEndDateChange" />
@@ -237,7 +242,7 @@
   <!-- Add member modal -->
   <BaseModal v-if="showAddMember" :title="$t('customer.add_member')" @close="showAddMember = false">
     <div class="form-group">
-      <input class="form-input" v-model="memberSearch" :placeholder="$t('common.search') + '…'" />
+      <input class="form-input" v-model="memberSearch" :aria-label="$t('common.search')" :placeholder="$t('common.search') + '…'" />
     </div>
     <div class="user-picker-list">
       <div

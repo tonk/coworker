@@ -226,7 +226,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	claims, err := h.authSvc.ValidateToken(req.RefreshToken)
+	claims, err := h.authSvc.ValidateRefreshToken(req.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid refresh token"})
 		return
@@ -330,7 +330,17 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		updates["email"] = strings.ToLower(req.Email)
 	}
 	if req.AvatarURL != nil {
-		updates["avatar_url"] = *req.AvatarURL
+		av := *req.AvatarURL
+		if av != "" {
+			lower := strings.ToLower(av)
+			if !strings.HasPrefix(av, "/uploads/") &&
+				!strings.HasPrefix(lower, "http://") &&
+				!strings.HasPrefix(lower, "https://") {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid avatar URL"})
+				return
+			}
+		}
+		updates["avatar_url"] = av
 	}
 	validLocales := map[string]bool{"en": true, "nl": true, "de": true, "fr": true, "es": true}
 	if validLocales[req.Locale] {
@@ -454,8 +464,8 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 		return
 	}
 
-	claims, err := h.authSvc.ValidateToken(req.MFAToken)
-	if err != nil || !claims.MFAPending {
+	claims, err := h.authSvc.ValidateMFAToken(req.MFAToken)
+	if err != nil {
 		// Use 400 so the axios 401 interceptor does not fire and redirect the user.
 		// The frontend shows an "expired session" message and resets to step 1.
 		authLog(c, "mfa_verify_failed", 0, "", "reason=session_expired")
@@ -736,11 +746,19 @@ func authLogRaw(ip, client, event string, userID uint, username, detail string) 
 }
 
 // clientStr returns the value of X-WarmDesk-Client if present, otherwise "web".
+// Control characters are stripped to prevent log injection.
 func clientStr(c *gin.Context) string {
-	if v := c.GetHeader("X-WarmDesk-Client"); v != "" {
-		return v
+	v := c.GetHeader("X-WarmDesk-Client")
+	if v == "" {
+		return "web"
 	}
-	return "web"
+	v = strings.Map(func(r rune) rune {
+		if r == '\n' || r == '\r' || r == '\t' {
+			return ' '
+		}
+		return r
+	}, v)
+	return v
 }
 
 func (h *AuthHandler) issueTokens(user models.User) (*tokenResponse, error) {
@@ -758,7 +776,7 @@ func (h *AuthHandler) issueTokens(user models.User) (*tokenResponse, error) {
 // setAuthCookies writes access and refresh tokens as httpOnly, SameSite=Strict cookies.
 // Browser clients use these automatically; API/Tauri clients continue to use the JSON body.
 func setAuthCookies(c *gin.Context, tokens *tokenResponse) {
-	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
+	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" || gin.Mode() == gin.ReleaseMode
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("access_token", tokens.AccessToken, 15*60, "/", "", secure, true)
 	c.SetCookie("refresh_token", tokens.RefreshToken, 7*24*60*60, "/", "", secure, true)
@@ -766,7 +784,7 @@ func setAuthCookies(c *gin.Context, tokens *tokenResponse) {
 
 // clearAuthCookies expires the auth cookies immediately.
 func clearAuthCookies(c *gin.Context) {
-	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
+	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" || gin.Mode() == gin.ReleaseMode
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("access_token", "", -1, "/", "", secure, true)
 	c.SetCookie("refresh_token", "", -1, "/", "", secure, true)

@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/database"
@@ -83,6 +84,15 @@ func UploadAttachment(c *gin.Context) {
 		return
 	}
 
+	// Verify the uploader has access to the claimed owner entity before accepting the file.
+	if middleware.GetGlobalRole(c) != "admin" {
+		probe := models.Attachment{OwnerType: ownerType, OwnerID: uint(ownerID)}
+		if err := checkAttachmentAccess(probe, userID); err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+	}
+
 	maxMB := int64(25)
 	if attachmentCfg != nil && attachmentCfg.MaxUploadMB > 0 {
 		maxMB = attachmentCfg.MaxUploadMB
@@ -119,9 +129,8 @@ func UploadAttachment(c *gin.Context) {
 	// Detect MIME type from the actual file bytes — ignores the client-supplied Content-Type header.
 	mimeType := "application/octet-stream"
 	if f, err := os.Open(dest); err == nil {
-		buf := make([]byte, 512)
-		if n, err := f.Read(buf); err == nil && n > 0 {
-			mimeType = http.DetectContentType(buf[:n])
+		if mt, err := mimetype.DetectReader(f); err == nil {
+			mimeType = mt.String()
 		}
 		f.Close()
 	}

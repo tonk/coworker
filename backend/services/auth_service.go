@@ -65,6 +65,7 @@ func (s *AuthService) IssueRefreshToken(userID uint, username, role string) (str
 		UserID:     userID,
 		Username:   username,
 		GlobalRole: role,
+		Purpose:    "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -80,6 +81,7 @@ func (s *AuthService) IssueMFAToken(userID uint, username string) (string, error
 		UserID:     userID,
 		Username:   username,
 		MFAPending: true,
+		Purpose:    "mfa",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -166,6 +168,30 @@ func (s *AuthService) ValidateToken(tokenStr string) (*Claims, error) {
 		return nil, err
 	}
 	if claims.Purpose != "" {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
+// ValidateRefreshToken validates a refresh token; rejects access tokens or other purpose-limited tokens.
+func (s *AuthService) ValidateRefreshToken(tokenStr string) (*Claims, error) {
+	claims, err := s.parseToken(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Purpose != "refresh" {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
+// ValidateMFAToken validates a short-lived MFA challenge token; rejects any other token type.
+func (s *AuthService) ValidateMFAToken(tokenStr string) (*Claims, error) {
+	claims, err := s.parseToken(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Purpose != "mfa" || !claims.MFAPending {
 		return nil, ErrInvalidToken
 	}
 	return claims, nil

@@ -456,7 +456,8 @@
   "about": {
     "repository": "Repository",
     "license": "Licens",
-    "built_with": "Bygget med"
+    "built_with": "Bygget med",
+    "website": "Hjemmeside"
   },
   "presence": {
     "online": "online"
@@ -541,7 +542,8 @@
     "open_chat": "Åbn chat",
     "no_users_found": "Ingen brugere fundet",
     "no_teams": "Ingen projekter fundet",
-    "team_members_count": "{count} medlemmer"
+    "team_members_count": "{count} medlemmer",
+    "new_conversation": "Ny samtale"
   },
   "sidebar": {
     "starred": "Favoritprojekter",

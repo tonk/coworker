@@ -105,7 +105,7 @@
                   @update:activeIndex="editTopicMentionIndex = $event"
                 />
                 <div class="topic-editor-wrap">
-                  <button class="emoji-trigger-btn" type="button" @click="editTopicEmojiOpen = !editTopicEmojiOpen">😊</button>
+                  <button class="emoji-trigger-btn" type="button" aria-label="Add emoji reaction" @click="editTopicEmojiOpen = !editTopicEmojiOpen">😊</button>
                   <textarea
                     ref="editTopicTextareaEl"
                     class="topic-textarea"
@@ -162,7 +162,7 @@
                         @update:activeIndex="editReplyMentionIndex = $event"
                       />
                       <div class="topic-editor-wrap">
-                        <button class="emoji-trigger-btn" type="button" @click="editReplyEmojiOpen = !editReplyEmojiOpen">😊</button>
+                        <button class="emoji-trigger-btn" type="button" aria-label="Add emoji reaction" @click="editReplyEmojiOpen = !editReplyEmojiOpen">😊</button>
                         <textarea
                           ref="editReplyTextareaEl"
                           class="topic-textarea topic-textarea-sm"
@@ -204,7 +204,7 @@
                   @update:activeIndex="newReplyMentionIndex = $event"
                 />
                 <div class="topic-editor-wrap">
-                  <button class="emoji-trigger-btn" type="button" @click="newReplyEmojiOpen = !newReplyEmojiOpen">😊</button>
+                  <button class="emoji-trigger-btn" type="button" aria-label="Add emoji reaction" @click="newReplyEmojiOpen = !newReplyEmojiOpen">😊</button>
                   <textarea
                     ref="newReplyTextareaEl"
                     class="topic-textarea topic-textarea-sm"
@@ -230,11 +230,11 @@
     <!-- New Topic modal -->
     <BaseModal v-if="showNew" :title="$t('topics.new_topic')" @close="showNew = false">
       <div class="form-group">
-        <label class="form-label">{{ $t('topics.topic_title') }}</label>
-        <input class="form-input" v-model="newTopic.title" required autofocus />
+        <label class="form-label" for="new-topic-title">{{ $t('topics.topic_title') }}</label>
+        <input id="new-topic-title" class="form-input" v-model="newTopic.title" required autofocus />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('topics.topic_body') }}</label>
+        <label class="form-label" for="new-topic-body">{{ $t('topics.topic_body') }}</label>
         <div class="compose-outer">
           <InlineEmojiPicker
             v-if="newTopicEmojiOpen"
@@ -251,8 +251,9 @@
             @update:activeIndex="newTopicMentionIndex = $event"
           />
           <div class="topic-editor-wrap">
-            <button class="emoji-trigger-btn" type="button" @click="newTopicEmojiOpen = !newTopicEmojiOpen">😊</button>
+            <button class="emoji-trigger-btn" type="button" aria-label="Add emoji reaction" @click="newTopicEmojiOpen = !newTopicEmojiOpen">😊</button>
             <textarea
+              id="new-topic-body"
               ref="newTopicTextareaEl"
               class="topic-textarea"
               v-model="newTopic.body"
@@ -735,6 +736,7 @@ function renderMarkdown(text) {
   transition: opacity .1s;
 }
 .emoji-trigger-btn:hover { opacity: 1; }
+.emoji-trigger-btn:focus-visible { opacity: 1; }
 
 .edit-actions { display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end; }
 

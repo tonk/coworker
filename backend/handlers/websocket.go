@@ -432,6 +432,17 @@ func handleGroupCallInvite(client *appws.Client, msg appws.Message) {
 		if uid == inviterID {
 			continue
 		}
+		// Only invite users the inviter already has a conversation with,
+		// preventing arbitrary users from being silently added to any conversation.
+		var sharedCount int64
+		database.DB.Raw(`
+			SELECT COUNT(*) FROM conversation_members cm1
+			JOIN conversation_members cm2 ON cm1.conversation_id = cm2.conversation_id
+			WHERE cm1.user_id = ? AND cm2.user_id = ?
+		`, inviterID, uid).Scan(&sharedCount)
+		if sharedCount == 0 {
+			continue
+		}
 		if !isMember(convID, uid) {
 			database.DB.Create(&models.ConversationMember{
 				ConversationID: convID,

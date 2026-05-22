@@ -456,7 +456,8 @@
   "about": {
     "repository": "Repository",
     "license": "Lisens",
-    "built_with": "Bygget med"
+    "built_with": "Bygget med",
+    "website": "Nettsted"
   },
   "presence": {
     "online": "online"
@@ -541,7 +542,8 @@
     "open_chat": "Åpne chat",
     "no_users_found": "Ingen brukere funnet",
     "no_teams": "Ingen prosjekter funnet",
-    "team_members_count": "{count} medlemmer"
+    "team_members_count": "{count} medlemmer",
+    "new_conversation": "Ny samtale"
   },
   "sidebar": {
     "starred": "Favorittprosjekter",
