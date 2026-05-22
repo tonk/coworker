@@ -2,7 +2,7 @@
   <BaseModal :title="isNew ? $t('board.add_card') : $t('board.edit_card')" @close="handleClose" :resizable="true" style="--modal-width: 700px">
     <div class="card-detail">
       <div v-if="!isNew" class="sections-menu-wrap" ref="sectionsMenuEl">
-        <button class="sections-menu-btn" @click.stop="sectionsMenuOpen = !sectionsMenuOpen" :title="$t('board.toggle_sections')" aria-label="Card menu">⋮</button>
+        <button class="sections-menu-btn" @click.stop="sectionsMenuOpen = !sectionsMenuOpen" :title="$t('board.toggle_sections')" :aria-label="$t('board.toggle_sections')">⋮</button>
         <div v-if="sectionsMenuOpen" class="sections-menu-dropdown">
           <div v-for="sec in sectionsConfig" :key="sec.key" class="sections-menu-item" :class="{ 'sections-menu-item--locked': !sectionEmpty[sec.key] }">
             <label class="sections-menu-label">

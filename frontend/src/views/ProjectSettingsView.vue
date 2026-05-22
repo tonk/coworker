@@ -378,7 +378,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('project.color') }}</label>
-        <input type="color" class="form-input" v-model="newLabel.color" style="height:40px;padding:4px;width:80px" />
+        <input type="color" class="form-input" v-model="newLabel.color" :aria-label="$t('project.color')" style="height:40px;padding:4px;width:80px" />
       </div>
       <template #footer>
         <button class="btn btn-secondary" @click="showAddLabel = false">{{ $t('common.cancel') }}</button>
