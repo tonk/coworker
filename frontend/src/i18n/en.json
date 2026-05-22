@@ -236,7 +236,10 @@
     "wip_limit_invalid": "Enter a positive number or leave empty for no limit.",
     "column_cards_tooltip": "Open cards in this column: {count}",
     "column_wip_tooltip": "Work in progress limit: {limit}. This column has {count} cards.",
-    "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit."
+    "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
+    "sort_select_aria": "Sort cards by",
+    "sort_asc_action": "Sort ascending",
+    "sort_desc_action": "Sort descending"
   },
   "chat": {
     "title": "Team Chat",

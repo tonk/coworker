@@ -1,5 +1,5 @@
 <template>
-  <div class="board-card" :class="{ 'board-card--closed': card.closed, 'board-card--overdue': isOverdue }" @click="$emit('open', card)">
+  <div class="board-card" :class="{ 'board-card--closed': card.closed, 'board-card--overdue': isOverdue }" role="button" tabindex="0" @click="$emit('open', card)" @keydown.enter="$emit('open', card)" @keydown.space.prevent="$emit('open', card)">
     <!-- Assignee avatars — top right (shows multi-assignees if present, else primary) -->
     <div v-if="allAssignees.length" class="card-avatars">
       <div

@@ -7,7 +7,7 @@
           v-if="editingName"
           class="column-name-input"
           v-model="editName"
-          aria-label="Column name"
+          :aria-label="$t('board.column_name')"
           @blur="saveName"
           @keydown.enter="saveName"
           @keydown.escape="cancelEdit"
@@ -40,14 +40,14 @@
         </div>
       </div>
       <div class="column-header-actions">
-        <button class="btn btn-ghost btn-sm" @click="$emit('add-card', column.id)" :title="$t('board.add_card')" aria-label="Add card">+</button>
+        <button class="btn btn-ghost btn-sm" @click="$emit('add-card', column.id)" :title="$t('board.add_card')" :aria-label="$t('board.add_card')">+</button>
         <button
           v-if="canManageColumns"
           type="button"
           class="btn btn-ghost btn-sm col-edit-btn"
           @click.stop="$emit('edit-column', column)"
           :title="$t('board.edit_column')"
-          aria-label="Edit column"
+          :aria-label="$t('board.edit_column')"
         >⚙</button>
         <button
           v-if="canManageColumns && column.cards.length === 0"
@@ -55,19 +55,19 @@
           class="btn btn-ghost btn-sm delete-col-btn"
           @click="$emit('delete-column', column.id)"
           :title="$t('board.delete_column')"
-          aria-label="Delete column"
+          :aria-label="$t('board.delete_column')"
         >🗑</button>
       </div>
     </div>
 
     <div class="sort-bar">
-      <select class="sort-select" v-model="sortField" aria-label="Sort cards by">
+      <select class="sort-select" v-model="sortField" :aria-label="$t('board.sort_select_aria')">
         <option value="">{{ $t('board.sort_none') }}</option>
         <option value="due_date">{{ $t('board.sort_date') }}</option>
         <option value="assignee">{{ $t('board.sort_assignee') }}</option>
         <option value="priority">{{ $t('board.sort_priority') }}</option>
       </select>
-      <button v-if="sortField" class="sort-dir-btn" @click="sortDir = sortDir === 'asc' ? 'desc' : 'asc'" :title="sortDir === 'asc' ? $t('board.sort_asc') : $t('board.sort_desc')" :aria-label="sortDir === 'asc' ? 'Sort descending' : 'Sort ascending'">
+      <button v-if="sortField" class="sort-dir-btn" @click="sortDir = sortDir === 'asc' ? 'desc' : 'asc'" :title="sortDir === 'asc' ? $t('board.sort_asc') : $t('board.sort_desc')" :aria-label="sortDir === 'asc' ? $t('board.sort_desc_action') : $t('board.sort_asc_action')">
         {{ sortDir === 'asc' ? '↑' : '↓' }}
       </button>
     </div>

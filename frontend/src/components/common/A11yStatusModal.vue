@@ -19,14 +19,44 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
 
 const boxRef = ref(null)
 
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+let previousFocus = null
+
+function onKeyDown(e) {
+  if (e.key === 'Escape') { emit('close'); return }
+  if (e.key !== 'Tab' || !boxRef.value) return
+
+  const focusable = [...boxRef.value.querySelectorAll(FOCUSABLE)]
+  if (!focusable.length) return
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+
+  if (e.shiftKey) {
+    if (document.activeElement === first) { e.preventDefault(); last.focus() }
+  } else {
+    if (document.activeElement === last) { e.preventDefault(); first.focus() }
+  }
+}
+
 onMounted(() => {
-  boxRef.value?.focus()
+  previousFocus = document.activeElement
+  document.addEventListener('keydown', onKeyDown)
+  const first = boxRef.value?.querySelector(FOCUSABLE)
+  if (first) first.focus()
+  else boxRef.value?.focus()
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeyDown)
+  previousFocus?.focus()
 })
 
 function openShortcuts() {
