@@ -13,8 +13,9 @@ description:
   - Update per-user preferences such as locale, timezone, theme options,
     and UI layout settings via the admin API.
   - Idempotent — a second run with the same parameters produces no change.
-  - Requires admin credentials (C(global_role=admin)) or a token from an
-    admin account.
+  - When updating your own options, any authenticated credentials work.
+  - To update another user's options, admin credentials
+    (C(global_role=admin)) are required.
   - This module only touches preference fields; it does not change core
     account attributes (email, password, role, active state).
 extends_documentation_fragment:
@@ -159,12 +160,15 @@ from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api im
 )
 
 
-def _find_user(client, username):
-    """Return the user dict whose username matches, or None."""
-    users = client.get('/admin/users')
+def _find_user_id(client, username):
+    """Return the numeric user ID for *username* (or None)."""
+    try:
+        users = client.get('/users')
+    except WarmDeskAPIError:
+        return None
     for u in users:
         if u.get('username') == username:
-            return u
+            return u['id']
     return None
 
 
@@ -212,16 +216,40 @@ def run_module():
     p = module.params
     client = WarmDeskClient.from_module(module)
 
+    # Find target user ID by username.
     try:
-        user = _find_user(client, p['username'])
+        user_id = _find_user_id(client, p['username'])
     except WarmDeskAPIError as exc:
         module.fail_json(
             msg='Error looking up user "%s": %s (HTTP %s)' % (
                 p['username'], exc.message, exc.status)
         )
 
-    if user is None:
+    if user_id is None:
         module.fail_json(msg='User "%s" not found.' % p['username'])
+
+    # Determine the API path: self-service via /auth/me, or admin via /admin/users/:id.
+    try:
+        me = client.get('/auth/me')
+    except WarmDeskAPIError as exc:
+        module.fail_json(
+            msg='Failed to fetch current user: %s (HTTP %s)' % (
+                exc.message, exc.status)
+        )
+
+    is_self = me.get('username') == p['username']
+    if is_self:
+        user = me
+        endpoint = '/auth/me'
+    else:
+        try:
+            user = client.get('/admin/users/%d' % user_id)
+        except WarmDeskAPIError as exc:
+            module.fail_json(
+                msg='Failed to fetch user "%s" (admin required): %s (HTTP %s)' % (
+                    p['username'], exc.message, exc.status)
+            )
+        endpoint = '/admin/users/%d' % user_id
 
     # Build update body from supplied options that differ from current values.
     body = {}
@@ -242,7 +270,7 @@ def run_module():
         module.exit_json(changed=True, user=user)
 
     try:
-        user = client.put('/admin/users/%d' % user['id'], body)
+        user = client.put(endpoint, body)
     except WarmDeskAPIError as exc:
         module.fail_json(
             msg='Failed to update options for user "%s": %s (HTTP %s)' % (
