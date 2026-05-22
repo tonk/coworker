@@ -112,7 +112,22 @@
     "end_date": "Slutdatum",
     "no_contracts": "Inga kontrakt ännu.",
     "delete_confirm": "Ta bort det här kontraktet? Tillhörande projekt kopplas loss.",
-    "edit": "Redigera kontrakt"
+    "edit": "Redigera kontrakt",
+    "price_per_hour": "Pris per timme",
+    "currency": "Valuta",
+    "time_slots": "Extra tidsluckor",
+    "add_time_slot": "Lägg till tidslucka",
+    "slot_label": "Etikett",
+    "slot_start": "Från",
+    "slot_end": "Till",
+    "slot_factor": "Faktor",
+    "slot_rate": "Taxa",
+    "remove_slot": "Ta bort tidslucka",
+    "slot_days": "Dagar",
+    "slot_days_all": "Alla dagar",
+    "slot_days_weekdays": "Vardagar",
+    "slot_days_saturday": "Lördag",
+    "slot_days_sunday": "Söndag"
   },
   "subcard": {
     "sub_cards": "Delkort",
@@ -778,6 +793,7 @@
     "declarable": "Fakturerbar",
     "undeclarable_per_entry": "Ej fakturerbar tid per post",
     "pdf_page_break_customer": "Ny sida per kund",
+    "show_costs": "Visa kostnadskolumn",
     "pdf_export_options": "Exportalternativ",
     "pdf_show_abbr": "Visa veckodag före datum",
     "add_holidays": "Lägg till helgdagar",
@@ -787,7 +803,10 @@
     "holidays_added_skipped": "{added} helgdagar tillagda för {year} ({skipped} fanns redan)",
     "holidays_error": "Det gick inte att lägga till helgdagar",
     "is_holiday": "Helgdag",
-    "allotted": "Tilldelat:"
+    "allotted": "Tilldelat:",
+    "start_time": "Starttid",
+    "end_time": "Sluttid",
+    "set_time_range": "Ange tidsintervall"
   },
   "call": {
     "incoming": "Inkommande samtal",

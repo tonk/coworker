@@ -186,7 +186,7 @@ func GetCustomer(c *gin.Context) {
 	custItem := CustomerListItem{Customer: cust, IsFavorite: isFav, ProjectCount: pCount, ContractCount: cCount, MyRole: myRole}
 
 	var contracts []models.Contract
-	database.DB.Where("customer_id = ?", cust.ID).Order("id asc").Find(&contracts)
+	database.DB.Preload("TimeSlots").Where("customer_id = ?", cust.ID).Order("id asc").Find(&contracts)
 
 	contractGroups := make([]ContractGroup, len(contracts))
 	for i, con := range contracts {
@@ -335,7 +335,7 @@ func ListContracts(c *gin.Context) {
 		return
 	}
 	var contracts []models.Contract
-	database.DB.Where("customer_id = ?", id).Order("id asc").Find(&contracts)
+	database.DB.Preload("TimeSlots").Where("customer_id = ?", id).Order("id asc").Find(&contracts)
 	c.JSON(http.StatusOK, contracts)
 }
 
@@ -356,19 +356,35 @@ func CreateContract(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name        string `json:"name" binding:"required,min=1,max=200"`
-		Description string `json:"description"`
-		StartDate   string `json:"start_date"`
-		EndDate     string `json:"end_date"`
+		Name          string   `json:"name" binding:"required,min=1,max=200"`
+		Description   string   `json:"description"`
+		StartDate     string   `json:"start_date"`
+		EndDate       string   `json:"end_date"`
+		PricePerHour  *float64 `json:"price_per_hour"`
+		Currency      string   `json:"currency"`
+		TimeSlots     []struct {
+			Label                string   `json:"label"`
+			StartTime            string   `json:"start_time"`
+			EndTime              string   `json:"end_time"`
+			DayType              string   `json:"day_type"`
+			MultiplicationFactor *float64 `json:"multiplication_factor"`
+			HourlyRate           *float64 `json:"hourly_rate"`
+		} `json:"time_slots"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
+	currency := req.Currency
+	if currency == "" {
+		currency = "€"
+	}
 	con := models.Contract{
-		CustomerID:  uint(custID),
-		Name:        req.Name,
-		Description: req.Description,
+		CustomerID:   uint(custID),
+		Name:         req.Name,
+		Description:  req.Description,
+		PricePerHour: req.PricePerHour,
+		Currency:     currency,
 	}
 	if t, err := parseContractDate(req.StartDate); err == nil && t != nil {
 		con.StartDate = t
@@ -380,6 +396,25 @@ func CreateContract(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	for _, s := range req.TimeSlots {
+		if s.StartTime == "" || s.EndTime == "" {
+			continue
+		}
+		dayType := s.DayType
+		if dayType == "" {
+			dayType = "all"
+		}
+		database.DB.Create(&models.ContractTimeSlot{
+			ContractID:           con.ID,
+			Label:                s.Label,
+			StartTime:            s.StartTime,
+			EndTime:              s.EndTime,
+			DayType:              dayType,
+			MultiplicationFactor: s.MultiplicationFactor,
+			HourlyRate:           s.HourlyRate,
+		})
+	}
+	database.DB.Preload("TimeSlots").First(&con, con.ID)
 	c.JSON(http.StatusCreated, con)
 }
 
@@ -400,10 +435,20 @@ func UpdateContract(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		StartDate   string `json:"start_date"`
-		EndDate     string `json:"end_date"`
+		Name          string   `json:"name"`
+		Description   string   `json:"description"`
+		StartDate     string   `json:"start_date"`
+		EndDate       string   `json:"end_date"`
+		PricePerHour  *float64 `json:"price_per_hour"`
+		Currency      string   `json:"currency"`
+		TimeSlots     []struct {
+			Label                string   `json:"label"`
+			StartTime            string   `json:"start_time"`
+			EndTime              string   `json:"end_time"`
+			DayType              string   `json:"day_type"`
+			MultiplicationFactor *float64 `json:"multiplication_factor"`
+			HourlyRate           *float64 `json:"hourly_rate"`
+		} `json:"time_slots"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -419,8 +464,31 @@ func UpdateContract(c *gin.Context) {
 	if t, err := parseContractDate(req.EndDate); err == nil {
 		updates["end_date"] = t
 	}
+	updates["price_per_hour"] = req.PricePerHour
+	if req.Currency != "" {
+		updates["currency"] = req.Currency
+	}
 	database.DB.Model(&con).Updates(updates)
-	database.DB.First(&con, contractID)
+	database.DB.Where("contract_id = ?", con.ID).Delete(&models.ContractTimeSlot{})
+	for _, s := range req.TimeSlots {
+		if s.StartTime == "" || s.EndTime == "" {
+			continue
+		}
+		dayType := s.DayType
+		if dayType == "" {
+			dayType = "all"
+		}
+		database.DB.Create(&models.ContractTimeSlot{
+			ContractID:           con.ID,
+			Label:                s.Label,
+			StartTime:            s.StartTime,
+			EndTime:              s.EndTime,
+			DayType:              dayType,
+			MultiplicationFactor: s.MultiplicationFactor,
+			HourlyRate:           s.HourlyRate,
+		})
+	}
+	database.DB.Preload("TimeSlots").First(&con, contractID)
 	c.JSON(http.StatusOK, con)
 }
 
@@ -441,6 +509,7 @@ func DeleteContract(c *gin.Context) {
 		return
 	}
 	database.DB.Model(&models.Project{}).Where("contract_id = ?", con.ID).Update("contract_id", nil)
+	database.DB.Where("contract_id = ?", con.ID).Delete(&models.ContractTimeSlot{})
 	database.DB.Delete(&con)
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }

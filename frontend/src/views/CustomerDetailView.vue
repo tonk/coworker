@@ -55,6 +55,16 @@
               <span v-if="grp.start_date || grp.end_date" class="contract-dates">
                 {{ formatDate(grp.start_date) }}{{ grp.end_date ? ' – ' + formatDate(grp.end_date) : '' }}
               </span>
+              <span v-if="grp.price_per_hour != null" class="contract-rate">{{ grp.price_per_hour }} {{ grp.currency }}/h</span>
+            </div>
+            <div v-if="grp.time_slots && grp.time_slots.length" class="slot-list">
+              <div v-for="slot in grp.time_slots" :key="slot.id" class="slot-item">
+                <span class="slot-time">{{ slot.start_time }}–{{ slot.end_time }}</span>
+                <span v-if="slot.day_type && slot.day_type !== 'all'" class="slot-days">{{ $t('contract.slot_days_' + slot.day_type) }}</span>
+                <span v-if="slot.label" class="slot-label">{{ slot.label }}</span>
+                <span v-if="slot.multiplication_factor != null" class="slot-factor">×{{ slot.multiplication_factor }}</span>
+                <span v-if="slot.hourly_rate != null" class="slot-rate">{{ slot.hourly_rate }} {{ grp.currency }}/h</span>
+              </div>
             </div>
             <div class="contract-actions">
               <button v-if="canManage" class="icon-btn" @click="editContract(grp)" :aria-label="$t('contract.edit')" title="Edit">✎</button>
@@ -234,6 +244,67 @@
           </div>
         </div>
       </div>
+      <div class="detail-row">
+        <div class="form-group half">
+          <label class="form-label" for="contract-rate">{{ $t('contract.price_per_hour') }}</label>
+          <input id="contract-rate" class="form-input" type="number" min="0" step="0.01" v-model="contractForm.price_per_hour" />
+        </div>
+        <div class="form-group half">
+          <label class="form-label" for="contract-currency">{{ $t('contract.currency') }}</label>
+          <select id="contract-currency" class="form-input" v-model="contractForm.currency">
+            <option value="€">€ (EUR)</option>
+            <option value="USD">USD ($)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="CHF">CHF</option>
+            <option value="SEK">SEK (kr)</option>
+            <option value="NOK">NOK (kr)</option>
+            <option value="DKK">DKK (kr)</option>
+            <option value="PLN">PLN (zł)</option>
+            <option value="CZK">CZK (Kč)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="slots-header">
+          <label class="form-label">{{ $t('contract.time_slots') }}</label>
+          <button type="button" class="btn btn-sm" @click="addTimeSlot">+ {{ $t('contract.add_time_slot') }}</button>
+        </div>
+        <div class="slots-list">
+          <div v-for="(slot, idx) in contractForm.time_slots" :key="idx" class="slot-card">
+            <div class="slot-card-top">
+              <input class="form-input" type="text" v-model="slot.label" :aria-label="$t('contract.slot_label')" :placeholder="$t('contract.slot_label')" />
+              <button type="button" class="btn-icon-xs slot-remove" @click="removeTimeSlot(idx)" :aria-label="$t('contract.remove_slot')">✕</button>
+            </div>
+            <div class="slot-card-bottom">
+              <div class="slot-field">
+                <label class="slot-field-label">{{ $t('contract.slot_start') }}</label>
+                <input class="form-input" type="time" v-model="slot.start_time" :aria-label="$t('contract.slot_start')" />
+              </div>
+              <div class="slot-field">
+                <label class="slot-field-label">{{ $t('contract.slot_end') }}</label>
+                <input class="form-input" type="time" v-model="slot.end_time" :aria-label="$t('contract.slot_end')" />
+              </div>
+              <div class="slot-field slot-field-days">
+                <label class="slot-field-label">{{ $t('contract.slot_days') }}</label>
+                <select class="form-input" v-model="slot.day_type" :aria-label="$t('contract.slot_days')">
+                  <option value="all">{{ $t('contract.slot_days_all') }}</option>
+                  <option value="weekdays">{{ $t('contract.slot_days_weekdays') }}</option>
+                  <option value="saturday">{{ $t('contract.slot_days_saturday') }}</option>
+                  <option value="sunday">{{ $t('contract.slot_days_sunday') }}</option>
+                </select>
+              </div>
+              <div class="slot-field">
+                <label class="slot-field-label">{{ $t('contract.slot_factor') }}</label>
+                <input class="form-input" type="number" min="0" step="0.01" v-model="slot.multiplication_factor" :aria-label="$t('contract.slot_factor')" :placeholder="'×'" />
+              </div>
+              <div class="slot-field">
+                <label class="slot-field-label">{{ $t('contract.slot_rate') }}</label>
+                <input class="form-input" type="number" min="0" step="0.01" v-model="slot.hourly_rate" :aria-label="$t('contract.slot_rate')" :placeholder="contractForm.currency + '/h'" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <template #footer>
         <button class="btn" @click="closeContractModal">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="saveContract" :disabled="!contractForm.name.trim()">{{ $t('common.save') }}</button>
@@ -302,7 +373,8 @@ const { formatDate, dateOnlyFormat } = useDateFormat()
 
 const showAddContract = ref(false)
 const editingContract = ref(null)
-const contractForm = ref({ name: '', description: '', start_date: '', end_date: '' })
+const contractForm = ref({ name: '', description: '', start_date: '', end_date: '', price_per_hour: null, currency: '€', time_slots: [] })
+const emptySlot = () => ({ label: '', start_time: '', end_time: '', day_type: 'all', multiplication_factor: null, hourly_rate: null })
 const displayContractStartDate = ref('')
 const displayContractEndDate   = ref('')
 
@@ -569,25 +641,55 @@ function editContract(grp) {
     description: grp.description || '',
     start_date: grp.start_date ? grp.start_date.split('T')[0] : '',
     end_date:   grp.end_date   ? grp.end_date.split('T')[0]   : '',
+    price_per_hour: grp.price_per_hour != null ? grp.price_per_hour : null,
+    currency:       grp.currency || '€',
+    time_slots: (grp.time_slots || []).map(s => ({
+      label:                s.label || '',
+      start_time:           s.start_time || '',
+      end_time:             s.end_time || '',
+      day_type:             s.day_type || 'all',
+      multiplication_factor: s.multiplication_factor != null ? s.multiplication_factor : null,
+      hourly_rate:           s.hourly_rate != null ? s.hourly_rate : null,
+    })),
   }
   displayContractStartDate.value = contractForm.value.start_date ? formatDate(contractForm.value.start_date) : ''
   displayContractEndDate.value   = contractForm.value.end_date   ? formatDate(contractForm.value.end_date)   : ''
 }
 
+function addTimeSlot() {
+  contractForm.value.time_slots.push(emptySlot())
+}
+
+function removeTimeSlot(idx) {
+  contractForm.value.time_slots.splice(idx, 1)
+}
+
 function closeContractModal() {
   showAddContract.value = false
   editingContract.value = null
-  contractForm.value = { name: '', description: '', start_date: '', end_date: '' }
+  contractForm.value = { name: '', description: '', start_date: '', end_date: '', price_per_hour: null, currency: '€', time_slots: [] }
   displayContractStartDate.value = ''
   displayContractEndDate.value   = ''
 }
 
 async function saveContract() {
   const payload = {
-    name:        contractForm.value.name,
-    description: contractForm.value.description,
-    start_date:  contractForm.value.start_date || '',
-    end_date:    contractForm.value.end_date   || '',
+    name:           contractForm.value.name,
+    description:    contractForm.value.description,
+    start_date:     contractForm.value.start_date || '',
+    end_date:       contractForm.value.end_date   || '',
+    price_per_hour: contractForm.value.price_per_hour,
+    currency:       contractForm.value.currency || '€',
+    time_slots:     contractForm.value.time_slots
+      .filter(s => s.start_time && s.end_time)
+      .map(s => ({
+        label:                s.label || '',
+        start_time:           s.start_time,
+        end_time:             s.end_time,
+        day_type:             s.day_type || 'all',
+        multiplication_factor: s.multiplication_factor !== null && s.multiplication_factor !== '' ? parseFloat(s.multiplication_factor) : null,
+        hourly_rate:           s.hourly_rate !== null && s.hourly_rate !== '' ? parseFloat(s.hourly_rate) : null,
+      })),
   }
   try {
     if (editingContract.value) {
@@ -700,6 +802,14 @@ async function deleteContract(grp) {
   font-size: 12px;
   color: var(--color-text-muted);
   margin-left: 4px;
+}
+
+.contract-rate {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-left: 8px;
+  white-space: nowrap;
 }
 
 .contract-actions { display: flex; gap: 4px; }
@@ -847,4 +957,71 @@ async function deleteContract(grp) {
 .user-picker-row.selected { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
 
 .check-mark { font-size: 14px; color: var(--color-primary); font-weight: 700; flex-shrink: 0; }
+
+/* Time slots — contract display */
+.slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.slot-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.slot-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.slot-days { font-size: 11px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 4px; padding: 1px 5px; white-space: nowrap; }
+.slot-label { color: var(--color-text); }
+.slot-factor { font-weight: 600; color: var(--color-primary); }
+.slot-rate { font-weight: 600; color: var(--color-primary); }
+
+/* Time slots — contract form */
+.slots-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.slots-header .form-label { margin-bottom: 0; }
+.slots-list { display: flex; flex-direction: column; gap: 8px; }
+.slot-card {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.slot-card-top {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.slot-card-top .form-input { flex: 1; }
+.slot-card-bottom {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.slot-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.slot-field-days { flex: 1; min-width: 110px; }
+.slot-field .form-input { padding: 5px 7px; font-size: 13px; width: 90px; }
+.slot-field-days .form-input { width: 100%; }
+.slot-field-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--color-text-muted);
+}
+.slot-remove { color: var(--color-danger, #ef4444); flex-shrink: 0; }
+.slot-remove:hover { background: color-mix(in srgb, var(--color-danger, #ef4444) 10%, transparent); }
 </style>

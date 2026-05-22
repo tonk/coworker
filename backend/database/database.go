@@ -396,6 +396,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.CardLink{},
 		&models.Customer{},
 		&models.Contract{},
+		&models.ContractTimeSlot{},
 		&models.CustomerFavorite{},
 		&models.CustomerAccess{},
 		&models.CardReference{},

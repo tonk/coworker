@@ -15,6 +15,67 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+// contractRateMap builds a map of projectID → (price_per_hour, currency) for
+// projects that have a contract with a price set.
+func contractRateMap(entries []models.TimeEntry) map[uint]struct {
+	Rate     float64
+	Currency string
+} {
+	projIDs := make(map[uint]struct{})
+	for _, e := range entries {
+		if e.ProjectID != nil {
+			projIDs[*e.ProjectID] = struct{}{}
+		}
+	}
+	if len(projIDs) == 0 {
+		return nil
+	}
+	ids := make([]uint, 0, len(projIDs))
+	for id := range projIDs {
+		ids = append(ids, id)
+	}
+	var projects []models.Project
+	database.DB.Where("id IN ?", ids).Find(&projects)
+	result := make(map[uint]struct {
+		Rate     float64
+		Currency string
+	})
+	for _, p := range projects {
+		if p.ContractID == nil {
+			continue
+		}
+		var c models.Contract
+		if err := database.DB.First(&c, *p.ContractID).Error; err != nil || c.PricePerHour == nil {
+			continue
+		}
+		result[p.ID] = struct {
+			Rate     float64
+			Currency string
+		}{*c.PricePerHour, c.Currency}
+	}
+	return result
+}
+
+// entryCost computes the cost in the entry's project currency.
+func entryCost(e models.TimeEntry, rates map[uint]struct {
+	Rate     float64
+	Currency string
+}) (float64, string) {
+	if e.ProjectID == nil {
+		return 0, ""
+	}
+	r, ok := rates[*e.ProjectID]
+	if !ok {
+		return 0, ""
+	}
+	return float64(e.Minutes) / 60.0 * r.Rate, r.Currency
+}
+
+// fmtCost formats a cost value with 2 decimal places.
+func fmtCost(v float64) string {
+	return fmt.Sprintf("%.2f", v)
+}
+
 // GetTimeEntryReportXLSX streams the grouped time-entry report as an XLSX file.
 func GetTimeEntryReportXLSX(c *gin.Context) {
 	userID := middleware.GetUserID(c)
@@ -38,6 +99,13 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 		return
 	}
 
+	// Collect all entries and build rate map
+	var allEntries []models.TimeEntry
+	for _, g := range report.Groups {
+		allEntries = append(allEntries, g.Entries...)
+	}
+	rates := contractRateMap(allEntries)
+
 	f := excelize.NewFile()
 	defer f.Close()
 
@@ -48,6 +116,10 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 	f.SetSheetName("Sheet1", sheetName)
 
 	bold, _ := f.NewStyle(&excelize.Style{Font: &excelize.Font{Bold: true}})
+	moneyFmt, _ := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Bold: true},
+		NumFmt: 4, // "#,##0.00"
+	})
 
 	name := report.CompanyName
 	if name == "" {
@@ -60,7 +132,8 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 	f.SetCellValue(sheetName, cell(1, row), report.PeriodLabel)
 	row += 2
 
-	headers := []string{"Date", "Customer", "Project", "Activity", "Hours"}
+	costCol := 8
+	headers := []string{"Date", "Customer", "Project", "Activity", "Hours", "Currency", "Rate", "Cost"}
 	for col, h := range headers {
 		cr := cell(col+1, row)
 		f.SetCellValue(sheetName, cr, h)
@@ -73,7 +146,7 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 			continue
 		}
 		f.SetCellValue(sheetName, cell(1, row), grp.Label)
-		f.SetCellStyle(sheetName, cell(1, row), cell(5, row), bold)
+		f.SetCellStyle(sheetName, cell(1, row), cell(costCol, row), bold)
 		row++
 
 		for _, e := range grp.Entries {
@@ -85,23 +158,73 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 			if e.Project != nil {
 				projectName = e.Project.Name
 			}
+			cost, currency := entryCost(e, rates)
+			rate := 0.0
+			if e.ProjectID != nil {
+				if r, ok := rates[*e.ProjectID]; ok {
+					rate = r.Rate
+				}
+			}
 			f.SetCellValue(sheetName, cell(1, row), e.Date.Format("2006-01-02"))
 			f.SetCellValue(sheetName, cell(2, row), customerName)
 			f.SetCellValue(sheetName, cell(3, row), projectName)
 			f.SetCellValue(sheetName, cell(4, row), e.Description)
 			f.SetCellValue(sheetName, cell(5, row), decimalHours(e.Minutes))
+			if currency != "" {
+				f.SetCellValue(sheetName, cell(6, row), currency)
+			}
+			if rate > 0 {
+				f.SetCellValue(sheetName, cell(7, row), rate)
+			}
+			if cost > 0 {
+				f.SetCellValue(sheetName, cell(8, row), cost)
+			}
 			row++
 		}
 
+		// Group subtotal — hours + cost
+		grpCost := 0.0
+		grpCurrency := ""
+		for _, e := range grp.Entries {
+			c, cur := entryCost(e, rates)
+			grpCost += c
+			if cur != "" {
+				grpCurrency = cur
+			}
+		}
 		f.SetCellValue(sheetName, cell(4, row), "Total")
 		f.SetCellValue(sheetName, cell(5, row), decimalHours(grp.TotalMinutes))
-		f.SetCellStyle(sheetName, cell(1, row), cell(5, row), bold)
+		if grpCurrency != "" {
+			f.SetCellValue(sheetName, cell(6, row), grpCurrency)
+		}
+		if grpCost > 0 {
+			f.SetCellValue(sheetName, cell(8, row), grpCost)
+		}
+		f.SetCellStyle(sheetName, cell(1, row), cell(8, row), bold)
 		row += 2
 	}
 
+	// Grand total
+	totalCost := 0.0
+	totalCurrency := ""
+	for _, g := range report.Groups {
+		for _, e := range g.Entries {
+			c, cur := entryCost(e, rates)
+			totalCost += c
+			if cur != "" {
+				totalCurrency = cur
+			}
+		}
+	}
 	f.SetCellValue(sheetName, cell(4, row), "Total")
 	f.SetCellValue(sheetName, cell(5, row), decimalHours(report.TotalMinutes))
-	f.SetCellStyle(sheetName, cell(1, row), cell(5, row), bold)
+	if totalCurrency != "" {
+		f.SetCellValue(sheetName, cell(6, row), totalCurrency)
+	}
+	if totalCost > 0 {
+		f.SetCellValue(sheetName, cell(8, row), totalCost)
+	}
+	f.SetCellStyle(sheetName, cell(1, row), cell(8, row), moneyFmt)
 
 	if report.UndeclarableMinutes > 0 {
 		row++
@@ -110,7 +233,7 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 		row++
 		f.SetCellValue(sheetName, cell(4, row), "Declarable")
 		f.SetCellValue(sheetName, cell(5, row), decimalHours(report.DeclarableMinutes))
-		f.SetCellStyle(sheetName, cell(1, row), cell(5, row), bold)
+		f.SetCellStyle(sheetName, cell(1, row), cell(8, row), bold)
 	}
 
 	f.SetColWidth(sheetName, "A", "A", 14)
@@ -118,6 +241,9 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 	f.SetColWidth(sheetName, "C", "C", 25)
 	f.SetColWidth(sheetName, "D", "D", 35)
 	f.SetColWidth(sheetName, "E", "E", 10)
+	f.SetColWidth(sheetName, "F", "F", 10)
+	f.SetColWidth(sheetName, "G", "G", 10)
+	f.SetColWidth(sheetName, "H", "H", 14)
 
 	var buf bytes.Buffer
 	if err := f.Write(&buf); err != nil {

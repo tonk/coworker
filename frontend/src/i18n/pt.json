@@ -112,7 +112,22 @@
     "end_date": "Data de fim",
     "no_contracts": "Ainda não há contratos.",
     "delete_confirm": "Eliminar este contrato? Os projetos associados serão desvinculados.",
-    "edit": "Editar contrato"
+    "edit": "Editar contrato",
+    "price_per_hour": "Preço por hora",
+    "currency": "Moeda",
+    "time_slots": "Faixas de horário extra",
+    "add_time_slot": "Adicionar faixa",
+    "slot_label": "Rótulo",
+    "slot_start": "De",
+    "slot_end": "Até",
+    "slot_factor": "Fator",
+    "slot_rate": "Taxa",
+    "remove_slot": "Remover faixa",
+    "slot_days": "Dias",
+    "slot_days_all": "Todos os dias",
+    "slot_days_weekdays": "Dias úteis",
+    "slot_days_saturday": "Sábado",
+    "slot_days_sunday": "Domingo"
   },
   "subcard": {
     "sub_cards": "Subcartões",
@@ -778,6 +793,7 @@
     "declarable": "Declarável",
     "undeclarable_per_entry": "Tempo não declarável por entrada",
     "pdf_page_break_customer": "Nova página por cliente",
+    "show_costs": "Mostrar coluna de custos",
     "pdf_export_options": "Opções de exportação",
     "pdf_show_abbr": "Mostrar dia da semana antes da data",
     "add_holidays": "Adicionar feriados",
@@ -787,7 +803,10 @@
     "holidays_added_skipped": "{added} feriados adicionados para {year} ({skipped} já existiam)",
     "holidays_error": "Não foi possível adicionar feriados",
     "is_holiday": "Feriado",
-    "allotted": "Atribuído:"
+    "allotted": "Atribuído:",
+    "start_time": "Hora de início",
+    "end_time": "Hora de fim",
+    "set_time_range": "Definir intervalo de tempo"
   },
   "call": {
     "incoming": "Chamada recebida",

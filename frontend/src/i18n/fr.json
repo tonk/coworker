@@ -113,7 +113,22 @@
     "end_date": "Date de fin",
     "no_contracts": "Aucun contrat pour l'instant.",
     "delete_confirm": "Supprimer ce contrat ? Les projets liés seront détachés.",
-    "edit": "Modifier le contrat"
+    "edit": "Modifier le contrat",
+    "price_per_hour": "Prix par heure",
+    "currency": "Monnaie",
+    "time_slots": "Créneaux supplémentaires",
+    "add_time_slot": "Ajouter un créneau",
+    "slot_label": "Libellé",
+    "slot_start": "De",
+    "slot_end": "À",
+    "slot_factor": "Facteur",
+    "slot_rate": "Taux",
+    "remove_slot": "Supprimer le créneau",
+    "slot_days": "Jours",
+    "slot_days_all": "Tous les jours",
+    "slot_days_weekdays": "Jours ouvrés",
+    "slot_days_saturday": "Samedi",
+    "slot_days_sunday": "Dimanche"
   },
   "subcard": {
     "sub_cards": "Sous-tâches",
@@ -784,6 +799,7 @@
     "declarable": "Facturable",
     "undeclarable_per_entry": "Temps non facturable par entrée",
     "pdf_page_break_customer": "Nouvelle page par client",
+    "show_costs": "Afficher la colonne des coûts",
     "pdf_export_options": "Options d'export",
     "pdf_show_abbr": "Afficher le jour de la semaine avant la date",
     "add_holidays": "Ajouter les jours fériés",
@@ -793,7 +809,10 @@
     "holidays_added_skipped": "{added} jours fériés ajoutés pour {year} ({skipped} existaient déjà)",
     "holidays_error": "Impossible d'ajouter les jours fériés",
     "is_holiday": "Jour férié",
-    "allotted": "Alloué:"
+    "allotted": "Alloué:",
+    "start_time": "Heure de début",
+    "end_time": "Heure de fin",
+    "set_time_range": "Définir la plage horaire"
   },
   "call": {
     "incoming": "Appel entrant",

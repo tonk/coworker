@@ -157,7 +157,7 @@
                 <td class="c-desc">{{ row.description || '—' }}</td>
               </template>
 
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '']">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', copiedCell?.sourceKey === row.key + d.iso ? 'c-day-copied' : '']">
                 <input
                   :type="timeNotation === 'hhmm' ? 'text' : 'number'"
                   class="h-inp"
@@ -168,8 +168,13 @@
                   :disabled="viewingOther || savingCell === row.key + d.iso || editingRow === row.key"
                   @focus="$event.target.select()"
                   @blur="onCellBlur(row, d.iso, $event.target.value)"
-                  @keydown.enter="$event.target.blur()"
+                  @keydown="onCellKeydown(row, d.iso, $event)"
                 />
+                <span
+                  v-if="getEntry(row, d.iso)?.start_time"
+                  class="cell-time-dot"
+                  aria-hidden="true"
+                ></span>
                 <button v-if="!viewingOther"
                   class="cell-hol-toggle"
                   :class="{ 'cell-hol-on': getEntry(row, d.iso)?.is_holiday }"
@@ -179,6 +184,47 @@
                   @mousedown.prevent="toggleCellHoliday(row, d.iso)"
                   tabindex="-1"
                 ></button>
+                <button v-if="!viewingOther && (getEntry(row, d.iso) || cellVal(row, d.iso))"
+                  class="cell-time-toggle"
+                  :class="{ 'cell-time-on': !!getEntry(row, d.iso)?.start_time }"
+                  :aria-label="$t('timeTracking.set_time_range')"
+                  :title="$t('timeTracking.set_time_range')"
+                  @mousedown.prevent="openTimePopup(row, d.iso)"
+                  tabindex="-1"
+                >⏱</button>
+                <!-- Time range popup -->
+                <div
+                  v-if="timePopupKey === row.key + d.iso"
+                  class="time-popup"
+                  ref="timePopupRef"
+                  role="dialog"
+                  :aria-label="$t('timeTracking.set_time_range')"
+                  @mousedown.stop
+                >
+                  <label class="tp-label">{{ $t('timeTracking.start_time') }}
+                    <input type="text" class="tp-inp" v-model="timePopupStart"
+                      placeholder="09:00" maxlength="5"
+                      @input="onTimePopupInput('start', $event)"
+                      @keydown.enter.prevent="applyTimePopup(row, d.iso)"
+                      @keydown.escape.prevent="timePopupKey = ''"
+                    />
+                  </label>
+                  <label class="tp-label">{{ $t('timeTracking.end_time') }}
+                    <input type="text" class="tp-inp" v-model="timePopupEnd"
+                      placeholder="17:00" maxlength="5"
+                      @input="onTimePopupInput('end', $event)"
+                      @keydown.enter.prevent="applyTimePopup(row, d.iso)"
+                      @keydown.escape.prevent="timePopupKey = ''"
+                    />
+                  </label>
+                  <div v-if="timePopupMinutes() !== null" class="tp-preview">
+                    {{ fmtTime(timePopupMinutes()) }}
+                  </div>
+                  <div class="tp-actions">
+                    <button class="tp-btn tp-apply" @mousedown.prevent="applyTimePopup(row, d.iso)">{{ $t('common.save') }}</button>
+                    <button v-if="getEntry(row, d.iso)?.start_time" class="tp-btn tp-clear" @mousedown.prevent="clearTimePopup(row, d.iso)">{{ $t('common.clear') }}</button>
+                  </div>
+                </div>
               </td>
               <td class="c-total c-rowtotal">
                 <span>{{ rowTotal(row) }}</span>
@@ -395,6 +441,10 @@
                 <label v-if="rpt.group_by === 'customer'" class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfPageBreak)">
                   <input type="checkbox" v-model="pdfPageBreak" />
                   {{ $t('timeTracking.pdf_page_break_customer') }}
+                </label>
+                <label class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowCosts)">
+                  <input type="checkbox" v-model="pdfShowCosts" />
+                  {{ $t('timeTracking.show_costs') }}
                 </label>
               </div>
             </div>
@@ -672,6 +722,8 @@ const pdfPageBreak = ref(localStorage.getItem('timeTracking.pdfPageBreak') === '
 watch(pdfPageBreak, v => localStorage.setItem('timeTracking.pdfPageBreak', v ? '1' : '0'))
 const pdfShowAbbr = ref(localStorage.getItem('timeTracking.pdfShowAbbr') === '1')
 watch(pdfShowAbbr, v => localStorage.setItem('timeTracking.pdfShowAbbr', v ? '1' : '0'))
+const pdfShowCosts = ref(localStorage.getItem('timeTracking.pdfShowCosts') === '1')
+watch(pdfShowCosts, v => localStorage.setItem('timeTracking.pdfShowCosts', v ? '1' : '0'))
 const pdfOptionsOpen = ref(false)
 const pdfOptionsRef = ref(null)
 
@@ -1117,6 +1169,8 @@ async function onCellBlur(row, dateISO, rawVal) {
           minutes:     0,
           description: row.description,
           is_holiday:  true,
+          start_time:  existing.start_time || null,
+          end_time:    existing.end_time   || null,
         })
         const idx = rawEntries.value.findIndex(e => e.id === existing.id)
         rawEntries.value[idx] = data
@@ -1134,6 +1188,8 @@ async function onCellBlur(row, dateISO, rawVal) {
         minutes,
         description: row.description,
         is_holiday:  existing.is_holiday,
+        start_time:  existing.start_time || null,
+        end_time:    existing.end_time   || null,
       })
       const idx = rawEntries.value.findIndex(e => e.id === existing.id)
       rawEntries.value[idx] = data
@@ -1286,6 +1342,232 @@ async function toggleCellHoliday(row, dateISO) {
     ui.error(t('timeTracking.save_error'))
   } finally {
     if (savingCell.value === ck) savingCell.value = ''
+  }
+}
+
+// ── Cell copy / paste ─────────────────────────────────────────────────────
+// copiedCell holds the full state of the last copied cell. It persists until
+// the user copies something else or presses Escape, so the same value can be
+// pasted into multiple cells.
+const copiedCell = ref(null) // { minutes, startTime, endTime, isHoliday, sourceKey }
+
+function copyCellData(row, dateISO) {
+  const entry = getEntry(row, dateISO)
+  // Nothing to copy if the cell has no data at all.
+  if (!entry && !cellVal(row, dateISO)) return
+  copiedCell.value = {
+    minutes:   entry?.minutes    ?? 0,
+    startTime: entry?.start_time ?? null,
+    endTime:   entry?.end_time   ?? null,
+    isHoliday: entry?.is_holiday ?? false,
+    sourceKey: row.key + dateISO,
+  }
+}
+
+async function pasteCellData(row, dateISO) {
+  const src = copiedCell.value
+  if (!src) return
+  const existing = getEntry(row, dateISO)
+  const ck = row.key + dateISO
+  savingCell.value = ck
+  try {
+    if (src.minutes > 0 || src.isHoliday) {
+      if (existing) {
+        const { data } = await timeEntriesApi.update(existing.id, {
+          customer_id: row.customer_id || null,
+          project_id:  row.project_id  || null,
+          date:        dateISO,
+          minutes:     src.minutes,
+          description: row.description,
+          is_holiday:  src.isHoliday,
+          start_time:  src.startTime,
+          end_time:    src.endTime,
+        })
+        const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+        rawEntries.value[idx] = data
+      } else {
+        const { data } = await timeEntriesApi.create({
+          customer_id:  row.customer_id  || null,
+          project_id:   row.project_id   || null,
+          date:         dateISO,
+          minutes:      src.minutes,
+          description:  row.description,
+          is_holiday:   src.isHoliday,
+          start_time:   src.startTime,
+          end_time:     src.endTime,
+        })
+        rawEntries.value.push(data)
+        localRows.value = localRows.value.filter(r => r.key !== row.key)
+      }
+    } else if (existing) {
+      // Pasting a cell that had no hours and no holiday marker clears the target.
+      await timeEntriesApi.remove(existing.id)
+      rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+    }
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  } finally {
+    if (savingCell.value === ck) savingCell.value = ''
+  }
+}
+
+function onCellKeydown(row, dateISO, event) {
+  if (event.key === 'Enter') {
+    event.target.blur()
+    return
+  }
+  if (event.key === 'Escape') {
+    copiedCell.value = null
+    event.target.blur()
+    return
+  }
+  const mod = event.ctrlKey || event.metaKey
+  if (!mod) return
+  if (event.key === 'c') {
+    // Don't preventDefault: let the browser also copy the text value normally.
+    copyCellData(row, dateISO)
+  } else if (event.key === 'v' && copiedCell.value) {
+    event.preventDefault()
+    pasteCellData(row, dateISO)
+  }
+}
+
+// ── Per-cell time range popup ─────────────────────────────────────────────
+const timePopupKey   = ref('')        // row.key + dateISO when open
+const timePopupStart = ref('')
+const timePopupEnd   = ref('')
+const timePopupRef   = ref(null)
+
+// Format minutes-since-midnight as "HH:MM" for storage/display.
+function fmtWallClock(mins) {
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+function openTimePopup(row, dateISO) {
+  const key = row.key + dateISO
+  if (timePopupKey.value === key) {
+    timePopupKey.value = ''
+    return
+  }
+  const existing = getEntry(row, dateISO)
+  timePopupStart.value = existing?.start_time || ''
+  timePopupEnd.value   = existing?.end_time   || ''
+  timePopupKey.value   = key
+}
+
+// Parse a wall-clock "H:MM" or "HH:MM" string to minutes-since-midnight.
+// Returns -1 when invalid.
+function parseWallClock(s) {
+  if (!s) return -1
+  const trimmed = s.trim()
+  const m = trimmed.match(/^(\d{1,2}):(\d{2})$/)
+  if (!m) return -1
+  const h = parseInt(m[1]), min = parseInt(m[2])
+  if (h > 23 || min > 59) return -1
+  return h * 60 + min
+}
+
+// Auto-insert colon while typing (e.g. "09" → "09:" after 2 digits).
+function onTimePopupInput(field, event) {
+  let val = event.target.value.replace(/[^\d:]/g, '')
+  // Auto-insert colon after 2 digits if user hasn't typed one yet
+  if (val.length === 2 && !val.includes(':')) {
+    val = val + ':'
+    event.target.value = val
+  }
+  if (field === 'start') timePopupStart.value = val
+  else timePopupEnd.value = val
+}
+
+function timePopupMinutes() {
+  const s = parseWallClock(timePopupStart.value)
+  const e = parseWallClock(timePopupEnd.value)
+  if (s < 0 || e < 0) return null
+  const mins = e - s
+  return mins > 0 ? mins : null
+}
+
+async function applyTimePopup(row, dateISO) {
+  // Normalise to HH:MM before saving so storage is always consistent.
+  const sm = parseWallClock(timePopupStart.value)
+  const em = parseWallClock(timePopupEnd.value)
+  const start = sm >= 0 ? fmtWallClock(sm) : null
+  const end   = em >= 0 ? fmtWallClock(em) : null
+  const calcMins = (start && end && em > sm) ? (em - sm) : null
+
+  const existing = getEntry(row, dateISO)
+  const ck = row.key + dateISO
+  savingCell.value = ck
+  try {
+    if (existing) {
+      const minutes = calcMins !== null ? calcMins : existing.minutes
+      const { data } = await timeEntriesApi.update(existing.id, {
+        customer_id: row.customer_id || null,
+        project_id:  row.project_id  || null,
+        date:        dateISO,
+        minutes,
+        description: row.description,
+        is_holiday:  existing.is_holiday,
+        start_time:  start,
+        end_time:    end,
+      })
+      const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+      rawEntries.value[idx] = data
+    } else if (calcMins !== null) {
+      const { data } = await timeEntriesApi.create({
+        customer_id:  row.customer_id || null,
+        project_id:   row.project_id  || null,
+        date:         dateISO,
+        minutes:      calcMins,
+        description:  row.description,
+        start_time:   start,
+        end_time:     end,
+      })
+      rawEntries.value.push(data)
+      localRows.value = localRows.value.filter(r => r.key !== row.key)
+    }
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  } finally {
+    if (savingCell.value === ck) savingCell.value = ''
+    timePopupKey.value = ''
+  }
+}
+
+async function clearTimePopup(row, dateISO) {
+  const existing = getEntry(row, dateISO)
+  if (!existing) { timePopupKey.value = ''; return }
+  const ck = row.key + dateISO
+  savingCell.value = ck
+  try {
+    const { data } = await timeEntriesApi.update(existing.id, {
+      customer_id: row.customer_id || null,
+      project_id:  row.project_id  || null,
+      date:        dateISO,
+      minutes:     existing.minutes,
+      description: row.description,
+      is_holiday:  existing.is_holiday,
+      start_time:  null,
+      end_time:    null,
+    })
+    const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+    rawEntries.value[idx] = data
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  } finally {
+    if (savingCell.value === ck) savingCell.value = ''
+    timePopupKey.value = ''
+  }
+}
+
+function onTimePopupDocClick(e) {
+  if (!timePopupKey.value) return
+  // timePopupRef may be an array when inside v-for
+  const el = Array.isArray(timePopupRef.value) ? timePopupRef.value[0] : timePopupRef.value
+  if (el && !el.contains(e.target) && !e.target.closest('.cell-time-toggle')) {
+    timePopupKey.value = ''
   }
 }
 
@@ -1518,6 +1800,7 @@ async function exportReportPDF() {
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
     if (pdfShowAbbr.value) params.show_abbr = '1'
     if (pdfPageBreak.value && rpt.value.group_by === 'customer') params.page_break = 'customer'
+    if (pdfShowCosts.value) params.show_costs = '1'
     const data = await timeEntriesApi.reportPDF(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
@@ -1703,11 +1986,13 @@ onMounted(() => {
   document.addEventListener('mousedown', onDocClick)
   document.addEventListener('mousedown', onHolidaysDocClick)
   document.addEventListener('mousedown', onWkPickerDocClick)
+  document.addEventListener('mousedown', onTimePopupDocClick)
 })
 onUnmounted(() => {
   document.removeEventListener('mousedown', onDocClick)
   document.removeEventListener('mousedown', onHolidaysDocClick)
   document.removeEventListener('mousedown', onWkPickerDocClick)
+  document.removeEventListener('mousedown', onTimePopupDocClick)
 })
 
 // ── Init ──────────────────────────────────────────────────────────────────
@@ -1895,6 +2180,101 @@ td.c-day:focus-within .cell-hol-toggle,
   background: var(--color-warning, #f59e0b);
   box-shadow: 0 0 5px var(--color-warning, #f59e0b);
 }
+
+/* Clock button — time range toggle */
+.cell-time-toggle {
+  position: absolute;
+  bottom: 3px; left: 3px;
+  width: 14px; height: 14px;
+  padding: 0; border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-text-muted, #888);
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.15s, color 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+td.c-day:hover .cell-time-toggle,
+td.c-day:focus-within .cell-time-toggle,
+.cell-time-toggle.cell-time-on { opacity: 1; }
+.cell-time-toggle.cell-time-on { color: var(--color-primary); }
+.cell-time-toggle:focus-visible { opacity: 1; }
+
+/* Blue dot indicator for cells that have a time range set */
+.cell-time-dot {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  pointer-events: none;
+}
+
+/* Time range popup */
+.time-popup {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  z-index: 300;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  padding: 10px;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tp-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.tp-inp {
+  width: 100%;
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-input-bg, var(--color-surface-2));
+  color: var(--color-text);
+  font-size: 12px;
+}
+.tp-preview {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.tp-actions {
+  display: flex;
+  gap: 4px;
+}
+.tp-btn {
+  flex: 1;
+  padding: 3px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+.tp-apply {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.tp-apply:hover { opacity: .9; }
+.tp-clear {
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+}
+.tp-clear:hover { background: var(--color-surface-3, var(--color-surface-2)); }
 .c-day-holiday { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.18); }
 .dh-holiday-dot {
   width: 7px; height: 7px; border-radius: 50%;
@@ -1904,6 +2284,7 @@ td.c-day:focus-within .cell-hol-toggle,
 .tt-row-holiday { background: color-mix(in srgb, var(--color-warning, #f59e0b) 22%, transparent) !important; }
 .tt-row-holiday .c-info, .tt-row-holiday .c-desc { font-style: italic; opacity: .9; }
 .c-day-holiday-cell { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.30); }
+.c-day-copied { outline: 2px dashed var(--color-primary); outline-offset: -2px; }
 
 .tt-mode-tabs { display: flex; gap: 2px; }
 .tt-mode-btn {

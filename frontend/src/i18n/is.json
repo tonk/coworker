@@ -112,7 +112,22 @@
     "end_date": "Lokadagur",
     "no_contracts": "Engir samningar enn.",
     "delete_confirm": "Eyða þessum samningi? Tengd verkefni verða aftengt.",
-    "edit": "Breyta samningi"
+    "edit": "Breyta samningi",
+    "price_per_hour": "Verð á klst.",
+    "currency": "Gjaldmiðill",
+    "time_slots": "Aukatímabil",
+    "add_time_slot": "Bæta við tímabili",
+    "slot_label": "Merki",
+    "slot_start": "Frá",
+    "slot_end": "Til",
+    "slot_factor": "Margfaldari",
+    "slot_rate": "Gjald",
+    "remove_slot": "Fjarlægja tímabil",
+    "slot_days": "Dagar",
+    "slot_days_all": "Allir dagar",
+    "slot_days_weekdays": "Virkir dagar",
+    "slot_days_saturday": "Laugardagur",
+    "slot_days_sunday": "Sunnudagur"
   },
   "subcard": {
     "sub_cards": "Undirspjöld",
@@ -778,6 +793,7 @@
     "declarable": "Reikningshæft",
     "undeclarable_per_entry": "Ekki reikningshæfur tími á færslu",
     "pdf_page_break_customer": "Ný síða á viðskiptavin",
+    "show_costs": "Sýna kostnaðardálk",
     "pdf_export_options": "Útflutningsstillingar",
     "pdf_show_abbr": "Sýna vikudag fyrir dagsetningu",
     "add_holidays": "Bæta við frídögum",
@@ -787,7 +803,10 @@
     "holidays_added_skipped": "{added} frídagar bættir við fyrir {year} ({skipped} voru þegar til)",
     "holidays_error": "Mistókst að bæta við frídögum",
     "is_holiday": "Frídagur",
-    "allotted": "Úthlutað:"
+    "allotted": "Úthlutað:",
+    "start_time": "Byrjunartími",
+    "end_time": "Lokatími",
+    "set_time_range": "Stilla tímabil"
   },
   "call": {
     "incoming": "Móttekið símtal",

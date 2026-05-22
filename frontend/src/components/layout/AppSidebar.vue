@@ -28,6 +28,7 @@
             draggable="false"
             :data-item-id="project.id"
             data-item-type="project"
+            :title="project.customer?.name"
           >
             <span class="drag-handle" @pointerdown.prevent.stop="onItemHandleDown($event, project, 'project')">⠿</span>
             <img v-if="projectAvatar(project) && !avatarErrors.has('p'+project.id)" :src="projectAvatar(project)" class="project-avatar" alt="" @error="avatarErrors.add('p'+project.id)" />
@@ -61,6 +62,7 @@
             :key="project.id"
             :to="`/projects/${project.slug}`"
             class="sidebar-link"
+            :title="project.customer?.name"
           >
             <img v-if="projectAvatar(project) && !avatarErrors.has('p'+project.id)" :src="projectAvatar(project)" class="project-avatar" alt="" @error="avatarErrors.add('p'+project.id)" />
             <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>

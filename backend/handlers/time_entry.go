@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
+	"gorm.io/gorm"
 )
 
 // ListTimeEntries returns time entries for the authenticated user, optionally
@@ -61,17 +63,43 @@ func ListTimeEntries(c *gin.Context) {
 	c.JSON(http.StatusOK, entries)
 }
 
+// checkContractNotExpired verifies that no contract associated with the given
+// customer or project has an end_date before the entry date.
+func checkContractNotExpired(db *gorm.DB, customerID, projectID *uint, entryDate time.Time) error {
+	if projectID != nil {
+		var project models.Project
+		if err := db.First(&project, *projectID).Error; err == nil && project.ContractID != nil {
+			var contract models.Contract
+			if err := db.First(&contract, *project.ContractID).Error; err == nil && contract.EndDate != nil {
+				if entryDate.After(*contract.EndDate) {
+					return fmt.Errorf("the contract for this project expired on %s", contract.EndDate.Format("2006-01-02"))
+				}
+			}
+		}
+	}
+	if customerID != nil {
+		var contracts []models.Contract
+		db.Where("customer_id = ? AND end_date IS NOT NULL AND end_date < ?", *customerID, entryDate).Find(&contracts)
+		if len(contracts) > 0 {
+			return fmt.Errorf("a contract for this customer expired on %s", contracts[0].EndDate.Format("2006-01-02"))
+		}
+	}
+	return nil
+}
+
 // CreateTimeEntry logs a new time entry for the authenticated user.
 func CreateTimeEntry(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
 	var req struct {
-		CustomerID  *uint  `json:"customer_id"`
-		ProjectID   *uint  `json:"project_id"`
-		Date        string `json:"date"`
-		Minutes     int    `json:"minutes"`
-		Description string `json:"description"`
-		IsHoliday   bool   `json:"is_holiday"`
+		CustomerID  *uint   `json:"customer_id"`
+		ProjectID   *uint   `json:"project_id"`
+		Date        string  `json:"date"`
+		Minutes     int     `json:"minutes"`
+		Description string  `json:"description"`
+		IsHoliday   bool    `json:"is_holiday"`
+		StartTime   *string `json:"start_time"`
+		EndTime     *string `json:"end_time"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -87,6 +115,11 @@ func CreateTimeEntry(c *gin.Context) {
 		return
 	}
 
+	if err := checkContractNotExpired(database.DB, req.CustomerID, req.ProjectID, date); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	entry := models.TimeEntry{
 		UserID:      userID,
 		CustomerID:  req.CustomerID,
@@ -95,6 +128,8 @@ func CreateTimeEntry(c *gin.Context) {
 		Minutes:     req.Minutes,
 		Description: req.Description,
 		IsHoliday:   req.IsHoliday,
+		StartTime:   req.StartTime,
+		EndTime:     req.EndTime,
 	}
 	if err := database.DB.Create(&entry).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -120,12 +155,14 @@ func UpdateTimeEntry(c *gin.Context) {
 	}
 
 	var req struct {
-		CustomerID  *uint  `json:"customer_id"`
-		ProjectID   *uint  `json:"project_id"`
-		Date        string `json:"date"`
-		Minutes     int    `json:"minutes"`
-		Description string `json:"description"`
-		IsHoliday   bool   `json:"is_holiday"`
+		CustomerID  *uint   `json:"customer_id"`
+		ProjectID   *uint   `json:"project_id"`
+		Date        string  `json:"date"`
+		Minutes     int     `json:"minutes"`
+		Description string  `json:"description"`
+		IsHoliday   bool    `json:"is_holiday"`
+		StartTime   *string `json:"start_time"`
+		EndTime     *string `json:"end_time"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -141,12 +178,19 @@ func UpdateTimeEntry(c *gin.Context) {
 		return
 	}
 
+	if err := checkContractNotExpired(database.DB, req.CustomerID, req.ProjectID, date); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	entry.CustomerID = req.CustomerID
 	entry.ProjectID = req.ProjectID
 	entry.Date = date
 	entry.Minutes = req.Minutes
 	entry.Description = req.Description
 	entry.IsHoliday = req.IsHoliday
+	entry.StartTime = req.StartTime
+	entry.EndTime = req.EndTime
 
 	// Explicitly clear nullable FK columns so zeroing them is persisted.
 	if req.CustomerID == nil {
@@ -154,6 +198,12 @@ func UpdateTimeEntry(c *gin.Context) {
 	}
 	if req.ProjectID == nil {
 		database.DB.Model(&entry).Update("project_id", nil)
+	}
+	if req.StartTime == nil {
+		database.DB.Model(&entry).Update("start_time", nil)
+	}
+	if req.EndTime == nil {
+		database.DB.Model(&entry).Update("end_time", nil)
 	}
 	if err := database.DB.Save(&entry).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})

@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.10.12 — 2026-05-22
+
+### Added
+- **Contract time slots** — contracts on the Customer detail page now support named time-of-day rate tiers (e.g. "Evening", "Weekend") with configurable start/end time, day type (all / weekdays / Saturday / Sunday), hourly rate, and multiplication factor. The PDF and XLSX time-tracking exports apply matching slots automatically when a time entry carries a start/end time.
+- **Contract hourly rate and currency** — contracts now store a base `price_per_hour` and `currency`; nine currency options are available (EUR, USD, GBP, CHF, SEK, NOK, DKK, PLN, CZK).
+- **Time entry start/end time** — each cell in the time-tracking grid can optionally record a wall-clock start and end time (HH:MM). A ⏱ button on each filled cell opens a compact popup; setting both times auto-fills the duration. A small dot indicator shows cells that already have a time range stored.
+- **PDF inline time slot breakdown** — when a time entry has a start/end time and the project's contract defines time slots, the PDF export renders per-entry sub-rows immediately below each entry, sorted chronologically, showing the exact HH:MM–HH:MM overlap with each slot (and any standard-rate gap), its label, hours, and cost.
+- **Time-tracking cell copy/paste** — Ctrl+C on any filled cell copies its full contents (duration, start/end time, holiday flag) to an internal clipboard. Ctrl+V pastes into any other cell; the source cell is highlighted with a dashed outline. Escape clears the clipboard.
+- **Deleted cards restore** — project owners and system admins can view, permanently delete, or restore soft-deleted cards from a new "Deleted cards" tab in Project Settings. Restore records an event in card history.
+- **Working hours per user** — users can configure expected start times for each day of the week (Mon–Sun) in User Settings. The time-tracking view uses these to flag days where logged time exceeds the configured limit.
+- **Conditional visibility in card detail** — each section of the card detail modal (labels, attachments, checklist, linked cards, watchers, etc.) can be individually shown or hidden from a sections menu (⋮). Visibility state persists in `localStorage`.
+- **Time notation preference** — users can choose between decimal (8.5 h) and HH:MM (8:00) display format for durations; the setting is applied consistently across the time-tracking UI and settings forms.
+
+### Changed
+- **Sidebar drag-handle tooltips** — drag handles on starred projects and customers in the sidebar now show a tooltip, improving discoverability of the reorder feature.
+- **Seeder idempotency** — the seed program (`cmd/seed`) can now be re-run safely without creating duplicate data.
+- **`--version` flags** — `cmd/seed` and `cmd/training` now accept a `--version` flag and print their version string.
+
+### Fixed
+- **Ansible `user_options` module** — self-service calls now use `/auth/me` instead of the admin endpoint, fixing permission errors for non-admin automation users.
+
 ## v0.10.11 — 2026-05-22
 
 ### Added

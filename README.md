@@ -8,10 +8,14 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.11)
+## Latest release (v0.10.12)
 
-- **Ansible `user_options` module** — manage per-user preferences (locale, timezone, theme, time tracking toggle, and more) via `ansilabnl.warmdesk.user_options`.
-- **Admin API extended** — `time_tracking_enabled`, `theme`, `show_breadcrumbs`, `email_notifications` now settable via `PUT /admin/users/:id`.
+- **Contract time slots** — define named rate tiers per contract (day type + time range + factor/rate); PDF and XLSX exports apply them automatically when entries have start/end times.
+- **Time entry start/end time** — record wall-clock start and end on any time-tracking cell; duration auto-fills from the range.
+- **PDF inline slot breakdown** — per-entry sub-rows show the exact HH:MM–HH:MM overlap with each slot and the standard-rate gaps, sorted chronologically under the parent entry.
+- **Cell copy/paste** — Ctrl+C / Ctrl+V copies the full contents of a time cell (duration, times, holiday) to another cell; dashed outline marks the clipboard source.
+- **Deleted cards restore** — project owners can view, restore, or permanently delete soft-deleted cards from Project Settings.
+- **Working hours & time notation** — configure expected hours per weekday; choose decimal or HH:MM duration display.
 
 ## Experiment
 

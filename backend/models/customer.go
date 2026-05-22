@@ -18,14 +18,30 @@ type Customer struct {
 // Contract is an agreement between a Customer and the organisation, under which
 // one or more Projects are delivered.
 type Contract struct {
-	ID          uint       `gorm:"primaryKey" json:"id"`
-	CustomerID  uint       `gorm:"not null;index" json:"customer_id"`
-	Name        string     `gorm:"not null;size:200" json:"name"`
-	Description string     `gorm:"type:text" json:"description"`
-	StartDate   *time.Time `json:"start_date,omitempty"`
-	EndDate     *time.Time `json:"end_date,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID            uint                 `gorm:"primaryKey" json:"id"`
+	CustomerID    uint                 `gorm:"not null;index" json:"customer_id"`
+	Name          string               `gorm:"not null;size:200" json:"name"`
+	Description   string               `gorm:"type:text" json:"description"`
+	StartDate     *time.Time           `json:"start_date,omitempty"`
+	EndDate       *time.Time           `json:"end_date,omitempty"`
+	PricePerHour  *float64             `json:"price_per_hour,omitempty"`
+	Currency      string               `gorm:"size:3;default:€" json:"currency"`
+	TimeSlots     []ContractTimeSlot   `gorm:"foreignKey:ContractID" json:"time_slots,omitempty"`
+	CreatedAt     time.Time            `json:"created_at"`
+	UpdatedAt     time.Time            `json:"updated_at"`
+}
+
+// ContractTimeSlot defines an alternative rate for work performed outside standard office hours.
+// DayType is one of "all", "weekdays", or "weekends".
+type ContractTimeSlot struct {
+	ID                   uint     `gorm:"primaryKey" json:"id"`
+	ContractID           uint     `gorm:"not null;index" json:"contract_id"`
+	Label                string   `gorm:"size:100" json:"label"`
+	StartTime            string   `gorm:"size:5;not null" json:"start_time"`
+	EndTime              string   `gorm:"size:5;not null" json:"end_time"`
+	DayType              string   `gorm:"size:10;default:all" json:"day_type"`
+	MultiplicationFactor *float64 `json:"multiplication_factor,omitempty"`
+	HourlyRate           *float64 `json:"hourly_rate,omitempty"`
 }
 
 // CustomerFavorite records that a user has starred a customer for quick sidebar access.

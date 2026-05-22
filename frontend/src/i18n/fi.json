@@ -111,7 +111,22 @@
     "end_date": "Päättymispäivä",
     "no_contracts": "Ei sopimuksia vielä.",
     "delete_confirm": "Poistetaanko tämä sopimus? Liittyvät projektit irrotetaan.",
-    "edit": "Muokkaa sopimusta"
+    "edit": "Muokkaa sopimusta",
+    "price_per_hour": "Tuntihinta",
+    "currency": "Valuutta",
+    "time_slots": "Lisäaikavälyt",
+    "add_time_slot": "Lisää aikaväli",
+    "slot_label": "Otsikko",
+    "slot_start": "Alkaen",
+    "slot_end": "Päättyen",
+    "slot_factor": "Kerroin",
+    "slot_rate": "Tuntihinta",
+    "remove_slot": "Poista aikaväli",
+    "slot_days": "Päivät",
+    "slot_days_all": "Kaikki päivät",
+    "slot_days_weekdays": "Arkipäivät",
+    "slot_days_saturday": "Lauantai",
+    "slot_days_sunday": "Sunnuntai"
   },
   "subcard": {
     "sub_cards": "Alakortit",
@@ -777,6 +792,7 @@
     "declarable": "Laskutettava",
     "undeclarable_per_entry": "Ei-laskutettava aika per merkintä",
     "pdf_page_break_customer": "Uusi sivu per asiakas",
+    "show_costs": "Näytä kustannussarake",
     "pdf_export_options": "Vientiasetukset",
     "pdf_show_abbr": "Näytä viikonpäivä ennen päivämäärää",
     "add_holidays": "Lisää pyhäpäivät",
@@ -786,7 +802,10 @@
     "holidays_added_skipped": "{added} pyhäpäivää lisätty vuodelle {year} ({skipped} oli jo olemassa)",
     "holidays_error": "Pyhäpäivien lisääminen epäonnistui",
     "is_holiday": "Vapaapäivä",
-    "allotted": "Varattu:"
+    "allotted": "Varattu:",
+    "start_time": "Aloitusaika",
+    "end_time": "Päättymisaika",
+    "set_time_range": "Aseta aikaväli"
   },
   "call": {
     "incoming": "Saapuva puhelu",

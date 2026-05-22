@@ -1,0 +1,99 @@
+---
+title: "v0.10.12: Contract time slots, time entry start/end, copy/paste, and card restore"
+date: "2026-05-22"
+author: "Ton Kersten"
+description: "Named rate tiers on contracts, wall-clock start/end time per time-tracking cell, inline PDF slot breakdown, Ctrl+C/Ctrl+V cell copy, deleted card restore, per-user working hours, and time notation choice."
+draft: false
+---
+:doctype: article
+:icons!:
+
+v0.10.12 is a feature release focused on time tracking and project management improvements.
+The headline additions are contract time slot rate tiers, start/end time per time entry, an inline PDF cost breakdown, and the long-requested ability to copy-paste time cells.
+
+== Contract time slots
+
+Contracts on the Customer detail page now support named rate tiers.
+Each slot defines a time range, a day type, and either a multiplication factor or a flat hourly rate:
+
+* **Time range** — `09:00`–`18:00`, `18:00`–`22:00`, and so on.
+* **Day type** — All days, weekdays only, Saturday, or Sunday.
+* **Rate** — a multiplier on the contract base rate (e.g. ×1.5 for evenings) or an absolute hourly rate.
+* **Label** — a free-text name shown in PDF exports and reports ("Evening", "Night", "Weekend").
+
+Contracts also gain a base `price_per_hour` field and a currency selector (EUR, USD, GBP, CHF, SEK, NOK, DKK, PLN, CZK).
+
+The slot configuration is in the contract edit dialog under Customer detail.
+Existing contracts are unaffected unless you add slots.
+
+== Start/end time per time entry
+
+Every cell in the time-tracking grid can now optionally record a wall-clock start and end time.
+
+* A **⏱ button** appears on the bottom-left of any filled cell on hover; clicking it opens a compact popup.
+* Enter start and end in HH:MM format — the duration field auto-fills from the difference.
+* A small blue dot in the top-left corner indicates cells that already have a time range stored.
+* The time input always uses HH:MM wall-clock notation, regardless of the user's duration display preference.
+
+Start and end times are stored in the database and included in all exports.
+
+== Inline PDF time slot breakdown
+
+When a time entry has a start/end time and its project contract defines time slots, the PDF export now renders per-entry sub-rows immediately below that entry.
+
+Each sub-row shows:
+
+* The exact **HH:MM–HH:MM** range of the overlap (or gap).
+* The slot label — or "Standard" for the portions of time that fall between defined slots.
+* Hours and cost for that segment.
+
+Sub-rows are sorted chronologically and appear only for entries that have a time range; entries without start/end times continue to show a single row as before.
+
+This replaces the previous behaviour of aggregated slot totals at the bottom of each group, which made it hard to relate costs back to specific days.
+
+== Cell copy/paste
+
+The time-tracking grid now supports keyboard copy/paste between cells.
+
+* **Ctrl+C** (or Cmd+C on macOS) on any cell copies its complete contents: duration, start time, end time, and the holiday flag.
+* **Ctrl+V** on a target cell pastes the copied data.
+* The source cell is highlighted with a dashed outline — similar to Excel's "marching ants" — for as long as the clipboard is active.
+* **Escape** clears the clipboard and removes the highlight.
+* The clipboard persists across multiple pastes (paste once, then paste again elsewhere) until explicitly cleared or a new copy is made.
+
+The text clipboard is not affected: Ctrl+C still copies the cell's text to the OS clipboard as normal.
+
+== Deleted cards restore
+
+Project owners and system admins can now manage soft-deleted cards without touching the database.
+
+A new **Deleted cards** tab in Project Settings lists all cards that have been deleted in the project.
+For each card, an admin can:
+
+* **Restore** it — the card reappears in its original column with a "Card restored" history event.
+* **Permanently delete** it — removes the card and all associated data (comments, history, attachments, linked cards).
+
+Non-admin members continue to see a 404 when trying to access a deleted card.
+
+== Working hours configuration
+
+Users can now configure an expected start time for each day of the week in User Settings.
+
+The time-tracking view uses these values to calculate expected hours per day and highlights days where the total logged time exceeds the configured limit.
+Separate settings are provided for weekdays and weekend days; weekend fields are optional.
+
+== Time notation preference
+
+Users can choose between two duration display formats:
+
+* **Decimal** — `8.50`, `1.75`
+* **HH:MM** — `8:30`, `1:45`
+
+The preference is applied consistently across the time-tracking grid, the working hours settings form, and time-entry inputs.
+
+== Other improvements
+
+* **Sidebar tooltips** — drag handles on starred projects and customers now show a tooltip, making the reorder feature easier to discover.
+* **Seed idempotency** — the `cmd/seed` program can be re-run safely; it skips records that already exist rather than creating duplicates.
+* **`--version` flags** — `cmd/seed` and `cmd/training` now print their version string when invoked with `--version`.
+* **Ansible fix** — the `ansilabnl.warmdesk.user_options` module now uses `/auth/me` for self-service calls instead of the admin endpoint, fixing permission errors for non-admin automation users.

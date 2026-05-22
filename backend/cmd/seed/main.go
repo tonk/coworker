@@ -212,7 +212,7 @@ func main() {
 			Email: "tonk@smartowl.nl", Username: "tonk",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "admin",
 			FirstName: "Ton", LastName: "Kersten", DisplayName: "Ton Kersten",
-			AvatarURL: "/logo/smartowl.png", IsActive: true, EmailNotifications: true,
+			IsActive: true, EmailNotifications: true,
 		}
 		must(db.Create(&tonk).Error)
 		fmt.Println("   Created system admin: tonk (tonk@smartowl.nl)")

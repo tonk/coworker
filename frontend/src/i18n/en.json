@@ -113,7 +113,22 @@
     "end_date": "End Date",
     "no_contracts": "No contracts yet.",
     "delete_confirm": "Delete this contract? Linked projects will be detached from it.",
-    "edit": "Edit Contract"
+    "edit": "Edit Contract",
+    "price_per_hour": "Price per hour",
+    "currency": "Currency",
+    "time_slots": "Extra time slots",
+    "add_time_slot": "Add time slot",
+    "slot_label": "Label",
+    "slot_start": "From",
+    "slot_end": "To",
+    "slot_days": "Days",
+    "slot_days_all": "All days",
+    "slot_days_weekdays": "Weekdays",
+    "slot_days_saturday": "Saturday",
+    "slot_days_sunday": "Sunday",
+    "slot_factor": "Factor",
+    "slot_rate": "Rate",
+    "remove_slot": "Remove slot"
   },
   "subcard": {
     "sub_cards": "Sub-cards",
@@ -778,6 +793,7 @@
     "declarable": "Declarable",
     "undeclarable_per_entry": "Undeclarable time per entry",
     "pdf_page_break_customer": "New page per customer",
+    "show_costs": "Show costs column",
     "pdf_export_options": "Export options",
     "pdf_show_abbr": "Show day of week before date",
     "add_holidays": "Add holidays",
@@ -787,7 +803,10 @@
     "holidays_added_skipped": "Added {added} public holidays for {year} ({skipped} already existed)",
     "holidays_error": "Failed to add holidays",
     "is_holiday": "Holiday",
-    "allotted": "Allotted:"
+    "allotted": "Allotted:",
+    "start_time": "Start time",
+    "end_time": "End time",
+    "set_time_range": "Set time range"
   },
   "call": {
     "incoming": "Incoming call",

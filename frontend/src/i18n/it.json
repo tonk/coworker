@@ -112,7 +112,22 @@
     "end_date": "Data fine",
     "no_contracts": "Nessun contratto ancora.",
     "delete_confirm": "Eliminare questo contratto? I progetti associati verranno scollegati.",
-    "edit": "Modifica contratto"
+    "edit": "Modifica contratto",
+    "price_per_hour": "Prezzo all'ora",
+    "currency": "Valuta",
+    "time_slots": "Fasce orarie aggiuntive",
+    "add_time_slot": "Aggiungi fascia",
+    "slot_label": "Etichetta",
+    "slot_start": "Da",
+    "slot_end": "A",
+    "slot_factor": "Fattore",
+    "slot_rate": "Tariffa",
+    "remove_slot": "Rimuovi fascia",
+    "slot_days": "Giorni",
+    "slot_days_all": "Tutti i giorni",
+    "slot_days_weekdays": "Giorni feriali",
+    "slot_days_saturday": "Sabato",
+    "slot_days_sunday": "Domenica"
   },
   "subcard": {
     "sub_cards": "Sottoschede",
@@ -778,6 +793,7 @@
     "declarable": "Dichiarabile",
     "undeclarable_per_entry": "Tempo non dichiarabile per voce",
     "pdf_page_break_customer": "Nuova pagina per cliente",
+    "show_costs": "Mostra colonna costi",
     "pdf_export_options": "Opzioni di esportazione",
     "pdf_show_abbr": "Mostra giorno della settimana prima della data",
     "add_holidays": "Aggiungi festività",
@@ -787,7 +803,10 @@
     "holidays_added_skipped": "{added} festività aggiunte per {year} ({skipped} già esistenti)",
     "holidays_error": "Impossibile aggiungere le festività",
     "is_holiday": "Giorno festivo",
-    "allotted": "Assegnato:"
+    "allotted": "Assegnato:",
+    "start_time": "Ora di inizio",
+    "end_time": "Ora di fine",
+    "set_time_range": "Imposta intervallo di tempo"
   },
   "call": {
     "incoming": "Chiamata in arrivo",

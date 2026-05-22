@@ -113,7 +113,22 @@
     "end_date": "Enddatum",
     "no_contracts": "Noch keine Verträge.",
     "delete_confirm": "Diesen Vertrag löschen? Verknüpfte Projekte werden davon getrennt.",
-    "edit": "Vertrag bearbeiten"
+    "edit": "Vertrag bearbeiten",
+    "price_per_hour": "Preis pro Stunde",
+    "currency": "Währung",
+    "time_slots": "Zusätzliche Zeitslots",
+    "add_time_slot": "Zeitslot hinzufügen",
+    "slot_label": "Bezeichnung",
+    "slot_start": "Von",
+    "slot_end": "Bis",
+    "slot_factor": "Faktor",
+    "slot_rate": "Stundensatz",
+    "remove_slot": "Zeitslot entfernen",
+    "slot_days": "Tage",
+    "slot_days_all": "Alle Tage",
+    "slot_days_weekdays": "Wochentage",
+    "slot_days_saturday": "Samstag",
+    "slot_days_sunday": "Sonntag"
   },
   "subcard": {
     "sub_cards": "Teilaufgaben",
@@ -784,6 +799,7 @@
     "declarable": "Abrechenbar",
     "undeclarable_per_entry": "Nicht abrechenbare Zeit pro Eintrag",
     "pdf_page_break_customer": "Neue Seite pro Kunde",
+    "show_costs": "Kostenspalte anzeigen",
     "pdf_export_options": "Exportoptionen",
     "pdf_show_abbr": "Wochentag vor Datum anzeigen",
     "add_holidays": "Feiertage hinzufügen",
@@ -793,7 +809,10 @@
     "holidays_added_skipped": "{added} Feiertage für {year} hinzugefügt ({skipped} bereits vorhanden)",
     "holidays_error": "Feiertage konnten nicht hinzugefügt werden",
     "is_holiday": "Feiertag",
-    "allotted": "Zugewiesen:"
+    "allotted": "Zugewiesen:",
+    "start_time": "Startzeit",
+    "end_time": "Endzeit",
+    "set_time_range": "Zeitbereich festlegen"
   },
   "call": {
     "incoming": "Eingehender Anruf",

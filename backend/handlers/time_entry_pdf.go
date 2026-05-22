@@ -5,7 +5,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jung-kurt/gofpdf"
 	"github.com/tonk/warmdesk/database"
@@ -109,6 +112,17 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	groupBy := c.DefaultQuery("group_by", "period")
 	pageBreakPerCustomer := groupBy == "customer" && c.Query("page_break") == "customer"
 	showAbbr := c.Query("show_abbr") == "1"
+	showCosts := c.Query("show_costs") == "1"
+
+	// Build contract info map for cost display (includes time slots for slot-aware costing).
+	var contractInfos map[uint]projectContractInfo
+	if showCosts {
+		var allEntries []models.TimeEntry
+		for _, g := range report.Groups {
+			allEntries = append(allEntries, g.Entries...)
+		}
+		contractInfos = contractInfoMap(allEntries)
+	}
 
 	// Pre-load logo once so the header closure doesn't hit disk on every page.
 	var cachedLogoBytes []byte
@@ -169,12 +183,25 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		colCust = 45.0
 		colProj = 45.0
 		colDesc = 50.0
+		colCost = 0.0
 	)
+	if showCosts {
+		colDate = 22.0
+		colCust = 38.0
+		colProj = 38.0
+		colDesc = 47.0
+		colCost = 20.0
+	}
 	if showAbbr {
 		colDate = colAbbr + 25.0
-		colDesc = 40.0
+		if showCosts {
+			colDesc = 37.0
+		} else {
+			colDesc = 40.0
+		}
 	}
-	colHours := pdfBodyW - colDate - colCust - colProj - colDesc
+	colHours := pdfBodyW - colDate - colCust - colProj - colDesc - colCost
+	nonHourW := colDate + colCust + colProj + colDesc + colCost
 
 	// ── Table header ──────────────────────────────────────────────────────────
 	drawTableHeader := func() {
@@ -186,6 +213,9 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.CellFormat(colCust, rowH, tr.Customer, "0", 0, "L", true, 0, "")
 		pdf.CellFormat(colProj, rowH, tr.Project, "0", 0, "L", true, 0, "")
 		pdf.CellFormat(colDesc, rowH, tr.Activity, "0", 0, "L", true, 0, "")
+		if showCosts {
+			pdf.CellFormat(colCost, rowH, tr.Cost, "0", 0, "R", true, 0, "")
+		}
 		pdf.CellFormat(colHours, rowH, tr.Hours, "0", 1, "R", true, 0, "")
 		setTxt(pdf, clrText)
 	}
@@ -261,27 +291,189 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 				projectName = e.Project.Name
 			}
 
-			dateCell := e.Date.Format("2006-01-02")
-			if showAbbr {
-				// Render abbreviation in a fixed-width sub-cell so the date
-				// column stays aligned regardless of 2- vs 3-char abbr width.
-				abbrIdx := (int(e.Date.Weekday()) + 6) % 7
-				pdf.CellFormat(colAbbr, rowH, tr.DaysAbbr[abbrIdx], "B", 0, "L", true, 0, "")
-				pdf.CellFormat(colDate-colAbbr, rowH, dateCell, "B", 0, "L", true, 0, "")
-			} else {
-				pdf.CellFormat(colDate, rowH, dateCell, "B", 0, "L", true, 0, "")
+			// Determine if we have a time range to show.
+			timeRange := ""
+			if e.StartTime != nil && *e.StartTime != "" && e.EndTime != nil && *e.EndTime != "" {
+				timeRange = *e.StartTime + "–" + *e.EndTime
 			}
-			pdf.CellFormat(colCust, rowH, customerName, "B", 0, "L", true, 0, "")
-			pdf.CellFormat(colProj, rowH, projectName, "B", 0, "L", true, 0, "")
-			pdf.CellFormat(colDesc, rowH, truncate(e.Description, 32), "B", 0, "L", true, 0, "")
-			pdf.CellFormat(colHours, rowH, fmtDecimalH(pdfEntryDeclarable(e)), "B", 1, "R", true, 0, "")
+			entryRowH := rowH
+			if timeRange != "" {
+				entryRowH = 9.5
+			}
+
+			dateCell := e.Date.Format("2006-01-02")
+			rowStartX := pdf.GetX()
+			rowStartY := pdf.GetY()
+
+			if showAbbr {
+				abbrIdx := (int(e.Date.Weekday()) + 6) % 7
+				dateAlign := "L"
+				if timeRange != "" {
+					dateAlign = "LT"
+				}
+				pdf.CellFormat(colAbbr, entryRowH, tr.DaysAbbr[abbrIdx], "B", 0, dateAlign, true, 0, "")
+				pdf.CellFormat(colDate-colAbbr, entryRowH, dateCell, "B", 0, dateAlign, true, 0, "")
+			} else {
+				dateAlign := "L"
+				if timeRange != "" {
+					dateAlign = "LT"
+				}
+				pdf.CellFormat(colDate, entryRowH, dateCell, "B", 0, dateAlign, true, 0, "")
+			}
+
+			// Overlay time range in small font below the date.
+			if timeRange != "" {
+				afterDateX := pdf.GetX()
+				timeX := rowStartX
+				if showAbbr {
+					timeX = rowStartX + colAbbr
+				}
+				pdf.SetXY(timeX, rowStartY+5.5)
+				pdf.SetFont(fontFamily, "", 6.5)
+				setTxt(pdf, clrMuted)
+				pdf.CellFormat(colDate-(timeX-rowStartX), 3.5, timeRange, "", 0, "L", false, 0, "")
+				pdf.SetXY(afterDateX, rowStartY)
+				pdf.SetFont(fontFamily, "", 8)
+				setTxt(pdf, clrText)
+			}
+
+			pdf.CellFormat(colCust, entryRowH, customerName, "B", 0, "L", true, 0, "")
+			pdf.CellFormat(colProj, entryRowH, projectName, "B", 0, "L", true, 0, "")
+			pdf.CellFormat(colDesc, entryRowH, truncate(e.Description, 32), "B", 0, "L", true, 0, "")
+			if showCosts {
+				costStr := ""
+				var cost float64
+				var cur string
+				if e.ProjectID != nil {
+					if info, ok := contractInfos[*e.ProjectID]; ok {
+						cost, cur = entrySlotCost(e, info)
+					}
+				}
+				if cost > 0 {
+					costStr = fmtCost(cost) + " " + cur
+				}
+				pdf.CellFormat(colCost, entryRowH, costStr, "B", 0, "R", true, 0, "")
+			}
+			pdf.CellFormat(colHours, entryRowH, fmtDecimalH(pdfEntryDeclarable(e)), "B", 1, "R", true, 0, "")
+
+			// ── Per-entry time-slot sub-rows ─────────────────────────────────
+			// Only shown when the entry has a time range AND the project has slots.
+			if timeRange != "" && e.ProjectID != nil {
+				if info, ok := contractInfos[*e.ProjectID]; ok && len(info.TimeSlots) > 0 {
+					entryStartMins := parseHHMM(*e.StartTime)
+					entryEndMins := parseHHMM(*e.EndTime)
+					if entryStartMins >= 0 && entryEndMins > entryStartMins {
+						_, slotSegs := entrySlotBreakdown(e, info)
+						stdSegs := standardTimeSegments(entryStartMins, entryEndMins, slotSegs)
+
+						type subRow struct {
+							startMins    int
+							timeRangeStr string
+							label        string
+							minutes      int
+							cost         float64
+							currency     string
+						}
+						var subRows []subRow
+
+						for _, seg := range stdSegs {
+							c := 0.0
+							if info.BaseRate != nil {
+								c = float64(seg.Minutes) / 60.0 * *info.BaseRate
+							}
+							subRows = append(subRows, subRow{
+								startMins:    seg.Start,
+								timeRangeStr: fmtWallClockPDF(seg.Start) + "–" + fmtWallClockPDF(seg.End),
+								label:        tr.Standard,
+								minutes:      seg.Minutes,
+								cost:         c,
+								currency:     info.Currency,
+							})
+						}
+						for _, s := range slotSegs {
+							var c float64
+							switch {
+							case s.HourlyRate != nil:
+								c = float64(s.Minutes) / 60.0 * *s.HourlyRate
+							case s.MultiplicationFactor != nil && info.BaseRate != nil:
+								c = float64(s.Minutes) / 60.0 * *info.BaseRate * *s.MultiplicationFactor
+							case info.BaseRate != nil:
+								c = float64(s.Minutes) / 60.0 * *info.BaseRate
+							}
+							lbl := s.Label
+							if lbl == "" {
+								lbl = "—"
+							}
+							subRows = append(subRows, subRow{
+								startMins:    s.OverlapStart,
+								timeRangeStr: fmtWallClockPDF(s.OverlapStart) + "–" + fmtWallClockPDF(s.OverlapEnd),
+								label:        lbl,
+								minutes:      s.Minutes,
+								cost:         c,
+								currency:     info.Currency,
+							})
+						}
+						sort.Slice(subRows, func(i, j int) bool {
+							return subRows[i].startMins < subRows[j].startMins
+						})
+
+						const subH = 4.5
+						for _, sr := range subRows {
+							setFill(pdf, rgb{245, 248, 253})
+							setDraw(pdf, rgb{220, 225, 230})
+							pdf.SetLineWidth(0.1)
+							pdf.SetFont(fontFamily, "", 7)
+							setTxt(pdf, clrMuted)
+							if showAbbr {
+								pdf.CellFormat(colAbbr, subH, "", "B", 0, "L", true, 0, "")
+								pdf.CellFormat(colDate-colAbbr, subH, sr.timeRangeStr, "B", 0, "L", true, 0, "")
+							} else {
+								pdf.CellFormat(colDate, subH, sr.timeRangeStr, "B", 0, "L", true, 0, "")
+							}
+							pdf.CellFormat(colCust, subH, "", "B", 0, "L", true, 0, "")
+							pdf.CellFormat(colProj, subH, "", "B", 0, "L", true, 0, "")
+							pdf.CellFormat(colDesc, subH, "  "+sr.label, "B", 0, "L", true, 0, "")
+							if showCosts {
+								costStr := ""
+								if sr.cost > 0 {
+									costStr = fmtCost(sr.cost) + " " + sr.currency
+								}
+								pdf.CellFormat(colCost, subH, costStr, "B", 0, "R", true, 0, "")
+							}
+							pdf.CellFormat(colHours, subH, fmtDecimalH(sr.minutes), "B", 1, "R", true, 0, "")
+						}
+					}
+				}
+			}
 		}
 
 		// Group subtotal
+		grpCost := 0.0
+		grpCurrency := ""
+		if showCosts {
+			for _, e := range grp.Entries {
+				if e.ProjectID != nil {
+					if info, ok := contractInfos[*e.ProjectID]; ok {
+						c, cur := entrySlotCost(e, info)
+						grpCost += c
+						if cur != "" {
+							grpCurrency = cur
+						}
+					}
+				}
+			}
+		}
 		pdf.SetFont(fontFamily, "B", 8)
 		setTxt(pdf, clrMuted)
 		setFill(pdf, rgb{238, 242, 248})
-		pdf.CellFormat(pdfBodyW-colHours, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" "+tr.Total, "0", 0, "R", true, 0, "")
+		pdf.CellFormat(nonHourW-colCost, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" "+tr.Total, "0", 0, "R", true, 0, "")
+		if showCosts {
+			costStr := ""
+			if grpCost > 0 {
+				costStr = fmtCost(grpCost) + " " + grpCurrency
+			}
+			pdf.CellFormat(colCost, rowH, costStr, "0", 0, "R", true, 0, "")
+		}
 		setTxt(pdf, clrPrimary)
 		pdf.CellFormat(colHours, rowH, fmtDecimalH(grp.DeclarableMinutes), "0", 1, "R", true, 0, "")
 
@@ -290,7 +482,10 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 			setFill(pdf, rgb{252, 245, 245})
 			setTxt(pdf, clrMuted)
 			pdf.SetFont(fontFamily, "", 8)
-			pdf.CellFormat(pdfBodyW-colHours, rowH, "  "+tr.Undeclarable, "0", 0, "R", true, 0, "")
+			pdf.CellFormat(nonHourW-colCost, rowH, "  "+tr.Undeclarable, "0", 0, "R", true, 0, "")
+			if showCosts {
+				pdf.CellFormat(colCost, rowH, "", "0", 0, "R", true, 0, "")
+			}
 			setTxt(pdf, rgb{180, 80, 80})
 			pdf.CellFormat(colHours, rowH, "−"+fmtDecimalH(grp.UndeclarableMinutes), "0", 1, "R", true, 0, "")
 		}
@@ -309,17 +504,45 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		if report.UndeclarableMinutes > 0 {
 			grandMinutes = report.DeclarableMinutes
 		}
+		totalCost := 0.0
+		totalCurrency := ""
+		if showCosts {
+			for _, g := range report.Groups {
+				for _, e := range g.Entries {
+					if e.ProjectID == nil {
+						continue
+					}
+					if info, ok := contractInfos[*e.ProjectID]; ok {
+						c, cur := entrySlotCost(e, info)
+						totalCost += c
+						if cur != "" {
+							totalCurrency = cur
+						}
+					}
+				}
+			}
+		}
 		setFill(pdf, clrPrimary)
 		setTxt(pdf, rgb{255, 255, 255})
 		pdf.SetFont(fontFamily, "B", 9)
-		pdf.CellFormat(pdfBodyW-colHours, rowH+1, "  "+tr.Total, "0", 0, "L", true, 0, "")
+		pdf.CellFormat(nonHourW-colCost, rowH+1, "  "+tr.Total, "0", 0, "L", true, 0, "")
+		if showCosts {
+			costStr := ""
+			if totalCost > 0 {
+				costStr = fmtCost(totalCost) + " " + totalCurrency
+			}
+			pdf.CellFormat(colCost, rowH+1, costStr, "0", 0, "R", true, 0, "")
+		}
 		pdf.CellFormat(colHours, rowH+1, fmtDecimalH(grandMinutes), "0", 1, "R", true, 0, "")
 
 		if groupBy == "customer" && report.UndeclarableMinutes > 0 {
 			setFill(pdf, rgb{252, 245, 245})
 			setTxt(pdf, clrMuted)
 			pdf.SetFont(fontFamily, "", 8.5)
-			pdf.CellFormat(pdfBodyW-colHours, rowH, "  "+tr.Undeclarable, "0", 0, "L", true, 0, "")
+			pdf.CellFormat(nonHourW-colCost, rowH, "  "+tr.Undeclarable, "0", 0, "L", true, 0, "")
+			if showCosts {
+				pdf.CellFormat(colCost, rowH, "", "0", 0, "R", true, 0, "")
+			}
 			setTxt(pdf, rgb{180, 80, 80})
 			pdf.CellFormat(colHours, rowH, "−"+fmtDecimalH(report.UndeclarableMinutes), "0", 1, "R", true, 0, "")
 		}
@@ -368,4 +591,216 @@ func truncate(s string, n int) string {
 		return s
 	}
 	return string(r[:n-1]) + "…"
+}
+
+// projectContractInfo holds the base rate, currency and time slots for a project's contract.
+type projectContractInfo struct {
+	BaseRate  *float64
+	Currency  string
+	TimeSlots []models.ContractTimeSlot
+}
+
+// contractInfoMap builds a projectContractInfo for every project referenced by the entries.
+func contractInfoMap(entries []models.TimeEntry) map[uint]projectContractInfo {
+	projIDs := make(map[uint]struct{})
+	for _, e := range entries {
+		if e.ProjectID != nil {
+			projIDs[*e.ProjectID] = struct{}{}
+		}
+	}
+	if len(projIDs) == 0 {
+		return nil
+	}
+	ids := make([]uint, 0, len(projIDs))
+	for id := range projIDs {
+		ids = append(ids, id)
+	}
+	var projects []models.Project
+	database.DB.Where("id IN ?", ids).Find(&projects)
+	result := make(map[uint]projectContractInfo)
+	for _, p := range projects {
+		if p.ContractID == nil {
+			continue
+		}
+		var c models.Contract
+		if err := database.DB.Preload("TimeSlots").First(&c, *p.ContractID).Error; err != nil {
+			continue
+		}
+		info := projectContractInfo{Currency: c.Currency, TimeSlots: c.TimeSlots}
+		if c.PricePerHour != nil {
+			info.BaseRate = c.PricePerHour
+		}
+		result[p.ID] = info
+	}
+	return result
+}
+
+// parseHHMM parses a "HH:MM" string into minutes since midnight. Returns -1 on error.
+func parseHHMM(s string) int {
+	if len(s) != 5 || s[2] != ':' {
+		return -1
+	}
+	h, err1 := strconv.Atoi(s[:2])
+	m, err2 := strconv.Atoi(s[3:])
+	if err1 != nil || err2 != nil || h < 0 || h > 23 || m < 0 || m > 59 {
+		return -1
+	}
+	return h*60 + m
+}
+
+// dayTypeMatches returns true when the slot's DayType applies to the given weekday.
+func dayTypeMatches(dayType string, weekday time.Weekday) bool {
+	switch dayType {
+	case "all", "":
+		return true
+	case "weekdays":
+		return weekday >= time.Monday && weekday <= time.Friday
+	case "saturday":
+		return weekday == time.Saturday
+	case "sunday":
+		return weekday == time.Sunday
+	}
+	return false
+}
+
+// minutesOverlap returns how many minutes two time ranges share.
+func minutesOverlap(startA, endA, startB, endB int) int {
+	s := startA
+	if startB > s {
+		s = startB
+	}
+	e := endA
+	if endB < e {
+		e = endB
+	}
+	if e <= s {
+		return 0
+	}
+	return e - s
+}
+
+// slotMinutes describes how many minutes of an entry fall within a specific time slot.
+type slotMinutes struct {
+	Label                string
+	Minutes              int
+	OverlapStart         int // minutes since midnight
+	OverlapEnd           int // minutes since midnight
+	HourlyRate           *float64
+	MultiplicationFactor *float64
+}
+
+// timeSegment represents a contiguous block of standard (non-slot) time.
+type timeSegment struct {
+	Start   int
+	End     int
+	Minutes int
+}
+
+// fmtWallClockPDF formats minutes-since-midnight as "HH:MM".
+func fmtWallClockPDF(mins int) string {
+	return fmt.Sprintf("%02d:%02d", mins/60, mins%60)
+}
+
+// standardTimeSegments returns the entry time ranges NOT covered by any slot,
+// sorted chronologically.
+func standardTimeSegments(entryStart, entryEnd int, slots []slotMinutes) []timeSegment {
+	if len(slots) == 0 {
+		return []timeSegment{{entryStart, entryEnd, entryEnd - entryStart}}
+	}
+	sorted := make([]slotMinutes, len(slots))
+	copy(sorted, slots)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].OverlapStart < sorted[j].OverlapStart
+	})
+	var segs []timeSegment
+	pos := entryStart
+	for _, s := range sorted {
+		if s.OverlapStart > pos {
+			segs = append(segs, timeSegment{pos, s.OverlapStart, s.OverlapStart - pos})
+		}
+		if s.OverlapEnd > pos {
+			pos = s.OverlapEnd
+		}
+	}
+	if pos < entryEnd {
+		segs = append(segs, timeSegment{pos, entryEnd, entryEnd - pos})
+	}
+	return segs
+}
+
+// entrySlotBreakdown splits an entry's minutes into standard and per-slot buckets.
+// Returns standard (non-slot) minutes and a slice of per-slot breakdowns.
+// Returns the full entry minutes as standard when no start/end time is set.
+func entrySlotBreakdown(entry models.TimeEntry, info projectContractInfo) (int, []slotMinutes) {
+	if entry.StartTime == nil || entry.EndTime == nil {
+		return entry.Minutes, nil
+	}
+	startMins := parseHHMM(*entry.StartTime)
+	endMins := parseHHMM(*entry.EndTime)
+	if startMins < 0 || endMins < 0 || endMins <= startMins {
+		return entry.Minutes, nil
+	}
+
+	var slots []slotMinutes
+	slotCovered := 0
+	for _, slot := range info.TimeSlots {
+		if !dayTypeMatches(slot.DayType, entry.Date.Weekday()) {
+			continue
+		}
+		slotStart := parseHHMM(slot.StartTime)
+		slotEnd := parseHHMM(slot.EndTime)
+		if slotStart < 0 || slotEnd < 0 {
+			continue
+		}
+		overlapStart := startMins
+		if slotStart > overlapStart {
+			overlapStart = slotStart
+		}
+		overlapEnd := endMins
+		if slotEnd < overlapEnd {
+			overlapEnd = slotEnd
+		}
+		overlap := overlapEnd - overlapStart
+		if overlap <= 0 {
+			continue
+		}
+		slots = append(slots, slotMinutes{
+			Label:                slot.Label,
+			Minutes:              overlap,
+			OverlapStart:         overlapStart,
+			OverlapEnd:           overlapEnd,
+			HourlyRate:           slot.HourlyRate,
+			MultiplicationFactor: slot.MultiplicationFactor,
+		})
+		slotCovered += overlap
+	}
+
+	standard := entry.Minutes - slotCovered
+	if standard < 0 {
+		standard = 0
+	}
+	return standard, slots
+}
+
+// entrySlotCost computes the cost for an entry using time-slot-aware rates.
+func entrySlotCost(entry models.TimeEntry, info projectContractInfo) (float64, string) {
+	if info.BaseRate == nil && len(info.TimeSlots) == 0 {
+		return 0, ""
+	}
+	standard, slots := entrySlotBreakdown(entry, info)
+	total := 0.0
+	if info.BaseRate != nil && standard > 0 {
+		total += float64(standard) / 60.0 * *info.BaseRate
+	}
+	for _, s := range slots {
+		switch {
+		case s.HourlyRate != nil:
+			total += float64(s.Minutes) / 60.0 * *s.HourlyRate
+		case s.MultiplicationFactor != nil && info.BaseRate != nil:
+			total += float64(s.Minutes) / 60.0 * *info.BaseRate * *s.MultiplicationFactor
+		case info.BaseRate != nil:
+			total += float64(s.Minutes) / 60.0 * *info.BaseRate
+		}
+	}
+	return total, info.Currency
 }

@@ -113,7 +113,22 @@
     "end_date": "Einddatum",
     "no_contracts": "Nog geen contracten.",
     "delete_confirm": "Dit contract verwijderen? Gekoppelde projecten worden losgekoppeld.",
-    "edit": "Contract bewerken"
+    "edit": "Contract bewerken",
+    "price_per_hour": "Prijs per uur",
+    "currency": "Valuta",
+    "time_slots": "Extra tijdslots",
+    "add_time_slot": "Tijdslot toevoegen",
+    "slot_label": "Label",
+    "slot_start": "Van",
+    "slot_end": "Tot",
+    "slot_factor": "Factor",
+    "slot_rate": "Tarief",
+    "remove_slot": "Tijdslot verwijderen",
+    "slot_days": "Dagen",
+    "slot_days_all": "Alle dagen",
+    "slot_days_weekdays": "Weekdagen",
+    "slot_days_saturday": "Zaterdag",
+    "slot_days_sunday": "Zondag"
   },
   "subcard": {
     "sub_cards": "Deeltaken",
@@ -784,6 +799,7 @@
     "declarable": "Declarabel",
     "undeclarable_per_entry": "Niet-declarabele tijd per entry",
     "pdf_page_break_customer": "Nieuwe pagina per klant",
+    "show_costs": "Kostenkolom tonen",
     "pdf_export_options": "Exportopties",
     "pdf_show_abbr": "Dag van de week voor datum weergeven",
     "add_holidays": "Feestdagen toevoegen",
@@ -793,7 +809,10 @@
     "holidays_added_skipped": "{added} feestdagen toegevoegd voor {year} ({skipped} bestonden al)",
     "holidays_error": "Feestdagen toevoegen mislukt",
     "is_holiday": "Feestdag",
-    "allotted": "Toegewezen:"
+    "allotted": "Toegewezen:",
+    "start_time": "Begintijd",
+    "end_time": "Eindtijd",
+    "set_time_range": "Tijdsbereik instellen"
   },
   "call": {
     "incoming": "Inkomende oproep",
