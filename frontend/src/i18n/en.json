@@ -786,7 +786,8 @@
     "holidays_all_exist": "All {count} public holidays for {year} already exist",
     "holidays_added_skipped": "Added {added} public holidays for {year} ({skipped} already existed)",
     "holidays_error": "Failed to add holidays",
-    "is_holiday": "Holiday"
+    "is_holiday": "Holiday",
+    "allotted": "Allotted:"
   },
   "call": {
     "incoming": "Incoming call",

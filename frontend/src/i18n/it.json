@@ -786,7 +786,8 @@
     "holidays_all_exist": "Tutte le {count} festività del {year} esistono già",
     "holidays_added_skipped": "{added} festività aggiunte per {year} ({skipped} già esistenti)",
     "holidays_error": "Impossibile aggiungere le festività",
-    "is_holiday": "Giorno festivo"
+    "is_holiday": "Giorno festivo",
+    "allotted": "Assegnato:"
   },
   "call": {
     "incoming": "Chiamata in arrivo",

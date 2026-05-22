@@ -162,7 +162,7 @@
             :key="user.id"
             :to="{ name: 'chats', query: { user: user.id } }"
             class="user-row"
-          >
+            :title="user.username">
             <span class="presence-dot" :class="{ online: isOnline(user.id) }" aria-hidden="true"></span>
             <span class="sr-only">{{ isOnline(user.id) ? $t('sidebar.online') : $t('sidebar.offline') }}</span>
             <img v-if="userAvatar(user) && !avatarErrors.has('u'+user.id)" :src="userAvatar(user)" class="user-avatar" alt="" @error="avatarErrors.add('u'+user.id)" />
@@ -194,7 +194,7 @@
             :key="user.id"
             :to="{ name: 'chats', query: { user: user.id } }"
             class="user-row"
-          >
+            :title="user.username">
             <span class="presence-dot" :class="{ online: user.online }" aria-hidden="true"></span>
             <span class="sr-only">{{ user.online ? $t('sidebar.online') : $t('sidebar.offline') }}</span>
             <img v-if="userAvatar(user) && !avatarErrors.has('u'+user.id)" :src="userAvatar(user)" class="user-avatar" alt="" @error="avatarErrors.add('u'+user.id)" />

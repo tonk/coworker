@@ -786,7 +786,8 @@
     "holidays_all_exist": "Alle {count} helligdager for {year} finnes allerede",
     "holidays_added_skipped": "{added} helligdager lagt til for {year} ({skipped} fantes allerede)",
     "holidays_error": "Kunne ikke legge til helligdager",
-    "is_holiday": "Helligdag"
+    "is_holiday": "Helligdag",
+    "allotted": "Tildelt:"
   },
   "call": {
     "incoming": "Innkommende anrop",

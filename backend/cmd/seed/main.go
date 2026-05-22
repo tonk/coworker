@@ -19,9 +19,13 @@ import (
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/models"
+	"github.com/tonk/warmdesk/services"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+// version is set at build time via -ldflags "-X main.version=<tag>".
+var version = "dev"
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -148,9 +152,15 @@ var demoProjects = []seedProject{
 // ─── main ────────────────────────────────────────────────────────────────────
 
 func main() {
+	showVersion := flag.Bool("version", false, "print version and exit")
 	configPath := flag.String("config", "", "path to warmdesk.yaml (optional)")
 	reset := flag.Bool("reset", false, "remove existing demo data before seeding")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(version)
+		return
+	}
 
 	cfg := config.Load(*configPath)
 	cfg.DBLog = "silent" // keep seed output readable
@@ -202,7 +212,7 @@ func main() {
 			Email: "tonk@smartowl.nl", Username: "tonk",
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "admin",
 			FirstName: "Ton", LastName: "Kersten", DisplayName: "Ton Kersten",
-			IsActive: true, EmailNotifications: true,
+			AvatarURL: "/logo/smartowl.png", IsActive: true, EmailNotifications: true,
 		}
 		must(db.Create(&tonk).Error)
 		fmt.Println("   Created system admin: tonk (tonk@smartowl.nl)")
@@ -2525,15 +2535,18 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	ttCustIDByName := map[string]uint{}
 	for _, cs := range ttCustomers {
-		cust := &models.Customer{
-			Name:             cs.name,
-			Description:      cs.desc,
-			TimeTrackingOnly: true,
-			CreatedByID:      &tonk.ID,
+		var cust models.Customer
+		if err := db.Where("name = ? AND time_tracking_only = ? AND created_by_id = ?", cs.name, true, tonk.ID).First(&cust).Error; err != nil {
+			cust = models.Customer{
+				Name:             cs.name,
+				Description:      cs.desc,
+				TimeTrackingOnly: true,
+				CreatedByID:      &tonk.ID,
+			}
+			must(db.Create(&cust).Error)
+			must(db.Create(&models.CustomerFavorite{UserID: tonk.ID, CustomerID: cust.ID}).Error)
 		}
-		must(db.Create(cust).Error)
 		ttCustIDByName[cs.name] = cust.ID
-		must(db.Create(&models.CustomerFavorite{UserID: tonk.ID, CustomerID: cust.ID}).Error)
 	}
 
 	// TT-only projects owned by tonk
@@ -2552,15 +2565,19 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	ttProjIDBySlug := map[string]uint{}
 	for _, ps := range ttProjectSpecs {
-		proj := &models.Project{
-			Name:                ps.name,
-			Slug:                ps.slug,
-			Color:               ps.color,
-			TimeTrackingOnly:    true,
-			UndeclarableMinutes: ps.undeclarable,
-			CreatedByID:         tonk.ID,
+		var proj models.Project
+		if err := db.Where("slug = ?", ps.slug).First(&proj).Error; err != nil {
+			proj = models.Project{
+				Name:                ps.name,
+				Slug:                ps.slug,
+				KeyPrefix:           services.GenerateKeyPrefix(ps.name),
+				Color:               ps.color,
+				TimeTrackingOnly:    true,
+				UndeclarableMinutes: ps.undeclarable,
+				CreatedByID:         tonk.ID,
+			}
+			must(db.Create(&proj).Error)
 		}
-		must(db.Create(proj).Error)
 		ttProjIDBySlug[ps.slug] = proj.ID
 	}
 

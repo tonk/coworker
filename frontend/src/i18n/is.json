@@ -786,7 +786,8 @@
     "holidays_all_exist": "Allir {count} frídagar fyrir {year} eru þegar til",
     "holidays_added_skipped": "{added} frídagar bættir við fyrir {year} ({skipped} voru þegar til)",
     "holidays_error": "Mistókst að bæta við frídögum",
-    "is_holiday": "Frídagur"
+    "is_holiday": "Frídagur",
+    "allotted": "Úthlutað:"
   },
   "call": {
     "incoming": "Móttekið símtal",

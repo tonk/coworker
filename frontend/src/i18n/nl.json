@@ -792,7 +792,8 @@
     "holidays_all_exist": "Alle {count} feestdagen voor {year} bestaan al",
     "holidays_added_skipped": "{added} feestdagen toegevoegd voor {year} ({skipped} bestonden al)",
     "holidays_error": "Feestdagen toevoegen mislukt",
-    "is_holiday": "Feestdag"
+    "is_holiday": "Feestdag",
+    "allotted": "Toegewezen:"
   },
   "call": {
     "incoming": "Inkomende oproep",

@@ -127,9 +127,13 @@ func getName(chars []Character, index int) Character {
 	return chars[(index-1)%len(chars)]
 }
 
+// version is set at build time via -ldflags "-X main.version=<tag>".
+var version = "dev"
+
 // ─── main ─────────────────────────────────────────────────────────────────────
 
 func main() {
+	showVersion := flag.Bool("version", false, "print version and exit")
 	configPath := flag.String("config", "", "path to warmdesk.yaml (optional)")
 	reset := flag.Bool("reset", false, "remove all guru** training data from the database")
 	flag.Usage = func() {
@@ -143,6 +147,11 @@ func main() {
 		flag.PrintDefaults()
 	}
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(version)
+		return
+	}
 
 	cfg := config.Load(*configPath)
 	cfg.DBLog = "silent"

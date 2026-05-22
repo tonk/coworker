@@ -236,7 +236,7 @@
           <tfoot>
             <tr class="tt-foot">
               <td colspan="3" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '', dayOverLimit(d.iso) ? 'c-day-over' : '']" :title="dayExpectedLabel(d.iso)">
                 {{ dayTotal(d.iso) }}
               </td>
               <td class="c-total grand-total">{{ grandTotal }}</td>
@@ -996,8 +996,34 @@ function rowTotal(row) {
 }
 
 function dayTotal(dateISO) {
-  const m = allRows.value.reduce((s, row) => s + (getEntry(row, dateISO)?.minutes || 0), 0)
-  return fmtTime(m)
+  return fmtTime(dayRawMinutes(dateISO))
+}
+
+const dayOfWeekField = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+
+function dayRawMinutes(dateISO) {
+  return allRows.value.reduce((s, row) => s + (getEntry(row, dateISO)?.minutes || 0), 0)
+}
+
+function dayExpectedMinutes(dateISO) {
+  const dayIndex = new Date(dateISO + 'T12:00:00').getDay()
+  const field = dayOfWeekField[dayIndex] + '_work_start'
+  const val = auth.user?.[field]
+  if (!val) return 0
+  const [h, m] = val.split(':').map(Number)
+  return h * 60 + m
+}
+
+function dayOverLimit(dateISO) {
+  const expected = dayExpectedMinutes(dateISO)
+  if (expected <= 0) return false
+  return dayRawMinutes(dateISO) > expected
+}
+
+function dayExpectedLabel(dateISO) {
+  const m = dayExpectedMinutes(dateISO)
+  if (m <= 0) return ''
+  return t('timeTracking.allotted') + ' ' + fmtTime(m)
 }
 
 const grandTotal = computed(() => {
@@ -2051,6 +2077,7 @@ td.c-day:focus-within .cell-hol-toggle,
 }
 .foot-lbl { text-align: right; }
 .c-dttotal { text-align: right; font-size: 13px; }
+.c-dttotal.c-day-over { color: var(--color-danger, #e53e3e); font-weight: 600; }
 .grand-total { color: var(--color-primary); font-size: 14px; }
 
 /* Undeclarable & declarable footer rows */

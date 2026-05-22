@@ -792,7 +792,8 @@
     "holidays_all_exist": "Tous les {count} jours fériés de {year} existent déjà",
     "holidays_added_skipped": "{added} jours fériés ajoutés pour {year} ({skipped} existaient déjà)",
     "holidays_error": "Impossible d'ajouter les jours fériés",
-    "is_holiday": "Jour férié"
+    "is_holiday": "Jour férié",
+    "allotted": "Alloué:"
   },
   "call": {
     "incoming": "Appel entrant",
