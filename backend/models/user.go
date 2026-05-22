@@ -43,6 +43,13 @@ type User struct {
 	TimeTrackingViewer  bool           `gorm:"default:false" json:"time_tracking_viewer"`
 	TimeNotation        string         `gorm:"size:10;default:'decimal'" json:"time_notation"` // "decimal" | "hhmm"
 	WeekStart           string         `gorm:"size:10;default:'monday'" json:"week_start"`     // "monday" | "sunday"
+	MonWorkStart        string         `gorm:"size:5;default:'08:00'" json:"mon_work_start"`
+	TueWorkStart        string         `gorm:"size:5;default:'08:00'" json:"tue_work_start"`
+	WedWorkStart        string         `gorm:"size:5;default:'08:00'" json:"wed_work_start"`
+	ThuWorkStart        string         `gorm:"size:5;default:'08:00'" json:"thu_work_start"`
+	FriWorkStart        string         `gorm:"size:5;default:'08:00'" json:"fri_work_start"`
+	SatWorkStart        string         `gorm:"size:5" json:"sat_work_start"`
+	SunWorkStart        string         `gorm:"size:5" json:"sun_work_start"`
 	TOTPSecret          string         `gorm:"size:64" json:"-"`
 	TOTPEnabled         bool           `gorm:"default:false" json:"totp_enabled"`
 	PasswordResetToken  string         `gorm:"size:64;index" json:"-"`

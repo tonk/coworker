@@ -188,7 +188,9 @@
     "card_history": "Kartenhistorie",
     "history_created": "hat diese Karte erstellt",
     "history_closed": "hat diese Karte geschlossen",
+    "history_deleted": "hat diese Karte gelöscht",
     "history_reopened": "hat diese Karte wiedereröffnet",
+    "history_restored": "hat diese Karte wiederhergestellt",
     "history_title_changed": "hat den Titel geändert zu",
     "history_priority_changed": "hat die Priorität geändert zu",
     "history_assignee_changed": "hat den Bearbeiter geändert zu",
@@ -239,7 +241,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Karte wiederherstellen",
+    "card_restored": "Karte wiederhergestellt",
+    "card_restore_failed": "Fehler beim Wiederherstellen der Karte"
   },
   "chat": {
     "title": "Team-Chat",
@@ -500,7 +505,9 @@
     "req_upper": "Ein Großbuchstabe (A–Z)",
     "req_lower": "Ein Kleinbuchstabe (a–z)",
     "req_digit": "Eine Ziffer (0–9)",
-    "req_special": "Ein Sonderzeichen (!{'@'}#$…)"
+    "req_special": "Ein Sonderzeichen (!{'@'}#$…)",
+    "working_hours": "Arbeitszeiten",
+    "working_hours_hint": "Legen Sie Ihre übliche Startzeit für jeden Wochentag fest. Leer lassen für freie Tage."
   },
   "dm": {
     "title": "Chats",

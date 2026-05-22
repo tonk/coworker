@@ -187,7 +187,9 @@
     "card_history": "Korthistorik",
     "history_created": "skapade detta kort",
     "history_closed": "stängde detta kort",
+    "history_deleted": "tog bort detta kort",
     "history_reopened": "öppnade detta kort igen",
+    "history_restored": "återställde detta kort",
     "history_title_changed": "ändrade titeln till",
     "history_priority_changed": "ändrade prioriteten till",
     "history_assignee_changed": "ändrade den ansvarige till",
@@ -238,7 +240,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Återställ kort",
+    "card_restored": "Kort återställt",
+    "card_restore_failed": "Kunde inte återställa kort"
   },
   "chat": {
     "title": "Teamchatt",
@@ -529,7 +534,9 @@
     "req_upper": "En stor bokstav (A–Ö)",
     "req_lower": "En liten bokstav (a–ö)",
     "req_digit": "En siffra (0–9)",
-    "req_special": "Ett specialtecken (!{'@'}#$…)"
+    "req_special": "Ett specialtecken (!{'@'}#$…)",
+    "working_hours": "Arbetstid",
+    "working_hours_hint": "Ange din vanliga starttid för varje veckodag. Lämna tomt för lediga dagar."
   },
   "dm": {
     "title": "Chattar",

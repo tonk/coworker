@@ -29,6 +29,9 @@ func ListTimeTrackingCustomers(c *gin.Context) {
 			  AND (cu.created_by_id = ? OR u.global_role = 'admin')
 			ORDER BY cu.name ASC`, userID).Scan(&customers)
 	}
+	if customers == nil {
+		customers = []models.Customer{}
+	}
 	c.JSON(http.StatusOK, customers)
 }
 

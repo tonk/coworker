@@ -187,7 +187,9 @@
     "card_history": "Korthistorikk",
     "history_created": "opprettet dette kortet",
     "history_closed": "lukket dette kortet",
+    "history_deleted": "slettet dette kortet",
     "history_reopened": "gjenåpnet dette kortet",
+    "history_restored": "gjenopprettet dette kortet",
     "history_title_changed": "endret tittelen til",
     "history_priority_changed": "endret prioriteten til",
     "history_assignee_changed": "endret den ansvarlige til",
@@ -238,7 +240,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Gjenopprett kort",
+    "card_restored": "Kort gjenopprettet",
+    "card_restore_failed": "Kunne ikke gjenopprette kort"
   },
   "chat": {
     "title": "Teamchat",
@@ -529,7 +534,9 @@
     "req_upper": "En stor bokstav (A–Å)",
     "req_lower": "En liten bokstav (a–å)",
     "req_digit": "Et siffer (0–9)",
-    "req_special": "Et spesialtegn (!{'@'}#$…)"
+    "req_special": "Et spesialtegn (!{'@'}#$…)",
+    "working_hours": "Arbeidstid",
+    "working_hours_hint": "Angi din vanlige starttid for hver ukedag. La stå tom for fridager."
   },
   "dm": {
     "title": "Chatter",

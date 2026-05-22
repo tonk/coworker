@@ -187,7 +187,9 @@
     "card_history": "Cronologia della scheda",
     "history_created": "ha creato questa scheda",
     "history_closed": "ha chiuso questa scheda",
+    "history_deleted": "ha eliminato questa scheda",
     "history_reopened": "ha riaperto questa scheda",
+    "history_restored": "ha ripristinato questa scheda",
     "history_title_changed": "ha cambiato il titolo in",
     "history_priority_changed": "ha cambiato la priorità in",
     "history_assignee_changed": "ha cambiato il responsabile in",
@@ -238,7 +240,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Ripristina scheda",
+    "card_restored": "Scheda ripristinata",
+    "card_restore_failed": "Ripristino scheda fallito"
   },
   "chat": {
     "title": "Chat del team",
@@ -529,7 +534,9 @@
     "req_upper": "Una maiuscola (A–Z)",
     "req_lower": "Una minuscola (a–z)",
     "req_digit": "Una cifra (0–9)",
-    "req_special": "Un carattere speciale (!{'@'}#$…)"
+    "req_special": "Un carattere speciale (!{'@'}#$…)",
+    "working_hours": "Orario di lavoro",
+    "working_hours_hint": "Imposta l'orario di inizio abituale per ogni giorno. Lascia vuoto per i giorni liberi."
   },
   "dm": {
     "title": "Chat",

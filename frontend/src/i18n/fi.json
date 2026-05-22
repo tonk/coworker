@@ -186,7 +186,9 @@
     "card_history": "Kortin historia",
     "history_created": "loi tämän kortin",
     "history_closed": "sulki tämän kortin",
+    "history_deleted": "poisti tämän kortin",
     "history_reopened": "avasi tämän kortin uudelleen",
+    "history_restored": "palautti tämän kortin",
     "history_title_changed": "muutti otsikon muotoon",
     "history_priority_changed": "muutti prioriteetin muotoon",
     "history_assignee_changed": "muutti vastuuhenkilön muotoon",
@@ -237,7 +239,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Palauta kortti",
+    "card_restored": "Kortti palautettu",
+    "card_restore_failed": "Kortin palautus epäonnistui"
   },
   "chat": {
     "title": "Tiimichatti",
@@ -528,7 +533,9 @@
     "req_upper": "Iso kirjain (A–Ö)",
     "req_lower": "Pieni kirjain (a–ö)",
     "req_digit": "Numero (0–9)",
-    "req_special": "Erikoismerkki (!{'@'}#$…)"
+    "req_special": "Erikoismerkki (!{'@'}#$…)",
+    "working_hours": "Työajat",
+    "working_hours_hint": "Aseta tavanomainen aloitusaika jokaiselle viikonpäivälle. Jätä tyhjäksi vapaapäiville."
   },
   "dm": {
     "title": "Chatit",

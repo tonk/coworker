@@ -170,6 +170,33 @@
           </form>
         </div>
 
+        <div v-if="form.time_tracking_enabled" class="settings-card">
+          <h2>{{ $t('settings.working_hours') }}</h2>
+          <p class="settings-hint">{{ $t('settings.working_hours_hint') }}</p>
+          <form @submit.prevent="saveProfile">
+            <div v-for="d in weekDays" :key="d.key" class="form-row">
+              <div class="form-group day-label">
+                <label class="form-label">{{ d.label }}</label>
+              </div>
+              <div class="form-group half">
+                <input
+                  class="form-input"
+                  type="text"
+                  :value="formatWorkTime(form[d.field])"
+                  @change="onWorkTimeChange(d.field, $event.target.value)"
+                  :placeholder="timeNotationPlaceholder"
+                  :aria-label="d.label"
+                />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" :disabled="savingProfile">
+                {{ savingProfile ? $t('common.loading') : $t('common.save') }}
+              </button>
+            </div>
+          </form>
+        </div>
+
         <div v-if="passwordExpired" class="auth-error" style="margin-bottom:16px;padding:12px 16px;border-radius:6px">
           {{ $t('auth.password_expired') }}
         </div>
@@ -363,7 +390,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -415,7 +442,14 @@ const form = ref({
   email_notifications: true,
   time_tracking_enabled: false,
   time_notation: 'decimal',
-  week_start: 'monday'
+  week_start: 'monday',
+  mon_work_start: '08:00',
+  tue_work_start: '08:00',
+  wed_work_start: '08:00',
+  thu_work_start: '08:00',
+  fri_work_start: '08:00',
+  sat_work_start: '',
+  sun_work_start: ''
 })
 
 const timezones = [
@@ -428,6 +462,42 @@ const timezones = [
   'Asia/Singapore', 'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Seoul',
   'Australia/Sydney', 'Pacific/Auckland'
 ]
+
+const weekDays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map(d => ({
+  key: d,
+  field: d + '_work_start',
+  label: d.charAt(0).toUpperCase() + d.slice(1)
+}))
+
+const timeNotationPlaceholder = computed(() =>
+  form.value.time_notation === 'decimal' ? '8.5' : '8:00'
+)
+
+function formatWorkTime(val) {
+  if (!val) return ''
+  if (form.value.time_notation === 'decimal') {
+    const [h, m] = val.split(':')
+    return String(parseInt(h) + (parseInt(m) / 60)).replace(/\.?0+$/, '')
+  }
+  return val
+}
+
+function onWorkTimeChange(field, raw) {
+  if (!raw.trim()) { form.value[field] = ''; return }
+  if (form.value.time_notation === 'decimal') {
+    const h = parseFloat(raw)
+    if (isNaN(h)) return
+    const hours = Math.floor(h)
+    const mins = Math.round((h - hours) * 60)
+    form.value[field] = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
+  } else {
+    const parts = raw.split(':')
+    const h = parseInt(parts[0])
+    const m = parts[1] ? parseInt(parts[1]) : 0
+    if (isNaN(h)) return
+    form.value[field] = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+  }
+}
 
 const pwForm = ref({ current_password: '', new_password: '' })
 const passwordPolicy = ref({ min_length: 8, require_upper: false, require_lower: false, require_digit: false, require_special: false })
@@ -496,7 +566,14 @@ onMounted(async () => {
       email_notifications: u.email_notifications !== undefined ? u.email_notifications : true,
       time_tracking_enabled: !!u.time_tracking_enabled,
       time_notation: u.time_notation || 'decimal',
-      week_start: u.week_start || 'monday'
+      week_start: u.week_start || 'monday',
+      mon_work_start: u.mon_work_start ?? '08:00',
+      tue_work_start: u.tue_work_start ?? '08:00',
+      wed_work_start: u.wed_work_start ?? '08:00',
+      thu_work_start: u.thu_work_start ?? '08:00',
+      fri_work_start: u.fri_work_start ?? '08:00',
+      sat_work_start: u.sat_work_start ?? '',
+      sun_work_start: u.sun_work_start ?? ''
     }
   }
 })
@@ -527,7 +604,14 @@ async function saveProfile() {
       email_notifications: form.value.email_notifications,
       time_tracking_enabled: form.value.time_tracking_enabled,
       time_notation: form.value.time_notation,
-      week_start: form.value.week_start
+      week_start: form.value.week_start,
+      mon_work_start: form.value.mon_work_start,
+      tue_work_start: form.value.tue_work_start,
+      wed_work_start: form.value.wed_work_start,
+      thu_work_start: form.value.thu_work_start,
+      fri_work_start: form.value.fri_work_start,
+      sat_work_start: form.value.sat_work_start,
+      sun_work_start: form.value.sun_work_start
     })
     applyUserPreferences(auth.user)
     setTheme(form.value.theme)
@@ -795,5 +879,18 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
   font-size: 12px;
   color: var(--color-text-muted);
   line-height: 1.8;
+}
+
+.settings-hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: -8px 0 16px 0;
+  line-height: 1.5;
+}
+.day-label {
+  flex: 0 0 80px;
+}
+.day-label .form-label {
+  padding-top: 8px;
 }
 </style>

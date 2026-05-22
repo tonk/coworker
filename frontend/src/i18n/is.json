@@ -187,7 +187,9 @@
     "card_history": "Kortasaga",
     "history_created": "bjó til þetta kort",
     "history_closed": "lokaði þessu korti",
+    "history_deleted": "eyddi þessu korti",
     "history_reopened": "opnaði þetta kort aftur",
+    "history_restored": "endurheimti þetta kort",
     "history_title_changed": "breytti titlinum í",
     "history_priority_changed": "breytti forgangi í",
     "history_assignee_changed": "breytti ábyrgðaraðila í",
@@ -238,7 +240,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Endurheimta spjald",
+    "card_restored": "Spjaldi endurheimt",
+    "card_restore_failed": "Mistókst að endurheimta spjald"
   },
   "chat": {
     "title": "Liðsspjall",
@@ -529,7 +534,9 @@
     "req_upper": "Hástafur (A–Ö)",
     "req_lower": "Lágstafur (a–ö)",
     "req_digit": "Tala (0–9)",
-    "req_special": "Sértákn (!{'@'}#$…)"
+    "req_special": "Sértákn (!{'@'}#$…)",
+    "working_hours": "Vinnutími",
+    "working_hours_hint": "Stillu inn venjulegan upphafstíma fyrir hvern vikudag. Skildu eftir autt á frídögum."
   },
   "dm": {
     "title": "Spjall",

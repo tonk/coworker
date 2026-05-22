@@ -188,7 +188,9 @@
     "card_history": "Kaartgeschiedenis",
     "history_created": "heeft deze kaart aangemaakt",
     "history_closed": "heeft deze kaart gesloten",
+    "history_deleted": "heeft deze kaart verwijderd",
     "history_reopened": "heeft deze kaart heropend",
+    "history_restored": "heeft deze kaart hersteld",
     "history_title_changed": "heeft de titel gewijzigd naar",
     "history_priority_changed": "heeft de prioriteit gewijzigd naar",
     "history_assignee_changed": "heeft de toegewezene gewijzigd naar",
@@ -239,7 +241,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Kaart herstellen",
+    "card_restored": "Kaart hersteld",
+    "card_restore_failed": "Kaart herstellen mislukt"
   },
   "chat": {
     "title": "Teamchat",
@@ -500,7 +505,9 @@
     "req_upper": "Één hoofdletter (A–Z)",
     "req_lower": "Één kleine letter (a–z)",
     "req_digit": "Één cijfer (0–9)",
-    "req_special": "Één speciaal teken (!{'@'}#$…)"
+    "req_special": "Één speciaal teken (!{'@'}#$…)",
+    "working_hours": "Werktijden",
+    "working_hours_hint": "Stel uw gebruikelijke starttijd in voor elke dag van de week. Laat leeg voor dagen dat u niet werkt."
   },
   "dm": {
     "title": "Chats",

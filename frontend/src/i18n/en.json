@@ -188,7 +188,9 @@
     "card_history": "Card History",
     "history_created": "created this card",
     "history_closed": "closed this card",
+    "history_deleted": "deleted this card",
     "history_reopened": "reopened this card",
+    "history_restored": "restored this card",
     "history_title_changed": "changed the title to",
     "history_priority_changed": "changed the priority to",
     "history_assignee_changed": "changed the assignee to",
@@ -239,7 +241,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Restore card",
+    "card_restored": "Card restored",
+    "card_restore_failed": "Failed to restore card"
   },
   "chat": {
     "title": "Team Chat",
@@ -530,12 +535,8 @@
     "week_start": "Week starts on",
     "week_start_monday": "Monday",
     "week_start_sunday": "Sunday",
-    "password_requirements": "Password requirements",
-    "req_min_length": "At least {n} characters",
-    "req_upper": "One uppercase letter (A–Z)",
-    "req_lower": "One lowercase letter (a–z)",
-    "req_digit": "One digit (0–9)",
-    "req_special": "One special character (!{'@'}#$…)"
+    "working_hours": "Working Hours",
+    "working_hours_hint": "Set your usual start time for each day of the week. Leave blank for days you don't work."
   },
   "dm": {
     "title": "Chats",

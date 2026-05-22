@@ -187,7 +187,9 @@
     "card_history": "Histórico do cartão",
     "history_created": "criou este cartão",
     "history_closed": "fechou este cartão",
+    "history_deleted": "eliminou este cartão",
     "history_reopened": "reabriu este cartão",
+    "history_restored": "restaurou este cartão",
     "history_title_changed": "alterou o título para",
     "history_priority_changed": "alterou a prioridade para",
     "history_assignee_changed": "alterou o responsável para",
@@ -238,7 +240,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Restaurar cartão",
+    "card_restored": "Cartão restaurado",
+    "card_restore_failed": "Falha ao restaurar cartão"
   },
   "chat": {
     "title": "Chat da equipa",
@@ -529,7 +534,9 @@
     "req_upper": "Uma maiúscula (A–Z)",
     "req_lower": "Uma minúscula (a–z)",
     "req_digit": "Um dígito (0–9)",
-    "req_special": "Um carácter especial (!{'@'}#$…)"
+    "req_special": "Um carácter especial (!{'@'}#$…)",
+    "working_hours": "Horário de trabalho",
+    "working_hours_hint": "Defina a hora de início habitual para cada dia. Deixe em branco para dias de folga."
   },
   "dm": {
     "title": "Chats",

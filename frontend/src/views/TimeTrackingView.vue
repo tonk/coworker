@@ -1327,7 +1327,7 @@ async function copyPrevWeek() {
 
     const { data } = await timeEntriesApi.list(params)
 
-    if (!data.length) {
+    if (!data?.length) {
       ui.info(t('timeTracking.copy_prev_nothing'))
       return
     }
@@ -1543,7 +1543,7 @@ watch(addingTTProject, (v) => {
 async function loadTTProjects() {
   try {
     const { data } = await projectsApi.listTimeTracking()
-    ttProjects.value = data
+    ttProjects.value = data ?? []
   } catch {
     ui.error(t('timeTracking.tt_project_load_error'))
   }
@@ -1696,10 +1696,10 @@ onMounted(async () => {
     fetches.push(client.get('/users').catch(() => ({ data: [] })))
   }
   const results = await Promise.all(fetches)
-  customers.value   = results[0].data
-  ttCustomers.value = results[1].data
-  projects.value    = results[2].data.filter(p => !p.archived)
-  ttProjects.value  = results[3].data
+  customers.value   = results[0]?.data ?? []
+  ttCustomers.value = results[1]?.data ?? []
+  projects.value    = (results[2]?.data ?? []).filter(p => !p.archived)
+  ttProjects.value  = results[3]?.data ?? []
   if (canViewOtherUsers.value) {
     allUsers.value = results[4].data
     selectedUserId.value = auth.user?.id ?? null

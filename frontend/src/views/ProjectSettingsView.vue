@@ -12,6 +12,7 @@
           <button :class="['tab', { active: tab === 'labels' }]" @click="tab = 'labels'" role="tab" :aria-selected="tab === 'labels'" aria-controls="tab-panel-labels" id="tab-btn-labels">{{ $t('project.labels') }}</button>
           <button :class="['tab', { active: tab === 'apikeys' }]" @click="tab = 'apikeys'; loadApiKeys()" role="tab" :aria-selected="tab === 'apikeys'" aria-controls="tab-panel-apikeys" id="tab-btn-apikeys">{{ $t('apikeys.tab') }}</button>
           <button :class="['tab', { active: tab === 'webhooks' }]" @click="tab = 'webhooks'; loadWebhooks()" role="tab" :aria-selected="tab === 'webhooks'" aria-controls="tab-panel-webhooks" id="tab-btn-webhooks">Webhooks</button>
+          <button v-if="canManageDeletedCards" :class="['tab', { active: tab === 'deletedcards' }]" @click="tab = 'deletedcards'; loadDeletedCards()" role="tab" :aria-selected="tab === 'deletedcards'" aria-controls="tab-panel-deletedcards" id="tab-btn-deletedcards">Deleted Cards</button>
         </div>
 
         <!-- General Tab -->
@@ -315,6 +316,41 @@
           </table>
         </div>
 
+        <!-- Deleted Cards Tab -->
+        <div v-show="tab === 'deletedcards'" class="tab-content" role="tabpanel" id="tab-panel-deletedcards" aria-labelledby="tab-btn-deletedcards">
+          <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:16px">
+            Permanently delete cards that were previously soft-deleted from the board.
+          </p>
+          <div v-if="loadingDeletedCards" style="color:var(--color-text-muted);font-size:13px">Loading…</div>
+          <table v-else class="data-table">
+            <thead>
+              <tr>
+                <th>Card</th>
+                <th>Title</th>
+                <th>Column</th>
+                <th>Deleted</th>
+                <th>By</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="deletedCards.length === 0">
+                <td colspan="6" style="text-align:center;color:var(--color-text-muted)">No deleted cards.</td>
+              </tr>
+              <tr v-for="c in deletedCards" :key="c.id">
+                <td><a href="#" class="card-link" @click.prevent="openDeletedCard(c)"><code>{{ project?.key_prefix }}-{{ c.card_number }}</code></a></td>
+                <td><a href="#" class="card-link" @click.prevent="openDeletedCard(c)">{{ c.title }}</a></td>
+                <td>{{ c.column_name }}</td>
+                <td>{{ formatDateTime(c.deleted_at) }}</td>
+                <td>{{ c.created_by }}</td>
+                <td>
+                  <button class="btn btn-danger btn-sm" @click="permanentDeleteCard(c)" :aria-label="'Permanently delete card ' + c.card_number">Delete forever</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Labels Tab -->
         <div v-show="tab === 'labels'" class="tab-content" role="tabpanel" id="tab-panel-labels" aria-labelledby="tab-btn-labels">
           <div class="section-action">
@@ -385,12 +421,25 @@
         <button class="btn btn-primary" @click="createLabel">{{ $t('common.create') }}</button>
       </template>
   </BaseModal>
+
+  <!-- Deleted card detail (read-only) -->
+  <CardDetail
+    v-if="selectedCard"
+    :card="selectedCard"
+    :labels="[]"
+    :members="members"
+    :project-slug="slug"
+    :readonly="true"
+    @close="selectedCard = null"
+    @restore="selectedCard = null; loadDeletedCards()"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import BaseModal from '@/components/common/BaseModal.vue'
+import CardDetail from '@/components/board/CardDetail.vue'
 import { useProjectStore } from '@/stores/project'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
@@ -716,6 +765,49 @@ function copyWebhookToken() {
   navigator.clipboard.writeText(createdWebhookToken.value)
   ui.success('Copied!')
 }
+
+// ── Deleted cards ──────────────────────────────────────────────────────────
+const canManageDeletedCards = computed(() => {
+  if (auth.isAdmin) return true
+  const u = members.value.find(m => m.user?.id === auth.user?.id)
+  return u && (u.role === 'admin' || u.role === 'owner')
+})
+
+const deletedCards = ref([])
+const loadingDeletedCards = ref(false)
+const selectedCard = ref(null)
+
+async function openDeletedCard(card) {
+  try {
+    const { data } = await projectsApi.getCard(slug.value, card.id)
+    selectedCard.value = data
+  } catch {
+    ui.error('Failed to load card')
+  }
+}
+
+async function loadDeletedCards() {
+  loadingDeletedCards.value = true
+  try {
+    const { data } = await projectsApi.listDeletedCards(slug.value)
+    deletedCards.value = data || []
+  } catch {
+    ui.error('Failed to load deleted cards')
+  } finally {
+    loadingDeletedCards.value = false
+  }
+}
+
+async function permanentDeleteCard(card) {
+  if (!confirm(`Permanently delete ${project.value?.key_prefix}-${card.card_number} "${card.title}"? This cannot be undone.`)) return
+  try {
+    await projectsApi.permanentDeleteCard(slug.value, card.id)
+    deletedCards.value = deletedCards.value.filter(c => c.id !== card.id)
+    ui.success('Card permanently deleted')
+  } catch {
+    ui.error('Failed to delete card')
+  }
+}
 </script>
 
 <style scoped>
@@ -864,5 +956,13 @@ function copyWebhookToken() {
   border-radius: 5px;
   object-fit: cover;
   border: 1px solid var(--color-border);
+}
+.card-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  cursor: pointer;
+}
+.card-link:hover {
+  text-decoration: underline;
 }
 </style>

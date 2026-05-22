@@ -1,6 +1,6 @@
 <template>
   <BaseModal :title="isNew ? $t('board.add_card') : $t('board.edit_card')" @close="handleClose" :resizable="true" style="--modal-width: 700px">
-    <div class="card-detail">
+    <div class="card-detail" :class="{ readonly }">
       <div v-if="!isNew" class="sections-menu-wrap" ref="sectionsMenuEl">
         <button class="sections-menu-btn" @click.stop="sectionsMenuOpen = !sectionsMenuOpen" :title="$t('board.toggle_sections')" :aria-label="$t('board.toggle_sections')">⋮</button>
         <div v-if="sectionsMenuOpen" class="sections-menu-dropdown">
@@ -333,7 +333,7 @@
         </div>
       </div>
 
-      <div v-if="!isNew" class="comments-section">
+      <div v-if="!isNew && !readonly" class="comments-section">
         <div class="comments-header">
           <h4>{{ $t('board.comments') }}</h4>
           <span v-if="card.time_spent_minutes > 0" class="time-spent-total">
@@ -467,7 +467,7 @@
         </div>
       </div>
 
-      <div v-if="!isNew && showActivityPanel" class="activity-section">
+      <div v-if="!isNew && (showActivityPanel || readonly)" class="activity-section">
         <h4>{{ $t('board.card_history') }}</h4>
         <div v-if="!history.length" class="activity-empty">{{ $t('common.no_results') }}</div>
         <div v-else class="activity-list">
@@ -491,6 +491,10 @@
       <template v-else-if="isNew">
         <button class="btn btn-secondary" @click="$emit('close')">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="save" :disabled="saving || !form.title.trim()">{{ saving ? $t('common.loading') : $t('common.create') }}</button>
+      </template>
+      <template v-else-if="readonly">
+        <button class="btn btn-primary btn-sm" @click="restoreCard" :disabled="restoring">{{ restoring ? $t('common.loading') : $t('board.restore_card') }}</button>
+        <button class="btn btn-secondary btn-sm" @click="handleClose">{{ $t('common.close') }}</button>
       </template>
       <template v-else>
         <button class="btn btn-danger btn-sm" @click="confirmDelete">{{ $t('board.delete_card') }}</button>
@@ -556,9 +560,10 @@ const props = defineProps({
   labels: { type: Array, default: () => [] },
   members: { type: Array, default: () => [] },
   projectSlug: { type: String, required: true },
-  parentCard: { type: Object, default: null }
+  parentCard: { type: Object, default: null },
+  readonly: { type: Boolean, default: false }
 })
-const emit = defineEmits(['close', 'deleted', 'back'])
+const emit = defineEmits(['close', 'deleted', 'back', 'restore'])
 
 const { t } = useI18n()
 
@@ -638,6 +643,7 @@ watch(() => form.value.external_issue_url, (url) => {
   if (m) form.value.external_issue_ref = `#${m[1]}`
 })
 const copying = ref(false)
+const restoring = ref(false)
 const showTransferPanel = ref(false)
 const showCancelConfirm = ref(false)
 
@@ -713,7 +719,7 @@ const columnHistory = computed(() =>
 function activityIcon(type) {
   const icons = {
     created: '✦', column_move: '→', closed: '✓', reopened: '↑',
-    title_changed: '✎', priority_changed: '⚑', assignee_changed: '◉',
+    deleted: '✗', restored: '↩', title_changed: '✎', priority_changed: '⚑', assignee_changed: '◉',
     comment_added: '✉', start_date_changed: '▷', due_date_changed: '⏱',
     description_changed: '¶',
   }
@@ -725,6 +731,8 @@ function activityLabel(h) {
     case 'created': return t('board.history_created')
     case 'closed': return t('board.history_closed')
     case 'reopened': return t('board.history_reopened')
+    case 'deleted': return t('board.history_deleted')
+    case 'restored': return t('board.history_restored')
     case 'column_move': return `${h.from_column?.name ?? '?'} → ${h.to_column?.name ?? '?'}`
     case 'title_changed': return `${t('board.history_title_changed')}: "${h.detail}"`
     case 'priority_changed': return `${t('board.history_priority_changed')}: ${h.detail}`
@@ -761,6 +769,7 @@ async function loadSubCards() {
 }
 
 async function addSubCard() {
+  if (props.readonly) return
   const title = newSubCardTitle.value.trim()
   if (!title) return
   try {
@@ -771,6 +780,7 @@ async function addSubCard() {
 }
 
 async function toggleSubCard(sc) {
+  if (props.readonly) return
   try {
     const { data } = await projectsApi.updateCard(props.projectSlug, sc.id, { closed: !sc.closed })
     const idx = subCards.value.findIndex(s => s.id === sc.id)
@@ -794,6 +804,7 @@ async function loadLinkedCards() {
 }
 
 async function addLinkedCard() {
+  if (props.readonly) return
   const ref = newLinkedCardRef.value.trim()
   if (!ref) return
   try {
@@ -807,6 +818,7 @@ async function addLinkedCard() {
 }
 
 async function removeLinkedCard(lc) {
+  if (props.readonly) return
   try {
     await projectsApi.deleteCardRef(props.projectSlug, props.card.id, lc.ref_id)
     linkedCards.value = linkedCards.value.filter(c => c.ref_id !== lc.ref_id)
@@ -829,6 +841,7 @@ function isAssigned(userId) {
 }
 
 async function toggleAssignee(user) {
+  if (props.readonly) return
   try {
     if (isAssigned(user.id)) {
       await projectsApi.removeAssignee(props.projectSlug, props.card.id, user.id)
@@ -844,6 +857,7 @@ async function toggleAssignee(user) {
 }
 
 async function addChecklistItem() {
+  if (props.readonly) return
   const body = newChecklistItem.value.trim()
   if (!body) return
   try {
@@ -856,6 +870,7 @@ async function addChecklistItem() {
 }
 
 async function toggleChecklistItem(item) {
+  if (props.readonly) return
   try {
     const { data } = await projectsApi.updateChecklistItem(props.projectSlug, props.card.id, item.id, { is_completed: !item.is_completed })
     const idx = checklist.value.findIndex(i => i.id === item.id)
@@ -876,6 +891,7 @@ function cancelItemEdit() {
 }
 
 async function saveItemEdit(item) {
+  if (props.readonly) return
   if (!editItemBody.value.trim()) { cancelItemEdit(); return }
   try {
     const { data } = await projectsApi.updateChecklistItem(props.projectSlug, props.card.id, item.id, { body: editItemBody.value })
@@ -888,6 +904,7 @@ async function saveItemEdit(item) {
 }
 
 async function removeChecklistItem(item) {
+  if (props.readonly) return
   try {
     await projectsApi.deleteChecklistItem(props.projectSlug, props.card.id, item.id)
     checklist.value = checklist.value.filter(i => i.id !== item.id)
@@ -897,6 +914,7 @@ async function removeChecklistItem(item) {
 }
 
 async function addTag() {
+  if (props.readonly) return
   const name = newTagName.value.trim().replace(/^#/, '')
   if (!name) return
   try {
@@ -913,6 +931,7 @@ async function addTag() {
 }
 
 async function removeTag(tag) {
+  if (props.readonly) return
   try {
     await projectsApi.removeCardTag(props.projectSlug, props.card.id, tag.id)
     props.card.tags = (props.card.tags || []).filter(t => t.id !== tag.id)
@@ -923,6 +942,7 @@ async function removeTag(tag) {
 }
 
 async function uploadFiles(files) {
+  if (props.readonly) return
   if (!files.length) return
   uploading.value = true
   for (const file of files) {
@@ -951,6 +971,7 @@ function onDrop(e) {
 }
 
 async function deleteAttachment(a) {
+  if (props.readonly) return
   try {
     await attachmentsApi.delete(a.id)
     attachments.value = attachments.value.filter(x => x.id !== a.id)
@@ -960,12 +981,15 @@ async function deleteAttachment(a) {
 }
 
 function handleClose() {
+  if (props.readonly) { emit('close'); return }
   if (!isDirty.value) { emit('close'); return }
   showCancelConfirm.value = true
 }
 
 function onKeyDown(e) {
-  if (e.key === 'Escape' && !e.defaultPrevented && !isDirty.value) emit('close')
+  if (e.key === 'Escape' && !e.defaultPrevented) {
+    if (props.readonly || !isDirty.value) emit('close')
+  }
 }
 
 async function openLink(url) {
@@ -1020,16 +1044,14 @@ watch(() => boardStore.checklistEvent, (event) => {
 onMounted(async () => {
   document.addEventListener('keydown', onKeyDown)
   if (isNew.value) return
-  try {
-    const [histRes, checkRes, linksRes] = await Promise.all([
-      projectsApi.getCardHistory(props.projectSlug, props.card.id),
-      projectsApi.listChecklist(props.projectSlug, props.card.id),
-      projectsApi.getCardLinks(props.projectSlug, props.card.id),
-    ])
-    history.value = histRes.data
-    checklist.value = checkRes.data || []
-    gitLinks.value = linksRes.data || []
-  } catch {}
+  const [histRes, checkRes, linksRes] = await Promise.all([
+    projectsApi.getCardHistory(props.projectSlug, props.card.id).catch(() => ({ data: [] })),
+    projectsApi.listChecklist(props.projectSlug, props.card.id).catch(() => ({ data: [] })),
+    projectsApi.getCardLinks(props.projectSlug, props.card.id).catch(() => ({ data: [] })),
+  ])
+  history.value = histRes.data
+  checklist.value = checkRes.data || []
+  gitLinks.value = linksRes.data || []
   await loadSubCards()
   await loadLinkedCards()
 })
@@ -1070,20 +1092,23 @@ const _init = {
   external_issue_url: props.card.external_issue_url || '',
   external_issue_ref: props.card.external_issue_ref || '',
 }
-const isDirty = computed(() =>
-  newComment.value.trim() !== '' ||
-  newCommentHours.value > 0 ||
-  newCommentMinutes.value > 0 ||
-  form.value.title !== _init.title ||
-  form.value.description !== _init.description ||
-  form.value.priority !== _init.priority ||
-  form.value.start_date !== _init.start_date ||
-  form.value.due_date !== _init.due_date ||
-  form.value.assignee_id !== _init.assignee_id ||
-  form.value.story_points !== _init.story_points ||
-  form.value.external_issue_url !== _init.external_issue_url ||
-  form.value.external_issue_ref !== _init.external_issue_ref
-)
+const isDirty = computed(() => {
+  if (props.readonly) return false
+  return (
+    newComment.value.trim() !== '' ||
+    newCommentHours.value > 0 ||
+    newCommentMinutes.value > 0 ||
+    form.value.title !== _init.title ||
+    form.value.description !== _init.description ||
+    form.value.priority !== _init.priority ||
+    form.value.start_date !== _init.start_date ||
+    form.value.due_date !== _init.due_date ||
+    form.value.assignee_id !== _init.assignee_id ||
+    form.value.story_points !== _init.story_points ||
+    form.value.external_issue_url !== _init.external_issue_url ||
+    form.value.external_issue_ref !== _init.external_issue_ref
+  )
+})
 
 const {
   mentionUsers: descMentionUsers, mentionIndex: descMentionIndex,
@@ -1178,6 +1203,7 @@ function isWatching(userId) {
 }
 
 async function toggleWatcher(user) {
+  if (props.readonly) return
   try {
     if (isWatching(user.id)) {
       await projectsApi.removeWatcher(props.projectSlug, props.card.id, user.id)
@@ -1192,6 +1218,7 @@ async function toggleWatcher(user) {
 }
 
 async function toggleLabel(label) {
+  if (props.readonly) return
   try {
     if (hasLabel(label.id)) {
       await projectsApi.removeLabel(props.projectSlug, props.card.id, label.id)
@@ -1207,6 +1234,7 @@ async function toggleLabel(label) {
 }
 
 async function save() {
+  if (props.readonly) return
   saving.value = true
   try {
     const payload = {
@@ -1271,6 +1299,20 @@ async function confirmDelete() {
     emit('close')
   } catch (e) {
     ui.error('Failed to delete card')
+  }
+}
+
+async function restoreCard() {
+  restoring.value = true
+  try {
+    await projectsApi.restoreCard(props.projectSlug, props.card.id)
+    ui.success(t('board.card_restored'))
+    emit('restore')
+    emit('close')
+  } catch (e) {
+    ui.error(t('board.card_restore_failed'))
+  } finally {
+    restoring.value = false
   }
 }
 
@@ -1744,4 +1786,23 @@ function renderMarkdown(text) {
 .ref-closed .linked-card-title, .ref-closed.linked-card-ref, .ref-closed.linked-card-title { text-decoration: line-through; opacity: .6; }
 .linked-card-add-row { display: flex; gap: 8px; margin-top: 4px; }
 .linked-card-new-input { flex: 1; font-size: 13px; }
+
+.card-detail.readonly select,
+.card-detail.readonly input,
+.card-detail.readonly textarea {
+  pointer-events: none;
+  opacity: 0.6;
+  background: var(--color-surface-alt, transparent);
+  cursor: default;
+}
+.card-detail.readonly .btn-icon-xs,
+.card-detail.readonly .label-chip,
+.card-detail.readonly .watcher-chip,
+.card-detail.readonly .tag-remove,
+.card-detail.readonly .checklist-checkbox,
+.card-detail.readonly .subcard-check,
+.card-detail.readonly .checklist-drag-handle {
+  pointer-events: none;
+  opacity: 0.5;
+}
 </style>

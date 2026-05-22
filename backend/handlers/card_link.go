@@ -31,9 +31,9 @@ func ListCardLinks(c *gin.Context) {
 		return
 	}
 
-	// Verify the card belongs to this project.
+	// Verify the card belongs to this project (supports soft-deleted cards).
 	var card models.Card
-	if err := database.DB.Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
+	if err := database.DB.Unscoped().Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
 		return
 	}

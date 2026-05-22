@@ -170,6 +170,7 @@ func CreateCard(c *gin.Context) {
 // @Router       /projects/{projectSlug}/cards/{cardId} [get]
 func GetCard(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
 	slug := c.Param("projectSlug")
 	cardID, err := strconv.ParseUint(c.Param("cardId"), 10, 64)
 	if err != nil {
@@ -182,15 +183,23 @@ func GetCard(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
 		return
 	}
-	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "viewer"); err != nil {
+	if err := services.RequireProjectRole(project.ID, userID, globalRole, "viewer"); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
 
 	var card models.Card
 	if err := database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Watchers").Preload("Comments.User").Preload("Tags").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
-		return
+		// Deleted cards are visible to project admins/owners and system admins
+		if services.RequireProjectRole(project.ID, userID, globalRole, "admin") == nil {
+			if err2 := database.DB.Unscoped().Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Watchers").Preload("Comments.User").Preload("Tags").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err2 != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
+				return
+			}
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
+			return
+		}
 	}
 	if am := LoadAttachments("card", []uint{card.ID}); len(am[card.ID]) > 0 {
 		card.Attachments = am[card.ID]
@@ -442,6 +451,11 @@ func DeleteCard(c *gin.Context) {
 	}
 
 	database.DB.Delete(&card)
+	database.DB.Create(&models.CardHistory{
+		CardID:    card.ID,
+		UserID:    userID,
+		EventType: "deleted",
+	})
 	ws.BroadcastToProject(project.ID, ws.Message{
 		Type:    ws.TypeBoardCardDeleted,
 		Payload: map[string]uint{"card_id": uint(cardID), "column_id": card.ColumnID},
@@ -854,4 +868,165 @@ func ResolveCardRef(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+// DeletedCardItem is a soft-deleted card shown in project settings.
+type DeletedCardItem struct {
+	ID         uint       `json:"id"`
+	CardNumber int        `json:"card_number"`
+	Title      string     `json:"title"`
+	DeletedAt  time.Time  `json:"deleted_at"`
+	ColumnName string     `json:"column_name"`
+	CreatedBy  string     `json:"created_by"`
+	Assignee   string     `json:"assignee"`
+}
+
+// ListDeletedCards returns all soft-deleted cards for a project.
+// Only project owners/admins and system admins can view them.
+func ListDeletedCards(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	slug := c.Param("projectSlug")
+	globalRole := middleware.GetGlobalRole(c)
+
+	project, err := services.GetProjectBySlug(slug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	if err := services.RequireProjectRole(project.ID, userID, globalRole, "admin"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var cards []models.Card
+	database.DB.Unscoped().
+		Preload("Column").
+		Preload("CreatedBy").
+		Preload("Assignee").
+		Where("project_id = ? AND deleted_at IS NOT NULL", project.ID).
+		Order("deleted_at desc").
+		Find(&cards)
+
+	items := make([]DeletedCardItem, len(cards))
+	for i, card := range cards {
+		item := DeletedCardItem{
+			ID:         card.ID,
+			CardNumber: card.CardNumber,
+			Title:      card.Title,
+			DeletedAt:  card.DeletedAt.Time,
+			ColumnName: card.Column.Name,
+			CreatedBy:  card.CreatedBy.DisplayName,
+		}
+		if card.CreatedBy.DisplayName == "" {
+			item.CreatedBy = card.CreatedBy.Username
+		}
+		if card.Assignee != nil {
+			item.Assignee = card.Assignee.DisplayName
+			if item.Assignee == "" {
+				item.Assignee = card.Assignee.Username
+			}
+		}
+		items[i] = item
+	}
+
+	c.JSON(http.StatusOK, items)
+}
+
+// PermanentDeleteCard permanently removes a soft-deleted card and all of its
+// associated data. Only project owners/admins and system admins can do this.
+func PermanentDeleteCard(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	slug := c.Param("projectSlug")
+	cardID, err := strconv.ParseUint(c.Param("cardId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid card id"})
+		return
+	}
+	globalRole := middleware.GetGlobalRole(c)
+
+	project, err := services.GetProjectBySlug(slug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	if err := services.RequireProjectRole(project.ID, userID, globalRole, "admin"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var card models.Card
+	if err := database.DB.Unscoped().
+		Where("id = ? AND project_id = ? AND deleted_at IS NOT NULL", cardID, project.ID).
+		First(&card).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "deleted card not found"})
+		return
+	}
+
+	db := database.DB
+
+	// Remove associated records
+	db.Unscoped().Where("card_id = ?", card.ID).Delete(&models.CardComment{})
+	db.Where("card_id = ?", card.ID).Delete(&models.CardChecklistItem{})
+	db.Where("card_id = ?", card.ID).Delete(&models.CardHistory{})
+	db.Where("card_id = ?", card.ID).Delete(&models.CardAssignee{})
+	db.Where("card_id = ?", card.ID).Delete(&models.CardLabel{})
+	db.Where("card_id = ?", card.ID).Delete(&models.CardTag{})
+	db.Where("card_id = ? OR target_card_id = ?", card.ID, card.ID).Delete(&models.CardReference{})
+	db.Exec("DELETE FROM card_watchers WHERE card_id = ?", card.ID)
+
+	// Hard-delete the card
+	db.Unscoped().Delete(&card)
+
+	c.JSON(http.StatusOK, gin.H{"message": "permanently deleted"})
+}
+
+// RestoreCard restores a soft-deleted card by clearing its deleted_at timestamp.
+// Only project owners/admins and system admins can do this.
+func RestoreCard(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
+	slug := c.Param("projectSlug")
+	cardID, err := strconv.ParseUint(c.Param("cardId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid card id"})
+		return
+	}
+
+	project, err := services.GetProjectBySlug(slug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	if err := services.RequireProjectRole(project.ID, userID, globalRole, "admin"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var card models.Card
+	if err := database.DB.Unscoped().
+		Where("id = ? AND project_id = ? AND deleted_at IS NOT NULL", cardID, project.ID).
+		First(&card).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "deleted card not found"})
+		return
+	}
+
+	database.DB.Unscoped().Model(&card).Update("deleted_at", nil)
+
+	// Record restore event in card history
+	database.DB.Create(&models.CardHistory{
+		CardID:    card.ID,
+		UserID:    userID,
+		EventType: "restored",
+	})
+
+	// Reload with preloads so the frontend receives the full card
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Watchers").Preload("Comments.User").Preload("Tags").
+		First(&card)
+
+	ws.BroadcastToProject(project.ID, ws.Message{
+		Type:    ws.TypeBoardCardCreated,
+		Payload: card,
+	})
+
+	c.JSON(http.StatusOK, card)
 }

@@ -31,6 +31,9 @@ func ListTimeTrackingProjects(c *gin.Context) {
 			  AND (p.created_by_id = ? OR u.global_role = 'admin')
 			ORDER BY p.name ASC`, userID).Scan(&projects)
 	}
+	if projects == nil {
+		projects = []models.Project{}
+	}
 	c.JSON(http.StatusOK, projects)
 }
 

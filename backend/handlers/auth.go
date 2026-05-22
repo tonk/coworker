@@ -310,6 +310,13 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		TimeTrackingEnabled *bool   `json:"time_tracking_enabled"`
 		TimeNotation         string  `json:"time_notation"`
 		WeekStart            string  `json:"week_start"`
+		MonWorkStart         string  `json:"mon_work_start"`
+		TueWorkStart         string  `json:"tue_work_start"`
+		WedWorkStart         string  `json:"wed_work_start"`
+		ThuWorkStart         string  `json:"thu_work_start"`
+		FriWorkStart         string  `json:"fri_work_start"`
+		SatWorkStart         string  `json:"sat_work_start"`
+		SunWorkStart         string  `json:"sun_work_start"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -383,6 +390,13 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	if req.WeekStart == "monday" || req.WeekStart == "sunday" {
 		updates["week_start"] = req.WeekStart
 	}
+	updates["mon_work_start"] = req.MonWorkStart
+	updates["tue_work_start"] = req.TueWorkStart
+	updates["wed_work_start"] = req.WedWorkStart
+	updates["thu_work_start"] = req.ThuWorkStart
+	updates["fri_work_start"] = req.FriWorkStart
+	updates["sat_work_start"] = req.SatWorkStart
+	updates["sun_work_start"] = req.SunWorkStart
 
 	now := time.Now()
 	updates["settings_updated_at"] = now

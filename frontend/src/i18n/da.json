@@ -187,7 +187,9 @@
     "card_history": "Korthistorik",
     "history_created": "oprettede dette kort",
     "history_closed": "lukkede dette kort",
+    "history_deleted": "slettede dette kort",
     "history_reopened": "genåbnede dette kort",
+    "history_restored": "gendannede dette kort",
     "history_title_changed": "ændrede titlen til",
     "history_priority_changed": "ændrede prioriteten til",
     "history_assignee_changed": "ændrede den ansvarlige til",
@@ -238,7 +240,10 @@
     "column_wip_tooltip_over": "Work in progress limit: {limit}. This column has {count} cards — at or over the limit.",
     "sort_select_aria": "Sort cards by",
     "sort_asc_action": "Sort ascending",
-    "sort_desc_action": "Sort descending"
+    "sort_desc_action": "Sort descending",
+    "restore_card": "Gendan kort",
+    "card_restored": "Kort gendannet",
+    "card_restore_failed": "Kunne ikke gendanne kort"
   },
   "chat": {
     "title": "Teamchat",
@@ -529,7 +534,9 @@
     "req_upper": "Et stort bogstav (A–Z)",
     "req_lower": "Et lille bogstav (a–z)",
     "req_digit": "Et ciffer (0–9)",
-    "req_special": "Et specialtegn (!{'@'}#$…)"
+    "req_special": "Et specialtegn (!{'@'}#$…)",
+    "working_hours": "Arbejdstid",
+    "working_hours_hint": "Indstil din sædvanlige starttid for hver ugedag. Lad være tom på fridage."
   },
   "dm": {
     "title": "Chats",
