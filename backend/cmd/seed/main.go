@@ -2197,12 +2197,22 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	// ── 6. Customers & Contracts ──────────────────────────────────────────────
 	fmt.Println("→ Creating customers and contracts…")
 
+	type timeSlotSpec struct {
+		label        string
+		from         string
+		to           string
+		days         string
+		factor       float64
+		endDayOffset int
+	}
 	type contractSpec struct {
-		name      string
-		desc      string
-		startDays int      // relative to today
-		endDays   int      // 0 = no end date
-		projects  []string // project slugs to link
+		name         string
+		desc         string
+		startDays    int // relative to today
+		endDays      int // 0 = no end date
+		projects     []string
+		pricePerHour *float64
+		timeSlots    []timeSlotSpec
 	}
 	type customerSpec struct {
 		name      string
@@ -2212,6 +2222,12 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		projects  []string // unassigned projects (no contract)
 	}
 
+	acmePricePerHour := 110.0
+	acmeStandbySlots := []timeSlotSpec{
+		{label: "Standby - week", from: "19:00", to: "07:00", days: "weekdays", factor: 1.5, endDayOffset: 1},
+		{label: "Standby - weekend", from: "19:00", to: "07:00", days: "friday", factor: 2.0, endDayOffset: 3},
+	}
+
 	demoCustomers := []customerSpec{
 		{
 			name:    "Acme Corporation",
@@ -2219,18 +2235,22 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			logoURL: "https://api.dicebear.com/9.x/shapes/svg?seed=Acme-Corp&backgroundColor=ecfeff,bfdbfe,e9d5ff",
 			contracts: []contractSpec{
 				{
-					name:      "Phase 1 — Marketing Site",
-					desc:      "Full redesign and relaunch of the corporate marketing website.",
-					startDays: -180,
-					endDays:   90,
-					projects:  []string{"website-redesign"},
+					name:         "Phase 1 — Marketing Site",
+					desc:         "Full redesign and relaunch of the corporate marketing website.",
+					startDays:    -180,
+					endDays:      90,
+					projects:     []string{"website-redesign"},
+					pricePerHour: &acmePricePerHour,
+					timeSlots:    acmeStandbySlots,
 				},
 				{
-					name:      "Phase 2 — Mobile Apps",
-					desc:      "iOS and Android companion apps for the new platform.",
-					startDays: -60,
-					endDays:   180,
-					projects:  []string{"mobile-app-v2"},
+					name:         "Phase 2 — Mobile Apps",
+					desc:         "iOS and Android companion apps for the new platform.",
+					startDays:    -60,
+					endDays:      180,
+					projects:     []string{"mobile-app-v2"},
+					pricePerHour: &acmePricePerHour,
+					timeSlots:    acmeStandbySlots,
 				},
 			},
 		},
@@ -2280,16 +2300,30 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		for _, conSpec := range cs.contracts {
 			start := time.Now().UTC().AddDate(0, 0, conSpec.startDays).Truncate(24 * time.Hour)
 			con := &models.Contract{
-				CustomerID:  cust.ID,
-				Name:        conSpec.name,
-				Description: conSpec.desc,
-				StartDate:   &start,
+				CustomerID:   cust.ID,
+				Name:         conSpec.name,
+				Description:  conSpec.desc,
+				StartDate:    &start,
+				PricePerHour: conSpec.pricePerHour,
 			}
 			if conSpec.endDays != 0 {
 				end := time.Now().UTC().AddDate(0, 0, conSpec.endDays).Truncate(24 * time.Hour)
 				con.EndDate = &end
 			}
 			must(db.Create(con).Error)
+
+			for _, slotSpec := range conSpec.timeSlots {
+				factor := slotSpec.factor
+				must(db.Create(&models.ContractTimeSlot{
+					ContractID:           con.ID,
+					Label:                slotSpec.label,
+					StartTime:            slotSpec.from,
+					EndTime:              slotSpec.to,
+					DayType:              slotSpec.days,
+					EndDayOffset:         slotSpec.endDayOffset,
+					MultiplicationFactor: &factor,
+				}).Error)
+			}
 
 			for _, slug := range conSpec.projects {
 				must(db.Model(&models.Project{}).Where("slug = ?", slug).

@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.10.13 — 2026-05-22
+
+### Added
+- **Overnight and multi-day contract time slots** — slots can span midnight (e.g. 19:00–07:00) and extend across calendar days via `end_day_offset` (e.g. Friday 19:00 → Monday 07:00). Day types now include `weekends` and individual weekday anchors (`monday`–`sunday`).
+- **Contract slot week preview** — the contract edit dialog shows a visual strip of the current week with each slot highlighted on the days and times it covers.
+- **Resizable contract edit modal** — the contract form can be resized for easier editing of long slot lists.
+- **Standby shift logging** — a ⏳ action on each time-tracking row opens a dialog to log a multi-day shift (e.g. weekend standby Fri 19:00 → Mon 07:00); the entry is split automatically across calendar days with correct start/end times per day.
+- **Time-tracking cell selection** — arrow keys move the selection; Shift+arrow or Shift+click extends a rectangular range (spreadsheet-style).
+- **Multi-cell paste** — Ctrl+V (or Shift+Ins) pastes the copied cell into all selected cells at once.
+- **Time-tracking undo** — Ctrl+Z reverts the last saved cell change, paste, holiday toggle, time-range edit, or standby shift; an **Undo** button appears in the bottom bar when there is something to undo.
+- **Keyboard shortcuts — Time Tracking section** — the shortcuts modal (`?`) documents selection, copy/paste, undo, and Escape to clear the clipboard.
+- **XLSX slot-aware billing** — time-tracking XLSX export adds per-slot sub-rows with label, hours, and cost when entries carry start/end times and the contract defines slots.
+
+### Changed
+- **PDF/XLSX slot matching** — overnight and multi-day contract slots are matched on a timeline so entries crossing midnight or spanning several days bill against the correct tiers.
+- **Time cell input** — cells accept only valid time characters (digits, colon, or decimal separator); invalid text is blocked at input and paste.
+- **Acme demo seed** — sample contract includes weekday and weekend standby slots (×1.5 / ×2.0) for trying the new billing and logging flows.
+
+### Fixed
+- **Ctrl+Z on Firefox** — undo is intercepted via `beforeinput` and a window-level capture listener so Firefox no longer swallows the shortcut when a cell is focused.
+- **Undo focus scope** — Ctrl+Z works anywhere on the time-tracking page, not only when a cell input still has focus.
+
 ## v0.10.12 — 2026-05-22
 
 ### Added

@@ -367,6 +367,7 @@ func CreateContract(c *gin.Context) {
 			StartTime            string   `json:"start_time"`
 			EndTime              string   `json:"end_time"`
 			DayType              string   `json:"day_type"`
+			EndDayOffset         int      `json:"end_day_offset"`
 			MultiplicationFactor *float64 `json:"multiplication_factor"`
 			HourlyRate           *float64 `json:"hourly_rate"`
 		} `json:"time_slots"`
@@ -410,6 +411,7 @@ func CreateContract(c *gin.Context) {
 			StartTime:            s.StartTime,
 			EndTime:              s.EndTime,
 			DayType:              dayType,
+			EndDayOffset:         s.EndDayOffset,
 			MultiplicationFactor: s.MultiplicationFactor,
 			HourlyRate:           s.HourlyRate,
 		})
@@ -446,6 +448,7 @@ func UpdateContract(c *gin.Context) {
 			StartTime            string   `json:"start_time"`
 			EndTime              string   `json:"end_time"`
 			DayType              string   `json:"day_type"`
+			EndDayOffset         int      `json:"end_day_offset"`
 			MultiplicationFactor *float64 `json:"multiplication_factor"`
 			HourlyRate           *float64 `json:"hourly_rate"`
 		} `json:"time_slots"`
@@ -484,6 +487,7 @@ func UpdateContract(c *gin.Context) {
 			StartTime:            s.StartTime,
 			EndTime:              s.EndTime,
 			DayType:              dayType,
+			EndDayOffset:         s.EndDayOffset,
 			MultiplicationFactor: s.MultiplicationFactor,
 			HourlyRate:           s.HourlyRate,
 		})

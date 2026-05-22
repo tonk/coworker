@@ -59,7 +59,7 @@
             </div>
             <div v-if="grp.time_slots && grp.time_slots.length" class="slot-list">
               <div v-for="slot in grp.time_slots" :key="slot.id" class="slot-item">
-                <span class="slot-time">{{ slot.start_time }}–{{ slot.end_time }}</span>
+                <span class="slot-time">{{ formatSlotTimeRange(slot) }}</span>
                 <span v-if="slot.day_type && slot.day_type !== 'all'" class="slot-days">{{ $t('contract.slot_days_' + slot.day_type) }}</span>
                 <span v-if="slot.label" class="slot-label">{{ slot.label }}</span>
                 <span v-if="slot.multiplication_factor != null" class="slot-factor">×{{ slot.multiplication_factor }}</span>
@@ -211,7 +211,13 @@
     </BaseModal>
 
     <!-- Add / edit contract modal -->
-    <BaseModal v-if="showAddContract || editingContract" :title="editingContract ? $t('contract.edit') : $t('contract.new_contract')" @close="closeContractModal">
+    <BaseModal
+      v-if="showAddContract || editingContract"
+      :title="editingContract ? $t('contract.edit') : $t('contract.new_contract')"
+      :resizable="true"
+      style="--modal-width: 720px"
+      @close="closeContractModal"
+    >
       <div class="form-group">
         <label class="form-label" for="contract-name">{{ $t('contract.name') }}</label>
         <input id="contract-name" class="form-input" v-model="contractForm.name" />
@@ -269,6 +275,7 @@
           <label class="form-label">{{ $t('contract.time_slots') }}</label>
           <button type="button" class="btn btn-sm" @click="addTimeSlot">+ {{ $t('contract.add_time_slot') }}</button>
         </div>
+        <p class="form-hint">{{ $t('contract.slot_overnight_hint') }}</p>
         <div class="slots-list">
           <div v-for="(slot, idx) in contractForm.time_slots" :key="idx" class="slot-card">
             <div class="slot-card-top">
@@ -289,8 +296,20 @@
                 <select class="form-input" v-model="slot.day_type" :aria-label="$t('contract.slot_days')">
                   <option value="all">{{ $t('contract.slot_days_all') }}</option>
                   <option value="weekdays">{{ $t('contract.slot_days_weekdays') }}</option>
+                  <option value="weekends">{{ $t('contract.slot_days_weekends') }}</option>
+                  <option value="monday">{{ $t('contract.slot_days_monday') }}</option>
+                  <option value="tuesday">{{ $t('contract.slot_days_tuesday') }}</option>
+                  <option value="wednesday">{{ $t('contract.slot_days_wednesday') }}</option>
+                  <option value="thursday">{{ $t('contract.slot_days_thursday') }}</option>
+                  <option value="friday">{{ $t('contract.slot_days_friday') }}</option>
                   <option value="saturday">{{ $t('contract.slot_days_saturday') }}</option>
                   <option value="sunday">{{ $t('contract.slot_days_sunday') }}</option>
+                </select>
+              </div>
+              <div v-if="isOvernightSlot(slot)" class="slot-field slot-field-days">
+                <label class="slot-field-label">{{ $t('contract.slot_end_day_offset') }}</label>
+                <select class="form-input" v-model.number="slot.end_day_offset" :aria-label="$t('contract.slot_end_day_offset')">
+                  <option v-for="n in 6" :key="n" :value="n">{{ $t('contract.slot_end_day_offset_' + n) }}</option>
                 </select>
               </div>
               <div class="slot-field">
@@ -300,6 +319,27 @@
               <div class="slot-field">
                 <label class="slot-field-label">{{ $t('contract.slot_rate') }}</label>
                 <input class="form-input" type="number" min="0" step="0.01" v-model="slot.hourly_rate" :aria-label="$t('contract.slot_rate')" :placeholder="contractForm.currency + '/h'" />
+              </div>
+            </div>
+            <div v-if="slotPreviewReady(slot)" class="slot-preview">
+              <span class="slot-preview-label">{{ $t('contract.slot_preview') }}</span>
+              <div class="slot-preview-week" role="img" :aria-label="slotPreviewAria(slot)">
+                <div
+                  v-for="day in slotPreviewDays(slot)"
+                  :key="day.key"
+                  class="slot-preview-day"
+                  :class="{ 'slot-preview-day-active': day.active }"
+                >
+                  <span class="slot-preview-dow">{{ day.label }}</span>
+                  <div class="slot-preview-track" aria-hidden="true">
+                    <div
+                      v-for="(seg, segIdx) in day.segments"
+                      :key="segIdx"
+                      class="slot-preview-seg"
+                      :style="{ left: seg.left + '%', width: seg.width + '%' }"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -345,6 +385,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useCustomersStore } from '@/stores/customers'
@@ -356,6 +397,9 @@ import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
 import client from '@/api/client'
+import { buildSlotPreviewDays, slotPreviewReady as slotPreviewReadyFn } from '@/utils/contractSlotPreview'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -374,7 +418,45 @@ const { formatDate, dateOnlyFormat } = useDateFormat()
 const showAddContract = ref(false)
 const editingContract = ref(null)
 const contractForm = ref({ name: '', description: '', start_date: '', end_date: '', price_per_hour: null, currency: '€', time_slots: [] })
-const emptySlot = () => ({ label: '', start_time: '', end_time: '', day_type: 'all', multiplication_factor: null, hourly_rate: null })
+const emptySlot = () => ({ label: '', start_time: '', end_time: '', day_type: 'all', end_day_offset: 1, multiplication_factor: null, hourly_rate: null })
+
+function isOvernightSlot(slot) {
+  return !!(slot.start_time && slot.end_time && slot.end_time <= slot.start_time)
+}
+
+function formatSlotTimeRange(slot) {
+  if (!slot.start_time || !slot.end_time) return ''
+  if (!isOvernightSlot(slot)) return `${slot.start_time}–${slot.end_time}`
+  const offset = slot.end_day_offset > 0 ? slot.end_day_offset : 1
+  if (offset === 1) return `${slot.start_time}–${slot.end_time}`
+  return `${slot.start_time} → +${offset}d ${slot.end_time}`
+}
+
+const slotPreviewDowLabels = computed(() => [
+  t('contract.slot_preview_dow_mon'),
+  t('contract.slot_preview_dow_tue'),
+  t('contract.slot_preview_dow_wed'),
+  t('contract.slot_preview_dow_thu'),
+  t('contract.slot_preview_dow_fri'),
+  t('contract.slot_preview_dow_sat'),
+  t('contract.slot_preview_dow_sun'),
+])
+
+function slotPreviewReady(slot) {
+  return slotPreviewReadyFn(slot)
+}
+
+function slotPreviewDays(slot) {
+  return buildSlotPreviewDays(slot, slotPreviewDowLabels.value)
+}
+
+function slotPreviewAria(slot) {
+  const range = formatSlotTimeRange(slot)
+  const days = slot.day_type && slot.day_type !== 'all'
+    ? t('contract.slot_days_' + slot.day_type)
+    : t('contract.slot_days_all')
+  return t('contract.slot_preview_aria', { range, days })
+}
 const displayContractStartDate = ref('')
 const displayContractEndDate   = ref('')
 
@@ -648,6 +730,7 @@ function editContract(grp) {
       start_time:           s.start_time || '',
       end_time:             s.end_time || '',
       day_type:             s.day_type || 'all',
+      end_day_offset:       s.end_day_offset > 0 ? s.end_day_offset : 1,
       multiplication_factor: s.multiplication_factor != null ? s.multiplication_factor : null,
       hourly_rate:           s.hourly_rate != null ? s.hourly_rate : null,
     })),
@@ -687,6 +770,7 @@ async function saveContract() {
         start_time:           s.start_time,
         end_time:             s.end_time,
         day_type:             s.day_type || 'all',
+        end_day_offset:       isOvernightSlot(s) ? (s.end_day_offset > 0 ? s.end_day_offset : 1) : 0,
         multiplication_factor: s.multiplication_factor !== null && s.multiplication_factor !== '' ? parseFloat(s.multiplication_factor) : null,
         hourly_rate:           s.hourly_rate !== null && s.hourly_rate !== '' ? parseFloat(s.hourly_rate) : null,
       })),
@@ -986,6 +1070,7 @@ async function deleteContract(grp) {
   margin-bottom: 8px;
 }
 .slots-header .form-label { margin-bottom: 0; }
+.form-hint { font-size: 12px; color: var(--color-text-muted); margin: 0 0 8px; }
 .slots-list { display: flex; flex-direction: column; gap: 8px; }
 .slot-card {
   border: 1px solid var(--color-border);
@@ -1024,4 +1109,55 @@ async function deleteContract(grp) {
 }
 .slot-remove { color: var(--color-danger, #ef4444); flex-shrink: 0; }
 .slot-remove:hover { background: color-mix(in srgb, var(--color-danger, #ef4444) 10%, transparent); }
+
+.slot-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--color-border);
+}
+.slot-preview-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--color-text-muted);
+}
+.slot-preview-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.slot-preview-day {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.slot-preview-dow {
+  font-size: 10px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+.slot-preview-day-active .slot-preview-dow {
+  color: var(--color-text);
+  font-weight: 600;
+}
+.slot-preview-track {
+  position: relative;
+  height: 10px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.slot-preview-seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  border-radius: 2px;
+  min-width: 2px;
+}
 </style>

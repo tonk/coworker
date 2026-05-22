@@ -1,0 +1,60 @@
+---
+title: "v0.10.13: Overnight contract slots, standby shifts, and time-grid undo"
+date: "2026-05-22"
+author: "Ton Kersten"
+description: "Multi-day contract rate tiers, standby shift logging, spreadsheet-style cell selection and multi-paste, Ctrl+Z undo on Firefox, and XLSX slot breakdowns."
+draft: false
+---
+:doctype: article
+:icons!:
+
+v0.10.13 extends the contract time-slot work from v0.10.12 with overnight and multi-day tiers, adds a standby-shift workflow for long on-call periods, and makes the time-tracking grid feel more like a spreadsheet — including undo that works in Firefox.
+
+== Overnight and multi-day contract slots
+
+Contract time slots are no longer limited to a single calendar day.
+
+* **Overnight ranges** — when end time is earlier than start time (e.g. `19:00`–`07:00`), the slot runs until the end time on the next morning.
+* **Multi-day spans** — **Ends after** (`end_day_offset`) lets a slot end two or more calendar days later (e.g. Friday `19:00` until Monday `07:00`).
+* **Day types** — `weekends`, individual weekdays (`monday`–`sunday`), plus the existing `all` and `weekdays` options.
+* **Week preview** — the contract edit dialog shows a strip of the current week with each slot highlighted on the days and hours it covers.
+* **Resizable modal** — drag the corner of the contract edit dialog when slot lists get long.
+
+PDF and XLSX exports use timeline-based matching so entries that cross midnight or span several days bill against the correct tiers.
+
+== Standby shift logging
+
+Logging a weekend or on-call block that spans multiple days no longer requires filling each cell by hand.
+
+* Click **⏳** on any time-tracking row to open the **Standby shift** dialog.
+* Set start date/time and end date/time (defaults suggest Fri 19:00 → Mon 07:00 for the visible week).
+* WarmDesk splits the shift into one entry per calendar day, each with the correct wall-clock start/end and duration.
+* Overnight segments on the first and last day are handled automatically; full intermediate days are logged as 00:00–23:59.
+
+Use this together with multi-day contract slots so standby hours pick up the right rate tier in exports.
+
+== Time grid: selection, multi-paste, undo
+
+The weekly timesheet grid now behaves more like a spreadsheet.
+
+* **Selection** — click a cell, then use arrow keys to move; **Shift+arrow** or **Shift+click** extends a rectangular range.
+* **Copy** — **Ctrl+C** copies duration, start/end time, and holiday flag from the anchor cell.
+* **Multi-paste** — **Ctrl+V** or **Shift+Ins** pastes into every cell in the selection.
+* **Undo** — **Ctrl+Z** reverts the last saved operation (cell edit, paste, holiday toggle, time popup, or standby shift). An **Undo** button in the bottom bar appears when there is something to undo.
+* **Input filtering** — cells accept only valid time characters; letters and other junk are blocked.
+
+Undo works from anywhere on the time-tracking page, including after Tab or clicking the week navigation. Firefox is supported via `beforeinput` interception in addition to the usual keyboard handler.
+
+Press **?** to open the keyboard shortcuts modal — a new **Time Tracking** section lists these keys.
+
+== XLSX slot breakdown
+
+The time-tracking XLSX export now mirrors the PDF slot logic: when an entry has start/end times and the contract defines slots, sub-rows show each slot segment with label, hours, and cost.
+
+== Demo data
+
+Re-seed with `go run ./cmd/seed --reset` to load the Acme Corporation demo contract with weekday standby (×1.5) and weekend standby (×2.0) slots for trying the new flows.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:download.adoc[download page] or upgrade your existing installation — database schema changes are applied automatically on startup (new `end_day_offset` column on contract time slots).

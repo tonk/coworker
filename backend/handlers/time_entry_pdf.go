@@ -362,9 +362,9 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 				if info, ok := contractInfos[*e.ProjectID]; ok && len(info.TimeSlots) > 0 {
 					entryStartMins := parseHHMM(*e.StartTime)
 					entryEndMins := parseHHMM(*e.EndTime)
-					if entryStartMins >= 0 && entryEndMins > entryStartMins {
+					if entryStartMins >= 0 && entryEndMins >= 0 && entryStartMins != entryEndMins {
 						_, slotSegs := entrySlotBreakdown(e, info)
-						stdSegs := standardTimeSegments(entryStartMins, entryEndMins, slotSegs)
+						stdSegs := standardTimeSegments(entryStartMins, entryTimelineEnd(entryStartMins, entryEndMins), slotSegs)
 
 						type subRow struct {
 							startMins    int
@@ -635,6 +635,116 @@ func contractInfoMap(entries []models.TimeEntry) map[uint]projectContractInfo {
 	return result
 }
 
+const minutesPerDay = 24 * 60
+
+// timelineInterval is a half-open [start, end) range on a timeline where 0 is midnight on the entry date.
+type timelineInterval struct {
+	start int
+	end   int
+}
+
+// entryTimelineEnd returns the entry end position on the entry-date timeline (may exceed minutesPerDay).
+func entryTimelineEnd(startMins, endMins int) int {
+	if endMins > startMins {
+		return endMins
+	}
+	return minutesPerDay + endMins
+}
+
+// entryTimelineIntervals converts entry start/end times into timeline intervals relative to the entry date.
+func entryTimelineIntervals(startMins, endMins int) []timelineInterval {
+	if startMins < 0 || endMins < 0 || startMins == endMins {
+		return nil
+	}
+	if endMins > startMins {
+		return []timelineInterval{{startMins, endMins}}
+	}
+	return []timelineInterval{
+		{startMins, minutesPerDay},
+		{minutesPerDay, minutesPerDay + endMins},
+	}
+}
+
+// slotEndDayOffset returns how many calendar days after the anchor day the end time falls.
+func slotEndDayOffset(slot models.ContractTimeSlot) int {
+	slotStart := parseHHMM(slot.StartTime)
+	slotEnd := parseHHMM(slot.EndTime)
+	if slotStart < 0 || slotEnd < 0 {
+		return 0
+	}
+	if slotEnd > slotStart {
+		return 0
+	}
+	if slot.EndDayOffset > 0 {
+		return slot.EndDayOffset
+	}
+	return 1
+}
+
+// slotTimelineIntervals returns slot coverage on the entry-date timeline, including overnight and multi-day spans.
+func slotTimelineIntervals(slot models.ContractTimeSlot, entryDate time.Time) []timelineInterval {
+	slotStart := parseHHMM(slot.StartTime)
+	slotEnd := parseHHMM(slot.EndTime)
+	if slotStart < 0 || slotEnd < 0 || slotStart == slotEnd {
+		return nil
+	}
+
+	endOffset := slotEndDayOffset(slot)
+	var out []timelineInterval
+	for dayOffset := -endOffset; dayOffset <= 1; dayOffset++ {
+		day := entryDate.AddDate(0, 0, dayOffset)
+		if !dayTypeMatches(slot.DayType, day.Weekday()) {
+			continue
+		}
+		base := dayOffset * minutesPerDay
+		if slotEnd > slotStart {
+			out = append(out, timelineInterval{base + slotStart, base + slotEnd})
+			continue
+		}
+		out = append(out, timelineInterval{base + slotStart, base + endOffset*minutesPerDay + slotEnd})
+	}
+	return out
+}
+
+// intervalOverlap returns the overlap of two timeline intervals.
+func intervalOverlap(a, b timelineInterval) (timelineInterval, bool) {
+	start := a.start
+	if b.start > start {
+		start = b.start
+	}
+	end := a.end
+	if b.end < end {
+		end = b.end
+	}
+	if end <= start {
+		return timelineInterval{}, false
+	}
+	return timelineInterval{start, end}, true
+}
+
+// mergeTimelineIntervals merges overlapping or adjacent timeline intervals.
+func mergeTimelineIntervals(ints []timelineInterval) []timelineInterval {
+	if len(ints) == 0 {
+		return nil
+	}
+	sorted := make([]timelineInterval, len(ints))
+	copy(sorted, ints)
+	sort.Slice(sorted, func(i, j int) bool { return sorted[i].start < sorted[j].start })
+
+	merged := []timelineInterval{sorted[0]}
+	for _, iv := range sorted[1:] {
+		last := &merged[len(merged)-1]
+		if iv.start <= last.end {
+			if iv.end > last.end {
+				last.end = iv.end
+			}
+			continue
+		}
+		merged = append(merged, iv)
+	}
+	return merged
+}
+
 // parseHHMM parses a "HH:MM" string into minutes since midnight. Returns -1 on error.
 func parseHHMM(s string) int {
 	if len(s) != 5 || s[2] != ':' {
@@ -655,6 +765,18 @@ func dayTypeMatches(dayType string, weekday time.Weekday) bool {
 		return true
 	case "weekdays":
 		return weekday >= time.Monday && weekday <= time.Friday
+	case "weekends":
+		return weekday == time.Saturday || weekday == time.Sunday
+	case "monday":
+		return weekday == time.Monday
+	case "tuesday":
+		return weekday == time.Tuesday
+	case "wednesday":
+		return weekday == time.Wednesday
+	case "thursday":
+		return weekday == time.Thursday
+	case "friday":
+		return weekday == time.Friday
 	case "saturday":
 		return weekday == time.Saturday
 	case "sunday":
@@ -663,28 +785,12 @@ func dayTypeMatches(dayType string, weekday time.Weekday) bool {
 	return false
 }
 
-// minutesOverlap returns how many minutes two time ranges share.
-func minutesOverlap(startA, endA, startB, endB int) int {
-	s := startA
-	if startB > s {
-		s = startB
-	}
-	e := endA
-	if endB < e {
-		e = endB
-	}
-	if e <= s {
-		return 0
-	}
-	return e - s
-}
-
 // slotMinutes describes how many minutes of an entry fall within a specific time slot.
 type slotMinutes struct {
 	Label                string
 	Minutes              int
-	OverlapStart         int // minutes since midnight
-	OverlapEnd           int // minutes since midnight
+	OverlapStart         int // minutes on the entry-date timeline
+	OverlapEnd           int // minutes on the entry-date timeline
 	HourlyRate           *float64
 	MultiplicationFactor *float64
 }
@@ -696,8 +802,12 @@ type timeSegment struct {
 	Minutes int
 }
 
-// fmtWallClockPDF formats minutes-since-midnight as "HH:MM".
+// fmtWallClockPDF formats a timeline minute value as "HH:MM" on a 24-hour clock.
 func fmtWallClockPDF(mins int) string {
+	mins %= minutesPerDay
+	if mins < 0 {
+		mins += minutesPerDay
+	}
 	return fmt.Sprintf("%02d:%02d", mins/60, mins%60)
 }
 
@@ -737,42 +847,37 @@ func entrySlotBreakdown(entry models.TimeEntry, info projectContractInfo) (int, 
 	}
 	startMins := parseHHMM(*entry.StartTime)
 	endMins := parseHHMM(*entry.EndTime)
-	if startMins < 0 || endMins < 0 || endMins <= startMins {
+	if startMins < 0 || endMins < 0 {
+		return entry.Minutes, nil
+	}
+	entryInts := entryTimelineIntervals(startMins, endMins)
+	if len(entryInts) == 0 {
 		return entry.Minutes, nil
 	}
 
 	var slots []slotMinutes
 	slotCovered := 0
 	for _, slot := range info.TimeSlots {
-		if !dayTypeMatches(slot.DayType, entry.Date.Weekday()) {
-			continue
+		var overlaps []timelineInterval
+		for _, slotInt := range slotTimelineIntervals(slot, entry.Date) {
+			for _, entryInt := range entryInts {
+				if ov, ok := intervalOverlap(entryInt, slotInt); ok {
+					overlaps = append(overlaps, ov)
+				}
+			}
 		}
-		slotStart := parseHHMM(slot.StartTime)
-		slotEnd := parseHHMM(slot.EndTime)
-		if slotStart < 0 || slotEnd < 0 {
-			continue
+		for _, ov := range mergeTimelineIntervals(overlaps) {
+			minutes := ov.end - ov.start
+			slots = append(slots, slotMinutes{
+				Label:                slot.Label,
+				Minutes:              minutes,
+				OverlapStart:         ov.start,
+				OverlapEnd:           ov.end,
+				HourlyRate:           slot.HourlyRate,
+				MultiplicationFactor: slot.MultiplicationFactor,
+			})
+			slotCovered += minutes
 		}
-		overlapStart := startMins
-		if slotStart > overlapStart {
-			overlapStart = slotStart
-		}
-		overlapEnd := endMins
-		if slotEnd < overlapEnd {
-			overlapEnd = slotEnd
-		}
-		overlap := overlapEnd - overlapStart
-		if overlap <= 0 {
-			continue
-		}
-		slots = append(slots, slotMinutes{
-			Label:                slot.Label,
-			Minutes:              overlap,
-			OverlapStart:         overlapStart,
-			OverlapEnd:           overlapEnd,
-			HourlyRate:           slot.HourlyRate,
-			MultiplicationFactor: slot.MultiplicationFactor,
-		})
-		slotCovered += overlap
 	}
 
 	standard := entry.Minutes - slotCovered
@@ -803,4 +908,84 @@ func entrySlotCost(entry models.TimeEntry, info projectContractInfo) (float64, s
 		}
 	}
 	return total, info.Currency
+}
+
+// entryCostSegment is one billable slice of a time entry (standard rate or a matching slot).
+type entryCostSegment struct {
+	StartMins int
+	TimeRange string
+	Label     string
+	Minutes   int
+	Cost      float64
+	Currency  string
+}
+
+// entryCostSegmentRate returns the effective hourly rate for a segment.
+func entryCostSegmentRate(seg entryCostSegment) float64 {
+	if seg.Minutes <= 0 || seg.Cost <= 0 {
+		return 0
+	}
+	return seg.Cost / (float64(seg.Minutes) / 60.0)
+}
+
+// entryCostSegments splits an entry into standard and slot segments for export breakdowns.
+// Returns nil when the entry has no start/end time or the contract has no time slots.
+func entryCostSegments(entry models.TimeEntry, info projectContractInfo, standardLabel string) []entryCostSegment {
+	if entry.StartTime == nil || entry.EndTime == nil || len(info.TimeSlots) == 0 {
+		return nil
+	}
+	startMins := parseHHMM(*entry.StartTime)
+	endMins := parseHHMM(*entry.EndTime)
+	if startMins < 0 || endMins < 0 || startMins == endMins {
+		return nil
+	}
+
+	_, slotSegs := entrySlotBreakdown(entry, info)
+	stdSegs := standardTimeSegments(startMins, entryTimelineEnd(startMins, endMins), slotSegs)
+	if len(stdSegs) == 0 && len(slotSegs) == 0 {
+		return nil
+	}
+
+	var out []entryCostSegment
+	for _, seg := range stdSegs {
+		cost := 0.0
+		if info.BaseRate != nil {
+			cost = float64(seg.Minutes) / 60.0 * *info.BaseRate
+		}
+		out = append(out, entryCostSegment{
+			StartMins: seg.Start,
+			TimeRange: fmtWallClockPDF(seg.Start) + "–" + fmtWallClockPDF(seg.End),
+			Label:     standardLabel,
+			Minutes:   seg.Minutes,
+			Cost:      cost,
+			Currency:  info.Currency,
+		})
+	}
+	for _, s := range slotSegs {
+		cost := 0.0
+		switch {
+		case s.HourlyRate != nil:
+			cost = float64(s.Minutes) / 60.0 * *s.HourlyRate
+		case s.MultiplicationFactor != nil && info.BaseRate != nil:
+			cost = float64(s.Minutes) / 60.0 * *info.BaseRate * *s.MultiplicationFactor
+		case info.BaseRate != nil:
+			cost = float64(s.Minutes) / 60.0 * *info.BaseRate
+		}
+		lbl := s.Label
+		if lbl == "" {
+			lbl = "—"
+		}
+		out = append(out, entryCostSegment{
+			StartMins: s.OverlapStart,
+			TimeRange: fmtWallClockPDF(s.OverlapStart) + "–" + fmtWallClockPDF(s.OverlapEnd),
+			Label:     lbl,
+			Minutes:   s.Minutes,
+			Cost:      cost,
+			Currency:  info.Currency,
+		})
+	}
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].StartMins < out[j].StartMins
+	})
+	return out
 }

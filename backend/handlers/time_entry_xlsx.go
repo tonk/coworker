@@ -21,54 +21,36 @@ func contractRateMap(entries []models.TimeEntry) map[uint]struct {
 	Rate     float64
 	Currency string
 } {
-	projIDs := make(map[uint]struct{})
-	for _, e := range entries {
-		if e.ProjectID != nil {
-			projIDs[*e.ProjectID] = struct{}{}
-		}
-	}
-	if len(projIDs) == 0 {
+	infos := contractInfoMap(entries)
+	if len(infos) == 0 {
 		return nil
 	}
-	ids := make([]uint, 0, len(projIDs))
-	for id := range projIDs {
-		ids = append(ids, id)
-	}
-	var projects []models.Project
-	database.DB.Where("id IN ?", ids).Find(&projects)
 	result := make(map[uint]struct {
 		Rate     float64
 		Currency string
 	})
-	for _, p := range projects {
-		if p.ContractID == nil {
+	for id, info := range infos {
+		if info.BaseRate == nil {
 			continue
 		}
-		var c models.Contract
-		if err := database.DB.First(&c, *p.ContractID).Error; err != nil || c.PricePerHour == nil {
-			continue
-		}
-		result[p.ID] = struct {
+		result[id] = struct {
 			Rate     float64
 			Currency string
-		}{*c.PricePerHour, c.Currency}
+		}{*info.BaseRate, info.Currency}
 	}
 	return result
 }
 
-// entryCost computes the cost in the entry's project currency.
-func entryCost(e models.TimeEntry, rates map[uint]struct {
-	Rate     float64
-	Currency string
-}) (float64, string) {
+// entryCost computes the slot-aware cost for a time entry.
+func entryCost(e models.TimeEntry, infos map[uint]projectContractInfo) (float64, string) {
 	if e.ProjectID == nil {
 		return 0, ""
 	}
-	r, ok := rates[*e.ProjectID]
+	info, ok := infos[*e.ProjectID]
 	if !ok {
 		return 0, ""
 	}
-	return float64(e.Minutes) / 60.0 * r.Rate, r.Currency
+	return entrySlotCost(e, info)
 }
 
 // fmtCost formats a cost value with 2 decimal places.
@@ -99,12 +81,14 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 		return
 	}
 
-	// Collect all entries and build rate map
+	// Collect all entries and build contract info (rates + time slots)
 	var allEntries []models.TimeEntry
 	for _, g := range report.Groups {
 		allEntries = append(allEntries, g.Entries...)
 	}
-	rates := contractRateMap(allEntries)
+	contractInfos := contractInfoMap(allEntries)
+	baseRates := contractRateMap(allEntries)
+	tr := pdfI18nFromLang(c.Query("lang"))
 
 	f := excelize.NewFile()
 	defer f.Close()
@@ -117,8 +101,11 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 
 	bold, _ := f.NewStyle(&excelize.Style{Font: &excelize.Font{Bold: true}})
 	moneyFmt, _ := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Bold: true},
+		Font:   &excelize.Font{Bold: true},
 		NumFmt: 4, // "#,##0.00"
+	})
+	subFmt, _ := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Italic: true, Color: "666666"},
 	})
 
 	name := report.CompanyName
@@ -158,10 +145,10 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 			if e.Project != nil {
 				projectName = e.Project.Name
 			}
-			cost, currency := entryCost(e, rates)
+			cost, currency := entryCost(e, contractInfos)
 			rate := 0.0
 			if e.ProjectID != nil {
-				if r, ok := rates[*e.ProjectID]; ok {
+				if r, ok := baseRates[*e.ProjectID]; ok {
 					rate = r.Rate
 				}
 			}
@@ -180,13 +167,35 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 				f.SetCellValue(sheetName, cell(8, row), cost)
 			}
 			row++
+
+			if e.ProjectID != nil {
+				if info, ok := contractInfos[*e.ProjectID]; ok {
+					for _, seg := range entryCostSegments(e, info, tr.Standard) {
+						effRate := entryCostSegmentRate(seg)
+						f.SetCellValue(sheetName, cell(1, row), seg.TimeRange)
+						f.SetCellValue(sheetName, cell(4, row), "  "+seg.Label)
+						f.SetCellValue(sheetName, cell(5, row), decimalHours(seg.Minutes))
+						if seg.Currency != "" {
+							f.SetCellValue(sheetName, cell(6, row), seg.Currency)
+						}
+						if effRate > 0 {
+							f.SetCellValue(sheetName, cell(7, row), effRate)
+						}
+						if seg.Cost > 0 {
+							f.SetCellValue(sheetName, cell(8, row), seg.Cost)
+						}
+						f.SetCellStyle(sheetName, cell(1, row), cell(8, row), subFmt)
+						row++
+					}
+				}
+			}
 		}
 
 		// Group subtotal — hours + cost
 		grpCost := 0.0
 		grpCurrency := ""
 		for _, e := range grp.Entries {
-			c, cur := entryCost(e, rates)
+			c, cur := entryCost(e, contractInfos)
 			grpCost += c
 			if cur != "" {
 				grpCurrency = cur
@@ -209,7 +218,7 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 	totalCurrency := ""
 	for _, g := range report.Groups {
 		for _, e := range g.Entries {
-			c, cur := entryCost(e, rates)
+			c, cur := entryCost(e, contractInfos)
 			totalCost += c
 			if cur != "" {
 				totalCurrency = cur

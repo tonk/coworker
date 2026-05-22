@@ -157,18 +157,29 @@
                 <td class="c-desc">{{ row.description || '—' }}</td>
               </template>
 
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', copiedCell?.sourceKey === row.key + d.iso ? 'c-day-copied' : '']">
+              <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), copiedCell?.sourceKey === row.key + d.iso ? 'c-day-copied' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
                 <input
-                  :type="timeNotation === 'hhmm' ? 'text' : 'number'"
+                  :key="'c' + cellRenderEpoch + '-' + row.key + '-' + d.iso"
+                  :id="'tt-cell-' + idx + '-' + di"
+                  type="text"
+                  :inputmode="timeNotation === 'hhmm' ? 'numeric' : 'decimal'"
+                  autocomplete="off"
+                  spellcheck="false"
                   class="h-inp"
                   :class="{ 'h-inp-filled': !!cellVal(row, d.iso) }"
-                  v-bind="timeNotation === 'hhmm' ? { placeholder: savingCell === row.key + d.iso ? '…' : '' } : { step: '0.25', min: '0', placeholder: savingCell === row.key + d.iso ? '…' : '' }"
+                  :placeholder="savingCell === row.key + d.iso ? '…' : ''"
                   :value="cellVal(row, d.iso)"
                   :aria-label="timeNotation === 'hhmm' ? 'Hours and minutes for ' + d.abbr + ' ' + d.mmdd : 'Hours for ' + d.abbr + ' ' + d.mmdd"
                   :disabled="viewingOther || savingCell === row.key + d.iso || editingRow === row.key"
-                  @focus="$event.target.select()"
+                  @focus="onCellFocus(idx, di)"
+                  @mousedown="onCellMouseDown(idx, di, $event)"
+                  @focusin="$event.target.select()"
+                  @input="onCellInput($event)"
+                  @paste="onCellPaste($event)"
+                  @beforeinput="onCellBeforeInput"
+                  @keydown.capture="onCellUndoCapture"
                   @blur="onCellBlur(row, d.iso, $event.target.value)"
-                  @keydown="onCellKeydown(row, d.iso, $event)"
+                  @keydown="onCellKeydown(row, d.iso, idx, di, $event)"
                 />
                 <span
                   v-if="getEntry(row, d.iso)?.start_time"
@@ -219,6 +230,7 @@
                   </label>
                   <div v-if="timePopupMinutes() !== null" class="tp-preview">
                     {{ fmtTime(timePopupMinutes()) }}
+                    <span v-if="timePopupOvernight()" class="tp-overnight">{{ $t('timeTracking.time_ends_next_day') }}</span>
                   </div>
                   <div class="tp-actions">
                     <button class="tp-btn tp-apply" @mousedown.prevent="applyTimePopup(row, d.iso)">{{ $t('common.save') }}</button>
@@ -244,6 +256,7 @@
                   </template>
                   <template v-else>
                     <button class="act-btn act-edit" @click="startEditRow(row)" :title="$t('common.edit')" aria-label="Edit time entry">✎</button>
+                    <button class="act-btn act-standby" @click="openStandbyShift(row)" :title="$t('timeTracking.standby_shift')" :aria-label="$t('timeTracking.standby_shift')">⏳</button>
                     <button class="act-btn act-del" @click="startDeleteRow(row)" :title="$t('common.delete')" aria-label="Delete time entry">🗑</button>
                   </template>
                 </template>
@@ -317,6 +330,14 @@
           <button class="btn-copy-prev" @click="copyPrevWeek" :disabled="copyingPrevWeek" :aria-label="$t('timeTracking.copy_prev_week')">
             {{ copyingPrevWeek ? '…' : '⇐' }} {{ $t('timeTracking.copy_prev_week') }}
           </button>
+          <button
+            type="button"
+            class="btn-undo"
+            :disabled="undoStack.length === 0 || viewingOther"
+            :title="$t('timeTracking.undo')"
+            :aria-label="$t('timeTracking.undo')"
+            @click="undoLastChange"
+          >↶ {{ $t('timeTracking.undo') }}</button>
         </template>
         <template v-else-if="!viewingOther">
           <button class="btn btn-primary" @click="confirmNewRow">{{ $t('common.save') }}</button>
@@ -358,6 +379,50 @@
         </div>
       </div>
     </div>
+
+    <BaseModal
+      v-if="standbyRow"
+      :title="$t('timeTracking.standby_shift_title')"
+      :resizable="true"
+      style="--modal-width: 480px"
+      @close="closeStandbyShift"
+    >
+      <p class="standby-hint">{{ $t('timeTracking.standby_hint') }}</p>
+      <div class="form-group">
+        <label class="form-label" for="standby-start-date">{{ $t('timeTracking.standby_start_date') }}</label>
+        <div class="date-input-row">
+          <input id="standby-start-date" class="form-input" type="text" v-model="displayStandbyStartDate" :placeholder="dateOnlyFormat()" @blur="parseStandbyStartDate" />
+          <label class="picker-wrap" :title="$t('common.pick_date')">
+            <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
+            <input type="date" class="date-picker-overlay" :value="standbyForm.start_date" :aria-label="$t('timeTracking.standby_start_date')" @change="onStandbyStartDateChange" />
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="standby-start-time">{{ $t('timeTracking.start_time') }}</label>
+        <input id="standby-start-time" class="form-input" type="text" v-model="standbyForm.start_time" placeholder="19:00" maxlength="5" @input="onStandbyTimeInput('start', $event)" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="standby-end-date">{{ $t('timeTracking.standby_end_date') }}</label>
+        <div class="date-input-row">
+          <input id="standby-end-date" class="form-input" type="text" v-model="displayStandbyEndDate" :placeholder="dateOnlyFormat()" @blur="parseStandbyEndDate" />
+          <label class="picker-wrap" :title="$t('common.pick_date')">
+            <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
+            <input type="date" class="date-picker-overlay" :value="standbyForm.end_date" :aria-label="$t('timeTracking.standby_end_date')" @change="onStandbyEndDateChange" />
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="standby-end-time">{{ $t('timeTracking.end_time') }}</label>
+        <input id="standby-end-time" class="form-input" type="text" v-model="standbyForm.end_time" placeholder="07:00" maxlength="5" @input="onStandbyTimeInput('end', $event)" />
+      </div>
+      <button type="button" class="btn btn-sm standby-preset" @click="applyStandbyPreset">{{ $t('timeTracking.standby_preset_weekend') }}</button>
+      <p v-if="standbyPreview" class="standby-preview">{{ standbyPreview }}</p>
+      <template #footer>
+        <button class="btn" @click="closeStandbyShift">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-primary" :disabled="!standbyPreview || savingStandby" @click="applyStandbyShift">{{ savingStandby ? '…' : $t('timeTracking.standby_apply') }}</button>
+      </template>
+    </BaseModal>
 
     <!-- ── Report ──────────────────────────────────────────────────────────── -->
     <div v-if="mode === 'report'" id="panel-report" role="tabpanel" aria-labelledby="tab-report" class="tt-report-outer">
@@ -663,10 +728,18 @@ import { customersApi } from '@/api/customers'
 import { projectsApi } from '@/api/projects'
 import client, { triggerDownload } from '@/api/client'
 import { resolveAssetUrl } from '@/api/serverConfig'
+import BaseModal from '@/components/common/BaseModal.vue'
+import { useDateFormat } from '@/composables/useDateFormat'
+import {
+  splitShiftIntoDayEntries,
+  weekendStandbyDefaults,
+  parseWallClock as parseShiftWallClock,
+} from '@/utils/shiftTimeEntries'
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const ui = useUIStore()
+const { formatDate, dateOnlyFormat } = useDateFormat()
 
 // ── Shared lookup data ────────────────────────────────────────────────────
 const customers    = ref([])    // regular CRM customers
@@ -709,6 +782,8 @@ function onUserChange() {
   editingRow.value = null
   deletingRow.value = null
   addingRow.value = false
+  clearCellSelection()
+  clearUndoStack()
   loadWeek()
   loadReport()
 }
@@ -777,6 +852,8 @@ function shiftWeek(delta) {
   editingRow.value = null
   deletingRow.value = null
   addingRow.value = false
+  clearCellSelection()
+  clearUndoStack()
   loadWeek()
 }
 
@@ -805,6 +882,8 @@ function goToToday() {
   editingRow.value = null
   deletingRow.value = null
   addingRow.value = false
+  clearCellSelection()
+  clearUndoStack()
   loadWeek()
 }
 
@@ -880,6 +959,8 @@ function goToDate(date) {
   editingRow.value = null
   deletingRow.value = null
   addingRow.value = false
+  clearCellSelection()
+  clearUndoStack()
   loadWeek()
 }
 
@@ -1148,17 +1229,185 @@ async function loadWeek() {
   }
 }
 
+// ── Cell undo ─────────────────────────────────────────────────────────────
+const undoStack = ref([])
+const undoInProgress = ref(false)
+const cellRenderEpoch = ref(0)
+const MAX_UNDO = 50
+
+function isUndoShortcut(event) {
+  if (!(event.ctrlKey || event.metaKey) || event.shiftKey || event.altKey) return false
+  return event.code === 'KeyZ' || (typeof event.key === 'string' && event.key.toLowerCase() === 'z')
+}
+
+function isUndoBlockedTarget(el) {
+  if (!(el instanceof HTMLElement) || !el.closest('.tt-view')) return true
+  if (el.closest('.modal-backdrop')) return true
+  if (el.closest('.tt-editing')) return true
+  const tag = el.tagName
+  if (tag === 'SELECT') return true
+  if (tag === 'INPUT' || tag === 'TEXTAREA') {
+    return !el.classList.contains('h-inp') && !el.classList.contains('tp-inp')
+  }
+  return false
+}
+
+function shouldHandleTimeTrackingUndo(event) {
+  if (mode.value !== 'sheet' || viewingOther.value || undoInProgress.value || undoStack.value.length === 0) {
+    return false
+  }
+  if (event.type === 'keydown' && !isUndoShortcut(event)) return false
+  if (event.type === 'beforeinput' && event.inputType !== 'historyUndo') return false
+  return !isUndoBlockedTarget(event.target)
+}
+
+function triggerTimeTrackingUndo(event) {
+  if (!shouldHandleTimeTrackingUndo(event)) return false
+  event.preventDefault()
+  event.stopPropagation()
+  event.stopImmediatePropagation()
+  void undoLastChange()
+  return true
+}
+
+function onCellUndoCapture(event) {
+  triggerTimeTrackingUndo(event)
+}
+
+function onWindowUndoCapture(event) {
+  triggerTimeTrackingUndo(event)
+}
+
+function onWindowBeforeInputCapture(event) {
+  triggerTimeTrackingUndo(event)
+}
+
+function onCellBeforeInput(event) {
+  if (event.inputType === 'historyUndo') {
+    triggerTimeTrackingUndo(event)
+  } else if (event.inputType === 'historyRedo') {
+    event.preventDefault()
+  }
+}
+
+function snapshotCell(row, dateISO) {
+  const entry = getEntry(row, dateISO)
+  return entry ? { ...entry } : null
+}
+
+function pushUndoBatch(items) {
+  const changes = items.map(({ row, dateISO, before }) => ({
+    rowKey: row.key,
+    customer_id: row.customer_id,
+    project_id: row.project_id,
+    description: row.description,
+    dateISO,
+    before: before ? { ...before } : null,
+  }))
+  if (!changes.length) return
+  undoStack.value.push({ changes })
+  if (undoStack.value.length > MAX_UNDO) undoStack.value.shift()
+}
+
+function clearUndoStack() {
+  undoStack.value = []
+}
+
+function rowForUndo(change) {
+  return sortedRows.value.find(r => r.key === change.rowKey) ?? {
+    key: change.rowKey,
+    customer_id: change.customer_id,
+    project_id: change.project_id,
+    description: change.description,
+    customer_name: '',
+    project_name: '',
+  }
+}
+
+async function restoreCellChange(change) {
+  const row = rowForUndo(change)
+  const existing = getEntry(row, change.dateISO)
+  const before = change.before
+
+  if (before === null) {
+    if (existing) {
+      await timeEntriesApi.remove(existing.id)
+      rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+    }
+    return
+  }
+
+  const payload = {
+    customer_id: change.customer_id ?? null,
+    project_id: change.project_id ?? null,
+    date: change.dateISO,
+    minutes: before.minutes,
+    description: change.description,
+    is_holiday: before.is_holiday ?? false,
+    start_time: before.start_time ?? null,
+    end_time: before.end_time ?? null,
+  }
+
+  if (existing) {
+    const { data } = await timeEntriesApi.update(existing.id, payload)
+    const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+    if (idx >= 0) rawEntries.value[idx] = data
+    else rawEntries.value.push(data)
+  } else {
+    const { data } = await timeEntriesApi.create(payload)
+    rawEntries.value.push(data)
+    localRows.value = localRows.value.filter(r => r.key !== change.rowKey)
+  }
+}
+
+async function undoLastChange() {
+  if (undoInProgress.value || viewingOther.value || undoStack.value.length === 0) return false
+  undoInProgress.value = true
+  const action = undoStack.value.pop()
+  try {
+    for (const change of action.changes) {
+      await restoreCellChange(change)
+    }
+    refreshCellInputs()
+    cellRenderEpoch.value++
+    return true
+  } catch {
+    undoStack.value.push(action)
+    ui.error(t('timeTracking.undo_error'))
+    return false
+  } finally {
+    undoInProgress.value = false
+  }
+}
+
+function refreshCellInputs() {
+  nextTick(() => {
+    for (let ri = 0; ri < sortedRows.value.length; ri++) {
+      for (let di = 0; di < weekDays.value.length; di++) {
+        const inp = document.getElementById(`tt-cell-${ri}-${di}`)
+        if (!inp) continue
+        const row = sortedRows.value[ri]
+        const iso = weekDays.value[di]?.iso
+        if (row && iso) inp.value = cellVal(row, iso)
+      }
+    }
+  })
+}
+
 // ── Cell save ─────────────────────────────────────────────────────────────
 async function onCellBlur(row, dateISO, rawVal) {
+  if (undoInProgress.value) return
   const minutes = parseTimeInput(rawVal)
   const existing = getEntry(row, dateISO)
 
   if (minutes === (existing?.minutes || 0)) return   // no change
 
+  const before = snapshotCell(row, dateISO)
   const ck = row.key + dateISO
   savingCell.value = ck
 
   try {
+    let changed = false
     if (minutes === 0 && existing) {
       if (existing.is_holiday) {
         // Keep holiday markers at 0 minutes rather than deleting them
@@ -1174,12 +1423,12 @@ async function onCellBlur(row, dateISO, rawVal) {
         })
         const idx = rawEntries.value.findIndex(e => e.id === existing.id)
         rawEntries.value[idx] = data
+        changed = true
       } else {
         await timeEntriesApi.remove(existing.id)
         rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+        changed = true
       }
-      savingCell.value = ''
-      return
     } else if (minutes > 0 && existing) {
       const { data } = await timeEntriesApi.update(existing.id, {
         customer_id: row.customer_id || null,
@@ -1193,6 +1442,7 @@ async function onCellBlur(row, dateISO, rawVal) {
       })
       const idx = rawEntries.value.findIndex(e => e.id === existing.id)
       rawEntries.value[idx] = data
+      changed = true
     } else if (minutes > 0) {
       const { data } = await timeEntriesApi.create({
         customer_id:  row.customer_id  || null,
@@ -1202,9 +1452,10 @@ async function onCellBlur(row, dateISO, rawVal) {
         description:  row.description,
       })
       rawEntries.value.push(data)
-      // Row is now in entries — remove from localRows
       localRows.value = localRows.value.filter(r => r.key !== row.key)
+      changed = true
     }
+    if (changed) pushUndoBatch([{ row, dateISO, before }])
   } catch {
     ui.error(t('timeTracking.save_error'))
   } finally {
@@ -1306,6 +1557,7 @@ async function confirmDeleteRow(row) {
 // ── Per-cell holiday toggle ───────────────────────────────────────────────
 async function toggleCellHoliday(row, dateISO) {
   const existing = getEntry(row, dateISO)
+  const before = snapshotCell(row, dateISO)
   const ck = row.key + dateISO
   savingCell.value = ck
   try {
@@ -1338,6 +1590,7 @@ async function toggleCellHoliday(row, dateISO) {
       rawEntries.value.push(data)
       localRows.value = localRows.value.filter(r => r.key !== row.key)
     }
+    pushUndoBatch([{ row, dateISO, before }])
   } catch {
     ui.error(t('timeTracking.save_error'))
   } finally {
@@ -1345,28 +1598,122 @@ async function toggleCellHoliday(row, dateISO) {
   }
 }
 
-// ── Cell copy / paste ─────────────────────────────────────────────────────
+// ── Cell selection, copy / paste ──────────────────────────────────────────
 // copiedCell holds the full state of the last copied cell. It persists until
 // the user copies something else or presses Escape, so the same value can be
 // pasted into multiple cells.
 const copiedCell = ref(null) // { minutes, startTime, endTime, isHoliday, sourceKey }
+const selectionAnchor = ref(null) // { rowIdx, dayIdx }
+const selectionFocus = ref(null)  // { rowIdx, dayIdx }
+const selectionFromKeyboard = ref(false)
 
-function copyCellData(row, dateISO) {
-  const entry = getEntry(row, dateISO)
-  // Nothing to copy if the cell has no data at all.
-  if (!entry && !cellVal(row, dateISO)) return
+function clearCellSelection() {
+  selectionAnchor.value = null
+  selectionFocus.value = null
+}
+
+function clampSelection(rowIdx, dayIdx) {
+  return {
+    rowIdx: Math.max(0, Math.min(rowIdx, sortedRows.value.length - 1)),
+    dayIdx: Math.max(0, Math.min(dayIdx, weekDays.value.length - 1)),
+  }
+}
+
+function isCellSelected(rowIdx, dayIdx) {
+  if (!selectionAnchor.value || !selectionFocus.value) return false
+  const r0 = Math.min(selectionAnchor.value.rowIdx, selectionFocus.value.rowIdx)
+  const r1 = Math.max(selectionAnchor.value.rowIdx, selectionFocus.value.rowIdx)
+  const d0 = Math.min(selectionAnchor.value.dayIdx, selectionFocus.value.dayIdx)
+  const d1 = Math.max(selectionAnchor.value.dayIdx, selectionFocus.value.dayIdx)
+  return rowIdx >= r0 && rowIdx <= r1 && dayIdx >= d0 && dayIdx <= d1
+}
+
+function cellSelectionClass(rowIdx, dayIdx) {
+  return isCellSelected(rowIdx, dayIdx) ? 'c-day-selected' : ''
+}
+
+function getSelectedCells() {
+  if (!selectionAnchor.value || !selectionFocus.value) return []
+  const r0 = Math.min(selectionAnchor.value.rowIdx, selectionFocus.value.rowIdx)
+  const r1 = Math.max(selectionAnchor.value.rowIdx, selectionFocus.value.rowIdx)
+  const d0 = Math.min(selectionAnchor.value.dayIdx, selectionFocus.value.dayIdx)
+  const d1 = Math.max(selectionAnchor.value.dayIdx, selectionFocus.value.dayIdx)
+  const cells = []
+  for (let ri = r0; ri <= r1; ri++) {
+    const row = sortedRows.value[ri]
+    if (!row) continue
+    for (let di = d0; di <= d1; di++) {
+      const iso = weekDays.value[di]?.iso
+      if (iso) cells.push({ row, dateISO: iso })
+    }
+  }
+  return cells
+}
+
+function focusCellInput(rowIdx, dayIdx) {
+  nextTick(() => {
+    document.getElementById(`tt-cell-${rowIdx}-${dayIdx}`)?.focus()
+  })
+}
+
+function onCellFocus(rowIdx, dayIdx) {
+  if (selectionFromKeyboard.value) {
+    selectionFromKeyboard.value = false
+    return
+  }
+  selectionAnchor.value = { rowIdx, dayIdx }
+  selectionFocus.value = { rowIdx, dayIdx }
+}
+
+function onCellMouseDown(rowIdx, dayIdx, event) {
+  if (viewingOther.value) return
+  if (event.shiftKey && selectionAnchor.value) {
+    event.preventDefault()
+    selectionFocus.value = clampSelection(rowIdx, dayIdx)
+    selectionFromKeyboard.value = true
+    focusCellInput(selectionFocus.value.rowIdx, selectionFocus.value.dayIdx)
+  }
+}
+
+function moveCellSelection(rowIdx, dayIdx, extend) {
+  const next = clampSelection(rowIdx, dayIdx)
+  if (extend) {
+    if (!selectionAnchor.value) selectionAnchor.value = next
+    selectionFocus.value = next
+  } else {
+    selectionAnchor.value = next
+    selectionFocus.value = next
+  }
+  selectionFromKeyboard.value = true
+  focusCellInput(next.rowIdx, next.dayIdx)
+}
+
+function copyCellData(row, dateISO, rowIdx, dayIdx) {
+  let srcRow = row
+  let srcISO = dateISO
+  if (selectionAnchor.value) {
+    const anchorRow = sortedRows.value[selectionAnchor.value.rowIdx]
+    const anchorISO = weekDays.value[selectionAnchor.value.dayIdx]?.iso
+    if (anchorRow && anchorISO) {
+      srcRow = anchorRow
+      srcISO = anchorISO
+    }
+  } else if (rowIdx != null && dayIdx != null) {
+    selectionAnchor.value = { rowIdx, dayIdx }
+    selectionFocus.value = { rowIdx, dayIdx }
+  }
+  const entry = getEntry(srcRow, srcISO)
+  if (!entry && !cellVal(srcRow, srcISO)) return
   copiedCell.value = {
     minutes:   entry?.minutes    ?? 0,
     startTime: entry?.start_time ?? null,
     endTime:   entry?.end_time   ?? null,
     isHoliday: entry?.is_holiday ?? false,
-    sourceKey: row.key + dateISO,
+    sourceKey: srcRow.key + srcISO,
   }
 }
 
-async function pasteCellData(row, dateISO) {
-  const src = copiedCell.value
-  if (!src) return
+async function pasteCellDataOne(row, dateISO, src) {
   const existing = getEntry(row, dateISO)
   const ck = row.key + dateISO
   savingCell.value = ck
@@ -1400,36 +1747,133 @@ async function pasteCellData(row, dateISO) {
         localRows.value = localRows.value.filter(r => r.key !== row.key)
       }
     } else if (existing) {
-      // Pasting a cell that had no hours and no holiday marker clears the target.
       await timeEntriesApi.remove(existing.id)
       rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
     }
-  } catch {
-    ui.error(t('timeTracking.save_error'))
   } finally {
     if (savingCell.value === ck) savingCell.value = ''
   }
 }
 
-function onCellKeydown(row, dateISO, event) {
+async function pasteCellData(row, dateISO) {
+  const src = copiedCell.value
+  if (!src) return
+  const targets = getSelectedCells()
+  const cells = targets.length > 0 ? targets : [{ row, dateISO }]
+  const undoItems = cells.map(cell => ({
+    row: cell.row,
+    dateISO: cell.dateISO,
+    before: snapshotCell(cell.row, cell.dateISO),
+  }))
+  try {
+    for (const cell of cells) {
+      await pasteCellDataOne(cell.row, cell.dateISO, src)
+    }
+    pushUndoBatch(undoItems)
+    refreshCellInputs()
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  }
+}
+
+function onCellKeydown(row, dateISO, rowIdx, dayIdx, event) {
+  if (isUndoShortcut(event)) return
+
   if (event.key === 'Enter') {
     event.target.blur()
     return
   }
   if (event.key === 'Escape') {
     copiedCell.value = null
+    clearCellSelection()
     event.target.blur()
     return
   }
+
+  if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    if (!isAllowedCellChar(event.key)) {
+      event.preventDefault()
+      return
+    }
+  }
+
+  const arrowDelta = {
+    ArrowUp: [-1, 0],
+    ArrowDown: [1, 0],
+    ArrowLeft: [0, -1],
+    ArrowRight: [0, 1],
+  }
+  if (arrowDelta[event.key] && !viewingOther.value && editingRow.value !== row.key) {
+    event.preventDefault()
+    const [dr, dd] = arrowDelta[event.key]
+    if (event.shiftKey) {
+      if (!selectionAnchor.value) {
+        selectionAnchor.value = { rowIdx, dayIdx }
+        selectionFocus.value = { rowIdx, dayIdx }
+      }
+      const cur = selectionFocus.value ?? { rowIdx, dayIdx }
+      moveCellSelection(cur.rowIdx + dr, cur.dayIdx + dd, true)
+    } else {
+      moveCellSelection(rowIdx + dr, dayIdx + dd, false)
+    }
+    return
+  }
+
+  if (event.shiftKey && event.key === 'Insert' && copiedCell.value) {
+    event.preventDefault()
+    pasteCellData(row, dateISO)
+    return
+  }
+
   const mod = event.ctrlKey || event.metaKey
   if (!mod) return
   if (event.key === 'c') {
-    // Don't preventDefault: let the browser also copy the text value normally.
-    copyCellData(row, dateISO)
+    copyCellData(row, dateISO, rowIdx, dayIdx)
   } else if (event.key === 'v' && copiedCell.value) {
     event.preventDefault()
     pasteCellData(row, dateISO)
   }
+}
+
+function isAllowedCellChar(key) {
+  if (timeNotation.value === 'hhmm') return /^[\d:]$/.test(key)
+  return /^[\d.,]$/.test(key)
+}
+
+function sanitizeCellInput(raw) {
+  if (timeNotation.value === 'hhmm') {
+    let val = String(raw).replace(/[^\d:]/g, '')
+    const colon = val.indexOf(':')
+    if (colon >= 0) {
+      val = val.slice(0, colon + 1) + val.slice(colon + 1).replace(/:/g, '')
+    }
+    return val
+  }
+  let val = String(raw).replace(/[^\d.,]/g, '').replace(',', '.')
+  const dot = val.indexOf('.')
+  if (dot >= 0) val = val.slice(0, dot + 1) + val.slice(dot + 1).replace(/\./g, '')
+  return val
+}
+
+function onCellInput(event) {
+  const el = event.target
+  let val = sanitizeCellInput(el.value)
+  if (timeNotation.value === 'hhmm' && val.length === 2 && !val.includes(':')) {
+    val = val + ':'
+  }
+  if (val !== el.value) el.value = val
+}
+
+function onCellPaste(event) {
+  event.preventDefault()
+  const text = event.clipboardData?.getData('text') ?? ''
+  const sanitized = sanitizeCellInput(text)
+  if (!sanitized) return
+  const el = event.target
+  const start = el.selectionStart ?? el.value.length
+  const end = el.selectionEnd ?? el.value.length
+  el.value = sanitizeCellInput(el.value.slice(0, start) + sanitized + el.value.slice(end))
+  onCellInput({ target: el })
 }
 
 // ── Per-cell time range popup ─────────────────────────────────────────────
@@ -1481,12 +1925,19 @@ function onTimePopupInput(field, event) {
   else timePopupEnd.value = val
 }
 
+function timePopupOvernight() {
+  const s = parseWallClock(timePopupStart.value)
+  const e = parseWallClock(timePopupEnd.value)
+  return s >= 0 && e >= 0 && e <= s
+}
+
 function timePopupMinutes() {
   const s = parseWallClock(timePopupStart.value)
   const e = parseWallClock(timePopupEnd.value)
   if (s < 0 || e < 0) return null
-  const mins = e - s
-  return mins > 0 ? mins : null
+  if (e > s) return e - s
+  if (e === s) return null
+  return (24 * 60 - s) + e
 }
 
 async function applyTimePopup(row, dateISO) {
@@ -1495,12 +1946,17 @@ async function applyTimePopup(row, dateISO) {
   const em = parseWallClock(timePopupEnd.value)
   const start = sm >= 0 ? fmtWallClock(sm) : null
   const end   = em >= 0 ? fmtWallClock(em) : null
-  const calcMins = (start && end && em > sm) ? (em - sm) : null
+  let calcMins = null
+  if (start && end && sm >= 0 && em >= 0 && sm !== em) {
+    calcMins = em > sm ? (em - sm) : ((24 * 60 - sm) + em)
+  }
 
   const existing = getEntry(row, dateISO)
+  const before = snapshotCell(row, dateISO)
   const ck = row.key + dateISO
   savingCell.value = ck
   try {
+    let changed = false
     if (existing) {
       const minutes = calcMins !== null ? calcMins : existing.minutes
       const { data } = await timeEntriesApi.update(existing.id, {
@@ -1515,6 +1971,7 @@ async function applyTimePopup(row, dateISO) {
       })
       const idx = rawEntries.value.findIndex(e => e.id === existing.id)
       rawEntries.value[idx] = data
+      changed = true
     } else if (calcMins !== null) {
       const { data } = await timeEntriesApi.create({
         customer_id:  row.customer_id || null,
@@ -1527,7 +1984,9 @@ async function applyTimePopup(row, dateISO) {
       })
       rawEntries.value.push(data)
       localRows.value = localRows.value.filter(r => r.key !== row.key)
+      changed = true
     }
+    if (changed) pushUndoBatch([{ row, dateISO, before }])
   } catch {
     ui.error(t('timeTracking.save_error'))
   } finally {
@@ -1539,6 +1998,7 @@ async function applyTimePopup(row, dateISO) {
 async function clearTimePopup(row, dateISO) {
   const existing = getEntry(row, dateISO)
   if (!existing) { timePopupKey.value = ''; return }
+  const before = snapshotCell(row, dateISO)
   const ck = row.key + dateISO
   savingCell.value = ck
   try {
@@ -1554,11 +2014,167 @@ async function clearTimePopup(row, dateISO) {
     })
     const idx = rawEntries.value.findIndex(e => e.id === existing.id)
     rawEntries.value[idx] = data
+    pushUndoBatch([{ row, dateISO, before }])
   } catch {
     ui.error(t('timeTracking.save_error'))
   } finally {
     if (savingCell.value === ck) savingCell.value = ''
     timePopupKey.value = ''
+  }
+}
+
+// ── Standby shift (multi-day) ─────────────────────────────────────────────
+const standbyRow = ref(null)
+const savingStandby = ref(false)
+const standbyForm = ref({ start_date: '', start_time: '19:00', end_date: '', end_time: '07:00' })
+const displayStandbyStartDate = ref('')
+const displayStandbyEndDate = ref('')
+
+function syncStandbyDateDisplays() {
+  displayStandbyStartDate.value = standbyForm.value.start_date ? formatDate(standbyForm.value.start_date) : ''
+  displayStandbyEndDate.value = standbyForm.value.end_date ? formatDate(standbyForm.value.end_date) : ''
+}
+
+function _parseStandbyDate(displayRef, isoKey) {
+  const val = displayRef.value.trim()
+  if (!val) {
+    standbyForm.value[isoKey] = ''
+    return
+  }
+  const fmt = dateOnlyFormat()
+  const yPos = fmt.indexOf('YYYY')
+  const mPos = fmt.indexOf('MM')
+  const dPos = fmt.indexOf('DD')
+  const y = parseInt(val.slice(yPos, yPos + 4), 10)
+  const m = parseInt(val.slice(mPos, mPos + 2), 10)
+  const d = parseInt(val.slice(dPos, dPos + 2), 10)
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    displayRef.value = standbyForm.value[isoKey] ? formatDate(standbyForm.value[isoKey]) : ''
+    return
+  }
+  const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  standbyForm.value[isoKey] = iso
+  displayRef.value = formatDate(iso)
+}
+
+function parseStandbyStartDate() { _parseStandbyDate(displayStandbyStartDate, 'start_date') }
+function parseStandbyEndDate() { _parseStandbyDate(displayStandbyEndDate, 'end_date') }
+
+function onStandbyStartDateChange(e) {
+  standbyForm.value.start_date = e.target.value
+  displayStandbyStartDate.value = e.target.value ? formatDate(e.target.value) : ''
+}
+
+function onStandbyEndDateChange(e) {
+  standbyForm.value.end_date = e.target.value
+  displayStandbyEndDate.value = e.target.value ? formatDate(e.target.value) : ''
+}
+
+const standbySegments = computed(() => {
+  if (!standbyForm.value.start_date || !standbyForm.value.end_date) return []
+  return splitShiftIntoDayEntries(
+    standbyForm.value.start_date,
+    standbyForm.value.start_time,
+    standbyForm.value.end_date,
+    standbyForm.value.end_time,
+  )
+})
+
+const standbyPreview = computed(() => {
+  const segs = standbySegments.value
+  if (!segs.length) return ''
+  const total = segs.reduce((s, seg) => s + seg.minutes, 0)
+  return t('timeTracking.standby_preview', { count: segs.length, hours: fmtTime(total) })
+})
+
+function onStandbyTimeInput(field, event) {
+  let val = event.target.value.replace(/[^\d:]/g, '')
+  if (val.length === 2 && !val.includes(':')) {
+    val = val + ':'
+    event.target.value = val
+  }
+  if (field === 'start') standbyForm.value.start_time = val
+  else standbyForm.value.end_time = val
+}
+
+function openStandbyShift(row) {
+  standbyRow.value = row
+  const defaults = weekendStandbyDefaults(weekDays.value.map(d => d.iso))
+  standbyForm.value = { ...defaults }
+  syncStandbyDateDisplays()
+}
+
+function closeStandbyShift() {
+  standbyRow.value = null
+  savingStandby.value = false
+  displayStandbyStartDate.value = ''
+  displayStandbyEndDate.value = ''
+}
+
+function applyStandbyPreset() {
+  const defaults = weekendStandbyDefaults(weekDays.value.map(d => d.iso))
+  standbyForm.value = { ...defaults }
+  syncStandbyDateDisplays()
+}
+
+async function applyStandbyShift() {
+  parseStandbyStartDate()
+  parseStandbyEndDate()
+  const row = standbyRow.value
+  const segs = standbySegments.value
+  if (!row || !segs.length) {
+    ui.error(t('timeTracking.standby_invalid_range'))
+    return
+  }
+  if (parseShiftWallClock(standbyForm.value.start_time) < 0 || parseShiftWallClock(standbyForm.value.end_time) < 0) {
+    ui.error(t('timeTracking.standby_invalid_range'))
+    return
+  }
+
+  savingStandby.value = true
+  const undoItems = segs.map(seg => ({
+    row,
+    dateISO: seg.date,
+    before: snapshotCell(row, seg.date),
+  }))
+  try {
+    for (const seg of segs) {
+      const existing = getEntry(row, seg.date)
+      if (existing) {
+        const { data } = await timeEntriesApi.update(existing.id, {
+          customer_id: row.customer_id || null,
+          project_id:  row.project_id  || null,
+          date:        seg.date,
+          minutes:     seg.minutes,
+          description: row.description,
+          is_holiday:  existing.is_holiday,
+          start_time:  seg.start_time,
+          end_time:    seg.end_time,
+        })
+        const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+        rawEntries.value[idx] = data
+      } else {
+        const { data } = await timeEntriesApi.create({
+          customer_id:  row.customer_id || null,
+          project_id:   row.project_id  || null,
+          date:         seg.date,
+          minutes:      seg.minutes,
+          description:  row.description,
+          start_time:   seg.start_time,
+          end_time:     seg.end_time,
+        })
+        rawEntries.value.push(data)
+      }
+    }
+    localRows.value = localRows.value.filter(r => r.key !== row.key)
+    pushUndoBatch(undoItems)
+    ui.success(t('timeTracking.standby_success'))
+    closeStandbyShift()
+    loadWeek()
+  } catch {
+    ui.error(t('timeTracking.standby_error'))
+  } finally {
+    savingStandby.value = false
   }
 }
 
@@ -1983,12 +2599,16 @@ function onDocClick(e) {
   }
 }
 onMounted(() => {
+  window.addEventListener('keydown', onWindowUndoCapture, true)
+  window.addEventListener('beforeinput', onWindowBeforeInputCapture, true)
   document.addEventListener('mousedown', onDocClick)
   document.addEventListener('mousedown', onHolidaysDocClick)
   document.addEventListener('mousedown', onWkPickerDocClick)
   document.addEventListener('mousedown', onTimePopupDocClick)
 })
 onUnmounted(() => {
+  window.removeEventListener('keydown', onWindowUndoCapture, true)
+  window.removeEventListener('beforeinput', onWindowBeforeInputCapture, true)
   document.removeEventListener('mousedown', onDocClick)
   document.removeEventListener('mousedown', onHolidaysDocClick)
   document.removeEventListener('mousedown', onWkPickerDocClick)
@@ -2251,6 +2871,13 @@ td.c-day:focus-within .cell-time-toggle,
   font-weight: 600;
   color: var(--color-primary);
 }
+.tp-overnight {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
 .tp-actions {
   display: flex;
   gap: 4px;
@@ -2275,6 +2902,29 @@ td.c-day:focus-within .cell-time-toggle,
   color: var(--color-text-muted);
 }
 .tp-clear:hover { background: var(--color-surface-3, var(--color-surface-2)); }
+
+.standby-hint,
+.standby-preview {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0 0 12px;
+}
+.standby-preview {
+  margin: 12px 0 0;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.standby-preset { margin-top: 4px; }
+
+.date-input-row { display: flex; align-items: center; gap: 6px; }
+.date-input-row .form-input { flex: 1; }
+.picker-wrap { position: relative; display: inline-flex; flex-shrink: 0; cursor: pointer; }
+.date-picker-overlay { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.btn-icon-xs {
+  background: none; border: none; cursor: pointer; color: var(--color-text-muted);
+  padding: 2px 4px; font-size: 13px; line-height: 1; border-radius: 3px; flex-shrink: 0;
+}
+.btn-icon-xs:hover { background: var(--color-bg); color: var(--color-text); }
 .c-day-holiday { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.18); }
 .dh-holiday-dot {
   width: 7px; height: 7px; border-radius: 50%;
@@ -2285,6 +2935,11 @@ td.c-day:focus-within .cell-time-toggle,
 .tt-row-holiday .c-info, .tt-row-holiday .c-desc { font-style: italic; opacity: .9; }
 .c-day-holiday-cell { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.30); }
 .c-day-copied { outline: 2px dashed var(--color-primary); outline-offset: -2px; }
+.c-day-selected {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+.c-day-selected .h-inp { background: transparent; }
 
 .tt-mode-tabs { display: flex; gap: 2px; }
 .tt-mode-btn {
@@ -2337,7 +2992,7 @@ td.c-day:focus-within .cell-time-toggle,
 .c-desc { width: 180px; }
 .c-day  { width: 82px; }
 .c-total { width: 70px; }
-.c-act  { width: 54px; }
+.c-act  { width: 72px; }
 
 /* Sticky left columns */
 .c-nr, .c-info, .c-desc {
@@ -2500,6 +3155,17 @@ td.c-day:focus-within .cell-time-toggle,
 }
 .btn-copy-prev:hover:not(:disabled) { background: var(--color-bg); border-color: var(--color-text-muted); color: var(--color-text); }
 .btn-copy-prev:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-undo {
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.btn-undo:hover:not(:disabled) { background: var(--color-bg); border-color: var(--color-text-muted); color: var(--color-text); }
+.btn-undo:disabled { opacity: 0.5; cursor: not-allowed; }
 .tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
 .pdf-font-group { display: flex; flex-direction: column; gap: 4px; }
 .pdf-options-wrapper { position: relative; }
@@ -2570,6 +3236,7 @@ td.c-day:focus-within .cell-time-toggle,
 .act-btn:hover { background: var(--color-bg); color: var(--color-text); }
 
 .act-edit:hover { color: var(--color-primary); }
+.act-standby:hover { color: var(--color-primary); }
 .act-del:hover  { color: var(--color-danger); }
 .act-ok  { opacity: 1 !important; color: var(--color-success); }
 .act-ok:hover { background: color-mix(in srgb, var(--color-success) 12%, transparent); }

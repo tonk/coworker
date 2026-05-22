@@ -8,14 +8,13 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.12)
+## Latest release (v0.10.13)
 
-- **Contract time slots** — define named rate tiers per contract (day type + time range + factor/rate); PDF and XLSX exports apply them automatically when entries have start/end times.
-- **Time entry start/end time** — record wall-clock start and end on any time-tracking cell; duration auto-fills from the range.
-- **PDF inline slot breakdown** — per-entry sub-rows show the exact HH:MM–HH:MM overlap with each slot and the standard-rate gaps, sorted chronologically under the parent entry.
-- **Cell copy/paste** — Ctrl+C / Ctrl+V copies the full contents of a time cell (duration, times, holiday) to another cell; dashed outline marks the clipboard source.
-- **Deleted cards restore** — project owners can view, restore, or permanently delete soft-deleted cards from Project Settings.
-- **Working hours & time notation** — configure expected hours per weekday; choose decimal or HH:MM duration display.
+- **Overnight & multi-day contract slots** — rate tiers can span midnight and multiple calendar days (e.g. Fri 19:00 → Mon 07:00); week preview on the contract form.
+- **Standby shift logging** — log a multi-day shift from one dialog; entries split per day with start/end times for slot billing.
+- **Time grid selection & paste** — Shift+arrows extend selection; Ctrl+V / Shift+Ins paste into all selected cells.
+- **Undo (Ctrl+Z)** — revert the last saved change; works on Firefox and from anywhere on the time-tracking page.
+- **XLSX slot breakdown** — export sub-rows per contract slot when entries have wall-clock times.
 
 ## Experiment
 

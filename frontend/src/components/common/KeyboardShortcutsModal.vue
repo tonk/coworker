@@ -90,6 +90,17 @@ const sections = computed(() => [
       { chord: ['Enter / Tab'], action: 'shortcuts.pick_suggestion' },
     ],
   },
+  {
+    key: 'time_tracking',
+    rows: [
+      { chord: ['↑ / ↓ / ← / →'], action: 'shortcuts.tt_move_selection' },
+      { chord: ['Shift', '↑ / ↓ / ← / →'], action: 'shortcuts.tt_extend_selection' },
+      { chord: [mod, 'C'], action: 'shortcuts.tt_copy_cell' },
+      { chord: [mod, 'V'], action: 'shortcuts.tt_paste_cells', alt: ['Shift', 'Ins'] },
+      { chord: [mod, 'Z'], action: 'shortcuts.tt_undo' },
+      { chord: ['Esc'], action: 'shortcuts.tt_clear_selection' },
+    ],
+  },
 ])
 </script>
 
