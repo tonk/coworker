@@ -25,6 +25,23 @@ options:
       - Login name of the user whose options should be updated.
     type: str
     required: true
+  time_tracking_enabled:
+    description:
+      - Enable time tracking features for the user.
+    type: bool
+  theme:
+    description:
+      - UI theme preference.
+    type: str
+    choices: [light, dark, system]
+  show_breadcrumbs:
+    description:
+      - Whether to show breadcrumb navigation in the UI.
+    type: bool
+  email_notifications:
+    description:
+      - Whether the user receives email notifications.
+    type: bool
   locale:
     description:
       - Preferred UI locale (e.g. C(en), C(nl), C(de), C(fr), C(es)).
@@ -99,13 +116,28 @@ EXAMPLES = r'''
     sidebar_position: right
     accent_color: red
 
-- name: Configure time tracking preferences
+- name: Enable time tracking for a user
+  ansilabnl.warmdesk.user_options:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+    username: charlie
+    time_tracking_enabled: true
+
+- name: Configure time tracking display preferences
   ansilabnl.warmdesk.user_options:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
     username: charlie
     time_notation: hhmm
     week_start: monday
+
+- name: Switch to dark theme with breadcrumbs hidden
+  ansilabnl.warmdesk.user_options:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+    username: alice
+    theme: dark
+    show_breadcrumbs: false
 '''
 
 RETURN = r'''
@@ -137,6 +169,10 @@ def _find_user(client, username):
 
 
 _OPTION_FIELDS = (
+    'time_tracking_enabled',
+    'theme',
+    'show_breadcrumbs',
+    'email_notifications',
     'locale',
     'date_time_format',
     'timezone',
@@ -153,6 +189,10 @@ def run_module():
     argument_spec = warmdesk_argument_spec()
     argument_spec.update(dict(
         username=dict(type='str', required=True),
+        time_tracking_enabled=dict(type='bool'),
+        theme=dict(type='str', choices=['light', 'dark', 'system']),
+        show_breadcrumbs=dict(type='bool'),
+        email_notifications=dict(type='bool'),
         locale=dict(type='str'),
         date_time_format=dict(type='str'),
         timezone=dict(type='str'),

@@ -43,6 +43,10 @@ func AdminUpdateUser(c *gin.Context) {
 		GlobalRole          string `json:"global_role"`
 		IsActive            *bool  `json:"is_active"`
 		TimeTrackingViewer  *bool  `json:"time_tracking_viewer"`
+		TimeTrackingEnabled *bool  `json:"time_tracking_enabled"`
+		Theme               string `json:"theme"`
+		ShowBreadcrumbs     *bool  `json:"show_breadcrumbs"`
+		EmailNotifications  *bool  `json:"email_notifications"`
 		FirstName           string `json:"first_name"`
 		LastName            string `json:"last_name"`
 		DisplayName         string `json:"display_name"`
@@ -74,6 +78,19 @@ func AdminUpdateUser(c *gin.Context) {
 	}
 	if req.TimeTrackingViewer != nil {
 		updates["time_tracking_viewer"] = *req.TimeTrackingViewer
+	}
+	if req.TimeTrackingEnabled != nil {
+		updates["time_tracking_enabled"] = *req.TimeTrackingEnabled
+	}
+	validThemes := map[string]bool{"light": true, "dark": true, "system": true}
+	if validThemes[req.Theme] {
+		updates["theme"] = req.Theme
+	}
+	if req.ShowBreadcrumbs != nil {
+		updates["show_breadcrumbs"] = *req.ShowBreadcrumbs
+	}
+	if req.EmailNotifications != nil {
+		updates["email_notifications"] = *req.EmailNotifications
 	}
 	if req.FirstName != "" {
 		updates["first_name"] = req.FirstName
