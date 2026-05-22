@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.10.11 — 2026-05-22
+
+### Added
+- **Ansible collection — `user_options` module** — new `ansilabnl.warmdesk.user_options` module manages per-user preferences (locale, timezone, font, sidebar position, accent colour, time notation, week start, time tracking toggle, theme, breadcrumbs, email notifications) via the admin API. Idempotent — only sends a PUT when values differ.
+- **Admin API — new user preference fields** — `PUT /api/v1/admin/users/:id` now accepts `time_tracking_enabled`, `theme`, `show_breadcrumbs`, and `email_notifications`, matching the existing user-facing `PUT /api/v1/auth/me` endpoint.
+
+### Changed
+- **Ansible collection — `card_comment` option renamed** — `time_spent_minutes` → `time_spent` for consistency with the `card` module. The API JSON key remains `time_spent_minutes`.
+
 ## v0.10.10 — 2026-05-22
 
 ### Added

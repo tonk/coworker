@@ -572,3 +572,6 @@ Create an application that has all these features and requirements
 - Add maximize/restore button to card detail modal: fills the full viewport on click; second click restores previous size
 - Fix card modal clipped at high browser zoom: make modal backdrop the scroll container so the full card is always reachable
 - Ansible card module: added `time_spent` option to log time (in minutes) against a card
+- Ansible card_comment module: renamed `time_spent_minutes` to `time_spent` for consistency
+- Ansible collection: new `user_options` module for managing per-user preferences
+- Admin API: `PUT /api/v1/admin/users/:id` now accepts `time_tracking_enabled`, `theme`, `show_breadcrumbs`, `email_notifications`

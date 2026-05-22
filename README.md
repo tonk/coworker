@@ -8,9 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.10)
+## Latest release (v0.10.11)
 
-- **Ansible `time_spent` option** — `ansilabnl.warmdesk.card` now supports `time_spent` (in minutes) for logging time against cards.
+- **Ansible `user_options` module** — manage per-user preferences (locale, timezone, theme, time tracking toggle, and more) via `ansilabnl.warmdesk.user_options`.
+- **Admin API extended** — `time_tracking_enabled`, `theme`, `show_breadcrumbs`, `email_notifications` now settable via `PUT /admin/users/:id`.
 
 ## Experiment
 
