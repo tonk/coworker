@@ -1,0 +1,71 @@
+---
+title: "v0.10.9: CVE patches and accessibility polish"
+date: "2026-05-22"
+author: "Ton Kersten"
+description: "Two Go standard-library CVE patches, a Content-Security-Policy tightening, keyboard access for board cards, and i18n-aware aria-labels across the board UI."
+draft: false
+---
+:doctype: article
+:icons!:
+
+v0.10.9 ships two CVE patches, one CSP improvement, and a set of focused accessibility fixes for the board view.
+
+== CVE patches
+
+=== golang.org/x/net → v0.55.0
+
+`golang.org/x/net` is updated to v0.55.0, which addresses a security advisory in the HTTP/2 and HPACK implementations.
+
+=== golang.org/x/sys → v0.45.0
+
+`golang.org/x/sys` is updated to v0.45.0, picking up fixes for low-level system call handling on Linux and other platforms.
+
+== Content-Security-Policy hardening
+
+`object-src 'none'` is now included in the `Content-Security-Policy` response header.
+
+The `object-src` directive controls what sources are valid for `<object>`, `<embed>`, and `<applet>` elements — effectively Flash, Java applets, and similar browser plugins.
+Setting it to `'none'` ensures these elements cannot load any content, even from the same origin.
+This was the one CSP directive missing from the existing policy.
+
+== Accessibility
+
+=== Board cards keyboard-accessible
+
+Board cards are now reachable and activatable without a mouse.
+
+Each card carries `role="button"` and `tabindex="0"`, so it appears in the Tab order.
+Pressing Enter or Space opens the card detail modal, consistent with standard button behaviour.
+
+This was a WCAG 2.1 AA Level failure (Success Criterion 2.1.1 Keyboard): interactive content was not operable without a pointing device.
+
+=== i18n aria-labels on board controls
+
+Several `aria-label` values in the board UI were previously hardcoded in English.
+They are now translated via `$t()` calls, consistent with the rest of the application.
+
+Affected elements:
+
+* Column name edit input (`board.column_name`)
+* Add card button (`board.add_card`)
+* Edit column button (`board.edit_column`)
+* Delete column button (`board.delete_column`)
+* Sort-by select (`board.sort_select_aria`) _(new key)_
+* Sort direction toggle: ascending (`board.sort_asc_action`) _(new key)_
+* Sort direction toggle: descending (`board.sort_desc_action`) _(new key)_
+* Card sections menu button (`board.toggle_sections`)
+
+All three new keys are provided in all 12 supported locales.
+
+=== A11yStatusModal focus management
+
+The accessibility status modal (shown from the keyboard shortcuts panel) now:
+
+* Traps focus within the dialog while open — Tab and Shift+Tab cycle through focusable elements without escaping the modal
+* Closes on Escape
+* Restores focus to the element that opened the modal when it is dismissed
+* Moves focus to the first focusable element inside the dialog on open
+
+=== ProjectSettings colour picker label
+
+The label colour picker in the Project Settings labels tab now carries an `aria-label` matching its visible label, satisfying WCAG 4.1.2 (Name, Role, Value) for the colour input.

@@ -1,0 +1,129 @@
+---
+title: "v0.10.8: Security hardening and WCAG 2.1 AA accessibility"
+date: "2026-05-22"
+author: "Ton Kersten"
+description: "A broad security pass covering JWT token-type confusion, SVG upload XSS, webhook token hashing, SSRF prevention, and more — alongside a full WCAG 2.1 AA accessibility sweep across every view in the application."
+draft: false
+---
+:doctype: article
+:icons!:
+
+v0.10.8 is a security and accessibility release with no new features.
+Every change in this release either closes a security gap or improves the experience for users of assistive technology.
+
+== Security
+
+=== JWT purpose segregation
+
+Refresh tokens and MFA tokens now carry a `purpose` claim.
+Dedicated validation helpers (`ValidateRefreshToken`, `ValidateMFAToken`) reject any token whose purpose does not match the endpoint being called.
+
+Without this, a refresh token was structurally identical to an access token and could theoretically be replayed as one.
+The fix ensures each token type is only valid in its intended context.
+
+=== SVG uploads blocked
+
+SVG files are no longer accepted on image upload endpoints.
+
+SVG is XML, not a bitmap, and browsers execute `<script>` elements embedded in SVG when the file is served inline or as an `<img>` in certain contexts.
+Uploading a malicious SVG as a project avatar, user avatar, or attachment was a stored XSS vector.
+Accepted image types are now limited to JPEG, PNG, GIF, and WebP.
+
+=== Accurate MIME sniffing
+
+Go's built-in `net/http.DetectContentType` only inspects the first 512 bytes and covers a limited set of file signatures.
+It can be fooled by prepending valid image bytes to a file that is actually something else.
+
+The attachment handler and the conversation-avatar upload now use `gabriel-vasile/mimetype`, which performs a deeper inspection and recognises far more file types.
+
+=== Attachment ownership enforced before parsing
+
+The attachment download handler now verifies that the requesting user is a member of the relevant project (or conversation) before it opens the file on disk.
+Previously the ownership check came after file parsing, which allowed path-based probing of the filesystem structure.
+
+=== SSRF / DNS-rebinding prevention in media proxy
+
+The media proxy resolves the upstream hostname to an IP address once, before making the outbound request, and then dials by IP with the original `Host` header.
+
+Without this, an attacker who controlled a DNS record could serve a public IP during the initial check and then switch to an internal address before the actual connection — a classic DNS-rebinding attack.
+
+(This fix was already applied to `GET /api/v1/media/proxy` in v0.10.6; v0.10.8 brings the same protection to the remaining proxy paths.)
+
+=== Webhook tokens hashed
+
+Webhook tokens are now stored as SHA-256 hashes in a new `token_hash` column.
+The plaintext token is returned once at creation time and never stored again.
+
+On first startup after this upgrade, existing plaintext tokens in the `token` column are hashed automatically.
+Incoming webhook requests are authenticated by hashing the provided token and comparing to the stored hash.
+
+=== Auth rate limiting extended
+
+`/auth/refresh` and `/auth/passkey/login/begin` are now covered by the existing `AuthRateLimit` middleware.
+Previously only `/auth/login`, `/auth/register`, and `/auth/password-reset` were rate-limited.
+
+=== Group-call invites restricted
+
+A user can only be invited into a group call via a conversation they already share with the inviter.
+Previously it was possible to send a call notification to any user ID.
+
+=== Reduced user data exposure
+
+Non-admin callers of `GET /api/v1/users` now receive a trimmed response containing only id, username, display name, avatar URL, and online status.
+The full user struct (email address, locale, role, settings, etc.) is now restricted to admin callers.
+
+=== Secure cookie flag and input sanitisation
+
+* The `Secure` flag on auth cookies is now derived from whether the connection is TLS or the `X-Forwarded-Proto: https` header is present, rather than being tied to Gin release mode alone.
+* The `X-WarmDesk-Client` header value is stripped of newline and tab characters before being written to the audit log.
+* Avatar URL updates now reject values that are not an `/uploads/` path or a valid `http(s)://` URL.
+
+=== Startup warnings
+
+* A log warning is emitted at startup when `db_driver` is `postgres` or `mysql` and `db_tls_mode` is `disable` — a reminder that credentials and query data travel in plaintext over the network.
+* `pg_dump` and `mysqldump` error output is no longer forwarded verbatim to the API response, preventing internal path and configuration leakage.
+
+== Accessibility (WCAG 2.1 AA)
+
+This release includes a full accessibility audit of every view in the application.
+
+=== Tab panel ARIA roles
+
+The following views now use correct `role="tablist"` / `role="tab"` / `role="tabpanel"` markup with `aria-selected`, `aria-controls`, and `aria-labelledby` attributes wired up on every tab:
+
+* Project Settings
+* Backlog
+* Admin panel (all seven tabs)
+* Direct Messages (new conversation panel)
+
+=== Icon-only buttons
+
+Every button that shows only an icon or symbol now has an `aria-label`.
+This covers edit, delete, promote, demote, remove, star/favourite, close, call, settings, add member, layout picker, notification bell, and view-mode toggle buttons across all views.
+
+Toggle buttons additionally carry `aria-pressed` to communicate their current state to screen readers.
+
+=== Form label linkage
+
+Every `<label>` element in the application now has a `for` attribute that matches the `id` on its corresponding input, select, or textarea.
+This covers:
+
+* Settings — profile, password, MFA
+* Admin — system settings (general, SMTP, branding, password policy, backup), and all modals (create/edit user, create/edit project, create/edit group, create/edit customer)
+* Customer detail — Edit Customer, Add/Edit Contract, Add Member modals
+* Customers — Create Customer modal
+* Topics — new topic form
+* Direct Messages — add-member search
+
+=== Keyboard-visible hover elements
+
+Elements that were previously revealed only on mouse hover (emoji triggers, drag handles, message action buttons) are now also visible when the element or its container receives keyboard focus, via `:focus-visible` and `:focus-within` CSS rules.
+
+=== Dialog accessibility
+
+`AboutModal` and `NewsWelcomeModal` now carry `aria-modal="true"` and restore focus to the previously focused element when closed.
+
+=== About box
+
+The website URL (`tonk.github.io/warmdesk`) is now shown in the About dialog.
+A new `about.website` i18n key is provided in all 12 supported locales.
