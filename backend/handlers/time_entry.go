@@ -71,12 +71,13 @@ func CreateTimeEntry(c *gin.Context) {
 		Date        string `json:"date"`
 		Minutes     int    `json:"minutes"`
 		Description string `json:"description"`
+		IsHoliday   bool   `json:"is_holiday"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-	if req.Minutes <= 0 {
+	if req.Minutes < 0 || (req.Minutes == 0 && !req.IsHoliday) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "minutes must be positive"})
 		return
 	}
@@ -93,6 +94,7 @@ func CreateTimeEntry(c *gin.Context) {
 		Date:        date,
 		Minutes:     req.Minutes,
 		Description: req.Description,
+		IsHoliday:   req.IsHoliday,
 	}
 	if err := database.DB.Create(&entry).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -123,12 +125,13 @@ func UpdateTimeEntry(c *gin.Context) {
 		Date        string `json:"date"`
 		Minutes     int    `json:"minutes"`
 		Description string `json:"description"`
+		IsHoliday   bool   `json:"is_holiday"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-	if req.Minutes <= 0 {
+	if req.Minutes < 0 || (req.Minutes == 0 && !req.IsHoliday) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "minutes must be positive"})
 		return
 	}
@@ -143,6 +146,7 @@ func UpdateTimeEntry(c *gin.Context) {
 	entry.Date = date
 	entry.Minutes = req.Minutes
 	entry.Description = req.Description
+	entry.IsHoliday = req.IsHoliday
 
 	// Explicitly clear nullable FK columns so zeroing them is persisted.
 	if req.CustomerID == nil {

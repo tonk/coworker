@@ -157,7 +157,7 @@
                 <td class="c-desc">{{ row.description || '—' }}</td>
               </template>
 
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', row.is_holiday && getEntry(row, d.iso) ? 'c-day-holiday-cell' : '']">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '']">
                 <input
                   :type="timeNotation === 'hhmm' ? 'text' : 'number'"
                   class="h-inp"
@@ -170,6 +170,15 @@
                   @blur="onCellBlur(row, d.iso, $event.target.value)"
                   @keydown.enter="$event.target.blur()"
                 />
+                <button v-if="!viewingOther"
+                  class="cell-hol-toggle"
+                  :class="{ 'cell-hol-on': getEntry(row, d.iso)?.is_holiday }"
+                  :aria-label="$t('timeTracking.is_holiday')"
+                  :aria-pressed="!!getEntry(row, d.iso)?.is_holiday"
+                  :title="$t('timeTracking.is_holiday')"
+                  @mousedown.prevent="toggleCellHoliday(row, d.iso)"
+                  tabindex="-1"
+                ></button>
               </td>
               <td class="c-total c-rowtotal">
                 <span>{{ rowTotal(row) }}</span>
@@ -216,7 +225,7 @@
                   @keydown.escape="cancelNewRow"
                 />
               </td>
-              <td v-for="d in weekDays" :key="d.iso" class="c-day">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
                 <input class="h-inp" :type="timeNotation === 'hhmm' ? 'text' : 'number'" value="" disabled />
               </td>
               <td class="c-total"></td>
@@ -227,7 +236,7 @@
           <tfoot>
             <tr class="tt-foot">
               <td colspan="3" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" class="c-day c-total c-dttotal">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
                 {{ dayTotal(d.iso) }}
               </td>
               <td class="c-total grand-total">{{ grandTotal }}</td>
@@ -235,7 +244,7 @@
             </tr>
             <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-undecl">
               <td colspan="3" class="foot-lbl foot-undecl-lbl">{{ $t('timeTracking.undeclarable') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" class="c-day c-total c-dttotal foot-undecl">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-undecl', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
                 {{ dayUndecl(d.iso) || '' }}
               </td>
               <td class="c-total foot-undecl">{{ fmtTime(grandUndeclTotal) }}</td>
@@ -243,7 +252,7 @@
             </tr>
             <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-decl">
               <td colspan="3" class="foot-lbl foot-decl-lbl">{{ $t('timeTracking.declarable') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" class="c-day c-total c-dttotal foot-decl">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-decl', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
                 {{ dayDeclarable(d.iso) || '' }}
               </td>
               <td class="c-total grand-total foot-decl">{{ fmtTime(grandDeclarable) }}</td>
@@ -893,6 +902,8 @@ const entryRows = computed(() => {
         description:   e.description || '',
         is_holiday:    e.is_holiday || false,
       })
+    } else if (e.is_holiday) {
+      seen.get(k).is_holiday = true
     }
   }
   return [...seen.values()]
@@ -1071,8 +1082,24 @@ async function onCellBlur(row, dateISO, rawVal) {
 
   try {
     if (minutes === 0 && existing) {
-      await timeEntriesApi.remove(existing.id)
-      rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+      if (existing.is_holiday) {
+        // Keep holiday markers at 0 minutes rather than deleting them
+        const { data } = await timeEntriesApi.update(existing.id, {
+          customer_id: row.customer_id || null,
+          project_id:  row.project_id  || null,
+          date:        dateISO,
+          minutes:     0,
+          description: row.description,
+          is_holiday:  true,
+        })
+        const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+        rawEntries.value[idx] = data
+      } else {
+        await timeEntriesApi.remove(existing.id)
+        rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+      }
+      savingCell.value = ''
+      return
     } else if (minutes > 0 && existing) {
       const { data } = await timeEntriesApi.update(existing.id, {
         customer_id: row.customer_id || null,
@@ -1080,6 +1107,7 @@ async function onCellBlur(row, dateISO, rawVal) {
         date:        dateISO,
         minutes,
         description: row.description,
+        is_holiday:  existing.is_holiday,
       })
       const idx = rawEntries.value.findIndex(e => e.id === existing.id)
       rawEntries.value[idx] = data
@@ -1141,6 +1169,7 @@ async function confirmEditRow(row) {
         date:        e.date.slice(0, 10),
         minutes:     e.minutes,
         description: r.description,
+        is_holiday:  e.is_holiday,
       })
       const idx = rawEntries.value.findIndex(x => x.id === e.id)
       rawEntries.value[idx] = data
@@ -1192,6 +1221,48 @@ async function confirmDeleteRow(row) {
   }
 }
 
+// ── Per-cell holiday toggle ───────────────────────────────────────────────
+async function toggleCellHoliday(row, dateISO) {
+  const existing = getEntry(row, dateISO)
+  const ck = row.key + dateISO
+  savingCell.value = ck
+  try {
+    if (existing) {
+      if (existing.is_holiday && existing.minutes === 0) {
+        // 0-minute holiday marker — removing holiday means removing the entry entirely
+        await timeEntriesApi.remove(existing.id)
+        rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+      } else {
+        const { data } = await timeEntriesApi.update(existing.id, {
+          customer_id: row.customer_id || null,
+          project_id:  row.project_id  || null,
+          date:        dateISO,
+          minutes:     existing.minutes,
+          description: row.description,
+          is_holiday:  !existing.is_holiday,
+        })
+        const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+        rawEntries.value[idx] = data
+      }
+    } else {
+      const { data } = await timeEntriesApi.create({
+        customer_id:  row.customer_id  || null,
+        project_id:   row.project_id   || null,
+        date:         dateISO,
+        minutes:      0,
+        description:  row.description,
+        is_holiday:   true,
+      })
+      rawEntries.value.push(data)
+      localRows.value = localRows.value.filter(r => r.key !== row.key)
+    }
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  } finally {
+    if (savingCell.value === ck) savingCell.value = ''
+  }
+}
+
 // ── Add row ───────────────────────────────────────────────────────────────
 const addingRow   = ref(false)
 const newDescRef  = ref(null)
@@ -1223,6 +1294,7 @@ function confirmNewRow() {
       project_id:    r.project_id,
       project_name:  proj?.name || '',
       description:   r.description,
+      is_holiday:    false,
     })
   }
   addingRow.value = false
@@ -1778,7 +1850,26 @@ onMounted(async () => {
 
 
 /* Holiday highlights */
-.c-day-holiday { background: color-mix(in srgb, var(--color-warning, #f59e0b) 30%, transparent); }
+.c-day { position: relative; }
+.cell-hol-toggle {
+  position: absolute;
+  bottom: 3px; right: 3px;
+  width: 10px; height: 10px;
+  padding: 0; border: none;
+  border-radius: 50%;
+  background: var(--color-text-muted, #888);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+td.c-day:hover .cell-hol-toggle,
+td.c-day:focus-within .cell-hol-toggle,
+.cell-hol-toggle.cell-hol-on { opacity: 1; }
+.cell-hol-toggle.cell-hol-on {
+  background: var(--color-warning, #f59e0b);
+  box-shadow: 0 0 5px var(--color-warning, #f59e0b);
+}
+.c-day-holiday { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.18); }
 .dh-holiday-dot {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--color-warning, #f59e0b); margin: 3px auto 0;
@@ -1786,7 +1877,7 @@ onMounted(async () => {
 }
 .tt-row-holiday { background: color-mix(in srgb, var(--color-warning, #f59e0b) 22%, transparent) !important; }
 .tt-row-holiday .c-info, .tt-row-holiday .c-desc { font-style: italic; opacity: .9; }
-.c-day-holiday-cell { background: color-mix(in srgb, var(--color-warning, #f59e0b) 45%, transparent); }
+.c-day-holiday-cell { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.30); }
 
 .tt-mode-tabs { display: flex; gap: 2px; }
 .tt-mode-btn {
@@ -2109,7 +2200,6 @@ onMounted(async () => {
   background: var(--color-surface);
   color: var(--color-text);
 }
-
 /* ── Report ── */
 .tt-report-outer { flex: 1; overflow: auto; padding: 20px 24px; }
 .report-filters { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }

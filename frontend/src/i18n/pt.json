@@ -778,7 +778,8 @@
     "holidays_added": "{count} feriados adicionados para {year}",
     "holidays_all_exist": "Todos os {count} feriados de {year} já existem",
     "holidays_added_skipped": "{added} feriados adicionados para {year} ({skipped} já existiam)",
-    "holidays_error": "Não foi possível adicionar feriados"
+    "holidays_error": "Não foi possível adicionar feriados",
+    "is_holiday": "Feriado"
   },
   "call": {
     "incoming": "Chamada recebida",

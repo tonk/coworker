@@ -777,7 +777,8 @@
     "holidays_added": "{count} pyhäpäivää lisätty vuodelle {year}",
     "holidays_all_exist": "Kaikki {count} pyhäpäivää vuodelle {year} ovat jo olemassa",
     "holidays_added_skipped": "{added} pyhäpäivää lisätty vuodelle {year} ({skipped} oli jo olemassa)",
-    "holidays_error": "Pyhäpäivien lisääminen epäonnistui"
+    "holidays_error": "Pyhäpäivien lisääminen epäonnistui",
+    "is_holiday": "Vapaapäivä"
   },
   "call": {
     "incoming": "Saapuva puhelu",

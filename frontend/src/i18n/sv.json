@@ -778,7 +778,8 @@
     "holidays_added": "{count} helgdagar tillagda för {year}",
     "holidays_all_exist": "Alla {count} helgdagar för {year} finns redan",
     "holidays_added_skipped": "{added} helgdagar tillagda för {year} ({skipped} fanns redan)",
-    "holidays_error": "Det gick inte att lägga till helgdagar"
+    "holidays_error": "Det gick inte att lägga till helgdagar",
+    "is_holiday": "Helgdag"
   },
   "call": {
     "incoming": "Inkommande samtal",

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.10 — 2026-05-22
+
+### Added
+- **Ansible collection — `time_spent` option on card module** — `ansilabnl.warmdesk.card` now accepts `time_spent` (int, minutes) to set the total time logged against a card. Idempotent: only issues a PUT when the value differs from the server.
+
 ## v0.10.9 — 2026-05-22
 
 ### Security
