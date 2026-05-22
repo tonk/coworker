@@ -13,8 +13,8 @@ description:
   - Creates, updates, or deletes a comment on a WarmDesk card.
   - The card is located via I(project) + I(card_number) (e.g. C(EDA-42)).
   - When I(comment_id) is supplied the module is idempotent — it only updates
-    the comment when I(body) or I(time_spent_minutes) differs from the
-    stored value.
+    the comment when I(body) or I(time_spent) differs from the stored
+    value.
   - When I(comment_id) is omitted and I(state=present) a new comment is
     B(always) created. This is intentional for CI/CD pipelines that post a
     deployment notice without caring whether one already exists.
@@ -43,9 +43,9 @@ options:
       - When omitted with I(state=present) a new comment is always created.
       - Required when I(state=absent).
     type: int
-  time_spent_minutes:
+  time_spent:
     description:
-      - Minutes of time logged with this comment.
+      - Time logged with this comment, in minutes.
       - Only used when I(state=present).
       - Pass C(0) to clear an existing time entry on update.
     type: int
@@ -91,7 +91,7 @@ EXAMPLES = r'''
     project: ops-board
     card_number: OPS-7
     body: "Investigated network issue; root cause was a misconfigured firewall rule."
-    time_spent_minutes: 90
+    time_spent: 90
 
 - name: Update an existing comment by ID (idempotent)
   ansilabnl.warmdesk.card_comment:
@@ -141,8 +141,8 @@ comment:
       description: Whether the comment has been edited after creation.
       type: bool
       sample: false
-    time_spent_minutes:
-      description: Time logged with this comment in minutes.
+    time_spent:
+      description: Time logged with this comment, in minutes.
       type: int
       sample: 0
     created_at:
@@ -173,7 +173,7 @@ def run_module():
         card_number=dict(type='str', required=True),
         body=dict(type='str'),
         comment_id=dict(type='int'),
-        time_spent_minutes=dict(type='int', default=0),
+        time_spent=dict(type='int', default=0),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
 
@@ -190,7 +190,7 @@ def run_module():
     card_number = module.params['card_number']
     body = module.params['body']
     comment_id = module.params['comment_id']
-    time_spent_minutes = module.params['time_spent_minutes']
+    time_spent = module.params['time_spent']
     state = module.params['state']
 
     try:
@@ -242,7 +242,7 @@ def run_module():
         try:
             created = client.post(base_url, {
                 'body': body,
-                'time_spent_minutes': time_spent_minutes,
+                'time_spent_minutes': time_spent,
             })
         except WarmDeskAPIError as exc:
             module.fail_json(
@@ -265,7 +265,7 @@ def run_module():
             msg='Comment %d not found on card "%s".' % (comment_id, card_number)
         )
 
-    if existing.get('body') == body and existing.get('time_spent_minutes', 0) == time_spent_minutes:
+    if existing.get('body') == body and existing.get('time_spent_minutes', 0) == time_spent:
         module.exit_json(changed=False, comment=existing)
 
     if module.check_mode:
@@ -274,7 +274,7 @@ def run_module():
     try:
         updated = client.put('%s/%d' % (base_url, comment_id), {
             'body': body,
-            'time_spent_minutes': time_spent_minutes,
+            'time_spent_minutes': time_spent,
         })
     except WarmDeskAPIError as exc:
         module.fail_json(
