@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.7)
+## Latest release (v0.10.8)
 
-- **Card maximize button** — one click fills the full viewport; handy for presenting cards to trainees or reviewing long descriptions.
-- **Fix card modal scrolling at high zoom** — the modal is no longer clipped when zoomed in; the backdrop now scrolls to reveal the full card.
+- **Security hardening** — JWT purpose segregation, SVG upload blocked, webhook tokens hashed, SSRF fix in media proxy, auth rate limiting extended, and more.
+- **WCAG 2.1 AA accessibility** — tab panel ARIA roles, aria-label on all icon buttons, for/id label linkage across all forms, keyboard-visible hover elements, and dialog focus management.
+- **About box** — website link added.
 
 ## Experiment
 

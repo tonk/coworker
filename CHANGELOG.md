@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.10.8 — 2026-05-22
+
+### Security
+- **JWT purpose segregation** — refresh and MFA tokens now carry a `purpose` claim; dedicated `ValidateRefreshToken` / `ValidateMFAToken` helpers reject any token whose purpose doesn't match, preventing token-type confusion attacks
+- **SVG upload blocked** — SVG files are no longer accepted on image upload endpoints, eliminating a stored-XSS vector via inline `<script>` in SVG
+- **Accurate MIME sniffing** — replaced `net/http.DetectContentType` with `gabriel-vasile/mimetype` for attachment serving and conversation-avatar uploads, preventing MIME-type spoofing
+- **Attachment ownership enforced before parsing** — the attachment handler now verifies project membership before opening the file, preventing path-based enumeration
+- **SSRF / DNS-rebinding fix** — the media-proxy handler resolves the upstream hostname once and dials by IP, preventing DNS-rebinding attacks
+- **Webhook tokens hashed** — tokens are now stored as SHA-256 hashes (`token_hash` column); existing plaintext tokens are migrated automatically on startup
+- **Auth rate limiting extended** — `/auth/refresh` and `/auth/passkey/login/begin` are now covered by the `AuthRateLimit` middleware
+- **Group-call invite restricted** — users can only be invited to a group call via a conversation they already share with the inviter
+- **Reduced user data exposure** — non-admin callers of `/users` receive a trimmed response (id, username, display name, avatar, online status) rather than the full user struct
+- **Secure cookie flag improved** — derived from TLS state or `X-Forwarded-Proto` rather than hard-coded; `X-WarmDesk-Client` header is stripped of control characters; non-upload avatar URLs are rejected on profile update
+
+### Changed
+- **Remote DB without TLS warns on startup** — a log warning is emitted when `db_driver` is `postgres` or `mysql` and `db_tls_mode` is `disable`
+- **Backup error messages sanitised** — `pg_dump` / `mysqldump` stderr is no longer forwarded to the API response
+
+### Accessibility (WCAG 2.1 AA)
+- **Tab panels** — `role=tablist/tab/tabpanel`, `aria-selected`, `aria-controls`, `aria-labelledby` wired up in ProjectSettings, Backlog, Admin, and DirectMessages views
+- **Icon-only buttons** — `aria-label` added to every icon-only button across all views; `aria-pressed` on toggle buttons (star/favourite, layout picker, notification bell, view-mode, accent swatches)
+- **Form label linkage** — `for`/`id` pairs added to all form inputs in Settings, Admin (system settings + all modals), CustomerDetail, Customers, Topics, and DirectMessages
+- **Hover-only elements keyboard-visible** — `:focus-visible` / `:focus-within` rules ensure emoji triggers, drag handles, and message action buttons are reachable by keyboard
+- **Dialog accessibility** — `aria-modal="true"` and focus-restore on `AboutModal` and `NewsWelcomeModal`
+- **About box** — website URL (`tonk.github.io/warmdesk`) added; `about.website` i18n key added to all 12 locales
+
 ## v0.10.7 — 2026-05-21
 
 ### Added
