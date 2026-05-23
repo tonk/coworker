@@ -1,0 +1,63 @@
+---
+title: "v0.10.14: Automated test infrastructure — 141+ tests across backend and frontend"
+date: "2026-05-23"
+author: "Ton Kersten"
+description: "Comprehensive test armoring: JWT/bcrypt/TOTP verification, HTML email rendering, CORS parsing, WebSocket message types, date/time utilities, emoticons with gemoji, and CI integration via GitHub Actions."
+draft: false
+---
+:doctype: article
+:icons!:
+
+v0.10.14 adds 141+ automated tests across Go backend and Vue frontend, together with a test infrastructure, `make test` targets, and CI enforcement so regressions are caught automatically.
+
+== Backend: 61 tests across 9 packages
+
+Every package with testable pure functions now has coverage:
+
+**`services/auth_service_test.go` (13)** — JWT issuance and validation for every token type (access, refresh, MFA, WebSocket, media, passkey), bcrypt hash/verify, TOTP secret generation and code verification, plus expired and wrong-signature rejection.
+
+**`services/email_service_test.go` (8)** — `envelopeAddress` with plain, display-name, and invalid addresses; `ExtractMentions` with none, single, multiple, duplicates, and underscore usernames.
+
+**`services/email_template_test.go` (8)** — `WrapHTML` and `WrapText` with fallback branding, custom company name and logo, instance URL, empty company, and leading-`v` version stripping.
+
+**`services/project_service_test.go` (30 subtests)** — `keyPrefixBase` covers 11 inputs (single word, multi-word, short names, digits, symbols, empty), `slugify` covers 10 (spaces, special chars, leading/trailing dashes, unicode), and `itoa` covers 8 (0, single digit, multi-digit).
+
+**`services/order_service_test.go` (10)** — `MidPosition` and `PositionAfter` with various neighbour combinations for card/column ordering.
+
+**`middleware/cors_test.go` (6)** — `ParseOrigins` with empty, single, multiple, trimmed whitespace, empty-skip, and Tauri origins always included.
+
+**`ws/ws_test.go` (4 functions)** — `memoryPubSub` lifecycle (IsLocal, Publish, Subscribe/cancel), `InitPubSub`, `StartPubSubListener` no-op, and all ~40 message type constants.
+
+**`config/config_test.go` (1)** — default values for all ~25 config fields (port, DB, JWT, SMTP, LiveKit, TLS, etc.).
+
+**`cmd/training/main_test.go` (6)** — `getName` with index/rollover, `projectAvatarURL`, `groupAvatarURL`, `guru00` constant, character list integrity.
+
+== Frontend: 80 tests across 5 files
+
+**`composables/useUpdateCheck.test.js` (11)** — `isNewer` with semver comparisons, leading `v` prefixes, and dev version; `pickAsset` with platform/arch matching and Tauri detection.
+
+**`composables/useDateFormat.test.js` (10)** — `pad`, `applyFormat` (Date, ISO string-only, 12-hour with am/pm, midnight, noon, invalid), and `dateOnlyFmt`.
+
+**`utils/shiftTimeEntries.test.js` (13)** — `parseWallClock`, `fmtWallClock`, `wallClockSpanMinutes` (same-day and overnight), `addDaysISO`, `splitShiftIntoDayEntries` (single and multi-day), and `weekendStandbyDefaults`.
+
+**`utils/contractSlotPreview.test.js` (18)** — `parseSlotHHMM`, `slotDayTypeMatches`, `slotCoverageOnWeekday` (same-day, overnight, non-matching, merged), `slotPreviewReady`, `buildSlotPreviewDays`, and `formatSlotPreviewTime`.
+
+**`utils/emoticons.test.js` (9)** — EMOTICONS sort order, QUICK_REACTION_EMOJIS, EMOJI_SHORTCODES underscore alias generation, `detectEmoticon` (greedy matching, mid-word rejection, hearts), and `detectEmojiShortcode`.
+
+Pure functions were made testable by exporting them as named exports (e.g. `pad`, `applyFormat`, `dateOnlyFmt` from `useDateFormat.js`).
+
+== Test infrastructure
+
+A reusable `SetupTestDB()` function (`backend/testutil/db.go`) creates in-memory SQLite databases with all models migrated, ready for tests that need a real database.
+
+`frontend/vitest.config.ts` configures jsdom, the `@` path alias, and a `__APP_VERSION__` mock. Component tests use `@vue/test-utils` and `@pinia/testing`.
+
+A `dateOnlyFmt` bug was fixed during testing: 12-hour formats with trailing ` a` (e.g. `MM/DD/YYYY HH:mm a`) previously left a stray `a` in the date-only output.
+
+== CI integration
+
+`make test`, `make test-backend`, and `make test-frontend` targets run all tests locally. GitHub Actions runs `go test ./...` and `vitest run` as separate steps in `build-server.yml` and `release.yml` — failures stop the pipeline before the build step.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:download.adoc[download page] or upgrade your existing installation — database schema is unchanged in this release.
