@@ -11,7 +11,8 @@
     "messages": "Chatit",
     "about": "Tietoja",
     "user_menu": "Käyttäjävalikko",
-    "news": "Uutiset"
+    "news": "Uutiset",
+    "keyboard_shortcuts": "Pikanäppäimet"
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -73,7 +74,8 @@
     },
     "customer": "Asiakas",
     "contract": "Sopimus",
-    "no_customer": "Ei asiakasta"
+    "no_customer": "Ei asiakasta",
+    "customer_required": "Asiakas vaaditaan"
   },
   "customer": {
     "customers": "Asiakkaat",
@@ -371,6 +373,9 @@
     "deleted": "Poistettu",
     "show_deleted": "Näytä poistetut",
     "restore": "Palauta",
+    "purge_project": "Poista pysyvästi",
+    "purge_project_confirm": "Poista projekti \"{name}\" pysyvästi? Tätä ei voi kumota — kaikki kortit, sarakkeet, tarrat, keskusteluhistoria ja sprintit menetetään ikuisesti.",
+    "purge_project_success": "Projekti \"{name}\" poistettu pysyvästi",
     "backup_title": "Tietokannan varmuuskopio",
     "backup_description": "Luo varmuuskopio tietokannasta palvelimelle. Varmuuskopiot tallennetaan hakemistoon backups/ palvelimen viereen.",
     "backup_button": "Luo varmuuskopio",
@@ -418,6 +423,8 @@
     "backup_email_enabled": "Lähetä sähköposti-ilmoitus varmuuskopion jälkeen",
     "backup_email_address": "Ilmoitusten sähköpostiosoite",
     "role_backup": "Varmuuskopio",
+    "timetracking_viewer": "Ajanseurannan katselija",
+    "timetracking_viewer_hint": "Voi nähdä ajanseurantatiedot kaikilta käyttäjiltä ja asiakkailta",
     "scrum_storypoints_enabled": "Scrum-tarinapisteet",
     "scrum_storypoints_hint": "Kun käytössä, jokaiselle kortille ilmestyy tarinapisteet-kenttä Scrum-arviointia varten.",
     "gravatar_enabled": "Gravatar-avatarit",

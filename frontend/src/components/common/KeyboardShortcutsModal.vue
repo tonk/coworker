@@ -98,6 +98,7 @@ const sections = computed(() => [
       { chord: [mod, 'C'], action: 'shortcuts.tt_copy_cell' },
       { chord: [mod, 'V'], action: 'shortcuts.tt_paste_cells', alt: ['Shift', 'Ins'] },
       { chord: [mod, 'Z'], action: 'shortcuts.tt_undo' },
+      { chord: ['Del'], action: 'shortcuts.tt_clear_cell' },
       { chord: ['Esc'], action: 'shortcuts.tt_clear_selection' },
     ],
   },

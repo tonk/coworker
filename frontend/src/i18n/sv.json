@@ -74,7 +74,8 @@
     },
     "customer": "Kund",
     "contract": "Kontrakt",
-    "no_customer": "Ingen kund"
+    "no_customer": "Ingen kund",
+    "customer_required": "En kund krävs"
   },
   "customer": {
     "customers": "Kunder",
@@ -372,6 +373,9 @@
     "deleted": "Raderad",
     "show_deleted": "Visa raderade",
     "restore": "Återställ",
+    "purge_project": "Ta bort permanent",
+    "purge_project_confirm": "Ta bort projekt \"{name}\" permanent? Detta kan inte ångras — alla kort, kolumner, etiketter, chatthistorik och sprintar kommer att gå förlorade för alltid.",
+    "purge_project_success": "Projekt \"{name}\" har tagits bort permanent",
     "backup_title": "Databasbackup",
     "backup_description": "Skapa en säkerhetskopia av databasen på servern. Backuper lagras i katalogen backups/ bredvid servern.",
     "backup_button": "Skapa backup",
@@ -419,6 +423,8 @@
     "backup_email_enabled": "Skicka e-postmeddelande efter säkerhetskopiering",
     "backup_email_address": "E-postadress för aviseringar",
     "role_backup": "Backup",
+    "timetracking_viewer": "Tidsspårningsvisare",
+    "timetracking_viewer_hint": "Kan se tidsspårningsdata för alla användare och kunder",
     "scrum_storypoints_enabled": "Scrum story points",
     "scrum_storypoints_hint": "När aktiverat visas ett story points-fält på varje kort för Scrum-estimering.",
     "gravatar_enabled": "Gravatar-avatarer",

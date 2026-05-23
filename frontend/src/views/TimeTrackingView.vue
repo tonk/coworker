@@ -1790,6 +1790,12 @@ function onCellKeydown(row, dateISO, rowIdx, dayIdx, event) {
     return
   }
 
+  if (event.key === 'Delete' || event.key === 'Backspace') {
+    event.preventDefault()
+    onCellBlur(row, dateISO, '')
+    return
+  }
+
   if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
     if (!isAllowedCellChar(event.key)) {
       event.preventDefault()

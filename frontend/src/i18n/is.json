@@ -74,7 +74,8 @@
     },
     "customer": "Viðskiptavinur",
     "contract": "Samningur",
-    "no_customer": "Enginn viðskiptavinur"
+    "no_customer": "Enginn viðskiptavinur",
+    "customer_required": "Viðskiptavinur er nauðsynlegur"
   },
   "customer": {
     "customers": "Viðskiptavinir",
@@ -372,6 +373,9 @@
     "deleted": "Eytt",
     "show_deleted": "Sýna eydd",
     "restore": "Endurheimta",
+    "purge_project": "Eyða varanlega",
+    "purge_project_confirm": "Eyða \"{name}\" varanlega? Þetta er óafturkallanlegt — öll spjöld, dálkar, merki, spjallferill og sprettur tapast að eilífu.",
+    "purge_project_success": "Verkefni \"{name}\" varanlega eytt",
     "backup_title": "Gagnagrunnsafrit",
     "backup_description": "Búðu til afrit af gagnagrunni á þjóninum. Afrit eru geymd í möppunni backups/ við hlið þjónsins.",
     "backup_button": "Búa til afrit",
@@ -419,6 +423,8 @@
     "backup_email_enabled": "Senda tölvupóstsskeyti eftir afrit",
     "backup_email_address": "Netfang fyrir tilkynningar",
     "role_backup": "Afrit",
+    "timetracking_viewer": "Tímaskráningarskoðari",
+    "timetracking_viewer_hint": "Getur skoðað tímaskráningargögn allra notenda og viðskiptavina",
     "scrum_storypoints_enabled": "Scrum sögu-stig",
     "scrum_storypoints_hint": "Þegar virkjað birtist sögu-stig reitur á hverju korti fyrir Scrum mat.",
     "gravatar_enabled": "Gravatar myndir",

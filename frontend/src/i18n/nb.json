@@ -74,7 +74,8 @@
     },
     "customer": "Kunde",
     "contract": "Kontrakt",
-    "no_customer": "Ingen kunde"
+    "no_customer": "Ingen kunde",
+    "customer_required": "En kunde er påkrevd"
   },
   "customer": {
     "customers": "Kunder",
@@ -372,6 +373,9 @@
     "deleted": "Slettet",
     "show_deleted": "Vis slettede",
     "restore": "Gjenopprett",
+    "purge_project": "Slett permanent",
+    "purge_project_confirm": "Slett prosjekt \"{name}\" permanent? Dette kan ikke angres — alle kort, kolonner, etiketter, chathistorikk og sprinter vil gå tapt for alltid.",
+    "purge_project_success": "Prosjekt \"{name}\" slettet permanent",
     "backup_title": "Databasesikkerhetskopiering",
     "backup_description": "Lag en sikkerhetskopi av databasen på serveren. Sikkerhetskopier lagres i mappen backups/ ved siden av serveren.",
     "backup_button": "Lag sikkerhetskopi",
@@ -419,6 +423,8 @@
     "backup_email_enabled": "Send e-postvarsel etter sikkerhetskopiering",
     "backup_email_address": "E-postadresse for varsler",
     "role_backup": "Sikkerhetskopi",
+    "timetracking_viewer": "Tidsregistreringsviser",
+    "timetracking_viewer_hint": "Kan se tidsregistreringsdata for alle brukere og kunder",
     "scrum_storypoints_enabled": "Scrum story points",
     "scrum_storypoints_hint": "Når aktivert vises et story points-felt på hvert kort for Scrum-estimering.",
     "gravatar_enabled": "Gravatar-avatarer",

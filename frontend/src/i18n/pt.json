@@ -74,7 +74,8 @@
     },
     "customer": "Cliente",
     "contract": "Contrato",
-    "no_customer": "Sem cliente"
+    "no_customer": "Sem cliente",
+    "customer_required": "É necessário um cliente"
   },
   "customer": {
     "customers": "Clientes",
@@ -372,6 +373,9 @@
     "deleted": "Eliminado",
     "show_deleted": "Mostrar eliminados",
     "restore": "Restaurar",
+    "purge_project": "Eliminar permanentemente",
+    "purge_project_confirm": "Eliminar permanentemente \"{name}\"? Isto não pode ser desfeito — todos os cartões, colunas, etiquetas, histórico de chat e sprints serão perdidos para sempre.",
+    "purge_project_success": "Projeto \"{name}\" eliminado permanentemente",
     "backup_title": "Cópia de segurança da base de dados",
     "backup_description": "Criar uma cópia de segurança da base de dados no servidor. As cópias são guardadas na pasta backups/ junto ao servidor.",
     "backup_button": "Criar cópia de segurança",
@@ -419,6 +423,8 @@
     "backup_email_enabled": "Enviar notificação por e-mail após cópia de segurança",
     "backup_email_address": "Endereço de e-mail para notificações",
     "role_backup": "Cópia de segurança",
+    "timetracking_viewer": "Visualizador de registo de tempo",
+    "timetracking_viewer_hint": "Pode ver dados de registo de tempo de todos os utilizadores e clientes",
     "scrum_storypoints_enabled": "Pontos de história Scrum",
     "scrum_storypoints_hint": "Quando ativado, um campo de pontos de história aparece em cada cartão para estimativa Scrum.",
     "gravatar_enabled": "Avatares Gravatar",

@@ -74,7 +74,8 @@
     },
     "customer": "Cliente",
     "contract": "Contratto",
-    "no_customer": "Nessun cliente"
+    "no_customer": "Nessun cliente",
+    "customer_required": "È richiesto un cliente"
   },
   "customer": {
     "customers": "Clienti",
@@ -372,6 +373,9 @@
     "deleted": "Eliminato",
     "show_deleted": "Mostra eliminati",
     "restore": "Ripristina",
+    "purge_project": "Elimina definitivamente",
+    "purge_project_confirm": "Eliminare definitivamente \"{name}\"? Non è possibile annullare — tutte le card, colonne, etichette, cronologia chat e sprint andranno perse per sempre.",
+    "purge_project_success": "Progetto \"{name}\" eliminato definitivamente",
     "backup_title": "Backup del database",
     "backup_description": "Crea una copia di backup del database sul server. I backup vengono salvati nella directory backups/ accanto al server.",
     "backup_button": "Crea backup",
@@ -419,6 +423,8 @@
     "backup_email_enabled": "Invia notifica email dopo il backup",
     "backup_email_address": "Indirizzo email per le notifiche",
     "role_backup": "Backup",
+    "timetracking_viewer": "Visualizzatore tempi",
+    "timetracking_viewer_hint": "Può visualizzare i dati di registrazione tempi per tutti gli utenti e clienti",
     "scrum_storypoints_enabled": "Punti storia Scrum",
     "scrum_storypoints_hint": "Quando abilitato, un campo Punti storia appare su ogni scheda per la stima Scrum.",
     "gravatar_enabled": "Avatar Gravatar",
