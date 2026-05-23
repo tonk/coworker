@@ -14,11 +14,11 @@ import { useSystemStore } from '@/stores/system'
  *   a     – am/pm
  */
 
-function pad(n) {
+export function pad(n) {
   return String(n).padStart(2, '0')
 }
 
-function applyFormat(date, fmt) {
+export function applyFormat(date, fmt) {
   let d
   // ISO date-only strings (YYYY-MM-DD) must be parsed as local date to avoid UTC midnight shift
   if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -49,9 +49,9 @@ function applyFormat(date, fmt) {
 }
 
 /** Returns only the date portion of the user's format (strips time part). */
-function dateOnlyFmt(fmt) {
+export function dateOnlyFmt(fmt) {
   // Remove the time portion: everything from a space followed by HH or hh onwards
-  return fmt.replace(/\s+(HH:mm|hh:mm a)/, '').trim()
+  return fmt.replace(/\s+(HH:mm( a)?|hh:mm a)/, '').trim()
 }
 
 export function useDateFormat() {

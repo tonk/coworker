@@ -317,29 +317,55 @@ Both the `update_dismissed` key (which hides the banner) and the `update_check` 
 
 ## Tests
 
-### Backend (Go)
+### Running
 
 ```bash
+make test             # backend + frontend
+make test-backend     # go test ./...
+make test-frontend    # vitest run
+
+# Backend — single package or test
 cd backend
-go test ./...                    # all tests
-go test ./services/ -v -run TestMidPosition   # single test
-```
+go test ./...                    # all packages
+go test ./services/ -v -run TestMidPosition   # single test by name
 
-Test dependencies: `github.com/stretchr/testify` (assertions).
-
-The `testutil` package (`backend/testutil/db.go`) provides `SetupTestDB()` which returns an in-memory SQLite database with all models migrated — use it in tests that need a real database.
-
-### Frontend (Vitest)
-
-```bash
+# Frontend
 cd frontend
 npm test              # vitest run
 npm run test:watch    # vitest watch mode
 ```
 
-Test dependencies: `vitest`, `@vue/test-utils`, `jsdom` — all already in `devDependencies`.
+Test dependencies: `github.com/stretchr/testify` (Go assertions), `vitest` / `@vue/test-utils` / `jsdom` (frontend).
 
-Config lives in `frontend/vitest.config.ts`. Component tests use `@vue/test-utils` `mount()`/`shallowMount()`, store tests use `@pinia/testing`. Pure functions are exported for direct testing (e.g. `isNewer`, `pickAsset` from `useUpdateCheck.js`).
+### Backend — test index
+
+| Package | File | What it tests | Tests |
+|---------|------|---------------|-------|
+| `services` | `auth_service_test.go` | JWT issuance/validation (access, refresh, MFA, WS, media, passkey), bcrypt hash/verify, TOTP generate/verify, expired/invalid signature | 13 |
+| `services` | `email_service_test.go` | `envelopeAddress` (plain, display-name, invalid), `ExtractMentions` (none, single, multiple, dupes, underscore) | 8 |
+| `services` | `email_template_test.go` | `WrapHTML`/`WrapText` with fallback, custom branding, version-strip, empty company, instance URL | 8 |
+| `services` | `order_service_test.go` | `MidPosition`, `PositionAfter` — ordering slot calculation with various neighbours | 10 |
+| `services` | `project_service_test.go` | `keyPrefixBase` (11 cases), `slugify` (11 cases), `itoa` (8 cases) | 30 subtests |
+| `middleware` | `cors_test.go` | `ParseOrigins` — empty, single, multiple, trimming, skips empty, Tauri origins always included | 6 |
+| `ws` | `ws_test.go` | `memoryPubSub` (IsLocal, Publish, Subscribe/cancel), `InitPubSub`, `StartPubSubListener`, all ~40 message type constants, struct constructors | 4 funcs |
+| `config` | `config_test.go` | `defaults()` — all ~25 default field values asserted | 1 |
+| `cmd/training` | `main_test.go` | `getName()` with index/rollover, `projectAvatarURL`, `groupAvatarURL`, constants | 6 |
+
+The `testutil` package (`backend/testutil/db.go`) provides `SetupTestDB()` which returns an in-memory SQLite database with all models migrated — use it in tests that need a real database.
+
+### Frontend — test index
+
+| File | What it tests | Tests |
+|------|---------------|-------|
+| `composables/useUpdateCheck.test.js` | `isNewer` (semver comparison, leading v, dev), `pickAsset` (platform/arch matching, Tauri detection) | 11 |
+| `composables/useDateFormat.test.js` | `pad`, `applyFormat` (Date, ISO string, 12h, midnight, invalid), `dateOnlyFmt` | 10 |
+| `utils/shiftTimeEntries.test.js` | `parseWallClock`, `fmtWallClock`, `wallClockSpanMinutes`, `addDaysISO`, `splitShiftIntoDayEntries`, `weekendStandbyDefaults` | 13 |
+| `utils/contractSlotPreview.test.js` | `parseSlotHHMM`, `slotDayTypeMatches`, `slotCoverageOnWeekday`, `slotPreviewReady`, `buildSlotPreviewDays`, `formatSlotPreviewTime` | 18 |
+| `utils/emoticons.test.js` | EMOTICONS sort order, QUICK_REACTION_EMOJIS, EMOJI_SHORTCODES underscore aliases, `detectEmoticon`, `detectEmojiShortcode` | 9 |
+
+**Total: 141+ tests** (61 backend + 5 test files / 80 frontend across 5 test files)
+
+Config lives in `frontend/vitest.config.ts`. Component tests use `@vue/test-utils` `mount()`/`shallowMount()`, store tests use `@pinia/testing`. Pure functions are exported for direct testing (e.g. `isNewer`, `pickAsset` from `useUpdateCheck.js`, `pad`/`applyFormat`/`dateOnlyFmt` from `useDateFormat.js`).
 
 ---
 
