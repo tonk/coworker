@@ -290,6 +290,36 @@ Saving in Tauri uses `@tauri-apps/plugin-dialog` `save()` + `@tauri-apps/plugin-
 
 ---
 
+## Update banner
+
+`useUpdateCheck.js` fetches `https://api.github.com/repos/tonk/warmdesk/releases/latest` on login and every hour thereafter. If the latest tag is semver-greater than `__APP_VERSION__` (set at Vite build time via `git describe`), an `UpdateBanner` appears at the top of the page with a "Download" button that picks the right binary by platform + architecture (`navigator.platform`). The download link only appears in the Tauri desktop app (`window.__TAURI_INTERNALS__`); the web interface shows "View release notes" only.
+
+The CSP in `backend/middleware/security_headers.go` must list `https://api.github.com` in `connect-src` for this to work.
+
+### Testing locally
+
+Inject a fake cache entry in DevTools console, then reload:
+
+```js
+sessionStorage.removeItem('update_dismissed')
+sessionStorage.setItem('update_check', JSON.stringify({
+  tag: 'v99.99.99',
+  url: 'https://github.com/tonk/warmdesk/releases/tag/v99.99.99',
+  assets: [
+    {name: 'WarmDesk-v99.99.99-x86_64.AppImage',  browser_download_url: 'https://github.com/tonk/warmdesk/releases/download/v99.99.99/WarmDesk-v99.99.99-x86_64.AppImage'},
+    {name: 'WarmDesk-v99.99.99-universal.dmg',     browser_download_url: 'https://github.com/tonk/warmdesk/releases/download/v99.99.99/WarmDesk-v99.99.99-universal.dmg'},
+    {name: 'WarmDesk-v99.99.99-x64-portable.zip',  browser_download_url: 'https://github.com/tonk/warmdesk/releases/download/v99.99.99/WarmDesk-v99.99.99-x64-portable.zip'},
+    {name: 'warmdesk-v99.99.99-linux-amd64.tar.gz', browser_download_url: 'https://github.com/tonk/warmdesk/releases/download/v99.99.99/warmdesk-v99.99.99-linux-amd64.tar.gz'}
+  ],
+  expires: Date.now() + 3600000
+}))
+location.reload()
+```
+
+Both the `update_dismissed` key (which hides the banner) and the `update_check` key (which caches the GitHub API response) live in `sessionStorage` and reset on tab close.
+
+---
+
 ## No tests
 
 There are currently no automated tests (no `*_test.go` files, no Vitest/Jest config). When adding features, verify manually; do not add a testing framework unless explicitly asked.

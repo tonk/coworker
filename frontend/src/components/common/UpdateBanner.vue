@@ -4,7 +4,10 @@
       {{ $t('update.available', { version: latestVersion }) }}
       <button class="update-link" @click="openLink(releaseUrl)">{{ $t('update.release_notes') }}</button>
     </span>
-    <button class="update-dismiss" @click="dismiss" :aria-label="$t('common.close')">✕</button>
+    <span class="update-actions">
+      <a v-if="downloadUrl" class="update-download" :href="downloadUrl" target="_blank" rel="noopener noreferrer">{{ $t('update.download') }}</a>
+      <button class="update-dismiss" @click="dismiss" :aria-label="$t('common.close')">✕</button>
+    </span>
   </div>
 </template>
 
@@ -13,7 +16,8 @@ import { ref } from 'vue'
 
 const props = defineProps({
   latestVersion: { type: String, required: true },
-  releaseUrl: { type: String, required: true }
+  releaseUrl: { type: String, required: true },
+  downloadUrl: { type: String, default: null }
 })
 
 async function openLink(url) {
@@ -59,6 +63,24 @@ function dismiss() {
   font-size: inherit;
 }
 .update-link:hover { opacity: 0.85; }
+.update-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.update-download {
+  display: inline-block;
+  padding: 3px 12px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.update-download:hover { background: rgba(255,255,255,0.35); }
 .update-dismiss {
   background: none;
   border: none;

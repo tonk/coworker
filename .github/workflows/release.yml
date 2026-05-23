@@ -67,10 +67,10 @@ jobs:
           mkdir -p dist-amd64
           cd backend
           go build -tags embed -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-amd64/warmdesk .
-          go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-seed ./cmd/seed
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-amd64/warmdesk-seed ./cmd/seed
           go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-export ./cmd/export
           go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-import ./cmd/importer
-          go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-training ./cmd/training
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-amd64/warmdesk-training ./cmd/training
 
       - name: Build backend (linux/arm64)
         env:
@@ -81,10 +81,10 @@ jobs:
           mkdir -p dist-arm64
           cd backend
           go build -tags embed -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-arm64/warmdesk .
-          go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-seed ./cmd/seed
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-arm64/warmdesk-seed ./cmd/seed
           go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-export ./cmd/export
           go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-import ./cmd/importer
-          go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-training ./cmd/training
+          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-arm64/warmdesk-training ./cmd/training
 
       - name: Assemble distributions
         run: |

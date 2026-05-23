@@ -1,7 +1,7 @@
 <template>
   <div v-if="auth.isLoggedIn" class="app-shell">
     <a href="#main-content" class="skip-link">{{ $t('common.skip_to_content') }}</a>
-    <UpdateBanner v-if="updateAvailable" :latest-version="latestVersion" :release-url="releaseUrl" />
+    <UpdateBanner v-if="updateAvailable" :latest-version="latestVersion" :release-url="releaseUrl" :download-url="downloadUrl" />
     <AppHeader class="app-shell-header" @open-shortcuts="showShortcuts = true" />
     <nav v-if="showBreadcrumbs" class="app-breadcrumbs" aria-label="Breadcrumb">
       <button class="crumb-nav-btn" @click="goBack" :disabled="!canGoBack" :aria-label="$t('common.go_back')">←</button>
@@ -158,7 +158,7 @@ watch([() => notificationsStore.hasUnread, projectChatUnread], ([hasUnread, chat
   document.title = (hasUnread || chatUnread > 0) ? '● WarmDesk' : 'WarmDesk'
 })
 
-const { updateAvailable, latestVersion, releaseUrl, check: checkForUpdate } = useUpdateCheck()
+const { updateAvailable, latestVersion, releaseUrl, downloadUrl, check: checkForUpdate } = useUpdateCheck()
 let versionTimer = null
 function runVersionChecks() {
   checkForUpdate(appVersion)

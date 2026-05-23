@@ -469,7 +469,8 @@
   },
   "update": {
     "available": "En ny version af WarmDesk er tilgængelig: v{version}.",
-    "release_notes": "Se udgivelsesnoter"
+    "release_notes": "Se udgivelsesnoter",
+    "download": "Download"
   },
   "common": {
     "save": "Gem",

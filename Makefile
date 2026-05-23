@@ -64,10 +64,10 @@ build-backend:
 	@echo "Building backend..."
 	mkdir -p $(DIST_DIR)
 	cd $(BACKEND) && go build -tags embed -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_DIR)/$(BINARY) .
-	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-seed ./cmd/seed
+	cd $(BACKEND) && go build -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_DIR)/$(BINARY)-seed ./cmd/seed
 	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-export ./cmd/export
 	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-import ./cmd/importer
-	cd $(BACKEND) && go build -ldflags="-s -w" -o ../$(DIST_DIR)/$(BINARY)-training ./cmd/training
+	cd $(BACKEND) && go build -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_DIR)/$(BINARY)-training ./cmd/training
 
 # Build everything for linux/arm64 (server + embedded web assets).
 # No C cross-compiler required — the SQLite driver (glebarez/sqlite) is pure Go.
@@ -84,10 +84,10 @@ build-backend-arm64:
 	@echo "Building backend (linux/arm64)..."
 	mkdir -p $(DIST_ARM64)
 	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -tags embed -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_ARM64)/$(BINARY) .
-	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ../$(DIST_ARM64)/$(BINARY)-seed ./cmd/seed
+	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_ARM64)/$(BINARY)-seed ./cmd/seed
 	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ../$(DIST_ARM64)/$(BINARY)-export ./cmd/export
 	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ../$(DIST_ARM64)/$(BINARY)-import ./cmd/importer
-	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o ../$(DIST_ARM64)/$(BINARY)-training ./cmd/training
+	cd $(BACKEND) && GOOS=linux GOARCH=arm64 go build -ldflags="-s -w -X main.version=$(VERSION)" -o ../$(DIST_ARM64)/$(BINARY)-training ./cmd/training
 
 
 # Run in development mode (two terminals needed)

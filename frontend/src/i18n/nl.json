@@ -440,7 +440,8 @@
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",
-    "release_notes": "Bekijk release-opmerkingen"
+    "release_notes": "Bekijk release-opmerkingen",
+    "download": "Downloaden"
   },
   "common": {
     "save": "Opslaan",

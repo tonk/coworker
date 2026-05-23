@@ -468,7 +468,8 @@
   },
   "update": {
     "available": "WarmDeskistä on saatavilla uusi versio: v{version}.",
-    "release_notes": "Näytä julkaisutiedot"
+    "release_notes": "Näytä julkaisutiedot",
+    "download": "Lataa"
   },
   "common": {
     "save": "Tallenna",

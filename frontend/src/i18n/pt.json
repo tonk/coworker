@@ -469,7 +469,8 @@
   },
   "update": {
     "available": "Uma nova versão do WarmDesk está disponível: v{version}.",
-    "release_notes": "Ver notas de versão"
+    "release_notes": "Ver notas de versão",
+    "download": "Descarregar"
   },
   "common": {
     "save": "Guardar",

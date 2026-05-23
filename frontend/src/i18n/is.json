@@ -469,7 +469,8 @@
   },
   "update": {
     "available": "Ný útgáfa af WarmDesk er tiltæk: v{version}.",
-    "release_notes": "Skoða útgáfunotur"
+    "release_notes": "Skoða útgáfunotur",
+    "download": "Sækja"
   },
   "common": {
     "save": "Vista",
