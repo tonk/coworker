@@ -47,11 +47,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      - name: Run Go tests
+        run: cd backend && go test ./...
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Run frontend tests
+        run: cd frontend && npm test
+
       - name: Build frontend
-        run: |
-          cd frontend
-          npm ci
-          npm run build
+        run: cd frontend && npm run build
 
       - name: Embed frontend into binary
         run: |
@@ -196,6 +202,9 @@ jobs:
       - name: Install frontend dependencies
         run: cd frontend && npm ci
 
+      - name: Run frontend tests
+        run: cd frontend && npm test
+
       - name: Stamp version in tauri.conf.json and Cargo.toml
         shell: bash
         run: |
@@ -334,6 +343,9 @@ jobs:
 
       - name: Install frontend dependencies
         run: cd frontend && npm ci
+
+      - name: Run frontend tests
+        run: cd frontend && npm test
 
       - name: Stamp version in tauri.conf.json and Cargo.toml
         shell: bash

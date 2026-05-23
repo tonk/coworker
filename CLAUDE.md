@@ -315,9 +315,31 @@ Both the `update_dismissed` key (which hides the banner) and the `update_check` 
 
 ---
 
-## No tests
+## Tests
 
-There are currently no automated tests (no `*_test.go` files, no Vitest/Jest config). When adding features, verify manually; do not add a testing framework unless explicitly asked.
+### Backend (Go)
+
+```bash
+cd backend
+go test ./...                    # all tests
+go test ./services/ -v -run TestMidPosition   # single test
+```
+
+Test dependencies: `github.com/stretchr/testify` (assertions).
+
+The `testutil` package (`backend/testutil/db.go`) provides `SetupTestDB()` which returns an in-memory SQLite database with all models migrated — use it in tests that need a real database.
+
+### Frontend (Vitest)
+
+```bash
+cd frontend
+npm test              # vitest run
+npm run test:watch    # vitest watch mode
+```
+
+Test dependencies: `vitest`, `@vue/test-utils`, `jsdom` — all already in `devDependencies`.
+
+Config lives in `frontend/vitest.config.ts`. Component tests use `@vue/test-utils` `mount()`/`shallowMount()`, store tests use `@pinia/testing`. Pure functions are exported for direct testing (e.g. `isNewer`, `pickAsset` from `useUpdateCheck.js`).
 
 ---
 

@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
@@ -41,6 +43,9 @@
     "@types/dompurify": "^3.0.5",
     "@types/sortablejs": "^1.15.8",
     "@vitejs/plugin-vue": "^6.0.7",
-    "vite": "^8.0.13"
+    "@vue/test-utils": "^2.4.10",
+    "jsdom": "^29.1.1",
+    "vite": "^8.0.13",
+    "vitest": "^4.1.7"
   }
 }

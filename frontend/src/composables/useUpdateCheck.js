@@ -8,7 +8,7 @@ function parse(v) {
   return v.replace(/^v/, '').split('.').map(Number)
 }
 
-function isNewer(current, latest) {
+export function isNewer(current, latest) {
   const [ma, mi, pa] = parse(current)
   const [mb, mi2, pb] = parse(latest)
   if (mb !== ma) return mb > ma
@@ -27,7 +27,7 @@ function detectPlatform() {
   return null
 }
 
-function pickAsset(assets, tag) {
+export function pickAsset(assets, tag) {
   if (!window.__TAURI_INTERNALS__ || !assets) return null
   const platform = detectPlatform()
   if (!platform) return null
