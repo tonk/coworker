@@ -7,6 +7,7 @@
 # Screenshots:
 #   Start the app with:
 #    chromium-browser --window-size=1400,900 --app="http://localhost:8080" &>/dev/null &
+#    chromium-browser --window-size=1400,900 --app="http://localhost:8080" --ozone-platform=x11 &>/dev/null &
 #
 #   Shoot with:
 #     sleep 3; maim --hidecursor -u  -i "$(xdotool getactivewindow)" <filename>
