@@ -5,7 +5,7 @@ BACKEND   := backend
 FRONTEND  := frontend
 VERSION   := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
 ARCHIVE   := warmdesk-$(VERSION).tar.gz
-.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 _fetch-gst-plugin deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit help
+.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 _fetch-gst-plugin deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit test test-backend test-frontend help
 
 help:
 	@echo "WarmDesk $(VERSION)"
@@ -36,6 +36,11 @@ help:
 	@echo "Windows desktop  (must run on Windows — requires Rust + WebView2)"
 	@echo "  windows-installer    NSIS installer (.exe)"
 	@echo "  windows-portable     Portable zip (no installation needed)"
+	@echo ""
+	@echo "Tests"
+	@echo "  test                 Run all backend + frontend tests"
+	@echo "  test-backend         Run Go tests only"
+	@echo "  test-frontend        Run Vitest tests only"
 
 # Build everything into dist/
 all: build
@@ -213,6 +218,19 @@ windows-portable: stamp-desktop-version
 	cd $(FRONTEND) && npm run tauri:build -- --bundles nsis
 	powershell -Command "Compress-Archive -Path '$(FRONTEND)/src-tauri/target/release/WarmDesk.exe' -DestinationPath 'WarmDesk-portable.zip' -Force"
 	@echo "Portable zip: WarmDesk-portable.zip"
+
+# Run all tests
+test: test-backend test-frontend
+
+# Run Go tests
+test-backend:
+	@echo "Running Go tests..."
+	cd $(BACKEND) && go test ./...
+
+# Run frontend tests
+test-frontend:
+	@echo "Running frontend tests..."
+	cd $(FRONTEND) && npm test
 
 # Remove build artifacts
 clean:
