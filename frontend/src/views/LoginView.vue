@@ -229,7 +229,7 @@ const loading = ref(false)
 const registrationEnabled = ref(true)
 const branding = ref({ enabled: false, name: '', logo: '', logoDark: '' })
 const isTauri = !!window.__TAURI_INTERNALS__
-const passkeySupported = !isTauri && !!window.PublicKeyCredential
+const passkeySupported = !!window.PublicKeyCredential
 const currentServer = getServerUrl()
 const serverReachabilityError = ref('')
 
@@ -329,9 +329,9 @@ async function handlePasskeyLogin() {
       challenge_token: beginData.challenge_token,
       credential: serializeAuthenticationCredential(credential),
     })
+    auth.setTokens(data.access_token, data.refresh_token)
+    await auth.fetchMe()
     router.push('/')
-    // data contains access_token / refresh_token; cookies are set by the server for browser clients
-    void data
   } catch (e) {
     if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
       // User dismissed the browser prompt — no error shown
