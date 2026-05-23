@@ -367,6 +367,48 @@ The `testutil` package (`backend/testutil/db.go`) provides `SetupTestDB()` which
 
 Config lives in `frontend/vitest.config.ts`. Component tests use `@vue/test-utils` `mount()`/`shallowMount()`, store tests use `@pinia/testing`. Pure functions are exported for direct testing (e.g. `isNewer`, `pickAsset` from `useUpdateCheck.js`, `pad`/`applyFormat`/`dateOnlyFmt` from `useDateFormat.js`).
 
+### E2E screenshots (Playwright)
+
+Playwright-driven screenshot specs live in `frontend/e2e/`. They produce the 20 reference PNGs under `screenshots/` used for documentation/README.
+
+```bash
+# Full run — seed DB, start servers, capture screenshots, clean up
+make screenshots
+# or: cd frontend && npm run screenshots
+
+# Run against already-running servers (faster for iteration)
+cd frontend && npm run screenshots:dev
+```
+
+**Prerequisites:** Go, Node.js, Chrome/Chromium (installed automatically by Playwright). The first full run will install the Playwright browser binary via `npx playwright install chromium`.
+
+The spec (`frontend/e2e/screenshots.spec.js`) logs in as `demo.admin` / `demo1234` and captures each view. Auth state is saved/reused via Playwright `storageState`.
+
+| Screenshot | Route / action |
+|---|---|
+| `01-login.png` | `/login` page |
+| `02-dashboard.png` | Dashboard after login |
+| `03-board.png` | `/projects/website-redesign` |
+| `04-card-detail.png` | Click first card on board |
+| `05-topics.png` | `/projects/website-redesign/topics`, open first topic |
+| `06-messages.png` | `/chats` (direct messages) |
+| `07-report.png` | `/reports` |
+| `08-admin-users.png` | `/admin` (users tab) |
+| `09-admin-settings.png` | `/admin` → Settings tab |
+| `10-user-settings.png` | `/settings` |
+| `13-gant.png` | `/projects/website-redesign/gantt` |
+| `14-cumulative.png` | `/projects/product-platform/charts` → Cumulative tab |
+| `15-scrum-backlog.png` | `/projects/product-platform/backlog` |
+| `16-scrum-throughput.png` | `/projects/product-platform/charts` → Throughput tab |
+| `17-scrum-burndown.png` | `/projects/product-platform/charts` → Burndown tab + select sprint |
+| `18-scrum-burnup.png` | `/projects/product-platform/charts` → Burnup tab + select sprint |
+| `19-scrum-release.png` | `/projects/product-platform/charts` → Release tab |
+| `20-standby-shift.png` | `/time-tracking` |
+
+**Screenshots 11–12 (chat reactions)** require interaction in the embedded chat panel and are not yet automated — capture manually or run with `DEBUG=pw:api` to verify selectors.
+
+**Adding a new screenshot:** add a new test in `frontend/e2e/screenshots.spec.js` following the existing pattern (create context from `AUTH_FILE`, navigate, wait, screenshot). To update all reference PNGs, run `make screenshots`. For individual updates, point your test at the specific view and use Playwright's `--update-snapshots` if using `toHaveScreenshot` assertions.
+
 ---
 
 ## Deployment notes

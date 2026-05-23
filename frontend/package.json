@@ -10,7 +10,9 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "screenshots": "bash e2e/screenshots.sh",
+    "screenshots:dev": "npx playwright test --config=e2e/playwright.config.js"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
@@ -39,6 +41,7 @@
     "vue-router": "^5.0.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tauri-apps/cli": "^2.11.2",
     "@types/dompurify": "^3.0.5",
     "@types/sortablejs": "^1.15.8",

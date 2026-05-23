@@ -5,7 +5,7 @@ BACKEND   := backend
 FRONTEND  := frontend
 VERSION   := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
 ARCHIVE   := warmdesk-$(VERSION).tar.gz
-.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 _fetch-gst-plugin deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit test test-backend test-frontend help
+.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 _fetch-gst-plugin deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit test test-backend test-frontend screenshots screenshots-dev help
 
 help:
 	@echo "WarmDesk $(VERSION)"
@@ -41,6 +41,10 @@ help:
 	@echo "  test                 Run all backend + frontend tests"
 	@echo "  test-backend         Run Go tests only"
 	@echo "  test-frontend        Run Vitest tests only"
+	@echo ""
+	@echo "Screenshots  (requires Go, Node.js, chromium)"
+	@echo "  screenshots          Full run: seed DB, start servers, capture screenshots, clean up"
+	@echo "  screenshots-dev      Run Playwright against already-running servers"
 
 # Build everything into dist/
 all: build
@@ -221,6 +225,16 @@ windows-portable: stamp-desktop-version
 
 # Run all tests
 test: test-backend test-frontend
+
+# Regenerate all screenshots using Playwright (seeds DB, starts servers, runs specs)
+screenshots:
+	@echo "Regenerating screenshots..."
+	cd $(FRONTEND) && npm run screenshots
+
+# Run Playwright screenshot specs against already-running servers (dev mode)
+screenshots-dev:
+	@echo "Running Playwright screenshots (servers must be running)..."
+	cd $(FRONTEND) && npm run screenshots:dev
 
 # Run Go tests
 test-backend:
