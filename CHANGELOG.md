@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.10.16 — 2025-05-25
+
+### Fixed
+- **CI test suite — e2e/ directory excluded from vitest** — Playwright
+  screenshot specs were being picked up by vitest, causing a false test
+  failure. Excluded `e2e/**` from the vitest runner.
+
 ## v0.10.15 — 2025-05-25
 
 ### Added

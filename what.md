@@ -582,3 +582,4 @@ Create an application that has all these features and requirements
 - Add Delete/Backspace key to clear selected time tracking cells
 - Add Time Tracking section to user guide and Admin Time Tracking subsection to admin guide
 - Document contract time-slot compact badge display and hover popup in user guide
+- Fix CI test suite: exclude e2e/ directory from vitest runner so Playwright screenshot specs don't cause false failures

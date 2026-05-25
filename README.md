@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.15)
+## Latest release (v0.10.16)
 
-- **Admin Time Tracking tab** — manage time-tracking projects and customers from the Admin panel.
-- **Passkey login on Tauri desktop** — WebAuthn works in the native desktop build.
-- **Delete/Backspace to clear cells** — press Delete or Backspace on a selected time-tracking cell to clear it.
+- **CI test suite fixed** — Playwright e2e specs excluded from vitest runner
+  so `npm test` passes cleanly in CI.
 
 ## Experiment
 
