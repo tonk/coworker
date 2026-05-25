@@ -575,3 +575,10 @@ Create an application that has all these features and requirements
 - Ansible card_comment module: renamed `time_spent_minutes` to `time_spent` for consistency
 - Ansible collection: new `user_options` module for managing per-user preferences
 - Admin API: `PUT /api/v1/admin/users/:id` now accepts `time_tracking_enabled`, `theme`, `show_breadcrumbs`, `email_notifications`
+- Add Time Tracking tab to Admin panel for managing time-tracking-only projects and customers with full CRUD
+- Replace inline time-slot list on contract tiles with a compact 🕒 N badge and hover popup
+- Enable passkey login on Tauri desktop app
+- Add Playwright screenshot automation: 18 reference screenshots for documentation
+- Add Delete/Backspace key to clear selected time tracking cells
+- Add Time Tracking section to user guide and Admin Time Tracking subsection to admin guide
+- Document contract time-slot compact badge display and hover popup in user guide

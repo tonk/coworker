@@ -436,7 +436,10 @@
     "allowed_ips_label": "API allowed IP addresses",
     "allowed_ips_placeholder": "e.g. 10.0.0.0/8, 192.168.1.5",
     "allowed_ips_hint": "Comma-separated IPv4/IPv6 addresses or CIDR ranges. Leave empty to allow all. Warning: an incorrect value will lock everyone out of the API.",
-    "news_show_on_login": "Show as welcome message on login"
+    "news_show_on_login": "Show as welcome message on login",
+    "time_tracking": "Time Tracking",
+    "tt_projects_title": "Time-tracking projects",
+    "tt_customers_title": "Time-tracking customers"
   },
   "report": {
     "title": "Time Report",

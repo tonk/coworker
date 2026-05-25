@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.10.15 — 2025-05-25
+
+### Added
+- **Admin panel — Time Tracking tab** — manage time-tracking-only projects and
+  customers directly from the Admin panel with full CRUD (name, colour,
+  undeclarable minutes).
+- **Compact time-slot display on contract tiles** — slots are shown as a 🕒 N
+  badge with hover popup instead of an inline list, keeping the contract tile
+  clean.
+- **Passkey login on Tauri desktop app** — WebAuthn authentication now works in
+  the native desktop build.
+- **Playwright screenshot automation** — 18 reference screenshots captured
+  automatically for documentation and release notes.
+- **Delete/Backspace key to clear time tracking cells** — press Delete or
+  Backspace on a selected cell to clear its value without reaching for the
+  mouse.
+
+### Fixed
+- **Missing i18n translations** — added missing translation keys across all 12
+  languages.
+
+### Documentation
+- **Time Tracking section in user guide** — documents the weekly grid, managing
+  time-tracking-only projects/customers via the ⚙ gear button, and the
+  "Global (created by admin)" concept.
+- **Contract time slots in user guide** — documents the compact badge display
+  and hover popup.
+- **Admin guide — Time Tracking subsection** — documents both the Admin panel
+  tab and the ⚙ manage modal.
+
 ## v0.10.13 — 2026-05-22
 
 ### Added

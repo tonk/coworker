@@ -8,13 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.13)
+## Latest release (v0.10.15)
 
-- **Overnight & multi-day contract slots** — rate tiers can span midnight and multiple calendar days (e.g. Fri 19:00 → Mon 07:00); week preview on the contract form.
-- **Standby shift logging** — log a multi-day shift from one dialog; entries split per day with start/end times for slot billing.
-- **Time grid selection & paste** — Shift+arrows extend selection; Ctrl+V / Shift+Ins paste into all selected cells.
-- **Undo (Ctrl+Z)** — revert the last saved change; works on Firefox and from anywhere on the time-tracking page.
-- **XLSX slot breakdown** — export sub-rows per contract slot when entries have wall-clock times.
+- **Admin Time Tracking tab** — manage time-tracking projects and customers from the Admin panel.
+- **Passkey login on Tauri desktop** — WebAuthn works in the native desktop build.
+- **Delete/Backspace to clear cells** — press Delete or Backspace on a selected time-tracking cell to clear it.
 
 ## Experiment
 

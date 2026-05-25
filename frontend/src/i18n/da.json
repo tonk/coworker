@@ -436,7 +436,10 @@
     "allowed_ips_label": "Tilladte IP-adresser til API'en",
     "allowed_ips_placeholder": "f.eks. 10.0.0.0/8, 192.168.1.5",
     "allowed_ips_hint": "Kommaseparerede IPv4/IPv6-adresser eller CIDR-intervaller. Lad feltet være tomt for at tillade alle. Advarsel: en forkert værdi låser alle ude af API'en.",
-    "news_show_on_login": "Vis som velkomstbesked ved login"
+    "news_show_on_login": "Vis som velkomstbesked ved login",
+    "time_tracking": "Tidsregistrering",
+    "tt_projects_title": "Tidsregistreringsprojekter",
+    "tt_customers_title": "Tidsregistreringskunder"
   },
   "report": {
     "title": "Tidsrapport",

@@ -11,9 +11,10 @@
 7. [Chats & Direct Messages](#7-chats--direct-messages)
 8. [Notifications & @Mentions](#8-notifications--mentions)
 9. [Time Reports](#9-time-reports)
-10. [User Settings](#10-user-settings)
-11. [Customers](#11-customers)
-12. [Search](#12-search)
+10. [Time Tracking](#10-time-tracking)
+11. [User Settings](#11-user-settings)
+12. [Customers](#12-customers)
+13. [Search](#13-search)
 
 ---
 
@@ -540,7 +541,45 @@ Before exporting you can choose two options that are saved for your next visit:
 
 ---
 
-## 10. User Settings
+## 10. Time Tracking
+
+Time tracking is an optional module (enabled in User Settings). When active, the
+**Time Tracking** page (`/time-tracking`) shows a weekly grid where you log
+hours per customer, project, and activity across the seven days of any week.
+
+### Weekly grid
+
+Each row represents a customer + project + activity combination. Columns are
+the days of the week. Click a cell to enter the number of hours worked that day.
+The row total, day totals, and grand total update automatically.
+
+Use the week picker (left/right arrows or the week label) to navigate between
+weeks. An **Add holidays** dropdown in the navigation bar lets you insert public
+holidays for a country as 0-minute entries.
+
+### Time-tracking-only projects and customers
+
+Beyond regular board-backed projects, WarmDesk supports lightweight
+**time-tracking-only projects** (no board, columns, or members) and
+**time-tracking-only customers** (not added to the CRM). These are managed
+through a tabbed modal opened by clicking the ⚙ gear button in the top bar
+of the time-tracking page.
+
+| Tab | Action |
+|-----|--------|
+| **Projects** | Click `＋ Add project`, enter a name, pick a colour, and optionally set an *undeclarable minutes* value (e.g. travel time, holidays) that is automatically subtracted from totals in the sheet, report, PDF, and XLSX export. |
+| **Customers** | Click `＋ Add customer`, enter a name, and save. |
+
+Once created, these projects and customers appear in the dropdowns when adding
+new time-tracking rows.
+
+### "Global (created by admin)"
+
+Projects and customers created by a **global admin** are labelled **Global (created by admin)** and are visible to every user. Non-admin users see these global entries alongside their own, but cannot edit or delete them. Projects and customers you create yourself are private — only you see them unless another admin chooses to edit them.
+
+---
+
+## 11. User Settings
 
 Open User Settings by clicking your display name in the header.
 
@@ -562,7 +601,7 @@ Open User Settings by clicking your display name in the header.
 
 ---
 
-## 11. Customers
+## 12. Customers
 
 The **Customers** page (`/customers`) lists the customer organisations you have
 access to. Each customer can have one or more contracts, and contracts can be
@@ -585,8 +624,17 @@ for quick access. Click ★ again to unstar.
 Click a customer name to open the detail page, which shows:
 
 - Description and logo
-- Linked contracts with start / end dates
-- Projects linked to each contract
+- Linked contracts with start / end dates and projects
+- Projects not yet linked to any contract
+
+#### Contracts
+
+Each contract shows its name, date range, hourly rate, and linked projects.
+Contracts can have **time slots** — named time-of-day rate tiers (e.g.
+"Evening", "Weekend") with configurable start/end time, day type, hourly rate,
+and multiplication factor. When a contract has time slots, a 🕒 **N** badge
+appears; hover or focus to see the full list. Time slots are used in PDF and
+XLSX time-tracking exports to compute slot-aware billing automatically.
 
 ### Managing members (customer-admins)
 
@@ -606,7 +654,7 @@ Global admins can do all of this regardless of their customer role.
 
 ---
 
-## 12. Search
+## 13. Search
 
 The global search bar (magnifying glass icon in the header) searches across:
 

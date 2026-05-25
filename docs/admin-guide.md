@@ -476,6 +476,21 @@ automatically (`WAR`, `WAR2`, `WAR3`, …). The prefix **cannot be changed
 after the project is created** — existing card codes in commit messages and
 external integrations would become invalid.
 
+### Time tracking
+
+Time-tracking-only projects and customers can be managed in two places:
+
+- **Admin → Time Tracking** tab — a dedicated tab in the Admin panel listing
+  all time-tracking projects and customers with full CRUD (create, rename,
+  recolour, set undeclarable minutes, delete).
+- **⚙ gear button** on the Time Tracking page — the same operations are also
+  available from the user-facing time-tracking view.
+
+Projects and customers created by an admin are automatically visible to all
+users and labelled **Global (created by admin)** in the management lists.
+Regular users only see their own items plus admin-created ones, and cannot
+edit or delete items they did not create.
+
 ### System settings
 
 All settings under **Admin → Settings** take effect **immediately without a

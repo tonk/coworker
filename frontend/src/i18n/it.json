@@ -436,7 +436,10 @@
     "allowed_ips_label": "Indirizzi IP consentiti per l'API",
     "allowed_ips_placeholder": "es. 10.0.0.0/8, 192.168.1.5",
     "allowed_ips_hint": "Indirizzi IPv4/IPv6 o intervalli CIDR separati da virgole. Lasciare vuoto per consentire tutti. Attenzione: un valore errato bloccherà l'accesso di tutti all'API.",
-    "news_show_on_login": "Mostra come messaggio di benvenuto al login"
+    "news_show_on_login": "Mostra come messaggio di benvenuto al login",
+    "time_tracking": "Registrazione tempo",
+    "tt_projects_title": "Progetti di registrazione tempo",
+    "tt_customers_title": "Clienti di registrazione tempo"
   },
   "report": {
     "title": "Report ore",

@@ -57,13 +57,18 @@
               </span>
               <span v-if="grp.price_per_hour != null" class="contract-rate">{{ grp.price_per_hour }} {{ grp.currency }}/h</span>
             </div>
-            <div v-if="grp.time_slots && grp.time_slots.length" class="slot-list">
-              <div v-for="slot in grp.time_slots" :key="slot.id" class="slot-item">
-                <span class="slot-time">{{ formatSlotTimeRange(slot) }}</span>
-                <span v-if="slot.day_type && slot.day_type !== 'all'" class="slot-days">{{ $t('contract.slot_days_' + slot.day_type) }}</span>
-                <span v-if="slot.label" class="slot-label">{{ slot.label }}</span>
-                <span v-if="slot.multiplication_factor != null" class="slot-factor">×{{ slot.multiplication_factor }}</span>
-                <span v-if="slot.hourly_rate != null" class="slot-rate">{{ slot.hourly_rate }} {{ grp.currency }}/h</span>
+            <div v-if="grp.time_slots && grp.time_slots.length" class="slot-indicator-wrap">
+              <span class="slot-badge" tabindex="0" :aria-label="grp.time_slots.length + ' ' + $t('contract.time_slots')">
+                🕒 {{ grp.time_slots.length }}
+              </span>
+              <div class="slot-popup" role="tooltip">
+                <div v-for="slot in grp.time_slots" :key="slot.id" class="slot-popup-item">
+                  <span class="slot-popup-time">{{ formatSlotTimeRange(slot) }}</span>
+                  <span v-if="slot.day_type && slot.day_type !== 'all'" class="slot-popup-days">{{ $t('contract.slot_days_' + slot.day_type) }}</span>
+                  <span v-if="slot.label" class="slot-popup-label">{{ slot.label }}</span>
+                  <span v-if="slot.multiplication_factor != null" class="slot-popup-factor">×{{ slot.multiplication_factor }}</span>
+                  <span v-if="slot.hourly_rate != null" class="slot-popup-rate">{{ slot.hourly_rate }} {{ grp.currency }}/h</span>
+                </div>
               </div>
             </div>
             <div class="contract-actions">
@@ -1042,25 +1047,59 @@ async function deleteContract(grp) {
 
 .check-mark { font-size: 14px; color: var(--color-primary); font-weight: 700; flex-shrink: 0; }
 
-/* Time slots — contract display */
-.slot-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* Time slots — contract display (compact badge + hover popup) */
+.slot-indicator-wrap {
+  position: relative;
+  display: inline-flex;
   margin-top: 6px;
 }
-.slot-item {
+.slot-badge {
+  font-size: 11px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1px 7px;
+  cursor: default;
+  white-space: nowrap;
+  user-select: none;
+}
+.slot-badge:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.slot-popup {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  z-index: 10;
+  min-width: 240px;
+  flex-direction: column;
+  gap: 5px;
+}
+.slot-indicator-wrap:hover .slot-popup,
+.slot-indicator-wrap:focus-within .slot-popup {
+  display: flex;
+}
+.slot-popup-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   font-size: 12px;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
-.slot-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.slot-days { font-size: 11px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 4px; padding: 1px 5px; white-space: nowrap; }
-.slot-label { color: var(--color-text); }
-.slot-factor { font-weight: 600; color: var(--color-primary); }
-.slot-rate { font-weight: 600; color: var(--color-primary); }
+.slot-popup-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.slot-popup-days { font-size: 11px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 4px; padding: 1px 5px; white-space: nowrap; }
+.slot-popup-label { color: var(--color-text); }
+.slot-popup-factor { font-weight: 600; color: var(--color-primary); }
+.slot-popup-rate { font-weight: 600; color: var(--color-primary); }
 
 /* Time slots — contract form */
 .slots-header {

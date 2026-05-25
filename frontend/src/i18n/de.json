@@ -436,7 +436,10 @@
     "allowed_ips_label": "Erlaubte IP-Adressen für die API",
     "allowed_ips_placeholder": "z.B. 10.0.0.0/8, 192.168.1.5",
     "allowed_ips_hint": "Kommagetrennte IPv4/IPv6-Adressen oder CIDR-Bereiche. Leer lassen, um alle zuzulassen. Warnung: ein falscher Wert sperrt alle aus der API aus.",
-    "news_show_on_login": "Als Willkommensnachricht beim Login anzeigen"
+    "news_show_on_login": "Als Willkommensnachricht beim Login anzeigen",
+    "time_tracking": "Zeiterfassung",
+    "tt_projects_title": "Zeiterfassungsprojekte",
+    "tt_customers_title": "Zeiterfassungskunden"
   },
   "update": {
     "available": "Eine neue Version von WarmDesk ist verfügbar: v{version}.",

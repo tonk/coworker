@@ -436,7 +436,10 @@
     "allowed_ips_label": "Endereços IP permitidos para a API",
     "allowed_ips_placeholder": "ex. 10.0.0.0/8, 192.168.1.5",
     "allowed_ips_hint": "Endereços IPv4/IPv6 ou intervalos CIDR separados por vírgulas. Deixar vazio para permitir todos. Atenção: um valor incorreto bloqueará o acesso de todos à API.",
-    "news_show_on_login": "Mostrar como mensagem de boas-vindas no login"
+    "news_show_on_login": "Mostrar como mensagem de boas-vindas no login",
+    "time_tracking": "Registo de tempo",
+    "tt_projects_title": "Projetos de registo de tempo",
+    "tt_customers_title": "Clientes de registo de tempo"
   },
   "report": {
     "title": "Relatório de tempo",

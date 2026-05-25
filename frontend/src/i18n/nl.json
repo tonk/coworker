@@ -436,7 +436,10 @@
     "allowed_ips_label": "Toegestane IP-adressen voor de API",
     "allowed_ips_placeholder": "bijv. 10.0.0.0/8, 192.168.1.5",
     "allowed_ips_hint": "Komma-gescheiden IPv4/IPv6-adressen of CIDR-bereiken. Leeg laten om alles toe te staan. Waarschuwing: een onjuiste waarde sluit iedereen buiten de API.",
-    "news_show_on_login": "Toon als welkomstbericht bij inloggen"
+    "news_show_on_login": "Toon als welkomstbericht bij inloggen",
+    "time_tracking": "Urenregistratie",
+    "tt_projects_title": "Urenregistratieprojecten",
+    "tt_customers_title": "Urenregistratieklanten"
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",
