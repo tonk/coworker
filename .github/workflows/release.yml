@@ -166,13 +166,11 @@ jobs:
             os: ubuntu-24.04
             bundle: appimage
             artifact: "WarmDesk-*-x86_64.AppImage"
-            rename: "WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage"
 
           - name: macOS
             os: macos-latest
             bundle: dmg
             artifact: "WarmDesk_*.dmg"
-            rename: "WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg"
 
     steps:
       - name: Checkout
