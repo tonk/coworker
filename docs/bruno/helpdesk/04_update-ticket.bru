@@ -1,0 +1,33 @@
+meta {
+  name: Update Ticket
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "status": "in_progress",
+    "priority": "critical",
+    "assigned_to_id": 2,
+    "reminder_at": null
+  }
+}
+
+docs {
+  All fields are optional; only send what you want to change.
+  status: open | in_progress | resolved | closed | pending
+  priority: low | medium | high | critical
+  reminder_at: ISO 8601 timestamp (e.g. "2026-06-01T12:00:00Z") or null to clear.
+  Changing priority re-evaluates the SLA policy and resets breach flags.
+  assigned_to_id / owner_id / group_id: send 0 to clear.
+}

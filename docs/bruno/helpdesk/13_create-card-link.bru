@@ -1,0 +1,21 @@
+meta {
+  name: Link to Board Card
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/cards
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "card_id": 42
+  }
+}

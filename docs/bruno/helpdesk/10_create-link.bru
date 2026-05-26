@@ -1,0 +1,26 @@
+meta {
+  name: Link Tickets
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/links
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "linked_ticket_id": 2,
+    "link_type": "relates_to"
+  }
+}
+
+docs {
+  link_type: relates_to | duplicates | blocks | is_blocked_by
+}

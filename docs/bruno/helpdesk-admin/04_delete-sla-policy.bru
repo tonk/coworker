@@ -1,0 +1,15 @@
+meta {
+  name: Delete SLA Policy (Admin)
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/admin/sla-policies/{{slaPolicyId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

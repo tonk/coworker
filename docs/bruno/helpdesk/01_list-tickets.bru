@@ -1,0 +1,20 @@
+meta {
+  name: List Tickets
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Requires helpdesk_enabled on the user account (admins always have access).
+  Returns tickets ordered by pending-reminder urgency then creation date desc.
+}

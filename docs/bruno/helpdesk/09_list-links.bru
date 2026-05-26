@@ -1,0 +1,15 @@
+meta {
+  name: List Linked Tickets
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/links
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

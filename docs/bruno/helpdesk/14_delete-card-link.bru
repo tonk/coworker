@@ -1,0 +1,15 @@
+meta {
+  name: Remove Card Link
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/cards/{{linkId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Add Tag
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/tags
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "auth"
+  }
+}

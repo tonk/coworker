@@ -1,0 +1,19 @@
+meta {
+  name: Get Ticket
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Returns full ticket with messages, tags, SLA info, and all attachments.
+}

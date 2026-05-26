@@ -1,0 +1,33 @@
+meta {
+  name: Create Ticket
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Login page throws 500 after password reset",
+    "description": "Steps to reproduce: reset password via email link, then attempt login — 500 returned.",
+    "type": "incident",
+    "priority": "high",
+    "assigned_to_id": null,
+    "owner_id": null,
+    "group_id": null
+  }
+}
+
+docs {
+  type: incident | problem | service_request | change_request (default: incident)
+  priority: low | medium | high | critical (default: medium)
+  SLA deadlines are auto-applied from the matching active SLA policy.
+}

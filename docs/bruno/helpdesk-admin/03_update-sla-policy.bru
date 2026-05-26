@@ -1,0 +1,25 @@
+meta {
+  name: Update SLA Policy (Admin)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/v1/admin/sla-policies/{{slaPolicyId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Critical 1h/4h",
+    "response_time_minutes": 60,
+    "resolution_time_minutes": 240,
+    "priority_filter": "critical",
+    "is_active": true
+  }
+}

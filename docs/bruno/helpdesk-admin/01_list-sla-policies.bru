@@ -1,0 +1,19 @@
+meta {
+  name: List SLA Policies (Admin)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/sla-policies
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Admin only. Returns all SLA policies regardless of active status.
+}

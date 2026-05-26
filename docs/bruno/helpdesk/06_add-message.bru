@@ -1,0 +1,21 @@
+meta {
+  name: Add Internal Message
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/messages
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "body": "Checked the logs — the session token is being invalidated before redirect. Fix in progress."
+  }
+}
