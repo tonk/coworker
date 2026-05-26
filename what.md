@@ -592,3 +592,8 @@ Create an application that has all these features and requirements
 - Playwright screenshots 21 (ticket list) and 22 (ticket detail) added to automated capture suite
 - Fix markdown list indentation missing in ticket/news/dashboard views (moved .markdown-body ul/ol styles to global CSS)
 - Ansible collection v0.4.0: new ticket, sla_policy, and user_credential modules
+- Add time logging on tickets: users can log time entries directly on a ticket (gated by time_tracking_enabled), with a project selector populated from the customer's contracts and unassigned projects
+- Fix Playwright screenshot suite: dismiss welcome/news backdrop before every screenshot (not just before clicks), change test.describe.serial to test.describe so one failure does not abort the whole suite, add dismissWelcome() helper used consistently across all 20 tests
+- Update website homepage: add Helpdesk & Ticketing feature card, add ticket list and ticket detail screenshots to the gallery, update hero subtitle to mention helpdesk ticketing with SLA
+- Add Hugo blog post about the helpdesk ticketing system with screenshots
+- Fix release workflow: replace softprops/action-gh-release with gh CLI commands (gh release create/upload/edit) to eliminate dependency on codeload.github.com; add workflow_dispatch trigger with tag input for manual re-runs; add RELEASE_TAG env for consistent tag resolution across push and dispatch events
