@@ -15,6 +15,12 @@ permissions:
   id-token: write   # required by SignPath to verify OIDC build identity
   actions: read     # required by SignPath to read workflow artifact metadata
 
+# Resolve the release tag regardless of trigger:
+#   - tag push  → github.ref_name is the tag (e.g. v0.10.17)
+#   - manual    → use the `tag` input
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
 jobs:
   # ── Create draft release first ───────────────────────────────────────────────
   create-release:
@@ -22,8 +28,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create draft release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           draft: true
           generate_release_notes: true
 
@@ -77,11 +84,11 @@ jobs:
         run: |
           mkdir -p dist-amd64
           cd backend
-          go build -tags embed -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-amd64/warmdesk .
-          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-amd64/warmdesk-seed ./cmd/seed
+          go build -tags embed -ldflags="-s -w -X main.version=${{ env.RELEASE_TAG }}" -o ../dist-amd64/warmdesk .
+          go build -ldflags="-s -w -X main.version=${{ env.RELEASE_TAG }}" -o ../dist-amd64/warmdesk-seed ./cmd/seed
           go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-export ./cmd/export
           go build -ldflags="-s -w" -o ../dist-amd64/warmdesk-import ./cmd/importer
-          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-amd64/warmdesk-training ./cmd/training
+          go build -ldflags="-s -w -X main.version=${{ env.RELEASE_TAG }}" -o ../dist-amd64/warmdesk-training ./cmd/training
 
       - name: Build backend (linux/arm64)
         env:
@@ -91,11 +98,11 @@ jobs:
         run: |
           mkdir -p dist-arm64
           cd backend
-          go build -tags embed -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-arm64/warmdesk .
-          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-arm64/warmdesk-seed ./cmd/seed
+          go build -tags embed -ldflags="-s -w -X main.version=${{ env.RELEASE_TAG }}" -o ../dist-arm64/warmdesk .
+          go build -ldflags="-s -w -X main.version=${{ env.RELEASE_TAG }}" -o ../dist-arm64/warmdesk-seed ./cmd/seed
           go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-export ./cmd/export
           go build -ldflags="-s -w" -o ../dist-arm64/warmdesk-import ./cmd/importer
-          go build -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ../dist-arm64/warmdesk-training ./cmd/training
+          go build -ldflags="-s -w -X main.version=${{ env.RELEASE_TAG }}" -o ../dist-arm64/warmdesk-training ./cmd/training
 
       - name: Assemble distributions
         run: |
@@ -111,8 +118,8 @@ jobs:
 
       - name: Create archives
         run: |
-          tar -czf warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz -C dist-amd64 .
-          tar -czf warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz -C dist-arm64 .
+          tar -czf warmdesk-${{ env.RELEASE_TAG }}-linux-amd64.tar.gz -C dist-amd64 .
+          tar -czf warmdesk-${{ env.RELEASE_TAG }}-linux-arm64.tar.gz -C dist-arm64 .
 
       - name: Sign archives
         if: env.HAS_GPG == 'true'
@@ -125,22 +132,23 @@ jobs:
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
           gpgconf --kill gpg-agent
-          for f in warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz \
-                   warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz; do
+          for f in warmdesk-${{ env.RELEASE_TAG }}-linux-amd64.tar.gz \
+                   warmdesk-${{ env.RELEASE_TAG }}-linux-arm64.tar.gz; do
             gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
           done
 
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           fail_on_unmatched_files: false
           files: |
-            warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz
-            warmdesk-${{ github.ref_name }}-linux-amd64.tar.gz.asc
-            warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz
-            warmdesk-${{ github.ref_name }}-linux-arm64.tar.gz.asc
+            warmdesk-${{ env.RELEASE_TAG }}-linux-amd64.tar.gz
+            warmdesk-${{ env.RELEASE_TAG }}-linux-amd64.tar.gz.asc
+            warmdesk-${{ env.RELEASE_TAG }}-linux-arm64.tar.gz
+            warmdesk-${{ env.RELEASE_TAG }}-linux-arm64.tar.gz.asc
 
   # ── Tauri desktop clients ────────────────────────────────────────────────────
   release-desktop:
@@ -158,13 +166,13 @@ jobs:
             os: ubuntu-24.04
             bundle: appimage
             artifact: "WarmDesk-*-x86_64.AppImage"
-            rename: "WarmDesk-${{ github.ref_name }}-x86_64.AppImage"
+            rename: "WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage"
 
           - name: macOS
             os: macos-latest
             bundle: dmg
             artifact: "WarmDesk_*.dmg"
-            rename: "WarmDesk-${{ github.ref_name }}-universal.dmg"
+            rename: "WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg"
 
     steps:
       - name: Checkout
@@ -227,7 +235,7 @@ jobs:
             fs.writeFileSync(cp, cargo);
           "
         env:
-          VERSION: ${{ github.ref_name }}
+          VERSION: ${{ env.RELEASE_TAG }}
 
       - name: Build desktop app (Linux)
         if: matrix.os == 'ubuntu-24.04'
@@ -250,17 +258,17 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         run: |
           SRC=$(ls frontend/src-tauri/target/release/bundle/appimage/*.AppImage | head -1)
-          cp "$SRC" "WarmDesk-${{ github.ref_name }}-x86_64.AppImage"
+          cp "$SRC" "WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage"
           SRC=$(ls frontend/src-tauri/target/release/bundle/deb/*.deb | head -1)
-          cp "$SRC" "WarmDesk-${{ github.ref_name }}-amd64.deb"
+          cp "$SRC" "WarmDesk-${{ env.RELEASE_TAG }}-amd64.deb"
           SRC=$(ls frontend/src-tauri/target/release/bundle/rpm/*.rpm | head -1)
-          cp "$SRC" "WarmDesk-${{ github.ref_name }}-x86_64.rpm"
+          cp "$SRC" "WarmDesk-${{ env.RELEASE_TAG }}-x86_64.rpm"
 
       - name: Collect and rename artifact (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           SRC=$(ls frontend/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg | head -1)
-          cp "$SRC" "WarmDesk-${{ github.ref_name }}-universal.dmg"
+          cp "$SRC" "WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg"
 
       - name: Sign artifacts (Linux)
         if: matrix.os == 'ubuntu-24.04' && env.HAS_GPG == 'true'
@@ -273,9 +281,9 @@ jobs:
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
           gpgconf --kill gpg-agent
-          for f in WarmDesk-${{ github.ref_name }}-x86_64.AppImage \
-                   WarmDesk-${{ github.ref_name }}-amd64.deb \
-                   WarmDesk-${{ github.ref_name }}-x86_64.rpm; do
+          for f in WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage \
+                   WarmDesk-${{ env.RELEASE_TAG }}-amd64.deb \
+                   WarmDesk-${{ env.RELEASE_TAG }}-x86_64.rpm; do
             gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
@@ -295,29 +303,31 @@ jobs:
           gpg --batch --yes --pinentry-mode loopback \
             --passphrase "$GPG_PASSPHRASE" \
             --detach-sign --armor --local-user "$GPG_KEY_ID" \
-            WarmDesk-${{ github.ref_name }}-universal.dmg
+            WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg
 
       - name: Upload to GitHub Release (Linux)
         if: matrix.os == 'ubuntu-24.04'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           fail_on_unmatched_files: false
           files: |
-            WarmDesk-${{ github.ref_name }}-x86_64.AppImage
-            WarmDesk-${{ github.ref_name }}-x86_64.AppImage.asc
-            WarmDesk-${{ github.ref_name }}-amd64.deb
-            WarmDesk-${{ github.ref_name }}-amd64.deb.asc
-            WarmDesk-${{ github.ref_name }}-x86_64.rpm
-            WarmDesk-${{ github.ref_name }}-x86_64.rpm.asc
+            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage
+            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage.asc
+            WarmDesk-${{ env.RELEASE_TAG }}-amd64.deb
+            WarmDesk-${{ env.RELEASE_TAG }}-amd64.deb.asc
+            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.rpm
+            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.rpm.asc
 
       - name: Upload to GitHub Release (macOS)
         if: matrix.os == 'macos-latest'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           fail_on_unmatched_files: false
           files: |
-            WarmDesk-${{ github.ref_name }}-universal.dmg
-            WarmDesk-${{ github.ref_name }}-universal.dmg.asc
+            WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg
+            WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg.asc
 
   # ── Windows desktop client (separate job for SignPath code signing) ───────────
   release-desktop-windows:
@@ -369,7 +379,7 @@ jobs:
             fs.writeFileSync(cp, cargo);
           "
         env:
-          VERSION: ${{ github.ref_name }}
+          VERSION: ${{ env.RELEASE_TAG }}
 
       - name: Build desktop app (Windows)
         # RUSTC_WRAPPER="": override .cargo/config.toml's sccache wrapper — not installed on CI runners.
@@ -381,8 +391,8 @@ jobs:
         shell: pwsh
         run: |
           $installer = Get-ChildItem frontend/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
-          Copy-Item $installer.FullName "WarmDesk-${{ github.ref_name }}-x64-setup.exe"
-          Compress-Archive -Path "frontend/src-tauri/target/release/WarmDesk.exe" -DestinationPath "WarmDesk-${{ github.ref_name }}-x64-portable.zip"
+          Copy-Item $installer.FullName "WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe"
+          Compress-Archive -Path "frontend/src-tauri/target/release/WarmDesk.exe" -DestinationPath "WarmDesk-${{ env.RELEASE_TAG }}-x64-portable.zip"
 
       - name: Sign artifacts (Windows)
         if: env.HAS_GPG == 'true'
@@ -396,8 +406,8 @@ jobs:
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
           gpgconf --kill gpg-agent
-          for f in "WarmDesk-${{ github.ref_name }}-x64-setup.exe" \
-                   "WarmDesk-${{ github.ref_name }}-x64-portable.zip"; do
+          for f in "WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe" \
+                   "WarmDesk-${{ env.RELEASE_TAG }}-x64-portable.zip"; do
             gpg --batch --yes --pinentry-mode loopback \
               --passphrase "$GPG_PASSPHRASE" \
               --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
@@ -409,7 +419,7 @@ jobs:
       #   uses: actions/upload-artifact@v4
       #   with:
       #     name: warmdesk-unsigned-installer
-      #     path: WarmDesk-${{ github.ref_name }}-x64-setup.exe
+      #     path: WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe
       #     if-no-files-found: error
 
       # - name: Sign installer via SignPath
@@ -427,17 +437,18 @@ jobs:
       # - name: Rename signed installer
       #   shell: pwsh
       #   run: |
-      #     Copy-Item (Get-ChildItem signed/*.exe | Select-Object -First 1).FullName "WarmDesk-${{ github.ref_name }}-x64-setup.exe"
+      #     Copy-Item (Get-ChildItem signed/*.exe | Select-Object -First 1).FullName "WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe"
 
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           fail_on_unmatched_files: false
           files: |
-            WarmDesk-${{ github.ref_name }}-x64-setup.exe
-            WarmDesk-${{ github.ref_name }}-x64-setup.exe.asc
-            WarmDesk-${{ github.ref_name }}-x64-portable.zip
-            WarmDesk-${{ github.ref_name }}-x64-portable.zip.asc
+            WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe
+            WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe.asc
+            WarmDesk-${{ env.RELEASE_TAG }}-x64-portable.zip
+            WarmDesk-${{ env.RELEASE_TAG }}-x64-portable.zip.asc
 
   # ── Publish release after all assets are uploaded ───────────────────────────
   publish-release:
@@ -447,6 +458,7 @@ jobs:
 
     steps:
       - name: Publish draft release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           draft: false
