@@ -24,12 +24,12 @@ async function loginAs(page, username = 'demo.admin', password = 'demo1234') {
   await page.waitForURL('**/')
 }
 
-// Helper to dismiss the welcome/onboarding backdrop if present
+// Dismiss the welcome/news backdrop that appears on every fresh context
 async function dismissWelcome(page) {
   const welcomeClose = page.locator('.welcome-close')
-  if (await welcomeClose.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await welcomeClose.isVisible({ timeout: 3000 }).catch(() => false)) {
     await welcomeClose.click()
-    await page.waitForTimeout(300)
+    await page.waitForTimeout(400)
   }
 }
 
@@ -54,6 +54,7 @@ test.describe('screenshots', () => {
     const page = await context.newPage()
     await page.goto(BASE_URL)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.screenshot(ss('02-dashboard'))
     await context.close()
   })
@@ -65,6 +66,7 @@ test.describe('screenshots', () => {
     await page.goto(`${BASE_URL}/projects/website-redesign`)
     await page.waitForLoadState('networkidle')
     await page.waitForSelector('.board-column')
+    await dismissWelcome(page)
     await page.screenshot(ss('03-board'))
     await context.close()
   })
@@ -97,12 +99,13 @@ test.describe('screenshots', () => {
     await context.close()
   })
 
-  // ── 06: Messages (project chat panel) ──────────────────────────────
+  // ── 06: Messages (direct messages) ─────────────────────────────────
   test('06-messages', async ({ browser }) => {
     const context = await browser.newContext({ storageState: AUTH_FILE })
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/chats`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.screenshot(ss('06-messages'))
     await context.close()
   })
@@ -113,6 +116,7 @@ test.describe('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/reports`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.screenshot(ss('07-report'))
     await context.close()
   })
@@ -124,6 +128,7 @@ test.describe('screenshots', () => {
     await page.goto(`${BASE_URL}/admin`)
     await page.waitForLoadState('networkidle')
     await page.waitForSelector('.data-table')
+    await dismissWelcome(page)
     await page.screenshot(ss('08-admin-users'))
     await context.close()
   })
@@ -147,15 +152,14 @@ test.describe('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/settings`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.screenshot(ss('10-user-settings'))
     await context.close()
   })
 
   // ── 11–12: Chat reactions ─────────────────────────────────────────
   // NOTE: Reaction hover/selected screenshots require a chat with
-  // existing messages that have reactions. The ChatPanel is embedded
-  // in the call UI (ActiveCallBar) — not a full-page view. If reactions
-  // are not visible, these screenshots will need manual capture.
+  // existing messages that have reactions — capture manually.
 
   // ── 13: Gantt chart ────────────────────────────────────────────────
   test('13-gant', async ({ browser }) => {
@@ -163,6 +167,7 @@ test.describe('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/projects/website-redesign/gantt`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.screenshot(ss('13-gant'))
     await context.close()
   })
@@ -174,7 +179,6 @@ test.describe('screenshots', () => {
     await page.goto(`${BASE_URL}/projects/product-platform/charts`)
     await page.waitForLoadState('networkidle')
     await dismissWelcome(page)
-    // Click the Cumulative tab
     const cumTab = page.locator('.charts-tabs .tab', { hasText: /^🌊/ })
     if (await cumTab.isVisible()) {
       await cumTab.click()
@@ -190,6 +194,7 @@ test.describe('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/projects/product-platform/backlog`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.screenshot(ss('15-scrum-backlog'))
     await context.close()
   })
@@ -221,7 +226,6 @@ test.describe('screenshots', () => {
     if (await bdTab.isVisible()) {
       await bdTab.click()
       await page.waitForTimeout(500)
-      // Select a sprint from the dropdown
       const sprintSelect = page.locator('.sprint-select')
       if (await sprintSelect.isVisible()) {
         const options = await sprintSelect.locator('option').all()
@@ -246,7 +250,6 @@ test.describe('screenshots', () => {
     if (await buTab.isVisible()) {
       await buTab.click()
       await page.waitForTimeout(500)
-      // Select a sprint from the dropdown
       const sprintSelect = page.locator('.sprint-select')
       if (await sprintSelect.isVisible()) {
         const options = await sprintSelect.locator('option').all()
@@ -282,6 +285,7 @@ test.describe('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/time-tracking`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.screenshot(ss('20-standby-shift'))
     await context.close()
   })
@@ -293,16 +297,16 @@ test.describe('screenshots', () => {
     await page.goto(BASE_URL)
     await page.waitForLoadState('networkidle')
     await dismissWelcome(page)
-    // Find the first helpdesk customer link in the sidebar
+    // Navigate to first helpdesk customer tickets via sidebar
     const ticketLink = page.locator('[id^="section-body-helpdesk"] .sidebar-link').first()
     if (await ticketLink.isVisible()) {
       const href = await ticketLink.getAttribute('href')
       await page.goto(`${BASE_URL}${href}`)
     } else {
       await page.goto(`${BASE_URL}/customers`)
-      await page.waitForLoadState('networkidle')
     }
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.waitForSelector('.ticket-card', { timeout: 5000 }).catch(() => {})
     await page.screenshot(ss('21-ticket-list'))
     await context.close()
@@ -320,12 +324,17 @@ test.describe('screenshots', () => {
       const href = await ticketLink.getAttribute('href')
       await page.goto(`${BASE_URL}${href}`)
       await page.waitForLoadState('networkidle')
+      await dismissWelcome(page)
       await page.waitForSelector('.ticket-card', { timeout: 5000 }).catch(() => {})
       const firstCard = page.locator('.ticket-card').first()
       if (await firstCard.isVisible()) {
         await firstCard.click()
         await page.waitForLoadState('networkidle')
-        await page.waitForSelector('.ticket-detail-main', { timeout: 5000 }).catch(() => {})
+        // Wait for the full ticket detail to render — title, messages section, time section
+        await page.waitForSelector('.ticket-detail-main', { timeout: 8000 }).catch(() => {})
+        await page.waitForSelector('.ticket-messages', { timeout: 5000 }).catch(() => {})
+        await page.waitForLoadState('networkidle')
+        await page.waitForTimeout(800)
       }
     }
     await page.screenshot(ss('22-ticket-detail'))
