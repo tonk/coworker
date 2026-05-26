@@ -28,11 +28,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create draft release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          draft: true
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft \
+            --generate-notes \
+            --title "WarmDesk $RELEASE_TAG" \
+            || true  # ignore if release already exists
 
   # ── Server binary + web frontend tarball ────────────────────────────────────
   release-server:
@@ -45,6 +49,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -140,15 +146,16 @@ jobs:
           done
 
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          fail_on_unmatched_files: false
-          files: |
-            warmdesk-${{ env.RELEASE_TAG }}-linux-amd64.tar.gz
-            warmdesk-${{ env.RELEASE_TAG }}-linux-amd64.tar.gz.asc
-            warmdesk-${{ env.RELEASE_TAG }}-linux-arm64.tar.gz
-            warmdesk-${{ env.RELEASE_TAG }}-linux-arm64.tar.gz.asc
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber \
+            warmdesk-${{ env.RELEASE_TAG }}-linux-amd64.tar.gz \
+            warmdesk-${{ env.RELEASE_TAG }}-linux-arm64.tar.gz \
+            $(ls warmdesk-${{ env.RELEASE_TAG }}-linux-amd64.tar.gz.asc 2>/dev/null || true) \
+            $(ls warmdesk-${{ env.RELEASE_TAG }}-linux-arm64.tar.gz.asc 2>/dev/null || true)
 
   # ── Tauri desktop clients ────────────────────────────────────────────────────
   release-desktop:
@@ -165,16 +172,16 @@ jobs:
           - name: Linux
             os: ubuntu-24.04
             bundle: appimage
-            artifact: "WarmDesk-*-x86_64.AppImage"
 
           - name: macOS
             os: macos-latest
             bundle: dmg
-            artifact: "WarmDesk_*.dmg"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
 
       - name: Install Linux system dependencies
         if: matrix.os == 'ubuntu-24.04'
@@ -305,27 +312,29 @@ jobs:
 
       - name: Upload to GitHub Release (Linux)
         if: matrix.os == 'ubuntu-24.04'
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          fail_on_unmatched_files: false
-          files: |
-            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage
-            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage.asc
-            WarmDesk-${{ env.RELEASE_TAG }}-amd64.deb
-            WarmDesk-${{ env.RELEASE_TAG }}-amd64.deb.asc
-            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.rpm
-            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.rpm.asc
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber \
+            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage \
+            WarmDesk-${{ env.RELEASE_TAG }}-amd64.deb \
+            WarmDesk-${{ env.RELEASE_TAG }}-x86_64.rpm \
+            $(ls WarmDesk-${{ env.RELEASE_TAG }}-x86_64.AppImage.asc 2>/dev/null || true) \
+            $(ls WarmDesk-${{ env.RELEASE_TAG }}-amd64.deb.asc 2>/dev/null || true) \
+            $(ls WarmDesk-${{ env.RELEASE_TAG }}-x86_64.rpm.asc 2>/dev/null || true)
 
       - name: Upload to GitHub Release (macOS)
         if: matrix.os == 'macos-latest'
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          fail_on_unmatched_files: false
-          files: |
-            WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg
-            WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg.asc
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber \
+            WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg \
+            $(ls WarmDesk-${{ env.RELEASE_TAG }}-universal.dmg.asc 2>/dev/null || true)
 
   # ── Windows desktop client (separate job for SignPath code signing) ───────────
   release-desktop-windows:
@@ -338,6 +347,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -411,42 +422,16 @@ jobs:
               --detach-sign --armor --local-user "$GPG_KEY_ID" "$f"
           done
 
-      # Authenticode signing temporarily disabled
-      # - name: Upload unsigned installer for signing
-      #   id: upload-unsigned
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: warmdesk-unsigned-installer
-      #     path: WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe
-      #     if-no-files-found: error
-
-      # - name: Sign installer via SignPath
-      #   uses: signpath/github-action-submit-signing-request@v2
-      #   with:
-      #     api-token: '${{ secrets.SIGNPATH_API_TOKEN }}'
-      #     organization-id: '${{ vars.SIGNPATH_ORGANIZATION_ID }}'
-      #     project-slug: 'warmdesk'
-      #     signing-policy-slug: 'release-signing'
-      #     github-artifact-id: '${{ steps.upload-unsigned.outputs.artifact-id }}'
-      #     wait-for-completion: true
-      #     wait-for-completion-timeout-in-seconds: 1200
-      #     output-artifact-directory: signed
-
-      # - name: Rename signed installer
-      #   shell: pwsh
-      #   run: |
-      #     Copy-Item (Get-ChildItem signed/*.exe | Select-Object -First 1).FullName "WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe"
-
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          fail_on_unmatched_files: false
-          files: |
-            WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe
-            WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe.asc
-            WarmDesk-${{ env.RELEASE_TAG }}-x64-portable.zip
-            WarmDesk-${{ env.RELEASE_TAG }}-x64-portable.zip.asc
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ env.RELEASE_TAG }}" `
+            --repo "${{ github.repository }}" `
+            --clobber `
+            "WarmDesk-${{ env.RELEASE_TAG }}-x64-setup.exe" `
+            "WarmDesk-${{ env.RELEASE_TAG }}-x64-portable.zip"
+        shell: pwsh
 
   # ── Publish release after all assets are uploaded ───────────────────────────
   publish-release:
@@ -456,7 +441,9 @@ jobs:
 
     steps:
       - name: Publish draft release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          draft: false
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release edit "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft=false
