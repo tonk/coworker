@@ -8,15 +8,12 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.17)
+## Latest release (v0.10.18)
 
-- **Helpdesk ticketing module** — full ticket lifecycle (incident / problem / service request / change request) with priority, status, assignee, internal messages with attachments, tags, linked tickets, and linked board cards.
-- **SLA policies** — admin-configurable response and resolution time limits with optional priority filter; breach status tracked per ticket.
-- **Time tracking on tickets** — log time entries directly on a ticket (gated by time-tracking feature flag), with a project selector from the customer's contracts.
-- **Custom date picker** — fully themed `DatePicker` component that respects the user's date format and week-start settings; no native `<input type="date">`.
-- **Dashboard default** — users can choose *Boards* or *Tickets* as their home page in personal settings.
-- **Ansible collection v0.4.0** — new `ticket`, `sla_policy`, and `user_credential` modules.
-- **Screenshots** — all 22 reference screenshots updated; welcome backdrop reliably dismissed before every capture.
+- **Settings page crash fixed (Linux RPM)** — unhandled promise rejections in the user-settings page crashed the WebKit GTK WebView; all async calls now have proper error handling.
+- **Clipboard API crash fixed** — copy-key buttons in settings and project settings now gracefully handle unavailable clipboard API (WebKit GTK limitation).
+- **All 12 locales now saved correctly** — Danish, Swedish, Norwegian, Finnish, Icelandic, Portuguese, and Italian were silently rejected by the backend; fixed.
+- **Black theme now persisted** — selecting the black theme in personal settings is now correctly saved.
 
 ## Experiment
 

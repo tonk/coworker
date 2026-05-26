@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.10.18 — 2026-05-26
+
+### Fixed
+- **Settings page crash in Linux RPM** — `loadPersonalKeys()` and
+  `revokePersonalKey()` in the user settings page lacked error handling; an
+  unhandled promise rejection crashed the WebKit GTK WebView on Linux desktop
+  builds.
+- **Clipboard API crash in settings and project settings** — `navigator.clipboard`
+  calls in the copy-key buttons had no guard; WebKit GTK on Linux does not always
+  expose the clipboard API, causing a `TypeError` that took down the page. Now
+  falls back to a "copy manually" error message.
+- **Locale not saved for 7 languages** — selecting Danish, Swedish, Norwegian,
+  Finnish, Icelandic, Portuguese, or Italian in personal settings silently did
+  nothing (backend validation was incomplete). All 12 supported locales are now
+  accepted.
+- **Black theme not persisted** — selecting the *Black* theme in personal settings
+  was silently discarded by the backend; it is now accepted and saved alongside
+  light / dark / system.
+
 ## v0.10.17 — 2026-05-26
 
 ### Added
