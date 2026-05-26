@@ -333,6 +333,21 @@
         </div>
       </div>
 
+      <!-- Linked tickets -->
+      <div v-if="!isNew && isSectionVisible('linkedTickets')" class="linked-cards-section">
+        <div class="linked-cards-header">
+          <h4>{{ $t('ticket.linked_tickets') }}</h4>
+          <span v-if="linkedTickets.length" class="linked-cards-count">{{ linkedTickets.length }}</span>
+        </div>
+        <div class="linked-card-list">
+          <div v-for="lt in linkedTickets" :key="lt.link_id" class="linked-card-row" @click="openLinkedTicket(lt)">
+            <span class="linked-card-ref">{{ lt.status }}</span>
+            <span class="linked-card-title">#{{ lt.ticket_id }} {{ lt.title }}</span>
+            <button class="btn-icon-xs" @click.stop="removeLinkedTicket(lt)" :title="$t('ticket.remove_link')" aria-label="Remove linked ticket">✕</button>
+          </div>
+        </div>
+      </div>
+
       <div v-if="!isNew && !readonly" class="comments-section">
         <div class="comments-header">
           <h4>{{ $t('board.comments') }}</h4>
@@ -535,6 +550,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import Sortable from 'sortablejs'
 import { useI18n } from 'vue-i18n'
 import { marked } from 'marked'
@@ -549,6 +565,7 @@ import { useBoardStore } from '@/stores/board'
 import { useProjectStore } from '@/stores/project'
 import { useAuthStore } from '@/stores/auth'
 import { projectsApi } from '@/api/projects'
+import { ticketsApi } from '@/api/tickets'
 import { attachmentsApi } from '@/api/attachments'
 import { useUIStore } from '@/stores/ui'
 import { useSystemStore } from '@/stores/system'
@@ -574,6 +591,7 @@ const boardStore = useBoardStore()
 const systemStore = useSystemStore()
 const projectStore = useProjectStore()
 const ui = useUIStore()
+const router = useRouter()
 
 const cardRef = computed(() => {
   const prefix = projectStore.currentProject?.key_prefix
@@ -659,6 +677,7 @@ const sectionsConfig = computed(() => [
   { key: 'checklist', label: t('checklist.title') },
   { key: 'subcards', label: t('subcard.sub_cards') },
   { key: 'linkedCards', label: t('card_ref.linked_cards') },
+  { key: 'linkedTickets', label: t('ticket.linked_tickets') },
   { key: 'watchers', label: t('board.watchers') },
   { key: 'externalIssue', label: t('board.external_issue') },
 ].sort((a, b) => a.label.localeCompare(b.label)))
@@ -670,6 +689,7 @@ const sectionEmpty = computed(() => ({
   checklist: !checklist.value.length,
   subcards: !subCards.value.length,
   linkedCards: !linkedCards.value.length,
+  linkedTickets: !linkedTickets.value.length,
   watchers: !(props.card.watchers?.length),
   externalIssue: !form.value.external_issue_url,
 }))
@@ -796,10 +816,20 @@ function openSubCard(sc) {
 const linkedCards = ref([])
 const newLinkedCardRef = ref('')
 
+// Linked tickets
+const linkedTickets = ref([])
+
 async function loadLinkedCards() {
   try {
     const { data } = await projectsApi.listCardRefs(props.projectSlug, props.card.id)
     linkedCards.value = data || []
+  } catch {}
+}
+
+async function loadLinkedTickets() {
+  try {
+    const { data } = await projectsApi.listCardTickets(props.projectSlug, props.card.id)
+    linkedTickets.value = data || []
   } catch {}
 }
 
@@ -833,6 +863,18 @@ async function openLinkedCard(lc) {
     const { data } = await projectsApi.getCard(lc.project_slug, lc.id)
     openLinkedCardSlug.value = lc.project_slug
     openLinkedCardRef.value = data
+  } catch {}
+}
+
+function openLinkedTicket(lt) {
+  router.push({ name: 'ticket-detail', params: { id: lt.customer_id, ticketId: lt.ticket_id } })
+}
+
+async function removeLinkedTicket(lt) {
+  if (props.readonly) return
+  try {
+    await ticketsApi.removeCardLink(lt.customer_id, lt.ticket_id, lt.link_id)
+    await loadLinkedTickets()
   } catch {}
 }
 
@@ -1054,6 +1096,7 @@ onMounted(async () => {
   gitLinks.value = linksRes.data || []
   await loadSubCards()
   await loadLinkedCards()
+  await loadLinkedTickets()
 })
 
 onUnmounted(() => {

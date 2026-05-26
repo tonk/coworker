@@ -1,0 +1,782 @@
+<template>
+  <main class="ticket-detail-main">
+    <div v-if="loading" class="loading-state">
+      <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
+    </div>
+
+    <template v-else-if="ticket">
+      <header class="detail-header">
+        <RouterLink :to="`/customers/${customerId}/tickets`" class="back-link">{{ $t('common.go_back') }}</RouterLink>
+        <div class="detail-title-row">
+          <div class="title-edit-wrap">
+            <h1 v-if="!editingTitle" @dblclick="startTitleEdit" :title="$t('common.double_click_edit')">{{ ticket.title }}</h1>
+            <input v-else ref="titleInput" v-model="editTitleVal" class="form-input title-input" @blur="saveTitle" @keydown.enter="saveTitle" @keydown.escape="cancelTitleEdit" />
+          </div>
+          <div class="detail-actions">
+            <select class="form-input form-input-sm" :value="ticket.status" @change="updateStatus($event.target.value)">
+              <option value="open">{{ $t('ticket.status_open') }}</option>
+              <option value="in_progress">{{ $t('ticket.status_in_progress') }}</option>
+              <option value="pending">{{ $t('ticket.status_pending') }}</option>
+              <option value="resolved">{{ $t('ticket.status_resolved') }}</option>
+              <option value="closed">{{ $t('ticket.status_closed') }}</option>
+            </select>
+            <select class="form-input form-input-sm" :value="ticket.priority" @change="updatePriority($event.target.value)">
+              <option value="low">{{ $t('ticket.priority_low') }}</option>
+              <option value="medium">{{ $t('ticket.priority_medium') }}</option>
+              <option value="high">{{ $t('ticket.priority_high') }}</option>
+              <option value="critical">{{ $t('ticket.priority_critical') }}</option>
+            </select>
+            <button class="btn btn-danger btn-sm" @click="deleteTicket">{{ $t('common.delete') }}</button>
+          </div>
+        </div>
+        <div class="detail-meta">
+          <span class="ticket-type" :class="'type-' + ticket.type">{{ $t('ticket.type_' + ticket.type) }}</span>
+          <span class="ticket-status" :class="'status-' + ticket.status">{{ $t('ticket.status_' + ticket.status) }}</span>
+          <span v-if="ticket.sla_policy_id" :class="['sla-badge', ticket.sla_response_breached || ticket.sla_resolution_breached ? 'sla-breach' : slaWarning(ticket) ? 'sla-warning' : 'sla-ok']">
+            {{ ticket.sla_policy?.name || $t('sla.sla') }}
+            <template v-if="ticket.sla_response_breached">· {{ $t('sla.response_breached') }}</template>
+            <template v-else-if="ticket.sla_resolution_breached">· {{ $t('sla.resolution_breached') }}</template>
+          </span>
+          <span>#{{ ticket.id }}</span>
+          <span>{{ $t('ticket.created_by') }} {{ ticket.created_by?.display_name || ticket.created_by?.username }}</span>
+          <span>{{ formatDateTime(ticket.created_at) }}</span>
+          <span class="assignee-wrap">
+            <label class="sr-only" for="assignee-select">{{ $t('ticket.assigned_to') }}</label>
+            <select id="assignee-select" class="form-input form-input-sm" :value="ticket.assigned_to_id" @change="updateAssignedTo($event.target.value)">
+              <option :value="null">—</option>
+              <option v-for="u in customerUsers" :key="u.user_id" :value="u.user_id">{{ u.display_name || u.username }}</option>
+            </select>
+          </span>
+          <span v-if="ticket.owner">{{ $t('ticket.owner') }} {{ ticket.owner.display_name || ticket.owner.username }}</span>
+          <span v-if="ticket.group">{{ $t('ticket.group') }} {{ ticket.group.name }}</span>
+        </div>
+      </header>
+
+      <div v-if="ticket.status === 'pending'" class="reminder-row">
+        <span class="reminder-label">{{ $t('ticket.reminder_date') }}</span>
+        <DatePicker :model-value="reminderDateValue" @update:model-value="updateReminderDate" />
+      </div>
+
+      <div class="detail-fields">
+        <div class="detail-tags" v-if="ticket.tags?.length">
+          <span v-for="tag in ticket.tags" :key="tag.id" class="tag-chip">
+            #{{ tag.name }}
+            <button class="tag-remove" @click="removeTag(tag)" title="Remove tag" aria-label="Remove tag">×</button>
+          </span>
+        </div>
+        <div class="tag-input-row">
+          <input class="form-input form-input-sm tag-input" v-model="newTagName" :placeholder="$t('ticket.add_tag_placeholder')" @keydown.enter.prevent="addTag" @keydown.comma.prevent="addTag" />
+          <button class="btn btn-secondary btn-sm" @click="addTag" :disabled="!newTagName.trim()">{{ $t('common.add') }}</button>
+        </div>
+      </div>
+
+      <div v-if="ticket.description" class="detail-description markdown-body" v-html="renderMarkdown(ticket.description)"></div>
+      <AttachmentList v-if="ticket.attachments?.length" :attachments="ticket.attachments" :can-delete="false" />
+
+      <div v-if="ticket.sla_policy_id" class="sla-card">
+        <h4>{{ ticket.sla_policy?.name || $t('sla.sla') }}</h4>
+        <div class="sla-card-body">
+          <div class="sla-card-row" v-if="ticket.sla_response_deadline">
+            <span class="sla-card-label">{{ $t('sla.response_by') }}</span>
+            <span :class="['sla-card-value', ticket.sla_response_breached ? 'sla-card-breach' : '']">{{ formatDateTime(ticket.sla_response_deadline) }}</span>
+            <span v-if="ticket.first_response_at" class="sla-card-check met"><span class="feat-check" style="color:var(--color-success)">✓</span> {{ $t('sla.first_response') }} {{ formatDateTime(ticket.first_response_at) }}</span>
+            <span v-else-if="ticket.sla_response_breached" class="sla-card-status breach">{{ $t('sla.response_breached') }}</span>
+            <span v-else-if="slaWarning(ticket)" class="sla-card-status warn">{{ $t('sla.warning') }}</span>
+            <span v-else class="sla-card-status ok">{{ $t('sla.on_track') }}</span>
+          </div>
+          <div class="sla-card-row" v-if="ticket.sla_resolution_deadline">
+            <span class="sla-card-label">{{ $t('sla.resolution_by') }}</span>
+            <span :class="['sla-card-value', ticket.sla_resolution_breached ? 'sla-card-breach' : '']">{{ formatDateTime(ticket.sla_resolution_deadline) }}</span>
+            <span v-if="ticket.status === 'resolved' || ticket.status === 'closed'" class="sla-card-check met"><span class="feat-check" style="color:var(--color-success)">✓</span> {{ $t('ticket.status_' + ticket.status) }}</span>
+            <span v-else-if="ticket.sla_resolution_breached" class="sla-card-status breach">{{ $t('sla.resolution_breached') }}</span>
+            <span v-else-if="slaWarning(ticket)" class="sla-card-status warn">{{ $t('sla.warning') }}</span>
+            <span v-else class="sla-card-status ok">{{ $t('sla.on_track') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="linked-tickets-section" v-if="linkedTickets !== null">
+        <h4>{{ $t('ticket.linked_tickets') }} <span v-if="linkedTickets.length" class="count">({{ linkedTickets.length }})</span></h4>
+        <div v-if="linkedTickets.length" class="linked-list">
+          <div v-for="lt in linkedTickets" :key="lt.link_id" class="linked-row" @click="openTicket(lt)">
+            <span class="linked-status" :class="'status-' + lt.status">{{ $t('ticket.status_' + lt.status) }}</span>
+            <span class="linked-priority" :class="'pri-' + lt.priority">{{ lt.priority }}</span>
+            <span class="linked-title">#{{ lt.id }} {{ lt.title }}</span>
+            <button class="btn-icon-xs" @click.stop="removeLinkedTicket(lt)" :title="$t('ticket.remove_link')" aria-label="Remove link">✕</button>
+          </div>
+        </div>
+        <div class="linked-add-row">
+          <input class="form-input form-input-sm" v-model="newLinkId" :placeholder="$t('ticket.add_link_placeholder')" @keydown.enter.prevent="addLinkedTicket" />
+          <button class="btn btn-secondary btn-sm" @click="addLinkedTicket" :disabled="!newLinkId.trim()">{{ $t('common.add') }}</button>
+        </div>
+      </div>
+
+      <div v-if="linkedCards !== null" class="linked-tickets-section">
+        <h4>{{ $t('card_ref.linked_cards') }} <span v-if="linkedCards.length" class="count">({{ linkedCards.length }})</span></h4>
+        <div v-if="linkedCards.length" class="linked-list">
+          <div v-for="lc in linkedCards" :key="lc.link_id" class="linked-row" @click="openCard(lc)">
+            <span class="linked-ref">{{ lc.project_key }}-{{ lc.card_number }}</span>
+            <span class="linked-title">{{ lc.title }}</span>
+            <button class="btn-icon-xs" @click.stop="removeCardLink(lc)" :title="$t('ticket.remove_link')" aria-label="Remove link">✕</button>
+          </div>
+        </div>
+        <div class="linked-add-row">
+          <input class="form-input form-input-sm" v-model="newCardLink" :placeholder="$t('card_ref.add_link_placeholder')" @keydown.enter.prevent="addCardLink" />
+          <button class="btn btn-secondary btn-sm" @click="addCardLink" :disabled="!newCardLink.trim()">{{ $t('common.add') }}</button>
+        </div>
+      </div>
+
+      <section v-if="auth.timeTrackingEnabled" class="time-section">
+        <h4>{{ $t('ticket.time_logged') }} <span v-if="ticketTimeEntries.length" class="count">({{ formatMinutes(totalMinutes) }})</span></h4>
+
+        <div v-if="ticketTimeEntries.length" class="time-list">
+          <div v-for="te in ticketTimeEntries" :key="te.id" class="time-row">
+            <span class="time-date">{{ formatDate(te.date) }}</span>
+            <span class="time-who">{{ te.user?.display_name || te.user?.username }}</span>
+            <span class="time-dur">{{ formatMinutes(te.minutes) }}</span>
+            <span v-if="te.project" class="time-proj">{{ te.project.name }}</span>
+            <span class="time-desc">{{ te.description }}</span>
+            <button v-if="te.user_id === auth.user?.id" class="btn-icon-xs" @click="deleteTimeEntry(te)" :title="$t('ticket.time_delete_entry')" :aria-label="$t('ticket.time_delete_entry')">✕</button>
+          </div>
+        </div>
+        <p v-else class="time-empty">{{ $t('ticket.no_time_logged') }}</p>
+
+        <form class="time-add-form" @submit.prevent="logTime">
+          <label class="sr-only" for="te-date">{{ $t('ticket.time_date') }}</label>
+          <DatePicker id="te-date" :model-value="teDate" @update:model-value="teDate = $event" />
+          <label class="sr-only" for="te-hours">{{ $t('ticket.time_hours') }}</label>
+          <input id="te-hours" class="form-input form-input-sm te-num" type="number" min="0" max="23" v-model.number="teHours" :placeholder="$t('ticket.time_hours')" />
+          <label class="sr-only" for="te-mins">{{ $t('ticket.time_minutes') }}</label>
+          <input id="te-mins" class="form-input form-input-sm te-num" type="number" min="0" max="59" step="5" v-model.number="teMins" :placeholder="$t('ticket.time_minutes')" />
+          <label class="sr-only" for="te-project">{{ $t('board.select_project') }}</label>
+          <select id="te-project" class="form-input form-input-sm te-project" v-model="teProjectId">
+            <option :value="null">— {{ $t('board.select_project') }} —</option>
+            <option v-for="p in customerProjects" :key="p.id" :value="p.id">{{ p.name }}</option>
+          </select>
+          <label class="sr-only" for="te-desc">{{ $t('ticket.time_note') }}</label>
+          <input id="te-desc" class="form-input form-input-sm te-desc" type="text" v-model="teDesc" :placeholder="$t('ticket.time_note')" />
+          <button type="submit" class="btn btn-secondary btn-sm" :disabled="teSubmitting || (teHours === 0 && teMins === 0)">{{ $t('ticket.log_time') }}</button>
+        </form>
+      </section>
+
+      <section class="messages-section">
+        <h2>{{ $t('ticket.messages') }} ({{ ticket.messages?.length || 0 }})</h2>
+
+        <div v-if="!ticket.messages?.length" class="empty-state">
+          {{ $t('ticket.no_messages') }}
+        </div>
+
+        <div v-else class="messages-list">
+          <div v-for="msg in ticket.messages" :key="msg.id" class="message">
+            <div class="message-header">
+              <strong>{{ msg.user?.display_name || msg.user?.username }}</strong>
+              <span class="message-time">{{ formatDateTime(msg.created_at) }}</span>
+            </div>
+            <div class="message-body markdown-body" v-html="renderMarkdown(msg.body)"></div>
+            <AttachmentList v-if="msg.attachments?.length" :attachments="msg.attachments" :can-delete="false" />
+          </div>
+        </div>
+
+        <form class="message-form" @submit.prevent="submitMessage">
+          <div class="md-editor">
+            <div class="md-editor-tabs" role="tablist">
+              <button role="tab" :aria-selected="msgEditorTab === 'edit'" aria-controls="ticket-msg-panel-edit" id="ticket-msg-tab-edit" :class="['md-tab', { active: msgEditorTab === 'edit' }]" type="button" @click="msgEditorTab = 'edit'">{{ $t('common.edit') }}</button>
+              <button role="tab" :aria-selected="msgEditorTab === 'preview'" aria-controls="ticket-msg-panel-preview" id="ticket-msg-tab-preview" :class="['md-tab', { active: msgEditorTab === 'preview' }]" type="button" @click="msgEditorTab = 'preview'">{{ $t('common.preview') }}</button>
+            </div>
+            <textarea v-if="msgEditorTab === 'edit'" id="ticket-msg-panel-edit" role="tabpanel" aria-labelledby="ticket-msg-tab-edit" v-model="newMessage" class="form-input md-textarea" rows="3" :placeholder="$t('ticket.message_placeholder')" required @paste="onMsgPaste"></textarea>
+            <div v-else id="ticket-msg-panel-preview" role="tabpanel" aria-labelledby="ticket-msg-tab-preview" class="md-preview markdown-body" v-html="renderMarkdown(newMessage)"></div>
+          </div>
+          <div v-if="pendingFiles.length" class="pending-attachments">
+            <span class="pending-label">{{ $t('ticket.pending_files') }}</span>
+            <AttachmentList :attachments="pendingFiles" :can-delete="true" @remove="removePending" />
+          </div>
+          <div class="message-form-actions">
+            <FileUploadButton @files-selected="onFilesSelected" />
+            <button type="submit" class="btn btn-primary btn-sm" :disabled="(!newMessage.trim() && !pendingFiles.length) || sending">{{ $t('ticket.send') }}<span v-if="pendingFiles.length" class="pending-badge">· {{ pendingFiles.length }}</span></button>
+          </div>
+        </form>
+      </section>
+    </template>
+
+    <div v-else class="empty-state">
+      {{ $t('ticket.not_found') }}
+    </div>
+  </main>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { ticketsApi } from '@/api/tickets'
+import client from '@/api/client'
+import { attachmentsApi } from '@/api/attachments'
+import { customersApi } from '@/api/customers'
+import { timeEntriesApi } from '@/api/timeEntries'
+import { useUIStore } from '@/stores/ui'
+import { useAuthStore } from '@/stores/auth'
+import { useDateFormat } from '@/composables/useDateFormat'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+import AttachmentList from '@/components/common/AttachmentList.vue'
+import FileUploadButton from '@/components/common/FileUploadButton.vue'
+import DatePicker from '@/components/common/DatePicker.vue'
+
+const { formatDateTime, formatDate } = useDateFormat()
+const auth = useAuthStore()
+
+function renderMarkdown(text) {
+  return DOMPurify.sanitize(marked.parse(text || ''))
+}
+
+const descEditorTab = ref('preview')
+const msgEditorTab = ref('edit')
+
+const route = useRoute()
+const router = useRouter()
+const ui = useUIStore()
+
+const customerId = computed(() => Number(route.params.id))
+const ticketId = computed(() => Number(route.params.ticketId))
+const ticket = ref(null)
+const loading = ref(true)
+const newMessage = ref('')
+const pendingFiles = ref([])
+const sending = ref(false)
+const newTagName = ref('')
+const linkedTickets = ref(null)
+const newLinkId = ref('')
+const linkedCards = ref(null)
+const newCardLink = ref('')
+const customerUsers = ref([])
+const editingTitle = ref(false)
+const editTitleVal = ref('')
+const titleInput = ref(null)
+
+function startTitleEdit() {
+  editTitleVal.value = ticket.value?.title || ''
+  editingTitle.value = true
+  nextTick(() => titleInput.value?.focus())
+}
+
+async function saveTitle() {
+  const val = editTitleVal.value.trim()
+  if (!val || val === ticket.value?.title) {
+    editingTitle.value = false
+    return
+  }
+  try {
+    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { title: val })
+    ticket.value = data
+    ui.success('Title updated')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update title')
+  }
+  editingTitle.value = false
+}
+
+function cancelTitleEdit() {
+  editingTitle.value = false
+}
+
+const reminderDateValue = computed(() => {
+  if (!ticket.value?.reminder_at) return null
+  const d = new Date(ticket.value.reminder_at)
+  return d.toISOString().slice(0, 10)
+})
+
+async function updateReminderDate(val) {
+  try {
+    const d = val ? new Date(val + 'T12:00:00Z').toISOString() : null
+    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { reminder_at: d })
+    ticket.value = data
+    ui.success(val ? 'Reminder date updated' : 'Reminder cleared')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update reminder')
+  }
+}
+
+
+async function fetchTicket() {
+  loading.value = true
+  pendingFiles.value = []
+  newMessage.value = ''
+  linkedTickets.value = null
+  linkedCards.value = null
+  newMessage.value = ''
+  try {
+    const { data } = await ticketsApi.get(customerId.value, ticketId.value)
+    ticket.value = data
+    if (ticket.value.attachments === null) ticket.value.attachments = []
+    if (ticket.value.messages) {
+      for (const m of ticket.value.messages) {
+        if (m.attachments === null) m.attachments = []
+      }
+    }
+    // Fetch customer members for assignee dropdown and projects for time tracking
+    try {
+      const { data: members } = await client.get(`/customers/${customerId.value}/members`)
+      customerUsers.value = members || []
+    } catch {
+      customerUsers.value = []
+    }
+    try {
+      const { data: custDetail } = await customersApi.get(customerId.value)
+      const contractProjects = (custDetail.contracts || []).flatMap(cg => cg.projects || [])
+      const unassigned = custDetail.projects || []
+      customerProjects.value = [...contractProjects, ...unassigned]
+    } catch {
+      customerProjects.value = []
+    }
+
+    // Fetch linked tickets
+    try {
+      const { data: links } = await ticketsApi.listLinks(customerId.value, ticketId.value)
+      linkedTickets.value = links || []
+    } catch {
+      linkedTickets.value = []
+    }
+    // Fetch linked cards
+    try {
+      const { data: cards } = await ticketsApi.listCards(customerId.value, ticketId.value)
+      linkedCards.value = cards || []
+    } catch {
+      linkedCards.value = []
+    }
+    // Fetch time entries
+    await fetchTimeEntries()
+  } catch {}
+  loading.value = false
+}
+
+watch(() => route.params.ticketId, () => {
+  fetchTicket()
+})
+
+onMounted(fetchTicket)
+
+async function updateStatus(status) {
+  try {
+    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { status })
+    ticket.value = data
+    ui.success('Status updated')
+    if (status === 'pending') {
+      await nextTick()
+      document.querySelector('.reminder-row')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update status')
+  }
+}
+
+async function updatePriority(priority) {
+  try {
+    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { priority })
+    ticket.value = data
+    ui.success('Priority updated')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update priority')
+  }
+}
+
+async function updateAssignedTo(userId) {
+  try {
+    const val = userId ? Number(userId) : null
+    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { assigned_to_id: val })
+    ticket.value = data
+    ui.success('Assignee updated')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update assignee')
+  }
+}
+
+function onFilesSelected(files) {
+  for (const f of files) {
+    pendingFiles.value.push({
+      id: Math.random(),
+      filename: f.name,
+      size_bytes: f.size,
+      mime_type: f.type || 'application/octet-stream',
+      _file: f,
+      _previewUrl: f.type?.startsWith('image/') ? URL.createObjectURL(f) : null,
+    })
+  }
+}
+
+function removePending(a) {
+  if (a._previewUrl) URL.revokeObjectURL(a._previewUrl)
+  pendingFiles.value = pendingFiles.value.filter(p => p.id !== a.id)
+}
+
+async function onMsgPaste(e) {
+  const items = Array.from(e.clipboardData?.items || [])
+  const images = items.filter(it => it.kind === 'file' && it.type.startsWith('image/'))
+  if (images.length) {
+    e.preventDefault()
+    const files = await Promise.all(images.map(it => {
+      const file = it.getAsFile()
+      if (file) return file
+      return it.getType(it.type).then(blob => {
+        const ext = it.type.split('/')[1]?.split('+')[0] || 'png'
+        return new File([blob], `clipboard.${ext}`, { type: it.type })
+      })
+    }))
+    const valid = files.filter(Boolean)
+    if (valid.length) {
+      onFilesSelected(valid)
+      ui.success(valid.length > 1 ? `${valid.length} images pasted` : 'Image pasted')
+    }
+    return
+  }
+  if (window.__TAURI_INTERNALS__ && navigator.clipboard?.read) {
+    try {
+      const clipItems = await navigator.clipboard.read()
+      const files = []
+      for (const item of clipItems) {
+        for (const type of item.types) {
+          if (type.startsWith('image/')) {
+            const blob = await item.getType(type)
+            const ext = type.split('/')[1]?.split('+')[0] || 'png'
+            files.push(new File([blob], `paste.${ext}`, { type }))
+          }
+        }
+      }
+      if (files.length) { e.preventDefault(); onFilesSelected(files); ui.success('Image pasted') }
+    } catch {}
+  }
+}
+
+async function submitMessage() {
+  const body = newMessage.value.trim()
+  if (!body && !pendingFiles.value.length) return
+  sending.value = true
+  try {
+    const sendBody = body || '📎'
+    const { data } = await ticketsApi.addMessage(customerId.value, ticketId.value, sendBody)
+    const newMsg = { ...data, attachments: [] }
+
+    if (pendingFiles.value.length) {
+      const filesToUpload = [...pendingFiles.value]
+      pendingFiles.value = []
+      filesToUpload.forEach(pf => { if (pf._previewUrl) URL.revokeObjectURL(pf._previewUrl) })
+      for (const pf of filesToUpload) {
+        const fd = new FormData()
+        fd.append('file', pf._file)
+        fd.append('owner_type', 'ticket_message')
+        fd.append('owner_id', String(data.id))
+        try {
+          const { data: att } = await attachmentsApi.upload(fd)
+          newMsg.attachments.push(att)
+        } catch {}
+      }
+    }
+
+    if (!ticket.value.messages) ticket.value.messages = []
+    ticket.value.messages.push(newMsg)
+    newMessage.value = ''
+    await nextTick()
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to send message')
+  } finally {
+    sending.value = false
+  }
+}
+
+async function addTag() {
+  const name = newTagName.value.trim().replace(/^#/, '').toLowerCase()
+  if (!name) return
+  try {
+    const { data } = await ticketsApi.addTag(customerId.value, ticketId.value, name)
+    if (!ticket.value.tags) ticket.value.tags = []
+    if (!ticket.value.tags.some(t => t.id === data.id)) {
+      ticket.value.tags = [...ticket.value.tags, data]
+    }
+    newTagName.value = ''
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to add tag')
+  }
+}
+
+async function removeTag(tag) {
+  try {
+    await ticketsApi.removeTag(customerId.value, ticketId.value, tag.id)
+    ticket.value.tags = (ticket.value.tags || []).filter(t => t.id !== tag.id)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to remove tag')
+  }
+}
+
+async function addLinkedTicket() {
+  const targetId = parseInt(newLinkId.value.trim(), 10)
+  if (!targetId) return
+  try {
+    const { data } = await ticketsApi.addLink(customerId.value, ticketId.value, targetId)
+    if (!linkedTickets.value) linkedTickets.value = []
+    linkedTickets.value.push(data)
+    newLinkId.value = ''
+    ui.success('Ticket linked')
+  } catch (e) {
+    const msg = e.response?.data?.error || 'Failed to link ticket'
+    ui.error(msg)
+  }
+}
+
+async function removeLinkedTicket(lt) {
+  try {
+    await ticketsApi.removeLink(customerId.value, ticketId.value, lt.link_id)
+    linkedTickets.value = (linkedTickets.value || []).filter(l => l.link_id !== lt.link_id)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to remove link')
+  }
+}
+
+async function addCardLink() {
+  const val = newCardLink.value.trim()
+  if (!val) return
+  const body = /^\d+$/.test(val) ? { card_id: parseInt(val, 10) } : { ref: val }
+  try {
+    await ticketsApi.addCardLink(customerId.value, ticketId.value, body)
+    const { data: cards } = await ticketsApi.listCards(customerId.value, ticketId.value)
+    linkedCards.value = cards || []
+    newCardLink.value = ''
+    ui.success('Card linked')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to link card')
+  }
+}
+
+async function removeCardLink(lc) {
+  try {
+    await ticketsApi.removeCardLink(customerId.value, ticketId.value, lc.link_id)
+    linkedCards.value = (linkedCards.value || []).filter(c => c.link_id !== lc.link_id)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to remove link')
+  }
+}
+
+function openTicket(t) {
+  const cid = t.customer_id || customerId.value
+  router.push(`/customers/${cid}/tickets/${t.id}`)
+}
+
+function openCard(c) {
+  router.push({ name: 'board', params: { slug: c.project_slug }, query: { card: c.card_id } })
+}
+
+function slaWarning(t) {
+  if (!t.sla_response_deadline && !t.sla_resolution_deadline) return false
+  if (t.status === 'resolved' || t.status === 'closed') return false
+  const now = Date.now()
+  if (t.sla_response_deadline && !t.first_response_at) {
+    const deadline = new Date(t.sla_response_deadline).getTime()
+    if (deadline - now < 3600000 && deadline - now > 0) return true
+  }
+  if (t.sla_resolution_deadline) {
+    const deadline = new Date(t.sla_resolution_deadline).getTime()
+    if (deadline - now < 3600000 && deadline - now > 0) return true
+  }
+  return false
+}
+
+// --- Time tracking ---
+const ticketTimeEntries = ref([])
+const customerProjects = ref([])
+const teDate = ref(new Date().toISOString().slice(0, 10))
+const teHours = ref(0)
+const teMins = ref(0)
+const teProjectId = ref(null)
+const teDesc = ref('')
+const teSubmitting = ref(false)
+
+const totalMinutes = computed(() => ticketTimeEntries.value.reduce((s, e) => s + e.minutes, 0))
+
+function formatMinutes(mins) {
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
+async function fetchTimeEntries() {
+  if (!auth.timeTrackingEnabled) return
+  try {
+    const { data } = await timeEntriesApi.list({ ticket_id: ticketId.value })
+    ticketTimeEntries.value = data || []
+  } catch {
+    ticketTimeEntries.value = []
+  }
+}
+
+async function logTime() {
+  const minutes = teHours.value * 60 + teMins.value
+  if (minutes <= 0) return
+  teSubmitting.value = true
+  try {
+    const { data } = await timeEntriesApi.create({
+      ticket_id: ticketId.value,
+      project_id: teProjectId.value || undefined,
+      date: teDate.value,
+      minutes,
+      description: teDesc.value.trim(),
+    })
+    ticketTimeEntries.value.unshift(data)
+    teHours.value = 0
+    teMins.value = 0
+    teProjectId.value = null
+    teDesc.value = ''
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to log time')
+  } finally {
+    teSubmitting.value = false
+  }
+}
+
+async function deleteTimeEntry(te) {
+  if (!confirm('Delete this time entry?')) return
+  try {
+    await timeEntriesApi.remove(te.id)
+    ticketTimeEntries.value = ticketTimeEntries.value.filter(e => e.id !== te.id)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to delete time entry')
+  }
+}
+
+async function deleteTicket() {
+  if (!confirm('Delete this ticket?')) return
+  try {
+    await ticketsApi.delete(customerId.value, ticketId.value)
+    ui.success('Ticket deleted')
+    router.push(`/customers/${customerId.value}/tickets`)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to delete ticket')
+  }
+}
+</script>
+
+<style scoped>
+.ticket-detail-main { padding: 24px; max-width: 900px; margin: 0 auto; }
+.loading-state { display: flex; justify-content: center; padding: 48px; }
+.empty-state { text-align: center; padding: 64px 24px; color: var(--color-text-muted); }
+.back-link { font-size: 13px; color: var(--color-primary); text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.detail-header { margin-bottom: 24px; }
+.detail-title-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
+.detail-title-row h1 { flex: 1; margin: 0; font-size: 22px; }
+.detail-actions { display: flex; gap: 8px; }
+.detail-meta { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--color-text-muted); flex-wrap: wrap; }
+.ticket-status { padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+.status-open { background: #dbeafe; color: #1e40af; }
+.status-in_progress { background: #fef3c7; color: #92400e; }
+.status-resolved { background: #d1fae5; color: #065f46; }
+.status-closed { background: #e5e7eb; color: #374151; }
+.status-pending { background: #f0e6ff; color: #6b21a8; }
+.detail-description {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+.messages-section h2 { font-size: 16px; margin: 0 0 16px; }
+.messages-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.message {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.message-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+.message-time { color: var(--color-text-muted); }
+.message-body { font-size: 14px; }
+.message-form { display: flex; flex-direction: column; gap: 8px; }
+.message-form-actions { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.form-input-sm { height: 28px; font-size: 12px; padding: 4px 8px; }
+.pending-badge { font-size: 11px; color: var(--color-primary); font-weight: 600; }
+.pending-attachments { background: var(--color-bg-alt); border-radius: 6px; padding: 8px; margin-top: 4px; }
+.pending-label { font-size: 11px; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 4px; }
+.sla-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+.sla-ok { background: #d1fae5; color: #065f46; }
+.sla-warning { background: #fef3c7; color: #92400e; }
+.sla-breach { background: #fecaca; color: #b91c1c; }
+.sla-deadline { font-size: 12px; color: var(--color-text-muted); }
+.sla-deadline-breach { color: #b91c1c; font-weight: 600; }
+.sla-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+}
+.sla-card h4 { margin: 0 0 10px; font-size: 14px; }
+.sla-card-body { display: flex; flex-direction: column; gap: 6px; }
+.sla-card-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.sla-card-label { color: var(--color-text-muted); min-width: 100px; }
+.sla-card-value { font-weight: 600; }
+.sla-card-breach { color: #b91c1c; }
+.sla-card-status { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; }
+.sla-card-status.ok { background: #d1fae5; color: #065f46; }
+.sla-card-status.warn { background: #fef3c7; color: #92400e; }
+.sla-card-status.breach { background: #fecaca; color: #b91c1c; }
+.sla-card-check { font-size: 11px; color: var(--color-text-muted); }
+.ticket-type { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.type-incident { background: #fecaca; color: #b91c1c; }
+.type-problem { background: #fed7aa; color: #9a3412; }
+.type-service_request { background: #d1fae5; color: #065f46; }
+.type-change_request { background: #dbeafe; color: #1e40af; }
+.detail-fields { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
+.detail-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag-chip { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; background: var(--color-bg-alt); padding: 2px 8px; border-radius: 4px; }
+.tag-remove { background: none; border: none; cursor: pointer; font-size: 14px; line-height: 1; color: var(--color-text-muted); padding: 0; }
+.tag-input-row { display: flex; gap: 4px; align-items: center; }
+.tag-input { flex: 1; min-width: 120px; }
+.linked-tickets-section { margin-bottom: 24px; }
+.linked-tickets-section h4 { font-size: 14px; margin: 0 0 8px; display: flex; align-items: center; gap: 6px; }
+.linked-tickets-section .count { font-weight: 400; color: var(--color-text-muted); }
+.linked-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.linked-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.linked-row:hover { background: var(--color-bg-alt); }
+.linked-row .linked-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.linked-status { padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+.linked-ref { font-family: monospace; font-size: 11px; font-weight: 700; color: var(--color-primary); min-width: 70px; }
+.linked-priority { font-size: 10px; font-weight: 600; color: var(--color-text-muted); }
+.linked-add-row { display: flex; gap: 4px; }
+.linked-add-row input { flex: 1; }
+.btn-icon-xs { background: none; border: none; cursor: pointer; color: var(--color-text-muted); padding: 2px; font-size: 12px; line-height: 1; }
+.btn-icon-xs:hover { color: var(--color-danger, #ef4444); }
+
+/* Markdown editor tabs (matches AdminView pattern) */
+:deep(.md-editor) { border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
+:deep(.md-editor-tabs) { display: flex; background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border); }
+:deep(.md-tab) { padding: 6px 16px; font-size: 12px; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 2px solid transparent; color: var(--color-text-muted); transition: color .15s, border-color .15s; }
+:deep(.md-tab:hover) { color: var(--color-text); }
+:deep(.md-tab.active) { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+:deep(.md-textarea) { border: none !important; border-radius: 0 !important; resize: vertical; min-height: 80px; }
+:deep(.md-preview) { padding: 10px 12px; min-height: 80px; }
+
+.assignee-wrap { display: inline-flex; align-items: center; }
+.assignee-wrap select { font-size: 12px; padding: 1px 6px; height: 22px; max-width: 140px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.title-edit-wrap h1 { cursor: pointer; }
+.title-edit-wrap h1:hover { background: var(--color-bg-alt); border-radius: 4px; }
+.title-input { font-size: 22px; font-weight: 700; width: 100%; }
+.reminder-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 8px 12px; background: #f0e6ff; border-radius: 6px; }
+.reminder-label { font-size: 12px; font-weight: 600; color: #6b21a8; }
+.reminder-row :deep(.dp-trigger) { color: #6b21a8; border-color: rgba(107,33,168,0.3); background: transparent; font-weight: 600; }
+.reminder-row :deep(.dp-trigger:hover) { background: rgba(107,33,168,0.1); }
+.reminder-row :deep(.dp-trigger-empty) { color: #6b21a8; opacity: 0.6; }
+
+/* Time tracking section */
+.time-section { margin-bottom: 24px; }
+.time-section h4 { font-size: 14px; margin: 0 0 8px; display: flex; align-items: center; gap: 6px; }
+.time-section .count { font-weight: 400; color: var(--color-text-muted); }
+.time-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.time-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; font-size: 13px; background: var(--color-bg); border: 1px solid var(--color-border); }
+.time-date { color: var(--color-text-muted); min-width: 80px; font-size: 12px; }
+.time-who { color: var(--color-text-muted); min-width: 80px; font-size: 12px; }
+.time-dur { font-weight: 600; min-width: 50px; }
+.time-desc { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.time-proj { font-size: 11px; color: var(--color-primary); background: var(--color-bg-alt); padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
+.time-empty { font-size: 13px; color: var(--color-text-muted); margin: 0 0 8px; }
+.time-add-form { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.te-num { width: 60px; text-align: center; }
+.te-project { min-width: 130px; max-width: 180px; }
+.te-desc { flex: 1; min-width: 120px; }
+</style>

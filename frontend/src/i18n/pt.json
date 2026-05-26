@@ -584,7 +584,10 @@
     "req_digit": "Um dígito (0–9)",
     "req_special": "Um carácter especial (!{'@'}#$…)",
     "working_hours": "Horário de trabalho",
-    "working_hours_hint": "Defina a hora de início habitual para cada dia. Deixe em branco para dias de folga."
+    "working_hours_hint": "Defina a hora de início habitual para cada dia. Deixe em branco para dias de folga.",
+    "dashboard_default": "Dashboard shows",
+    "dashboard_default_boards": "Boards (projects)",
+    "dashboard_default_tickets": "Tickets (helpdesk)"
   },
   "dm": {
     "title": "Chats",
@@ -983,5 +986,17 @@
     "delete_error": "Falha ao remover",
     "confirm_delete": "Remover chave de acesso \"{name}\"?",
     "delete_aria": "Remover chave de acesso {name}"
+  },
+  "ticket": {
+    "time_logged": "Time Logged",
+    "log_time": "Log time",
+    "no_time_logged": "No time logged yet.",
+    "time_total": "Total",
+    "time_date": "Date",
+    "time_duration": "Duration",
+    "time_hours": "h",
+    "time_minutes": "m",
+    "time_delete_entry": "Delete time entry",
+    "time_note": "Note (optional)"
   }
 }

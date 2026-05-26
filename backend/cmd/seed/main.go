@@ -14,6 +14,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/tonk/warmdesk/config"
@@ -213,6 +214,7 @@ func main() {
 			PasswordHash: hashPassword("demo1234"), GlobalRole: "admin",
 			FirstName: "Ton", LastName: "Kersten", DisplayName: "Ton Kersten",
 			IsActive: true, EmailNotifications: true,
+			HelpdeskEnabled: true,
 		}
 		must(db.Create(&tonk).Error)
 		fmt.Println("   Created system admin: tonk (tonk@smartowl.nl)")
@@ -227,6 +229,7 @@ func main() {
 			FirstName: "Alex", LastName: "Admin", DisplayName: "Alex Admin",
 			IsActive: true, EmailNotifications: true,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=admin",
+			HelpdeskEnabled: true,
 		},
 		"sarah": {
 			Email: "sarah@demo.example", Username: "demo.sarah",
@@ -234,6 +237,7 @@ func main() {
 			FirstName: "Sarah", LastName: "Chen", DisplayName: "Sarah Chen",
 			IsActive: true, EmailNotifications: true,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=sarah",
+			HelpdeskEnabled: true,
 		},
 		"marc": {
 			Email: "marc@demo.example", Username: "demo.marc",
@@ -241,6 +245,7 @@ func main() {
 			FirstName: "Marc", LastName: "Dubois", DisplayName: "Marc Dubois",
 			IsActive: true, EmailNotifications: true,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=marc",
+			HelpdeskEnabled: true,
 		},
 		"lisa": {
 			Email: "lisa@demo.example", Username: "demo.lisa",
@@ -248,6 +253,7 @@ func main() {
 			FirstName: "Lisa", LastName: "Park", DisplayName: "Lisa Park",
 			IsActive: true, EmailNotifications: true,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=lisa",
+			HelpdeskEnabled: true,
 		},
 		"priya": {
 			Email: "priya@demo.example", Username: "demo.priya",
@@ -255,6 +261,7 @@ func main() {
 			FirstName: "Priya", LastName: "Nair", DisplayName: "Priya Nair",
 			IsActive: true, EmailNotifications: true,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=priya",
+			HelpdeskEnabled: true,
 		},
 		"james": {
 			Email: "james@demo.example", Username: "demo.james",
@@ -262,6 +269,7 @@ func main() {
 			FirstName: "James", LastName: "O'Brien", DisplayName: "James O'Brien",
 			IsActive: true, EmailNotifications: true,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=james",
+			HelpdeskEnabled: true,
 		},
 		"elena": {
 			Email: "elena@demo.example", Username: "demo.elena",
@@ -269,6 +277,7 @@ func main() {
 			FirstName: "Elena", LastName: "Kovač", DisplayName: "Elena Kovač",
 			IsActive: true, EmailNotifications: true,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=elena",
+			HelpdeskEnabled: true,
 		},
 		"raj": {
 			Email: "raj@demo.example", Username: "demo.raj",
@@ -276,6 +285,7 @@ func main() {
 			FirstName: "Raj", LastName: "Sharma", DisplayName: "Raj Sharma",
 			IsActive: true, EmailNotifications: false,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=raj",
+			HelpdeskEnabled: true,
 		},
 		"viewer": {
 			Email: "viewer@demo.example", Username: "demo.viewer",
@@ -283,6 +293,7 @@ func main() {
 			FirstName: "Victor", LastName: "Viewer", DisplayName: "Victor Viewer",
 			IsActive: true, EmailNotifications: false,
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=viewer",
+			HelpdeskEnabled: true,
 		},
 	}
 
@@ -2338,7 +2349,247 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d customers with contracts\n", len(demoCustomers))
 
-	// ── 7. Groups ─────────────────────────────────────────────────────────────
+	// ── 7. SLA Policies ───────────────────────────────────────────────────────
+	fmt.Println("→ Creating SLA policies…")
+
+	slaPolicies := []models.SlaPolicy{
+		{Name: "Critical — 1h response / 4h resolution", ResponseTimeMinutes: 60, ResolutionTimeMinutes: 240, PriorityFilter: "critical", IsActive: true},
+		{Name: "High — 2h response / 8h resolution", ResponseTimeMinutes: 120, ResolutionTimeMinutes: 480, PriorityFilter: "high", IsActive: true},
+		{Name: "Standard — 4h response / 24h resolution", ResponseTimeMinutes: 240, ResolutionTimeMinutes: 1440, PriorityFilter: "medium,low", IsActive: true},
+	}
+	for i := range slaPolicies {
+		must(db.Create(&slaPolicies[i]).Error)
+	}
+	fmt.Printf("   Created %d SLA policies\n", len(slaPolicies))
+
+	// Build a priority → SLA policy lookup for assigning SLA to tickets
+	slaByPriority := map[string]*models.SlaPolicy{}
+	for i := range slaPolicies {
+		if slaPolicies[i].PriorityFilter == "" {
+			// Match-all policy — store for every priority (lowest wins via existing insertion)
+			for _, p := range []string{"low", "medium", "high", "critical"} {
+				if _, ok := slaByPriority[p]; !ok {
+					slaByPriority[p] = &slaPolicies[i]
+				}
+			}
+		} else {
+			for _, p := range strings.Split(slaPolicies[i].PriorityFilter, ",") {
+				pri := strings.TrimSpace(p)
+				if _, ok := slaByPriority[pri]; !ok {
+					slaByPriority[pri] = &slaPolicies[i]
+				}
+			}
+		}
+	}
+
+	// ── 8. Tickets ────────────────────────────────────────────────────────────
+	fmt.Println("→ Creating tickets…")
+
+	type ticketMsgSpec struct {
+		userKey  string
+		body     string
+		hoursAgo int // hours before the ticket was created (positive = before)
+	}
+	type ticketSeed struct {
+		customerIdx  int
+		subject      string
+		description  string
+		ticketType   string
+		status       string
+		priority     string
+		createdByKey string
+		assignedToKey string
+		createdAgo   time.Duration // how long ago the ticket was created
+		messages     []ticketMsgSpec
+	}
+
+	// Build a lookup from customer name → demoCustomerIDs index
+	customerIdx := map[string]int{
+		"Acme Corporation":     0,
+		"Globex Systems":       1,
+		"Initech Ltd":          2,
+	}
+
+	ticketSeeds := []ticketSeed{
+		{
+			customerIdx:  customerIdx["Acme Corporation"],
+			subject:      "Login page returns 500 on Safari",
+			description:  "Users on Safari are seeing a 500 error when trying to log in. This started after yesterday's deployment. Works fine on Chrome and Firefox.\n\n**Steps to reproduce:**\n1. Open Safari (any version)\n2. Navigate to https://app.example.com/login\n3. Enter valid credentials\n4. Click \"Sign In\"\n\n**Actual result:** White screen with \"500 Internal Server Error\"\n**Expected result:** Redirect to dashboard",
+			ticketType:   "incident",
+			status:       "open",
+			priority:     "critical",
+			createdByKey: "sarah",
+			assignedToKey: "marc",
+			createdAgo:   3 * time.Hour,
+			messages: []ticketMsgSpec{
+				{"marc", "Can reproduce in Safari 18.0. The error seems to be in the session cookie parsing — Safari strips some characters that Chrome tolerates. Looking into a fix now.", 2},
+				{"sarah", "Thanks Marc. Let me know if you need me to set up a Safari remote debugging session.", 1},
+			},
+		},
+		{
+			customerIdx:  customerIdx["Globex Systems"],
+			subject:      "Kubernetes cluster node drain failing",
+			description:  "Our `kubectl drain` command is failing on node `gke-prod-4` with the following error:\n\n```\nerror: unable to drain node \"gke-prod-4\" ...\n```\n\nThis is blocking a scheduled security patch rollout.",
+			ticketType:   "incident",
+			status:       "in_progress",
+			priority:     "high",
+			createdByKey: "lisa",
+			assignedToKey: "marc",
+			createdAgo:   24 * time.Hour,
+			messages: []ticketMsgSpec{
+				{"marc", "Looked at the cluster. The issue is a PodDisruptionBudget on the monitoring stack that's set to minAvailable: 100%. Patching the PDB to allow disruption and will retry the drain.", 20},
+				{"lisa", "Good find. Do we need to coordinate with Globex's on-call team before proceeding?", 18},
+				{"marc", "Already confirmed with their lead — they're fine with a brief window of degraded monitoring coverage. Proceeding with the patch.", 16},
+			},
+		},
+		{
+			customerIdx:  customerIdx["Acme Corporation"],
+			subject:      "Invoice #2024-0042 shows wrong VAT amount",
+			description:  "The VAT rate applied to invoice #2024-0042 is 21% but should be 9% for the services rendered in Q1.\n\n**Invoice details:**\n- Invoice #: 2024-0042\n- Amount: €12,450.00\n- VAT applied: €2,614.50 (21%)\n- Expected VAT: €1,120.50 (9%)",
+			ticketType:   "service_request",
+			status:       "resolved",
+			priority:     "medium",
+			createdByKey: "admin",
+			assignedToKey: "priya",
+			createdAgo:   168 * time.Hour, // 7 days ago
+			messages: []ticketMsgSpec{
+				{"priya", "Confirmed the VAT error. The billing system incorrectly applied the default rate instead of the reduced rate that Acme qualifies for. I've corrected the invoice and it will be re-sent today.", 120},
+				{"admin", "Great, thanks Priya. Please CC Sarah on the re-send so she's in the loop.", 118},
+				{"priya", "Done. Invoice re-issued and sent to both Acme Finance and Sarah. Closing this out.", 96},
+			},
+		},
+		{
+			customerIdx:  customerIdx["Initech Ltd"],
+			subject:      "SSO integration — SAML metadata endpoint",
+			description:  "We need the SAML metadata endpoint URL so Initech can configure their identity provider for SSO.\n\nCan someone provide:\n1. The metadata endpoint\n2. The supported NameID formats\n3. Whether SP-initiated or IdP-initiated SSO is supported",
+			ticketType:   "service_request",
+			status:       "open",
+			priority:     "low",
+			createdByKey: "admin",
+			assignedToKey: "elena",
+			createdAgo:   48 * time.Hour,
+			messages:     nil,
+		},
+		{
+			customerIdx:  customerIdx["Acme Corporation"],
+			subject:      "Rate limiting causing 429 errors on API",
+			description:  "Our backend integration with Acme is seeing 429 Too Many Requests errors on the `/api/v2/orders` endpoint. We're sending ~200 req/min but the documented limit is 300 req/min.\n\n**Question:** Is there a per-IP or per-token limit that's lower than the documented rate?",
+			ticketType:   "problem",
+			status:       "closed",
+			priority:     "high",
+			createdByKey: "sarah",
+			assignedToKey: "raj",
+			createdAgo:   336 * time.Hour, // 14 days ago
+			messages: []ticketMsgSpec{
+				{"raj", "Investigated. The rate limiter was using a cluster-wide counter that wasn't resetting properly on token refresh. I've applied a fix and verified with a load test.", 312},
+				{"sarah", "Can you share the test results?", 310},
+				{"raj", "Attached in the ticket. 300 req/min sustained with 0% error rate for 30 minutes.", 308},
+			},
+		},
+		{
+			customerIdx:  customerIdx["Globex Systems"],
+			subject:      "Request: Read-only dashboard access for intern",
+			description:  "Globex's new intern, Alex Chen, needs read-only access to the DevOps monitoring dashboard. No write permissions required.\n\n**Details:**\n- Name: Alex Chen\n- Email: alex.chen@globex.com\n- Access level: Read-only (view only, no edit/delete)\n- Scope: devops-infra project only\n\nPlease provision and notify.",
+			ticketType:   "change_request",
+			status:       "open",
+			priority:     "low",
+			createdByKey: "lisa",
+			assignedToKey: "admin",
+			createdAgo:   12 * time.Hour,
+			messages:     nil,
+		},
+	}
+
+	createdTickets := map[string]*models.Ticket{}
+	for _, ts := range ticketSeeds {
+		custID := demoCustomerIDs[ts.customerIdx]
+		createdBy := users[ts.createdByKey]
+		assignedTo := users[ts.assignedToKey]
+
+	createdAt := now.Add(-ts.createdAgo)
+	ticket := models.Ticket{
+		CustomerID:   custID,
+		Title:        ts.subject,
+		Description:  ts.description,
+		Type:         ts.ticketType,
+		Status:       ts.status,
+		Priority:     ts.priority,
+		CreatedByID:  createdBy.ID,
+		AssignedToID: &assignedTo.ID,
+		CreatedAt:    createdAt,
+		UpdatedAt:    createdAt,
+	}
+	// Assign SLA policy matching the ticket's priority
+	if policy, ok := slaByPriority[ts.priority]; ok {
+		ticket.SlaPolicyID = &policy.ID
+		if policy.ResponseTimeMinutes > 0 {
+			d := createdAt.Add(time.Duration(policy.ResponseTimeMinutes) * time.Minute)
+			ticket.SlaResponseDeadline = &d
+		}
+		if policy.ResolutionTimeMinutes > 0 {
+			d := createdAt.Add(time.Duration(policy.ResolutionTimeMinutes) * time.Minute)
+			ticket.SlaResolutionDeadline = &d
+		}
+	}
+	must(db.Create(&ticket).Error)
+	createdTickets[ts.subject] = &ticket
+
+		var firstResponseAt *time.Time
+		for _, m := range ts.messages {
+			author := users[m.userKey]
+			msgCreatedAt := ticket.CreatedAt.Add(time.Duration(-m.hoursAgo) * time.Hour)
+			must(db.Create(&models.TicketMessage{
+				TicketID:  ticket.ID,
+				UserID:    author.ID,
+				Body:      m.body,
+				CreatedAt: msgCreatedAt,
+				UpdatedAt: msgCreatedAt,
+			}).Error)
+			// Track earliest agent reply for first_response_at
+			if author.ID != createdBy.ID {
+				if firstResponseAt == nil || msgCreatedAt.Before(*firstResponseAt) {
+					firstResponseAt = &msgCreatedAt
+				}
+			}
+		}
+		if firstResponseAt != nil {
+			db.Model(&ticket).Update("first_response_at", firstResponseAt)
+		}
+	}
+	fmt.Printf("   Created %d tickets with messages\n", len(ticketSeeds))
+
+	// ── 8b. Ticket–Card links ─────────────────────────────────────────────────
+	fmt.Println("→ Creating ticket–card links…")
+
+	type ticketCardLinkSeed struct {
+		ticketSubject string
+		cardKey       string // "slug/title"
+	}
+	ticketCardLinks := []ticketCardLinkSeed{
+		{"Login page returns 500 on Safari", "website-redesign/Accessibility audit and ARIA fixes"},
+		{"Rate limiting causing 429 errors on API", "mobile-app-v2/Integration tests for authentication flow"},
+		{"Kubernetes cluster node drain failing", "devops-infra/Set up Kubernetes cluster on cloud provider"},
+		{"SSO integration — SAML metadata endpoint", "devops-infra/Renew and automate SSL certificate rotation"},
+		{"Invoice #2024-0042 shows wrong VAT amount", "website-redesign/Update brand colour palette across all components"},
+	}
+	totalLinks := 0
+	for _, spec := range ticketCardLinks {
+		ticket, ok1 := createdTickets[spec.ticketSubject]
+		card, ok2 := createdCards[spec.cardKey]
+		if !ok1 || !ok2 {
+			fmt.Printf("   ⚠ skipping ticket–card link %q ↔ %q (ticket=%v card=%v)\n", spec.ticketSubject, spec.cardKey, ok1, ok2)
+			continue
+		}
+		must(db.Create(&models.TicketCardLink{
+			TicketID:    ticket.ID,
+			CardID:      card.ID,
+			CreatedByID: users["admin"].ID,
+		}).Error)
+		totalLinks++
+	}
+	fmt.Printf("   Created %d ticket–card links\n", totalLinks)
+
+	// ── 9. Groups ─────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating groups…")
 
 	type groupProjectSpec struct{ slug, role string }
@@ -2427,7 +2678,49 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d groups\n", len(demoGroupSpecs))
 
-	// ── 8. Time entries ───────────────────────────────────────────────────────
+	// ── 10a. Customer direct members (required for ticket assignee dropdown) ──
+	// ListCustomerMembers only returns direct CustomerAccess rows (not group
+	// access), so each customer needs explicit member rows for reassignment to
+	// work in the UI.
+	fmt.Println("→ Creating customer member access…")
+	type custMemberSpec struct {
+		customerName string
+		userKey      string
+		role         string
+	}
+	custMemberSpecs := []custMemberSpec{
+		// Acme Corporation — admin, sarah, marc own this account
+		{"Acme Corporation", "admin", "admin"},
+		{"Acme Corporation", "sarah", "member"},
+		{"Acme Corporation", "marc", "member"},
+		// Globex Systems — DevOps team (marc, lisa, raj) + admin
+		{"Globex Systems", "admin", "admin"},
+		{"Globex Systems", "marc", "member"},
+		{"Globex Systems", "lisa", "member"},
+		{"Globex Systems", "raj", "member"},
+		// Initech Ltd — admin, sarah, priya
+		{"Initech Ltd", "admin", "admin"},
+		{"Initech Ltd", "sarah", "member"},
+		{"Initech Ltd", "priya", "member"},
+	}
+	for _, cm := range custMemberSpecs {
+		var cust models.Customer
+		if db.Where("name = ?", cm.customerName).First(&cust).Error != nil {
+			continue
+		}
+		u, ok := users[cm.userKey]
+		if !ok {
+			continue
+		}
+		must(db.Create(&models.CustomerAccess{
+			CustomerID: cust.ID,
+			UserID:     u.ID,
+			Role:       cm.role,
+		}).Error)
+	}
+	fmt.Printf("   Created %d customer member rows\n", len(custMemberSpecs))
+
+	// ── 10. Time entries ──────────────────────────────────────────────────────
 	fmt.Println("→ Creating time entries…")
 
 	// Enable time tracking for the users who will have seeded log entries.
@@ -2555,7 +2848,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d time entries for 5 users\n", totalTimeEntries)
 
-	// ── 8b. Personal TT-only projects and customers for tonk ─────────────────
+	// ── 10b. Personal TT-only projects and customers for tonk ─────────────────
 	fmt.Println("→ Creating personal TT-only projects and customers for tonk…")
 
 	// TT-only customers owned by tonk
@@ -2662,7 +2955,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Printf("   Created %d TT-only customers, %d TT-only projects, %d personal time entries for tonk\n",
 		len(ttCustomers), len(ttProjectSpecs), len(ttEntries))
 
-	// ── 9. News items ─────────────────────────────────────────────────────────
+	// ── 11. News items ────────────────────────────────────────────────────────
 	fmt.Println("→ Creating news items…")
 
 	type newsSpec struct {
@@ -2795,7 +3088,7 @@ Hope to see you there!`,
 	}
 	fmt.Printf("   Created %d news items\n", totalNewsItems)
 
-	// ── 10. Summary ──────────────────────────────────────────────────────────────
+	// ── 12. Summary ──────────────────────────────────────────────────────────────
 	fmt.Println()
 	fmt.Println("✅ Demo data seeded successfully!")
 	fmt.Println()
@@ -3014,8 +3307,24 @@ func removeDemoData(db *gorm.DB) {
 		db.Where("id IN ?", groupIDs).Delete(&models.UserGroup{})
 	}
 
-	// Customers and contracts
+	// Tickets and SLA policies
 	var custIDs []uint
+	db.Model(&models.Customer{}).Where("name IN ?", demoCustomerNames).Pluck("id", &custIDs)
+	if len(custIDs) > 0 {
+		var ticketIDs []uint
+		db.Model(&models.Ticket{}).Where("customer_id IN ?", custIDs).Pluck("id", &ticketIDs)
+		if len(ticketIDs) > 0 {
+			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketMessage{})
+			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketTag{})
+			db.Unscoped().Where("source_ticket_id IN ? OR target_ticket_id IN ?", ticketIDs, ticketIDs).Delete(&models.TicketLink{})
+			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketCardLink{})
+			db.Unscoped().Where("id IN ?", ticketIDs).Delete(&models.Ticket{})
+		}
+	}
+	demoSlaNames := []string{"Critical — 1h response / 4h resolution", "High — 2h response / 8h resolution", "Standard — 4h response / 24h resolution"}
+	db.Unscoped().Where("name IN ?", demoSlaNames).Delete(&models.SlaPolicy{})
+
+	// Customers and contracts
 	db.Model(&models.Customer{}).Where("name IN ?", demoCustomerNames).Pluck("id", &custIDs)
 	if len(custIDs) > 0 {
 		db.Where("customer_id IN ?", custIDs).Delete(&models.CustomerFavorite{})

@@ -5,7 +5,9 @@ alwaysApply: true
 
 Keep this file in sync with `CLAUDE.md` at the repository root.
 
-# WarmDesk — Developer Guide
+# WarmDesk — Developer Guide for Claude
+
+Cursor loads the same content automatically via [.cursor/rules/warmdesk-developer-guide.mdc](.cursor/rules/warmdesk-developer-guide.mdc). Update both files when you change this documentation.
 
 WarmDesk is a self-hosted project management tool (Kanban boards, team chat with one-to-one WebRTC voice & video, LiveKit-based group calls for conversations with 3+ members, discussions, time reporting). It has a Go backend and a Vue 3 frontend; both live in this repository. A Tauri wrapper produces native desktop apps from the same frontend code.
 
@@ -256,9 +258,61 @@ Theme is controlled by a `data-theme` attribute on `<html>`. CSS custom properti
 
 ## File uploads
 
-Files are stored in `upload_dir` (default `./uploads`) with randomised hex names. The original filename and MIME type are recorded in the `attachments` table. Ownership is by `owner_type` + `owner_id` (`card`, `card_comment`, `chat_message`, `conv_message`). Images are served inline; other files are forced as downloads.
+Files are stored in `upload_dir` (default `./uploads`) with randomised hex names. The original filename and MIME type are recorded in the `attachments` table. Ownership is by `owner_type` + `owner_id` (`card`, `card_comment`, `chat_message`, `conv_message`, `ticket`, `ticket_message`). Images are served inline; other files are forced as downloads.
 
 `DownloadAttachment` verifies project membership or conversation participation before serving the file (see Security hardening above). The `Content-Disposition` filename is escaped to prevent header injection.
+
+---
+
+## Helpdesk (ticketing)
+
+The helpdesk module is gated by the `helpdesk_enabled` user flag (default `false`). Admins always have access. The feature middleware is `middleware.RequireFeature("helpdesk_enabled")`.
+
+### Models (`models/ticket.go`, `models/sla.go`)
+
+| Model | Key fields |
+|---|---|
+| `Ticket` | `CustomerID`, `Title`, `Description`, `Type` (incident/problem/service_request/change_request), `Priority` (low/medium/high/critical), `Status` (open/in_progress/resolved/closed/pending), `AssignedToID`, `OwnerID`, `GroupID`, `ReminderAt *time.Time`, `SlaPolicyID`, `SlaResponseDeadline`, `SlaResolutionDeadline`, `SlaBreached bool`, `FirstResponseAt *time.Time` |
+| `TicketMessage` | `TicketID`, `UserID`, `Body` — internal messages on a ticket |
+| `TicketTag` | `TicketID`, `Name` — free-form tags |
+| `TicketLink` | `TicketID`, `LinkedTicketID`, `LinkType` — links between tickets |
+| `TicketCardLink` | `TicketID`, `CardID` — links from a ticket to a board card |
+| `SlaPolicy` | `Name`, `ResponseTimeMinutes`, `ResolutionTimeMinutes`, `PriorityFilter` (comma-separated), `IsActive` |
+
+### Access control
+
+Customer access is checked by `requireCustomerAccess` in `handlers/ticket.go`. Users need at least `"member"` role on the customer (via direct `CustomerAccess` or `GroupCustomerAccess`). Global admins bypass this check.
+
+`ListCustomerMembers` (`handlers/customer_access.go`) only returns **direct** `CustomerAccess` rows — not group-based access. The ticket assignee dropdown in the UI depends on this endpoint, so every customer that uses tickets must have at least one direct `CustomerAccess` row per user who should appear as an assignee.
+
+### SLA policies
+
+`MatchSlaPolicy(priority)` in `handlers/sla.go` finds an active policy for the given priority (exact match or catch-all). `ComputeSlaDeadlines` computes the response and resolution deadlines from `time.Now()`. Both are called in `CreateTicket`. `refreshSlaBreachStatus` updates `SlaBreached` on every `GetTicket` / `ListTickets` call so the UI always reflects real-time breach state without a separate cron job.
+
+SLA policies are managed by admins via `GET/POST/PUT/DELETE /api/v1/admin/sla-policies` (no feature flag — always visible to admins).
+
+### Pending reminder
+
+A ticket in `"pending"` status may have a `ReminderAt` timestamp. `ListTickets` orders pending tickets with a due reminder (`reminder_at <= now`) to the top. The frontend stores only a `YYYY-MM-DD` date string and normalises it to `T12:00:00Z` UTC before sending to the API.
+
+### Routes
+
+All ticket routes live under `/api/v1/customers/:customerId/tickets` and require `RequireFeature("helpdesk_enabled")`. SLA policy routes live under `/api/v1/admin/sla-policies` and require `AdminOnly`.
+
+### Frontend
+
+- **`TicketListView.vue`** — lists tickets for one customer; shows `DashboardNews` at the top so news is visible to helpdesk-first users.
+- **`TicketDetailView.vue`** — full ticket detail with inline title editing, status/priority/type/assignee dropdowns, tag management, SLA card, linked tickets/cards panel, internal messages with attachments, and the pending reminder `DatePicker`.
+- **`components/admin/SlaPoliciesTab.vue`** — admin UI for CRUD on SLA policies.
+- **`components/common/DatePicker.vue`** — custom calendar picker that uses CSS custom properties for theming and respects `auth.user.date_time_format` and `auth.user.week_start`. Emits `update:modelValue` with a `YYYY-MM-DD` string (or `null` on clear). Does **not** use a native `<input type="date">` at all.
+- **`components/common/DashboardNews.vue`** — self-contained news widget that fetches active news, manages dismissed IDs in `localStorage` (key `dashboard_news_dismissed_ids`), and renders the widget grid. Used in `DashboardView`, `CustomersView`, and `TicketListView`.
+- **`stores/tickets.js`** — Pinia store for ticket list state.
+- **`api/tickets.js`** — Axios wrappers for all ticket endpoints.
+- **`api/sla.js`** — Axios wrappers for SLA policy admin endpoints.
+
+### User setting: `dashboard_default`
+
+Stored on `User.DashboardDefault` (GORM default `"boards"`). Values: `"boards"` | `"tickets"`. Set via `PUT /auth/me`. In `DashboardView.vue`, if `dashboard_default === "tickets"` and `helpdeskEnabled`, the component immediately redirects to the first starred customer's tickets page (or first customer, or `/customers` as fallback). The setting is exposed in **Settings → Dashboard shows**.
 
 ---
 
@@ -409,6 +463,8 @@ The spec (`frontend/e2e/screenshots.spec.js`) logs in as `demo.admin` / `demo123
 | `18-scrum-burnup.png` | `/projects/product-platform/charts` → Burnup tab + select sprint |
 | `19-scrum-release.png` | `/projects/product-platform/charts` → Release tab |
 | `20-standby-shift.png` | `/time-tracking` |
+| `21-ticket-list.png` | `/customers/{id}/tickets` — ticket list for first customer |
+| `22-ticket-detail.png` | `/customers/{id}/tickets/{ticketId}` — click first ticket |
 
 **Screenshots 11–12 (chat reactions)** require interaction in the embedded chat panel and are not yet automated — capture manually or run with `DEBUG=pw:api` to verify selectors.
 

@@ -583,3 +583,12 @@ Create an application that has all these features and requirements
 - Add Time Tracking section to user guide and Admin Time Tracking subsection to admin guide
 - Document contract time-slot compact badge display and hover popup in user guide
 - Fix CI test suite: exclude e2e/ directory from vitest runner so Playwright screenshot specs don't cause false failures
+- Add helpdesk ticketing module: tickets with type (incident/problem/service request/change request), priority, status (open/in-progress/resolved/closed/pending), assignee, owner, internal messages with attachments, tags, linked tickets, linked board cards, and a pending reminder date
+- Add SLA policies: admin-configurable response and resolution time limits with optional priority filter; auto-applied to new tickets; breach status tracked per ticket
+- Custom themed DatePicker component for date fields (respects user date format and week-start, works in all themes)
+- User setting: dashboard default (boards or tickets); ticket option redirects to first starred customer's ticket list
+- News widget shown on ticket list page so helpdesk-first users don't miss announcements
+- Demo seed: add direct CustomerAccess entries for all demo customers so ticket assignee dropdown is populated
+- Playwright screenshots 21 (ticket list) and 22 (ticket detail) added to automated capture suite
+- Fix markdown list indentation missing in ticket/news/dashboard views (moved .markdown-body ul/ol styles to global CSS)
+- Ansible collection v0.4.0: new ticket, sla_policy, and user_credential modules

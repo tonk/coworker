@@ -1,6 +1,6 @@
 # ansilabnl.warmdesk
 
-Ansible collection for managing [WarmDesk](https://github.com/tonk/warmdesk) — a self-hosted project management tool with Kanban boards, team chat, customers, and contracts.
+Ansible collection for managing [WarmDesk](https://github.com/tonk/warmdesk) — a self-hosted project management tool with Kanban boards, team chat, customers, contracts, and a helpdesk ticketing system.
 
 ## Requirements
 
@@ -33,9 +33,10 @@ Only one authentication method should be used at a time.
 
 | Module | Description |
 |---|---|
-| `ansilabnl.warmdesk.user` | Manage WarmDesk users |
-| `ansilabnl.warmdesk.user_options` | Manage per-user preferences (locale, timezone, UI options) |
-| `ansilabnl.warmdesk.api_key` | Manage API keys for a user |
+**Board & project**
+
+| Module | Description |
+|---|---|
 | `ansilabnl.warmdesk.project` | Manage projects |
 | `ansilabnl.warmdesk.project_member` | Manage project membership and roles |
 | `ansilabnl.warmdesk.column` | Manage Kanban columns in a project |
@@ -43,10 +44,36 @@ Only one authentication method should be used at a time.
 | `ansilabnl.warmdesk.card` | Manage cards on a Kanban board |
 | `ansilabnl.warmdesk.checklist_item` | Manage checklist items on a card |
 | `ansilabnl.warmdesk.card_comment` | Manage comments on a card |
+
+**Helpdesk**
+
+| Module | Description |
+|---|---|
+| `ansilabnl.warmdesk.ticket` | Manage helpdesk tickets (create, update, delete) |
+| `ansilabnl.warmdesk.sla_policy` | Manage SLA policies (admin only) |
+
+**Customers & contracts**
+
+| Module | Description |
+|---|---|
 | `ansilabnl.warmdesk.customer` | Manage customers |
 | `ansilabnl.warmdesk.customer_member` | Manage customer access and roles |
 | `ansilabnl.warmdesk.contract` | Manage contracts for a customer |
+
+**Users & access**
+
+| Module | Description |
+|---|---|
+| `ansilabnl.warmdesk.user` | Manage WarmDesk users |
+| `ansilabnl.warmdesk.user_options` | Manage per-user preferences (locale, timezone, UI options) |
+| `ansilabnl.warmdesk.user_credential` | Manage user feature flags (board, chat, helpdesk, time tracking) |
+| `ansilabnl.warmdesk.api_key` | Manage API keys for a user |
 | `ansilabnl.warmdesk.group` | Manage user groups and their project/customer access (admin only) |
+
+**System**
+
+| Module | Description |
+|---|---|
 | `ansilabnl.warmdesk.webhook` | Manage webhooks |
 | `ansilabnl.warmdesk.system_settings` | Manage global system settings (admin only) |
 
@@ -59,6 +86,7 @@ Only one authentication method should be used at a time.
 | `ansilabnl.warmdesk.customer` | Look up customers by name |
 | `ansilabnl.warmdesk.contract` | Look up contracts by name |
 | `ansilabnl.warmdesk.user` | Look up users by username |
+| `ansilabnl.warmdesk.api_key` | Look up API keys for a user |
 
 ## Inventory plugin
 

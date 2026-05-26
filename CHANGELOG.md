@@ -1,5 +1,52 @@
 # Changelog
 
+## v0.10.17 — 2026-05-26
+
+### Added
+- **Helpdesk — full ticketing module** — tickets with type (incident / problem /
+  service request / change request), priority, status (open / in-progress /
+  resolved / closed / pending), assignee, owner, internal messages with file
+  attachments, tags, linked tickets, linked board cards, and a pending-reminder
+  date stored per ticket.
+- **SLA policies** — admin-configurable SLA policies with response and resolution
+  time limits and optional priority filters. Policies auto-apply to new tickets
+  based on priority; breach status is recomputed and stored on every fetch.
+- **Pending reminder — custom date picker** — replaced the native
+  `<input type="date">` with a fully themed `DatePicker.vue` component that
+  respects the user's date format and week-start preferences and works correctly
+  in all themes (light / dark / black).
+- **Dashboard default setting** — users can set their home page to *Boards* or
+  *Tickets* in personal settings. The ticket option redirects to the first
+  starred (or first listed) customer's ticket list.
+- **News on ticket pages** — the dashboard news widget now also appears at the
+  top of the ticket list page so helpdesk-first users see announcements without
+  visiting the boards dashboard. The dismissed-items list is shared between both
+  views via `localStorage`.
+- **Demo seed — customer member access** — added direct `CustomerAccess` rows for
+  all three demo customers (Acme Corporation, Globex Systems, Initech Ltd) so the
+  ticket assignee dropdown is populated immediately after seeding.
+- **Playwright screenshots — tickets** — screenshots 21 (ticket list) and 22
+  (ticket detail) added to the automated capture suite and README table.
+
+### Fixed
+- **Markdown list indentation** — `ul` / `ol` inside `.markdown-body` were not
+  indented because styles were defined only in `AdminView.vue`'s scoped block.
+  Moved to global `main.css` so all views (tickets, news, dashboard) benefit.
+- **Ticket list page title** — showed "Tickets — Tickets"; now shows only the
+  customer name (e.g. "Acme Corporation").
+- **Customer name in ticket list** — `GET /customers/:id` returns
+  `{ customer: {...}, contracts: [...] }`, but the frontend was reading `.name`
+  from the wrapper object; fixed to unpack `data.customer`.
+
+### Ansible (collection v0.4.0)
+- **New module `ticket`** — create, update, and delete helpdesk tickets; customer
+  is resolved by name; supports check mode.
+- **New module `sla_policy`** — manage SLA policies via the admin API; name is
+  used as the idempotency key; supports check mode.
+- **New module `user_credential`** — manage user feature flags (board, chat,
+  helpdesk, time tracking) via the admin API; supports check mode.
+- Collection description updated to mention helpdesk / ticketing.
+
 ## v0.10.16 — 2025-05-25
 
 ### Fixed

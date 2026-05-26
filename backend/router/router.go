@@ -139,6 +139,12 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.POST("/news", handlers.AdminCreateNews)
 			admin.PUT("/news/:id", handlers.AdminUpdateNews)
 			admin.DELETE("/news/:id", handlers.AdminDeleteNews)
+
+			// SLA policies (helpdesk)
+			admin.GET("/sla-policies", handlers.AdminListSlaPolicies)
+			admin.POST("/sla-policies", handlers.AdminCreateSlaPolicy)
+			admin.PUT("/sla-policies/:id", handlers.AdminUpdateSlaPolicy)
+			admin.DELETE("/sla-policies/:id", handlers.AdminDeleteSlaPolicy)
 		}
 
 		// News (active items visible to all authenticated users)
@@ -178,10 +184,31 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			customers.GET("/:customerId/groups", handlers.ListCustomerGroups)
 			customers.POST("/:customerId/groups/:groupId/members", handlers.CustomerAddGroupMember)
 			customers.DELETE("/:customerId/groups/:groupId/members/:userId", handlers.CustomerRemoveGroupMember)
+
+			// Tickets (helpdesk)
+			tickets := customers.Group("/:customerId/tickets")
+			tickets.Use(middleware.RequireFeature("helpdesk_enabled"))
+			{
+				tickets.GET("", handlers.ListTickets)
+				tickets.POST("", handlers.CreateTicket)
+				tickets.GET("/:ticketId", handlers.GetTicket)
+				tickets.PUT("/:ticketId", handlers.UpdateTicket)
+				tickets.DELETE("/:ticketId", handlers.DeleteTicket)
+				tickets.POST("/:ticketId/messages", handlers.CreateTicketMessage)
+				tickets.POST("/:ticketId/tags", handlers.AddTicketTag)
+				tickets.DELETE("/:ticketId/tags/:tagId", handlers.RemoveTicketTag)
+				tickets.GET("/:ticketId/links", handlers.ListTicketLinks)
+				tickets.POST("/:ticketId/links", handlers.CreateTicketLink)
+				tickets.DELETE("/:ticketId/links/:linkId", handlers.DeleteTicketLink)
+				tickets.GET("/:ticketId/cards", handlers.ListTicketCardLinks)
+				tickets.POST("/:ticketId/cards", handlers.CreateTicketCardLink)
+				tickets.DELETE("/:ticketId/cards/:linkId", handlers.DeleteTicketCardLink)
+			}
 		}
 
 		// Direct messages (legacy 1-on-1)
 		dm := protected.Group("/direct-messages")
+		dm.Use(middleware.RequireFeature("chat_enabled"))
 		{
 			dm.GET("/conversations", handlers.ListConversations)
 			dm.GET("/:userId", handlers.ListDirectMessages)
@@ -206,32 +233,32 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.GET("/link-preview", handlers.LinkPreview)
 
 		// Reports
-		protected.GET("/reports/time", handlers.GetTimeReport)
-		protected.GET("/reports/time/pdf", handlers.GetTimeReportPDF)
-		protected.GET("/reports/time/xlsx", handlers.GetTimeReportXLSX)
+		protected.GET("/reports/time", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeReport)
+		protected.GET("/reports/time/pdf", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeReportPDF)
+		protected.GET("/reports/time/xlsx", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeReportXLSX)
 
 		// Time-tracking-only customers and projects (no board/CRM created)
-		protected.GET("/time-tracking-customers", handlers.ListTimeTrackingCustomers)
-		protected.POST("/time-tracking-customers", handlers.CreateTimeTrackingCustomer)
-		protected.PUT("/time-tracking-customers/:id", handlers.UpdateTimeTrackingCustomer)
-		protected.DELETE("/time-tracking-customers/:id", handlers.DeleteTimeTrackingCustomer)
+		protected.GET("/time-tracking-customers", middleware.RequireFeature("time_tracking_enabled"), handlers.ListTimeTrackingCustomers)
+		protected.POST("/time-tracking-customers", middleware.RequireFeature("time_tracking_enabled"), handlers.CreateTimeTrackingCustomer)
+		protected.PUT("/time-tracking-customers/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.UpdateTimeTrackingCustomer)
+		protected.DELETE("/time-tracking-customers/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.DeleteTimeTrackingCustomer)
 
 		// Time-tracking-only projects (no board created)
-		protected.GET("/time-tracking-projects", handlers.ListTimeTrackingProjects)
-		protected.POST("/time-tracking-projects", handlers.CreateTimeTrackingProject)
-		protected.PUT("/time-tracking-projects/:id", handlers.UpdateTimeTrackingProject)
-		protected.DELETE("/time-tracking-projects/:id", handlers.DeleteTimeTrackingProject)
+		protected.GET("/time-tracking-projects", middleware.RequireFeature("time_tracking_enabled"), handlers.ListTimeTrackingProjects)
+		protected.POST("/time-tracking-projects", middleware.RequireFeature("time_tracking_enabled"), handlers.CreateTimeTrackingProject)
+		protected.PUT("/time-tracking-projects/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.UpdateTimeTrackingProject)
+		protected.DELETE("/time-tracking-projects/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.DeleteTimeTrackingProject)
 
 		// Time entries (personal time registration)
-		protected.GET("/time-entries", handlers.ListTimeEntries)
-		protected.POST("/time-entries", handlers.CreateTimeEntry)
-		protected.PUT("/time-entries/:id", handlers.UpdateTimeEntry)
-		protected.DELETE("/time-entries/:id", handlers.DeleteTimeEntry)
-		protected.GET("/time-entries/report", handlers.GetTimeEntryReport)
-		protected.GET("/time-entries/report/pdf", handlers.GetTimeEntryReportPDF)
-		protected.GET("/time-entries/report/xlsx", handlers.GetTimeEntryReportXLSX)
-		protected.GET("/time-entries/sheet/xlsx", handlers.GetTimeEntrySheetXLSX)
-		protected.POST("/time-entries/holidays", handlers.AddHolidays)
+		protected.GET("/time-entries", middleware.RequireFeature("time_tracking_enabled"), handlers.ListTimeEntries)
+		protected.POST("/time-entries", middleware.RequireFeature("time_tracking_enabled"), handlers.CreateTimeEntry)
+		protected.PUT("/time-entries/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.UpdateTimeEntry)
+		protected.DELETE("/time-entries/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.DeleteTimeEntry)
+		protected.GET("/time-entries/report", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryReport)
+		protected.GET("/time-entries/report/pdf", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryReportPDF)
+		protected.GET("/time-entries/report/xlsx", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryReportXLSX)
+		protected.GET("/time-entries/sheet/xlsx", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntrySheetXLSX)
+		protected.POST("/time-entries/holidays", middleware.RequireFeature("time_tracking_enabled"), handlers.AddHolidays)
 
 		// Prometheus metrics (admin or metrics role)
 		protected.GET("/metrics", middleware.MetricsAuth(), handlers.GetMetrics)
@@ -241,6 +268,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Conversations (1-on-1 and group)
 		convs := protected.Group("/conversations")
+		convs.Use(middleware.RequireFeature("chat_enabled"))
 		{
 			convs.GET("", handlers.GetConversations)
 			convs.POST("", handlers.CreateConversation)
@@ -257,6 +285,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Projects
 		projects := protected.Group("/projects")
+		projects.Use(middleware.RequireFeature("board_enabled"))
 		{
 			projects.GET("", handlers.ListProjects)
 			projects.POST("", handlers.CreateProject)
@@ -323,6 +352,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			projects.GET("/:projectSlug/cards/:cardId/refs", handlers.ListCardRefs)
 			projects.POST("/:projectSlug/cards/:cardId/refs", handlers.CreateCardRef)
 			projects.DELETE("/:projectSlug/cards/:cardId/refs/:refId", handlers.DeleteCardRef)
+
+			// Ticket links (card side)
+			projects.GET("/:projectSlug/cards/:cardId/tickets", handlers.ListCardTicketLinks)
 
 			// Card comments
 			projects.GET("/:projectSlug/cards/:cardId/comments", handlers.ListComments)

@@ -584,7 +584,10 @@
     "req_digit": "Numero (0–9)",
     "req_special": "Erikoismerkki (!{'@'}#$…)",
     "working_hours": "Työajat",
-    "working_hours_hint": "Aseta tavanomainen aloitusaika jokaiselle viikonpäivälle. Jätä tyhjäksi vapaapäiville."
+    "working_hours_hint": "Aseta tavanomainen aloitusaika jokaiselle viikonpäivälle. Jätä tyhjäksi vapaapäiville.",
+    "dashboard_default": "Dashboard shows",
+    "dashboard_default_boards": "Boards (projects)",
+    "dashboard_default_tickets": "Tickets (helpdesk)"
   },
   "dm": {
     "title": "Chatit",
@@ -983,5 +986,17 @@
     "delete_error": "Poistaminen epäonnistui",
     "confirm_delete": "Poistetaanko salausavain \"{name}\"?",
     "delete_aria": "Poista salausavain {name}"
+  },
+  "ticket": {
+    "time_logged": "Time Logged",
+    "log_time": "Log time",
+    "no_time_logged": "No time logged yet.",
+    "time_total": "Total",
+    "time_date": "Date",
+    "time_duration": "Duration",
+    "time_hours": "h",
+    "time_minutes": "m",
+    "time_delete_entry": "Delete time entry",
+    "time_note": "Note (optional)"
   }
 }

@@ -73,7 +73,7 @@ func UploadAttachment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "owner_type and owner_id required"})
 		return
 	}
-	validTypes := map[string]bool{"chat_message": true, "conv_message": true, "card_comment": true, "card": true}
+	validTypes := map[string]bool{"chat_message": true, "conv_message": true, "card_comment": true, "card": true, "ticket_message": true, "ticket": true}
 	if !validTypes[ownerType] {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid owner_type"})
 		return
@@ -239,6 +239,22 @@ func checkAttachmentAccess(a models.Attachment, userID uint) error {
 			return services.ErrForbidden
 		}
 		return nil
+	case "ticket_message":
+		var tm models.TicketMessage
+		if err := database.DB.Select("ticket_id").First(&tm, a.OwnerID).Error; err != nil {
+			return services.ErrForbidden
+		}
+		var ticket models.Ticket
+		if err := database.DB.Select("customer_id").First(&ticket, tm.TicketID).Error; err != nil {
+			return services.ErrForbidden
+		}
+		return requireCustomerAccess(ticket.CustomerID, userID, "")
+	case "ticket":
+		var ticket models.Ticket
+		if err := database.DB.Select("customer_id").First(&ticket, a.OwnerID).Error; err != nil {
+			return services.ErrForbidden
+		}
+		return requireCustomerAccess(ticket.CustomerID, userID, "")
 	default:
 		return services.ErrForbidden
 	}

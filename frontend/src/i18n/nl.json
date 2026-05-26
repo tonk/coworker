@@ -549,7 +549,10 @@
     "req_digit": "Één cijfer (0–9)",
     "req_special": "Één speciaal teken (!{'@'}#$…)",
     "working_hours": "Werktijden",
-    "working_hours_hint": "Stel uw gebruikelijke starttijd in voor elke dag van de week. Laat leeg voor dagen dat u niet werkt."
+    "working_hours_hint": "Stel uw gebruikelijke starttijd in voor elke dag van de week. Laat leeg voor dagen dat u niet werkt.",
+    "dashboard_default": "Dashboard shows",
+    "dashboard_default_boards": "Boards (projects)",
+    "dashboard_default_tickets": "Tickets (helpdesk)"
   },
   "dm": {
     "title": "Chats",
@@ -983,5 +986,17 @@
     "delete_error": "Verwijderen mislukt",
     "confirm_delete": "Passkey \"{name}\" verwijderen?",
     "delete_aria": "Passkey {name} verwijderen"
+  },
+  "ticket": {
+    "time_logged": "Time Logged",
+    "log_time": "Log time",
+    "no_time_logged": "No time logged yet.",
+    "time_total": "Total",
+    "time_date": "Date",
+    "time_duration": "Duration",
+    "time_hours": "h",
+    "time_minutes": "m",
+    "time_delete_entry": "Delete time entry",
+    "time_note": "Note (optional)"
   }
 }

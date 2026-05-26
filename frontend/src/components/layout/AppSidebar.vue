@@ -3,7 +3,7 @@
     <div class="resize-handle" :class="sidebarPos === 'right' ? 'handle-left' : 'handle-right'" @mousedown="startResize"></div>
 
     <!-- Starred Projects -->
-    <section
+    <section v-if="auth.boardEnabled"
       class="sidebar-section"
       :style="sectionStyle('starred')"
       :class="{ 'section-drag-over': sectionDragOver === 'starred' }"
@@ -41,7 +41,7 @@
     </section>
 
     <!-- All Projects -->
-    <section
+    <section v-if="auth.boardEnabled"
       class="sidebar-section"
       :style="sectionStyle('projects')"
       :class="{ 'section-drag-over': sectionDragOver === 'projects' }"
@@ -143,7 +143,7 @@
     </section>
 
     <!-- Favorite People -->
-    <section
+    <section v-if="auth.chatEnabled"
       class="sidebar-section"
       :style="sectionStyle('favorites')"
       :class="{ 'section-drag-over': sectionDragOver === 'favorites' }"
@@ -176,8 +176,35 @@
       </div>
     </section>
 
+    <!-- Helpdesk (tickets) -->
+    <section v-if="auth.helpdeskEnabled" class="sidebar-section" :style="sectionStyle('helpdesk')" data-section-key="helpdesk">
+      <button class="section-header" @click="toggle('helpdesk')" :aria-expanded="open.helpdesk" aria-controls="section-body-helpdesk">
+        <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'helpdesk')">⠿</span>
+        <span class="section-title">{{ $t('ticket.tickets') }}</span>
+        <span class="chevron" :class="{ open: open.helpdesk }" aria-hidden="true">›</span>
+      </button>
+      <div v-show="open.helpdesk" class="section-body indented" id="section-body-helpdesk">
+        <nav class="sidebar-nav">
+          <RouterLink
+            v-for="c in customersStore.customers"
+            :key="c.id"
+            :to="`/customers/${c.id}/tickets`"
+            class="sidebar-link"
+            :title="c.name"
+          >
+            <img v-if="customerAvatar(c) && !avatarErrors.has('ch'+c.id)" :src="customerAvatar(c)" class="customer-avatar" alt="" @error="avatarErrors.add('ch'+c.id)" />
+            <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
+            <span class="link-text">{{ c.name }}</span>
+          </RouterLink>
+        </nav>
+        <div v-if="!customersStore.customers.length" class="section-empty">
+          {{ $t('sidebar.no_customers') }}
+        </div>
+      </div>
+    </section>
+
     <!-- All People -->
-    <section
+    <section v-if="auth.chatEnabled"
       class="sidebar-section"
       :style="sectionStyle('people')"
       :class="{ 'section-drag-over': sectionDragOver === 'people' }"
@@ -217,7 +244,7 @@
     </section>
 
     <!-- Chats -->
-    <section
+    <section v-if="auth.chatEnabled"
       class="sidebar-section"
       :style="sectionStyle('chats')"
       :class="{ 'section-drag-over': sectionDragOver === 'chats' }"
@@ -315,7 +342,7 @@ const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.ge
 
 // Collapse state — persisted in localStorage
 const STORAGE_KEY = 'sidebar_open'
-const defaults = { starred: true, projects: true, customers: false, allCustomers: false, favorites: true, chats: true, people: true }
+const defaults = { starred: true, projects: true, customers: false, allCustomers: false, helpdesk: true, favorites: true, chats: true, people: true }
 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaults
 const open = ref({ ...defaults, ...saved })
 
@@ -336,7 +363,7 @@ const onlineCount = computed(() => {
 
 // ── Section drag-to-reorder (pointer events — works on WebKitGTK/Linux) ───────
 const SECTION_ORDER_KEY = 'sidebar_section_order'
-const DEFAULT_SECTION_ORDER = ['starred', 'projects', 'customers', 'allCustomers', 'favorites', 'people', 'chats']
+const DEFAULT_SECTION_ORDER = ['starred', 'projects', 'customers', 'allCustomers', 'helpdesk', 'favorites', 'people', 'chats']
 
 const sectionOrder = ref(
   JSON.parse(localStorage.getItem(SECTION_ORDER_KEY) || 'null') || [...DEFAULT_SECTION_ORDER]

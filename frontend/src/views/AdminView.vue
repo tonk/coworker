@@ -9,9 +9,10 @@
           <button :class="['tab', { active: tab === 'customers' }]" @click="tab = 'customers'; loadAdminCustomers()" role="tab" :aria-selected="tab === 'customers'" aria-controls="tab-panel-customers" id="tab-btn-customers">{{ $t('customer.customers') }}</button>
           <button :class="['tab', { active: tab === 'projects' }]" @click="tab = 'projects'; loadProjects()" role="tab" :aria-selected="tab === 'projects'" aria-controls="tab-panel-projects" id="tab-btn-projects">{{ $t('admin.projects') }}</button>
           <button :class="['tab', { active: tab === 'settings' }]" @click="tab = 'settings'; loadSettings()" role="tab" :aria-selected="tab === 'settings'" aria-controls="tab-panel-settings" id="tab-btn-settings">{{ $t('admin.settings') }}</button>
-          <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()" role="tab" :aria-selected="tab === 'backup'" aria-controls="tab-panel-backup" id="tab-btn-backup">{{ $t('admin.backup_tab') }}</button>
           <button :class="['tab', { active: tab === 'news' }]" @click="tab = 'news'; loadNews()" role="tab" :aria-selected="tab === 'news'" aria-controls="tab-panel-news" id="tab-btn-news">{{ $t('admin.news_tab') }}</button>
           <button :class="['tab', { active: tab === 'time-tracking' }]" @click="tab = 'time-tracking'; loadAdminTTProjects(); loadAdminTTCustomers()" role="tab" :aria-selected="tab === 'time-tracking'" aria-controls="tab-panel-time-tracking" id="tab-btn-time-tracking">{{ $t('admin.time_tracking') }}</button>
+          <button :class="['tab', { active: tab === 'sla' }]" @click="tab = 'sla'" role="tab" :aria-selected="tab === 'sla'" aria-controls="tab-panel-sla" id="tab-btn-sla">{{ $t('sla.title') }}</button>
+          <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()" role="tab" :aria-selected="tab === 'backup'" aria-controls="tab-panel-backup" id="tab-btn-backup">{{ $t('admin.backup_tab') }}</button>
         </div>
 
         <!-- Users tab -->
@@ -92,6 +93,58 @@
               </tr>
             </tbody>
           </table>
+
+          <div v-if="sortedUsers.length" class="feature-matrix">
+            <h3>{{ $t('feature.features') }}</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:42px;"></th>
+                  <th>{{ $t('admin.user') }}</th>
+                  <th style="text-align:center;width:70px;">{{ $t('feature.board') }}</th>
+                  <th style="text-align:center;width:70px;">{{ $t('feature.chat') }}</th>
+                  <th style="text-align:center;width:90px;">{{ $t('feature.time_tracking') }}</th>
+                  <th style="text-align:center;width:100px;">{{ $t('admin.timetracking_viewer') }}</th>
+                  <th style="text-align:center;width:90px;">{{ $t('feature.helpdesk') }}</th>
+                  <th style="text-align:center;width:60px;">{{ $t('admin.mfa_enabled') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="user in sortedUsers" :key="'feat-'+user.id">
+                  <td>
+                    <div class="member-avatar-wrap">
+                      <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" class="member-avatar" alt="" />
+                      <span v-else class="member-avatar-initials" :style="getAvatarColor(user)">{{ getInitials(user) }}</span>
+                    </div>
+                  </td>
+                  <td>{{ user.display_name || user.username }}</td>
+                  <td style="text-align:center;">
+                    <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
+                    <input v-else type="checkbox" class="feat-toggle" :checked="user.board_enabled !== false" @change="toggleFeature(user, 'board_enabled', $event.target.checked)" />
+                  </td>
+                  <td style="text-align:center;">
+                    <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
+                    <input v-else type="checkbox" class="feat-toggle" :checked="user.chat_enabled !== false" @change="toggleFeature(user, 'chat_enabled', $event.target.checked)" />
+                  </td>
+                  <td style="text-align:center;">
+                    <input type="checkbox" class="feat-toggle" :checked="!!user.time_tracking_enabled" @change="toggleFeature(user, 'time_tracking_enabled', $event.target.checked)" />
+                  </td>
+                  <td style="text-align:center;">
+                    <input type="checkbox" class="feat-toggle" :checked="!!user.time_tracking_viewer" @change="toggleFeature(user, 'time_tracking_viewer', $event.target.checked)" />
+                  </td>
+                  <td style="text-align:center;">
+                    <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
+                    <input v-else type="checkbox" class="feat-toggle" :checked="!!user.helpdesk_enabled" @change="toggleFeature(user, 'helpdesk_enabled', $event.target.checked)" />
+                  </td>
+                  <td style="text-align:center;">
+                    <span v-if="user.totp_enabled" class="feat-check feat-on">✓</span>
+                    <span v-else class="feat-check feat-off">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p v-if="sortedUsers.some(u => u.global_role === 'admin')" style="font-size:12px;color:var(--color-text-muted);margin-top:8px;">{{ $t('admin.admins_bypass_features') }}</p>
+          </div>
         </div>
 
         <!-- Projects tab -->
@@ -562,98 +615,6 @@
 
         </div>
 
-        <!-- Backup / Restore tab -->
-        <div v-show="tab === 'backup'" role="tabpanel" id="tab-panel-backup" aria-labelledby="tab-btn-backup">
-          <!-- Scheduled backups -->
-          <div style="margin-bottom:24px">
-            <h3 class="form-section-title">{{ $t('admin.backup_schedule_title') }}</h3>
-            <div class="form-row" style="align-items:flex-end;gap:16px;flex-wrap:wrap">
-              <div class="form-group" style="flex:1;min-width:180px">
-                <label class="form-label" for="sys-backup-schedule">{{ $t('admin.backup_schedule_label') }}</label>
-                <select id="sys-backup-schedule" class="form-input" v-model="systemSettings.backup_schedule">
-                  <option value="disabled">{{ $t('admin.backup_schedule_disabled') }}</option>
-                  <option value="6h">{{ $t('admin.backup_schedule_6h') }}</option>
-                  <option value="8h">{{ $t('admin.backup_schedule_8h') }}</option>
-                  <option value="12h">{{ $t('admin.backup_schedule_12h') }}</option>
-                  <option value="24h">{{ $t('admin.backup_schedule_24h') }}</option>
-                </select>
-              </div>
-              <div class="form-group" style="flex:0 0 160px" v-if="systemSettings.backup_schedule !== 'disabled'">
-                <label class="form-label" for="sys-backup-time">{{ $t('admin.backup_start_time') }}</label>
-                <input
-                  id="sys-backup-time"
-                  class="form-input"
-                  type="text"
-                  v-model="backupStartTimeDisplay"
-                  :placeholder="backupTimePlaceholder"
-                  @blur="onBackupStartTimeBlur"
-                  @keydown.enter.prevent="onBackupStartTimeBlur"
-                />
-              </div>
-              <div class="form-group" style="flex:0 0 120px">
-                <label class="form-label" for="sys-backup-keep">{{ $t('admin.backup_keep_label') }}</label>
-                <input id="sys-backup-keep" class="form-input" type="number" min="1" max="100" v-model.number="systemSettings.backup_keep" />
-              </div>
-              <div class="form-group" style="flex:0 0 auto;padding-bottom:1px">
-                <button class="btn btn-primary btn-sm" @click="saveBackupSchedule">{{ $t('admin.backup_schedule_save') }}</button>
-              </div>
-            </div>
-            <p class="form-hint" v-if="systemSettings.backup_schedule !== 'disabled'">
-              {{ $t('admin.backup_last_run') }}:
-              {{ systemSettings.backup_last_run ? formatDateTime(systemSettings.backup_last_run) : $t('admin.backup_never') }}
-              &nbsp;·&nbsp;
-              {{ $t('admin.backup_next_run') }}: {{ backupNextRunDisplay }}
-            </p>
-            <!-- Email notification -->
-            <div class="form-row" style="align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:12px">
-              <div class="form-group" style="flex:0 0 auto;padding-bottom:4px">
-                <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                  <input type="checkbox" v-model="systemSettings.backup_email_enabled" />
-                  {{ $t('admin.backup_email_enabled') }}
-                </label>
-              </div>
-              <div class="form-group" style="flex:1;min-width:220px" v-if="systemSettings.backup_email_enabled">
-                <label class="form-label" for="sys-backup-email">{{ $t('admin.backup_email_address') }}</label>
-                <input id="sys-backup-email" class="form-input" type="email" v-model="systemSettings.backup_email_address" :placeholder="$t('admin.backup_email_address')" />
-              </div>
-            </div>
-          </div>
-          <hr style="margin:0 0 20px" />
-          <!-- Manual backup -->
-          <div class="tab-toolbar">
-            <button class="btn btn-primary btn-sm" :disabled="backingUp" @click="createBackup">
-              {{ backingUp ? $t('admin.backup_creating') : $t('admin.backup_button') }}
-            </button>
-          </div>
-          <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.backup_description') }}</p>
-          <table v-if="backups.length" class="data-table">
-            <thead>
-              <tr>
-                <th>File</th>
-                <th style="width:120px">Size</th>
-                <th style="width:160px">Created</th>
-                <th style="width:260px"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="b in backups" :key="b.filename">
-                <td style="font-family:monospace;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" :title="b.filename">{{ b.filename }}</td>
-                <td>{{ formatBytes(b.size) }}</td>
-                <td>{{ formatDateTime(b.modified_at) }}</td>
-                <td style="white-space:nowrap;text-align:right">
-                  <button class="btn btn-secondary btn-sm" :disabled="restoringBackup === b.filename" @click="restoreBackup(b)" style="margin-right:6px">
-                    {{ restoringBackup === b.filename ? $t('admin.backup_restoring') : $t('admin.backup_restore') }}
-                  </button>
-                  <button class="btn btn-secondary btn-sm" @click="downloadBackup(b)" style="margin-right:6px">{{ $t('admin.backup_download') }}</button>
-                  <button class="btn btn-danger btn-sm" @click="deleteBackup(b)">{{ $t('common.delete') }}</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <p v-else class="form-hint">{{ $t('admin.backup_list_empty') }}</p>
-        </div>
-      </div>
-
         <!-- News tab -->
         <div v-show="tab === 'news'" role="tabpanel" id="tab-panel-news" aria-labelledby="tab-btn-news">
           <div class="tab-toolbar">
@@ -820,6 +781,103 @@
           </div>
         </div>
 
+        <!-- SLA policies tab -->
+        <div v-show="tab === 'sla'" role="tabpanel" id="tab-panel-sla" aria-labelledby="tab-btn-sla">
+          <SlaPoliciesTab />
+        </div>
+
+        <!-- Backup / Restore tab -->
+        <div v-show="tab === 'backup'" role="tabpanel" id="tab-panel-backup" aria-labelledby="tab-btn-backup">
+          <!-- Scheduled backups -->
+          <div style="margin-bottom:24px">
+            <h3 class="form-section-title">{{ $t('admin.backup_schedule_title') }}</h3>
+            <div class="form-row" style="align-items:end;flex-wrap:wrap;gap:12px;margin-top:8px">
+              <div class="form-group" style="margin-bottom:0;flex:0 0 160px">
+                <label class="form-label" for="sys-backup-schedule">{{ $t('admin.backup_schedule_label') }}</label>
+                <select id="sys-backup-schedule" class="form-input" v-model="systemSettings.backup_schedule">
+                  <option value="disabled">{{ $t('admin.backup_schedule_disabled') }}</option>
+                  <option value="6h">{{ $t('admin.backup_schedule_6h') }}</option>
+                  <option value="8h">{{ $t('admin.backup_schedule_8h') }}</option>
+                  <option value="12h">{{ $t('admin.backup_schedule_12h') }}</option>
+                  <option value="24h">{{ $t('admin.backup_schedule_24h') }}</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:0 0 160px" v-if="systemSettings.backup_schedule !== 'disabled'">
+                <label class="form-label" for="sys-backup-time">{{ $t('admin.backup_start_time') }}</label>
+                <input
+                  id="sys-backup-time"
+                  type="time"
+                  class="form-input"
+                  v-model="backupStartTimeDisplay"
+                  :placeholder="backupTimePlaceholder"
+                />
+              </div>
+              <div class="form-group" style="flex:0 0 100px" v-if="systemSettings.backup_schedule !== 'disabled'">
+                <label class="form-label" for="sys-backup-keep">{{ $t('admin.backup_keep_label') }}</label>
+                <input id="sys-backup-keep" class="form-input" type="number" min="1" max="100" v-model.number="systemSettings.backup_keep" />
+              </div>
+            </div>
+
+            <div v-if="systemSettings.backup_schedule !== 'disabled'" style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--color-text-muted)">
+              <span>{{ $t('admin.backup_last_run') }}: <strong>{{ backupLastRun }}</strong></span>
+              <span>{{ $t('admin.backup_next_run') }}: <strong>{{ backupNextRun }}</strong></span>
+            </div>
+
+            <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;max-width:450px">
+              <label class="toggle-row">
+                <span>{{ $t('admin.backup_email_enabled') }}</span>
+                <input type="checkbox" v-model="systemSettings.backup_email_enabled" />
+              </label>
+              <input v-if="systemSettings.backup_email_enabled" class="form-input" v-model="systemSettings.backup_email_address" :placeholder="$t('admin.smtp_test_placeholder')" style="margin-top:4px" />
+            </div>
+
+            <div style="margin-top:12px">
+              <button class="btn btn-primary btn-sm" @click="saveBackupSchedule">{{ $t('admin.backup_schedule_save') }}</button>
+            </div>
+          </div>
+
+          <!-- Manual backup -->
+          <div style="margin-bottom:24px">
+            <h3 class="form-section-title">{{ $t('admin.backup_title') }}</h3>
+            <p class="form-hint">{{ $t('admin.backup_description') }}</p>
+            <button class="btn btn-primary btn-sm" @click="createBackup" :disabled="backupCreating">
+              {{ backupCreating ? $t('admin.backup_creating') : $t('admin.backup_button') }}
+            </button>
+            <span v-if="backupSuccess" style="margin-left:12px;color:var(--color-success);font-size:13px">{{ $t('admin.backup_success', { filename: backupSuccess }) }}</span>
+            <span v-if="backupError" style="margin-left:12px;color:var(--color-danger);font-size:13px">{{ $t('admin.backup_failed') }}</span>
+          </div>
+
+          <!-- Backup list -->
+          <div>
+            <table class="data-table" v-if="backups.length">
+              <thead>
+                <tr>
+                  <th>{{ $t('timeTracking.date') }}</th>
+                  <th>Filename</th>
+                  <th>Size</th>
+                  <th>{{ $t('common.actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="b in backups" :key="b.filename">
+                  <td>{{ formatDateTime(b.created_at) }}</td>
+                  <td><code>{{ b.filename }}</code></td>
+                  <td>{{ formatBytes(b.size) }}</td>
+                  <td>
+                    <div class="actions-cell">
+                      <button class="btn btn-secondary btn-sm" @click="downloadBackup(b.filename)">{{ $t('admin.backup_download') }}</button>
+                      <button class="btn btn-secondary btn-sm" @click="confirmRestoreBackup(b.filename)">{{ $t('admin.backup_restore') }}</button>
+                      <button class="btn btn-danger btn-sm" @click="deleteBackup(b)">{{ $t('common.delete') }}</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p v-else class="form-hint">{{ $t('admin.backup_list_empty') }}</p>
+          </div>
+        </div>
+      </div>
+
   </main>
 
   <!-- Create User Modal -->
@@ -958,6 +1016,27 @@
           <input type="checkbox" v-model="editUser.time_tracking_viewer" />
           {{ $t('admin.timetracking_viewer_hint') }}
         </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ $t('feature.features') }}</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="editUser.time_tracking_enabled" />
+            {{ $t('feature.time_tracking') }}
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="editUser.board_enabled" />
+            {{ $t('feature.board') }}
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="editUser.chat_enabled" />
+            {{ $t('feature.chat') }}
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="editUser.helpdesk_enabled" />
+            {{ $t('feature.helpdesk') }}
+          </label>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">{{ $t('mfa.title') }}</label>
@@ -1400,6 +1479,7 @@ import { useSystemStore } from '@/stores/system'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
+import SlaPoliciesTab from '@/components/admin/SlaPoliciesTab.vue'
 
 const { t } = useI18n()
 const ui = useUIStore()
@@ -2299,6 +2379,27 @@ async function toggleActive(user) {
   user.is_active = !user.is_active
 }
 
+const featureLabels = {
+  board_enabled: 'feature.board',
+  chat_enabled: 'feature.chat',
+  time_tracking_enabled: 'feature.time_tracking',
+  time_tracking_viewer: 'admin.timetracking_viewer',
+  helpdesk_enabled: 'feature.helpdesk',
+}
+
+async function toggleFeature(user, field, value) {
+  const idx = users.value.findIndex(u => u.id === user.id)
+  if (idx === -1) return
+  try {
+    await adminApi.updateUser(user.id, { [field]: value })
+    users.value[idx] = { ...users.value[idx], [field]: value }
+    const label = t(featureLabels[field] || field)
+    ui.success(`${label} ${value ? 'enabled' : 'disabled'} for ${user.display_name || user.username}`)
+  } catch (e) {
+    ui.error('Failed to update feature access')
+  }
+}
+
 async function deleteUser(user) {
   if (!confirm(`Delete user ${user.username}?`)) return
   try {
@@ -2359,7 +2460,11 @@ async function saveEditUser() {
       email: editUser.value.email,
       avatar_url: editUser.value.avatar_url,
       locale: editUser.value.locale,
-      time_tracking_viewer: editUser.value.time_tracking_viewer ?? false
+      time_tracking_viewer: editUser.value.time_tracking_viewer ?? false,
+      time_tracking_enabled: editUser.value.time_tracking_enabled ?? false,
+      board_enabled: editUser.value.board_enabled ?? true,
+      chat_enabled: editUser.value.chat_enabled ?? true,
+      helpdesk_enabled: editUser.value.helpdesk_enabled ?? false
     }
     if (editUser.value._newPassword) {
       payload.password = editUser.value._newPassword
@@ -2849,23 +2954,7 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
   background: var(--color-surface);
 }
 
-/* ── Markdown body (shared by editor preview + dashboard) ── */
-:deep(.markdown-body) h1,:deep(.markdown-body) h2,:deep(.markdown-body) h3 { font-weight: 700; margin: 12px 0 6px; line-height: 1.3; }
-:deep(.markdown-body) h1 { font-size: 1.2em; }
-:deep(.markdown-body) h2 { font-size: 1.1em; }
-:deep(.markdown-body) h3 { font-size: 1em; }
-:deep(.markdown-body) p { margin: 0 0 8px; }
-:deep(.markdown-body) ul,:deep(.markdown-body) ol { padding-left: 20px; margin: 0 0 8px; }
-:deep(.markdown-body) li { margin: 2px 0; }
-:deep(.markdown-body) code { background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: 3px; padding: 1px 5px; font-size: .9em; font-family: var(--font-mono); }
-:deep(.markdown-body) pre { background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 10px 12px; overflow-x: auto; margin: 0 0 8px; }
-:deep(.markdown-body) pre code { background: none; border: none; padding: 0; }
-:deep(.markdown-body) blockquote { border-left: 3px solid var(--color-border); padding-left: 12px; color: var(--color-text-muted); margin: 0 0 8px; }
-:deep(.markdown-body) a { color: var(--color-primary); text-decoration: underline; }
-:deep(.markdown-body) strong { font-weight: 700; }
-:deep(.markdown-body) em { font-style: italic; }
-:deep(.markdown-body) hr { border: none; border-top: 1px solid var(--color-border); margin: 12px 0; }
-:deep(.markdown-body) > *:last-child { margin-bottom: 0; }
+/* markdown-body styles are global in main.css */
 
 /* ── News sidebar color picker ── */
 .news-color-picker {
@@ -2963,4 +3052,12 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
   border: 1px solid var(--color-border);
   border-left-width: 4px;
 }
+
+.feature-matrix { margin-top: 32px; }
+.feature-matrix h3 { font-size: 16px; margin: 0 0 12px; }
+.feat-check { font-weight: 700; font-size: 16px; }
+.feat-always { color: var(--color-text-muted); }
+.feat-on { color: var(--color-primary); }
+.feat-off { color: var(--color-text-muted); }
+.feat-toggle { width: 18px; height: 18px; cursor: pointer; }
 </style>

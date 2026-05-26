@@ -1,5 +1,6 @@
 <template>
   <div class="customers-page">
+    <DashboardNews />
     <div class="page-header">
       <h1>{{ $t('customer.customers') }}</h1>
       <button v-if="canManage" class="btn btn-primary" @click="showCreate = true">
@@ -71,6 +72,7 @@ import { useUIStore } from '@/stores/ui'
 import { customersApi } from '@/api/customers'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
+import DashboardNews from '@/components/common/DashboardNews.vue'
 
 const auth = useAuthStore()
 const custStore = useCustomersStore()

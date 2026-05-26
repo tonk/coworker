@@ -258,6 +258,9 @@ func main() {
 			AvatarURL:          fmt.Sprintf("https://api.dicebear.com/9.x/avataaars/svg?seed=%s", thisName.FirstName),
 			IsActive:           true,
 			EmailNotifications: false,
+			BoardEnabled:       true,
+			ChatEnabled:        true,
+			HelpdeskEnabled:    true,
 		}
 		must(db.Create(&user).Error)
 

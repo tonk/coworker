@@ -162,6 +162,13 @@
                 <option value="sunday">{{ $t('settings.week_start_sunday') }}</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="dashboard-default-select">{{ $t('settings.dashboard_default') }}</label>
+              <select id="dashboard-default-select" class="form-input" v-model="form.dashboard_default">
+                <option value="boards">{{ $t('settings.dashboard_default_boards') }}</option>
+                <option value="tickets">{{ $t('settings.dashboard_default_tickets') }}</option>
+              </select>
+            </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingProfile">
                 {{ savingProfile ? $t('common.loading') : $t('common.save') }}
@@ -443,6 +450,7 @@ const form = ref({
   time_tracking_enabled: false,
   time_notation: 'decimal',
   week_start: 'monday',
+  dashboard_default: 'boards',
   mon_work_start: '08:00',
   tue_work_start: '08:00',
   wed_work_start: '08:00',
@@ -567,6 +575,7 @@ onMounted(async () => {
       time_tracking_enabled: !!u.time_tracking_enabled,
       time_notation: u.time_notation || 'decimal',
       week_start: u.week_start || 'monday',
+      dashboard_default: u.dashboard_default || 'boards',
       mon_work_start: u.mon_work_start ?? '08:00',
       tue_work_start: u.tue_work_start ?? '08:00',
       wed_work_start: u.wed_work_start ?? '08:00',
@@ -605,6 +614,7 @@ async function saveProfile() {
       time_tracking_enabled: form.value.time_tracking_enabled,
       time_notation: form.value.time_notation,
       week_start: form.value.week_start,
+      dashboard_default: form.value.dashboard_default,
       mon_work_start: form.value.mon_work_start,
       tue_work_start: form.value.tue_work_start,
       wed_work_start: form.value.wed_work_start,

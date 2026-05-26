@@ -6,7 +6,7 @@ import "time"
 type Attachment struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
 	CreatedAt  time.Time `json:"created_at"`
-	OwnerType  string    `gorm:"not null;size:50;index:idx_attach_owner" json:"owner_type"` // "chat_message" | "conv_message" | "card_comment"
+	OwnerType  string    `gorm:"not null;size:50;index:idx_attach_owner" json:"owner_type"` // "chat_message" | "conv_message" | "card_comment" | "ticket_message"
 	OwnerID    uint      `gorm:"not null;index:idx_attach_owner" json:"owner_id"`
 	UploaderID uint      `gorm:"not null" json:"uploader_id"`
 	Filename   string    `gorm:"not null;size:255" json:"filename"`

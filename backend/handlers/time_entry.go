@@ -29,6 +29,7 @@ func ListTimeEntries(c *gin.Context) {
 	q := database.DB.
 		Preload("Customer").
 		Preload("Project").
+		Preload("User").
 		Order("date desc, id desc")
 
 	if globalRole == "admin" || u.TimeTrackingViewer {
@@ -44,6 +45,11 @@ func ListTimeEntries(c *gin.Context) {
 		q = q.Where("user_id = ?", userID)
 	}
 
+	if ticketStr := c.Query("ticket_id"); ticketStr != "" {
+		if ticketID, err := strconv.ParseUint(ticketStr, 10, 64); err == nil && ticketID > 0 {
+			q = q.Where("ticket_id = ?", ticketID)
+		}
+	}
 	if from := c.Query("from"); from != "" {
 		if t, err := time.Parse("2006-01-02", from); err == nil {
 			q = q.Where("date >= ?", t)
@@ -94,6 +100,7 @@ func CreateTimeEntry(c *gin.Context) {
 	var req struct {
 		CustomerID  *uint   `json:"customer_id"`
 		ProjectID   *uint   `json:"project_id"`
+		TicketID    *uint   `json:"ticket_id"`
 		Date        string  `json:"date"`
 		Minutes     int     `json:"minutes"`
 		Description string  `json:"description"`
@@ -115,6 +122,14 @@ func CreateTimeEntry(c *gin.Context) {
 		return
 	}
 
+	// If a ticket_id is provided and customer_id is not, auto-populate from the ticket.
+	if req.TicketID != nil && req.CustomerID == nil {
+		var ticket models.Ticket
+		if database.DB.Select("customer_id").First(&ticket, *req.TicketID).Error == nil {
+			req.CustomerID = &ticket.CustomerID
+		}
+	}
+
 	if err := checkContractNotExpired(database.DB, req.CustomerID, req.ProjectID, date); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -124,6 +139,7 @@ func CreateTimeEntry(c *gin.Context) {
 		UserID:      userID,
 		CustomerID:  req.CustomerID,
 		ProjectID:   req.ProjectID,
+		TicketID:    req.TicketID,
 		Date:        date,
 		Minutes:     req.Minutes,
 		Description: req.Description,
@@ -135,7 +151,7 @@ func CreateTimeEntry(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	database.DB.Preload("Customer").Preload("Project").First(&entry, entry.ID)
+	database.DB.Preload("Customer").Preload("Project").Preload("User").First(&entry, entry.ID)
 	c.JSON(http.StatusCreated, entry)
 }
 

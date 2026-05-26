@@ -24,8 +24,17 @@ async function loginAs(page, username = 'demo.admin', password = 'demo1234') {
   await page.waitForURL('**/')
 }
 
+// Helper to dismiss the welcome/onboarding backdrop if present
+async function dismissWelcome(page) {
+  const welcomeClose = page.locator('.welcome-close')
+  if (await welcomeClose.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await welcomeClose.click()
+    await page.waitForTimeout(300)
+  }
+}
+
 // Tests ------------------------------------------------------------------
-test.describe.serial('screenshots', () => {
+test.describe('screenshots', () => {
 
   // ── 01: Login page ─────────────────────────────────────────────────
   test('01-login', async ({ browser }) => {
@@ -67,6 +76,7 @@ test.describe.serial('screenshots', () => {
     await page.goto(`${BASE_URL}/projects/website-redesign`)
     await page.waitForLoadState('networkidle')
     await page.waitForSelector('.board-card')
+    await dismissWelcome(page)
     await page.locator('.board-card').first().click()
     await page.waitForSelector('.modal-backdrop')
     await page.screenshot(ss('04-card-detail'))
@@ -80,6 +90,7 @@ test.describe.serial('screenshots', () => {
     await page.goto(`${BASE_URL}/projects/website-redesign/topics`)
     await page.waitForLoadState('networkidle')
     await page.waitForSelector('.topic-item')
+    await dismissWelcome(page)
     await page.locator('.topic-item').first().click()
     await page.waitForSelector('.topic-detail')
     await page.screenshot(ss('05-topics'))
@@ -123,6 +134,7 @@ test.describe.serial('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/admin`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     await page.locator('.tab:has-text("Settings")').click()
     await page.waitForTimeout(500)
     await page.screenshot(ss('09-admin-settings'))
@@ -161,6 +173,7 @@ test.describe.serial('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/projects/product-platform/charts`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     // Click the Cumulative tab
     const cumTab = page.locator('.charts-tabs .tab', { hasText: /^🌊/ })
     if (await cumTab.isVisible()) {
@@ -187,6 +200,7 @@ test.describe.serial('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/projects/product-platform/charts`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     const thruTab = page.locator('.charts-tabs .tab', { hasText: /^🔢/ })
     if (await thruTab.isVisible()) {
       await thruTab.click()
@@ -202,6 +216,7 @@ test.describe.serial('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/projects/product-platform/charts`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     const bdTab = page.locator('.charts-tabs .tab', { hasText: /^📉/ })
     if (await bdTab.isVisible()) {
       await bdTab.click()
@@ -226,6 +241,7 @@ test.describe.serial('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/projects/product-platform/charts`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     const buTab = page.locator('.charts-tabs .tab', { hasText: /^📈/ })
     if (await buTab.isVisible()) {
       await buTab.click()
@@ -250,6 +266,7 @@ test.describe.serial('screenshots', () => {
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/projects/product-platform/charts`)
     await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
     const relTab = page.locator('.charts-tabs .tab', { hasText: /^🚀/ })
     if (await relTab.isVisible()) {
       await relTab.click()
@@ -266,6 +283,52 @@ test.describe.serial('screenshots', () => {
     await page.goto(`${BASE_URL}/time-tracking`)
     await page.waitForLoadState('networkidle')
     await page.screenshot(ss('20-standby-shift'))
+    await context.close()
+  })
+
+  // ── 21: Ticket list ────────────────────────────────────────────────
+  test('21-ticket-list', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
+    await page.goto(BASE_URL)
+    await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
+    // Find the first helpdesk customer link in the sidebar
+    const ticketLink = page.locator('[id^="section-body-helpdesk"] .sidebar-link').first()
+    if (await ticketLink.isVisible()) {
+      const href = await ticketLink.getAttribute('href')
+      await page.goto(`${BASE_URL}${href}`)
+    } else {
+      await page.goto(`${BASE_URL}/customers`)
+      await page.waitForLoadState('networkidle')
+    }
+    await page.waitForLoadState('networkidle')
+    await page.waitForSelector('.ticket-card', { timeout: 5000 }).catch(() => {})
+    await page.screenshot(ss('21-ticket-list'))
+    await context.close()
+  })
+
+  // ── 22: Ticket detail ──────────────────────────────────────────────
+  test('22-ticket-detail', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
+    await page.goto(BASE_URL)
+    await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
+    const ticketLink = page.locator('[id^="section-body-helpdesk"] .sidebar-link').first()
+    if (await ticketLink.isVisible()) {
+      const href = await ticketLink.getAttribute('href')
+      await page.goto(`${BASE_URL}${href}`)
+      await page.waitForLoadState('networkidle')
+      await page.waitForSelector('.ticket-card', { timeout: 5000 }).catch(() => {})
+      const firstCard = page.locator('.ticket-card').first()
+      if (await firstCard.isVisible()) {
+        await firstCard.click()
+        await page.waitForLoadState('networkidle')
+        await page.waitForSelector('.ticket-detail-main', { timeout: 5000 }).catch(() => {})
+      }
+    }
+    await page.screenshot(ss('22-ticket-detail'))
     await context.close()
   })
 })

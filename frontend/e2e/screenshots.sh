@@ -54,7 +54,7 @@ else
     echo "=== Backend already running → http://localhost:8080 ==="
   else
     echo "=== Starting backend  → http://localhost:8080 ==="
-    (cd "$BACKEND_DIR" && JWT_SECRET="$JWT_SECRET" go run . &)
+    (cd "$BACKEND_DIR" && exec go run .) &
     BACKEND_PID=$!
     echo "Waiting for backend…"
     while ! curl -s http://localhost:8080/api/v1/version > /dev/null 2>&1; do sleep 1; done
@@ -65,7 +65,7 @@ else
     echo "=== Frontend already running → http://localhost:5173 ==="
   else
     echo "=== Starting frontend → http://localhost:5173 ==="
-    (cd "$FRONTEND_DIR" && npm run dev &)
+    (cd "$FRONTEND_DIR" && exec npm run dev) &
     FRONTEND_PID=$!
     echo "Waiting for frontend…"
     while ! curl -s http://localhost:5173 > /dev/null 2>&1; do sleep 1; done

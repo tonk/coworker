@@ -1,11 +1,12 @@
 ---
 namespace: ansilabnl
 name: warmdesk
-version: 0.3.11
+version: 0.4.0
 readme: README.md
 description: >
   Ansible collection to manage WarmDesk — users, projects, boards,
-  customers, contracts and system settings via the WarmDesk REST API.
+  customers, contracts, helpdesk tickets, SLA policies, and system
+  settings via the WarmDesk REST API.
 license:
   - GPL-2.0-or-later
 authors:

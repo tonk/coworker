@@ -110,6 +110,9 @@ export const projectsApi = {
   createCardRef:  (slug, cardId, data)  => client.post(`/projects/${slug}/cards/${cardId}/refs`, data),
   deleteCardRef:  (slug, cardId, refId) => client.delete(`/projects/${slug}/cards/${cardId}/refs/${refId}`),
 
+  // Ticket links (card side)
+  listCardTickets:(slug, cardId)        => client.get(`/projects/${slug}/cards/${cardId}/tickets`),
+
   // Sprints (Scrum)
   listSprints:          (slug)                    => client.get(`/projects/${slug}/sprints`),
   createSprint:         (slug, data)              => client.post(`/projects/${slug}/sprints`, data),

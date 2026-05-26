@@ -308,8 +308,11 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		AccentColor        string  `json:"accent_color"`
 		EmailNotifications  *bool   `json:"email_notifications"`
 		TimeTrackingEnabled *bool   `json:"time_tracking_enabled"`
+		BoardEnabled         *bool   `json:"board_enabled"`
+		ChatEnabled          *bool   `json:"chat_enabled"`
 		TimeNotation         string  `json:"time_notation"`
 		WeekStart            string  `json:"week_start"`
+		DashboardDefault     string  `json:"dashboard_default"`
 		MonWorkStart         string  `json:"mon_work_start"`
 		TueWorkStart         string  `json:"tue_work_start"`
 		WedWorkStart         string  `json:"wed_work_start"`
@@ -384,11 +387,20 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	if req.TimeTrackingEnabled != nil {
 		updates["time_tracking_enabled"] = *req.TimeTrackingEnabled
 	}
+	if req.BoardEnabled != nil {
+		updates["board_enabled"] = *req.BoardEnabled
+	}
+	if req.ChatEnabled != nil {
+		updates["chat_enabled"] = *req.ChatEnabled
+	}
 	if req.TimeNotation == "decimal" || req.TimeNotation == "hhmm" {
 		updates["time_notation"] = req.TimeNotation
 	}
 	if req.WeekStart == "monday" || req.WeekStart == "sunday" {
 		updates["week_start"] = req.WeekStart
+	}
+	if req.DashboardDefault == "boards" || req.DashboardDefault == "tickets" {
+		updates["dashboard_default"] = req.DashboardDefault
 	}
 	updates["mon_work_start"] = req.MonWorkStart
 	updates["tue_work_start"] = req.TueWorkStart

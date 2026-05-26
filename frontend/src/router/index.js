@@ -11,22 +11,24 @@ const routes = [
   { path: '/forgot-password', name: 'forgot-password', component: lazyWithReload(() => import('@/views/ForgotPasswordView.vue')), meta: { public: true } },
   { path: '/reset-password', name: 'reset-password', component: lazyWithReload(() => import('@/views/ResetPasswordView.vue')), meta: { public: true } },
   { path: '/', name: 'dashboard', component: lazyWithReload(() => import('@/views/DashboardView.vue')) },
-  { path: '/projects/:slug', name: 'board', component: lazyWithReload(() => import('@/views/BoardView.vue')) },
-  { path: '/projects/:slug/settings', name: 'project-settings', component: lazyWithReload(() => import('@/views/ProjectSettingsView.vue')) },
-  { path: '/projects/:slug/topics', name: 'topics', component: lazyWithReload(() => import('@/views/TopicsView.vue')) },
-  { path: '/projects/:slug/gantt', name: 'gantt', component: lazyWithReload(() => import('@/views/GanttView.vue')) },
-  { path: '/projects/:slug/backlog', name: 'backlog', component: lazyWithReload(() => import('@/views/BacklogView.vue')) },
-  { path: '/projects/:slug/sprint', name: 'sprint-board', component: lazyWithReload(() => import('@/views/SprintBoardView.vue')) },
-  { path: '/projects/:slug/charts', name: 'charts', component: lazyWithReload(() => import('@/views/ChartsView.vue')) },
+  { path: '/projects/:slug', name: 'board', component: lazyWithReload(() => import('@/views/BoardView.vue')), meta: { boardOnly: true } },
+  { path: '/projects/:slug/settings', name: 'project-settings', component: lazyWithReload(() => import('@/views/ProjectSettingsView.vue')), meta: { boardOnly: true } },
+  { path: '/projects/:slug/topics', name: 'topics', component: lazyWithReload(() => import('@/views/TopicsView.vue')), meta: { boardOnly: true } },
+  { path: '/projects/:slug/gantt', name: 'gantt', component: lazyWithReload(() => import('@/views/GanttView.vue')), meta: { boardOnly: true } },
+  { path: '/projects/:slug/backlog', name: 'backlog', component: lazyWithReload(() => import('@/views/BacklogView.vue')), meta: { boardOnly: true } },
+  { path: '/projects/:slug/sprint', name: 'sprint-board', component: lazyWithReload(() => import('@/views/SprintBoardView.vue')), meta: { boardOnly: true } },
+  { path: '/projects/:slug/charts', name: 'charts', component: lazyWithReload(() => import('@/views/ChartsView.vue')), meta: { boardOnly: true } },
   { path: '/news', name: 'news', component: lazyWithReload(() => import('@/views/NewsView.vue')) },
   { path: '/settings', name: 'settings', component: lazyWithReload(() => import('@/views/SettingsView.vue')) },
-  { path: '/chats', name: 'chats', component: lazyWithReload(() => import('@/views/DirectMessagesView.vue')) },
+  { path: '/chats', name: 'chats', component: lazyWithReload(() => import('@/views/DirectMessagesView.vue')), meta: { chatOnly: true } },
   { path: '/messages', redirect: '/chats' },
   { path: '/admin', name: 'admin', component: lazyWithReload(() => import('@/views/AdminView.vue')), meta: { adminOnly: true } },
   { path: '/reports', name: 'reports', component: lazyWithReload(() => import('@/views/ReportView.vue')), meta: { reportsOnly: true } },
   { path: '/time-tracking', name: 'time-tracking', component: lazyWithReload(() => import('@/views/TimeTrackingView.vue')), meta: { timeTrackingOnly: true } },
   { path: '/customers', name: 'customers', component: lazyWithReload(() => import('@/views/CustomersView.vue')) },
   { path: '/customers/:id', name: 'customer-detail', component: lazyWithReload(() => import('@/views/CustomerDetailView.vue')) },
+  { path: '/customers/:id/tickets', name: 'tickets', component: lazyWithReload(() => import('@/views/TicketListView.vue')), meta: { helpdeskOnly: true } },
+  { path: '/customers/:id/tickets/:ticketId', name: 'ticket-detail', component: lazyWithReload(() => import('@/views/TicketDetailView.vue')), meta: { helpdeskOnly: true } },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
@@ -47,6 +49,9 @@ router.beforeEach((to) => {
   if (to.meta.adminOnly && !auth.isAdmin) return '/'
   if (to.meta.reportsOnly && !auth.canViewReports) return '/'
   if (to.meta.timeTrackingOnly && !auth.timeTrackingEnabled) return '/'
+  if (to.meta.helpdeskOnly && !auth.helpdeskEnabled) return '/'
+  if (to.meta.boardOnly && !auth.boardEnabled) return '/'
+  if (to.meta.chatOnly && !auth.chatEnabled) return '/'
   if (to.meta.public && auth.isLoggedIn && (to.name === 'login' || to.name === 'register')) return '/'
   return true
 })

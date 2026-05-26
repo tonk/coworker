@@ -1,0 +1,18 @@
+import client from './client'
+
+export const ticketsApi = {
+  list:         (cid)                    => client.get(`/customers/${cid}/tickets`),
+  get:          (cid, id)                => client.get(`/customers/${cid}/tickets/${id}`),
+  create:       (cid, data)              => client.post(`/customers/${cid}/tickets`, data),
+  update:       (cid, id, data)          => client.put(`/customers/${cid}/tickets/${id}`, data),
+  delete:       (cid, id)                => client.delete(`/customers/${cid}/tickets/${id}`),
+  addMessage:   (cid, id, body)          => client.post(`/customers/${cid}/tickets/${id}/messages`, { body }),
+  addTag:       (cid, id, name)          => client.post(`/customers/${cid}/tickets/${id}/tags`, { name }),
+  removeTag:    (cid, id, tagId)         => client.delete(`/customers/${cid}/tickets/${id}/tags/${tagId}`),
+  listLinks:    (cid, id)                => client.get(`/customers/${cid}/tickets/${id}/links`),
+  addLink:      (cid, id, targetId)      => client.post(`/customers/${cid}/tickets/${id}/links`, { target_ticket_id: targetId }),
+  removeLink:   (cid, id, linkId)        => client.delete(`/customers/${cid}/tickets/${id}/links/${linkId}`),
+  listCards:    (cid, id)                => client.get(`/customers/${cid}/tickets/${id}/cards`),
+  addCardLink:  (cid, id, body)           => client.post(`/customers/${cid}/tickets/${id}/cards`, body),
+  removeCardLink:(cid, id, linkId)       => client.delete(`/customers/${cid}/tickets/${id}/cards/${linkId}`),
+}

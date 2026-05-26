@@ -81,6 +81,12 @@ const (
 	TypeCallUnavailable = "call.unavailable"
 	TypeCallGroupInvite = "call.group_invite"
 
+	// Server -> Client: tickets / helpdesk
+	TypeTicketCreated  = "ticket.created"
+	TypeTicketUpdated  = "ticket.updated"
+	TypeTicketDeleted  = "ticket.deleted"
+	TypeTicketMsgAdded = "ticket.message.added"
+
 	// System
 	TypePong  = "pong"
 	TypeError = "error"

@@ -44,6 +44,9 @@ func AdminUpdateUser(c *gin.Context) {
 		IsActive            *bool  `json:"is_active"`
 		TimeTrackingViewer  *bool  `json:"time_tracking_viewer"`
 		TimeTrackingEnabled *bool  `json:"time_tracking_enabled"`
+		BoardEnabled        *bool  `json:"board_enabled"`
+		ChatEnabled         *bool  `json:"chat_enabled"`
+		HelpdeskEnabled     *bool  `json:"helpdesk_enabled"`
 		Theme               string `json:"theme"`
 		ShowBreadcrumbs     *bool  `json:"show_breadcrumbs"`
 		EmailNotifications  *bool  `json:"email_notifications"`
@@ -88,6 +91,15 @@ func AdminUpdateUser(c *gin.Context) {
 	}
 	if req.TimeTrackingEnabled != nil {
 		updates["time_tracking_enabled"] = *req.TimeTrackingEnabled
+	}
+	if req.BoardEnabled != nil {
+		updates["board_enabled"] = *req.BoardEnabled
+	}
+	if req.ChatEnabled != nil {
+		updates["chat_enabled"] = *req.ChatEnabled
+	}
+	if req.HelpdeskEnabled != nil {
+		updates["helpdesk_enabled"] = *req.HelpdeskEnabled
 	}
 	validThemes := map[string]bool{"light": true, "dark": true, "system": true}
 	if validThemes[req.Theme] {

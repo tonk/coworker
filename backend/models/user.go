@@ -41,8 +41,12 @@ type User struct {
 	EmailNotifications  bool           `gorm:"default:true" json:"email_notifications"`
 	TimeTrackingEnabled bool           `gorm:"default:false" json:"time_tracking_enabled"`
 	TimeTrackingViewer  bool           `gorm:"default:false" json:"time_tracking_viewer"`
+	BoardEnabled        bool           `gorm:"default:true" json:"board_enabled"`
+	ChatEnabled         bool           `gorm:"default:true" json:"chat_enabled"`
+	HelpdeskEnabled     bool           `gorm:"default:false" json:"helpdesk_enabled"`
 	TimeNotation        string         `gorm:"size:10;default:'decimal'" json:"time_notation"` // "decimal" | "hhmm"
 	WeekStart           string         `gorm:"size:10;default:'monday'" json:"week_start"`     // "monday" | "sunday"
+	DashboardDefault    string         `gorm:"size:10;default:'boards'" json:"dashboard_default"` // "boards" | "tickets"
 	MonWorkStart        string         `gorm:"size:5;default:'08:00'" json:"mon_work_start"`
 	TueWorkStart        string         `gorm:"size:5;default:'08:00'" json:"tue_work_start"`
 	WedWorkStart        string         `gorm:"size:5;default:'08:00'" json:"wed_work_start"`
