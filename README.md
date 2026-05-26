@@ -8,10 +8,15 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.16)
+## Latest release (v0.10.17)
 
-- **CI test suite fixed** — Playwright e2e specs excluded from vitest runner
-  so `npm test` passes cleanly in CI.
+- **Helpdesk ticketing module** — full ticket lifecycle (incident / problem / service request / change request) with priority, status, assignee, internal messages with attachments, tags, linked tickets, and linked board cards.
+- **SLA policies** — admin-configurable response and resolution time limits with optional priority filter; breach status tracked per ticket.
+- **Time tracking on tickets** — log time entries directly on a ticket (gated by time-tracking feature flag), with a project selector from the customer's contracts.
+- **Custom date picker** — fully themed `DatePicker` component that respects the user's date format and week-start settings; no native `<input type="date">`.
+- **Dashboard default** — users can choose *Boards* or *Tickets* as their home page in personal settings.
+- **Ansible collection v0.4.0** — new `ticket`, `sla_policy`, and `user_credential` modules.
+- **Screenshots** — all 22 reference screenshots updated; welcome backdrop reliably dismissed before every capture.
 
 ## Experiment
 
