@@ -352,11 +352,15 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		}
 		updates["avatar_url"] = av
 	}
-	validLocales := map[string]bool{"en": true, "nl": true, "de": true, "fr": true, "es": true}
+	validLocales := map[string]bool{
+		"en": true, "nl": true, "de": true, "fr": true, "es": true,
+		"da": true, "sv": true, "nb": true, "fi": true, "is": true,
+		"pt": true, "it": true,
+	}
 	if validLocales[req.Locale] {
 		updates["locale"] = req.Locale
 	}
-	if req.Theme == "light" || req.Theme == "dark" || req.Theme == "system" {
+	if req.Theme == "light" || req.Theme == "dark" || req.Theme == "system" || req.Theme == "black" {
 		updates["theme"] = req.Theme
 	}
 	if req.DateTimeFormat != "" {

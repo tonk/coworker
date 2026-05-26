@@ -717,9 +717,13 @@ async function revokeKey(key) {
   loadApiKeys()
 }
 
-function copyKey() {
-  navigator.clipboard.writeText(generatedKey.value)
-  ui.success('Copied!')
+async function copyKey() {
+  try {
+    await navigator.clipboard.writeText(generatedKey.value)
+    ui.success('Copied!')
+  } catch {
+    ui.error('Copy not available — select and copy the key manually')
+  }
 }
 
 async function loadWebhooks() {
@@ -761,9 +765,13 @@ async function regenerateWebhook(wh) {
   }
 }
 
-function copyWebhookToken() {
-  navigator.clipboard.writeText(createdWebhookToken.value)
-  ui.success('Copied!')
+async function copyWebhookToken() {
+  try {
+    await navigator.clipboard.writeText(createdWebhookToken.value)
+    ui.success('Copied!')
+  } catch {
+    ui.error('Copy not available — select and copy the token manually')
+  }
 }
 
 // ── Deleted cards ──────────────────────────────────────────────────────────

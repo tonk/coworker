@@ -635,8 +635,10 @@ async function saveProfile() {
 }
 
 async function loadPersonalKeys() {
-  const { data } = await authApi.listApiKeys()
-  personalKeys.value = data
+  try {
+    const { data } = await authApi.listApiKeys()
+    personalKeys.value = data
+  } catch {}
 }
 
 async function generatePersonalKey() {
@@ -652,13 +654,21 @@ async function generatePersonalKey() {
 
 async function revokePersonalKey(key) {
   if (!confirm('Revoke this API key?')) return
-  await authApi.deleteApiKey(key.id)
-  loadPersonalKeys()
+  try {
+    await authApi.deleteApiKey(key.id)
+    loadPersonalKeys()
+  } catch {
+    ui.error('Failed to revoke key')
+  }
 }
 
-function copyPersonalKey() {
-  navigator.clipboard.writeText(generatedPersonalKey.value)
-  ui.success('Copied!')
+async function copyPersonalKey() {
+  try {
+    await navigator.clipboard.writeText(generatedPersonalKey.value)
+    ui.success('Copied!')
+  } catch {
+    ui.error('Copy not available — select and copy the key manually')
+  }
 }
 
 async function loadPasskeys() {
