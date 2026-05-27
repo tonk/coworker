@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.22)
+## Latest release (v0.10.23)
 
-- **Leave conversation** — hover over any chat in the list and click ✕ to remove it; deletes 1-on-1 chats for both parties, removes you from group chats.
-- **Escape closes all popups** — week picker and holidays dropdown in time tracking now close on Escape, completing full keyboard-navigation coverage.
+- **Website "What's new" strip** — homepage now shows release highlights between the hero and features sections.
+- **Leave conversation** — hover any chat and click ✕ to remove it; deletes 1-on-1 chats for both parties, removes you from group chats.
+- **Escape closes all popups** — week picker and holidays dropdown in time tracking now close on Escape.
 
 ## Experiment
 

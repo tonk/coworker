@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.23 — 2026-05-27
+
+### Changed
+- **Website "What's new" strip** — homepage now shows the current release highlights between the hero and features sections; updated each release via `hugo.toml`.
+
 ## v0.10.22 — 2026-05-27
 
 ### Added
