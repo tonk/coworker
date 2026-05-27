@@ -176,7 +176,7 @@ Create an application that has all these features and requirements
 - Team Chat removed from project board page
 - Card comments now trigger @mention notifications (email + real-time WS)
 - Auto-replace text emoticons (e.g. :-) ;-) <3) with emoji in all editors and chat inputs
-- Fix Escape key in card comment editor closing the card modal
+- Fix Escape key in card comment editor closing the card modal (first pass: stop propagation from the textarea)
 - Fix unread indicator showing for messages the current user sent
 - Git platform integration: connect GitHub, GitLab, Gitea, or Forgejo via webhooks
   - Push / PR / issue events post formatted messages to project chat
@@ -192,11 +192,11 @@ Create an application that has all these features and requirements
 - Fix Reports menu hidden for admins with stale cached user object
 - Close / reopen cards: Close Card button in card detail; closed cards shown with strikethrough and muted opacity on board; closed cards appear in time reports with a "Closed" badge
 - Fix due date on board cards showing wrong date in negative-UTC timezones (UTC vs local date slice)
-- Due date field replaced from browser date picker to text input following user's configured date format, with clear button
+- Due date field: replace native browser date picker with a plain text input that follows the user's configured date format, plus a clear button
 - Spellcheck in card description, comments, and title (plain textarea replaces CodeMirror for editing; markdown preview unchanged)
 - Auth tokens moved to sessionStorage so closing the browser ends the session
 - Fix project switching in sidebar not reloading board content (watch route slug; useWebSocket accepts reactive ref)
-- Due date calendar picker: hidden native `<input type="date">` triggered by a calendar icon button (📅) in the card detail; preserves configured date format display while allowing picker-based input
+- Due date calendar picker: add a calendar icon button (📅) alongside the text input (previous item) that triggers a hidden native `<input type="date">`; preserves the configured-format text display while also allowing picker-based input
 - Fix default labels not automatically added to new projects created via Admin → Projects (AdminCreateProject was missing the getDefaultLabelDefs() seeding loop)
 - Fix custom default columns not applied to new projects: replaced unreliable @change on textarea (destroyed by v-if before event fired) with an explicit Save button in the Project Defaults settings section
 - Fix saveSetting not updating existing rows: replaced GORM clause.OnConflict upsert (silently failed to UPDATE for string PKs in SQLite) with explicit UPDATE + RowsAffected == 0 → CREATE pattern
@@ -262,9 +262,8 @@ Create an application that has all these features and requirements
 - Fix webhook setup URL showing tauri://localhost in desktop app: use configured server URL instead of window.location.origin for GitHub, GitLab, and Gitea payload URL display
 - Fix Forgejo webhook showing Gitea logo on card Git Links: detect platform from X-Forgejo-Event header instead of webhook name
 - Fix git links and release notes banner doing nothing when clicked in desktop app: open in system browser via tauri-plugin-opener
-- Fix Escape key closing card modal even when a mention dropdown is open: check e.defaultPrevented before closing
-- Fix Cancel button discarding unsaved card changes silently: show Save / Discard / Back confirmation panel when the card is dirty
-- Escape key closes card modal when there are no unsaved changes
+- Fix Escape key closing card modal even when a mention dropdown is open: check e.defaultPrevented before closing (second pass)
+- Fix Cancel button discarding unsaved card changes silently: show Save / Discard / Back confirmation panel when the card is dirty; Escape also shows this panel when dirty, and closes immediately when the card is clean
 - Typing indicator in project chat: animated three-dot indicator shows who is typing; auto-clears after 4 seconds of inactivity
 - @mention autocomplete in card description and comment fields (same dropdown as in project chat)
 - Prometheus metrics endpoint GET /api/v1/metrics: project count, column count per project, open/closed card count per column; protected by a new metrics global role
@@ -402,7 +401,7 @@ Create an application that has all these features and requirements
 - Vite manualChunks bundle split: Vue core, i18n, markdown, HTTP libs moved to named chunks; main JS bundle reduced from ~504 kB to ~298 kB
 - Demo seed: add 60 time entries across 5 users spanning 2 weeks; enable time tracking for all five active demo users
 - Refuse to start if jwt_secret is still the default value or if allowed_origins contains wildcard in release mode
-- Add HSTS and Content-Security-Policy headers to nginx and Apache reverse-proxy templates
+- Add HSTS and Content-Security-Policy headers to nginx and Apache reverse-proxy templates (for deployments behind a reverse proxy)
 - Detect uploaded file MIME type from file bytes server-side; ignore client-supplied Content-Type
 - Pin bcrypt password hashing cost to 12 (raised from library default of 10)
 - Default gin_mode to release; require explicit opt-in for debug mode
@@ -418,7 +417,6 @@ Create an application that has all these features and requirements
 - Fix version label alignment on the login page
 - Show WarmDesk wordmark next to logo on the login screen
 - Fix company logo URL not resolving to absolute path in Tauri desktop client
-- Show a ← [parent card title] back link at the top of sub-card and linked-card nested modals to return to the originating card
 - Admin Users table: add Last Password Change column and dedicated MFA column (moved from Status badge)
 - Admin Settings: password_change_period_days policy; login flags expired passwords and redirects to Settings with a warning banner
 - People list in DM/chat: non-admin users with explicit customer assignments only see colleagues in shared customers
@@ -504,11 +502,11 @@ Create an application that has all these features and requirements
 - Fix CSP img-src blocking external avatars: add https: to img-src in nginx and Apache deploy templates so Gravatar, DiceBear, and other external avatar images load when the proxy redirects to them
 - Fix customer logo proxy 400 when hostname resolves to internal IP: return 302 redirect to original URL instead of 400 when resolveAndVerify rejects a host; browser loads the image directly, server-side SSRF protection still holds
 - Show "no one online" error for group video call: clicking the group call button when no other members are online now shows a toast message instead of silently joining an empty room
-- Replace theme cycle button in app navbar with a Light / Dark / System dropdown; active option highlighted; persisted to user profile
+- App: replace theme cycle button in app navbar with a Light / Dark / System dropdown; active option highlighted; persisted to user profile
 - Close user menu immediately when any item is selected instead of requiring an extra click elsewhere to dismiss it
 - Fix PDF and XLSX report export in the Tauri desktop app: open a native OS save dialog using tauri-plugin-dialog and tauri-plugin-fs; the previous anchor-download approach was silently ignored by the WebView
 - Close all popups and overlays with Escape: About dialog, Call Settings panel, Emoji reaction picker, and incoming call / group call notifications; the call chat sidebar shows an inline discard-draft confirmation before closing when a message has been typed
-- Add Light / Dark / System theme switcher to marketing website navbar; dark mode CSS variables applied throughout; system mode follows OS preference; choice persisted in localStorage
+- Website: add Light / Dark / System theme switcher to marketing website navbar; dark mode CSS variables applied throughout; system mode follows OS preference; choice persisted in localStorage
 
 - Allow users and admins to create time-tracking-only projects (no board created) for use in the weekly timesheet
 - Allow users and admins to create time-tracking-only customers (no CRM record created) that can be associated with time-tracking-only projects
@@ -529,7 +527,7 @@ Create an application that has all these features and requirements
 - Desktop app remembers last export directory: save dialog opens in the last-used export folder (stored in localStorage); falls back to home directory on first use
 - Fix attachment IDOR: verify project membership or conversation participation before serving any attachment download
 - Fix Content-Disposition header injection: escape quotes and backslashes in attachment filenames before inserting into the header
-- Add HSTS and Content-Security-Policy response headers to every server response
+- Add HSTS and Content-Security-Policy response headers to every Go server response (complements the proxy-template headers above; ensures headers are present when WarmDesk is accessed directly without a reverse proxy)
 - Block CORS wildcard origin at middleware level in addition to startup check
 - Enforce minimum 32-character length for jwt_secret at startup
 - Rate-limit direct-message and conversation message-send endpoints (60 req/min per IP)
