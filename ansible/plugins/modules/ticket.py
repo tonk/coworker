@@ -61,10 +61,11 @@ options:
   status:
     description:
       - Current status.
-      - Only meaningful when updating an existing ticket — new tickets are
-        always created with C(open).
+      - New tickets are always created with C(new).
+      - C(pending) puts the ticket on hold pending a reminder date;
+        C(pending_close) schedules automatic closing.
     type: str
-    choices: [open, in_progress, resolved, closed]
+    choices: [new, open, pending, pending_close, closed]
 
   assigned_to:
     description:
@@ -127,13 +128,13 @@ EXAMPLES = r"""
     priority: high
     assigned_to: sarah
 
-- name: Resolve a ticket
+- name: Close a resolved ticket
   ansilabnl.warmdesk.ticket:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_token: "{{ warmdesk_token }}"
     customer: Globex Systems
     title: Kubernetes cluster node drain failing
-    status: resolved
+    status: closed
 
 - name: Delete a ticket
   ansilabnl.warmdesk.ticket:
@@ -177,7 +178,7 @@ ticket:
       description: Current status.
       returned: always
       type: str
-      sample: open
+      sample: new
     priority:
       description: Priority level.
       returned: always
@@ -189,6 +190,8 @@ ticket:
       type: str
       sample: "2026-05-26T07:19:58Z"
 """
+
+import re
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api import (
@@ -202,10 +205,17 @@ from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolv
 )
 
 
+_DATE_PREFIX_RE = re.compile(r'^\[\d{4}-\d{2}-\d{2}\]\s*')
+
+
+def _strip_date_prefix(title):
+    return _DATE_PREFIX_RE.sub('', title or '')
+
+
 def _find_ticket(client, customer_id, title):
     tickets = client.get('/customers/%d/tickets' % customer_id)
     for t in tickets:
-        if t.get('title') == title:
+        if _strip_date_prefix(t.get('title', '')) == title:
             return client.get('/customers/%d/tickets/%d' % (customer_id, t['id']))
     return None
 
@@ -275,7 +285,7 @@ def run_module():
         description=dict(type='str'),
         type=dict(type='str', choices=['incident', 'problem', 'service_request', 'change_request']),
         priority=dict(type='str', choices=['low', 'medium', 'high', 'critical']),
-        status=dict(type='str', choices=['open', 'in_progress', 'resolved', 'closed']),
+        status=dict(type='str', choices=['new', 'open', 'pending', 'pending_close', 'closed']),
         assigned_to=dict(type='str'),
         owner=dict(type='str'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
