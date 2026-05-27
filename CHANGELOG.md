@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.24 — 2026-05-27
+
+### Fixed
+- **Time tracking row drag-and-drop** — reordering rows would stop working after navigating to a different week; Sortable is now re-attached whenever the table body is recreated.
+
 ## v0.10.23 — 2026-05-27
 
 ### Changed

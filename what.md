@@ -611,3 +611,4 @@ Create an application that has all these features and requirements
 - Add leave/remove conversation from chat list: hover any conversation to reveal a ✕ button; for 1-on-1 chats deletes the conversation for both parties, for group chats removes only the current user; backend DELETE /conversations/:id endpoint with WS broadcasts to remaining members
 - Fix Escape key not closing week picker and holidays dropdown in time tracking: add onNavEscapeKey document handler that closes both popups on Escape
 - Add "What's new" strip to website homepage: a tinted band between hero and features showing current release highlights pulled from hugo.toml release_highlights param; updated each release alongside warmdesk_version and release_date
+- Fix time tracking row drag-and-drop stopping after week navigation: watch tbodyEl template ref and destroy/recreate Sortable whenever Vue replaces the tbody element on week load
