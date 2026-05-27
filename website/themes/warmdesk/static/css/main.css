@@ -394,6 +394,58 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
 .hero-release a { color: rgba(255,255,255,0.65); }
 .hero-release a:hover { color: rgba(255,255,255,0.9); text-decoration: none; }
 
+/* ---------- What's new strip ------------------------------- */
+.whats-new {
+  padding: 28px 24px;
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-bg));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
+}
+.whats-new-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.whats-new-badge {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+.whats-new-link {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+.whats-new-link:hover { color: var(--color-primary); }
+.whats-new-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.whats-new-list li {
+  font-size: 14px;
+  color: var(--color-text);
+  padding-left: 18px;
+  position: relative;
+}
+.whats-new-list li::before {
+  content: "✦";
+  position: absolute;
+  left: 0;
+  color: var(--color-primary);
+  font-size: 10px;
+  top: 3px;
+}
+
 /* ---------- Section chrome --------------------------------- */
 .section { padding: 80px 24px; }
 .section--alt { background: var(--color-bg-alt); }

@@ -17,6 +17,11 @@ enableEmoji = true
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
   warmdesk_version = "v0.10.22"
   release_date     = "2026-05-27"
+  # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
+  release_highlights = [
+    "**Leave conversation** — hover any chat and click ✕ to remove it; deletes 1-on-1 chats for both parties, removes you from group chats.",
+    "**Escape closes all popups** — week picker and holidays dropdown in time tracking now close on Escape.",
+  ]
 
 [markup]
   [markup.asciidocext]
