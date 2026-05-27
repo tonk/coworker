@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.10.20 — 2026-05-28
+
+### Added
+- **Duplicate row in time tracking** — ⧉ button duplicates a row below the original with
+  auto-incrementing `(copy)` / `(copy 2)` suffix.
+- **Drag handles in time tracking** — grab the `⠿` handle to manually reorder rows; order
+  persisted in `localStorage` across sessions.
+- **Stable row order** — rows sorted by creation order (min entry ID) so they don't jump
+  on week load; editing a duplicated row's description/project preserves its position
+  instead of jumping to the bottom.
+- **`common.duplicate` i18n key** added to all 12 locale files.
+
+### Fixed
+- **Time entry rows jumping** — `entryRows` computed now sorts by minimum entry ID
+  ascending for stable creation order instead of following the API's `date desc` order.
+- **Duplicated rows moving to bottom on edit** — `confirmEditRow` renames the key in
+  `_keyOrder` at its current position instead of leaving the old key and letting the
+  new key land at the end.
+- **Row order reset on week change** — `_keyOrder` now saves to and restores from
+  `localStorage`, preserving the user's arrangement across weeks.
+
 ## v0.10.19 — 2026-05-27
 
 ### Added

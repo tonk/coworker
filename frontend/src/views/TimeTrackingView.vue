@@ -95,6 +95,7 @@
         <table class="tt-table">
           <thead>
             <tr class="tt-head">
+              <th class="c-drag"></th>
               <th class="c-nr"></th>
               <th class="c-info">
                 <button class="sort-btn" :class="{ 'sort-active': sortCol === 'info' }" @click="toggleSort('info')" :title="$t('timeTracking.sort_by_customer')" :aria-label="sortCol === 'info' ? (sortDir === 'asc' ? 'Sort by customer/project descending' : 'Sort by customer/project ascending') : 'Sort by customer/project ascending'">
@@ -121,9 +122,10 @@
             </tr>
           </thead>
 
-          <tbody>
+          <tbody ref="tbodyEl">
             <tr v-for="(row, idx) in sortedRows" :key="row.key"
-                :class="['tt-row', idx % 2 === 1 ? 'alt' : '', deletingRow === row.key ? 'tt-row-deleting' : '', row.is_holiday ? 'tt-row-holiday' : '']">
+                :class="['tt-row', idx % 2 === 1 ? 'alt' : '', deletingRow === row.key ? 'tt-row-deleting' : '', row.is_holiday ? 'tt-row-holiday' : '']" :data-key="row.key">
+              <td class="c-drag"><span class="drag-handle" aria-label="Reorder row">⠿</span></td>
               <td class="c-nr">{{ idx + 1 }}</td>
 
               <!-- Edit mode -->
@@ -256,6 +258,7 @@
                   </template>
                   <template v-else>
                     <button class="act-btn act-edit" @click="startEditRow(row)" :title="$t('common.edit')" aria-label="Edit time entry">✎</button>
+                    <button class="act-btn act-duplicate" @click="duplicateRow(row)" :title="$t('common.duplicate')" aria-label="Duplicate time entry">⧉</button>
                     <button class="act-btn act-standby" @click="openStandbyShift(row)" :title="$t('timeTracking.standby_shift')" :aria-label="$t('timeTracking.standby_shift')">⏳</button>
                     <button class="act-btn act-del" @click="startDeleteRow(row)" :title="$t('common.delete')" aria-label="Delete time entry">🗑</button>
                   </template>
@@ -721,6 +724,7 @@
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Sortable from 'sortablejs'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { timeEntriesApi } from '@/api/timeEntries'
@@ -1034,12 +1038,14 @@ const entryRows = computed(() => {
         project_name:  e.project?.name || '',
         description:   e.description || '',
         is_holiday:    e.is_holiday || false,
+        min_id:        e.id,
       })
-    } else if (e.is_holiday) {
-      seen.get(k).is_holiday = true
+    } else {
+      if (e.is_holiday) seen.get(k).is_holiday = true
+      if (e.id < seen.get(k).min_id) seen.get(k).min_id = e.id
     }
   }
-  return [...seen.values()]
+  return [...seen.values()].sort((a, b) => a.min_id - b.min_id)
 })
 
 // ISO dates that have a holiday entry this week
@@ -1067,16 +1073,55 @@ const sortDir = ref('asc')  // 'asc' | 'desc'
 // don't jump while the user is entering time.
 const _keyOrder = ref(null)
 
+const ORDER_STORAGE_KEY = 'warmdesk_tt_row_order'
+
+function loadSavedOrder() {
+  try {
+    const raw = localStorage.getItem(ORDER_STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function saveOrder(order) {
+  try {
+    localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(order))
+  } catch {}
+}
+
 watch(allRows, (rows) => {
   if (_keyOrder.value === null) {
-    _keyOrder.value = rows.map(r => r.key)
+    const saved = loadSavedOrder()
+    if (saved) {
+      const keySet = new Set(rows.map(r => r.key))
+      const valid = saved.filter(k => keySet.has(k))
+      const fresh = rows.map(r => r.key).filter(k => !valid.includes(k))
+      _keyOrder.value = [...valid, ...fresh]
+    } else {
+      _keyOrder.value = rows.map(r => r.key)
+    }
     return
   }
   const keySet = new Set(rows.map(r => r.key))
   const stable = _keyOrder.value.filter(k => keySet.has(k))
   const fresh  = rows.map(r => r.key).filter(k => !stable.includes(k))
-  _keyOrder.value = [...stable, ...fresh]
+
+  if (stable.length === 0 && fresh.length > 0) {
+    const saved = loadSavedOrder()
+    if (saved) {
+      const valid = saved.filter(k => keySet.has(k))
+      const remaining = fresh.filter(k => !valid.includes(k))
+      _keyOrder.value = [...valid, ...remaining]
+    } else {
+      _keyOrder.value = [...stable, ...fresh]
+    }
+  } else {
+    _keyOrder.value = [...stable, ...fresh]
+  }
+  saveOrder(_keyOrder.value)
 }, { immediate: true })
+
+const tbodyEl = ref(null)
+let rowSortable = null
 
 function applySortOrder() {
   const sorted = [...allRows.value].sort((a, b) => {
@@ -1481,6 +1526,38 @@ function startEditRow(row) {
   editingRow.value = row.key
 }
 
+function duplicateRow(row) {
+  let desc = row.description || ''
+  const m = desc.match(/\(copy(?: (\d+))?\)$/)
+  if (m) {
+    const n = m[1] ? parseInt(m[1]) + 1 : 2
+    desc = desc.replace(/\(copy(?: \d+)?\)$/, `(copy ${n})`)
+  } else {
+    desc = desc ? `${desc} (copy)` : '(copy)'
+  }
+  const k = rowKey(row.customer_id, row.project_id, desc)
+  if (allRows.value.find(x => x.key === k)) return
+  localRows.value.push({
+    key:           k,
+    customer_id:   row.customer_id,
+    customer_name: row.customer_name,
+    project_id:    row.project_id,
+    project_name:  row.project_name,
+    description:   desc,
+    is_holiday:    false,
+  })
+  nextTick(() => {
+    const srcIdx = _keyOrder.value.indexOf(row.key)
+    const dstIdx = _keyOrder.value.indexOf(k)
+    if (srcIdx !== -1 && dstIdx !== -1) {
+      const arr = [..._keyOrder.value]
+      arr.splice(dstIdx, 1)
+      arr.splice(srcIdx + 1, 0, k)
+      _keyOrder.value = arr
+    }
+  })
+}
+
 function cancelEditRow() {
   editingRow.value = null
 }
@@ -1518,6 +1595,9 @@ async function confirmEditRow(row) {
         project_name:  proj?.name || '',
         description:   r.description,
       }
+    }
+    if (newKey !== row.key && !_keyOrder.value.includes(newKey)) {
+      _keyOrder.value = _keyOrder.value.map(k => k === row.key ? newKey : k)
     }
   } catch {
     ui.error(t('timeTracking.save_error'))
@@ -2612,7 +2692,28 @@ onMounted(() => {
   document.addEventListener('mousedown', onWkPickerDocClick)
   document.addEventListener('mousedown', onTimePopupDocClick)
 })
+
+function initRowSortable() {
+  if (!tbodyEl.value || rowSortable) return
+  rowSortable = Sortable.create(tbodyEl.value, {
+    animation: 150,
+    handle: '.drag-handle',
+    draggable: 'tr.tt-row',
+    forceFallback: true,
+    fallbackClass: 'sortable-fallback',
+    ghostClass: 'sortable-ghost',
+    onEnd({ oldIndex, newIndex }) {
+      if (oldIndex === newIndex) return
+      const arr = [..._keyOrder.value]
+      const [moved] = arr.splice(oldIndex, 1)
+      arr.splice(newIndex, 0, moved)
+      _keyOrder.value = arr
+    },
+  })
+}
 onUnmounted(() => {
+  rowSortable?.destroy()
+  rowSortable = null
   window.removeEventListener('keydown', onWindowUndoCapture, true)
   window.removeEventListener('beforeinput', onWindowBeforeInputCapture, true)
   document.removeEventListener('mousedown', onDocClick)
@@ -2642,6 +2743,8 @@ onMounted(async () => {
     selectedUserId.value = auth.user?.id ?? null
   }
   await loadWeek()
+  await nextTick()
+  initRowSortable()
   await loadReport()
 })
 </script>
@@ -3242,6 +3345,7 @@ td.c-day:focus-within .cell-time-toggle,
 .act-btn:hover { background: var(--color-bg); color: var(--color-text); }
 
 .act-edit:hover { color: var(--color-primary); }
+.act-duplicate:hover { color: var(--color-primary); }
 .act-standby:hover { color: var(--color-primary); }
 .act-del:hover  { color: var(--color-danger); }
 .act-ok  { opacity: 1 !important; color: var(--color-success); }
@@ -3559,4 +3663,22 @@ td.c-day:focus-within .cell-time-toggle,
   gap: 8px;
 }
 .btn-sm { height: 28px; padding: 0 12px; font-size: 12px; }
+
+/* ── Drag handle ── */
+.c-drag { width: 28px; min-width: 28px; padding: 0 !important; text-align: center; }
+.drag-handle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; margin: 0; padding: 0;
+  border: none; border-radius: 3px;
+  background: none; color: var(--color-text-muted);
+  cursor: grab; font-size: 13px; line-height: 1;
+  user-select: none; -webkit-user-select: none;
+}
+.drag-handle:hover { background: var(--color-bg); color: var(--color-text); }
+.drag-handle:active { cursor: grabbing; }
+.tt-row.sortable-ghost { opacity: 0.3; }
+.sortable-fallback {
+  opacity: 0.9 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,.2) !important;
+}
 </style>
