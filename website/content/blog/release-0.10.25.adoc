@@ -1,0 +1,40 @@
+---
+title: "v0.10.25: Unified time reporting and PDF export options"
+date: "2026-05-27"
+author: "Ton Kersten"
+description: "Board report consolidated into Time Tracking as a third tab, PDF page-number and undeclarable-time toggles, and a cleaner filter bar on HD screens."
+draft: false
+---
+:doctype: article
+:icons!:
+
+v0.10.25 retires the separate Reports screen and brings the project-board time report into Time Tracking as a first-class tab. Two new PDF export toggles and a tidier filter bar complete the release.
+
+== Board report now lives in Time Tracking
+
+The project-board time report has moved from its own menu entry into **Time Tracking → Board**.
+
+Time Tracking now has three tabs:
+
+* **Log Time** — the weekly timesheet (unchanged, requires the time-tracking permission).
+* **Report** — personal time entry history with filters and export (unchanged, requires the time-tracking permission).
+* **Board** — the project-board cross-user time report with PDF and XLSX export (requires the reports permission).
+
+The old **Reports** menu entry has been removed. Any saved link or bookmark to `/reports` redirects automatically to the Board tab. Users who only have the reports permission (no personal time tracking) land directly on the Board tab when they open Time Tracking.
+
+== PDF export options
+
+Two new toggles in the **Export options** panel let you control what appears in the PDF:
+
+* **Show page numbers** — include or omit the page-number footer on every page. On by default.
+* **Show undeclarable time** — include or omit the undeclarable and declarable subtotal rows. On by default.
+
+Both settings persist in the browser so they survive page reloads.
+
+== Cleaner filter bar
+
+The PDF font and language selectors have moved from the main filter bar into the **Export options** panel. The filter bar now fits comfortably on a single line at 1280 × 720 and above without wrapping.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:download.adoc[download page] or upgrade your existing installation — no database schema changes in this release.
