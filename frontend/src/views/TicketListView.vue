@@ -759,7 +759,7 @@ async function onDescPaste(e) {
 .ticket-list-main:has(.ticket-table) { max-width: 100%; padding: 24px 32px; }
 .ticket-list-main:not(:has(.ticket-table)) { max-width: 1200px; }
 .ticket-list-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-.ticket-list-header h1 { flex: 1; margin: 0; font-size: 20px; }
+.ticket-list-header h1 { flex: 1; margin: 0; font-size: 22px; }
 .header-actions { display: flex; align-items: center; gap: 8px; }
 .view-toggle { display: flex; border: 1px solid var(--color-border); border-radius: 6px; overflow: hidden; }
 .view-toggle-btn { background: none; border: none; padding: 5px 12px; font-size: 12px; cursor: pointer; color: var(--color-text-muted); transition: background .15s, color .15s; }
@@ -812,7 +812,7 @@ async function onDescPaste(e) {
 .status-pending_close { background: #d1fae5; color: #065f46; }
 .status-closed { background: #e5e7eb; color: #374151; }
 .ticket-assignee { display: flex; align-items: center; gap: 4px; }
-.sla-badge { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; }
+.sla-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
 .sla-ok { background: #d1fae5; color: #065f46; }
 .sla-warning { background: #fef3c7; color: #92400e; }
 .sla-breach { background: #fecaca; color: #b91c1c; }

@@ -491,6 +491,7 @@
     "create": "Opprett",
     "loading": "Laster...",
     "error": "Det oppstod en feil",
+    "confirm": "Confirm",
     "confirm_delete": "Er du sikker på at du vil slette dette?",
     "yes": "Ja",
     "no": "Nei",
@@ -773,6 +774,7 @@
     "no_entries_group": "Ingen poster",
     "week_n": "Uke {n}",
     "refresh": "Oppdater",
+    "confirm": "Confirm",
     "confirm_delete": "Slette denne tidsposten?",
     "load_error": "Lasting mislyktes.",
     "save_error": "Lagring mislyktes.",
@@ -985,6 +987,7 @@
     "cancelled": "Handlingen ble avbrutt",
     "error": "Handlingen mislyktes",
     "delete_error": "Fjerning mislyktes",
+    "confirm": "Confirm",
     "confirm_delete": "Fjern passordnøkkel \"{name}\"?",
     "delete_aria": "Fjern passordnøkkel {name}"
   },

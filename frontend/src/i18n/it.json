@@ -491,6 +491,7 @@
     "create": "Crea",
     "loading": "Caricamento...",
     "error": "Si è verificato un errore",
+    "confirm": "Confirm",
     "confirm_delete": "Sei sicuro di voler eliminare questo?",
     "yes": "Sì",
     "no": "No",
@@ -773,6 +774,7 @@
     "no_entries_group": "Nessuna voce",
     "week_n": "Settimana {n}",
     "refresh": "Aggiorna",
+    "confirm": "Confirm",
     "confirm_delete": "Eliminare questa voce di tempo?",
     "load_error": "Caricamento non riuscito.",
     "save_error": "Salvataggio non riuscito.",
@@ -985,6 +987,7 @@
     "cancelled": "Operazione annullata",
     "error": "Operazione non riuscita",
     "delete_error": "Rimozione non riuscita",
+    "confirm": "Confirm",
     "confirm_delete": "Rimuovere la passkey \"{name}\"?",
     "delete_aria": "Rimuovi passkey {name}"
   },

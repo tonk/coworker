@@ -457,7 +457,7 @@ async function saveSprint() {
 }
 
 async function startSprint(sprint) {
-  if (!confirm(t('sprint.start_sprint_confirm'))) return
+  if (!await ui.confirm(t('sprint.start_sprint_confirm'))) return
   try {
     await sprintStore.startSprint(sprint.id)
   } catch (e) {
@@ -466,7 +466,7 @@ async function startSprint(sprint) {
 }
 
 async function completeSprint(sprint) {
-  if (!confirm(t('sprint.complete_sprint_confirm'))) return
+  if (!await ui.confirm(t('sprint.complete_sprint_confirm'))) return
   try {
     await sprintStore.completeSprint(sprint.id)
   } catch (e) {
@@ -475,7 +475,7 @@ async function completeSprint(sprint) {
 }
 
 async function deleteSprint(sprint) {
-  if (!confirm(t('sprint.delete_sprint_confirm'))) return
+  if (!await ui.confirm(t('sprint.delete_sprint_confirm'))) return
   try {
     await sprintStore.deleteSprint(sprint.id)
   } catch (e) {
@@ -604,8 +604,12 @@ const yTicks = computed(() => {
 }
 
 .card-count {
-  font-size: 12px;
-  color: var(--color-text-muted);
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 9999px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .backlog-empty {
@@ -848,15 +852,5 @@ const yTicks = computed(() => {
 
 .velocity-table { max-width: 500px; }
 
-.btn-warning {
-  background: var(--color-warning, #f59e0b);
-  color: #fff;
-  border: none;
-  border-radius: var(--border-radius, 6px);
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.btn-warning:hover { opacity: .9; }
+
 </style>

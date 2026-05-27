@@ -508,7 +508,7 @@ async function togglePin() {
 }
 
 async function deleteTopic() {
-  if (!confirm('Delete this topic and all replies?')) return
+  if (!await ui.confirm('Delete this topic and all replies?')) return
   try {
     await topicsApi.delete(slug.value, activeTopic.value.id)
     activeTopic.value = null
@@ -554,7 +554,7 @@ async function saveReplyEdit(reply) {
 }
 
 async function deleteReply(reply) {
-  if (!confirm('Delete this reply?')) return
+  if (!await ui.confirm('Delete this reply?')) return
   try {
     await topicsApi.deleteReply(slug.value, activeTopic.value.id, reply.id)
     replies.value = replies.value.filter(r => r.id !== reply.id)

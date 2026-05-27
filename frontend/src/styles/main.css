@@ -201,6 +201,13 @@ input, textarea, select {
 }
 .btn-danger:hover { background: var(--color-danger-hover); }
 
+.btn-warning {
+  background: var(--color-warning);
+  color: #fff;
+  border-color: var(--color-warning);
+}
+.btn-warning:hover { opacity: 0.9; }
+
 .btn-ghost {
   background: transparent;
   color: var(--color-text-muted);
@@ -209,6 +216,9 @@ input, textarea, select {
 .btn-ghost:hover { background: var(--color-bg); color: var(--color-text); }
 
 .btn-sm { height: 28px; padding: 0 10px; font-size: 13px; }
+
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.page-header h1 { font-size: 22px; font-weight: 700; margin: 0; }
 
 .form-group { margin-bottom: 16px; }
 .form-label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 13px; }
@@ -274,10 +284,10 @@ input.form-input, select.form-input { height: 36px; }
   animation: slideIn .2s ease;
 }
 
-.toast-success  { background: #16a34a; }
+.toast-success  { background: var(--color-success); }
 .toast-error    { background: var(--color-danger); }
 .toast-info     { background: var(--color-primary); }
-.toast-mention  { background: #7c3aed; max-width: 320px; font-weight: normal; }
+.toast-mention  { background: var(--color-primary); max-width: 320px; font-weight: normal; }
 
 @keyframes slideIn {
   from { transform: translateX(100%); opacity: 0; }

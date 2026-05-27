@@ -491,6 +491,7 @@
     "create": "Stofna",
     "loading": "Hleður...",
     "error": "Villa kom upp",
+    "confirm": "Confirm",
     "confirm_delete": "Ertu viss um að þú viljir eyða þessu?",
     "yes": "Já",
     "no": "Nei",
@@ -773,6 +774,7 @@
     "no_entries_group": "Engar færslur",
     "week_n": "Vika {n}",
     "refresh": "Uppfæra",
+    "confirm": "Confirm",
     "confirm_delete": "Eyða þessari tímafærslu?",
     "load_error": "Hleðsla mistókst.",
     "save_error": "Vistun mistókst.",
@@ -985,6 +987,7 @@
     "cancelled": "Aðgerð hætt við",
     "error": "Aðgerð mistókst",
     "delete_error": "Fjarlæging mistókst",
+    "confirm": "Confirm",
     "confirm_delete": "Fjarlægja aðgangslykil \"{name}\"?",
     "delete_aria": "Fjarlægja aðgangslykil {name}"
   },

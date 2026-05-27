@@ -653,7 +653,7 @@ async function generatePersonalKey() {
 }
 
 async function revokePersonalKey(key) {
-  if (!confirm('Revoke this API key?')) return
+  if (!await ui.confirm('Revoke this API key?')) return
   try {
     await authApi.deleteApiKey(key.id)
     loadPersonalKeys()
@@ -706,7 +706,7 @@ async function registerPasskey() {
 }
 
 async function deletePasskey(pk) {
-  if (!confirm($t('passkey.confirm_delete', { name: pk.name }))) return
+  if (!await ui.confirm($t('passkey.confirm_delete', { name: pk.name }))) return
   try {
     await passkeysApi.delete(pk.id)
     passkeys.value = passkeys.value.filter((p) => p.id !== pk.id)

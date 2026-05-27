@@ -711,7 +711,7 @@ async function saveEdit() {
 }
 
 async function doDelete() {
-  if (!confirm(this.$t?.('customer.delete_confirm') || 'Delete this customer?')) return
+  if (!await ui.confirm(this.$t?.('customer.delete_confirm') || 'Delete this customer?')) return
   try {
     await customersApi.delete(custId.value)
     await custStore.fetchCustomers()
@@ -794,7 +794,7 @@ async function saveContract() {
 }
 
 async function deleteContract(grp) {
-  if (!confirm('Delete contract "' + grp.name + '"?')) return
+  if (!await ui.confirm('Delete contract "' + grp.name + '"?')) return
   try {
     await customersApi.deleteContract(custId.value, grp.id)
     await load()
@@ -963,11 +963,6 @@ async function deleteContract(grp) {
 .icon-btn:hover { background: var(--color-bg); color: var(--color-text); }
 .icon-danger:hover { color: var(--color-danger, #ef4444); }
 
-.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: 13px; }
-.btn-primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
-.btn-danger { background: var(--color-danger, #ef4444); color: #fff; border-color: var(--color-danger, #ef4444); }
-.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .form-group { margin-bottom: 12px; }
 .form-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--color-text-muted); }

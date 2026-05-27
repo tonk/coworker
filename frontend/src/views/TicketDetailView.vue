@@ -745,7 +745,7 @@ async function logTime() {
 }
 
 async function deleteTimeEntry(te) {
-  if (!confirm('Delete this time entry?')) return
+  if (!await ui.confirm('Delete this time entry?')) return
   try {
     await timeEntriesApi.remove(te.id)
     ticketTimeEntries.value = ticketTimeEntries.value.filter(e => e.id !== te.id)
@@ -755,7 +755,7 @@ async function deleteTimeEntry(te) {
 }
 
 async function deleteTicket() {
-  if (!confirm('Delete this ticket?')) return
+  if (!await ui.confirm('Delete this ticket?')) return
   try {
     await ticketsApi.delete(customerId.value, ticketId.value)
     ui.success('Ticket deleted')
@@ -874,8 +874,8 @@ async function deleteTicket() {
 .title-input { font-size: 22px; font-weight: 700; width: 100%; }
 .reminder-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 8px 12px; background: #f0e6ff; border-radius: 6px; }
 .reminder-label { font-size: 12px; font-weight: 600; color: #6b21a8; }
-.reminder-row :deep(.dp-trigger) { color: #6b21a8; border-color: rgba(107,33,168,0.3); background: transparent; font-weight: 600; }
-.reminder-row :deep(.dp-trigger:hover) { background: rgba(107,33,168,0.1); }
+.reminder-row :deep(.dp-trigger) { color: #6b21a8; border-color: color-mix(in srgb, #6b21a8 30%, transparent); background: transparent; font-weight: 600; }
+.reminder-row :deep(.dp-trigger:hover) { background: color-mix(in srgb, #6b21a8 10%, transparent); }
 .reminder-row :deep(.dp-trigger-empty) { color: #6b21a8; opacity: 0.6; }
 
 /* Time tracking section */

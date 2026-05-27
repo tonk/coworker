@@ -456,6 +456,7 @@
     "create": "Erstellen",
     "loading": "Laden...",
     "error": "Ein Fehler ist aufgetreten",
+    "confirm": "Confirm",
     "confirm_delete": "Möchten Sie dies wirklich löschen?",
     "yes": "Ja",
     "no": "Nein",
@@ -773,6 +774,7 @@
     "no_entries_group": "Keine Einträge",
     "week_n": "Woche {n}",
     "refresh": "Aktualisieren",
+    "confirm": "Confirm",
     "confirm_delete": "Diesen Zeiteintrag löschen?",
     "load_error": "Laden fehlgeschlagen.",
     "save_error": "Speichern fehlgeschlagen.",
@@ -985,6 +987,7 @@
     "cancelled": "Passkey-Vorgang abgebrochen",
     "error": "Passkey-Vorgang fehlgeschlagen",
     "delete_error": "Entfernen fehlgeschlagen",
+    "confirm": "Confirm",
     "confirm_delete": "Passkey „{name}\" entfernen?",
     "delete_aria": "Passkey {name} entfernen"
   },

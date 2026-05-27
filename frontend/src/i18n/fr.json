@@ -456,6 +456,7 @@
     "create": "Créer",
     "loading": "Chargement...",
     "error": "Une erreur s'est produite",
+    "confirm": "Confirm",
     "confirm_delete": "Êtes-vous sûr de vouloir supprimer ceci ?",
     "yes": "Oui",
     "no": "Non",
@@ -773,6 +774,7 @@
     "no_entries_group": "Aucune entrée",
     "week_n": "Semaine {n}",
     "refresh": "Actualiser",
+    "confirm": "Confirm",
     "confirm_delete": "Supprimer cette entrée de temps ?",
     "load_error": "Échec du chargement.",
     "save_error": "Échec de l'enregistrement.",
@@ -985,6 +987,7 @@
     "cancelled": "Opération annulée",
     "error": "Opération échouée",
     "delete_error": "Échec de la suppression",
+    "confirm": "Confirm",
     "confirm_delete": "Supprimer la clé d'accès « {name} » ?",
     "delete_aria": "Supprimer la clé d'accès {name}"
   },

@@ -1335,7 +1335,7 @@ function replyTo(comment) {
 }
 
 async function confirmDelete() {
-  if (!confirm('Delete this card?')) return
+  if (!await ui.confirm('Delete this card?')) return
   try {
     await boardStore.deleteCard(props.card.id, props.card.column_id)
     emit('deleted')

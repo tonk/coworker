@@ -540,7 +540,7 @@ const notificationsStore = useNotificationsStore()
 function isOnline(userId) {
   return sidebarStore.chatUsers.some(u => u.id === userId)
 }
-const { formatTime } = useDateFormat()
+const { formatTime, formatDate } = useDateFormat()
 const { layout, setLayout } = useChatLayout()
 const { notifyEnabled, toggleNotify, desktopNotify, shouldNotifyNow } = useChatNotify()
 const ui = useUIStore()
@@ -1197,7 +1197,7 @@ async function addMember(user) {
 }
 
 async function removeMember(member) {
-  if (!confirm(t('dm.remove_member_confirm'))) return
+  if (!await ui.confirm(t('dm.remove_member_confirm'))) return
   try {
     const { data } = await messagesApi.removeMember(activeConv.value.id, member.user_id)
     if (data?.conversation_deleted) {
@@ -1330,7 +1330,7 @@ function dayLabel(dateStr) {
     a.getDate() === b.getDate()
   if (sameDay(d, now)) return 'Today'
   if (sameDay(d, yesterday)) return 'Yesterday'
-  return d.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
+  return formatDate(d)
 }
 </script>
 

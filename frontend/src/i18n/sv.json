@@ -491,6 +491,7 @@
     "create": "Skapa",
     "loading": "Laddar...",
     "error": "Ett fel inträffade",
+    "confirm": "Confirm",
     "confirm_delete": "Är du säker på att du vill ta bort det här?",
     "yes": "Ja",
     "no": "Nej",
@@ -773,6 +774,7 @@
     "no_entries_group": "Inga poster",
     "week_n": "Vecka {n}",
     "refresh": "Uppdatera",
+    "confirm": "Confirm",
     "confirm_delete": "Ta bort den här tidsposten?",
     "load_error": "Det gick inte att läsa in.",
     "save_error": "Det gick inte att spara.",
@@ -985,6 +987,7 @@
     "cancelled": "Åtgärden avbröts",
     "error": "Åtgärden misslyckades",
     "delete_error": "Borttagning misslyckades",
+    "confirm": "Confirm",
     "confirm_delete": "Ta bort lösennyckeln \"{name}\"?",
     "delete_aria": "Ta bort lösennyckel {name}"
   },

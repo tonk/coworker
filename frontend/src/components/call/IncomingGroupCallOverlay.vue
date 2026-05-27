@@ -128,8 +128,8 @@ onUnmounted(() => document.removeEventListener('keydown', onKeyDown))
 }
 .call-btn:hover { opacity: 0.88; transform: scale(1.06); }
 .call-btn:active { transform: scale(0.96); }
-.accept-btn { background: #3b82f6; }
-.decline-btn { background: #ef4444; }
+.accept-btn { background: var(--color-success); }
+.decline-btn { background: var(--color-danger); }
 
 .call-overlay-enter-from,
 .call-overlay-leave-to { opacity: 0; transform: translateY(12px) scale(0.95); }

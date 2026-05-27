@@ -169,7 +169,7 @@ function onCardMoved() {
 }
 
 async function completeSprint() {
-  if (!confirm(t('sprint.complete_sprint_confirm'))) return
+  if (!await ui.confirm(t('sprint.complete_sprint_confirm'))) return
   try {
     await sprintStore.completeSprint(sprintStore.activeSprint.id)
     ui.success(t('sprint.complete_success'))
@@ -241,15 +241,5 @@ async function completeSprint() {
   justify-content: center;
 }
 
-.btn-warning {
-  background: var(--color-warning, #f59e0b);
-  color: #fff;
-  border: none;
-  border-radius: var(--border-radius, 6px);
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.btn-warning:hover { opacity: .9; }
+
 </style>

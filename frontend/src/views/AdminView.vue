@@ -1559,7 +1559,7 @@ async function saveNews() {
   }
 }
 async function deleteNewsItem(item) {
-  if (!confirm(t('admin.news_delete_confirm', { title: item.title }))) return
+  if (!await ui.confirm(t('admin.news_delete_confirm', { title: item.title }))) return
   await newsApi.adminDelete(item.id)
   await loadNews()
 }
@@ -1738,7 +1738,7 @@ async function saveGroup() {
 }
 
 async function deleteGroup(g) {
-  if (!confirm(t('groups.delete_confirm'))) return
+  if (!await ui.confirm(t('groups.delete_confirm'))) return
   try {
     await groupsApi.delete(g.id)
     groups.value = groups.value.filter(x => x.id !== g.id)
@@ -1972,7 +1972,7 @@ async function restoreProject(project) {
 }
 
 async function purgeProject(project) {
-  if (!confirm(t('admin.purge_project_confirm', { name: project.name }))) return
+  if (!await ui.confirm(t('admin.purge_project_confirm', { name: project.name }))) return
   try {
     await adminApi.purgeProject(project.id)
     projects.value = projects.value.filter(p => p.id !== project.id)
@@ -2205,7 +2205,7 @@ async function createBackup() {
 }
 
 async function restoreBackup(b) {
-  if (!confirm(`Replace the current database with "${b.filename}"? All changes since this backup will be lost.`)) return
+  if (!await ui.confirm(`Replace the current database with "${b.filename}"? All changes since this backup will be lost.`)) return
   restoringBackup.value = b.filename
   try {
     await adminApi.restoreBackup(b.filename)
@@ -2227,7 +2227,7 @@ async function downloadBackup(b) {
 }
 
 async function deleteBackup(b) {
-  if (!confirm(`Delete backup "${b.filename}"?`)) return
+  if (!await ui.confirm(`Delete backup "${b.filename}"?`)) return
   try {
     await adminApi.deleteBackup(b.filename)
     backups.value = backups.value.filter(x => x.filename !== b.filename)
@@ -2401,7 +2401,7 @@ async function toggleFeature(user, field, value) {
 }
 
 async function deleteUser(user) {
-  if (!confirm(`Delete user ${user.username}?`)) return
+  if (!await ui.confirm(`Delete user ${user.username}?`)) return
   try {
     await adminApi.deleteUser(user.id)
     users.value = users.value.filter(u => u.id !== user.id)
@@ -2413,7 +2413,7 @@ async function deleteUser(user) {
 }
 
 async function adminResetMFA(user) {
-  if (!confirm(`Disable MFA for ${user.display_name || user.username}?`)) return
+  if (!await ui.confirm(`Disable MFA for ${user.display_name || user.username}?`)) return
   try {
     const { data } = await adminApi.disableUserMFA(user.id)
     // Update both the modal and the list
@@ -2577,7 +2577,7 @@ async function toggleArchive(project) {
 }
 
 async function deleteProject(project) {
-  if (!confirm(`Delete project "${project.name}"?`)) return
+  if (!await ui.confirm(`Delete project "${project.name}"?`)) return
   try {
     await adminApi.deleteProject(project.id)
     projects.value = projects.value.filter(p => p.id !== project.id)
@@ -2637,7 +2637,7 @@ async function saveEditCustomer() {
 }
 
 async function deleteAdminCustomer(c) {
-  if (!confirm(`Delete customer "${c.name}"? All linked projects will be detached.`)) return
+  if (!await ui.confirm(`Delete customer "${c.name}"? All linked projects will be detached.`)) return
   try {
     await customersApi.delete(c.id)
     adminCustomers.value = adminCustomers.value.filter(ac => ac.id !== c.id)
@@ -2759,7 +2759,7 @@ async function saveEditTTProject() {
 }
 
 async function deleteTTProject(p) {
-  if (!confirm(t('timeTracking.tt_project_delete_confirm'))) return
+  if (!await ui.confirm(t('timeTracking.tt_project_delete_confirm'))) return
   try {
     await projectsApi.deleteTimeTracking(p.id)
     adminTTProjects.value = adminTTProjects.value.filter(x => x.id !== p.id)
@@ -2786,7 +2786,7 @@ async function saveEditTTCustomer() {
 }
 
 async function deleteTTCustomer(c) {
-  if (!confirm(t('timeTracking.tt_customer_delete_confirm'))) return
+  if (!await ui.confirm(t('timeTracking.tt_customer_delete_confirm'))) return
   try {
     await customersApi.deleteTimeTracking(c.id)
     adminTTCustomers.value = adminTTCustomers.value.filter(x => x.id !== c.id)

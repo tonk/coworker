@@ -224,19 +224,4 @@ async function doCreate() {
   margin-top: 4px;
 }
 
-.btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text);
-  cursor: pointer;
-  font-size: 14px;
-}
-.btn-primary {
-  background: var(--color-primary);
-  color: #fff;
-  border-color: var(--color-primary);
-}
-.btn:disabled { opacity: .5; cursor: not-allowed; }
 </style>

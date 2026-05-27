@@ -352,7 +352,7 @@ async function onRenameColumn({ columnId, name }) {
 }
 
 async function onDeleteColumn(columnId) {
-  if (!confirm(t('board.delete_column_confirm'))) return
+  if (!await ui.confirm(t('board.delete_column_confirm'))) return
   try {
     await projectsApi.deleteColumn(slug.value, columnId)
     boardStore.columns = boardStore.columns.filter(c => c.id !== columnId)

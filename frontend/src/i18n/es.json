@@ -456,6 +456,7 @@
     "create": "Crear",
     "loading": "Cargando...",
     "error": "Se produjo un error",
+    "confirm": "Confirm",
     "confirm_delete": "¿Está seguro de que desea eliminar esto?",
     "yes": "Sí",
     "no": "No",
@@ -773,6 +774,7 @@
     "no_entries_group": "Sin entradas",
     "week_n": "Semana {n}",
     "refresh": "Actualizar",
+    "confirm": "Confirm",
     "confirm_delete": "¿Eliminar esta entrada de tiempo?",
     "load_error": "Error al cargar.",
     "save_error": "Error al guardar.",
@@ -985,6 +987,7 @@
     "cancelled": "Operación cancelada",
     "error": "La operación falló",
     "delete_error": "Error al eliminar",
+    "confirm": "Confirm",
     "confirm_delete": "¿Eliminar la clave de acceso «{name}»?",
     "delete_aria": "Eliminar clave de acceso {name}"
   },

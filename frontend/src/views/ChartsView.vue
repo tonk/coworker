@@ -194,6 +194,7 @@ import { useUIStore } from '@/stores/ui'
 import { projectsApi } from '@/api/projects'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { useDateFormat } from '@/composables/useDateFormat'
 
 Chart.register(...registerables)
 
@@ -202,6 +203,7 @@ const route = useRoute()
 const projectStore = useProjectStore()
 const sprintStore = useSprintStore()
 const ui = useUIStore()
+const { formatDate } = useDateFormat()
 
 const slug = computed(() => route.params.slug)
 
@@ -285,7 +287,6 @@ const sprintsWithDates = computed(() => sprintStore.sprints.filter(s => s.start_
 
 function projectAvatar(project) { return resolveAssetUrl(project?.avatar || '') }
 function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() }
-function formatDate(d) { return d ? new Date(d).toLocaleDateString() : '' }
 
 // ── Velocity + Throughput ────────────────────────────────────────────────────
 
@@ -557,7 +558,7 @@ async function saveRelease() {
 }
 
 async function confirmDeleteRelease(release) {
-  if (!confirm(`${t('sprint.delete_release')} "${release.name}"?`)) return
+  if (!await ui.confirm(`${t('sprint.delete_release')} "${release.name}"?`)) return
   try {
     await projectsApi.deleteRelease(slug.value, release.id)
     releases.value = releases.value.filter(r => r.id !== release.id)
@@ -593,7 +594,7 @@ function renderCycleTime() {
         tooltip: { callbacks: { label: ctx => `${ctx.raw.label}: ${ctx.raw.y} days` } },
       },
       scales: {
-        x: { type: 'linear', ticks: { callback: v => new Date(v).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) } },
+        x: { type: 'linear', ticks: { callback: v => formatDate(new Date(v)) } },
         y: { beginAtZero: true, title: { display: true, text: t('sprint.days_open') } },
       },
     },

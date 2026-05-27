@@ -491,6 +491,7 @@
     "create": "Opret",
     "loading": "Indlæser...",
     "error": "Der opstod en fejl",
+    "confirm": "Confirm",
     "confirm_delete": "Er du sikker på, at du vil slette dette?",
     "yes": "Ja",
     "no": "Nej",
@@ -773,6 +774,7 @@
     "no_entries_group": "Ingen poster",
     "week_n": "Uge {n}",
     "refresh": "Opdater",
+    "confirm": "Confirm",
     "confirm_delete": "Slet denne tidspost?",
     "load_error": "Indlæsning mislykkedes.",
     "save_error": "Lagring mislykkedes.",
@@ -985,6 +987,7 @@
     "cancelled": "Handling annulleret",
     "error": "Handling mislykkedes",
     "delete_error": "Fjernelse mislykkedes",
+    "confirm": "Confirm",
     "confirm_delete": "Fjern adgangsnøgle \"{name}\"?",
     "delete_aria": "Fjern adgangsnøgle {name}"
   },

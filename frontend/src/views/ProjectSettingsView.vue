@@ -632,7 +632,7 @@ function groupAvatar(group) {
 }
 
 async function confirmDelete() {
-  if (!confirm('Delete this project? This cannot be undone.')) return
+  if (!await ui.confirm('Delete this project? This cannot be undone.')) return
   try {
     await projectStore.deleteProject(slug.value)
     router.push('/')
@@ -651,7 +651,7 @@ async function updateRole(member) {
 }
 
 async function removeMember(member) {
-  if (!confirm('Remove this member?')) return
+  if (!await ui.confirm('Remove this member?')) return
   await projectsApi.removeMember(slug.value, member.user.id)
   loadMembers()
 }
@@ -690,7 +690,7 @@ async function createLabel() {
 }
 
 async function deleteLabel(label) {
-  if (!confirm('Delete this label?')) return
+  if (!await ui.confirm('Delete this label?')) return
   await projectsApi.deleteLabel(slug.value, label.id)
   loadLabels()
 }
@@ -712,7 +712,7 @@ async function generateKey() {
 }
 
 async function revokeKey(key) {
-  if (!confirm('Revoke this API key?')) return
+  if (!await ui.confirm('Revoke this API key?')) return
   await projectsApi.deleteApiKey(slug.value, key.id)
   loadApiKeys()
 }
@@ -749,13 +749,13 @@ async function createWebhook() {
 }
 
 async function deleteWebhook(wh) {
-  if (!confirm('Delete this webhook?')) return
+  if (!await ui.confirm('Delete this webhook?')) return
   await projectsApi.deleteWebhook(slug.value, wh.id)
   await loadWebhooks()
 }
 
 async function regenerateWebhook(wh) {
-  if (!confirm('Regenerate token? The old token will stop working immediately.')) return
+  if (!await ui.confirm('Regenerate token? The old token will stop working immediately.')) return
   try {
     const { data } = await projectsApi.regenerateWebhook(slug.value, wh.id)
     createdWebhookToken.value = data.token
@@ -807,7 +807,7 @@ async function loadDeletedCards() {
 }
 
 async function permanentDeleteCard(card) {
-  if (!confirm(`Permanently delete ${project.value?.key_prefix}-${card.card_number} "${card.title}"? This cannot be undone.`)) return
+  if (!await ui.confirm(`Permanently delete ${project.value?.key_prefix}-${card.card_number} "${card.title}"? This cannot be undone.`)) return
   try {
     await projectsApi.permanentDeleteCard(slug.value, card.id)
     deletedCards.value = deletedCards.value.filter(c => c.id !== card.id)
@@ -822,7 +822,7 @@ async function permanentDeleteCard(card) {
 .settings-main { flex: 1; padding: 32px 24px; }
 .settings-container { max-width: 800px; margin: 0 auto; }
 .settings-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
-.settings-header h1 { font-size: 20px; font-weight: 700; }
+.settings-header h1 { font-size: 22px; font-weight: 700; }
 
 .settings-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--color-border); margin-bottom: 28px; }
 .tab { padding: 10px 20px; background: transparent; border: none; font-size: 14px; font-weight: 500; color: var(--color-text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
@@ -931,15 +931,15 @@ async function permanentDeleteCard(card) {
 .form-hint { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; }
 .board-type-badge {
   display: inline-block;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 1px 6px;
   border-radius: 9999px;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
 }
-.board-type-badge.kanban { background: #dbeafe; color: #1e40af; }
-.board-type-badge.scrum  { background: #dcfce7; color: #166534; }
+.board-type-badge.scrum  { background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); }
+.board-type-badge.kanban { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
 .project-avatar-preview {
   margin-top: 8px;
   width: 40px;

@@ -302,7 +302,7 @@ const authUser = computed(() => auth.user)
 const messagesEl = ref(null)
 const textareaEl = ref(null)
 const draft = ref('')
-const { formatTime } = useDateFormat()
+const { formatTime, formatDate } = useDateFormat()
 const { layout, setLayout } = useChatLayout()
 const { notifyEnabled, toggleNotify, desktopNotify, shouldNotifyNow } = useChatNotify()
 const { addProjectChatUnread, clearProjectChatUnread } = useProjectChatUnread()
@@ -710,7 +710,7 @@ function dayLabel(dateStr) {
 
   if (sameDay(d, now)) return 'Today'
   if (sameDay(d, yesterday)) return 'Yesterday'
-  return d.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
+  return formatDate(d)
 }
 </script>
 

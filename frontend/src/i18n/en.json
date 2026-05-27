@@ -492,6 +492,7 @@
     "create": "Create",
     "loading": "Loading...",
     "error": "An error occurred",
+    "confirm": "Confirm",
     "confirm_delete": "Are you sure you want to delete this?",
     "yes": "Yes",
     "no": "No",

@@ -25,5 +25,19 @@ export const useUIStore = defineStore('ui', () => {
     }, 6000)
   }
 
-  return { toasts, toast, success, error, info, mention }
+  // Promise-based confirm dialog
+  const confirmState = ref(null) // { message, resolve }
+
+  function confirm(message) {
+    return new Promise(resolve => {
+      confirmState.value = { message, resolve }
+    })
+  }
+
+  function _confirmResolve(result) {
+    confirmState.value?.resolve(result)
+    confirmState.value = null
+  }
+
+  return { toasts, toast, success, error, info, mention, confirmState, confirm, _confirmResolve }
 })

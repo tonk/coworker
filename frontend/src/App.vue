@@ -28,6 +28,7 @@
   </div>
   <RouterView v-else />
   <ToastContainer />
+  <ConfirmDialog />
   <IncomingCallOverlay />
   <IncomingGroupCallOverlay />
   <ActiveCallBar />
@@ -51,6 +52,7 @@ import { useProjectChatUnread } from '@/composables/useProjectChatUnread'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import UpdateBanner from '@/components/common/UpdateBanner.vue'
 import { applyUserPreferences } from '@/composables/useUserPreferences'
 import { useUpdateCheck } from '@/composables/useUpdateCheck'

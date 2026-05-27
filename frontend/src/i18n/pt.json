@@ -491,6 +491,7 @@
     "create": "Criar",
     "loading": "A carregar...",
     "error": "Ocorreu um erro",
+    "confirm": "Confirm",
     "confirm_delete": "Tem a certeza de que quer eliminar isto?",
     "yes": "Sim",
     "no": "Não",
@@ -773,6 +774,7 @@
     "no_entries_group": "Sem entradas",
     "week_n": "Semana {n}",
     "refresh": "Atualizar",
+    "confirm": "Confirm",
     "confirm_delete": "Eliminar esta entrada de tempo?",
     "load_error": "Falha ao carregar.",
     "save_error": "Falha ao guardar.",
@@ -985,6 +987,7 @@
     "cancelled": "Operação cancelada",
     "error": "Operação falhou",
     "delete_error": "Falha ao remover",
+    "confirm": "Confirm",
     "confirm_delete": "Remover chave de acesso \"{name}\"?",
     "delete_aria": "Remover chave de acesso {name}"
   },

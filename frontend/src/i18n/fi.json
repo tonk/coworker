@@ -491,6 +491,7 @@
     "create": "Luo",
     "loading": "Ladataan...",
     "error": "Tapahtui virhe",
+    "confirm": "Confirm",
     "confirm_delete": "Haluatko varmasti poistaa tämän?",
     "yes": "Kyllä",
     "no": "Ei",
@@ -773,6 +774,7 @@
     "no_entries_group": "Ei merkintöjä",
     "week_n": "Viikko {n}",
     "refresh": "Päivitä",
+    "confirm": "Confirm",
     "confirm_delete": "Poistetaanko tämä aikamerkintä?",
     "load_error": "Lataus epäonnistui.",
     "save_error": "Tallennus epäonnistui.",
@@ -985,6 +987,7 @@
     "cancelled": "Toiminto peruutettiin",
     "error": "Toiminto epäonnistui",
     "delete_error": "Poistaminen epäonnistui",
+    "confirm": "Confirm",
     "confirm_delete": "Poistetaanko salausavain \"{name}\"?",
     "delete_aria": "Poista salausavain {name}"
   },

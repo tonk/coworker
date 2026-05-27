@@ -456,6 +456,7 @@
     "create": "Aanmaken",
     "loading": "Laden...",
     "error": "Er is een fout opgetreden",
+    "confirm": "Confirm",
     "confirm_delete": "Weet u zeker dat u dit wilt verwijderen?",
     "yes": "Ja",
     "no": "Nee",
@@ -773,6 +774,7 @@
     "no_entries_group": "Geen invoer",
     "week_n": "Week {n}",
     "refresh": "Vernieuwen",
+    "confirm": "Confirm",
     "confirm_delete": "Deze tijdinvoer verwijderen?",
     "load_error": "Laden mislukt.",
     "save_error": "Opslaan mislukt.",
@@ -985,6 +987,7 @@
     "cancelled": "Passkey-actie geannuleerd",
     "error": "Passkey-actie mislukt",
     "delete_error": "Verwijderen mislukt",
+    "confirm": "Confirm",
     "confirm_delete": "Passkey \"{name}\" verwijderen?",
     "delete_aria": "Passkey {name} verwijderen"
   },

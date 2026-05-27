@@ -37,7 +37,7 @@
                   class="wk-cal-day"
                   :class="{ 'wk-cal-other': cell.otherMonth, 'wk-cal-sel': cell.inSelectedWeek, 'wk-cal-today': cell.isToday }"
                   @click.stop="goToDate(cell.date)"
-                  :aria-label="cell.date.toLocaleDateString()"
+                  :aria-label="formatDate(cell.date)"
                   :aria-pressed="cell.inSelectedWeek">{{ cell.day }}</button>
               </template>
             </div>
@@ -2611,7 +2611,7 @@ async function saveTTProject() {
 }
 
 async function deleteTTProject(p) {
-  if (!confirm(t('timeTracking.tt_project_delete_confirm'))) return
+  if (!await ui.confirm(t('timeTracking.tt_project_delete_confirm'))) return
   try {
     await projectsApi.deleteTimeTracking(p.id)
     ttProjects.value = ttProjects.value.filter(x => x.id !== p.id)
@@ -2668,7 +2668,7 @@ async function saveTTCustomer() {
 }
 
 async function deleteTTCustomer(c) {
-  if (!confirm(t('timeTracking.tt_customer_delete_confirm'))) return
+  if (!await ui.confirm(t('timeTracking.tt_customer_delete_confirm'))) return
   try {
     await customersApi.deleteTimeTracking(c.id)
     ttCustomers.value = ttCustomers.value.filter(x => x.id !== c.id)
