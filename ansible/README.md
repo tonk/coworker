@@ -66,7 +66,7 @@ Only one authentication method should be used at a time.
 |---|---|
 | `ansilabnl.warmdesk.user` | Manage WarmDesk users |
 | `ansilabnl.warmdesk.user_options` | Manage per-user preferences (locale, timezone, UI options) |
-| `ansilabnl.warmdesk.user_credential` | Manage user feature flags (board, chat, helpdesk, time tracking) |
+| `ansilabnl.warmdesk.user_access` | Manage user feature flags and global role (board, chat, helpdesk, time tracking) |
 | `ansilabnl.warmdesk.api_key` | Manage API keys for a user |
 | `ansilabnl.warmdesk.group` | Manage user groups and their project/customer access (admin only) |
 

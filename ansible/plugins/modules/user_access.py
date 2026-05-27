@@ -5,8 +5,8 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: user_credential
-short_description: Manage WarmDesk user feature flags (board, chat, ticket rights)
+module: user_access
+short_description: Manage WarmDesk user feature flags and global role
 version_added: "0.4.0"
 author: "Ton Kersten (@tonk)"
 description:
@@ -80,7 +80,7 @@ options:
 
 EXAMPLES = r"""
 - name: Grant board and chat access to a user
-  ansilabnl.warmdesk.user_credential:
+  ansilabnl.warmdesk.user_access:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_token: "{{ warmdesk_token }}"
     username: alice
@@ -88,14 +88,14 @@ EXAMPLES = r"""
     chat_enabled: true
 
 - name: Grant helpdesk access to a user
-  ansilabnl.warmdesk.user_credential:
+  ansilabnl.warmdesk.user_access:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ api_key }}"
     username: bob
     helpdesk_enabled: true
 
 - name: Grant time tracking and viewer access
-  ansilabnl.warmdesk.user_credential:
+  ansilabnl.warmdesk.user_access:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_token: "{{ warmdesk_token }}"
     username: charlie
@@ -103,7 +103,7 @@ EXAMPLES = r"""
     time_tracking_viewer: true
 
 - name: Revoke all feature access (deactivate)
-  ansilabnl.warmdesk.user_credential:
+  ansilabnl.warmdesk.user_access:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ api_key }}"
     username: departed_user
@@ -113,14 +113,14 @@ EXAMPLES = r"""
     time_tracking_enabled: false
 
 - name: Soft-disable a user account
-  ansilabnl.warmdesk.user_credential:
+  ansilabnl.warmdesk.user_access:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_token: "{{ warmdesk_token }}"
     username: bob
     is_active: false
 
 - name: Promote user to admin
-  ansilabnl.warmdesk.user_credential:
+  ansilabnl.warmdesk.user_access:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_token: "{{ warmdesk_token }}"
     username: alice

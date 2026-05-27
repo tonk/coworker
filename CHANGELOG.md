@@ -104,8 +104,8 @@
   is resolved by name; supports check mode.
 - **New module `sla_policy`** — manage SLA policies via the admin API; name is
   used as the idempotency key; supports check mode.
-- **New module `user_credential`** — manage user feature flags (board, chat,
-  helpdesk, time tracking) via the admin API; supports check mode.
+- **New module `user_access`** — manage user feature flags (board, chat,
+  helpdesk, time tracking) and global role via the admin API; supports check mode.
 - Collection description updated to mention helpdesk / ticketing.
 
 ## v0.10.16 — 2025-05-25
