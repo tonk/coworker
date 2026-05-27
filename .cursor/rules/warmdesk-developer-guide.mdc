@@ -326,10 +326,13 @@ Stored on `User.DashboardDefault` (GORM default `"boards"`). Values: `"boards"` 
 
 ## Time reporting
 
-Two reporting surfaces exist:
+All reporting lives in **`TimeTrackingView.vue`** under `/time-tracking`, which has three tabs:
 
-- **`ReportView.vue`** — project-board time report. `GET /api/v1/reports/time` returns JSON; the table is rendered in Vue. Exports call the backend PDF/XLSX endpoints.
-- **`TimeTrackingView.vue`** — personal time-tracking sheet and report. Uses `/api/v1/time-entries/*` endpoints.
+- **Log Time** — weekly time sheet (requires `time_tracking_enabled`).
+- **Report** — personal time-tracking report. Uses `/api/v1/time-entries/*` endpoints (requires `time_tracking_enabled`).
+- **Board** — project-board time report extracted into `BoardReportPanel.vue`. `GET /api/v1/reports/time` returns JSON; the table is rendered in Vue. Exports call the backend PDF/XLSX endpoints (requires `can_view_reports`).
+
+The `/reports` route redirects to `/time-tracking?tab=board-report`. `ReportView.vue` is no longer a standalone route.
 
 ### Undeclarable time
 
@@ -459,7 +462,7 @@ The spec (`frontend/e2e/screenshots.spec.js`) logs in as `demo.admin` / `demo123
 | `04-card-detail.png` | Click first card on board |
 | `05-topics.png` | `/projects/website-redesign/topics`, open first topic |
 | `06-messages.png` | `/chats` (direct messages) |
-| `07-report.png` | `/reports` |
+| `07-report.png` | `/time-tracking` → Board tab |
 | `08-admin-users.png` | `/admin` (users tab) |
 | `09-admin-settings.png` | `/admin` → Settings tab |
 | `10-user-settings.png` | `/settings` |

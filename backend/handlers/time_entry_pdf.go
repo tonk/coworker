@@ -94,7 +94,11 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	ff := fontFamily
 	emp := employeeName
 	rpt := report
+	showPageNumbers := c.DefaultQuery("show_page_numbers", "1") != "0"
 	pdf.SetFooterFunc(func() {
+		if !showPageNumbers {
+			return
+		}
 		pdf.SetY(-12)
 		pdf.SetFont(ff, "", 8)
 		setTxt(pdf, clrMuted)
@@ -113,6 +117,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	pageBreakPerCustomer := groupBy == "customer" && c.Query("page_break") == "customer"
 	showAbbr := c.Query("show_abbr") == "1"
 	showCosts := c.Query("show_costs") == "1"
+	showUndeclarable := c.DefaultQuery("show_undeclarable", "1") != "0"
 
 	// Build contract info map for cost display (includes time slots for slot-aware costing).
 	var contractInfos map[uint]projectContractInfo
@@ -478,7 +483,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.CellFormat(colHours, rowH, fmtDecimalH(grp.DeclarableMinutes), "0", 1, "R", true, 0, "")
 
 		// Per-group undeclarable line (customer grouping only)
-		if groupBy == "customer" && grp.UndeclarableMinutes > 0 {
+		if showUndeclarable && groupBy == "customer" && grp.UndeclarableMinutes > 0 {
 			setFill(pdf, rgb{252, 245, 245})
 			setTxt(pdf, clrMuted)
 			pdf.SetFont(fontFamily, "", 8)
@@ -535,7 +540,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		}
 		pdf.CellFormat(colHours, rowH+1, fmtDecimalH(grandMinutes), "0", 1, "R", true, 0, "")
 
-		if groupBy == "customer" && report.UndeclarableMinutes > 0 {
+		if showUndeclarable && groupBy == "customer" && report.UndeclarableMinutes > 0 {
 			setFill(pdf, rgb{252, 245, 245})
 			setTxt(pdf, clrMuted)
 			pdf.SetFont(fontFamily, "", 8.5)

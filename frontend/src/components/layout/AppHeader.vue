@@ -17,8 +17,7 @@
         <span v-if="notificationsStore.hasUnread" class="nav-unread-dot" aria-hidden="true"></span>
         <span v-if="notificationsStore.hasUnread" class="sr-only">({{ $t('sidebar.unread_messages') }})</span>
       </RouterLink>
-      <RouterLink v-if="auth.canViewReports" to="/reports" class="header-nav-link" :class="{ active: route.path === '/reports' }">{{ $t('report.nav') }}</RouterLink>
-      <RouterLink v-if="auth.timeTrackingEnabled" to="/time-tracking" class="header-nav-link" :class="{ active: route.path.startsWith('/time-tracking') }">{{ $t('timeTracking.nav') }}</RouterLink>
+      <RouterLink v-if="auth.timeTrackingEnabled || auth.canViewReports" to="/time-tracking" class="header-nav-link" :class="{ active: route.path.startsWith('/time-tracking') }">{{ $t('timeTracking.nav') }}</RouterLink>
     </nav>
     <div class="header-right">
       <span class="presence-count" v-if="presenceCount > 0" :title="`${presenceCount} ${$t('presence.online')}`">
@@ -120,8 +119,7 @@
             <span v-if="notificationsStore.hasUnread" class="msg-unread-dot" aria-hidden="true"></span>
             <span v-if="notificationsStore.hasUnread" class="sr-only">({{ $t('sidebar.unread_messages') }})</span>
           </div>
-          <div class="dropdown-item" role="menuitem" v-if="auth.canViewReports" @click="navigate('/reports')">{{ $t('report.nav') }}</div>
-          <div class="dropdown-item" role="menuitem" v-if="auth.timeTrackingEnabled" @click="navigate('/time-tracking')">{{ $t('timeTracking.nav') }}</div>
+          <div class="dropdown-item" role="menuitem" v-if="auth.timeTrackingEnabled || auth.canViewReports" @click="navigate('/time-tracking')">{{ $t('timeTracking.nav') }}</div>
           <div class="dropdown-divider" role="separator"></div>
           <div class="dropdown-item" role="menuitem" @click="openShortcuts">{{ $t('nav.keyboard_shortcuts') }}</div>
           <div class="dropdown-item" role="menuitem" @click="openAbout">{{ $t('nav.about') }}</div>

@@ -4,7 +4,7 @@
 
     <!-- ── Top bar ─────────────────────────────────────────────────────────── -->
     <div class="tt-bar">
-      <div class="tt-employee">
+      <div class="tt-employee" v-show="mode !== 'board-report'">
         <span class="tt-emp-label">{{ $t('timeTracking.employee') }}</span>
         <select v-if="canViewOtherUsers" class="tt-user-select" v-model="selectedUserId" @change="onUserChange">
           <option :value="0">{{ $t('timeTracking.all_employees') }}</option>
@@ -13,7 +13,7 @@
         <strong v-else class="tt-emp-name">{{ displayName }}</strong>
       </div>
 
-      <div class="tt-week-nav">
+      <div class="tt-week-nav" v-show="mode !== 'board-report'">
         <button class="nav-btn" @click="shiftWeek(-1)" :title="$t('timeTracking.prev_week')" :aria-label="$t('timeTracking.prev_week')">&#9664;</button>
         <div class="wk-picker-wrap" ref="wkPickerRef">
           <button class="wk-label" @click="openWkPicker"
@@ -63,6 +63,7 @@
 
       <div class="tt-mode-tabs" role="tablist" aria-label="Time tracking mode">
         <button
+          v-if="auth.timeTrackingEnabled"
           id="tab-sheet"
           class="tt-mode-btn"
           role="tab"
@@ -81,10 +82,23 @@
           aria-controls="panel-report"
           :class="{ active: mode === 'report' }"
           @click="mode = 'report'"
+          v-if="auth.timeTrackingEnabled"
         >
           {{ $t('timeTracking.tab_report') }}
         </button>
-        <button class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
+        <button
+          v-if="auth.canViewReports"
+          id="tab-board-report"
+          class="tt-mode-btn"
+          role="tab"
+          :aria-selected="mode === 'board-report'"
+          aria-controls="panel-board-report"
+          :class="{ active: mode === 'board-report' }"
+          @click="mode = 'board-report'"
+        >
+          {{ $t('timeTracking.tab_board_report') }}
+        </button>
+        <button v-if="auth.timeTrackingEnabled" class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
       </div>
     </div>
 
@@ -458,63 +472,67 @@
         </div>
         <button class="btn btn-secondary" @click="loadReport">{{ $t('timeTracking.refresh') }}</button>
         <div class="tt-export-group" v-if="report && report.total_minutes > 0">
-          <div class="pdf-font-group">
-            <label class="filter-label">{{ $t('report.pdf_font') }}</label>
-            <select class="form-input" v-model="pdfFont">
-              <option value="inter">Inter</option>
-              <option value="roboto">Roboto</option>
-              <option value="opensans">Open Sans</option>
-              <option value="sourcecode">Source Code Pro</option>
-              <option value="freesans">{{ $t('report.pdf_font_freesans') }}</option>
-              <option value="freeserif">{{ $t('report.pdf_font_freeserif') }}</option>
-              <option value="freemono">{{ $t('report.pdf_font_freemono') }}</option>
-            </select>
-          </div>
-          <div class="pdf-font-group">
-            <label class="filter-label">{{ $t('report.pdf_lang') }}</label>
-            <select class="form-input" v-model="pdfLang">
-              <option value="auto">{{ $t('report.pdf_lang_auto') }}</option>
-              <option value="en">English</option>
-              <option value="nl">Nederlands</option>
-              <option value="de">Deutsch</option>
-              <option value="fr">Français</option>
-              <option value="es">Español</option>
-              <option value="da">Dansk</option>
-              <option value="sv">Svenska</option>
-              <option value="nb">Norsk</option>
-              <option value="fi">Suomi</option>
-              <option value="is">Íslenska</option>
-              <option value="pt">Português</option>
-              <option value="it">Italiano</option>
-            </select>
-          </div>
-          <div class="pdf-font-group" ref="pdfOptionsRef">
-            <span class="filter-label">&nbsp;</span>
-            <div class="pdf-options-wrapper">
-              <button
-                class="pdf-options-btn"
-                :class="{ 'is-active': pdfShowAbbr || (rpt.group_by === 'customer' && pdfPageBreak) }"
-                @click="pdfOptionsOpen = !pdfOptionsOpen"
-                :aria-expanded="String(pdfOptionsOpen)"
-                aria-haspopup="true"
-                :aria-label="$t('timeTracking.pdf_export_options')"
-              >
-                {{ $t('timeTracking.pdf_export_options') }}<span class="pdf-opts-chevron" :class="{ open: pdfOptionsOpen }">›</span>
-              </button>
-              <div v-if="pdfOptionsOpen" class="pdf-options-panel" role="menu">
-                <label class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowAbbr)">
-                  <input type="checkbox" v-model="pdfShowAbbr" />
-                  {{ $t('timeTracking.pdf_show_abbr') }}
-                </label>
-                <label v-if="rpt.group_by === 'customer'" class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfPageBreak)">
-                  <input type="checkbox" v-model="pdfPageBreak" />
-                  {{ $t('timeTracking.pdf_page_break_customer') }}
-                </label>
-                <label class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowCosts)">
-                  <input type="checkbox" v-model="pdfShowCosts" />
-                  {{ $t('timeTracking.show_costs') }}
-                </label>
+          <div class="pdf-options-wrapper" ref="pdfOptionsRef">
+            <button
+              class="pdf-options-btn"
+              :class="{ 'is-active': pdfShowAbbr || (rpt.group_by === 'customer' && pdfPageBreak) || !pdfShowPageNumbers || !pdfShowUndeclarable }"
+              @click="pdfOptionsOpen = !pdfOptionsOpen"
+              :aria-expanded="String(pdfOptionsOpen)"
+              aria-haspopup="true"
+              :aria-label="$t('timeTracking.pdf_export_options')"
+            >
+              {{ $t('timeTracking.pdf_export_options') }}<span class="pdf-opts-chevron" :class="{ open: pdfOptionsOpen }">›</span>
+            </button>
+            <div v-if="pdfOptionsOpen" class="pdf-options-panel" role="menu">
+              <div class="pdf-option-selects">
+                <label class="pdf-option-select-label" :for="'pdf-opt-font'">{{ $t('report.pdf_font') }}</label>
+                <select id="pdf-opt-font" class="form-input pdf-option-select" v-model="pdfFont">
+                  <option value="inter">Inter</option>
+                  <option value="roboto">Roboto</option>
+                  <option value="opensans">Open Sans</option>
+                  <option value="sourcecode">Source Code Pro</option>
+                  <option value="freesans">{{ $t('report.pdf_font_freesans') }}</option>
+                  <option value="freeserif">{{ $t('report.pdf_font_freeserif') }}</option>
+                  <option value="freemono">{{ $t('report.pdf_font_freemono') }}</option>
+                </select>
+                <label class="pdf-option-select-label" :for="'pdf-opt-lang'">{{ $t('report.pdf_lang') }}</label>
+                <select id="pdf-opt-lang" class="form-input pdf-option-select" v-model="pdfLang">
+                  <option value="auto">{{ $t('report.pdf_lang_auto') }}</option>
+                  <option value="en">English</option>
+                  <option value="nl">Nederlands</option>
+                  <option value="de">Deutsch</option>
+                  <option value="fr">Français</option>
+                  <option value="es">Español</option>
+                  <option value="da">Dansk</option>
+                  <option value="sv">Svenska</option>
+                  <option value="nb">Norsk</option>
+                  <option value="fi">Suomi</option>
+                  <option value="is">Íslenska</option>
+                  <option value="pt">Português</option>
+                  <option value="it">Italiano</option>
+                </select>
               </div>
+              <div class="pdf-options-divider" role="separator"></div>
+              <label class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowAbbr)">
+                <input type="checkbox" v-model="pdfShowAbbr" />
+                {{ $t('timeTracking.pdf_show_abbr') }}
+              </label>
+              <label v-if="rpt.group_by === 'customer'" class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfPageBreak)">
+                <input type="checkbox" v-model="pdfPageBreak" />
+                {{ $t('timeTracking.pdf_page_break_customer') }}
+              </label>
+              <label class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowCosts)">
+                <input type="checkbox" v-model="pdfShowCosts" />
+                {{ $t('timeTracking.show_costs') }}
+              </label>
+              <label class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowPageNumbers)">
+                <input type="checkbox" v-model="pdfShowPageNumbers" />
+                {{ $t('timeTracking.pdf_show_page_numbers') }}
+              </label>
+              <label class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowUndeclarable)">
+                <input type="checkbox" v-model="pdfShowUndeclarable" />
+                {{ $t('timeTracking.pdf_show_undeclarable') }}
+              </label>
             </div>
           </div>
           <button class="btn btn-secondary" @click="exportReportXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
@@ -584,6 +602,11 @@
           <span>{{ fmtTime(report.undeclarable_minutes) }}</span>
         </div>
       </template>
+    </div>
+
+    <!-- ── Board Report ──────────────────────────────────────────────────────── -->
+    <div v-if="mode === 'board-report'" id="panel-board-report" role="tabpanel" aria-labelledby="tab-board-report" class="tt-board-rpt-outer">
+      <BoardReportPanel />
     </div>
 
   </div>
@@ -722,7 +745,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Sortable from 'sortablejs'
 import { useAuthStore } from '@/stores/auth'
@@ -733,6 +757,7 @@ import { projectsApi } from '@/api/projects'
 import client, { triggerDownload } from '@/api/client'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
+const BoardReportPanel = defineAsyncComponent(() => import('@/components/reports/BoardReportPanel.vue'))
 import { useDateFormat } from '@/composables/useDateFormat'
 import {
   splitShiftIntoDayEntries,
@@ -741,6 +766,7 @@ import {
 } from '@/utils/shiftTimeEntries'
 
 const { t } = useI18n()
+const route = useRoute()
 const auth = useAuthStore()
 const ui = useUIStore()
 const { formatDate, dateOnlyFormat } = useDateFormat()
@@ -803,11 +829,22 @@ const pdfShowAbbr = ref(localStorage.getItem('timeTracking.pdfShowAbbr') === '1'
 watch(pdfShowAbbr, v => localStorage.setItem('timeTracking.pdfShowAbbr', v ? '1' : '0'))
 const pdfShowCosts = ref(localStorage.getItem('timeTracking.pdfShowCosts') === '1')
 watch(pdfShowCosts, v => localStorage.setItem('timeTracking.pdfShowCosts', v ? '1' : '0'))
+const pdfShowPageNumbers = ref(localStorage.getItem('timeTracking.pdfShowPageNumbers') !== '0')
+watch(pdfShowPageNumbers, v => localStorage.setItem('timeTracking.pdfShowPageNumbers', v ? '1' : '0'))
+const pdfShowUndeclarable = ref(localStorage.getItem('timeTracking.pdfShowUndeclarable') !== '0')
+watch(pdfShowUndeclarable, v => localStorage.setItem('timeTracking.pdfShowUndeclarable', v ? '1' : '0'))
 const pdfOptionsOpen = ref(false)
 const pdfOptionsRef = ref(null)
 
 // ── Mode ──────────────────────────────────────────────────────────────────
-const mode = ref('sheet')
+// Honour ?tab=board-report from the /reports redirect; also default to board-report
+// when the user only has canViewReports and no time-tracking access.
+const _initialMode = (() => {
+  if (route.query.tab === 'board-report' && auth.canViewReports) return 'board-report'
+  if (!auth.timeTrackingEnabled && auth.canViewReports) return 'board-report'
+  return 'sheet'
+})()
+const mode = ref(_initialMode)
 
 // ── Week navigation ───────────────────────────────────────────────────────
 const anchor = ref(new Date())
@@ -2516,6 +2553,8 @@ async function exportReportPDF() {
     if (pdfShowAbbr.value) params.show_abbr = '1'
     if (pdfPageBreak.value && rpt.value.group_by === 'customer') params.page_break = 'customer'
     if (pdfShowCosts.value) params.show_costs = '1'
+    params.show_page_numbers = pdfShowPageNumbers.value ? '1' : '0'
+    params.show_undeclarable = pdfShowUndeclarable.value ? '1' : '0'
     const data = await timeEntriesApi.reportPDF(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
@@ -3295,8 +3334,7 @@ td.c-day:focus-within .cell-time-toggle,
 }
 .btn-undo:hover:not(:disabled) { background: var(--color-bg); border-color: var(--color-text-muted); color: var(--color-text); }
 .btn-undo:disabled { opacity: 0.5; cursor: not-allowed; }
-.tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
-.pdf-font-group { display: flex; flex-direction: column; gap: 4px; }
+.tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: center; }
 .pdf-options-wrapper { position: relative; }
 .pdf-options-btn {
   display: inline-flex; align-items: center; gap: 6px;
@@ -3315,11 +3353,26 @@ td.c-day:focus-within .cell-time-toggle,
 .pdf-opts-chevron.open { transform: rotate(-90deg); }
 .pdf-options-panel {
   position: absolute; top: calc(100% + 4px); right: 0;
-  min-width: 220px; padding: 6px 0;
+  min-width: 280px; padding: 6px 0;
   background: var(--color-surface); border: 1px solid var(--color-border);
   border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,.12);
   z-index: 120;
 }
+.pdf-option-selects {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 8px 14px;
+}
+.pdf-option-select-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.pdf-option-select { font-size: 13px; }
+.pdf-options-divider { height: 1px; background: var(--color-border); margin: 2px 0; }
 .pdf-option-item {
   display: flex; align-items: center; gap: 8px;
   padding: 7px 14px; font-size: 13px; color: var(--color-text);
@@ -3701,4 +3754,6 @@ td.c-day:focus-within .cell-time-toggle,
   opacity: 0.9 !important;
   box-shadow: 0 4px 12px rgba(0,0,0,.2) !important;
 }
+/* ── Board Report ── */
+.tt-board-rpt-outer { flex: 1; overflow: auto; }
 </style>
