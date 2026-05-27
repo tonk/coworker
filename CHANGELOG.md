@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.10.21 — 2026-05-27
+
+### Fixed
+- **Backspace in time tracking cells** — Backspace now deletes one character at a time when
+  the cursor is positioned within a cell value; it only clears the whole cell when all text is
+  selected (the initial state on focus), matching standard spreadsheet behaviour.
+- **Sidebar resize handle blocked** — `overflow-y: auto` on `.app-sidebar` was clipping the
+  3 px of the resize handle that extended outside the element and placing the scrollbar directly
+  over it. The scrollable content is now wrapped in an inner `.sidebar-scroll` div; the handle
+  sits outside the scroll container and is always accessible.
+
+### Changed
+- **Ticket group count badge** — styled to match the board column card-count pill
+  (`--color-primary` background, `9999px` radius, `11px/600`).
+- **UI consistency pass** — resolved a wide range of visual inconsistencies introduced by
+  multiple contributors over time:
+  - All `toLocaleDateString()` calls replaced with `useDateFormat()` (chat day separators,
+    chart axes, calendar aria-labels) so they respect the user's date format preference.
+  - Backlog card count badge now matches the board column pill style.
+  - Call accept/decline buttons unified across 1:1 and group call overlays (`--color-success`
+    / `--color-danger`).
+  - `.toast-success` now uses `--color-success`; `.toast-mention` uses `--color-primary`.
+  - Board type badge (`Kanban`/`Scrum`) colour scheme synced between Dashboard and Project
+    Settings views.
+  - SLA badge padding/radius unified across ticket list and ticket detail.
+  - `btn-warning` moved to global `main.css`; per-view duplicates in BacklogView and
+    SprintBoardView removed.
+  - Redundant per-view `.btn` / `.btn-primary` / `.btn-danger` overrides removed from
+    CustomerDetailView and CustomersView.
+  - Page `<h1>` standardised to `22px` across all views; canonical `.page-header` rule added
+    to `main.css`.
+  - All 37 `window.confirm()` calls replaced with `await ui.confirm()` backed by a new themed
+    `ConfirmDialog.vue` component (accessible, keyboard-trapped, Escape to cancel).
+
 ## v0.10.20 — 2026-05-28
 
 ### Added
