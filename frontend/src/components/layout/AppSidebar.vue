@@ -2,6 +2,7 @@
   <aside class="app-sidebar" :style="{ width: sidebarWidth + 'px' }">
     <div class="resize-handle" :class="sidebarPos === 'right' ? 'handle-left' : 'handle-right'" @mousedown="startResize"></div>
 
+    <div class="sidebar-scroll">
     <!-- Starred Projects -->
     <section v-if="auth.boardEnabled"
       class="sidebar-section"
@@ -282,6 +283,7 @@
       </div>
     </section>
 
+    </div><!-- .sidebar-scroll -->
   </aside>
 </template>
 
@@ -639,6 +641,12 @@ onUnmounted(() => {
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
+  overflow: visible;
+}
+
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 12px 0;
 }

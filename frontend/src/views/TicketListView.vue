@@ -850,7 +850,7 @@ async function onDescPaste(e) {
 .group-section { margin-bottom: 32px; }
 .group-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .group-title { font-size: 16px; font-weight: 700; margin: 0; }
-.group-count { font-size: 12px; font-weight: 700; color: #fff; background: var(--color-text-muted); padding: 1px 8px; border-radius: 10px; line-height: 20px; }
+.group-count { font-size: 11px; font-weight: 600; color: #fff; background: var(--color-primary); padding: 1px 7px; border-radius: 9999px; line-height: 20px; }
 .group-section:not(:last-child)::after { content: ''; display: block; height: 1px; background: var(--color-border); margin-top: 32px; }
 .group-sub-toggle { display: flex; gap: 4px; margin-bottom: 20px; }
 .group-sub-btn { font-size: 12px; font-weight: 600; padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-bg); color: var(--color-text-muted); cursor: pointer; transition: all .15s; }

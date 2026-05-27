@@ -1867,8 +1867,11 @@ function onCellKeydown(row, dateISO, rowIdx, dayIdx, event) {
   }
 
   if (event.key === 'Delete' || event.key === 'Backspace') {
-    event.preventDefault()
-    onCellBlur(row, dateISO, '')
+    const { selectionStart, selectionEnd, value } = event.target
+    if (selectionStart === 0 && selectionEnd === value.length) {
+      event.preventDefault()
+      onCellBlur(row, dateISO, '')
+    }
     return
   }
 
