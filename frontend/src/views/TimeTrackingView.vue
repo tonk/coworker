@@ -1072,25 +1072,20 @@ const sortDir = ref('asc')  // 'asc' | 'desc'
 // sort header; data updates (cell saves) preserve the current order so rows
 // don't jump while the user is entering time.
 const _keyOrder = ref(null)
+// Server-loaded order, used to seed _keyOrder on first allRows update.
+const _serverOrder = ref(null)
 
-const ORDER_STORAGE_KEY = 'warmdesk_tt_row_order'
-
-function loadSavedOrder() {
-  try {
-    const raw = localStorage.getItem(ORDER_STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch { return null }
-}
-
-function saveOrder(order) {
-  try {
-    localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(order))
-  } catch {}
+let _saveOrderTimer = null
+function _scheduleSaveOrder(keys) {
+  clearTimeout(_saveOrderTimer)
+  _saveOrderTimer = setTimeout(() => {
+    timeEntriesApi.setRowOrder(keys).catch(() => {})
+  }, 600)
 }
 
 watch(allRows, (rows) => {
   if (_keyOrder.value === null) {
-    const saved = loadSavedOrder()
+    const saved = _serverOrder.value
     if (saved) {
       const keySet = new Set(rows.map(r => r.key))
       const valid = saved.filter(k => keySet.has(k))
@@ -1106,7 +1101,7 @@ watch(allRows, (rows) => {
   const fresh  = rows.map(r => r.key).filter(k => !stable.includes(k))
 
   if (stable.length === 0 && fresh.length > 0) {
-    const saved = loadSavedOrder()
+    const saved = _serverOrder.value
     if (saved) {
       const valid = saved.filter(k => keySet.has(k))
       const remaining = fresh.filter(k => !valid.includes(k))
@@ -1117,7 +1112,7 @@ watch(allRows, (rows) => {
   } else {
     _keyOrder.value = [...stable, ...fresh]
   }
-  saveOrder(_keyOrder.value)
+  _scheduleSaveOrder(_keyOrder.value)
 }, { immediate: true })
 
 const tbodyEl = ref(null)
@@ -1138,6 +1133,7 @@ function applySortOrder() {
     return 0
   })
   _keyOrder.value = sorted.map(r => r.key)
+  _scheduleSaveOrder(_keyOrder.value)
 }
 
 function toggleSort(col) {
@@ -2708,6 +2704,7 @@ function initRowSortable() {
       const [moved] = arr.splice(oldIndex, 1)
       arr.splice(newIndex, 0, moved)
       _keyOrder.value = arr
+      _scheduleSaveOrder(arr)
     },
   })
 }
@@ -2742,6 +2739,10 @@ onMounted(async () => {
     allUsers.value = results[4].data
     selectedUserId.value = auth.user?.id ?? null
   }
+  try {
+    const { data } = await timeEntriesApi.getRowOrder()
+    if (data.keys?.length) _serverOrder.value = data.keys
+  } catch {}
   await loadWeek()
   await nextTick()
   initRowSortable()

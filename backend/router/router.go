@@ -260,6 +260,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.GET("/time-entries/report/xlsx", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryReportXLSX)
 		protected.GET("/time-entries/sheet/xlsx", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntrySheetXLSX)
 		protected.POST("/time-entries/holidays", middleware.RequireFeature("time_tracking_enabled"), handlers.AddHolidays)
+		protected.GET("/time-entries/row-order", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryRowOrder)
+		protected.PUT("/time-entries/row-order", middleware.RequireFeature("time_tracking_enabled"), handlers.UpdateTimeEntryRowOrder)
 
 		// Prometheus metrics (admin or metrics role)
 		protected.GET("/metrics", middleware.MetricsAuth(), handlers.GetMetrics)

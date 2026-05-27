@@ -2,6 +2,13 @@ package models
 
 import "time"
 
+// TimeEntryRowOrder persists the user's custom row ordering for the time-tracking grid.
+// One row per user; OrderedKeys is a JSON array of row-key strings.
+type TimeEntryRowOrder struct {
+	UserID      uint   `gorm:"primaryKey" json:"user_id"`
+	OrderedKeys string `gorm:"type:text" json:"ordered_keys"`
+}
+
 type TimeEntry struct {
 	ID          uint      `gorm:"primarykey" json:"id"`
 	UserID      uint      `gorm:"not null;index" json:"user_id"`

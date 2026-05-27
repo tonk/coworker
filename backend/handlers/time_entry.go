@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -627,4 +628,43 @@ func setDeclarable(groups []timeEntryGroup) []timeEntryGroup {
 		groups[i].DeclarableMinutes = d
 	}
 	return groups
+}
+
+// GetTimeEntryRowOrder returns the saved row-key order for the current user.
+func GetTimeEntryRowOrder(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	var order models.TimeEntryRowOrder
+	database.DB.Where("user_id = ?", userID).First(&order)
+	var keys []string
+	if order.OrderedKeys != "" {
+		if err := json.Unmarshal([]byte(order.OrderedKeys), &keys); err != nil {
+			keys = []string{}
+		}
+	}
+	if keys == nil {
+		keys = []string{}
+	}
+	c.JSON(http.StatusOK, gin.H{"keys": keys})
+}
+
+// UpdateTimeEntryRowOrder saves the row-key order for the current user.
+func UpdateTimeEntryRowOrder(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	var body struct {
+		Keys []string `json:"keys"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	raw, _ := json.Marshal(body.Keys)
+	order := models.TimeEntryRowOrder{
+		UserID:      userID,
+		OrderedKeys: string(raw),
+	}
+	if err := database.DB.Save(&order).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save order"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
