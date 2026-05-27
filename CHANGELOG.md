@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.22 — 2026-05-27
+
+### Added
+- **Leave / remove conversation** — hover over any conversation in the chat list to reveal a ✕ button. For 1-on-1 chats this deletes the conversation for both parties; for group chats it removes only you from the group.
+
+### Fixed
+- **Week picker and holidays dropdown not closing on Escape** — pressing Escape now closes the week calendar picker and the holiday country dropdown in the time tracking view.
+
 ## v0.10.21 — 2026-05-27
 
 ### Fixed

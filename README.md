@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.21)
+## Latest release (v0.10.22)
 
-- **UI consistency pass** — Unified badge styles, button variants, date formatting, and page header sizes across all views; `window.confirm()` replaced with a themed accessible confirm dialog throughout.
-- **Sidebar resize restored** — The drag handle to resize the sidebar is accessible again after being obscured by the scrollbar.
-- **Backspace in time tracking cells** — Backspace now deletes one character at a time; only clears the whole cell when all text is selected.
+- **Leave conversation** — hover over any chat in the list and click ✕ to remove it; deletes 1-on-1 chats for both parties, removes you from group chats.
+- **Escape closes all popups** — week picker and holidays dropdown in time tracking now close on Escape, completing full keyboard-navigation coverage.
 
 ## Experiment
 
