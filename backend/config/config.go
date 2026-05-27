@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"gopkg.in/yaml.v3"
 )
@@ -161,6 +162,14 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv("TLS_KEY"); v != "" {
 		cfg.TLSKey = v
+	}
+	if v := os.Getenv("UPLOAD_DIR"); v != "" {
+		cfg.UploadDir = v
+	}
+	if v := os.Getenv("MAX_UPLOAD_MB"); v != "" {
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil {
+			cfg.MaxUploadMB = n
+		}
 	}
 	if v := os.Getenv("BASE_URL"); v != "" {
 		cfg.BaseURL = v

@@ -42,8 +42,10 @@ The result is a ~30,000 line Go backend and a ~30,000 line Vue 3 frontend that a
 | *Scrum backlog — two-panel sprint planner* | *Sprint throughput — cards closed per sprint* |
 | ![Sprint burndown](screenshots/17-scrum-burndown.png) | ![Sprint burnup](screenshots/18-scrum-burnup.png) |
 | *Sprint burndown — remaining points vs. ideal line* | *Sprint burnup — completed vs. total scope* |
-| ![Release burndown](screenshots/19-scrum-release.png) | |
-| *Release burndown — progress across all sprints in a release* | |
+| ![Release burndown](screenshots/19-scrum-release.png) | ![Standby shift](screenshots/20-standby-shift.png) |
+| *Release burndown — progress across all sprints in a release* | *Standby shift entry — split on-call shifts across multiple days* |
+| ![Ticket list](screenshots/21-ticket-list.png) | ![Ticket detail](screenshots/22-ticket-detail.png) |
+| *Helpdesk ticket list with SLA status* | *Ticket detail — status, priority, assignee, SLA card, and messages* |
 
 ## Quick Start
 
@@ -113,6 +115,17 @@ cd dist
 ./warmdesk-seed --reset   # wipe and re-seed
 ```
 
+### Training environments
+
+A training tool provisions one isolated environment per trainee — each gets their own user, customer, contract, project, and board columns:
+
+```bash
+./warmdesk-training 5 Training    # create trainer (guru00) + 5 trainees (guru01–guru05)
+./warmdesk-training --reset       # wipe all training data
+```
+
+Passwords follow the pattern `<PASSWORD_BASE><NN>` (e.g. `Training00`, `Training01`, …). Pass `--config` to point at a non-default config file.
+
 Demo accounts created (password for all: `demo1234`):
 
 | Username | Display name | Global role | Notes |
@@ -151,13 +164,22 @@ Settings can also be provided as environment variables, which always take preced
 | `tls_key` | `TLS_KEY` | *(empty)* | Path to server TLS private key |
 | `jwt_secret` | `JWT_SECRET` | *(required — server refuses to start at default)* | Secret for signing JWT tokens |
 | `allowed_origins` | `ALLOWED_ORIGINS` | `http://localhost:5173` | CORS allowed origins — `*` is blocked in `release` mode |
+| `trusted_proxies` | `TRUSTED_PROXIES` | *(empty)* | Comma-separated CIDRs/IPs of trusted reverse proxies; empty = trust no proxy headers |
+| `web_dir` | `WEB_DIR` | *(empty)* | Path to frontend assets directory; falls back to embedded frontend when unset |
+| `redis_url` | `REDIS_URL` | *(empty)* | Redis URL for horizontal scaling — routes WebSocket broadcasts through Redis pub/sub |
 | `default_locale` | `DEFAULT_LOCALE` | `en` | Default UI language for new users |
 | `gin_mode` | `GIN_MODE` | `release` | `release` (default) or `debug` (development only) |
 | `api_log` | `API_LOG` | `true` | Log incoming HTTP requests |
 | `db_log` | `DB_LOG` | `info` | DB query log level: `silent` / `error` / `warn` / `info` |
 | `upload_dir` | `UPLOAD_DIR` | `./uploads` | Directory for uploaded files |
 | `max_upload_mb` | `MAX_UPLOAD_MB` | `25` | Maximum upload file size in MB |
-| `base_url` | `BASE_URL` | *(empty)* | Public base URL (e.g. `https://desk.example.com`) — sets the host in Swagger UI |
+| `base_url` | `BASE_URL` | *(empty)* | Public base URL (e.g. `https://desk.example.com`) — sets the host in Swagger UI and email links |
+| `livekit_url` | `LIVEKIT_URL` | *(empty)* | LiveKit server WebSocket address — required for group voice/video calls |
+| `livekit_api_key` | `LIVEKIT_API_KEY` | *(empty)* | LiveKit API key |
+| `livekit_api_secret` | `LIVEKIT_API_SECRET` | *(empty)* | LiveKit API secret |
+| `livekit_room_prefix` | `LIVEKIT_ROOM_PREFIX` | *(empty)* | Optional prefix for LiveKit room names (avoids collisions on shared servers) |
+
+The interactive Swagger UI is available at `http://localhost:8080/swagger/index.html` when the server is running.
 
 See [INSTALL.md](INSTALL.md) for full options and deployment instructions.
 
@@ -235,18 +257,47 @@ ansible-galaxy collection install ansiblabnl.warmdesk
 
 ### Available Modules
 
-- `ansilabnl.warmdesk.user`: Manage users, passwords, and global/customer roles.
-- `ansilabnl.warmdesk.project`: Create and update projects (Kanban/Scrum) and prefixes.
-- `ansilabnl.warmdesk.group`: Manage user groups and their project/customer access.
-- `ansilabnl.warmdesk.customer_member`: Manage membership and roles within a customer.
-- `ansilabnl.warmdesk.card_comment`: Create, update, or delete comments on a card.
-- `ansilabnl.warmdesk.from_vars`: Provision WarmDesk resources from YAML variable files.
+**Board & project**
+- `ansilabnl.warmdesk.project` — Create and update projects (Kanban/Scrum) and prefixes.
+- `ansilabnl.warmdesk.project_member` — Manage project membership and roles.
+- `ansilabnl.warmdesk.column` — Create, update, or delete board columns.
+- `ansilabnl.warmdesk.label` — Manage card labels within a project.
+- `ansilabnl.warmdesk.card` — Create, update, or delete cards.
+- `ansilabnl.warmdesk.checklist_item` — Manage checklist items on a card.
+- `ansilabnl.warmdesk.card_comment` — Create, update, or delete comments on a card.
+
+**Helpdesk**
+- `ansilabnl.warmdesk.ticket` — Create and update helpdesk tickets.
+- `ansilabnl.warmdesk.sla_policy` — Manage SLA policies.
+
+**Customers & contracts**
+- `ansilabnl.warmdesk.customer` — Create and update customers.
+- `ansilabnl.warmdesk.customer_member` — Manage membership and roles within a customer.
+- `ansilabnl.warmdesk.contract` — Manage contracts linked to a customer.
+
+**Users & access**
+- `ansilabnl.warmdesk.user` — Manage users, passwords, and global/customer roles.
+- `ansilabnl.warmdesk.user_options` — Set per-user preferences and feature flags.
+- `ansilabnl.warmdesk.user_access` — Grant or revoke customer access for a user.
+- `ansilabnl.warmdesk.api_key` — Create and delete API keys.
+- `ansilabnl.warmdesk.group` — Manage user groups and their project/customer access.
+
+**System**
+- `ansilabnl.warmdesk.webhook` — Create and delete webhooks.
+- `ansilabnl.warmdesk.system_settings` — Update global system settings.
+- `ansilabnl.warmdesk.news` — Manage dashboard news items.
+
+**Provisioning**
+- `ansilabnl.warmdesk.from_vars` — Provision WarmDesk resources from YAML variable files.
 
 ### Available Plugins
 
 - **Inventory**: `ansilabnl.warmdesk.warmdesk` — Dynamic inventory from project members.
 - **Lookup**: `ansilabnl.warmdesk.project` — Fetch project metadata by slug.
 - **Lookup**: `ansilabnl.warmdesk.card` — Look up card details by reference (e.g. `PRJ-42`).
+- **Lookup**: `ansilabnl.warmdesk.customer` — Fetch customer details by name or ID.
+- **Lookup**: `ansilabnl.warmdesk.contract` — Fetch contract details by name or ID.
+- **Lookup**: `ansilabnl.warmdesk.user` — Look up user details by username or ID.
 - **Lookup**: `ansilabnl.warmdesk.api_key` — List personal or project-scoped API keys.
 
 ## Documentation
