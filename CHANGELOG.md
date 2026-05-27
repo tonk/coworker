@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.10.25 — 2026-05-27
+
+### Added
+- **Board report tab** — the project-board time report is now a third "Board" tab inside Time Tracking; the separate Reports menu entry is retired and `/reports` redirects automatically.
+- **PDF export options** — toggle page numbers and undeclarable time on/off directly from the export options panel.
+
+### Changed
+- **Export options panel** — PDF font and language selects moved into the export options popover, keeping the filter bar on a single line at HD resolution.
+
 ## v0.10.24 — 2026-05-27
 
 ### Fixed
