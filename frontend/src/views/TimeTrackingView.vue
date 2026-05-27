@@ -996,6 +996,12 @@ function onHolidaysDocClick(e) {
   }
 }
 
+function onNavEscapeKey(e) {
+  if (e.key !== 'Escape') return
+  if (wkPickerOpen.value) { wkPickerOpen.value = false; e.stopPropagation(); return }
+  if (holidaysDropOpen.value) { holidaysDropOpen.value = false; e.stopPropagation() }
+}
+
 async function addHolidays(loc) {
   holidaysDropOpen.value = false
   const year = weekInfo.value.year
@@ -2686,6 +2692,7 @@ function onDocClick(e) {
 onMounted(() => {
   window.addEventListener('keydown', onWindowUndoCapture, true)
   window.addEventListener('beforeinput', onWindowBeforeInputCapture, true)
+  document.addEventListener('keydown', onNavEscapeKey)
   document.addEventListener('mousedown', onDocClick)
   document.addEventListener('mousedown', onHolidaysDocClick)
   document.addEventListener('mousedown', onWkPickerDocClick)
@@ -2716,6 +2723,7 @@ onUnmounted(() => {
   rowSortable = null
   window.removeEventListener('keydown', onWindowUndoCapture, true)
   window.removeEventListener('beforeinput', onWindowBeforeInputCapture, true)
+  document.removeEventListener('keydown', onNavEscapeKey)
   document.removeEventListener('mousedown', onDocClick)
   document.removeEventListener('mousedown', onHolidaysDocClick)
   document.removeEventListener('mousedown', onWkPickerDocClick)
