@@ -8,13 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.19)
+## Latest release (v0.10.20)
 
-- **Ticket status redesign** — Resolved/closed merged into `pending_close` with auto-close; `closed` is immediate final status.
-- **Three ticket view modes** — Card grid, Group by status (cards or sortable table per group), and full List (sortable table).
-- **Date title prefix** — Setting a pending reminder/close date auto-prefixes the ticket title with `[YYYY-mm-dd]`.
-- **Ticket history** — Activity timeline with status changes, comments, links, and tag updates.
-- **Sidebar ticket counts** — Badges for new/open, pending, pending_close, closed per customer.
+- **Drag-to-reorder time tracking rows** — Grab the ⠿ handle to manually arrange rows; order is saved in localStorage and restored across sessions.
+- **Stable row order** — Rows no longer jump when entering time or editing descriptions; duplicated rows stay below the original.
+- **Duplicate time entry row** — ⧉ button clones a row with auto-incrementing `(copy)` suffix, inserted directly below the original.
 
 ## Experiment
 

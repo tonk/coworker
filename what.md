@@ -601,3 +601,6 @@ Create an application that has all these features and requirements
 - Fix locale not saved for 7 languages: backend validLocales map only accepted en/nl/de/fr/es; now accepts all 12 supported locales (da/sv/nb/fi/is/pt/it)
 - Fix black theme not persisted: backend theme validation now accepts 'black' alongside light/dark/system
 - Add helpdesk ticket and SLA policy endpoints to Bruno and Postman collections: 14 Bruno requests in docs/bruno/helpdesk/ (list, create, get, update, delete ticket; add message; add/remove tags; list/create/delete ticket links; list/create/delete card links) and 4 in docs/bruno/helpdesk-admin/ (SLA policy CRUD); both Postman environment files updated with customerId, ticketId, tagId, linkId, slaPolicyId variables
+- Add duplicate row button in time tracking: ⧉ clones a row with auto-incrementing (copy)/(copy 2) suffix, inserted directly below the original
+- Add drag handles to time tracking rows: grab the ⠿ handle to manually reorder rows; order persisted in localStorage and restored across sessions
+- Fix time tracking rows jumping: entryRows computed now sorts by minimum entry ID ascending (creation order) instead of following the API's date-desc ordering; editing a duplicated row's description/project preserves its position in _keyOrder instead of jumping to the bottom
