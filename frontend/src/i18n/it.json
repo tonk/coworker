@@ -606,7 +606,10 @@
     "no_users_found": "Nessun utente trovato",
     "no_teams": "Nessun progetto trovato",
     "team_members_count": "{count} membri",
-    "new_conversation": "Nuova conversazione"
+    "new_conversation": "Nuova conversazione",
+    "leave_conversation": "Remove from list",
+    "leave_conversation_confirm_dm": "Remove this conversation from your list? This will delete it for both of you.",
+    "leave_conversation_confirm_group": "Leave this group chat?"
   },
   "sidebar": {
     "starred": "Progetti preferiti",

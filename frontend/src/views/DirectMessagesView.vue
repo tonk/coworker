@@ -141,6 +141,12 @@
             </div>
           </div>
           <div v-if="activeConvId === conv.id" class="conv-active-dot"></div>
+          <button
+            class="conv-leave-btn"
+            @click.stop="leaveConversation(conv)"
+            :aria-label="$t('dm.leave_conversation')"
+            :title="$t('dm.leave_conversation')"
+          >✕</button>
         </div>
 
         <div v-if="!conversations.length && !showNewConv" class="conv-empty">
@@ -1196,6 +1202,25 @@ async function addMember(user) {
   }
 }
 
+async function leaveConversation(conv) {
+  const msg = conv.is_group
+    ? t('dm.leave_conversation_confirm_group')
+    : t('dm.leave_conversation_confirm_dm')
+  if (!await ui.confirm(msg)) return
+  try {
+    await messagesApi.leaveConversation(conv.id)
+    conversations.value = conversations.value.filter(c => c.id !== conv.id)
+    if (activeConvId.value === conv.id) {
+      activeConv.value = null
+      activeConvId.value = null
+      clearInterval(pollTimer)
+      messages.value = []
+    }
+  } catch {
+    ui.error(t('common.error'))
+  }
+}
+
 async function removeMember(member) {
   if (!await ui.confirm(t('dm.remove_member_confirm'))) return
   try {
@@ -1547,6 +1572,28 @@ function dayLabel(dateStr) {
 }
 .conv-item:hover { background: var(--color-bg); }
 .conv-item.active { background: color-mix(in srgb, var(--color-primary) 12%, transparent); }
+
+.conv-leave-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s, background .15s, color .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.conv-item:hover .conv-leave-btn,
+.conv-leave-btn:focus-visible { opacity: 1; }
+.conv-leave-btn:hover { background: color-mix(in srgb, var(--color-danger) 15%, transparent); color: var(--color-danger); }
 
 .conv-active-dot {
   width: 7px;

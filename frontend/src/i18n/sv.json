@@ -606,7 +606,10 @@
     "no_users_found": "Inga användare hittades",
     "no_teams": "Inga projekt hittades",
     "team_members_count": "{count} medlemmar",
-    "new_conversation": "Ny konversation"
+    "new_conversation": "Ny konversation",
+    "leave_conversation": "Remove from list",
+    "leave_conversation_confirm_dm": "Remove this conversation from your list? This will delete it for both of you.",
+    "leave_conversation_confirm_group": "Leave this group chat?"
   },
   "sidebar": {
     "starred": "Favoritprojekt",

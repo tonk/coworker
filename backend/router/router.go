@@ -279,6 +279,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			convs.POST("/:id/messages", middleware.MessageRateLimit(), handlers.SendConversationMessage)
 			convs.PATCH("/:id/messages/:msgId", handlers.EditConversationMessage)
 			convs.DELETE("/:id/messages/:msgId", handlers.DeleteConversationMessage)
+			convs.DELETE("/:id", handlers.LeaveConversation)
 			convs.POST("/:id/members", handlers.AddConversationMember)
 			convs.DELETE("/:id/members/:userId", handlers.RemoveConversationMember)
 			convs.POST("/:id/avatar", handlers.UploadConversationAvatar)

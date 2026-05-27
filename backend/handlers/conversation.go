@@ -477,6 +477,65 @@ func UploadConversationAvatar(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"avatar": avatarURL})
 }
 
+// LeaveConversation DELETE /conversations/:id
+// Current user leaves the conversation.
+// For 1-on-1: deletes the conversation for both parties.
+// For group: removes only the current user.
+func LeaveConversation(c *gin.Context) {
+	me := middleware.GetUserID(c)
+	convID, _ := strconv.Atoi(c.Param("id"))
+
+	if !isMember(uint(convID), me) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "not a member"})
+		return
+	}
+
+	var conv models.Conversation
+	if err := database.DB.First(&conv, convID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "conversation not found"})
+		return
+	}
+
+	var memberIDs []uint
+	database.DB.Model(&models.ConversationMember{}).
+		Where("conversation_id = ?", convID).
+		Pluck("user_id", &memberIDs)
+
+	if !conv.IsGroup {
+		// 1-on-1: delete the whole conversation so neither party is left with an orphan
+		database.DB.Where("conversation_id = ?", convID).Delete(&models.ConversationMember{})
+		database.DB.Delete(&conv)
+		for _, uid := range memberIDs {
+			appws.BroadcastToUser(uid, appws.Message{
+				Type:    "dm.conversation_deleted",
+				Payload: map[string]interface{}{"conversation_id": convID},
+			})
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+		return
+	}
+
+	// Group: remove only the current user
+	database.DB.Where("conversation_id = ? AND user_id = ?", convID, me).
+		Delete(&models.ConversationMember{})
+
+	// Notify remaining members
+	for _, uid := range memberIDs {
+		if uid == me {
+			continue
+		}
+		appws.BroadcastToUser(uid, appws.Message{
+			Type: "dm.member_removed",
+			Payload: map[string]interface{}{
+				"conversation_id": convID,
+				"user_id":         me,
+			},
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "left"})
+}
+
 func isMember(convID, userID uint) bool {
 	var m models.ConversationMember
 	return database.DB.Where("conversation_id = ? AND user_id = ?", convID, userID).

@@ -571,7 +571,10 @@
     "no_users_found": "Keine Benutzer gefunden",
     "no_teams": "Keine Projekte gefunden",
     "team_members_count": "{count} Mitglieder",
-    "new_conversation": "Neues Gespräch"
+    "new_conversation": "Neues Gespräch",
+    "leave_conversation": "Remove from list",
+    "leave_conversation_confirm_dm": "Remove this conversation from your list? This will delete it for both of you.",
+    "leave_conversation_confirm_group": "Leave this group chat?"
   },
   "sidebar": {
     "starred": "Favoritenprojekte",

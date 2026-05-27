@@ -606,7 +606,10 @@
     "no_users_found": "Engir notendur fundust",
     "no_teams": "Engin verkefni fundin",
     "team_members_count": "{count} meðlimir",
-    "new_conversation": "Ný samtal"
+    "new_conversation": "Ný samtal",
+    "leave_conversation": "Remove from list",
+    "leave_conversation_confirm_dm": "Remove this conversation from your list? This will delete it for both of you.",
+    "leave_conversation_confirm_group": "Leave this group chat?"
   },
   "sidebar": {
     "starred": "Uppáhalds verkefni",

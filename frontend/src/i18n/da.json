@@ -606,7 +606,10 @@
     "no_users_found": "Ingen brugere fundet",
     "no_teams": "Ingen projekter fundet",
     "team_members_count": "{count} medlemmer",
-    "new_conversation": "Ny samtale"
+    "new_conversation": "Ny samtale",
+    "leave_conversation": "Remove from list",
+    "leave_conversation_confirm_dm": "Remove this conversation from your list? This will delete it for both of you.",
+    "leave_conversation_confirm_group": "Leave this group chat?"
   },
   "sidebar": {
     "starred": "Favoritprojekter",
