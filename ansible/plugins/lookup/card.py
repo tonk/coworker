@@ -6,7 +6,7 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 name: card
 short_description: Look up WarmDesk cards by their card reference (e.g. EDA-42)
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Fetches one or more WarmDesk card objects by their card reference string

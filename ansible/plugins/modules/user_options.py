@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: user_options
 short_description: Manage WarmDesk user preferences and UI options
-version_added: "1.0.0"
+version_added: "0.3.8"
 author: "Ton Kersten (@tonk)"
 description:
   - Update per-user preferences such as locale, timezone, theme options,

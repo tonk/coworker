@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: project_member
 short_description: Manage membership of a WarmDesk project
-version_added: "1.0.0"
+version_added: "0.1.0"
 author:
   - Ton Kersten (@tonk)
 description:

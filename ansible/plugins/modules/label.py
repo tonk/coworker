@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: label
 short_description: Manage card labels in a WarmDesk project
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, or deletes a label inside a WarmDesk project.

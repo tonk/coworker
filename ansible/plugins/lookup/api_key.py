@@ -6,7 +6,7 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 name: api_key
 short_description: List WarmDesk API keys and show their owner
-version_added: "2.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Returns all personal API keys for the authenticated user, or all

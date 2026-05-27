@@ -6,7 +6,7 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 name: customer
 short_description: Look up WarmDesk customers by name
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Fetches one or more WarmDesk customer records by their display name and

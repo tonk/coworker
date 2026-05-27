@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: column
 short_description: Manage Kanban columns in a WarmDesk project
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, or deletes a Kanban column inside a WarmDesk project.

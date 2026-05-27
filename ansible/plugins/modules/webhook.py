@@ -7,7 +7,7 @@ DOCUMENTATION = r"""
 ---
 module: webhook
 short_description: Manage incoming webhooks for a WarmDesk project
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Create or delete incoming webhook integrations on a WarmDesk project.

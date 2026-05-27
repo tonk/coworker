@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: checklist_item
 short_description: Manage checklist items on a WarmDesk card
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, or deletes a single checklist item on a WarmDesk card.

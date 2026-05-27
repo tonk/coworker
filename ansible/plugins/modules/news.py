@@ -7,7 +7,7 @@ DOCUMENTATION = r"""
 ---
 module: news
 short_description: Manage WarmDesk dashboard news items
-version_added: "1.0.0"
+version_added: "0.3.1"
 author: "Ton Kersten (@tonk)"
 description:
   - Create, update, or delete news items that are shown as dismissible tiles

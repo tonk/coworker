@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: card_comment
 short_description: Manage comments on a WarmDesk card
-version_added: "1.0.0"
+version_added: "0.3.3"
 author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, or deletes a comment on a WarmDesk card.

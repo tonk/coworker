@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: from_vars
 short_description: Provision WarmDesk resources from YAML variable files
-version_added: "1.0.0"
+version_added: "0.3.0"
 author:
   - Ton Kersten (@tonk)
 description:

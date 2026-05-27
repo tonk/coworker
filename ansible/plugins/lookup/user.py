@@ -6,7 +6,7 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 name: user
 short_description: Look up WarmDesk user accounts by username
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Fetches one or more WarmDesk user accounts and returns them as a list of

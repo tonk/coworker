@@ -7,7 +7,7 @@ DOCUMENTATION = r"""
 ---
 module: contract
 short_description: Manage WarmDesk customer contracts
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Create, update, or delete contracts that belong to a WarmDesk customer.

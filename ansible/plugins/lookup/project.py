@@ -6,7 +6,7 @@ __metaclass__ = type
 DOCUMENTATION = r"""
 name: project
 short_description: Look up WarmDesk projects by slug
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Fetches one or more WarmDesk project objects by their slug and returns

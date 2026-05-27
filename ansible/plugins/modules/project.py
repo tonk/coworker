@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: project
 short_description: Manage WarmDesk projects
-version_added: "1.0.0"
+version_added: "0.1.0"
 author:
   - Ton Kersten (@tonk)
 description:

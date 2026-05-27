@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: group
 short_description: Manage WarmDesk user groups
-version_added: "1.0.0"
+version_added: "0.3.0"
 author:
   - Ton Kersten (@tonk)
 description:

@@ -7,7 +7,7 @@ DOCUMENTATION = r"""
 ---
 module: api_key
 short_description: Manage personal and project-scoped WarmDesk API keys
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Create or revoke personal API keys (C(scope=personal)) or project-scoped

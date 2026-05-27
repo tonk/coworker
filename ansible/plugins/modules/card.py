@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: card
 short_description: Manage cards on a WarmDesk Kanban board
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Creates, updates, moves, or deletes a card on a WarmDesk Kanban board.

@@ -7,7 +7,7 @@ DOCUMENTATION = r'''
 ---
 module: customer_member
 short_description: Manage access to a WarmDesk customer
-version_added: "1.0.0"
+version_added: "0.1.0"
 author:
   - Ton Kersten (@tonk)
 description:

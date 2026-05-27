@@ -7,7 +7,7 @@ DOCUMENTATION = r"""
 ---
 module: system_settings
 short_description: Configure WarmDesk system-wide settings
-version_added: "1.0.0"
+version_added: "0.1.0"
 author: "Ton Kersten (@tonk)"
 description:
   - Read and update system-wide configuration for a WarmDesk instance via the
