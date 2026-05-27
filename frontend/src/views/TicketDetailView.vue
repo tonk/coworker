@@ -14,10 +14,10 @@
           </div>
           <div class="detail-actions">
             <select class="form-input form-input-sm" :value="ticket.status" @change="updateStatus($event.target.value)">
+              <option value="new">{{ $t('ticket.status_new') }}</option>
               <option value="open">{{ $t('ticket.status_open') }}</option>
-              <option value="in_progress">{{ $t('ticket.status_in_progress') }}</option>
               <option value="pending">{{ $t('ticket.status_pending') }}</option>
-              <option value="resolved">{{ $t('ticket.status_resolved') }}</option>
+              <option value="pending_close">{{ $t('ticket.status_pending_close') }}</option>
               <option value="closed">{{ $t('ticket.status_closed') }}</option>
             </select>
             <select class="form-input form-input-sm" :value="ticket.priority" @change="updatePriority($event.target.value)">
@@ -56,6 +56,10 @@
         <span class="reminder-label">{{ $t('ticket.reminder_date') }}</span>
         <DatePicker :model-value="reminderDateValue" @update:model-value="updateReminderDate" />
       </div>
+      <div v-if="ticket.status === 'pending_close'" class="reminder-row">
+        <span class="reminder-label">{{ $t('ticket.close_date') }}</span>
+        <DatePicker :model-value="closeDateValue" @update:model-value="updateCloseDate" />
+      </div>
 
       <div class="detail-fields">
         <div class="detail-tags" v-if="ticket.tags?.length">
@@ -87,7 +91,7 @@
           <div class="sla-card-row" v-if="ticket.sla_resolution_deadline">
             <span class="sla-card-label">{{ $t('sla.resolution_by') }}</span>
             <span :class="['sla-card-value', ticket.sla_resolution_breached ? 'sla-card-breach' : '']">{{ formatDateTime(ticket.sla_resolution_deadline) }}</span>
-            <span v-if="ticket.status === 'resolved' || ticket.status === 'closed'" class="sla-card-check met"><span class="feat-check" style="color:var(--color-success)">✓</span> {{ $t('ticket.status_' + ticket.status) }}</span>
+            <span v-if="ticket.status === 'pending_close'" class="sla-card-check met"><span class="feat-check" style="color:var(--color-success)">✓</span> {{ $t('ticket.status_' + ticket.status) }}</span>
             <span v-else-if="ticket.sla_resolution_breached" class="sla-card-status breach">{{ $t('sla.resolution_breached') }}</span>
             <span v-else-if="slaWarning(ticket)" class="sla-card-status warn">{{ $t('sla.warning') }}</span>
             <span v-else class="sla-card-status ok">{{ $t('sla.on_track') }}</span>
@@ -196,6 +200,24 @@
           </div>
         </form>
       </section>
+
+      <section class="activity-section">
+        <button class="activity-toggle" @click="showActivity = !showActivity" :aria-expanded="showActivity">
+          <span class="activity-toggle-icon" :class="{ rotated: showActivity }">▸</span>
+          {{ $t('ticket.history') }} <span class="activity-count">({{ history.length }})</span>
+        </button>
+        <div v-if="showActivity">
+          <div v-if="!history.length" class="activity-empty">{{ $t('common.no_results') }}</div>
+          <div v-else class="activity-list">
+            <div v-for="h in history" :key="h.id" class="activity-entry">
+              <span class="activity-icon" :class="'activity-type-' + h.event_type" aria-hidden="true">{{ activityIcon(h.event_type) }}</span>
+              <span class="activity-time">{{ formatDateTime(h.created_at) }}</span>
+              <span class="activity-who">{{ h.user?.display_name || h.user?.username }}</span>
+              <span class="activity-detail">{{ activityLabel(h) }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </template>
 
     <div v-else class="empty-state">
@@ -238,6 +260,8 @@ const ui = useUIStore()
 const customerId = computed(() => Number(route.params.id))
 const ticketId = computed(() => Number(route.params.ticketId))
 const ticket = ref(null)
+const history = ref([])
+const showActivity = ref(false)
 const loading = ref(true)
 const newMessage = ref('')
 const pendingFiles = ref([])
@@ -278,6 +302,12 @@ function cancelTitleEdit() {
   editingTitle.value = false
 }
 
+function titleWithDatePrefix(title, isoDate) {
+  const stripped = title.replace(/^\[\d{4}-\d{2}-\d{2}\]\s*/, '')
+  if (!isoDate) return stripped
+  return `[${isoDate}] ${stripped}`
+}
+
 const reminderDateValue = computed(() => {
   if (!ticket.value?.reminder_at) return null
   const d = new Date(ticket.value.reminder_at)
@@ -287,7 +317,10 @@ const reminderDateValue = computed(() => {
 async function updateReminderDate(val) {
   try {
     const d = val ? new Date(val + 'T12:00:00Z').toISOString() : null
-    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { reminder_at: d })
+    const newTitle = titleWithDatePrefix(ticket.value.title, val || null)
+    const payload = { reminder_at: d }
+    if (newTitle !== ticket.value.title) payload.title = newTitle
+    const { data } = await ticketsApi.update(customerId.value, ticketId.value, payload)
     ticket.value = data
     ui.success(val ? 'Reminder date updated' : 'Reminder cleared')
   } catch (e) {
@@ -295,6 +328,25 @@ async function updateReminderDate(val) {
   }
 }
 
+const closeDateValue = computed(() => {
+  if (!ticket.value?.close_at) return null
+  const d = new Date(ticket.value.close_at)
+  return d.toISOString().slice(0, 10)
+})
+
+async function updateCloseDate(val) {
+  try {
+    const d = val ? new Date(val + 'T12:00:00Z').toISOString() : null
+    const newTitle = titleWithDatePrefix(ticket.value.title, val || null)
+    const payload = { close_at: d }
+    if (newTitle !== ticket.value.title) payload.title = newTitle
+    const { data } = await ticketsApi.update(customerId.value, ticketId.value, payload)
+    ticket.value = data
+    ui.success(val ? 'Close date updated' : 'Close date cleared')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update close date')
+  }
+}
 
 async function fetchTicket() {
   loading.value = true
@@ -344,6 +396,13 @@ async function fetchTicket() {
     }
     // Fetch time entries
     await fetchTimeEntries()
+    // Fetch history
+    try {
+      const { data: h } = await ticketsApi.getHistory(customerId.value, ticketId.value)
+      history.value = h || []
+    } catch {
+      history.value = []
+    }
   } catch {}
   loading.value = false
 }
@@ -356,10 +415,21 @@ onMounted(fetchTicket)
 
 async function updateStatus(status) {
   try {
-    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { status })
+    const payload = { status }
+    if (status === 'pending' && ticket.value.reminder_at) {
+      const iso = new Date(ticket.value.reminder_at).toISOString().slice(0, 10)
+      const newTitle = titleWithDatePrefix(ticket.value.title, iso)
+      if (newTitle !== ticket.value.title) payload.title = newTitle
+    }
+    if (status === 'pending_close' && ticket.value.close_at) {
+      const iso = new Date(ticket.value.close_at).toISOString().slice(0, 10)
+      const newTitle = titleWithDatePrefix(ticket.value.title, iso)
+      if (newTitle !== ticket.value.title) payload.title = newTitle
+    }
+    const { data } = await ticketsApi.update(customerId.value, ticketId.value, payload)
     ticket.value = data
     ui.success('Status updated')
-    if (status === 'pending') {
+    if (status === 'pending' || status === 'pending_close') {
       await nextTick()
       document.querySelector('.reminder-row')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
@@ -564,7 +634,7 @@ function openCard(c) {
 
 function slaWarning(t) {
   if (!t.sla_response_deadline && !t.sla_resolution_deadline) return false
-  if (t.status === 'resolved' || t.status === 'closed') return false
+  if (t.status === 'pending_close') return false
   const now = Date.now()
   if (t.sla_response_deadline && !t.first_response_at) {
     const deadline = new Date(t.sla_response_deadline).getTime()
@@ -575,6 +645,51 @@ function slaWarning(t) {
     if (deadline - now < 3600000 && deadline - now > 0) return true
   }
   return false
+}
+
+function activityIcon(type) {
+  const icons = {
+    created: '✦',
+    status_changed: '⟳',
+    title_changed: '✎',
+    priority_changed: '⚑',
+    type_changed: '▤',
+    assignee_changed: '◉',
+    owner_changed: '◎',
+    group_changed: '⊞',
+    comment_added: '✉',
+    ticket_linked: '🔗',
+    ticket_unlinked: '⛓',
+    card_linked: '📋',
+    card_unlinked: '📄',
+    tag_added: '+',
+    tag_removed: '−',
+    dates_changed: '📅',
+  }
+  return icons[type] || '•'
+}
+
+function activityLabel(h) {
+  const t = (key) => { try { return h.detail || key } catch { return h.detail || key } }
+  switch (h.event_type) {
+    case 'created': return 'created this ticket'
+    case 'status_changed': return `changed status to ${h.detail}`
+    case 'title_changed': return `changed title to "${h.detail}"`
+    case 'priority_changed': return `changed priority to ${h.detail}`
+    case 'type_changed': return `changed type to ${h.detail}`
+    case 'assignee_changed': return `changed assignee to ${h.detail}`
+    case 'owner_changed': return `changed owner to ${h.detail}`
+    case 'group_changed': return `changed group to ${h.detail}`
+    case 'comment_added': return 'added a comment'
+    case 'ticket_linked': return `linked ticket: ${h.detail}`
+    case 'ticket_unlinked': return 'removed a ticket link'
+    case 'card_linked': return 'linked a card'
+    case 'card_unlinked': return 'unlinked a card'
+    case 'tag_added': return `added tag #${h.detail}`
+    case 'tag_removed': return `removed tag #${h.detail}`
+    case 'dates_changed': return 'updated reminder / close dates'
+    default: return h.detail || h.event_type
+  }
 }
 
 // --- Time tracking ---
@@ -663,11 +778,11 @@ async function deleteTicket() {
 .detail-actions { display: flex; gap: 8px; }
 .detail-meta { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--color-text-muted); flex-wrap: wrap; }
 .ticket-status { padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
-.status-open { background: #dbeafe; color: #1e40af; }
-.status-in_progress { background: #fef3c7; color: #92400e; }
-.status-resolved { background: #d1fae5; color: #065f46; }
-.status-closed { background: #e5e7eb; color: #374151; }
+.status-new { background: #dbeafe; color: #1e40af; }
+.status-open { background: #fef3c7; color: #92400e; }
 .status-pending { background: #f0e6ff; color: #6b21a8; }
+.status-pending_close { background: #d1fae5; color: #065f46; }
+.status-closed { background: #e5e7eb; color: #374151; }
 .detail-description {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
@@ -779,4 +894,34 @@ async function deleteTicket() {
 .te-num { width: 60px; text-align: center; }
 .te-project { min-width: 130px; max-width: 180px; }
 .te-desc { flex: 1; min-width: 120px; }
+
+.activity-section { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
+.activity-toggle { display: flex; align-items: center; gap: 6px; width: 100%; background: none; border: none; cursor: pointer; font-size: 14px; color: var(--color-text-muted); padding: 4px 0; margin-bottom: 12px; }
+.activity-toggle:hover { color: var(--color-text); }
+.activity-toggle-icon { transition: transform .15s; font-size: 10px; }
+.activity-toggle-icon.rotated { transform: rotate(90deg); }
+.activity-count { font-weight: 400; color: var(--color-text-muted); }
+.activity-empty { font-size: 12px; color: var(--color-text-muted); }
+.activity-list { display: flex; flex-direction: column; gap: 6px; }
+.activity-entry { display: flex; align-items: baseline; gap: 8px; font-size: 12px; }
+.activity-icon { font-size: 11px; flex-shrink: 0; width: 14px; text-align: center; }
+.activity-time { color: var(--color-text-muted); flex-shrink: 0; }
+.activity-who { font-weight: 600; flex-shrink: 0; }
+.activity-detail { color: var(--color-text-muted); }
+.activity-type-created { color: #22c55e; }
+.activity-type-status_changed { color: var(--color-primary); }
+.activity-type-priority_changed { color: #f59e0b; }
+.activity-type-title_changed,
+.activity-type-type_changed,
+.activity-type-assignee_changed,
+.activity-type-owner_changed,
+.activity-type-group_changed,
+.activity-type-comment_added,
+.activity-type-ticket_linked,
+.activity-type-ticket_unlinked,
+.activity-type-card_linked,
+.activity-type-card_unlinked,
+.activity-type-tag_added,
+.activity-type-tag_removed,
+.activity-type-dates_changed { color: var(--color-text-muted); }
 </style>

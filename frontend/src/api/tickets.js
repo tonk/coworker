@@ -13,6 +13,7 @@ export const ticketsApi = {
   addLink:      (cid, id, targetId)      => client.post(`/customers/${cid}/tickets/${id}/links`, { target_ticket_id: targetId }),
   removeLink:   (cid, id, linkId)        => client.delete(`/customers/${cid}/tickets/${id}/links/${linkId}`),
   listCards:    (cid, id)                => client.get(`/customers/${cid}/tickets/${id}/cards`),
-  addCardLink:  (cid, id, body)           => client.post(`/customers/${cid}/tickets/${id}/cards`, body),
+  addCardLink:  (cid, id, body)          => client.post(`/customers/${cid}/tickets/${id}/cards`, body),
   removeCardLink:(cid, id, linkId)       => client.delete(`/customers/${cid}/tickets/${id}/cards/${linkId}`),
+  getHistory:   (cid, id)                => client.get(`/customers/${cid}/tickets/${id}/history`),
 }

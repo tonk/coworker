@@ -47,6 +47,7 @@ func AddTicketTag(c *gin.Context) {
 	name := strings.ToLower(strings.TrimSpace(strings.TrimPrefix(req.Name, "#")))
 	tag := models.TicketTag{TicketID: ticket.ID, Name: name}
 	database.DB.FirstOrCreate(&tag, models.TicketTag{TicketID: ticket.ID, Name: name})
+	database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "tag_added", Detail: name})
 	c.JSON(http.StatusCreated, tag)
 }
 
@@ -74,6 +75,11 @@ func RemoveTicketTag(c *gin.Context) {
 		return
 	}
 
+	var tag models.TicketTag
+	database.DB.Where("id = ? AND ticket_id = ?", tagID, ticketID).First(&tag)
 	database.DB.Where("id = ? AND ticket_id = ?", tagID, ticketID).Delete(&models.TicketTag{})
+	if tag.Name != "" {
+		database.DB.Create(&models.TicketHistory{TicketID: uint(ticketID), UserID: userID, EventType: "tag_removed", Detail: tag.Name})
+	}
 	c.JSON(http.StatusOK, gin.H{"message": "removed"})
 }

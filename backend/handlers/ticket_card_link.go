@@ -150,6 +150,7 @@ func CreateTicketCardLink(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, link)
+	database.DB.Create(&models.TicketHistory{TicketID: uint(ticketID), UserID: userID, EventType: "card_linked"})
 }
 
 // DeleteTicketCardLink DELETE /api/v1/customers/:customerId/tickets/:ticketId/cards/:linkId
@@ -183,6 +184,7 @@ func DeleteTicketCardLink(c *gin.Context) {
 		return
 	}
 	database.DB.Delete(&link)
+	database.DB.Create(&models.TicketHistory{TicketID: uint(ticketID), UserID: userID, EventType: "card_unlinked"})
 	c.JSON(http.StatusOK, gin.H{"message": "link removed"})
 }
 

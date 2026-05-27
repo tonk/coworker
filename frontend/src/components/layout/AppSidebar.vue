@@ -104,6 +104,7 @@
             <img v-if="customerAvatar(c) && !avatarErrors.has('c'+c.id)" :src="customerAvatar(c)" class="customer-avatar" alt="" @error="avatarErrors.add('c'+c.id)" />
             <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
             <span class="link-text">{{ c.name }}</span>
+            <span v-if="ticketBadge(c)" class="ticket-badge" :title="ticketBadgeTitle(c)">{{ ticketBadge(c) }}</span>
             <button class="fav-btn fav-btn-active" @click.prevent="customersStore.toggleFavorite(c.id)" :aria-label="$t('customer.unstar')"><span aria-hidden="true">★</span></button>
           </RouterLink>
         </nav>
@@ -136,6 +137,7 @@
             <img v-if="customerAvatar(c) && !avatarErrors.has('c'+c.id)" :src="customerAvatar(c)" class="customer-avatar" alt="" @error="avatarErrors.add('c'+c.id)" />
             <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
             <span class="link-text">{{ c.name }}</span>
+            <span v-if="ticketBadge(c)" class="ticket-badge" :title="ticketBadgeTitle(c)">{{ ticketBadge(c) }}</span>
             <span v-if="c.starred" class="star-mark">★</span>
           </RouterLink>
         </nav>
@@ -195,6 +197,7 @@
             <img v-if="customerAvatar(c) && !avatarErrors.has('ch'+c.id)" :src="customerAvatar(c)" class="customer-avatar" alt="" @error="avatarErrors.add('ch'+c.id)" />
             <span v-else class="customer-avatar-fallback">{{ customerInitial(c) }}</span>
             <span class="link-text">{{ c.name }}</span>
+            <span v-if="ticketBadge(c)" class="ticket-badge" :title="ticketBadgeTitle(c)">{{ ticketBadge(c) }}</span>
           </RouterLink>
         </nav>
         <div v-if="!customersStore.customers.length" class="section-empty">
@@ -558,6 +561,23 @@ function conversationAvatar(conv) {
   return userAvatar(other)
 }
 
+function ticketBadge(c) {
+  const n = c.ticket_new || 0
+  const p = c.ticket_pending || 0
+  const pc = c.ticket_pending_close || 0
+  const cl = c.ticket_closed || 0
+  if (!n && !p && !pc && !cl) return ''
+  return `${n} / ${p} / ${pc} / ${cl}`
+}
+
+function ticketBadgeTitle(c) {
+  const n = c.ticket_new || 0
+  const p = c.ticket_pending || 0
+  const pc = c.ticket_pending_close || 0
+  const cl = c.ticket_closed || 0
+  return `New: ${n}  Pending reminder: ${p}  Pending close: ${pc}  Closed: ${cl}`
+}
+
 function conversationInitials(conv) {
   if (!conv) return '?'
   if (conv.name) return conv.name.slice(0, 2).toUpperCase()
@@ -771,6 +791,18 @@ onUnmounted(() => {
 .star-mark {
   font-size: 11px;
   color: var(--color-warning, #f59e0b);
+  flex-shrink: 0;
+}
+
+.ticket-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg-alt);
+  padding: 0 5px;
+  border-radius: 4px;
+  line-height: 16px;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 

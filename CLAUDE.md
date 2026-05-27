@@ -288,6 +288,14 @@ SLA policies are managed by admins via `GET/POST/PUT/DELETE /api/v1/admin/sla-po
 
 A ticket in `"pending"` status may have a `ReminderAt` timestamp. `ListTickets` orders pending tickets with a due reminder (`reminder_at <= now`) to the top. The frontend stores only a `YYYY-MM-DD` date string and normalises it to `T12:00:00Z` UTC before sending to the API.
 
+### Pending close
+
+A ticket in `"pending_close"` status has a `CloseAt` timestamp. `autoClosePendingTickets()` (called inline from `ListTickets`/`GetTicket`) closes any ticket whose `close_at` has passed.
+
+### Date title prefix
+
+When a reminder date (`pending`) or close date (`pending_close`) is set or changed, the ticket title is automatically prefixed with `[YYYY-mm-dd]`. Clearing the date removes the prefix. The logic lives in `titleWithDatePrefix()` in `TicketDetailView.vue` and fires on status change (if a date already exists) and on date update.
+
 ### Routes
 
 All ticket routes live under `/api/v1/customers/:customerId/tickets` and require `RequireFeature("helpdesk_enabled")`. SLA policy routes live under `/api/v1/admin/sla-policies` and require `AdminOnly`.

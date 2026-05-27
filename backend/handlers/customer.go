@@ -77,10 +77,14 @@ func canManageCustomer(c *gin.Context, customerID uint) bool {
 // CustomerListItem wraps Customer with extra UI metadata.
 type CustomerListItem struct {
 	models.Customer
-	IsFavorite    bool   `json:"is_favorite"`
-	ProjectCount  int64  `json:"project_count"`
-	ContractCount int64  `json:"contract_count"`
-	MyRole        string `json:"my_role"` // "admin", "member", or "" (unrestricted / global admin)
+	IsFavorite     bool   `json:"is_favorite"`
+	ProjectCount   int64  `json:"project_count"`
+	ContractCount  int64  `json:"contract_count"`
+	TicketNew           int64  `json:"ticket_new"`
+	TicketPending       int64  `json:"ticket_pending"`
+	TicketPendingClose  int64  `json:"ticket_pending_close"`
+	TicketClosed        int64  `json:"ticket_closed"`
+	MyRole              string `json:"my_role"` // "admin", "member", or "" (unrestricted / global admin)
 }
 
 // ListCustomers returns all customers with favourite status and counts.
@@ -115,19 +119,27 @@ func ListCustomers(c *gin.Context) {
 
 	items := make([]CustomerListItem, len(customers))
 	for i, cust := range customers {
-		var pCount, cCount int64
+		var pCount, cCount, tNew, tPending, tPendingClose, tClosed int64
 		database.DB.Model(&models.Project{}).Where("customer_id = ? AND deleted_at IS NULL", cust.ID).Count(&pCount)
 		database.DB.Model(&models.Contract{}).Where("customer_id = ?", cust.ID).Count(&cCount)
+		database.DB.Model(&models.Ticket{}).Where("customer_id = ? AND status IN ('new', 'open')", cust.ID).Count(&tNew)
+		database.DB.Model(&models.Ticket{}).Where("customer_id = ? AND status = 'pending'", cust.ID).Count(&tPending)
+		database.DB.Model(&models.Ticket{}).Where("customer_id = ? AND status = 'pending_close'", cust.ID).Count(&tPendingClose)
+		database.DB.Model(&models.Ticket{}).Where("customer_id = ? AND status = 'closed'", cust.ID).Count(&tClosed)
 		myRole := myRoles[cust.ID]
 		if isAdmin {
 			myRole = "admin"
 		}
 		items[i] = CustomerListItem{
-			Customer:      cust,
-			IsFavorite:    favSet[cust.ID],
-			ProjectCount:  pCount,
-			ContractCount: cCount,
-			MyRole:        myRole,
+			Customer:           cust,
+			IsFavorite:         favSet[cust.ID],
+			ProjectCount:       pCount,
+			ContractCount:      cCount,
+			TicketNew:          tNew,
+			TicketPending:      tPending,
+			TicketPendingClose: tPendingClose,
+			TicketClosed:       tClosed,
+			MyRole:             myRole,
 		}
 	}
 

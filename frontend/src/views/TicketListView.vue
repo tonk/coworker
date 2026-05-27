@@ -5,7 +5,14 @@
       <header class="ticket-list-header">
         <RouterLink :to="`/customers/${customerId}`" class="back-link">{{ $t('common.go_back') }}</RouterLink>
         <h1>{{ customer?.name || $t('ticket.tickets') }}</h1>
-        <button class="btn btn-primary btn-sm" @click="showCreate = true">+ {{ $t('ticket.new_ticket') }}</button>
+        <div class="header-actions">
+          <div class="view-toggle" role="tablist">
+            <button role="tab" :aria-selected="viewMode === 'cards'" :class="['view-toggle-btn', { active: viewMode === 'cards' }]" @click="viewMode = 'cards'">☰ {{ $t('ticket.card_view') }}</button>
+            <button role="tab" :aria-selected="viewMode === 'group'" :class="['view-toggle-btn', { active: viewMode === 'group' }]" @click="viewMode = 'group'">⊞ {{ $t('ticket.group_view') }}</button>
+            <button role="tab" :aria-selected="viewMode === 'list'" :class="['view-toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
+          </div>
+          <button class="btn btn-primary btn-sm" @click="showCreate = true">+ {{ $t('ticket.new_ticket') }}</button>
+        </div>
       </header>
 
       <div v-if="loading" class="loading-state">
@@ -17,41 +24,296 @@
           {{ $t('ticket.no_tickets') }}
         </div>
 
-        <div v-else class="ticket-grid">
-          <div
-            v-for="t in tickets"
-            :key="t.id"
-            class="ticket-card"
-            :class="'ticket-' + t.status"
-            @click="openTicket(t)"
-            role="button"
-            tabindex="0"
-            @keydown.enter="openTicket(t)"
-            @keydown.space.prevent="openTicket(t)"
-            :aria-label="t.title"
-          >
-            <div class="ticket-card-header">
-              <span class="ticket-id">#{{ t.id }}</span>
-              <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
-              <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
-            </div>
-            <h3 class="ticket-card-title">{{ t.title }}</h3>
-            <div class="ticket-card-meta">
-              <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
-              <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
-              <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
-              <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
-              <span v-if="t.tags?.length" class="ticket-tags">
-                <span v-for="tag in t.tags.slice(0, 3)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
-                <span v-if="t.tags.length > 3" class="mini-tag more">+{{ t.tags.length - 3 }}</span>
-              </span>
-              <span v-if="t.assigned_to" class="ticket-assignee">
-                {{ t.assigned_to.display_name || t.assigned_to.username }}
-              </span>
-              <span class="ticket-date">{{ formatDate(t.created_at) }}</span>
+        <!-- Card view -->
+        <template v-else-if="viewMode === 'cards'">
+          <div v-if="regularTickets.length" class="ticket-grid">
+            <div
+              v-for="t in regularTickets"
+              :key="t.id"
+              class="ticket-card"
+              :class="'ticket-' + t.status"
+              @click="openTicket(t)"
+              role="button"
+              tabindex="0"
+              @keydown.enter="openTicket(t)"
+              @keydown.space.prevent="openTicket(t)"
+              :aria-label="t.title"
+            >
+              <div class="ticket-card-header">
+                <span class="ticket-id">#{{ t.id }}</span>
+                <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
+                <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
+              </div>
+              <h3 class="ticket-card-title">{{ t.title }}</h3>
+              <div class="ticket-card-meta">
+                <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
+                <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
+                <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
+                <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
+                <span v-if="t.tags?.length" class="ticket-tags">
+                  <span v-for="tag in t.tags.slice(0, 3)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
+                  <span v-if="t.tags.length > 3" class="mini-tag more">+{{ t.tags.length - 3 }}</span>
+                </span>
+                <span v-if="t.assigned_to" class="ticket-assignee">
+                  {{ t.assigned_to.display_name || t.assigned_to.username }}
+                </span>
+                <span class="ticket-date">{{ formatDate(t.created_at) }}</span>
+              </div>
             </div>
           </div>
-        </div>
+
+          <div v-if="pendingReminderTickets.length" class="pending-reminder-divider">
+            <span class="pending-reminder-label">{{ $t('ticket.pending_reminders') }}</span>
+          </div>
+
+          <div v-if="pendingReminderTickets.length" class="ticket-grid">
+            <div
+              v-for="t in pendingReminderTickets"
+              :key="t.id"
+              class="ticket-card"
+              :class="'ticket-' + t.status"
+              @click="openTicket(t)"
+              role="button"
+              tabindex="0"
+              @keydown.enter="openTicket(t)"
+              @keydown.space.prevent="openTicket(t)"
+              :aria-label="t.title"
+            >
+              <div class="ticket-card-header">
+                <span class="ticket-id">#{{ t.id }}</span>
+                <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
+                <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
+              </div>
+              <h3 class="ticket-card-title">{{ t.title }}</h3>
+              <div class="ticket-card-meta">
+                <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
+                <span v-if="t.reminder_at" class="reminder-badge">
+                  {{ $t('ticket.reminder') }}: {{ formatDate(t.reminder_at) }}
+                </span>
+                <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
+                <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
+                <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
+                <span v-if="t.tags?.length" class="ticket-tags">
+                  <span v-for="tag in t.tags.slice(0, 3)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
+                  <span v-if="t.tags.length > 3" class="mini-tag more">+{{ t.tags.length - 3 }}</span>
+                </span>
+                <span v-if="t.assigned_to" class="ticket-assignee">
+                  {{ t.assigned_to.display_name || t.assigned_to.username }}
+                </span>
+                <span class="ticket-date">{{ formatDate(t.created_at) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="pendingCloseTickets.length" class="pending-reminder-divider">
+            <span class="pending-reminder-label">{{ $t('ticket.resolved_closed') }}</span>
+          </div>
+
+          <div v-if="pendingCloseTickets.length" class="ticket-grid">
+            <div
+              v-for="t in pendingCloseTickets"
+              :key="t.id"
+              class="ticket-card"
+              :class="'ticket-' + t.status"
+              @click="openTicket(t)"
+              role="button"
+              tabindex="0"
+              @keydown.enter="openTicket(t)"
+              @keydown.space.prevent="openTicket(t)"
+              :aria-label="t.title"
+            >
+              <div class="ticket-card-header">
+                <span class="ticket-id">#{{ t.id }}</span>
+                <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
+                <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
+              </div>
+              <h3 class="ticket-card-title">{{ t.title }}</h3>
+              <div class="ticket-card-meta">
+                <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
+                <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
+                <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
+                <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
+                <span v-if="t.tags?.length" class="ticket-tags">
+                  <span v-for="tag in t.tags.slice(0, 3)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
+                  <span v-if="t.tags.length > 3" class="mini-tag more">+{{ t.tags.length - 3 }}</span>
+                </span>
+                <span v-if="t.assigned_to" class="ticket-assignee">
+                  {{ t.assigned_to.display_name || t.assigned_to.username }}
+                </span>
+                <span class="ticket-date">{{ formatDate(t.created_at) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="closedTickets.length" class="pending-reminder-divider">
+            <span class="pending-reminder-label">{{ $t('ticket.status_closed') }}</span>
+          </div>
+
+          <div v-if="closedTickets.length" class="ticket-grid">
+            <div
+              v-for="t in closedTickets"
+              :key="t.id"
+              class="ticket-card"
+              :class="'ticket-' + t.status"
+              @click="openTicket(t)"
+              role="button"
+              tabindex="0"
+              @keydown.enter="openTicket(t)"
+              @keydown.space.prevent="openTicket(t)"
+              :aria-label="t.title"
+            >
+              <div class="ticket-card-header">
+                <span class="ticket-id">#{{ t.id }}</span>
+                <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
+                <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
+              </div>
+              <h3 class="ticket-card-title">{{ t.title }}</h3>
+              <div class="ticket-card-meta">
+                <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
+                <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
+                <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
+                <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
+                <span v-if="t.tags?.length" class="ticket-tags">
+                  <span v-for="tag in t.tags.slice(0, 3)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
+                  <span v-if="t.tags.length > 3" class="mini-tag more">+{{ t.tags.length - 3 }}</span>
+                </span>
+                <span v-if="t.assigned_to" class="ticket-assignee">
+                  {{ t.assigned_to.display_name || t.assigned_to.username }}
+                </span>
+                <span class="ticket-date">{{ formatDate(t.created_at) }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Group view -->
+        <template v-else-if="viewMode === 'group'">
+          <div class="group-sub-toggle">
+            <button :class="['group-sub-btn', { active: groupSubMode === 'cards' }]" @click="groupSubMode = 'cards'">☰ {{ $t('ticket.card_view') }}</button>
+            <button :class="['group-sub-btn', { active: groupSubMode === 'list' }]" @click="groupSubMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
+          </div>
+          <div v-for="g in groupedTickets" :key="g.status" class="group-section">
+            <div class="group-header">
+              <h2 class="group-title">{{ g.label }}</h2>
+              <span class="group-count">{{ g.tickets.length }}</span>
+            </div>
+            <div v-if="g.tickets.length && groupSubMode === 'cards'" class="ticket-grid">
+              <div
+                v-for="t in g.tickets"
+                :key="t.id"
+                class="ticket-card"
+                :class="'ticket-' + t.status"
+                @click="openTicket(t)"
+                role="button"
+                tabindex="0"
+                @keydown.enter="openTicket(t)"
+                @keydown.space.prevent="openTicket(t)"
+                :aria-label="t.title"
+              >
+                <div class="ticket-card-header">
+                  <span class="ticket-id">#{{ t.id }}</span>
+                  <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
+                  <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
+                </div>
+                <h3 class="ticket-card-title">{{ t.title }}</h3>
+                <div class="ticket-card-meta">
+                  <span v-if="t.status === 'pending' && t.reminder_at" class="reminder-badge">
+                    {{ $t('ticket.reminder') }}: {{ formatDate(t.reminder_at) }}
+                  </span>
+                  <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
+                  <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
+                  <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
+                  <span v-if="t.tags?.length" class="ticket-tags">
+                    <span v-for="tag in t.tags.slice(0, 3)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
+                    <span v-if="t.tags.length > 3" class="mini-tag more">+{{ t.tags.length - 3 }}</span>
+                  </span>
+                  <span v-if="t.assigned_to" class="ticket-assignee">
+                    {{ t.assigned_to.display_name || t.assigned_to.username }}
+                  </span>
+                  <span class="ticket-date">{{ formatDate(t.created_at) }}</span>
+                </div>
+              </div>
+            </div>
+            <table v-else-if="g.tickets.length && groupSubMode === 'list'" class="group-table">
+              <thead>
+                <tr>
+                  <th class="th-sort" :class="groupSortClass('id')" @click="groupToggleSort('id')"># <span class="sort-arrow">{{ groupSortArrow('id') }}</span></th>
+                  <th class="th-sort" :class="groupSortClass('title')" @click="groupToggleSort('title')">{{ $t('ticket.title') }} <span class="sort-arrow">{{ groupSortArrow('title') }}</span></th>
+                  <th class="th-sort" :class="groupSortClass('priority')" @click="groupToggleSort('priority')">{{ $t('ticket.priority') }} <span class="sort-arrow">{{ groupSortArrow('priority') }}</span></th>
+                  <th class="th-sort" :class="groupSortClass('type')" @click="groupToggleSort('type')">{{ $t('ticket.type') }} <span class="sort-arrow">{{ groupSortArrow('type') }}</span></th>
+                  <th class="th-sort" :class="groupSortClass('assigned_to')" @click="groupToggleSort('assigned_to')">{{ $t('ticket.assigned_to') }} <span class="sort-arrow">{{ groupSortArrow('assigned_to') }}</span></th>
+                  <th class="th-sort" :class="groupSortClass('created_at')" @click="groupToggleSort('created_at')">{{ $t('ticket.created_at') }} <span class="sort-arrow">{{ groupSortArrow('created_at') }}</span></th>
+                  <th>{{ $t('ticket.tags') }}</th>
+                  <th>SLA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="t in g.tickets" :key="t.id" class="table-row" @click="openTicket(t)" tabindex="0" @keydown.enter="openTicket(t)">
+                  <td class="td-id">#{{ t.id }}</td>
+                  <td class="td-title">{{ t.title }}</td>
+                  <td><span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span></td>
+                  <td><span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span></td>
+                  <td class="td-assignee">{{ t.assigned_to?.display_name || t.assigned_to?.username || '—' }}</td>
+                  <td class="td-date">{{ formatDate(t.created_at) }}</td>
+                  <td>
+                    <span v-if="t.tags?.length" class="ticket-tags">
+                      <span v-for="tag in t.tags.slice(0, 2)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
+                      <span v-if="t.tags.length > 2" class="mini-tag more">+{{ t.tags.length - 2 }}</span>
+                    </span>
+                  </td>
+                  <td>
+                    <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
+                    <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
+                    <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
+                    <span v-else>—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
+
+        <!-- List view -->
+        <template v-else-if="viewMode === 'list'">
+          <table class="ticket-table">
+            <thead>
+              <tr>
+                <th class="th-sort" :class="sortClass('id')" @click="toggleSort('id')"># <span class="sort-arrow">{{ sortArrow('id') }}</span></th>
+                <th class="th-sort th-title" :class="sortClass('title')" @click="toggleSort('title')">{{ $t('ticket.title') }} <span class="sort-arrow">{{ sortArrow('title') }}</span></th>
+                <th class="th-sort" :class="sortClass('status')" @click="toggleSort('status')">{{ $t('ticket.status') }} <span class="sort-arrow">{{ sortArrow('status') }}</span></th>
+                <th class="th-sort" :class="sortClass('priority')" @click="toggleSort('priority')">{{ $t('ticket.priority') }} <span class="sort-arrow">{{ sortArrow('priority') }}</span></th>
+                <th class="th-sort" :class="sortClass('type')" @click="toggleSort('type')">{{ $t('ticket.type') }} <span class="sort-arrow">{{ sortArrow('type') }}</span></th>
+                <th class="th-sort" :class="sortClass('assigned_to')" @click="toggleSort('assigned_to')">{{ $t('ticket.assigned_to') }} <span class="sort-arrow">{{ sortArrow('assigned_to') }}</span></th>
+                <th class="th-sort" :class="sortClass('created_at')" @click="toggleSort('created_at')">{{ $t('ticket.created_at') }} <span class="sort-arrow">{{ sortArrow('created_at') }}</span></th>
+                <th class="th-tags">{{ $t('ticket.tags') }}</th>
+                <th>SLA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="t in sortedTickets" :key="t.id" class="table-row" @click="openTicket(t)" tabindex="0" @keydown.enter="openTicket(t)" :aria-label="t.title">
+                <td class="td-id">#{{ t.id }}</td>
+                <td class="td-title">{{ t.title }}</td>
+                <td><span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span></td>
+                <td><span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span></td>
+                <td><span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span></td>
+                <td class="td-assignee">{{ t.assigned_to?.display_name || t.assigned_to?.username || '—' }}</td>
+                <td class="td-date">{{ formatDate(t.created_at) }}</td>
+                <td>
+                  <span v-if="t.tags?.length" class="ticket-tags">
+                    <span v-for="tag in t.tags.slice(0, 2)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
+                    <span v-if="t.tags.length > 2" class="mini-tag more">+{{ t.tags.length - 2 }}</span>
+                  </span>
+                </td>
+                <td>
+                  <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
+                  <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
+                  <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
+                  <span v-else>—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </template>
       </template>
     </div>
 
@@ -172,6 +434,162 @@ const newTagName = ref('')
 const pendingFiles = ref([])
 const customerGroups = ref([])
 const customerUsers = ref([])
+const viewMode = ref(localStorage.getItem('ticket_view_mode') || 'cards')
+
+watch(viewMode, (val) => {
+  localStorage.setItem('ticket_view_mode', val)
+})
+const groupSubMode = ref(localStorage.getItem('ticket_group_sub_mode') || 'cards')
+
+watch(groupSubMode, (val) => {
+  localStorage.setItem('ticket_group_sub_mode', val)
+})
+const sortField = ref('created_at')
+const sortDir = ref(-1)
+const groupSortField = ref('created_at')
+const groupSortDir = ref(-1)
+
+const priorityRank = { low: 1, medium: 2, high: 3, critical: 4 }
+
+function isPendingReminder(t) {
+  return t.status === 'pending' && t.reminder_at
+}
+
+function isResolvedOrClosed(t) {
+  return t.status === 'pending_close' || t.status === 'closed'
+}
+
+const regularTickets = computed(() => {
+  return tickets.value.filter(t => !isPendingReminder(t) && !isResolvedOrClosed(t))
+})
+
+const pendingReminderTickets = computed(() => {
+  return tickets.value
+    .filter(t => isPendingReminder(t))
+    .sort((a, b) => new Date(a.reminder_at) - new Date(b.reminder_at))
+})
+
+const pendingCloseTickets = computed(() => {
+  return tickets.value.filter(t => t.status === 'pending_close')
+})
+
+const closedTickets = computed(() => {
+  return tickets.value.filter(t => t.status === 'closed')
+})
+
+const statusGroups = [
+  { status: 'new', label: 'New' },
+  { status: 'open', label: 'Open' },
+  { status: 'pending', label: 'Pending reminder' },
+  { status: 'pending_close', label: 'Pending close' },
+  { status: 'closed', label: 'Closed' },
+]
+
+const groupedTickets = computed(() => {
+  const f = groupSortField.value
+  const d = groupSortDir.value
+  return statusGroups.map(g => ({
+    ...g,
+    tickets: tickets.value.filter(t => t.status === g.status).sort((a, b) => {
+      let va, vb
+      if (f === 'priority') {
+        va = priorityRank[a.priority] || 0
+        vb = priorityRank[b.priority] || 0
+      } else if (f === 'type') {
+        va = a.type
+        vb = b.type
+      } else if (f === 'assigned_to') {
+        va = (a.assigned_to?.display_name || a.assigned_to?.username || '').toLowerCase()
+        vb = (b.assigned_to?.display_name || b.assigned_to?.username || '').toLowerCase()
+      } else if (f === 'id') {
+        va = a.id
+        vb = b.id
+      } else if (f === 'title') {
+        va = a.title.toLowerCase()
+        vb = b.title.toLowerCase()
+      } else {
+        va = a[f]
+        vb = b[f]
+      }
+      if (va < vb) return -1 * d
+      if (va > vb) return 1 * d
+      return 0
+    }),
+  })).filter(g => g.tickets.length > 0)
+})
+
+const sortedTickets = computed(() => {
+  const f = sortField.value
+  const d = sortDir.value
+  const arr = [...tickets.value]
+  arr.sort((a, b) => {
+    let va, vb
+    if (f === 'priority') {
+      va = priorityRank[a.priority] || 0
+      vb = priorityRank[b.priority] || 0
+    } else if (f === 'status') {
+      va = a.status
+      vb = b.status
+    } else if (f === 'type') {
+      va = a.type
+      vb = b.type
+    } else if (f === 'assigned_to') {
+      va = (a.assigned_to?.display_name || a.assigned_to?.username || '').toLowerCase()
+      vb = (b.assigned_to?.display_name || b.assigned_to?.username || '').toLowerCase()
+    } else if (f === 'id') {
+      va = a.id
+      vb = b.id
+    } else if (f === 'title') {
+      va = a.title.toLowerCase()
+      vb = b.title.toLowerCase()
+    } else {
+      va = a[f]
+      vb = b[f]
+    }
+    if (va < vb) return -1 * d
+    if (va > vb) return 1 * d
+    return 0
+  })
+  return arr
+})
+
+function toggleSort(field) {
+  if (sortField.value === field) {
+    sortDir.value *= -1
+  } else {
+    sortField.value = field
+    sortDir.value = -1
+  }
+}
+
+function sortClass(field) {
+  if (sortField.value !== field) return ''
+  return sortDir.value === -1 ? 'sort-desc' : 'sort-asc'
+}
+
+function sortArrow(field) {
+  if (sortField.value !== field) return '▽'
+  return sortDir.value === -1 ? '▽' : '△'
+}
+
+function groupToggleSort(field) {
+  if (groupSortField.value === field) {
+    groupSortDir.value *= -1
+  } else {
+    groupSortField.value = field
+    groupSortDir.value = -1
+  }
+}
+
+function groupSortClass(field) {
+  if (groupSortField.value !== field) return ''
+  return groupSortDir.value === -1 ? 'sort-desc' : 'sort-asc'
+}
+
+function groupSortArrow(field) {
+  if (groupSortField.value !== field) return '▽'
+  return groupSortDir.value === -1 ? '▽' : '△'
+}
 
 async function fetchData() {
   loading.value = true
@@ -207,7 +625,7 @@ function openTicket(t) {
 
 function slaWarning(t) {
   if (!t.sla_response_deadline && !t.sla_resolution_deadline) return false
-  if (t.status === 'resolved' || t.status === 'closed') return false
+  if (t.status === 'pending_close') return false
   const now = Date.now()
   if (t.sla_response_deadline && !t.first_response_at) {
     const deadline = new Date(t.sla_response_deadline).getTime()
@@ -252,7 +670,6 @@ async function submitCreate() {
       }
     }
 
-    // Add tags after creation
     if (newTicketTags.value.length) {
       for (const tagName of newTicketTags.value) {
         try {
@@ -338,9 +755,17 @@ async function onDescPaste(e) {
 </script>
 
 <style scoped>
-.ticket-list-main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.ticket-list-main { padding: 24px; margin: 0 auto; }
+.ticket-list-main:has(.ticket-table) { max-width: 100%; padding: 24px 32px; }
+.ticket-list-main:not(:has(.ticket-table)) { max-width: 1200px; }
 .ticket-list-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
 .ticket-list-header h1 { flex: 1; margin: 0; font-size: 20px; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.view-toggle { display: flex; border: 1px solid var(--color-border); border-radius: 6px; overflow: hidden; }
+.view-toggle-btn { background: none; border: none; padding: 5px 12px; font-size: 12px; cursor: pointer; color: var(--color-text-muted); transition: background .15s, color .15s; }
+.view-toggle-btn:not(:last-child) { border-right: 1px solid var(--color-border); }
+.view-toggle-btn:hover { background: var(--color-bg-alt); }
+.view-toggle-btn.active { background: var(--color-primary); color: #fff; }
 .back-link { font-size: 13px; color: var(--color-primary); text-decoration: none; }
 .back-link:hover { text-decoration: underline; }
 .loading-state { display: flex; justify-content: center; padding: 48px; }
@@ -381,17 +806,81 @@ async function onDescPaste(e) {
 .ticket-card-title { font-size: 14px; font-weight: 600; margin: 0 0 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ticket-card-meta { display: flex; gap: 8px; align-items: center; font-size: 11px; color: var(--color-text-muted); flex-wrap: wrap; }
 .ticket-status { padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-.status-open { background: #dbeafe; color: #1e40af; }
-.status-in_progress { background: #fef3c7; color: #92400e; }
-.status-resolved { background: #d1fae5; color: #065f46; }
+.status-new { background: #dbeafe; color: #1e40af; }
+.status-open { background: #fef3c7; color: #92400e; }
+.status-pending { background: #f0e6ff; color: #6b21a8; }
+.status-pending_close { background: #d1fae5; color: #065f46; }
 .status-closed { background: #e5e7eb; color: #374151; }
 .ticket-assignee { display: flex; align-items: center; gap: 4px; }
 .sla-badge { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; }
 .sla-ok { background: #d1fae5; color: #065f46; }
 .sla-warning { background: #fef3c7; color: #92400e; }
 .sla-breach { background: #fecaca; color: #b91c1c; }
+.pending-reminder-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 24px 0 16px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.pending-reminder-divider::before {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+.pending-reminder-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+.reminder-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #fef3c7;
+  color: #92400e;
+}
 
-/* Markdown editor tabs (matches AdminView pattern) */
+/* Group view */
+.group-section { margin-bottom: 32px; }
+.group-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.group-title { font-size: 16px; font-weight: 700; margin: 0; }
+.group-count { font-size: 12px; font-weight: 700; color: #fff; background: var(--color-text-muted); padding: 1px 8px; border-radius: 10px; line-height: 20px; }
+.group-section:not(:last-child)::after { content: ''; display: block; height: 1px; background: var(--color-border); margin-top: 32px; }
+.group-sub-toggle { display: flex; gap: 4px; margin-bottom: 20px; }
+.group-sub-btn { font-size: 12px; font-weight: 600; padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-bg); color: var(--color-text-muted); cursor: pointer; transition: all .15s; }
+.group-sub-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.group-sub-btn:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
+.group-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.group-table th { text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--color-border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); white-space: nowrap; }
+.group-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.group-table .table-row { cursor: pointer; }
+.group-table .table-row:hover { background: var(--color-bg-alt); }
+
+/* Table view */
+.ticket-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ticket-table th { text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--color-border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-muted); white-space: nowrap; user-select: none; }
+.ticket-table td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.th-sort { cursor: pointer; }
+.th-sort:hover { color: var(--color-text); }
+.sort-arrow { font-size: 10px; margin-left: 2px; }
+.th-sort.sort-desc .sort-arrow { color: var(--color-primary); }
+.th-sort.sort-asc .sort-arrow { color: var(--color-primary); }
+.th-title { min-width: 200px; }
+.td-title { font-weight: 600; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.td-id { font-family: monospace; font-size: 12px; color: var(--color-text-muted); font-weight: 700; }
+.td-assignee { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; color: var(--color-text-muted); }
+.td-date { white-space: nowrap; color: var(--color-text-muted); font-size: 12px; }
+.table-row { cursor: pointer; transition: background .1s; }
+.table-row:hover { background: var(--color-bg-alt); }
+.table-row:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+
+/* Markdown editor tabs */
 :deep(.md-editor) { border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
 :deep(.md-editor-tabs) { display: flex; background: var(--color-bg-alt); border-bottom: 1px solid var(--color-border); }
 :deep(.md-tab) { padding: 6px 16px; font-size: 12px; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 2px solid transparent; color: var(--color-text-muted); transition: color .15s, border-color .15s; }

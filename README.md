@@ -8,12 +8,13 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.18)
+## Latest release (v0.10.19)
 
-- **Settings page crash fixed (Linux RPM)** — unhandled promise rejections in the user-settings page crashed the WebKit GTK WebView; all async calls now have proper error handling.
-- **Clipboard API crash fixed** — copy-key buttons in settings and project settings now gracefully handle unavailable clipboard API (WebKit GTK limitation).
-- **All 12 locales now saved correctly** — Danish, Swedish, Norwegian, Finnish, Icelandic, Portuguese, and Italian were silently rejected by the backend; fixed.
-- **Black theme now persisted** — selecting the black theme in personal settings is now correctly saved.
+- **Ticket status redesign** — Resolved/closed merged into `pending_close` with auto-close; `closed` is immediate final status.
+- **Three ticket view modes** — Card grid, Group by status (cards or sortable table per group), and full List (sortable table).
+- **Date title prefix** — Setting a pending reminder/close date auto-prefixes the ticket title with `[YYYY-mm-dd]`.
+- **Ticket history** — Activity timeline with status changes, comments, links, and tag updates.
+- **Sidebar ticket counts** — Badges for new/open, pending, pending_close, closed per customer.
 
 ## Experiment
 

@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.10.19 — 2026-05-27
+
+### Added
+- **Ticket status redesign** — merged resolved/closed into `pending_close` (date picker + auto-close),
+  re-added `closed` as an immediate final status.
+- **View modes** — three ticket list layouts: Card (grid), Group (grouped by status with cards or
+  sortable table per group), and List (full-width sortable table), persisted in `localStorage`.
+- **Ticket history** — activity timeline tracking all status changes, comments, links, tag
+  changes, and date updates, shown as a collapsible timeline in ticket detail.
+- **Date title prefix** — setting a pending reminder or pending close date automatically
+  prefixes the ticket title with `[YYYY-mm-dd]`; clearing the date removes it.
+- **Sidebar ticket counts** — customer sidebar now shows badge counts for new/open, pending,
+  pending_close, and closed tickets.
+- **Sort on grouped tables** — group view's per-section tables have sortable columns.
+- **Pending close auto-close** — tickets with `close_at` in the past are automatically closed
+  on list/detail load.
+
+### Fixed
+- **Vue i18n SyntaxError in 11 locale files** — unescaped `{'@'}` in `req_special`
+  translations caused a Vue compile error.
+
 ## v0.10.18 — 2026-05-26
 
 ### Fixed

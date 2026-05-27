@@ -140,6 +140,7 @@ func CreateTicketLink(c *gin.Context) {
 		Priority:   target.Priority,
 		CustomerID: target.CustomerID,
 	})
+	database.DB.Create(&models.TicketHistory{TicketID: uint(ticketID), UserID: userID, EventType: "ticket_linked", Detail: target.Title})
 }
 
 // DeleteTicketLink DELETE /api/v1/customers/:customerId/tickets/:ticketId/links/:linkId
@@ -167,5 +168,6 @@ func DeleteTicketLink(c *gin.Context) {
 	}
 
 	database.DB.Where("id = ? AND (source_ticket_id = ? OR target_ticket_id = ?)", linkID, ticketID, ticketID).Delete(&models.TicketLink{})
+	database.DB.Create(&models.TicketHistory{TicketID: uint(ticketID), UserID: userID, EventType: "ticket_unlinked"})
 	c.JSON(http.StatusOK, gin.H{"message": "removed"})
 }

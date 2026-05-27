@@ -8,7 +8,7 @@ type Ticket struct {
 	Title                 string          `gorm:"not null;size:500" json:"title"`
 	Description           string          `gorm:"type:text" json:"description"`
 	Type                  string          `gorm:"not null;size:30;default:'incident'" json:"type"`
-	Status                string          `gorm:"not null;size:20;default:'open'" json:"status"`
+	Status                string          `gorm:"not null;size:20;default:'new'" json:"status"`
 	Priority              string          `gorm:"not null;size:20;default:'medium'" json:"priority"`
 	CreatedByID           uint            `gorm:"not null" json:"created_by_id"`
 	AssignedToID          *uint           `gorm:"index" json:"assigned_to_id,omitempty"`
@@ -21,6 +21,7 @@ type Ticket struct {
 	SlaResponseBreached   bool            `json:"sla_response_breached"`
 	SlaResolutionBreached bool            `json:"sla_resolution_breached"`
 	ReminderAt            *time.Time      `json:"reminder_at,omitempty"`
+	CloseAt               *time.Time      `json:"close_at,omitempty"`
 	CreatedAt             time.Time       `json:"created_at"`
 	UpdatedAt             time.Time       `json:"updated_at"`
 	Messages              []TicketMessage `gorm:"foreignKey:TicketID" json:"messages,omitempty"`
@@ -42,4 +43,15 @@ type TicketMessage struct {
 	UpdatedAt time.Time    `json:"updated_at"`
 	User      User         `json:"user,omitempty"`
 	Attachments []Attachment `gorm:"-" json:"attachments,omitempty"`
+}
+
+// TicketHistory records activity events on a ticket.
+type TicketHistory struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	TicketID  uint      `gorm:"not null;index" json:"ticket_id"`
+	UserID    uint      `gorm:"not null" json:"user_id"`
+	User      User      `json:"user"`
+	EventType string    `gorm:"size:50;not null" json:"event_type"`
+	Detail    string    `gorm:"size:500" json:"detail"`
 }

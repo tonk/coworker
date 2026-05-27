@@ -27,6 +27,7 @@ func ListTickets(c *gin.Context) {
 		return
 	}
 
+	autoCloseTickets()
 	var tickets []models.Ticket
 	database.DB.Where("customer_id = ?", customerID).
 		Preload("CreatedBy").
@@ -65,6 +66,7 @@ func GetTicket(c *gin.Context) {
 		return
 	}
 
+	autoCloseTickets()
 	var ticket models.Ticket
 	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).
 		Preload("CreatedBy").
@@ -150,7 +152,7 @@ func CreateTicket(c *gin.Context) {
 		Description:  req.Description,
 		Type:         req.Type,
 		Priority:     req.Priority,
-		Status:       "open",
+		Status:       "new",
 		CreatedByID:  userID,
 		AssignedToID: req.AssignedTo,
 		OwnerID:      req.OwnerID,
@@ -171,6 +173,7 @@ func CreateTicket(c *gin.Context) {
 	}
 
 	database.DB.Preload("CreatedBy").Preload("AssignedTo").Preload("Owner").Preload("Group").Preload("Tags").Preload("SlaPolicy").First(&ticket, ticket.ID)
+	database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "created"})
 	c.JSON(http.StatusCreated, ticket)
 }
 
@@ -199,7 +202,7 @@ func UpdateTicket(c *gin.Context) {
 		return
 	}
 
-	var req struct {
+		var req struct {
 		Title       *string    `json:"title"`
 		Description *string    `json:"description"`
 		Type        *string    `json:"type"`
@@ -209,6 +212,7 @@ func UpdateTicket(c *gin.Context) {
 		OwnerID     *uint      `json:"owner_id"`
 		GroupID     *uint      `json:"group_id"`
 		ReminderAt  *time.Time `json:"reminder_at"`
+		CloseAt     *time.Time `json:"close_at"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -230,13 +234,20 @@ func UpdateTicket(c *gin.Context) {
 		}
 	}
 	if req.Status != nil {
-		validStatuses := map[string]bool{"open": true, "in_progress": true, "resolved": true, "closed": true, "pending": true}
+		validStatuses := map[string]bool{"new": true, "open": true, "pending": true, "pending_close": true, "closed": true}
 		if validStatuses[*req.Status] {
 			updates["status"] = *req.Status
 		}
 	}
 	if req.ReminderAt != nil {
 		updates["reminder_at"] = req.ReminderAt
+	}
+	if req.CloseAt != nil {
+		if req.CloseAt.IsZero() {
+			updates["close_at"] = nil
+		} else {
+			updates["close_at"] = req.CloseAt
+		}
 	}
 	if req.Priority != nil {
 		validPriorities := map[string]bool{"low": true, "medium": true, "high": true, "critical": true}
@@ -295,6 +306,75 @@ func UpdateTicket(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update ticket"})
 			return
 		}
+	}
+
+	// Log history for relevant changes
+	if req.Title != nil && *req.Title != ticket.Title {
+		database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "title_changed", Detail: *req.Title})
+	}
+	if req.Status != nil && *req.Status != ticket.Status {
+		database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "status_changed", Detail: *req.Status})
+	}
+	if req.Priority != nil && *req.Priority != ticket.Priority {
+		database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "priority_changed", Detail: *req.Priority})
+	}
+	if req.Type != nil && *req.Type != ticket.Type {
+		database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "type_changed", Detail: *req.Type})
+	}
+	if req.AssignedTo != nil {
+		oldAssignee := ticket.AssignedToID
+		newVal := *req.AssignedTo
+		if newVal == 0 {
+			newVal = 0
+		}
+		if oldAssignee == nil || *oldAssignee != newVal {
+			detail := "unassigned"
+			if newVal != 0 {
+				var u models.User
+				database.DB.First(&u, newVal)
+				detail = u.DisplayName
+				if detail == "" {
+					detail = u.Username
+				}
+			}
+			database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "assignee_changed", Detail: detail})
+		}
+	}
+	if req.OwnerID != nil {
+		newVal := *req.OwnerID
+		if newVal == 0 {
+			newVal = 0
+		}
+		if ticket.OwnerID == nil || *ticket.OwnerID != newVal {
+			detail := "unassigned"
+			if newVal != 0 {
+				var u models.User
+				database.DB.First(&u, newVal)
+				detail = u.DisplayName
+				if detail == "" {
+					detail = u.Username
+				}
+			}
+			database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "owner_changed", Detail: detail})
+		}
+	}
+	if req.GroupID != nil {
+		newVal := *req.GroupID
+		if newVal == 0 {
+			newVal = 0
+		}
+		if ticket.GroupID == nil || *ticket.GroupID != newVal {
+			detail := "unassigned"
+			if newVal != 0 {
+				var g models.UserGroup
+				database.DB.First(&g, newVal)
+				detail = g.Name
+			}
+			database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "group_changed", Detail: detail})
+		}
+	}
+	if req.ReminderAt != nil || req.CloseAt != nil {
+		database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "dates_changed", Detail: "reminder / close"})
 	}
 
 	database.DB.Preload("CreatedBy").Preload("AssignedTo").Preload("Owner").Preload("Group").Preload("Tags").Preload("SlaPolicy").First(&ticket, ticket.ID)
@@ -383,7 +463,49 @@ func CreateTicketMessage(c *gin.Context) {
 
 	database.DB.Preload("User").First(&msg, msg.ID)
 	msg.Attachments = []models.Attachment{}
+	database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "comment_added"})
 	c.JSON(http.StatusCreated, msg)
+}
+
+// GetTicketHistory GET /api/v1/customers/:customerId/tickets/:ticketId/history
+func GetTicketHistory(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	customerID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var history []models.TicketHistory
+	database.DB.Preload("User").
+		Where("ticket_id = ?", ticketID).
+		Order("created_at desc").
+		Find(&history)
+	if history == nil {
+		history = []models.TicketHistory{}
+	}
+	c.JSON(http.StatusOK, history)
+}
+
+// autoCloseTickets closes any pending_close tickets whose close_at has passed.
+func autoCloseTickets() {
+	database.DB.Model(&models.Ticket{}).
+		Where("status = 'pending_close' AND close_at IS NOT NULL AND close_at <= datetime('now')").
+		Update("status", "closed")
+	// Clear close_at on already-closed tickets that still have it set
+	database.DB.Model(&models.Ticket{}).
+		Where("status = 'closed' AND close_at IS NOT NULL").
+		Update("close_at", nil)
 }
 
 // refreshSlaBreachStatus updates breach flags on a ticket if deadlines have passed.
@@ -398,7 +520,7 @@ func refreshSlaBreachStatus(ticket *models.Ticket) {
 		}
 	}
 	if ticket.SlaResolutionDeadline != nil && !ticket.SlaResolutionBreached && now.After(*ticket.SlaResolutionDeadline) {
-		if ticket.Status != "resolved" && ticket.Status != "closed" {
+		if ticket.Status != "pending_close" && ticket.Status != "closed" {
 			ticket.SlaResolutionBreached = true
 			database.DB.Model(ticket).Update("sla_resolution_breached", true)
 			changed = true

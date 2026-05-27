@@ -547,7 +547,7 @@
     "req_upper": "Ein Großbuchstabe (A–Z)",
     "req_lower": "Ein Kleinbuchstabe (a–z)",
     "req_digit": "Eine Ziffer (0–9)",
-    "req_special": "Ein Sonderzeichen (!{'@'}#$…)",
+    "req_special": "Ein Sonderzeichen (!@#$…)",
     "working_hours": "Arbeitszeiten",
     "working_hours_hint": "Legen Sie Ihre übliche Startzeit für jeden Wochentag fest. Leer lassen für freie Tage.",
     "dashboard_default": "Dashboard shows",
@@ -997,6 +997,23 @@
     "time_hours": "h",
     "time_minutes": "m",
     "time_delete_entry": "Delete time entry",
-    "time_note": "Note (optional)"
+    "time_note": "Note (optional)",
+    "reminder": "Reminder",
+    "pending_reminders": "Pending reminders",
+    "resolved_closed": "Pending close",
+    "status_new": "New",
+    "status_open": "Open",
+    "status_pending": "Pending reminder",
+    "status_pending_close": "Pending close",
+    "status_closed": "Closed",
+    "close_date": "Close date",
+    "clear_close_date": "Clear close date",
+    "change_close_date": "Click to change close date",
+    "history": "Activity",
+    "card_view": "Card View",
+    "list_view": "List View",
+    "status": "Status",
+    "created_at": "Created At",
+    "group_view": "Group View"
   }
 }
