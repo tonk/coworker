@@ -27,6 +27,11 @@ notes:
   - The username is used as the idempotency key.  If the user does not exist
     the module fails.
 
+seealso:
+  - module: ansilabnl.warmdesk.user
+  - module: ansilabnl.warmdesk.user_options
+    description: Use user_options to manage UI preferences (locale, theme, timezone, date format, etc.).
+
 extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
 

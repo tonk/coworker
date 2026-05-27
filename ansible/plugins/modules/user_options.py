@@ -26,10 +26,6 @@ options:
       - Login name of the user whose options should be updated.
     type: str
     required: true
-  time_tracking_enabled:
-    description:
-      - Enable time tracking features for the user.
-    type: bool
   theme:
     description:
       - UI theme preference.
@@ -89,6 +85,8 @@ notes:
     are left unchanged on the server.
 seealso:
   - module: ansilabnl.warmdesk.user
+  - module: ansilabnl.warmdesk.user_access
+    description: Use user_access to manage feature flags (board, chat, helpdesk, time tracking) and global role.
 '''
 
 EXAMPLES = r'''
@@ -116,13 +114,6 @@ EXAMPLES = r'''
     username: bob
     sidebar_position: right
     accent_color: red
-
-- name: Enable time tracking for a user
-  ansilabnl.warmdesk.user_options:
-    warmdesk_url: https://warmdesk.example.com
-    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
-    username: charlie
-    time_tracking_enabled: true
 
 - name: Configure time tracking display preferences
   ansilabnl.warmdesk.user_options:
@@ -173,7 +164,6 @@ def _find_user_id(client, username):
 
 
 _OPTION_FIELDS = (
-    'time_tracking_enabled',
     'theme',
     'show_breadcrumbs',
     'email_notifications',
@@ -193,7 +183,6 @@ def run_module():
     argument_spec = warmdesk_argument_spec()
     argument_spec.update(dict(
         username=dict(type='str', required=True),
-        time_tracking_enabled=dict(type='bool'),
         theme=dict(type='str', choices=['light', 'dark', 'system']),
         show_breadcrumbs=dict(type='bool'),
         email_notifications=dict(type='bool'),
