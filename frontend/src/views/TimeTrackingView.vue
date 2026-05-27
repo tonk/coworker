@@ -1124,6 +1124,14 @@ watch(allRows, (rows) => {
 const tbodyEl = ref(null)
 let rowSortable = null
 
+watch(tbodyEl, (newEl) => {
+  if (rowSortable) {
+    rowSortable.destroy()
+    rowSortable = null
+  }
+  if (newEl) initRowSortable()
+})
+
 function applySortOrder() {
   const sorted = [...allRows.value].sort((a, b) => {
     let va, vb
@@ -2700,7 +2708,7 @@ onMounted(() => {
 })
 
 function initRowSortable() {
-  if (!tbodyEl.value || rowSortable) return
+  if (!tbodyEl.value) return
   rowSortable = Sortable.create(tbodyEl.value, {
     animation: 150,
     handle: '.drag-handle',
