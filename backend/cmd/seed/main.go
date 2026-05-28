@@ -2382,6 +2382,80 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		}
 	}
 
+	// ── 7b. Macros ────────────────────────────────────────────────────────────
+	fmt.Println("→ Creating macros…")
+
+	seedMacros := []models.Macro{
+		{
+			Name:        "Acknowledge & Investigate",
+			Description: "Set open, tag as investigating, send acknowledgement",
+			IsActive:    true,
+			SortOrder:   10,
+			Actions: models.MacroActions{
+				{Type: "set_status", Value: "open"},
+				{Type: "add_tag", Value: "investigating"},
+				{Type: "add_message", Value: "Hi {fname},\n\nThank you for reaching out. We have received your ticket and are currently investigating the issue. We will keep you updated on our progress.\n\nKind regards,\n{agent}"},
+			},
+		},
+		{
+			Name:        "Request More Information",
+			Description: "Set pending, tag needs-info, ask for details",
+			IsActive:    true,
+			SortOrder:   20,
+			Actions: models.MacroActions{
+				{Type: "set_status", Value: "pending"},
+				{Type: "add_tag", Value: "needs-info"},
+				{Type: "add_message", Value: "Hi {fname},\n\nThank you for your message. To help us investigate further, could you please provide the following:\n\n- Steps to reproduce the issue\n- Any error messages or screenshots\n- Browser / OS version\n\nOnce we have this information we can proceed.\n\nKind regards,\n{agent}"},
+			},
+		},
+		{
+			Name:        "Escalate to Critical",
+			Description: "Raise priority to critical, tag as escalated",
+			IsActive:    true,
+			SortOrder:   30,
+			Actions: models.MacroActions{
+				{Type: "set_priority", Value: "critical"},
+				{Type: "set_status", Value: "open"},
+				{Type: "add_tag", Value: "escalated"},
+			},
+		},
+		{
+			Name:        "Resolved — Pending Close",
+			Description: "Mark resolved, set pending_close, notify reporter",
+			IsActive:    true,
+			SortOrder:   40,
+			Actions: models.MacroActions{
+				{Type: "set_status", Value: "pending_close"},
+				{Type: "add_message", Value: "Hi {fname},\n\nWe are pleased to let you know that your ticket {ticket_id} has been resolved. Please let us know within 3 business days if you experience any further issues — otherwise the ticket will be closed automatically.\n\nThank you for contacting us!\n\nKind regards,\n{agent}"},
+			},
+		},
+		{
+			Name:        "Close & Thank",
+			Description: "Close ticket with a thank-you message",
+			IsActive:    true,
+			SortOrder:   50,
+			Actions: models.MacroActions{
+				{Type: "set_status", Value: "closed"},
+				{Type: "add_message", Value: "Hi {fname},\n\nTicket {ticket_id} has been closed. Thank you for contacting us! If you need further assistance, please don't hesitate to open a new ticket.\n\nKind regards,\n{agent}"},
+			},
+		},
+		{
+			Name:        "Mark as Duplicate",
+			Description: "Tag as duplicate and close",
+			IsActive:    true,
+			SortOrder:   60,
+			Actions: models.MacroActions{
+				{Type: "add_tag", Value: "duplicate"},
+				{Type: "set_status", Value: "closed"},
+				{Type: "add_message", Value: "Hi {fname},\n\nThis ticket appears to be a duplicate of an existing report. We have merged it with the original and will update you via the primary ticket.\n\nKind regards,\n{agent}"},
+			},
+		},
+	}
+	for i := range seedMacros {
+		must(db.Create(&seedMacros[i]).Error)
+	}
+	fmt.Printf("   Created %d macros\n", len(seedMacros))
+
 	// ── 8. Tickets ────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating tickets…")
 
@@ -3491,6 +3565,8 @@ func removeDemoData(db *gorm.DB) {
 	}
 	demoSlaNames := []string{"Critical — 1h response / 4h resolution", "High — 2h response / 8h resolution", "Standard — 4h response / 24h resolution"}
 	db.Unscoped().Where("name IN ?", demoSlaNames).Delete(&models.SlaPolicy{})
+	demoMacroNames := []string{"Acknowledge & Investigate", "Request More Information", "Escalate to Critical", "Resolved — Pending Close", "Close & Thank", "Mark as Duplicate"}
+	db.Unscoped().Where("name IN ?", demoMacroNames).Delete(&models.Macro{})
 
 	// Customers and contracts
 	db.Model(&models.Customer{}).Where("name IN ?", demoCustomerNames).Pluck("id", &custIDs)
