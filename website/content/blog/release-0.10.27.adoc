@@ -1,0 +1,139 @@
+---
+title: "v0.10.27: Macros, spam handling, and a better reply box"
+date: "2026-05-28"
+author: "Ton Kersten"
+description: "Apply reusable macros to tickets in one click, mark incoming email as spam to close and hide it, and enjoy a taller reply box with a Cancel button."
+draft: false
+---
+:doctype: article
+:icons!:
+
+v0.10.27 adds three quality-of-life improvements for helpdesk agents: macros for repetitive responses, spam handling for unwanted email, and a more comfortable reply box.
+
+== Macros
+
+Macros let you bundle a set of ticket actions into a single named shortcut.
+One click applies all of them at once.
+
+=== Creating macros
+
+Open *Admin → Settings → Macros* and click *+ New macro*.
+
+Each macro has a name, an optional description, a sort order, and an active/inactive toggle.
+The *Actions* section is where the work happens — add one or more actions in sequence:
+
+[cols="1,3"]
+|===
+| Action | Effect
+
+| Set status
+| Changes the ticket status to New, Open, Pending, Pending close, or Closed.
+
+| Set priority
+| Changes the priority to Low, Medium, High, or Critical.
+
+| Set type
+| Changes the type to Incident, Problem, Service request, or Change request.
+
+| Add tag
+| Attaches a tag to the ticket.
+
+| Add message
+| Pre-fills the reply box with a templated message (see Placeholders below).
+|===
+
+You can add multiple actions to a single macro — for example, set status to Pending *and* add a tag *and* pre-fill a reply in one step.
+
+=== Applying macros
+
+In any ticket detail view a *Apply macro* dropdown appears next to the status and priority controls (only shown when at least one active macro exists).
+Select a macro name and all its actions are applied immediately:
+
+* Status, priority, type changes take effect on the spot.
+* Tags are added to the ticket.
+* If the macro has an *Add message* action, the expanded text is placed in the reply box so the agent can review and edit it before hitting Send.
+
+=== Placeholders
+
+`Add message` actions support template variables that are expanded at apply time:
+
+[cols="1,3"]
+|===
+| Placeholder | Expands to
+
+| `{email}`
+| The sender's full From address (e.g. `John Doe <john@example.com>`).
+
+| `{fname}`
+| The sender's first name, extracted from the From address or the ticket creator's profile.
+
+| `{name}`
+| The sender's full display name.
+
+| `{subject}`
+| The ticket title.
+
+| `{ticket_id}`
+| The ticket number, e.g. `#42`.
+
+| `{agent}`
+| The applying agent's display name.
+
+| `{agent_fname}`
+| The applying agent's first name.
+|===
+
+Clickable chips in the macro editor insert a placeholder at the cursor position, so you never have to type them by hand.
+
+=== Demo macros
+
+The seed program (`make seed`) now includes six ready-made macros to get you started:
+
+* *Acknowledge & Investigate* — sets status to Open, adds an `investigating` tag, and pre-fills an acknowledgement reply.
+* *Request More Information* — sets status to Pending, adds a `needs-info` tag, and pre-fills a request for details.
+* *Escalate to Critical* — raises priority to Critical, adds an `escalated` tag, and pre-fills an escalation notice.
+* *Resolved — Pending Close* — sets status to Pending close and pre-fills a resolution notification.
+* *Close & Thank* — closes the ticket and pre-fills a thank-you message.
+* *Mark as Duplicate* — closes the ticket, adds a `duplicate` tag, and pre-fills a duplicate notice.
+
+== Spam handling
+
+Incoming email sometimes brings spam.
+Every ticket detail view now has a *Mark as Spam* button in the toolbar.
+
+Marking a ticket as spam:
+
+* Sets `is_spam = true` and closes the ticket.
+* Hides it from all ticket list and inbox views by default.
+* Shows a red *SPAM* badge on the ticket title when spam is visible.
+* Displays a red banner at the top of the ticket detail view.
+
+To see spam tickets, click the *Show Spam* toggle in the ticket list or inbox header.
+The button turns amber while spam is visible; click it again to hide spam tickets.
+
+If a ticket was incorrectly flagged, open it and click *Not Spam* to restore it to Open status.
+
+== Inbox card/group/list views
+
+The Inbox now offers the same three view modes as customer ticket lists:
+
+* *Card View* — compact cards grouped by status sections (regular, pending reminder, pending close, closed).
+* *Group View* — status-based groups, each expandable as cards or a mini table.
+* *List View* — a sortable table showing all tickets in one flat list.
+
+The selected mode is stored independently from the customer ticket list preference so switching views in one place does not affect the other.
+
+== Larger reply box
+
+The comment/reply box has been enlarged from 3 rows to 8 rows with a minimum height of 180 px.
+It remains resizable if you need even more space.
+
+A *Cancel* button now appears next to Send whenever there is text in the box or files attached.
+Clicking Cancel clears the draft and any pending attachments and resets the editor to the Edit tab — useful when a macro pre-fills the box and you decide not to send the message after all.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No manual database changes are required.
+The `is_spam` column is added automatically on first boot via GORM AutoMigrate.
