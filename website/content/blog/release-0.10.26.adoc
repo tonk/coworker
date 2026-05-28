@@ -1,0 +1,140 @@
+---
+title: "v0.10.26: IMAP inbox, OAuth2 email auth, and real-time ticket refresh"
+date: "2026-05-28"
+author: "Ton Kersten"
+description: "Incoming email creates helpdesk tickets automatically, replies thread onto existing tickets, Gmail and Office 365 authenticate via OAuth2, and the inbox updates live via WebSocket."
+draft: false
+---
+:doctype: article
+:icons!:
+
+v0.10.26 closes the loop between email and the helpdesk module.
+Incoming email lands in a dedicated Inbox queue, replies thread back onto existing tickets, Gmail and Office 365 authenticate without storing passwords, and the entire inbox updates in real time the moment IMAP delivers new mail.
+
+== Inbox queue for incoming email
+
+A new *Inbox* section appears in the sidebar for users with helpdesk access.
+The inbox collects tickets that were created from incoming email and have not yet been assigned to a customer.
+
+The sidebar badge shows the number of unread tickets followed by the total — for example **3/7** means three tickets the agent has not yet opened out of seven total active tickets.
+
+Clicking *Inbox* opens the full list.
+From there an agent can open a ticket, read the original message, reply, and assign the ticket to the right customer with a single dropdown and button click.
+
+== IMAP polling
+
+Configure the mailbox under *Admin → Settings → Incoming Mail*.
+
+[cols="1,3"]
+|===
+| Setting | Description
+
+| Host / Port
+| IMAP server address and port (993 for TLS, 143 for STARTTLS).
+
+| Mailbox
+| The folder to poll. Defaults to `INBOX`.
+
+| Processed mailbox
+| Folder that processed messages are moved to. Defaults to `Processed`.
+
+| Poll interval
+| Seconds between polls. Minimum 30 seconds.
+
+| Authentication
+| `Plain` (password) or `OAuth2` (see below).
+|===
+
+After each poll, processed messages are moved from the source mailbox to the processed folder so they are never imported twice.
+If the move fails (some servers restrict it), the server falls back to marking the message as `\Seen`.
+
+A *Test connection* button verifies the host, credentials, and mailbox name using the current form values — it does not require saving first.
+A *Poll now* button triggers an immediate poll outside the normal schedule.
+
+== Reply threading
+
+When a reply arrives for an existing ticket, WarmDesk appends it as a new message on that ticket instead of opening a duplicate.
+Four matching strategies are tried in order:
+
+1. **`X-WarmDesk-Ticket-Id` header** — set automatically on every outbound reply; the most reliable match.
+2. **`In-Reply-To` header** — standard email threading; matches the `Message-Id` of the original ticket email.
+3. **`References` header** — fallback for mail clients that omit `In-Reply-To`; the full reference chain is checked.
+4. **Subject `[#N]` tag** — last resort for manually forwarded email; extracts the ticket ID from a `[#42]` prefix in the subject line.
+
+If the matched ticket is in a resolved or closed state, it is automatically reopened to `open` so the reply is not missed.
+
+== Outbound email replies
+
+When an agent sends a message on a ticket that originated from email, WarmDesk sends the reply back to the customer's address via the configured SMTP server.
+The outgoing message carries an `X-WarmDesk-Ticket-Id` header so any further customer reply threads directly onto the correct ticket.
+
+Messages sent this way show an ✉ badge next to the author name in the message list.
+
+== OAuth2 authentication — Gmail and Office 365
+
+Password-based IMAP authentication is increasingly blocked by cloud providers.
+v0.10.26 adds full OAuth2 support using the XOAUTH2 SASL mechanism (with OAUTHBEARER as fallback).
+
+=== Google (Gmail)
+
+1. Create an OAuth 2.0 Client ID in the https://console.cloud.google.com/apis/credentials[Google Cloud Console] (Web application type, scope `https://mail.google.com/`).
+2. Set the redirect URI to `https://your-domain/api/v1/admin/imap/oauth2/callback`.
+3. Add the client ID and secret to `warmdesk.yaml`:
+
+[source,yaml]
+----
+oauth2:
+  google_client_id:     "xxxx.apps.googleusercontent.com"
+  google_client_secret: "GOCSPX-xxxx"
+----
+
+=== Office 365 (Outlook)
+
+1. Register an app in https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps[Azure → App registrations] with delegated permissions `IMAP.AccessAsUser.All` and `offline_access`.
+2. Set the redirect URI to `https://your-domain/api/v1/admin/imap/oauth2/callback`.
+3. Add the client ID and secret to `warmdesk.yaml`:
+
+[source,yaml]
+----
+oauth2:
+  office_client_id:     "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  office_client_secret: "xxxx~xxxx"
+----
+
+=== Authorising the mailbox
+
+In *Admin → Settings → Incoming Mail*, set *Authentication* to *OAuth2*, choose the provider, and click *Authorise*.
+A popup opens to the provider's consent screen.
+After granting access the popup closes, tokens are stored in the database, and polling continues automatically.
+Access tokens are refreshed transparently before each poll; only the refresh token is stored long-term (access tokens are masked in the admin API response).
+
+== Real-time inbox refresh
+
+Previous releases required a manual page reload or navigation to see new tickets.
+v0.10.26 pushes updates via WebSocket the moment a poll completes:
+
+* **New ticket** — the inbox counter increments and the ticket list reloads in place.
+* **New reply on an existing ticket** — the inbox counter updates, the list reloads, and if the agent has that ticket open the new message appears at the bottom of the thread without clearing any reply draft in progress.
+
+== Email indicators
+
+Tickets created from email show the sender's name and address in the ticket header.
+An ✉ icon in the header meta row provides a quick visual cue that the ticket originated from email.
+Messages that triggered an outbound email reply carry the same ✉ badge next to the author name.
+
+== Move ticket between customers
+
+Inbox tickets arrive without a customer assignment.
+From the ticket detail view, select a customer from the *Customer* dropdown and click *Assign* to move the ticket into that customer's ticket list.
+
+Tickets already assigned to a customer can be moved to a different customer using the *Move to customer* panel in the same view — useful when a ticket was initially routed to the wrong account.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No manual database changes are required.
+New columns are added automatically on first boot via GORM AutoMigrate.
+
+OAuth2 client credentials must be added to `warmdesk.yaml` before the Authorise flow will work — the admin UI will show a configuration error if they are missing.
+Plain password authentication continues to work without any configuration changes.
