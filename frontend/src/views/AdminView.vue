@@ -512,6 +512,61 @@
               </div>
             </div>
 
+            <h3 class="settings-subsection">{{ $t('admin.imap_title') }}</h3>
+            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.imap_hint') }}</p>
+
+            <div class="form-group">
+              <label class="toggle-row">
+                <span>{{ $t('admin.imap_enabled') }}</span>
+                <input type="checkbox" v-model="systemSettings.imap_enabled" />
+              </label>
+            </div>
+
+            <div class="form-row" style="max-width:500px">
+              <div class="form-group" style="flex:3">
+                <label class="form-label" for="sys-imap-host">{{ $t('admin.imap_host') }}</label>
+                <input id="sys-imap-host" class="form-input" v-model="systemSettings.imap_host" :placeholder="$t('admin.imap_host_placeholder')" />
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label" for="sys-imap-port">{{ $t('admin.imap_port') }}</label>
+                <input id="sys-imap-port" class="form-input" v-model="systemSettings.imap_port" type="number" placeholder="993" />
+              </div>
+            </div>
+
+            <div class="form-row" style="max-width:500px">
+              <div class="form-group" style="flex:1">
+                <label class="form-label" for="sys-imap-username">{{ $t('admin.imap_username') }}</label>
+                <input id="sys-imap-username" class="form-input" v-model="systemSettings.imap_username" autocomplete="off" />
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label" for="sys-imap-password">{{ $t('admin.imap_password') }}</label>
+                <input id="sys-imap-password" class="form-input" v-model="systemSettings.imap_password" type="password" autocomplete="new-password" :placeholder="imapPasswordPlaceholder" />
+              </div>
+            </div>
+
+            <div class="form-row" style="max-width:500px">
+              <div class="form-group" style="flex:1">
+                <label class="form-label" for="sys-imap-mailbox">{{ $t('admin.imap_mailbox') }}</label>
+                <input id="sys-imap-mailbox" class="form-input" v-model="systemSettings.imap_mailbox" placeholder="INBOX" />
+              </div>
+              <div class="form-group" style="flex:1">
+                <label class="form-label" for="sys-imap-poll">{{ $t('admin.imap_poll_interval') }}</label>
+                <input id="sys-imap-poll" class="form-input" v-model="systemSettings.imap_poll_interval" type="number" placeholder="60" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="toggle-row">
+                <span>{{ $t('admin.imap_use_tls') }}</span>
+                <input type="checkbox" v-model="systemSettings.imap_use_tls" />
+              </label>
+              <p class="form-hint">{{ $t('admin.imap_use_tls_hint') }}</p>
+            </div>
+
+            <div class="form-actions" style="max-width:500px">
+              <button class="btn btn-primary" @click="saveImapSettings">{{ $t('common.save') }}</button>
+            </div>
+
             <h3 class="settings-subsection">{{ $t('admin.branding_title') }}</h3>
             <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.branding_hint') }}</p>
 
@@ -1905,6 +1960,14 @@ const systemSettings = ref({
   smtp_from: '',
   smtp_username: '',
   smtp_password: '',
+  imap_enabled: false,
+  imap_host: '',
+  imap_port: '993',
+  imap_username: '',
+  imap_password: '',
+  imap_use_tls: true,
+  imap_mailbox: 'INBOX',
+  imap_poll_interval: '60',
   company_name: '',
   company_logo: '',
   company_logo_dark: '',
@@ -1925,6 +1988,8 @@ const systemSettings = ref({
 // True when the server has a password saved (so we show a placeholder instead of the value)
 const smtpPasswordSet = ref(false)
 const smtpPasswordPlaceholder = computed(() => smtpPasswordSet.value ? '••••••••' : '')
+const imapPasswordSet = ref(false)
+const imapPasswordPlaceholder = computed(() => imapPasswordSet.value ? '••••••••' : '')
 const smtpTestEmail = ref('')
 const smtpTestSending = ref(false)
 let settingsLoading = false
@@ -2012,6 +2077,15 @@ async function loadSettings() {
     // Password is never sent back from the server — show placeholder if one is set
     smtpPasswordSet.value = data.smtp_password_set === 'true'
     systemSettings.value.smtp_password            = ''
+    systemSettings.value.imap_enabled       = data.imap_enabled === 'true'
+    systemSettings.value.imap_host          = data.imap_host || ''
+    systemSettings.value.imap_port          = data.imap_port || '993'
+    systemSettings.value.imap_username      = data.imap_username || ''
+    imapPasswordSet.value = data.imap_password_set === 'true'
+    systemSettings.value.imap_password      = ''
+    systemSettings.value.imap_use_tls       = data.imap_use_tls !== 'false'
+    systemSettings.value.imap_mailbox       = data.imap_mailbox || 'INBOX'
+    systemSettings.value.imap_poll_interval = data.imap_poll_interval || '60'
     systemSettings.value.company_name             = data.company_name || ''
     systemSettings.value.company_logo             = data.company_logo || ''
     systemSettings.value.company_logo_dark        = data.company_logo_dark || ''
@@ -2318,6 +2392,31 @@ async function saveSmtpSettings() {
     if (systemSettings.value.smtp_password) {
       smtpPasswordSet.value = true
       systemSettings.value.smtp_password = ''
+    }
+    ui.success('Settings saved')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to save settings')
+  }
+}
+
+async function saveImapSettings() {
+  try {
+    const payload = {
+      imap_enabled:       systemSettings.value.imap_enabled,
+      imap_host:          systemSettings.value.imap_host,
+      imap_port:          String(systemSettings.value.imap_port || '993'),
+      imap_username:      systemSettings.value.imap_username,
+      imap_use_tls:       systemSettings.value.imap_use_tls,
+      imap_mailbox:       systemSettings.value.imap_mailbox,
+      imap_poll_interval: String(systemSettings.value.imap_poll_interval || '60'),
+    }
+    if (systemSettings.value.imap_password) {
+      payload.imap_password = systemSettings.value.imap_password
+    }
+    await adminApi.updateSystemSettings(payload)
+    if (systemSettings.value.imap_password) {
+      imapPasswordSet.value = true
+      systemSettings.value.imap_password = ''
     }
     ui.success('Settings saved')
   } catch (e) {

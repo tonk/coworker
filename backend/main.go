@@ -140,6 +140,13 @@ func main() {
 	handlers.MigrateWebhookTokenHashes()
 	handlers.StartBackupScheduler()
 
+	// IMAP incoming mail polling
+	imapSvc := services.NewIMAPService()
+	services.SetIMAPConfigReader(handlers.GetIMAPSettings)
+	imapStop := make(chan struct{})
+	go imapSvc.StartPolling(imapStop)
+	_ = imapStop // server runs for its full lifetime; stop channel is a clean-shutdown hook
+
 	// Initialise pub/sub backend (Redis for horizontal scaling, memory for single instance)
 	if cfg.RedisURL != "" {
 		rps, err := ws.NewRedisPubSub(cfg.RedisURL)

@@ -31,6 +31,7 @@ type Config struct {
 	MaxUploadMB    int64  `yaml:"max_upload_mb"` // max upload size in MB (default: 25)
 	BaseURL        string `yaml:"base_url"`      // public base URL (e.g. https://desk.example.com) — used in Swagger UI
 	SMTP           SMTPConfig `yaml:"smtp"`
+	IMAP           IMAPConfig `yaml:"imap"`
 	LiveKitURL        string `yaml:"livekit_url"`         // e.g. wss://livekit.yourcompany.com
 	LiveKitAPIKey     string `yaml:"livekit_api_key"`
 	LiveKitAPISecret  string `yaml:"livekit_api_secret"`
@@ -44,6 +45,17 @@ type SMTPConfig struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	UseTLS   bool   `yaml:"use_tls"`
+}
+
+type IMAPConfig struct {
+	Enabled      bool   `yaml:"enabled"`
+	Host         string `yaml:"host"`
+	Port         int    `yaml:"port"`
+	Username     string `yaml:"username"`
+	Password     string `yaml:"password"`
+	UseTLS       bool   `yaml:"use_tls"`
+	Mailbox      string `yaml:"mailbox"`
+	PollInterval int    `yaml:"poll_interval"` // seconds between polls
 }
 
 // Load reads configuration with the following priority (highest first):
@@ -74,6 +86,7 @@ func defaults() *Config {
 		UploadDir:      "./uploads",
 		MaxUploadMB:    25,
 		SMTP:           SMTPConfig{Port: 587},
+		IMAP:           IMAPConfig{Port: 993, UseTLS: true, Mailbox: "INBOX", PollInterval: 60},
 	}
 }
 

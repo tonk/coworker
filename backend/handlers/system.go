@@ -59,6 +59,14 @@ const (
 	settingCompanyLogoDark           = "company_logo_dark"
 	settingAllowedIPs                = "allowed_ips"
 	settingPasswordChangePeriodDays  = "password_change_period_days"
+	settingIMAPEnabled               = "imap_enabled"
+	settingIMAPHost                  = "imap_host"
+	settingIMAPPort                  = "imap_port"
+	settingIMAPUsername              = "imap_username"
+	settingIMAPPassword              = "imap_password"
+	settingIMAPUseTLS                = "imap_use_tls"
+	settingIMAPMailbox               = "imap_mailbox"
+	settingIMAPPollInterval          = "imap_poll_interval"
 )
 
 func init() {
@@ -144,6 +152,14 @@ var systemSettingDefaults = map[string]string{
 	settingGravatarEnabled:           "true",
 	settingExternalImageProxyEnabled: "true",
 	settingPasswordChangePeriodDays:  "0",
+	settingIMAPEnabled:               "false",
+	settingIMAPHost:                  "",
+	settingIMAPPort:                  "993",
+	settingIMAPUsername:              "",
+	settingIMAPPassword:              "",
+	settingIMAPUseTLS:                "true",
+	settingIMAPMailbox:               "INBOX",
+	settingIMAPPollInterval:          "60",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that
@@ -266,6 +282,29 @@ func GetSMTPSettings() config.SMTPConfig {
 	}
 }
 
+// GetIMAPSettings returns the current IMAP configuration from the database.
+func GetIMAPSettings() config.IMAPConfig {
+	all := loadAllSettings()
+	port, _ := strconv.Atoi(all[settingIMAPPort])
+	if port == 0 {
+		port = 993
+	}
+	pollInterval, _ := strconv.Atoi(all[settingIMAPPollInterval])
+	if pollInterval == 0 {
+		pollInterval = 60
+	}
+	return config.IMAPConfig{
+		Enabled:      all[settingIMAPEnabled] == "true",
+		Host:         all[settingIMAPHost],
+		Port:         port,
+		Username:     all[settingIMAPUsername],
+		Password:     all[settingIMAPPassword],
+		UseTLS:       all[settingIMAPUseTLS] != "false",
+		Mailbox:      all[settingIMAPMailbox],
+		PollInterval: pollInterval,
+	}
+}
+
 // GetSystemSettings godoc
 // @Summary      Get public system settings (registration enabled, locale defaults)
 // @Tags         system
@@ -304,6 +343,9 @@ func AdminGetSystemSettings(c *gin.Context) {
 	passwordSet := all[settingSMTPPassword] != ""
 	delete(all, settingSMTPPassword)
 	all["smtp_password_set"] = fmt.Sprintf("%t", passwordSet)
+	imapPasswordSet := all[settingIMAPPassword] != ""
+	delete(all, settingIMAPPassword)
+	all["imap_password_set"] = fmt.Sprintf("%t", imapPasswordSet)
 	c.JSON(http.StatusOK, all)
 }
 
@@ -328,6 +370,14 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		SMTPFrom                  *string     `json:"smtp_from"`
 		SMTPUsername              *string     `json:"smtp_username"` // pointer so empty string clears it
 		SMTPPassword              *string     `json:"smtp_password"` // pointer so empty string clears it
+		IMAPEnabled               *bool       `json:"imap_enabled"`
+		IMAPHost                  *string     `json:"imap_host"`
+		IMAPPort                  json.Number `json:"imap_port"`
+		IMAPUsername              *string     `json:"imap_username"`
+		IMAPPassword              *string     `json:"imap_password"`
+		IMAPUseTLS                *bool       `json:"imap_use_tls"`
+		IMAPMailbox               *string     `json:"imap_mailbox"`
+		IMAPPollInterval          json.Number `json:"imap_poll_interval"`
 		SessionTimeoutMinutes     *int        `json:"session_timeout_minutes"`
 		CompanyName               *string     `json:"company_name"`
 		CompanyLogo               *string     `json:"company_logo"`
@@ -421,6 +471,27 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	}
 	if req.SMTPPassword != nil {
 		saveSetting(settingSMTPPassword, *req.SMTPPassword)
+	}
+	// IMAP
+	boolSetting(req.IMAPEnabled, settingIMAPEnabled)
+	if req.IMAPHost != nil {
+		saveSetting(settingIMAPHost, *req.IMAPHost)
+	}
+	if req.IMAPPort != "" {
+		saveSetting(settingIMAPPort, req.IMAPPort.String())
+	}
+	if req.IMAPUsername != nil {
+		saveSetting(settingIMAPUsername, *req.IMAPUsername)
+	}
+	if req.IMAPPassword != nil {
+		saveSetting(settingIMAPPassword, *req.IMAPPassword)
+	}
+	boolSetting(req.IMAPUseTLS, settingIMAPUseTLS)
+	if req.IMAPMailbox != nil {
+		saveSetting(settingIMAPMailbox, *req.IMAPMailbox)
+	}
+	if req.IMAPPollInterval != "" {
+		saveSetting(settingIMAPPollInterval, req.IMAPPollInterval.String())
 	}
 	if req.SessionTimeoutMinutes != nil {
 		timeout := *req.SessionTimeoutMinutes
