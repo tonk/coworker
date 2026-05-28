@@ -8,14 +8,39 @@ import (
 )
 
 // AdminTestIMAP POST /api/v1/admin/imap/test
+// Accepts a JSON body with the current form values so the user can test
+// without saving first. Any omitted field falls back to the saved DB value.
 func AdminTestIMAP(c *gin.Context) {
-	svc := services.GetDefaultService()
-	if svc == nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "IMAP service not running"})
-		return
-	}
 	cfg := GetIMAPSettings()
-	if err := svc.TestConnection(cfg); err != nil {
+	var body struct {
+		Host     *string `json:"host"`
+		Port     *int    `json:"port"`
+		Username *string `json:"username"`
+		Password *string `json:"password"`
+		UseTLS   *bool   `json:"use_tls"`
+		Mailbox  *string `json:"mailbox"`
+	}
+	if err := c.ShouldBindJSON(&body); err == nil {
+		if body.Host != nil {
+			cfg.Host = *body.Host
+		}
+		if body.Port != nil {
+			cfg.Port = *body.Port
+		}
+		if body.Username != nil {
+			cfg.Username = *body.Username
+		}
+		if body.Password != nil {
+			cfg.Password = *body.Password
+		}
+		if body.UseTLS != nil {
+			cfg.UseTLS = *body.UseTLS
+		}
+		if body.Mailbox != nil {
+			cfg.Mailbox = *body.Mailbox
+		}
+	}
+	if err := services.TestIMAPConnection(cfg); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

@@ -234,6 +234,11 @@ var defaultService *IMAPService
 func SetDefaultService(s *IMAPService) { defaultService = s }
 func GetDefaultService() *IMAPService  { return defaultService }
 
+// TestIMAPConnection tests a connection without requiring a running IMAPService.
+func TestIMAPConnection(cfg config.IMAPConfig) error {
+	return (&IMAPService{}).TestConnection(cfg)
+}
+
 // PollOnce runs a single poll cycle using the current live config.
 func (s *IMAPService) PollOnce() error {
 	cfg := s.cfg()

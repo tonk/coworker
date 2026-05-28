@@ -2431,7 +2431,15 @@ async function saveImapSettings() {
 async function testImap() {
   imapTesting.value = true
   try {
-    await client.post('/admin/imap/test')
+    const body = {
+      host:          systemSettings.value.imap_host,
+      port:          Number(systemSettings.value.imap_port) || 993,
+      username:      systemSettings.value.imap_username,
+      use_tls:       systemSettings.value.imap_use_tls,
+      mailbox:       systemSettings.value.imap_mailbox,
+    }
+    if (systemSettings.value.imap_password) body.password = systemSettings.value.imap_password
+    await client.post('/admin/imap/test', body)
     ui.success(t('admin.imap_test_success'))
   } catch (e) {
     ui.error(e.response?.data?.error || t('admin.imap_test_failed'))
