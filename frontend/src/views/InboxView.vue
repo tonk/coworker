@@ -27,7 +27,7 @@
         <div class="ticket-card-meta">
           <span v-if="t.assigned_to" class="ticket-assignee">{{ t.assigned_to.display_name || t.assigned_to.username }}</span>
           <span v-else class="ticket-unassigned">{{ $t('ticket.unassigned') }}</span>
-          <span class="ticket-date">{{ fmtDate(t.created_at) }}</span>
+          <span class="ticket-date">{{ formatDate(t.created_at) }}</span>
         </div>
         <div v-if="t.tags?.length" class="ticket-tags">
           <span v-for="tag in t.tags.slice(0, 3)" :key="tag.id" class="ticket-tag">{{ tag.name }}</span>
@@ -41,22 +41,22 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ticketsApi } from '@/api/tickets'
+import { useTicketsStore } from '@/stores/tickets'
+import { useDateFormat } from '@/composables/useDateFormat'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const ticketsStore = useTicketsStore()
+const { formatDate } = useDateFormat()
 const tickets = ref([])
 const loading = ref(false)
-
-function fmtDate(iso) {
-  if (!iso) return ''
-  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
-}
 
 onMounted(async () => {
   loading.value = true
   try {
     const { data } = await ticketsApi.inboxList()
     tickets.value = data
+    ticketsStore.inboxCount = (data || []).filter(t => t.status !== 'closed').length
   } finally {
     loading.value = false
   }

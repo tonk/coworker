@@ -62,7 +62,7 @@
         </div>
         <div class="td-meta-row">
           <span class="td-label">{{ $t('ticket.created_at') }}</span>
-          <span class="td-value">{{ fmtDate(ticket.created_at) }}</span>
+          <span class="td-value">{{ formatDateTime(ticket.created_at) }}</span>
         </div>
         <div v-if="ticket.tags?.length || isAdmin" class="td-meta-row td-tags-row">
           <span class="td-label">{{ $t('ticket.tags') }}</span>
@@ -91,7 +91,7 @@
             <div v-for="msg in ticket.messages" :key="msg.id" class="td-message">
               <div class="td-msg-meta">
                 <strong>{{ msg.user?.display_name || msg.user?.username }}</strong>
-                <span class="td-msg-date">{{ fmtDate(msg.created_at) }}</span>
+                <span class="td-msg-date">{{ formatDateTime(msg.created_at) }}</span>
               </div>
               <div class="td-msg-body">{{ msg.body }}</div>
             </div>
@@ -125,6 +125,7 @@ import { ticketsApi } from '@/api/tickets'
 import { customersApi } from '@/api/customers'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import { useDateFormat } from '@/composables/useDateFormat'
 import { useI18n } from 'vue-i18n'
 
 const route  = useRoute()
@@ -132,6 +133,7 @@ const router = useRouter()
 const auth   = useAuthStore()
 const ui     = useUIStore()
 const { t }  = useI18n()
+const { formatDateTime } = useDateFormat()
 
 const ticketId = computed(() => Number(route.params.ticketId))
 const ticket   = ref(null)
@@ -153,11 +155,6 @@ const replyBody       = ref('')
 const sendingMsg      = ref(false)
 
 const isAdmin = computed(() => auth.globalRole === 'admin')
-
-function fmtDate(iso) {
-  if (!iso) return ''
-  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
 
 async function load() {
   loading.value = true

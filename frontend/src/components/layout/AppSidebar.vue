@@ -195,6 +195,7 @@
           >
             <span class="inbox-icon" aria-hidden="true">📥</span>
             <span class="link-text">{{ $t('inbox.title') }}</span>
+            <span v-if="ticketsStore.inboxCount" class="inbox-badge" :aria-label="`${ticketsStore.inboxCount} ${$t('inbox.title')}`" aria-live="polite">{{ ticketsStore.inboxCount }}</span>
           </RouterLink>
           <RouterLink
             v-for="c in customersStore.customers"
@@ -344,12 +345,14 @@ import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useCustomersStore } from '@/stores/customers'
+import { useTicketsStore } from '@/stores/tickets'
 import { resolveAssetUrl } from '@/api/serverConfig'
 
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
 const notificationsStore = useNotificationsStore()
 const customersStore = useCustomersStore()
+const ticketsStore = useTicketsStore()
 
 const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.getItem('sidebar_position') || 'left')
 
@@ -609,8 +612,10 @@ async function unfavorite(user) {
 }
 
 const ONLINE_POLL_INTERVAL_MS = 5_000
+const INBOX_POLL_INTERVAL_MS = 30_000
 let pollInterval = null
 let unreadInterval = null
+let inboxInterval = null
 
 onMounted(() => {
   sidebarStore.fetchStarred()
@@ -627,11 +632,16 @@ onMounted(() => {
   unreadInterval = setInterval(() => {
     notificationsStore.checkUnread()
   }, 5_000)
+  if (auth.helpdeskEnabled) {
+    ticketsStore.fetchInboxCount()
+    inboxInterval = setInterval(() => ticketsStore.fetchInboxCount(), INBOX_POLL_INTERVAL_MS)
+  }
 })
 
 onUnmounted(() => {
   clearInterval(pollInterval)
   clearInterval(unreadInterval)
+  clearInterval(inboxInterval)
   stopResize()
   // Clean up any in-progress pointer drags
   document.removeEventListener('pointermove', onSectionPointerMove)
@@ -819,6 +829,19 @@ onUnmounted(() => {
   border-radius: 4px;
   line-height: 16px;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.inbox-badge {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 9999px;
+  padding: 0 5px;
+  min-width: 16px;
+  line-height: 16px;
+  text-align: center;
   flex-shrink: 0;
 }
 
