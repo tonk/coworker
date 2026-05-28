@@ -92,7 +92,7 @@
           <template v-else-if="action.type === 'add_message'">
             <div class="macro-msg-wrap">
               <label class="sr-only" :for="'act-val-' + idx">{{ $t('macro.action_value') }}</label>
-              <textarea :id="'act-val-' + idx" :ref="el => { if (el) msgRefs[idx] = el }" class="form-input form-input-sm macro-msg-area" v-model="action.value" :placeholder="$t('ticket.message_placeholder')" rows="2"></textarea>
+              <textarea :id="'act-val-' + idx" :ref="el => { if (el) msgRefs[idx] = el }" class="form-input form-input-sm macro-msg-area" v-model="action.value" :placeholder="$t('ticket.message_placeholder')" rows="6"></textarea>
               <div class="macro-ph-row">
                 <span class="macro-ph-label">{{ $t('macro.placeholders') }}:</span>
                 <button v-for="ph in PLACEHOLDERS" :key="ph" type="button" class="macro-ph-chip" @click="insertPlaceholder(action, ph, idx)">{{ ph }}</button>
@@ -289,7 +289,7 @@ async function deleteMacro(m) {
 .macro-action-row > select.form-input-sm:not(:first-of-type) { flex: 1; min-width: 0; }
 .macro-action-row > input.form-input-sm { flex: 1; min-width: 0; }
 .macro-msg-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-.macro-msg-area { resize: vertical; min-height: 60px; width: 100%; box-sizing: border-box; }
+.macro-msg-area { resize: vertical; min-height: 140px; width: 100%; box-sizing: border-box; }
 .macro-ph-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .macro-ph-label { font-size: 11px; color: var(--color-text-muted); flex-shrink: 0; }
 .macro-ph-chip { font-size: 11px; font-family: monospace; padding: 1px 6px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-surface); color: var(--color-primary); cursor: pointer; line-height: 1.6; }
