@@ -6,7 +6,7 @@
 
     <template v-else-if="ticket">
       <header class="detail-header">
-        <RouterLink :to="`/customers/${customerId}/tickets`" class="back-link">{{ $t('common.go_back') }}</RouterLink>
+        <RouterLink :to="isInbox ? '/tickets/inbox' : `/customers/${customerId}/tickets`" class="back-link">{{ $t('common.go_back') }}</RouterLink>
         <div class="detail-title-row">
           <div class="title-edit-wrap">
             <h1 v-if="!editingTitle" @dblclick="startTitleEdit" :title="$t('common.double_click_edit')">{{ ticket.title }}</h1>
@@ -40,7 +40,7 @@
           <span>#{{ ticket.id }}</span>
           <span>{{ $t('ticket.created_by') }} {{ ticket.created_by?.display_name || ticket.created_by?.username }}</span>
           <span>{{ formatDateTime(ticket.created_at) }}</span>
-          <span class="assignee-wrap">
+          <span v-if="!isInbox" class="assignee-wrap">
             <label class="sr-only" for="assignee-select">{{ $t('ticket.assigned_to') }}</label>
             <select id="assignee-select" class="form-input form-input-sm" :value="ticket.assigned_to_id" @change="updateAssignedTo($event.target.value)">
               <option :value="null">—</option>
@@ -61,7 +61,7 @@
         <DatePicker :model-value="closeDateValue" @update:model-value="updateCloseDate" />
       </div>
 
-      <div class="detail-fields">
+      <div v-if="!isInbox" class="detail-fields">
         <div class="detail-tags" v-if="ticket.tags?.length">
           <span v-for="tag in ticket.tags" :key="tag.id" class="tag-chip">
             #{{ tag.name }}
@@ -77,7 +77,7 @@
       <div v-if="ticket.description" class="detail-description markdown-body" v-html="renderMarkdown(ticket.description)"></div>
       <AttachmentList v-if="ticket.attachments?.length" :attachments="ticket.attachments" :can-delete="false" />
 
-      <div v-if="ticket.sla_policy_id" class="sla-card">
+      <div v-if="ticket.sla_policy_id && !isInbox" class="sla-card">
         <h4>{{ ticket.sla_policy?.name || $t('sla.sla') }}</h4>
         <div class="sla-card-body">
           <div class="sla-card-row" v-if="ticket.sla_response_deadline">
@@ -99,7 +99,7 @@
         </div>
       </div>
 
-      <div class="linked-tickets-section" v-if="linkedTickets !== null">
+      <div class="linked-tickets-section" v-if="linkedTickets !== null && !isInbox">
         <h4>{{ $t('ticket.linked_tickets') }} <span v-if="linkedTickets.length" class="count">({{ linkedTickets.length }})</span></h4>
         <div v-if="linkedTickets.length" class="linked-list">
           <div v-for="lt in linkedTickets" :key="lt.link_id" class="linked-row" @click="openTicket(lt)">
@@ -115,7 +115,7 @@
         </div>
       </div>
 
-      <div v-if="linkedCards !== null" class="linked-tickets-section">
+      <div v-if="linkedCards !== null && !isInbox" class="linked-tickets-section">
         <h4>{{ $t('card_ref.linked_cards') }} <span v-if="linkedCards.length" class="count">({{ linkedCards.length }})</span></h4>
         <div v-if="linkedCards.length" class="linked-list">
           <div v-for="lc in linkedCards" :key="lc.link_id" class="linked-row" @click="openCard(lc)">
@@ -130,7 +130,18 @@
         </div>
       </div>
 
-      <div class="move-section">
+      <div v-if="isInbox" class="move-section">
+        <h4>{{ $t('inbox.customer') }}</h4>
+        <div class="move-row">
+          <label class="sr-only" for="assign-customer-select">{{ $t('inbox.assign_customer') }}</label>
+          <select id="assign-customer-select" class="form-input form-input-sm" v-model="moveTargetCustomer">
+            <option :value="null">—</option>
+            <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+          <button class="btn btn-primary btn-sm" @click="assignToCustomer" :disabled="!moveTargetCustomer || moving">{{ $t('inbox.assign') }}</button>
+        </div>
+      </div>
+      <div v-else class="move-section">
         <h4>{{ $t('ticket.move_to_customer') }}</h4>
         <div class="move-row">
           <label class="sr-only" for="move-customer-select">{{ $t('ticket.move_to_customer') }}</label>
@@ -142,7 +153,7 @@
         </div>
       </div>
 
-      <section v-if="auth.timeTrackingEnabled" class="time-section">
+      <section v-if="auth.timeTrackingEnabled && !isInbox" class="time-section">
         <h4>{{ $t('ticket.time_logged') }} <span v-if="ticketTimeEntries.length" class="count">({{ formatMinutes(totalMinutes) }})</span></h4>
 
         <div v-if="ticketTimeEntries.length" class="time-list">
@@ -213,7 +224,7 @@
         </form>
       </section>
 
-      <section class="activity-section">
+      <section v-if="!isInbox" class="activity-section">
         <button class="activity-toggle" @click="showActivity = !showActivity" :aria-expanded="showActivity">
           <span class="activity-toggle-icon" :class="{ rotated: showActivity }">▸</span>
           {{ $t('ticket.history') }} <span class="activity-count">({{ history.length }})</span>
@@ -269,7 +280,8 @@ const route = useRoute()
 const router = useRouter()
 const ui = useUIStore()
 
-const customerId = computed(() => Number(route.params.id))
+const isInbox = computed(() => route.name === 'inbox-ticket-detail')
+const customerId = computed(() => isInbox.value ? null : Number(route.params.id))
 const ticketId = computed(() => Number(route.params.ticketId))
 const ticket = ref(null)
 const history = ref([])
@@ -291,6 +303,12 @@ const allCustomers = ref([])
 const moveTargetCustomer = ref(null)
 const moving = ref(false)
 
+function apiUpdate(data) {
+  return isInbox.value
+    ? ticketsApi.inboxUpdate(ticketId.value, data)
+    : ticketsApi.update(customerId.value, ticketId.value, data)
+}
+
 function startTitleEdit() {
   editTitleVal.value = ticket.value?.title || ''
   editingTitle.value = true
@@ -304,7 +322,7 @@ async function saveTitle() {
     return
   }
   try {
-    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { title: val })
+    const { data } = await apiUpdate({ title: val })
     ticket.value = data
     ui.success('Title updated')
   } catch (e) {
@@ -335,7 +353,7 @@ async function updateReminderDate(val) {
     const newTitle = titleWithDatePrefix(ticket.value.title, val || null)
     const payload = { reminder_at: d }
     if (newTitle !== ticket.value.title) payload.title = newTitle
-    const { data } = await ticketsApi.update(customerId.value, ticketId.value, payload)
+    const { data } = await apiUpdate(payload)
     ticket.value = data
     ui.success(val ? 'Reminder date updated' : 'Reminder cleared')
   } catch (e) {
@@ -355,7 +373,7 @@ async function updateCloseDate(val) {
     const newTitle = titleWithDatePrefix(ticket.value.title, val || null)
     const payload = { close_at: d }
     if (newTitle !== ticket.value.title) payload.title = newTitle
-    const { data } = await ticketsApi.update(customerId.value, ticketId.value, payload)
+    const { data } = await apiUpdate(payload)
     ticket.value = data
     ui.success(val ? 'Close date updated' : 'Close date cleared')
   } catch (e) {
@@ -369,9 +387,10 @@ async function fetchTicket() {
   newMessage.value = ''
   linkedTickets.value = null
   linkedCards.value = null
-  newMessage.value = ''
   try {
-    const { data } = await ticketsApi.get(customerId.value, ticketId.value)
+    const { data } = isInbox.value
+      ? await ticketsApi.inboxGet(ticketId.value)
+      : await ticketsApi.get(customerId.value, ticketId.value)
     ticket.value = data
     if (ticket.value.attachments === null) ticket.value.attachments = []
     if (ticket.value.messages) {
@@ -379,56 +398,61 @@ async function fetchTicket() {
         if (m.attachments === null) m.attachments = []
       }
     }
-    // Fetch customer members for assignee dropdown and projects for time tracking
-    try {
-      const { data: members } = await client.get(`/customers/${customerId.value}/members`)
-      customerUsers.value = members || []
-    } catch {
-      customerUsers.value = []
-    }
+
+    // Load customers for assign/move panel
     try {
       const { data: customers } = await customersApi.list()
       allCustomers.value = customers || []
     } catch {
       allCustomers.value = []
     }
-    try {
-      const { data: custDetail } = await customersApi.get(customerId.value)
-      const contractProjects = (custDetail.contracts || []).flatMap(cg => cg.projects || [])
-      const unassigned = custDetail.projects || []
-      customerProjects.value = [...contractProjects, ...unassigned]
-    } catch {
-      customerProjects.value = []
-    }
 
-    // Fetch linked tickets
-    try {
-      const { data: links } = await ticketsApi.listLinks(customerId.value, ticketId.value)
-      linkedTickets.value = links || []
-    } catch {
-      linkedTickets.value = []
-    }
-    // Fetch linked cards
-    try {
-      const { data: cards } = await ticketsApi.listCards(customerId.value, ticketId.value)
-      linkedCards.value = cards || []
-    } catch {
-      linkedCards.value = []
-    }
-    // Fetch time entries
-    await fetchTimeEntries()
-    // Fetch history
-    try {
-      const { data: h } = await ticketsApi.getHistory(customerId.value, ticketId.value)
-      history.value = h || []
-    } catch {
-      history.value = []
+    if (!isInbox.value) {
+      // Fetch customer members for assignee dropdown
+      try {
+        const { data: members } = await client.get(`/customers/${customerId.value}/members`)
+        customerUsers.value = members || []
+      } catch {
+        customerUsers.value = []
+      }
+      // Fetch customer projects for time tracking
+      try {
+        const { data: custDetail } = await customersApi.get(customerId.value)
+        const contractProjects = (custDetail.contracts || []).flatMap(cg => cg.projects || [])
+        const unassigned = custDetail.projects || []
+        customerProjects.value = [...contractProjects, ...unassigned]
+      } catch {
+        customerProjects.value = []
+      }
+      // Fetch linked tickets
+      try {
+        const { data: links } = await ticketsApi.listLinks(customerId.value, ticketId.value)
+        linkedTickets.value = links || []
+      } catch {
+        linkedTickets.value = []
+      }
+      // Fetch linked cards
+      try {
+        const { data: cards } = await ticketsApi.listCards(customerId.value, ticketId.value)
+        linkedCards.value = cards || []
+      } catch {
+        linkedCards.value = []
+      }
+      // Fetch time entries
+      await fetchTimeEntries()
+      // Fetch history
+      try {
+        const { data: h } = await ticketsApi.getHistory(customerId.value, ticketId.value)
+        history.value = h || []
+      } catch {
+        history.value = []
+      }
     }
   } catch {}
   loading.value = false
 }
 
-watch(() => route.params.ticketId, () => {
+watch([() => route.params.ticketId, () => route.name], () => {
   fetchTicket()
 })
 
@@ -447,7 +471,7 @@ async function updateStatus(status) {
       const newTitle = titleWithDatePrefix(ticket.value.title, iso)
       if (newTitle !== ticket.value.title) payload.title = newTitle
     }
-    const { data } = await ticketsApi.update(customerId.value, ticketId.value, payload)
+    const { data } = await apiUpdate(payload)
     ticket.value = data
     ui.success('Status updated')
     if (status === 'pending' || status === 'pending_close') {
@@ -461,7 +485,7 @@ async function updateStatus(status) {
 
 async function updatePriority(priority) {
   try {
-    const { data } = await ticketsApi.update(customerId.value, ticketId.value, { priority })
+    const { data } = await apiUpdate({ priority })
     ticket.value = data
     ui.success('Priority updated')
   } catch (e) {
@@ -542,22 +566,27 @@ async function submitMessage() {
   sending.value = true
   try {
     const sendBody = body || '📎'
-    const { data } = await ticketsApi.addMessage(customerId.value, ticketId.value, sendBody)
-    const newMsg = { ...data, attachments: [] }
-
-    if (pendingFiles.value.length) {
-      const filesToUpload = [...pendingFiles.value]
-      pendingFiles.value = []
-      filesToUpload.forEach(pf => { if (pf._previewUrl) URL.revokeObjectURL(pf._previewUrl) })
-      for (const pf of filesToUpload) {
-        const fd = new FormData()
-        fd.append('file', pf._file)
-        fd.append('owner_type', 'ticket_message')
-        fd.append('owner_id', String(data.id))
-        try {
-          const { data: att } = await attachmentsApi.upload(fd)
-          newMsg.attachments.push(att)
-        } catch {}
+    let newMsg
+    if (isInbox.value) {
+      const { data } = await ticketsApi.inboxMessage(ticketId.value, sendBody)
+      newMsg = { ...data, attachments: [] }
+    } else {
+      const { data } = await ticketsApi.addMessage(customerId.value, ticketId.value, sendBody)
+      newMsg = { ...data, attachments: [] }
+      if (pendingFiles.value.length) {
+        const filesToUpload = [...pendingFiles.value]
+        pendingFiles.value = []
+        filesToUpload.forEach(pf => { if (pf._previewUrl) URL.revokeObjectURL(pf._previewUrl) })
+        for (const pf of filesToUpload) {
+          const fd = new FormData()
+          fd.append('file', pf._file)
+          fd.append('owner_type', 'ticket_message')
+          fd.append('owner_id', String(newMsg.id))
+          try {
+            const { data: att } = await attachmentsApi.upload(fd)
+            newMsg.attachments.push(att)
+          } catch {}
+        }
       }
     }
 
@@ -780,9 +809,14 @@ async function deleteTimeEntry(te) {
 async function deleteTicket() {
   if (!await ui.confirm('Delete this ticket?')) return
   try {
-    await ticketsApi.delete(customerId.value, ticketId.value)
+    if (isInbox.value) {
+      await ticketsApi.inboxDelete(ticketId.value)
+      router.push('/tickets/inbox')
+    } else {
+      await ticketsApi.delete(customerId.value, ticketId.value)
+      router.push(`/customers/${customerId.value}/tickets`)
+    }
     ui.success('Ticket deleted')
-    router.push(`/customers/${customerId.value}/tickets`)
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to delete ticket')
   }
@@ -797,6 +831,20 @@ async function moveTicket() {
     router.push(`/customers/${moveTargetCustomer.value}/tickets/${ticketId.value}`)
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to move ticket')
+  } finally {
+    moving.value = false
+  }
+}
+
+async function assignToCustomer() {
+  if (!moveTargetCustomer.value) return
+  moving.value = true
+  try {
+    await ticketsApi.inboxUpdate(ticketId.value, { customer_id: moveTargetCustomer.value })
+    ui.success('Ticket assigned')
+    router.push(`/customers/${moveTargetCustomer.value}/tickets/${ticketId.value}`)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to assign ticket')
   } finally {
     moving.value = false
   }

@@ -30,7 +30,7 @@ const routes = [
   { path: '/customers/:id/tickets', name: 'tickets', component: lazyWithReload(() => import('@/views/TicketListView.vue')), meta: { helpdeskOnly: true } },
   { path: '/customers/:id/tickets/:ticketId', name: 'ticket-detail', component: lazyWithReload(() => import('@/views/TicketDetailView.vue')), meta: { helpdeskOnly: true } },
   { path: '/tickets/inbox', name: 'inbox', component: lazyWithReload(() => import('@/views/InboxView.vue')), meta: { helpdeskOnly: true } },
-  { path: '/tickets/inbox/:ticketId', name: 'inbox-ticket-detail', component: lazyWithReload(() => import('@/views/InboxTicketDetailView.vue')), meta: { helpdeskOnly: true } },
+  { path: '/tickets/inbox/:ticketId', name: 'inbox-ticket-detail', component: lazyWithReload(() => import('@/views/TicketDetailView.vue')), meta: { helpdeskOnly: true } },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ]
 
