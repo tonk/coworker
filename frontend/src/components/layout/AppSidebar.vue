@@ -196,8 +196,8 @@
             <span class="inbox-icon" aria-hidden="true">📥</span>
             <span class="link-text">{{ $t('inbox.title') }}</span>
             <span v-if="ticketsStore.inboxCount" class="inbox-badge" :aria-label="`${ticketsStore.inboxUnread} unread, ${ticketsStore.inboxCount} total`" aria-live="polite">
-              <span v-if="ticketsStore.inboxUnread" class="inbox-badge-unread">{{ ticketsStore.inboxUnread }}</span>
-              <span v-if="ticketsStore.inboxUnread" class="inbox-badge-sep">/</span>
+              <span class="inbox-badge-unread">{{ ticketsStore.inboxUnread }}</span>
+              <span class="inbox-badge-sep">/</span>
               <span>{{ ticketsStore.inboxCount }}</span>
             </span>
           </RouterLink>
