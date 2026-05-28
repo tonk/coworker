@@ -80,6 +80,27 @@ options:
       - Set to an empty string C("") to clear.
     type: str
 
+  group:
+    description:
+      - Name of the user group to assign this ticket to.
+      - Set to an empty string C("") to unassign.
+      - Requires admin credentials for the group name lookup.
+    type: str
+
+  reminder_at:
+    description:
+      - Date on which a reminder fires for a C(pending) ticket.
+      - Accepted as C(YYYY-MM-DD); stored as noon UTC on that day.
+      - Only settable after creation; ignored when creating a new ticket.
+    type: str
+
+  close_at:
+    description:
+      - Date on which a C(pending_close) ticket is automatically closed.
+      - Accepted as C(YYYY-MM-DD); stored as noon UTC on that day.
+      - Only settable after creation; ignored when creating a new ticket.
+    type: str
+
   state:
     description:
       - C(present) ensures the ticket exists with the specified attributes.
@@ -136,6 +157,32 @@ EXAMPLES = r"""
     title: Kubernetes cluster node drain failing
     status: closed
 
+- name: Assign ticket to a support group
+  ansilabnl.warmdesk.ticket:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_token: "{{ warmdesk_token }}"
+    customer: Acme Corporation
+    title: Login page returns 500 on Safari
+    group: Level 2 Support
+
+- name: Put a ticket on hold with a follow-up reminder
+  ansilabnl.warmdesk.ticket:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_token: "{{ warmdesk_token }}"
+    customer: Acme Corporation
+    title: Waiting for vendor response
+    status: pending
+    reminder_at: "2026-06-15"
+
+- name: Schedule a ticket for auto-close
+  ansilabnl.warmdesk.ticket:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_token: "{{ warmdesk_token }}"
+    customer: Acme Corporation
+    title: Resolved — awaiting customer confirmation
+    status: pending_close
+    close_at: "2026-06-20"
+
 - name: Delete a ticket
   ansilabnl.warmdesk.ticket:
     warmdesk_url: https://warmdesk.example.com
@@ -184,11 +231,42 @@ ticket:
       returned: always
       type: str
       sample: critical
+    description:
+      description: Detailed description.
+      returned: always
+      type: str
+    assigned_to:
+      description: Assigned agent user object (or null).
+      returned: always
+      type: dict
+    owner:
+      description: Owner user object (or null).
+      returned: always
+      type: dict
+    group:
+      description: Assigned user group object (or null).
+      returned: always
+      type: dict
+    reminder_at:
+      description: Pending reminder timestamp (or null).
+      returned: always
+      type: str
+      sample: "2026-06-15T12:00:00Z"
+    close_at:
+      description: Scheduled auto-close timestamp (or null).
+      returned: always
+      type: str
+      sample: "2026-06-20T12:00:00Z"
     created_at:
       description: ISO-8601 creation timestamp.
       returned: always
       type: str
       sample: "2026-05-26T07:19:58Z"
+    updated_at:
+      description: ISO-8601 last-update timestamp.
+      returned: always
+      type: str
+      sample: "2026-05-28T09:00:00Z"
 """
 
 import re
@@ -201,15 +279,37 @@ from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api im
 )
 from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolve import (
     resolve_customer_id,
+    resolve_group_id,
     resolve_user_id,
 )
 
 
 _DATE_PREFIX_RE = re.compile(r'^\[\d{4}-\d{2}-\d{2}\]\s*')
+_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
 
 def _strip_date_prefix(title):
     return _DATE_PREFIX_RE.sub('', title or '')
+
+
+def _date_to_iso(date_str):
+    """Convert YYYY-MM-DD to YYYY-MM-DDT12:00:00Z (noon UTC), matching frontend convention."""
+    if not date_str or not _DATE_RE.match(date_str):
+        return None
+    return '%sT12:00:00Z' % date_str
+
+
+def _date_field_changed(desired_str, existing_iso):
+    """Return True when the desired YYYY-MM-DD differs from the stored ISO timestamp."""
+    if desired_str is None:
+        return False
+    if not desired_str:
+        return existing_iso is not None
+    desired_iso = _date_to_iso(desired_str)
+    if existing_iso is None:
+        return True
+    # Compare only the date portion — server may use different times
+    return existing_iso[:10] != desired_str
 
 
 def _find_ticket(client, customer_id, title):
@@ -274,6 +374,32 @@ def _build_update_body(p, existing, user_resolve_errors):
                 body['owner_id'] = desired_id if desired_id != 0 else None
                 changed = True
 
+    if p.get('group') is not None:
+        val = p['group']
+        if val == '':
+            desired_id = 0
+        else:
+            try:
+                desired_id = resolve_group_id(client, val)
+            except WarmDeskAPIError as e:
+                user_resolve_errors.append('group: %s' % str(e))
+                desired_id = None
+        if desired_id is not None:
+            current_id = 0
+            if existing.get('group') and existing['group'].get('id'):
+                current_id = existing['group']['id']
+            if current_id != desired_id:
+                body['group_id'] = desired_id if desired_id != 0 else None
+                changed = True
+
+    if _date_field_changed(p.get('reminder_at'), existing.get('reminder_at')):
+        body['reminder_at'] = _date_to_iso(p['reminder_at']) if p['reminder_at'] else None
+        changed = True
+
+    if _date_field_changed(p.get('close_at'), existing.get('close_at')):
+        body['close_at'] = _date_to_iso(p['close_at']) if p['close_at'] else None
+        changed = True
+
     return body, changed
 
 
@@ -288,6 +414,9 @@ def run_module():
         status=dict(type='str', choices=['new', 'open', 'pending', 'pending_close', 'closed']),
         assigned_to=dict(type='str'),
         owner=dict(type='str'),
+        group=dict(type='str'),
+        reminder_at=dict(type='str'),
+        close_at=dict(type='str'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
 
@@ -334,8 +463,23 @@ def run_module():
                     body['owner_id'] = resolve_user_id(client, p['owner'])
                 except WarmDeskAPIError as e:
                     module.fail_json(msg='Failed to resolve owner: %s' % str(e))
+            if p.get('group'):
+                try:
+                    body['group_id'] = resolve_group_id(client, p['group'])
+                except WarmDeskAPIError as e:
+                    module.fail_json(msg='Failed to resolve group: %s' % str(e))
 
             ticket = client.post('/customers/%d/tickets' % customer_id, body)
+
+            # reminder_at / close_at are not accepted by CreateTicket — apply via update
+            date_update = {}
+            if p.get('reminder_at'):
+                date_update['reminder_at'] = _date_to_iso(p['reminder_at'])
+            if p.get('close_at'):
+                date_update['close_at'] = _date_to_iso(p['close_at'])
+            if date_update:
+                ticket = client.put('/customers/%d/tickets/%d' % (customer_id, ticket['id']), date_update)
+
             module.exit_json(changed=True, ticket=ticket)
 
         # state=present - UPDATE

@@ -89,6 +89,18 @@ def resolve_label_id(client, project_slug, label_name):
     raise WarmDeskAPIError(404, 'Label "%s" not found in project %s' % (label_name, project_slug))
 
 
+def resolve_group_id(client, name):
+    """Return the numeric ID of the group whose name equals *name*.
+
+    Requires admin credentials (groups are admin-only).
+    """
+    groups = client.get('/admin/groups')
+    for g in groups:
+        if g.get('name') == name:
+            return g['id']
+    raise WarmDeskAPIError(404, 'Group not found: %s' % name)
+
+
 def find_card_by_number(client, project_slug, card_ref):
     """Return a card dict given a card reference like 'EDA-42'.
 

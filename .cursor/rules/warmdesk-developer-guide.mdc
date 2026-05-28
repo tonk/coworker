@@ -266,7 +266,7 @@ The helpdesk module is gated by the `helpdesk_enabled` user flag (default `false
 
 | Model | Key fields |
 |---|---|
-| `Ticket` | `CustomerID`, `Title`, `Description`, `Type` (incident/problem/service_request/change_request), `Priority` (low/medium/high/critical), `Status` (open/in_progress/resolved/closed/pending), `AssignedToID`, `OwnerID`, `GroupID`, `ReminderAt *time.Time`, `SlaPolicyID`, `SlaResponseDeadline`, `SlaResolutionDeadline`, `SlaBreached bool`, `FirstResponseAt *time.Time` |
+| `Ticket` | `CustomerID`, `Title`, `Description`, `Type` (incident/problem/service_request/change_request), `Priority` (low/medium/high/critical), `Status` (new/open/pending/pending_close/closed), `AssignedToID`, `OwnerID`, `GroupID`, `ReminderAt *time.Time`, `CloseAt *time.Time`, `IsSpam bool`, `SlaPolicyID`, `SlaResponseDeadline`, `SlaResolutionDeadline`, `SlaResponseBreached bool`, `SlaResolutionBreached bool`, `FirstResponseAt *time.Time` |
 | `TicketMessage` | `TicketID`, `UserID`, `Body`, `EmailSent bool` — internal messages on a ticket; `EmailSent` is `true` when the message triggered an outbound email reply |
 | `TicketTag` | `TicketID`, `Name` — free-form tags |
 | `TicketLink` | `TicketID`, `LinkedTicketID`, `LinkType` — links between tickets |
@@ -281,7 +281,7 @@ Customer access is checked by `requireCustomerAccess` in `handlers/ticket.go`. U
 
 ### SLA policies
 
-`MatchSlaPolicy(priority)` in `handlers/sla.go` finds an active policy for the given priority (exact match or catch-all). `ComputeSlaDeadlines` computes the response and resolution deadlines from `time.Now()`. Both are called in `CreateTicket`. `refreshSlaBreachStatus` updates `SlaBreached` on every `GetTicket` / `ListTickets` call so the UI always reflects real-time breach state without a separate cron job.
+`MatchSlaPolicy(priority)` in `handlers/sla.go` finds an active policy for the given priority (exact match or catch-all). `ComputeSlaDeadlines` computes the response and resolution deadlines from `time.Now()`. Both are called in `CreateTicket`. `refreshSlaBreachStatus` updates `SlaResponseBreached` and `SlaResolutionBreached` on every `GetTicket` / `ListTickets` call so the UI always reflects real-time breach state without a separate cron job.
 
 SLA policies are managed by admins via `GET/POST/PUT/DELETE /api/v1/admin/sla-policies` (no feature flag — always visible to admins).
 
@@ -297,6 +297,43 @@ A ticket in `"pending_close"` status has a `CloseAt` timestamp. `autoClosePendin
 
 When a reminder date (`pending`) or close date (`pending_close`) is set or changed, the ticket title is automatically prefixed with `[YYYY-mm-dd]`. Clearing the date removes the prefix. The logic lives in `titleWithDatePrefix()` in `TicketDetailView.vue` and fires on status change (if a date already exists) and on date update.
 
+### Macros
+
+Macros are reusable action sequences that agents can apply to tickets in one click. They are managed by admins and applied by any helpdesk user.
+
+**Model** (`models/macro.go`): `Name`, `Description`, `Actions` (JSON array of `MacroAction{Type, Value}`), `IsActive`, `SortOrder`.
+
+**Action types:**
+
+| Type | Effect |
+|---|---|
+| `set_status` | Sets ticket status (`new`, `open`, `pending`, `pending_close`, `closed`) |
+| `set_priority` | Sets priority (`low`, `medium`, `high`, `critical`) |
+| `set_type` | Sets type (`incident`, `problem`, `service_request`, `change_request`) |
+| `add_tag` | Adds a tag (idempotent via `FirstOrCreate`) |
+| `add_message` | Appends a message body; supports placeholders `{email}`, `{fname}`, `{name}`, `{subject}`, `{ticket_id}`, `{agent}`, `{agent_fname}` |
+
+**Routes:**
+- `GET/POST /api/v1/admin/macros` — list all / create (admin only)
+- `PUT/DELETE /api/v1/admin/macros/:id` — update / delete (admin only)
+- `GET /api/v1/macros` — list active macros (all authenticated helpdesk users)
+- `POST /api/v1/customers/:customerId/tickets/:ticketId/macros/:macroId` — apply to ticket
+- `POST /api/v1/tickets/inbox/:ticketId/macros/:macroId` — apply to inbox ticket
+
+**Frontend:** `components/admin/MacrosTab.vue` (admin CRUD with drag-and-drop placeholder insertion). Apply dropdown lives in `TicketDetailView.vue`.
+
+**Apply response:** `{ticket, macro_messages}` — `macro_messages` is a list of expanded message bodies for `add_message` actions; the frontend POSTs them as ticket messages.
+
+### Spam marking
+
+Marking a ticket as spam closes it and hides it from the default list view (filtered by `include_spam=true` query param).
+
+- `POST /api/v1/customers/:customerId/tickets/:ticketId/spam` — sets `is_spam=true`, `status=closed`
+- `DELETE /api/v1/customers/:customerId/tickets/:ticketId/spam` — sets `is_spam=false`, `status=open`
+- `POST/DELETE /api/v1/tickets/inbox/:ticketId/spam` — same for inbox tickets
+
+**Model field:** `IsSpam bool` (default `false`). `ListTickets` excludes spam by default; pass `?include_spam=true` to include them.
+
 ### Routes
 
 All ticket routes live under `/api/v1/customers/:customerId/tickets` and require `RequireFeature("helpdesk_enabled")`. SLA policy routes live under `/api/v1/admin/sla-policies` and require `AdminOnly`.
@@ -304,12 +341,14 @@ All ticket routes live under `/api/v1/customers/:customerId/tickets` and require
 ### Frontend
 
 - **`TicketListView.vue`** — lists tickets for one customer; shows `DashboardNews` at the top so news is visible to helpdesk-first users.
-- **`TicketDetailView.vue`** — full ticket detail with inline title editing, status/priority/type/assignee dropdowns, tag management, SLA card, linked tickets/cards panel, internal messages with attachments, and the pending reminder `DatePicker`. The original email body is rendered as plain text with `white-space: pre-wrap` (selectable via `.selectable` class to override `body { user-select: none }`). Messages from agents that triggered an email reply show an ✉ badge (`email_sent` field). Clicking the ticket number (`#123`) copies `Ticket#123` to the clipboard.
+- **`TicketDetailView.vue`** — full ticket detail with inline title editing, status/priority/type/assignee/group dropdowns, tag management, SLA card, linked tickets/cards panel, internal messages with attachments, the pending reminder `DatePicker`, macro apply dropdown, and spam mark/unmark controls. The original email body is rendered as plain text with `white-space: pre-wrap` (selectable via `.selectable` class to override `body { user-select: none }`). Messages from agents that triggered an email reply show an ✉ badge (`email_sent` field). Clicking the ticket number (`#123`) copies `Ticket#123` to the clipboard.
+- **`components/admin/MacrosTab.vue`** — admin UI for macro CRUD with drag-and-drop placeholder insertion buttons.
 - **`components/admin/SlaPoliciesTab.vue`** — admin UI for CRUD on SLA policies.
 - **`components/common/DatePicker.vue`** — custom calendar picker that uses CSS custom properties for theming and respects `auth.user.date_time_format` and `auth.user.week_start`. Emits `update:modelValue` with a `YYYY-MM-DD` string (or `null` on clear). Does **not** use a native `<input type="date">` at all.
 - **`components/common/DashboardNews.vue`** — self-contained news widget that fetches active news, manages dismissed IDs in `localStorage` (key `dashboard_news_dismissed_ids`), and renders the widget grid. Used in `DashboardView`, `CustomersView`, and `TicketListView`.
 - **`stores/tickets.js`** — Pinia store for ticket list state.
 - **`api/tickets.js`** — Axios wrappers for all ticket endpoints.
+- **`api/macros.js`** — Axios wrappers for macro CRUD and apply endpoints.
 - **`api/sla.js`** — Axios wrappers for SLA policy admin endpoints.
 
 ### User setting: `dashboard_default`

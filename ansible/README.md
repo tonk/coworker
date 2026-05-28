@@ -51,6 +51,7 @@ Only one authentication method should be used at a time.
 |---|---|
 | `ansilabnl.warmdesk.ticket` | Manage helpdesk tickets (create, update, delete) |
 | `ansilabnl.warmdesk.sla_policy` | Manage SLA policies (admin only) |
+| `ansilabnl.warmdesk.macro` | Manage ticket macros (admin only) |
 
 **Customers & contracts**
 
@@ -76,6 +77,8 @@ Only one authentication method should be used at a time.
 |---|---|
 | `ansilabnl.warmdesk.webhook` | Manage webhooks |
 | `ansilabnl.warmdesk.system_settings` | Manage global system settings (admin only) |
+| `ansilabnl.warmdesk.news` | Manage dashboard news items (admin only) |
+| `ansilabnl.warmdesk.from_vars` | Provision all resource types from one or more YAML var files |
 
 ## Lookup plugins
 

@@ -46,7 +46,7 @@ options:
       - |
           Each file may contain any combination of the supported top-level keys
           (C(users), C(customers), C(groups), C(projects), C(system_settings),
-          C(news_items)).
+          C(news_items), C(macros)).
       - |
           Use C({{ playbook_dir }}/vars/warmdesk.yml) for paths relative to the
           playbook.
@@ -114,6 +114,17 @@ EXAMPLES = r'''
 # system_settings:
 #   company_name: Acme Corp
 #   locale: en
+#
+# macros:
+#   - name: Close and thank customer
+#     description: Sets status to closed and sends a closing message
+#     actions:
+#       - type: set_status
+#         value: closed
+#       - type: add_message
+#         value: "Hi {fname}, your ticket {ticket_id} has been resolved. Thanks!"
+#     is_active: true
+#     sort_order: 10
 # ────────────────────────────────────────────────────────────────────────────
 
 - name: Provision all WarmDesk resources from a single vars file
@@ -177,6 +188,9 @@ results:
     system_settings:
       description: Counts for system setting operations.
       type: dict
+    macros:
+      description: Counts for macro operations.
+      type: dict
 '''
 
 import os
@@ -231,7 +245,7 @@ def _load_var_files(paths):
 _RESOURCE_TYPES = (
     'users', 'customers', 'contracts', 'customer_members',
     'projects', 'columns', 'labels', 'project_members', 'cards',
-    'groups', 'system_settings', 'news_items',
+    'groups', 'system_settings', 'news_items', 'macros',
 )
 
 
@@ -976,6 +990,49 @@ class Provisioner(object):
         else:
             self._counts['news_items'].unchanged += 1
 
+    def ensure_macro(self, defn):
+        name = defn.get('name', '').strip()
+        if not name:
+            return
+        all_macros = self.client.get('/admin/macros') or []
+        existing = next((m for m in all_macros if m.get('name') == name), None)
+
+        actions = defn.get('actions') or []
+        payload = dict(
+            name=name,
+            description=defn.get('description', ''),
+            actions=actions,
+            is_active=defn.get('is_active', True),
+            sort_order=defn.get('sort_order', 0),
+        )
+
+        if existing is None:
+            if not self.check_mode:
+                self.client.post('/admin/macros', payload)
+            self._counts['macros'].created += 1
+            return
+
+        existing_actions = existing.get('actions') or []
+        actions_changed = (
+            len(actions) != len(existing_actions)
+            or any(
+                d.get('type') != e.get('type') or d.get('value') != e.get('value')
+                for d, e in zip(actions, existing_actions)
+            )
+        )
+        changed = (
+            existing.get('description') != payload['description']
+            or actions_changed
+            or existing.get('is_active') != payload['is_active']
+            or existing.get('sort_order') != payload['sort_order']
+        )
+        if changed:
+            if not self.check_mode:
+                self.client.put('/admin/macros/%d' % existing['id'], payload)
+            self._counts['macros'].updated += 1
+        else:
+            self._counts['macros'].unchanged += 1
+
     # ── Main entry point ──────────────────────────────────────────────────────
 
     def run(self, data):
@@ -1032,6 +1089,10 @@ class Provisioner(object):
         # Phase 6 — news items (admin only)
         for defn in data.get('news_items', []):
             self.ensure_news_item(defn)
+
+        # Phase 7 — macros (admin only)
+        for defn in data.get('macros', []):
+            self.ensure_macro(defn)
 
 
 # ---------------------------------------------------------------------------
