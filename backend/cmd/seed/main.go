@@ -2589,6 +2589,112 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d ticket–card links\n", totalLinks)
 
+	// ── 8c. Inbox tickets (no customer) ───────────────────────────────────────
+	fmt.Println("→ Creating inbox tickets…")
+
+	type inboxTicketSeed struct {
+		subject      string
+		description  string
+		ticketType   string
+		status       string
+		priority     string
+		createdByKey string
+		assignedToKey string // may be empty
+		createdAgo   time.Duration
+		messages     []ticketMsgSpec
+	}
+
+	inboxSeeds := []inboxTicketSeed{
+		{
+			subject:      "Cannot access the admin panel after update",
+			description:  "Hi,\n\nSince the update rolled out this morning I can no longer log into the admin panel. I get \"403 Forbidden\" immediately after entering my credentials. Other users on my team are not affected.\n\nBrowser: Chrome 124\nOS: Windows 11\n\nPlease advise.\n\nRegards,\nT. Bergmann",
+			ticketType:   "incident",
+			status:       "open",
+			priority:     "high",
+			createdByKey: "admin",
+			createdAgo:   2 * time.Hour,
+			messages: []ticketMsgSpec{
+				{"sarah", "Thank you for reaching out. Could you tell us which role your account has and whether any permission changes were made before the update?", 1},
+			},
+		},
+		{
+			subject:      "Question about pricing for additional seats",
+			description:  "Hello,\n\nWe are currently on the Team plan (10 seats) and are planning to expand to about 25 users over the next quarter. Could you send us a quote for the additional 15 seats and let us know if volume pricing applies?\n\nWe would also like to know the minimum contract term.\n\nThanks,\nM. Okonkwo\nProcurement Manager",
+			ticketType:   "service_request",
+			status:       "open",
+			priority:     "low",
+			createdByKey: "admin",
+			createdAgo:   18 * time.Hour,
+			messages:     nil,
+		},
+		{
+			subject:      "Data export stuck at 0% for 3 hours",
+			description:  "I triggered a full data export from Settings → Export at 09:14 this morning. The progress bar has shown 0% ever since. The export job ID is `exp_7f3a91c`. No error is shown.\n\nThis is urgent — I need the export for an audit tomorrow morning.",
+			ticketType:   "incident",
+			status:       "open",
+			priority:     "critical",
+			createdByKey: "admin",
+			assignedToKey: "marc",
+			createdAgo:   3*time.Hour + 20*time.Minute,
+			messages: []ticketMsgSpec{
+				{"marc", "I can see the export job in the queue. It appears to be blocked waiting on a database lock. I'm investigating and will have an update within 30 minutes.", 2},
+			},
+		},
+	}
+
+	for _, is := range inboxSeeds {
+		createdBy := users[is.createdByKey]
+		createdAt := now.Add(-is.createdAgo)
+		iTicket := models.Ticket{
+			CustomerID:  nil, // inbox — no customer assigned
+			Title:       is.subject,
+			Description: is.description,
+			Type:        is.ticketType,
+			Status:      is.status,
+			Priority:    is.priority,
+			CreatedByID: createdBy.ID,
+			CreatedAt:   createdAt,
+			UpdatedAt:   createdAt,
+		}
+		if is.assignedToKey != "" {
+			iTicket.AssignedToID = &users[is.assignedToKey].ID
+		}
+		if policy, ok := slaByPriority[is.priority]; ok {
+			iTicket.SlaPolicyID = &policy.ID
+			if policy.ResponseTimeMinutes > 0 {
+				d := createdAt.Add(time.Duration(policy.ResponseTimeMinutes) * time.Minute)
+				iTicket.SlaResponseDeadline = &d
+			}
+			if policy.ResolutionTimeMinutes > 0 {
+				d := createdAt.Add(time.Duration(policy.ResolutionTimeMinutes) * time.Minute)
+				iTicket.SlaResolutionDeadline = &d
+			}
+		}
+		must(db.Create(&iTicket).Error)
+
+		var firstResponseAt *time.Time
+		for _, m := range is.messages {
+			author := users[m.userKey]
+			msgCreatedAt := iTicket.CreatedAt.Add(time.Duration(-m.hoursAgo) * time.Hour)
+			must(db.Create(&models.TicketMessage{
+				TicketID:  iTicket.ID,
+				UserID:    author.ID,
+				Body:      m.body,
+				CreatedAt: msgCreatedAt,
+				UpdatedAt: msgCreatedAt,
+			}).Error)
+			if author.ID != createdBy.ID {
+				if firstResponseAt == nil || msgCreatedAt.Before(*firstResponseAt) {
+					firstResponseAt = &msgCreatedAt
+				}
+			}
+		}
+		if firstResponseAt != nil {
+			db.Model(&iTicket).Update("first_response_at", firstResponseAt)
+		}
+	}
+	fmt.Printf("   Created %d inbox tickets\n", len(inboxSeeds))
+
 	// ── 9. Groups ─────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating groups…")
 
@@ -3320,6 +3426,20 @@ func removeDemoData(db *gorm.DB) {
 			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketCardLink{})
 			db.Unscoped().Where("id IN ?", ticketIDs).Delete(&models.Ticket{})
 		}
+	}
+	// Inbox tickets (customer_id IS NULL — matched by title)
+	demoInboxTitles := []string{
+		"Cannot access the admin panel after update",
+		"Question about pricing for additional seats",
+		"Data export stuck at 0% for 3 hours",
+	}
+	var inboxIDs []uint
+	db.Model(&models.Ticket{}).Where("customer_id IS NULL AND title IN ?", demoInboxTitles).Pluck("id", &inboxIDs)
+	if len(inboxIDs) > 0 {
+		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketMessage{})
+		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketTag{})
+		db.Unscoped().Where("source_ticket_id IN ? OR target_ticket_id IN ?", inboxIDs, inboxIDs).Delete(&models.TicketLink{})
+		db.Unscoped().Where("id IN ?", inboxIDs).Delete(&models.Ticket{})
 	}
 	demoSlaNames := []string{"Critical — 1h response / 4h resolution", "High — 2h response / 8h resolution", "Standard — 4h response / 24h resolution"}
 	db.Unscoped().Where("name IN ?", demoSlaNames).Delete(&models.SlaPolicy{})
