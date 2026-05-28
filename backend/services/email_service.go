@@ -15,6 +15,44 @@ import (
 	appws "github.com/tonk/warmdesk/ws"
 )
 
+// RFC 5322 §2.1.1: each line must not exceed 998 characters.
+// We fold at 990 to leave room for the \r\n continuation.
+const maxSMTPLineLen = 990
+
+// foldBody splits long lines at word boundaries to comply with SMTP line-length
+// limits.  Each line longer than maxSMTPLineLen is folded with \r\n continuation.
+func foldBody(body string) string {
+	lines := strings.Split(body, "\n")
+	var b strings.Builder
+	for i, line := range lines {
+		if i > 0 {
+			b.WriteByte('\n')
+		}
+		b.WriteString(foldLine(line))
+	}
+	return b.String()
+}
+
+func foldLine(line string) string {
+	if len(line) <= maxSMTPLineLen {
+		return line
+	}
+	var b strings.Builder
+	rest := line
+	for len(rest) > maxSMTPLineLen {
+		cut := maxSMTPLineLen
+		if idx := strings.LastIndex(rest[:maxSMTPLineLen], " "); idx > 0 {
+			cut = idx
+		}
+		b.WriteString(rest[:cut])
+		b.WriteString("\r\n")
+		rest = rest[cut:]
+		rest = strings.TrimLeft(rest, " ")
+	}
+	b.WriteString(rest)
+	return b.String()
+}
+
 // envelopeAddress extracts the bare email address from a From value that may
 // be either a plain address ("a@b.com") or RFC 5322 display-name form
 // ("Display Name <a@b.com>").  smtp.SendMail requires the bare address for
@@ -81,7 +119,7 @@ func (s *EmailService) Send(to, subject, body string) error {
 	}
 
 	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n%s",
-		from, to, subject, body)
+		from, to, foldHeader(subject), foldBody(body))
 
 	var auth smtp.Auth
 	if cfg.Username != "" {
@@ -89,6 +127,28 @@ func (s *EmailService) Send(to, subject, body string) error {
 	}
 
 	return smtp.SendMail(addr, auth, envelopeAddress(from), []string{to}, []byte(msg))
+}
+
+// foldHeader folds a header value (e.g. Subject) if it exceeds maxLen, using
+// \r\n followed by a space for continuation per RFC 5322 §2.2.3.
+func foldHeader(value string) string {
+	if len(value) <= maxSMTPLineLen {
+		return value
+	}
+	var b strings.Builder
+	rest := value
+	for len(rest) > maxSMTPLineLen {
+		cut := maxSMTPLineLen
+		if idx := strings.LastIndex(rest[:maxSMTPLineLen], " "); idx > 0 {
+			cut = idx
+		}
+		b.WriteString(rest[:cut])
+		b.WriteString("\r\n ")
+		rest = rest[cut:]
+		rest = strings.TrimLeft(rest, " ")
+	}
+	b.WriteString(rest)
+	return b.String()
 }
 
 // SendReply sends an email reply to a ticket's original sender with threading
@@ -119,7 +179,7 @@ func (s *EmailService) SendReply(to, subject, body string, ticketID uint, inRepl
 	var b strings.Builder
 	fmt.Fprintf(&b, "From: %s\r\n", from)
 	fmt.Fprintf(&b, "To: %s\r\n", to)
-	fmt.Fprintf(&b, "Subject: %s\r\n", subject)
+	fmt.Fprintf(&b, "Subject: %s\r\n", foldHeader(subject))
 	fmt.Fprintf(&b, "Message-ID: %s\r\n", msgID)
 	if inReplyTo != "" {
 		fmt.Fprintf(&b, "In-Reply-To: %s\r\n", inReplyTo)
@@ -128,8 +188,9 @@ func (s *EmailService) SendReply(to, subject, body string, ticketID uint, inRepl
 			fmt.Fprintf(&b, "References: %s %s\r\n", inReplyTo, strings.Trim(references, "<>"))
 		}
 	}
+	fmt.Fprintf(&b, "X-WarmDesk-Ticket-Id: %d\r\n", ticketID)
 	fmt.Fprintf(&b, "Content-Type: text/plain; charset=UTF-8\r\n")
-	fmt.Fprintf(&b, "\r\n%s", body)
+	fmt.Fprintf(&b, "\r\n%s", foldBody(body))
 
 	var auth smtp.Auth
 	if cfg.Username != "" {
@@ -156,14 +217,14 @@ func (s *EmailService) SendHTML(to, subject, htmlBody, textBody string) error {
 	var b strings.Builder
 	fmt.Fprintf(&b, "From: %s\r\n", from)
 	fmt.Fprintf(&b, "To: %s\r\n", to)
-	fmt.Fprintf(&b, "Subject: %s\r\n", subject)
+	fmt.Fprintf(&b, "Subject: %s\r\n", foldHeader(subject))
 	fmt.Fprintf(&b, "MIME-Version: 1.0\r\n")
 	fmt.Fprintf(&b, "Content-Type: multipart/alternative; boundary=%q\r\n", boundary)
 	fmt.Fprintf(&b, "\r\n")
 	fmt.Fprintf(&b, "--%s\r\n", boundary)
-	fmt.Fprintf(&b, "Content-Type: text/plain; charset=UTF-8\r\n\r\n%s\r\n", textBody)
+	fmt.Fprintf(&b, "Content-Type: text/plain; charset=UTF-8\r\n\r\n%s\r\n", foldBody(textBody))
 	fmt.Fprintf(&b, "--%s\r\n", boundary)
-	fmt.Fprintf(&b, "Content-Type: text/html; charset=UTF-8\r\n\r\n%s\r\n", htmlBody)
+	fmt.Fprintf(&b, "Content-Type: text/html; charset=UTF-8\r\n\r\n%s\r\n", foldBody(htmlBody))
 	fmt.Fprintf(&b, "--%s--\r\n", boundary)
 
 	var auth smtp.Auth

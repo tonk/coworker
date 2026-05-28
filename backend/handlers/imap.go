@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -62,9 +64,11 @@ func AdminPollIMAP(c *gin.Context) {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "IMAP service not running"})
 		return
 	}
-	if err := svc.PollOnce(); err != nil {
+	n, err := svc.PollOnce()
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Poll complete"})
+	log.Printf("imap: admin poll complete — %d message(s) processed", n)
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Poll complete — %d message(s) processed", n)})
 }

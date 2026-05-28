@@ -25,6 +25,8 @@ type Ticket struct {
 	CloseAt               *time.Time      `json:"close_at,omitempty"`
 	EmailMessageID        *string         `gorm:"uniqueIndex;size:998" json:"email_message_id,omitempty"`
 	FromEmail             *string         `gorm:"size:254" json:"from_email,omitempty"`
+	FromName              *string         `gorm:"size:150" json:"from_name,omitempty"`
+	RawEmail              *string         `gorm:"type:text" json:"raw_email,omitempty"`
 	CreatedAt             time.Time       `json:"created_at"`
 	UpdatedAt             time.Time       `json:"updated_at"`
 	Messages              []TicketMessage `gorm:"foreignKey:TicketID" json:"messages,omitempty"`
@@ -42,6 +44,7 @@ type TicketMessage struct {
 	TicketID  uint         `gorm:"not null;index" json:"ticket_id"`
 	UserID    uint         `gorm:"not null" json:"user_id"`
 	Body      string       `gorm:"type:text;not null" json:"body"`
+	FromName  string       `gorm:"size:150" json:"from_name"`
 	EmailSent bool         `gorm:"default:false" json:"email_sent"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`

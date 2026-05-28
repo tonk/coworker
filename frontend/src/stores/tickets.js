@@ -6,6 +6,9 @@ export const useTicketsStore = defineStore('tickets', () => {
   const tickets = ref([])
   const inboxCount = ref(0)
   const inboxUnread = ref(0)
+  const ticketRefreshKey = ref(0)
+  const refreshForTicketId = ref(null)
+  const inboxRefreshKey = ref(0)
 
   async function fetchTickets(customerId) {
     try {
@@ -41,14 +44,23 @@ export const useTicketsStore = defineStore('tickets', () => {
     tickets.value = tickets.value.filter(t => t.id !== id)
   }
 
+  function signalTicketUpdated(ticketId) {
+    refreshForTicketId.value = ticketId
+    ticketRefreshKey.value++
+  }
+
   return {
     tickets,
     inboxCount,
     inboxUnread,
+    ticketRefreshKey,
+    refreshForTicketId,
+    inboxRefreshKey,
     fetchTickets,
     fetchInboxCount,
     createTicket,
     updateTicket,
     deleteTicket,
+    signalTicketUpdated,
   }
 })

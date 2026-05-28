@@ -1055,6 +1055,7 @@
     "status": "Status",
     "created_at": "Created At",
     "original_email": "Original email",
+    "show_original": "Show original",
     "email_sent_hint": "A copy of this comment was sent by email",
     "group_view": "Group View",
     "move_to_customer": "Flytta till kund",

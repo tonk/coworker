@@ -66,6 +66,7 @@ const (
 	settingIMAPPassword              = "imap_password"
 	settingIMAPUseTLS                = "imap_use_tls"
 	settingIMAPMailbox               = "imap_mailbox"
+	settingIMAPProcessedMailbox       = "imap_processed_mailbox"
 	settingIMAPPollInterval          = "imap_poll_interval"
 	settingIMAPAuthMechanism         = "imap_auth_mechanism"
 	settingIMAPOAuth2Provider        = "imap_oauth2_provider"
@@ -164,6 +165,7 @@ var systemSettingDefaults = map[string]string{
 	settingIMAPPassword:              "",
 	settingIMAPUseTLS:                "true",
 	settingIMAPMailbox:               "INBOX",
+	settingIMAPProcessedMailbox:       "Processed",
 	settingIMAPPollInterval:          "60",
 	settingIMAPAuthMechanism:         "plain",
 	settingIMAPOAuth2Provider:        "",
@@ -304,19 +306,20 @@ func GetIMAPSettings() config.IMAPConfig {
 		pollInterval = 60
 	}
 	return config.IMAPConfig{
-		Enabled:        all[settingIMAPEnabled] == "true",
-		Host:           all[settingIMAPHost],
-		Port:           port,
-		Username:       all[settingIMAPUsername],
-		Password:       all[settingIMAPPassword],
-		UseTLS:         all[settingIMAPUseTLS] != "false",
-		Mailbox:        all[settingIMAPMailbox],
-		PollInterval:   pollInterval,
-		AuthMechanism:  all[settingIMAPAuthMechanism],
-		OAuth2Provider: all[settingIMAPOAuth2Provider],
-		AccessToken:    all[settingIMAPAccessToken],
-		RefreshToken:   all[settingIMAPRefreshToken],
-		TokenExpiry:    all[settingIMAPTokenExpiry],
+		Enabled:          all[settingIMAPEnabled] == "true",
+		Host:             all[settingIMAPHost],
+		Port:             port,
+		Username:         all[settingIMAPUsername],
+		Password:         all[settingIMAPPassword],
+		UseTLS:           all[settingIMAPUseTLS] != "false",
+		Mailbox:          all[settingIMAPMailbox],
+		ProcessedMailbox: all[settingIMAPProcessedMailbox],
+		PollInterval:     pollInterval,
+		AuthMechanism:    all[settingIMAPAuthMechanism],
+		OAuth2Provider:   all[settingIMAPOAuth2Provider],
+		AccessToken:      all[settingIMAPAccessToken],
+		RefreshToken:     all[settingIMAPRefreshToken],
+		TokenExpiry:      all[settingIMAPTokenExpiry],
 	}
 }
 
@@ -398,6 +401,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		IMAPPassword              *string     `json:"imap_password"`
 		IMAPUseTLS                *bool       `json:"imap_use_tls"`
 		IMAPMailbox               *string     `json:"imap_mailbox"`
+		IMAPProcessedMailbox      *string     `json:"imap_processed_mailbox"`
 		IMAPPollInterval          json.Number `json:"imap_poll_interval"`
 		IMAPAuthMechanism         *string     `json:"imap_auth_mechanism"`
 		IMAPOAuth2Provider        *string     `json:"imap_oauth2_provider"`
@@ -513,7 +517,10 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	}
 	boolSetting(req.IMAPUseTLS, settingIMAPUseTLS)
 	if req.IMAPMailbox != nil {
-		saveSetting(settingIMAPMailbox, *req.IMAPMailbox)
+		saveSetting(settingIMAPMailbox, strings.TrimSpace(*req.IMAPMailbox))
+	}
+	if req.IMAPProcessedMailbox != nil {
+		saveSetting(settingIMAPProcessedMailbox, strings.TrimSpace(*req.IMAPProcessedMailbox))
 	}
 	if req.IMAPPollInterval != "" {
 		saveSetting(settingIMAPPollInterval, req.IMAPPollInterval.String())

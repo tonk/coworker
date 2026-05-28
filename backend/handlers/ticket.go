@@ -923,3 +923,36 @@ func DeleteInboxTicket(c *gin.Context) {
 	database.DB.Delete(&ticket)
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
+
+// GetTicketRawEmail GET /api/v1/customers/:customerId/tickets/:ticketId/raw-email
+func GetTicketRawEmail(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	customerID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var rawEmail *string
+	database.DB.Model(&models.Ticket{}).
+		Select("raw_email").
+		Where("id = ? AND customer_id = ?", ticketID, customerID).
+		Scan(&rawEmail)
+
+	if rawEmail == nil || *rawEmail == "" {
+		c.JSON(http.StatusNotFound, gin.H{"error": "no raw email available"})
+		return
+	}
+
+	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(*rawEmail))
+}

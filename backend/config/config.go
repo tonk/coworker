@@ -49,14 +49,15 @@ type SMTPConfig struct {
 }
 
 type IMAPConfig struct {
-	Enabled      bool   `yaml:"enabled"`
-	Host         string `yaml:"host"`
-	Port         int    `yaml:"port"`
-	Username     string `yaml:"username"`
-	Password     string `yaml:"password"`
-	UseTLS       bool   `yaml:"use_tls"`
-	Mailbox      string `yaml:"mailbox"`
-	PollInterval int    `yaml:"poll_interval"` // seconds between polls
+	Enabled          bool   `yaml:"enabled"`
+	Host             string `yaml:"host"`
+	Port             int    `yaml:"port"`
+	Username         string `yaml:"username"`
+	Password         string `yaml:"password"`
+	UseTLS           bool   `yaml:"use_tls"`
+	Mailbox          string `yaml:"mailbox"`
+	ProcessedMailbox string `yaml:"processed_mailbox"`
+	PollInterval     int    `yaml:"poll_interval"` // seconds between polls
 	// OAuth2 authentication
 	AuthMechanism string `yaml:"auth_mechanism"` // "plain" or "oauth2"
 	OAuth2Provider string `yaml:"oauth2_provider"` // "google" or "office365"

@@ -78,9 +78,11 @@
       <div v-if="ticket.description" class="detail-description">
         <div class="detail-desc-header">
           <span class="detail-desc-label">{{ $t('ticket.original_email') }}</span>
+          <span v-if="ticket.from_name" class="from-name">{{ ticket.from_name }}</span>
           <a v-if="ticket.from_email" :href="'mailto:' + ticket.from_email" class="from-email-link" :title="ticket.from_email">{{ ticket.from_email }}</a>
+          <button v-if="ticket.email_message_id" class="btn btn-ghost btn-sm" @click="showOriginalEmail" style="margin-left:auto">{{ $t('ticket.show_original') }}</button>
         </div>
-        <div class="email-body selectable">{{ ticket.description }}</div>
+        <div class="email-body markdown-body selectable" v-html="renderMarkdown(ticket.description)"></div>
       </div>
       <AttachmentList v-if="ticket.attachments?.length" :attachments="ticket.attachments" :can-delete="false" />
 
@@ -204,7 +206,7 @@
           <div v-for="msg in ticket.messages" :key="msg.id" class="message">
             <div class="message-header">
               <span class="msg-author-group">
-                <strong>{{ msg.user?.display_name || msg.user?.username }}</strong>
+                <strong>{{ msg.from_name || msg.user?.display_name || msg.user?.username }}</strong>
                 <span v-if="msg.email_sent" class="email-sent-badge" :title="$t('ticket.email_sent_hint')">✉</span>
               </span>
               <span class="message-time">{{ formatDateTime(msg.created_at) }}</span>
@@ -256,6 +258,10 @@
     <div v-else class="empty-state">
       {{ $t('ticket.not_found') }}
     </div>
+
+    <BaseModal v-if="showRawEmail" title="Original email" @close="showRawEmail = false" :resizable="true" style="--modal-width: 800px">
+      <pre class="raw-email-pre">{{ rawEmailContent }}</pre>
+    </BaseModal>
   </main>
 </template>
 
@@ -269,18 +275,35 @@ import { customersApi } from '@/api/customers'
 import { timeEntriesApi } from '@/api/timeEntries'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
+import { useTicketsStore } from '@/stores/tickets'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import AttachmentList from '@/components/common/AttachmentList.vue'
 import FileUploadButton from '@/components/common/FileUploadButton.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
+import BaseModal from '@/components/common/BaseModal.vue'
 
 const { formatDateTime, formatDate } = useDateFormat()
 const auth = useAuthStore()
+const ticketsStore = useTicketsStore()
 
 function renderMarkdown(text) {
   return DOMPurify.sanitize(marked.parse(text || ''))
+}
+
+async function showOriginalEmail() {
+  if (rawEmailContent.value) { showRawEmail.value = true; return }
+  rawEmailLoading.value = true
+  try {
+    const res = await client.get(`/customers/${customerId.value}/tickets/${ticketId.value}/raw-email`, { responseType: 'text' })
+    rawEmailContent.value = res.data
+    showRawEmail.value = true
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to load original email')
+  } finally {
+    rawEmailLoading.value = false
+  }
 }
 
 const descEditorTab = ref('preview')
@@ -294,6 +317,9 @@ const isInbox = computed(() => route.name === 'inbox-ticket-detail')
 const customerId = computed(() => isInbox.value ? null : Number(route.params.id))
 const ticketId = computed(() => Number(route.params.ticketId))
 const ticket = ref(null)
+const showRawEmail = ref(false)
+const rawEmailContent = ref('')
+const rawEmailLoading = ref(false)
 const history = ref([])
 const showActivity = ref(false)
 const loading = ref(true)
@@ -467,6 +493,27 @@ watch([() => route.params.ticketId, () => route.name], () => {
 })
 
 onMounted(fetchTicket)
+
+// Refresh messages when IMAP delivers a reply to this ticket
+async function refreshMessages() {
+  try {
+    const { data } = isInbox.value
+      ? await ticketsApi.inboxGet(ticketId.value)
+      : await ticketsApi.get(customerId.value, ticketId.value)
+    if (data?.messages && ticket.value) {
+      for (const m of data.messages) {
+        if (m.attachments === null) m.attachments = []
+      }
+      ticket.value = { ...ticket.value, messages: data.messages }
+    }
+  } catch {}
+}
+
+watch(() => ticketsStore.ticketRefreshKey, () => {
+  if (ticketsStore.refreshForTicketId === ticketId.value) {
+    refreshMessages()
+  }
+})
 
 async function updateStatus(status) {
   try {
@@ -918,12 +965,32 @@ async function assignToCustomer() {
 .from-email-link:hover {
   text-decoration: underline;
 }
+.from-name {
+  font-size: 13px;
+  color: var(--color-text);
+  font-weight: 500;
+  margin-left: 8px;
+}
 .email-body {
   font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
   color: var(--color-text);
+}
+.raw-email-pre {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre;
+  word-break: normal;
+  overflow-x: auto;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 12px;
+  max-height: 70vh;
+  margin: 0;
+  font-family: var(--font-mono);
 }
 .detail-description {
   background: var(--color-bg);

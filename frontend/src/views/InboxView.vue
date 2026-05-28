@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ticketsApi } from '@/api/tickets'
 import { useTicketsStore } from '@/stores/tickets'
@@ -123,7 +123,7 @@ async function submitCreate() {
   }
 }
 
-onMounted(async () => {
+async function loadInbox() {
   loading.value = true
   try {
     const { data } = await ticketsApi.inboxList()
@@ -134,7 +134,11 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(loadInbox)
+
+watch(() => ticketsStore.inboxRefreshKey, loadInbox)
 </script>
 
 <style scoped>

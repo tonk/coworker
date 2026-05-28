@@ -593,6 +593,7 @@
     "no_tickets": "No tickets yet. Create your first ticket!",
     "no_messages": "No messages yet.",
     "original_email": "Original email",
+    "show_original": "Show original",
     "email_sent_hint": "A copy of this comment was sent by email",
     "messages": "Messages",
     "message_placeholder": "Write a reply…",

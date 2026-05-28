@@ -48,6 +48,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useSystemStore } from '@/stores/system'
 import { useUIStore } from '@/stores/ui'
 import { useNotificationsStore } from '@/stores/notifications'
+import { useTicketsStore } from '@/stores/tickets'
 import { useProjectChatUnread } from '@/composables/useProjectChatUnread'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
@@ -73,6 +74,7 @@ const auth = useAuthStore()
 const systemStore = useSystemStore()
 const ui = useUIStore()
 const notificationsStore = useNotificationsStore()
+const ticketsStore = useTicketsStore()
 const showShortcuts = ref(false)
 const showA11y = ref(false)
 
@@ -265,6 +267,17 @@ async function connectUserWs() {
         lkGroupCall.handleGroupInvite(msg.payload)
       } else if (msg.type && msg.type.startsWith('call.')) {
         call.handleSignal(msg)
+      } else if (msg.type === 'ticket.created') {
+        if (auth.helpdeskEnabled) {
+          ticketsStore.fetchInboxCount()
+          ticketsStore.inboxRefreshKey++
+        }
+      } else if (msg.type === 'ticket.message.added') {
+        if (auth.helpdeskEnabled) {
+          ticketsStore.fetchInboxCount()
+          ticketsStore.inboxRefreshKey++
+          ticketsStore.signalTicketUpdated(msg.payload?.ticket_id)
+        }
       }
     } catch {}
   }

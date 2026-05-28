@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"mime/quotedprintable"
 	"net/mail"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -20,6 +22,7 @@ import (
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/models"
+	appws "github.com/tonk/warmdesk/ws"
 )
 
 var imapConfigReader func() config.IMAPConfig
@@ -67,8 +70,10 @@ func (s *IMAPService) StartPolling(stop <-chan struct{}) {
 		}
 
 		if cfg.Enabled && cfg.Host != "" {
-			if err := s.poll(cfg); err != nil {
+			if n, err := s.poll(cfg); err != nil {
 				log.Printf("imap: poll error: %v", err)
+			} else if n > 0 {
+				log.Printf("imap: poll complete — %d message(s) processed", n)
 			}
 		}
 
@@ -137,40 +142,44 @@ func (s *IMAPService) connectAndLogin(cfg config.IMAPConfig) (*client.Client, er
 	return c, nil
 }
 
-func (s *IMAPService) poll(cfg config.IMAPConfig) error {
+func (s *IMAPService) poll(cfg config.IMAPConfig) (int, error) {
 	// Refresh OAuth2 token if needed before connecting
 	if imapOAuth2TokenRefresher != nil && cfg.AuthMechanism == "oauth2" {
 		imapOAuth2TokenRefresher()
 	}
 	c, err := s.connectAndLogin(cfg)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer c.Logout() //nolint:errcheck
 
-	mailbox := cfg.Mailbox
+	mailbox := strings.TrimSpace(cfg.Mailbox)
 	if mailbox == "" {
 		mailbox = "INBOX"
 	}
 	if _, err := c.Select(mailbox, false); err != nil {
-		return fmt.Errorf("select %q: %w", mailbox, err)
+		return 0, fmt.Errorf("select %q: %w", mailbox, err)
 	}
 
 	criteria := imap.NewSearchCriteria()
-	criteria.WithoutFlags = []string{imap.SeenFlag}
+	// Search all messages — processMessage deduplicates by Message-ID, so
+	// messages that were already imported or delivered with \Seen set are
+	// handled correctly.
 	seqNums, err := c.Search(criteria)
 	if err != nil {
-		return fmt.Errorf("search: %w", err)
+		return 0, fmt.Errorf("search: %w", err)
 	}
 	if len(seqNums) == 0 {
-		return nil
+		return 0, nil
 	}
+
+	log.Printf("imap: found %d message(s) to process", len(seqNums))
 
 	seqSet := new(imap.SeqSet)
 	seqSet.AddNum(seqNums...)
 
 	section := &imap.BodySectionName{}
-	items := []imap.FetchItem{section.FetchItem(), imap.FetchEnvelope}
+	items := []imap.FetchItem{section.FetchItem(), imap.FetchEnvelope, imap.FetchUid}
 	messages := make(chan *imap.Message, 10)
 	fetchErr := make(chan error, 1)
 	go func() {
@@ -182,23 +191,43 @@ func (s *IMAPService) poll(cfg config.IMAPConfig) error {
 		if err := s.processMessage(msg, section); err != nil {
 			log.Printf("imap: process msg %d: %v", msg.SeqNum, err)
 		} else {
-			processed = append(processed, msg.SeqNum)
+			processed = append(processed, msg.Uid)
 		}
 	}
 	if err := <-fetchErr; err != nil {
-		return fmt.Errorf("fetch: %w", err)
+		return len(processed), fmt.Errorf("fetch: %w", err)
 	}
 
 	if len(processed) > 0 {
-		markSet := new(imap.SeqSet)
-		markSet.AddNum(processed...)
-		item := imap.FormatFlagsOp(imap.AddFlags, true)
-		flags := []interface{}{imap.SeenFlag}
-		if err := c.Store(markSet, item, flags, nil); err != nil {
-			log.Printf("imap: mark seen: %v", err)
+		moveSet := new(imap.SeqSet)
+		moveSet.AddNum(processed...)
+
+		dest := strings.TrimSpace(cfg.ProcessedMailbox)
+		if dest == "" {
+			dest = "Processed"
+		}
+
+		// Try to create the destination mailbox (harmless if it already exists)
+		if err := c.Create(dest); err != nil {
+			log.Printf("imap: create %q (may already exist): %v", dest, err)
+		}
+
+		// After Create the client is in AuthenticatedState — re-select source
+		if _, err := c.Select(mailbox, false); err != nil {
+			log.Printf("imap: re-select %q: %v", mailbox, err)
+		} else if err := c.UidMove(moveSet, dest); err != nil {
+			log.Printf("imap: move to %q: %v (falling back to mark seen)", dest, err)
+			markSet := new(imap.SeqSet)
+			markSet.AddNum(processed...)
+			item := imap.FormatFlagsOp(imap.AddFlags, true)
+			flags := []interface{}{imap.SeenFlag}
+			if err2 := c.Store(markSet, item, flags, nil); err2 != nil {
+				log.Printf("imap: mark seen: %v", err2)
+			}
 		}
 	}
-	return nil
+	log.Printf("imap: processed %d message(s)", len(processed))
+	return len(processed), nil
 }
 
 func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectionName) error {
@@ -207,7 +236,13 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 		return fmt.Errorf("empty body")
 	}
 
-	m, err := mail.ReadMessage(r)
+	rawBytes, err := io.ReadAll(r)
+	if err != nil {
+		return fmt.Errorf("read body: %w", err)
+	}
+	rawStr := string(rawBytes)
+
+	m, err := mail.ReadMessage(bytes.NewReader(rawBytes))
 	if err != nil {
 		return fmt.Errorf("parse: %w", err)
 	}
@@ -223,8 +258,35 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 	}
 
 	fromEmail := ""
+	fromName := ""
 	if fromAddr, err := mail.ParseAddress(m.Header.Get("From")); err == nil && fromAddr != nil {
 		fromEmail = fromAddr.Address
+		fromName = fromAddr.Name
+	}
+
+	// Custom header check: if the incoming email carries X-WarmDesk-Ticket-Id,
+	// route it directly to that ticket without relying on Subject or In-Reply-To.
+	if xid := m.Header.Get("X-WarmDesk-Ticket-Id"); xid != "" {
+		xid = strings.TrimSpace(xid)
+		if parsed, err := strconv.ParseUint(xid, 10, 64); err == nil {
+			var parent models.Ticket
+			if err := database.DB.First(&parent, uint(parsed)).Error; err == nil {
+				body, _ := extractPlainText(m)
+				if body == "" {
+					body = "(no body)"
+				}
+				body = stripQuotedReplies(body)
+				database.DB.Create(&models.TicketMessage{
+					TicketID: parent.ID,
+					UserID:   systemUserID(),
+					Body:     body,
+					FromName: fromName,
+				})
+				broadcastTicketEvent(appws.TypeTicketMsgAdded, parent.ID)
+				log.Printf("imap: reply added to ticket #%d via X-WarmDesk-Ticket-Id header", parent.ID)
+				return nil
+			}
+		}
 	}
 
 	subject, _ := decodeRFC2047(m.Header.Get("Subject"))
@@ -265,6 +327,35 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 		return &parent
 	}
 
+	// extractTicketID extracts a ticket ID from a "[#N]" pattern in the subject.
+	extractTicketID := func(subject string) uint {
+		re := regexp.MustCompile(`\[#(\d+)\]`)
+		matches := re.FindStringSubmatch(subject)
+		if len(matches) < 2 {
+			return 0
+		}
+		id, err := strconv.ParseUint(matches[1], 10, 64)
+		if err != nil {
+			return 0
+		}
+		return uint(id)
+	}
+
+	// findParentTicketByID reopens logic duplicated from findParentTicket for clarity.
+	findParentTicketByID := func(id uint) *models.Ticket {
+		var parent models.Ticket
+		if err := database.DB.First(&parent, id).Error; err != nil {
+			return nil
+		}
+		closedStatuses := map[string]bool{"resolved": true, "closed": true, "done": true, "cancelled": true}
+		if closedStatuses[parent.Status] {
+			log.Printf("imap: reopening ticket #%d (was %s) on customer reply", parent.ID, parent.Status)
+			database.DB.Model(&parent).Update("status", "open")
+			parent.Status = "open"
+		}
+		return &parent
+	}
+
 	// Reply threading: check In-Reply-To first, then fall back to References.
 	var parent *models.Ticket
 	if inReplyTo != "" {
@@ -287,9 +378,27 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 			TicketID: parent.ID,
 			UserID:   systemUserID,
 			Body:     body,
+			FromName: fromName,
 		})
+		broadcastTicketEvent(appws.TypeTicketMsgAdded, parent.ID)
 		log.Printf("imap: reply added to ticket #%d", parent.ID)
 		return nil
+	}
+
+	// Subject-based fallback: look for [#N] in subject to match an existing ticket.
+	if id := extractTicketID(subject); id > 0 {
+		parent = findParentTicketByID(id)
+		if parent != nil {
+			database.DB.Create(&models.TicketMessage{
+				TicketID: parent.ID,
+				UserID:   systemUserID,
+				Body:     body,
+				FromName: fromName,
+			})
+			broadcastTicketEvent(appws.TypeTicketMsgAdded, parent.ID)
+			log.Printf("imap: reply added to ticket #%d via subject [%s]", parent.ID, subject)
+			return nil
+		}
 	}
 
 	// New ticket
@@ -301,6 +410,14 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 	if fromEmail != "" {
 		fromEmailPtr = &fromEmail
 	}
+	var fromNamePtr *string
+	if fromName != "" {
+		fromNamePtr = &fromName
+	}
+	var rawEmailPtr *string
+	if rawStr != "" {
+		rawEmailPtr = &rawStr
+	}
 	ticket := models.Ticket{
 		CustomerID:     customerID,
 		Title:          subject,
@@ -311,10 +428,13 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 		CreatedByID:    systemUserID,
 		EmailMessageID: msgIDPtr,
 		FromEmail:      fromEmailPtr,
+		FromName:       fromNamePtr,
+		RawEmail:       rawEmailPtr,
 	}
 	if err := database.DB.Create(&ticket).Error; err != nil {
 		return fmt.Errorf("create ticket: %w", err)
 	}
+	broadcastTicketEvent(appws.TypeTicketCreated, ticket.ID)
 	log.Printf("imap: created ticket #%d %q", ticket.ID, subject)
 	return nil
 }
@@ -331,15 +451,18 @@ func TestIMAPConnection(cfg config.IMAPConfig) error {
 }
 
 // PollOnce runs a single poll cycle using the current live config.
-func (s *IMAPService) PollOnce() error {
+// Returns the number of messages processed.
+func (s *IMAPService) PollOnce() (int, error) {
 	cfg := s.cfg()
 	if !cfg.Enabled || cfg.Host == "" {
-		return fmt.Errorf("IMAP not configured or disabled")
+		return 0, fmt.Errorf("IMAP not configured or disabled")
 	}
 	return s.poll(cfg)
 }
 
-// TestConnection connects and logs in without fetching any messages.
+// TestConnection connects, logs in, and verifies the configured mailbox exists
+// by selecting it.  This catches "no such mailbox" errors that would otherwise
+// only surface during polling.
 func (s *IMAPService) TestConnection(cfg config.IMAPConfig) error {
 	if cfg.Host == "" {
 		return fmt.Errorf("host is required")
@@ -348,7 +471,15 @@ func (s *IMAPService) TestConnection(cfg config.IMAPConfig) error {
 	if err != nil {
 		return err
 	}
-	c.Logout() //nolint:errcheck
+	defer c.Logout() //nolint:errcheck
+
+	mailbox := strings.TrimSpace(cfg.Mailbox)
+	if mailbox == "" {
+		mailbox = "INBOX"
+	}
+	if _, err := c.Select(mailbox, false); err != nil {
+		return fmt.Errorf("select %q: %w", mailbox, err)
+	}
 	return nil
 }
 
@@ -369,19 +500,22 @@ func decodeRFC2047(s string) (string, error) {
 
 // extractPlainText walks a MIME message and returns the first text/plain part.
 func extractPlainText(m *mail.Message) (string, error) {
-	ct := m.Header.Get("Content-Type")
+	return extractPlainTextFromHeader(m.Header, m.Body)
+}
+
+func extractPlainTextFromHeader(h mail.Header, body io.Reader) (string, error) {
+	ct := h.Get("Content-Type")
 	if ct == "" {
 		ct = "text/plain"
 	}
 	mediaType, params, err := mime.ParseMediaType(ct)
 	if err != nil {
-		// Not valid MIME — read body directly
-		b, err2 := io.ReadAll(m.Body)
+		b, err2 := io.ReadAll(body)
 		return strings.TrimSpace(string(b)), err2
 	}
 
 	if strings.HasPrefix(mediaType, "multipart/") {
-		mr := multipart.NewReader(m.Body, params["boundary"])
+		mr := multipart.NewReader(body, params["boundary"])
 		for {
 			part, err := mr.NextPart()
 			if err != nil {
@@ -389,6 +523,13 @@ func extractPlainText(m *mail.Message) (string, error) {
 			}
 			partCT := part.Header.Get("Content-Type")
 			partMedia, _, _ := mime.ParseMediaType(partCT)
+			if strings.HasPrefix(partMedia, "multipart/") {
+				text, err := extractPlainTextFromHeader(mail.Header(part.Header), part)
+				if err == nil && text != "" {
+					return text, nil
+				}
+				continue
+			}
 			if strings.EqualFold(partMedia, "text/plain") {
 				return readPartBody(part, part.Header.Get("Content-Transfer-Encoding"))
 			}
@@ -396,7 +537,7 @@ func extractPlainText(m *mail.Message) (string, error) {
 		return "", fmt.Errorf("no text/plain part found")
 	}
 
-	return readPartBody(m.Body, m.Header.Get("Content-Transfer-Encoding"))
+	return readPartBody(body, h.Get("Content-Transfer-Encoding"))
 }
 
 func readPartBody(r io.Reader, encoding string) (string, error) {
@@ -412,7 +553,7 @@ func readPartBody(r io.Reader, encoding string) (string, error) {
 
 var (
 	reQuotedLine = regexp.MustCompile(`(?m)^>.*$`)
-	reOnWrote    = regexp.MustCompile(`(?ms)^On .{0,200}wrote:.*`)
+	reOnWrote    = regexp.MustCompile(`(?m)^On .{0,200}wrote:.*$`)
 	reTrailingNL = regexp.MustCompile(`\n{3,}`)
 	reCustomer   = regexp.MustCompile(`(?i)customer\s*=\s*(\S+)`)
 )
@@ -423,6 +564,17 @@ func stripQuotedReplies(s string) string {
 	s = reQuotedLine.ReplaceAllString(s, "")
 	s = reTrailingNL.ReplaceAllString(s, "\n\n")
 	return strings.TrimSpace(s)
+}
+
+// broadcastTicketEvent sends a WebSocket notification to all connected users.
+func broadcastTicketEvent(eventType string, ticketID uint) {
+	msg := appws.Message{
+		Type:    eventType,
+		Payload: map[string]any{"ticket_id": ticketID},
+	}
+	for _, u := range appws.GetAllOnlineUsers() {
+		appws.BroadcastToUser(u.ID, msg)
+	}
 }
 
 // parseCustomerDirective looks for "customer=<name or id>" in the body.
