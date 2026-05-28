@@ -1102,5 +1102,27 @@
     "sort_order": "Rækkefølge",
     "applied": "Makro anvendt",
     "placeholders": "Pladsholdere"
+  },
+  "ticketChecklist": {
+    "title": "Tjeklister",
+    "new_template": "Ny tjekliste",
+    "edit_template": "Rediger tjekliste",
+    "name": "Navn",
+    "description": "Beskrivelse",
+    "items": "Elementer",
+    "add_item": "Tilføj element",
+    "item_placeholder": "Tjeklisteelement…",
+    "no_items": "Ingen elementer defineret.",
+    "no_templates": "Ingen tjeklisteskabeloner endnu.",
+    "active": "Aktiv",
+    "sort_order": "Rækkefølge",
+    "apply": "Anvend tjekliste",
+    "applied": "Tjekliste anvendt",
+    "apply_failed": "Kunne ikke anvende tjekliste",
+    "close_blocked": "Afklar alle elementer før lukning.",
+    "delete_item": "Slet element",
+    "drag_reorder": "Træk for at omarrangere",
+    "saved": "Tjeklisteskabelon gemt",
+    "deleted": "Tjeklisteskabelon slettet"
   }
 }

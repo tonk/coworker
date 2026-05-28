@@ -1102,5 +1102,27 @@
     "sort_order": "Ordre",
     "applied": "Macro appliqué",
     "placeholders": "Variables"
+  },
+  "ticketChecklist": {
+    "title": "Listes de contrôle",
+    "new_template": "Nouvelle liste",
+    "edit_template": "Modifier la liste",
+    "name": "Nom",
+    "description": "Description",
+    "items": "Éléments",
+    "add_item": "Ajouter un élément",
+    "item_placeholder": "Élément de liste…",
+    "no_items": "Aucun élément défini.",
+    "no_templates": "Aucun modèle de liste défini.",
+    "active": "Actif",
+    "sort_order": "Ordre",
+    "apply": "Appliquer la liste",
+    "applied": "Liste appliquée",
+    "apply_failed": "Impossible d'appliquer la liste",
+    "close_blocked": "Cochez tous les éléments avant de fermer.",
+    "delete_item": "Supprimer l'élément",
+    "drag_reorder": "Glisser pour réorganiser",
+    "saved": "Modèle de liste enregistré",
+    "deleted": "Modèle de liste supprimé"
   }
 }

@@ -2456,6 +2456,34 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d macros\n", len(seedMacros))
 
+	// ── 7c. Ticket checklist templates ────────────────────────────────────────
+	fmt.Println("→ Creating ticket checklist templates…")
+
+	seedChecklists := []models.TicketChecklistTemplate{
+		{
+			Name:        "Offboarding",
+			Description: "Standard checklist for employee offboarding",
+			IsActive:    true,
+			SortOrder:   10,
+			Items: models.TicketChecklistTemplateItems{
+				"Disable user account and remove from all groups",
+				"Revoke VPN, MFA devices, and remote access",
+				"Collect company hardware (laptop, phone, badge)",
+				"Transfer or archive email and shared drive access",
+				"Remove from Slack/Teams and internal communication tools",
+				"Revoke access to business applications (CRM, billing, etc.)",
+				"Reassign or close open tickets and tasks",
+				"Confirm knowledge transfer with manager completed",
+				"Schedule exit interview if applicable",
+				"Update HRIS and notify payroll of last working day",
+			},
+		},
+	}
+	for i := range seedChecklists {
+		must(db.Create(&seedChecklists[i]).Error)
+	}
+	fmt.Printf("   Created %d ticket checklist templates\n", len(seedChecklists))
+
 	// ── 8. Tickets ────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating tickets…")
 
@@ -3541,6 +3569,7 @@ func removeDemoData(db *gorm.DB) {
 		if len(ticketIDs) > 0 {
 			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketMessage{})
 			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketTag{})
+			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketChecklistItem{})
 			db.Unscoped().Where("source_ticket_id IN ? OR target_ticket_id IN ?", ticketIDs, ticketIDs).Delete(&models.TicketLink{})
 			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketCardLink{})
 			db.Unscoped().Where("id IN ?", ticketIDs).Delete(&models.Ticket{})
@@ -3560,6 +3589,7 @@ func removeDemoData(db *gorm.DB) {
 	if len(inboxIDs) > 0 {
 		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketMessage{})
 		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketTag{})
+		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketChecklistItem{})
 		db.Unscoped().Where("source_ticket_id IN ? OR target_ticket_id IN ?", inboxIDs, inboxIDs).Delete(&models.TicketLink{})
 		db.Unscoped().Where("id IN ?", inboxIDs).Delete(&models.Ticket{})
 	}
@@ -3567,6 +3597,8 @@ func removeDemoData(db *gorm.DB) {
 	db.Unscoped().Where("name IN ?", demoSlaNames).Delete(&models.SlaPolicy{})
 	demoMacroNames := []string{"Acknowledge & Investigate", "Request More Information", "Escalate to Critical", "Resolved — Pending Close", "Close & Thank", "Mark as Duplicate"}
 	db.Unscoped().Where("name IN ?", demoMacroNames).Delete(&models.Macro{})
+	demoChecklistNames := []string{"Offboarding"}
+	db.Unscoped().Where("name IN ?", demoChecklistNames).Delete(&models.TicketChecklistTemplate{})
 
 	// Customers and contracts
 	db.Model(&models.Customer{}).Where("name IN ?", demoCustomerNames).Pluck("id", &custIDs)

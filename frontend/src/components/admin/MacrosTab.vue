@@ -126,7 +126,9 @@
       </thead>
       <tbody>
         <tr v-for="m in macros" :key="m.id">
-          <td><strong>{{ m.name }}</strong></td>
+          <td>
+            <button type="button" class="name-link" @click="startEdit(m)">{{ m.name }}</button>
+          </td>
           <td class="text-muted">{{ m.description }}</td>
           <td>{{ m.actions?.length || 0 }}</td>
           <td>
@@ -150,7 +152,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { macrosApi } from '@/api/macros'
 import { useUIStore } from '@/stores/ui'
 
@@ -160,6 +162,7 @@ const saving = ref(false)
 const macros = ref([])
 const editing = ref(null)
 const form = ref(emptyForm())
+const formSnapshot = ref('')
 const msgRefs = ref({})
 
 const PLACEHOLDERS = ['{email}', '{fname}', '{name}', '{subject}', '{ticket_id}', '{agent}', '{agent_fname}']
@@ -186,6 +189,33 @@ function emptyForm() {
   return { name: '', description: '', is_active: true, sort_order: 0, actions: [] }
 }
 
+function snapshotForm(f) {
+  return JSON.stringify({
+    name: f.name,
+    description: f.description,
+    is_active: f.is_active,
+    sort_order: f.sort_order,
+    actions: (f.actions || []).map(a => ({ type: a.type, value: a.value ?? '' })),
+  })
+}
+
+function formIsDirty() {
+  return snapshotForm(form.value) !== formSnapshot.value
+}
+
+function onEditEscape(e) {
+  if (e.key !== 'Escape' || !editing.value || formIsDirty()) return
+  e.preventDefault()
+  cancelEdit()
+}
+
+watch(editing, (val) => {
+  if (val) window.addEventListener('keydown', onEditEscape)
+  else window.removeEventListener('keydown', onEditEscape)
+})
+
+onUnmounted(() => window.removeEventListener('keydown', onEditEscape))
+
 async function load() {
   loading.value = true
   try {
@@ -198,6 +228,7 @@ async function load() {
 function startCreate() {
   form.value = emptyForm()
   editing.value = { id: 0 }
+  formSnapshot.value = snapshotForm(form.value)
 }
 
 function startEdit(m) {
@@ -209,6 +240,7 @@ function startEdit(m) {
     actions: (m.actions || []).map(a => ({ ...a })),
   }
   editing.value = m
+  formSnapshot.value = snapshotForm(form.value)
 }
 
 function cancelEdit() {
@@ -311,4 +343,16 @@ async function deleteMacro(m) {
 :deep(.data-table) td:nth-child(4) { width: 90px; min-width: 90px; text-align: center; }
 :deep(.data-table) th:nth-child(5),
 :deep(.data-table) td:nth-child(5) { width: 120px; min-width: 120px; }
+.name-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  text-align: left;
+}
+.name-link:hover { text-decoration: underline; }
+.name-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 2px; }
 </style>

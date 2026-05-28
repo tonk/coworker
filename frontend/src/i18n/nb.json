@@ -1102,5 +1102,27 @@
     "sort_order": "Rekkefølge",
     "applied": "Makro brukt",
     "placeholders": "Plassholdere"
+  },
+  "ticketChecklist": {
+    "title": "Sjekklister",
+    "new_template": "Ny sjekkliste",
+    "edit_template": "Rediger sjekkliste",
+    "name": "Navn",
+    "description": "Beskrivelse",
+    "items": "Elementer",
+    "add_item": "Legg til element",
+    "item_placeholder": "Sjekklisteelement…",
+    "no_items": "Ingen elementer definert.",
+    "no_templates": "Ingen sjekklistemaler ennå.",
+    "active": "Aktiv",
+    "sort_order": "Rekkefølge",
+    "apply": "Bruk sjekkliste",
+    "applied": "Sjekkliste brukt",
+    "apply_failed": "Kunne ikke bruke sjekkliste",
+    "close_blocked": "Fullfør alle elementer før lukking.",
+    "delete_item": "Slett element",
+    "drag_reorder": "Dra for å omorganisere",
+    "saved": "Sjekklistemal lagret",
+    "deleted": "Sjekklistemal slettet"
   }
 }

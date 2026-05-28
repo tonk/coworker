@@ -106,6 +106,8 @@ func GetTicket(c *gin.Context) {
 		}
 	}
 
+	attachTicketChecklist(&ticket)
+
 	c.JSON(http.StatusOK, ticket)
 }
 
@@ -240,6 +242,10 @@ func UpdateTicket(c *gin.Context) {
 	if req.Status != nil {
 		validStatuses := map[string]bool{"new": true, "open": true, "pending": true, "pending_close": true, "closed": true}
 		if validStatuses[*req.Status] {
+			if statusRequiresChecklistComplete(*req.Status) && ticketChecklistBlocksClose(ticket.ID) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": errChecklistIncomplete})
+				return
+			}
 			updates["status"] = *req.Status
 		}
 	}
@@ -382,6 +388,7 @@ func UpdateTicket(c *gin.Context) {
 	}
 
 	database.DB.Preload("CreatedBy").Preload("AssignedTo").Preload("Owner").Preload("Group").Preload("Tags").Preload("SlaPolicy").First(&ticket, ticket.ID)
+	attachTicketChecklist(&ticket)
 	c.JSON(http.StatusOK, ticket)
 }
 
@@ -472,6 +479,7 @@ func DeleteTicket(c *gin.Context) {
 
 	database.DB.Where("ticket_id = ?", ticket.ID).Delete(&models.TicketMessage{})
 	database.DB.Where("ticket_id = ?", ticket.ID).Delete(&models.TicketTag{})
+	database.DB.Where("ticket_id = ?", ticket.ID).Delete(&models.TicketChecklistItem{})
 	database.DB.Where("source_ticket_id = ? OR target_ticket_id = ?", ticket.ID, ticket.ID).Delete(&models.TicketLink{})
 	database.DB.Delete(&ticket)
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
@@ -568,9 +576,14 @@ func GetTicketHistory(c *gin.Context) {
 
 // autoCloseTickets closes any pending_close tickets whose close_at has passed.
 func autoCloseTickets() {
-	database.DB.Model(&models.Ticket{}).
-		Where("status = 'pending_close' AND close_at IS NOT NULL AND close_at <= datetime('now')").
-		Update("status", "closed")
+	var tickets []models.Ticket
+	database.DB.Where("status = 'pending_close' AND close_at IS NOT NULL AND close_at <= datetime('now')").Find(&tickets)
+	for _, t := range tickets {
+		if ticketChecklistBlocksClose(t.ID) {
+			continue
+		}
+		database.DB.Model(&t).Update("status", "closed")
+	}
 	// Clear close_at on already-closed tickets that still have it set
 	database.DB.Model(&models.Ticket{}).
 		Where("status = 'closed' AND close_at IS NOT NULL").
@@ -675,6 +688,7 @@ func GetInboxTicket(c *gin.Context) {
 			ticket.Messages[i].Attachments = []models.Attachment{}
 		}
 	}
+	attachTicketChecklist(&ticket)
 	c.JSON(http.StatusOK, ticket)
 }
 
@@ -728,6 +742,10 @@ func UpdateInboxTicket(c *gin.Context) {
 	if req.Status != nil {
 		validStatuses := map[string]bool{"new": true, "open": true, "pending": true, "pending_close": true, "closed": true}
 		if validStatuses[*req.Status] {
+			if statusRequiresChecklistComplete(*req.Status) && ticketChecklistBlocksClose(ticket.ID) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": errChecklistIncomplete})
+				return
+			}
 			updates["status"] = *req.Status
 		}
 	}
@@ -815,6 +833,7 @@ func UpdateInboxTicket(c *gin.Context) {
 		Preload("CreatedBy").Preload("AssignedTo").Preload("Owner").Preload("Group").Preload("Tags").Preload("SlaPolicy").
 		First(&ticket)
 	refreshSlaBreachStatus(&ticket)
+	attachTicketChecklist(&ticket)
 	c.JSON(http.StatusOK, ticket)
 }
 
@@ -925,6 +944,7 @@ func DeleteInboxTicket(c *gin.Context) {
 	}
 	database.DB.Where("ticket_id = ?", ticket.ID).Delete(&models.TicketMessage{})
 	database.DB.Where("ticket_id = ?", ticket.ID).Delete(&models.TicketTag{})
+	database.DB.Where("ticket_id = ?", ticket.ID).Delete(&models.TicketChecklistItem{})
 	database.DB.Where("source_ticket_id = ? OR target_ticket_id = ?", ticket.ID, ticket.ID).Delete(&models.TicketLink{})
 	database.DB.Delete(&ticket)
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})

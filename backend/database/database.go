@@ -420,6 +420,8 @@ func autoMigrate(db *gorm.DB) error {
 		&models.TicketHistory{},
 		&models.SlaPolicy{},
 		&models.Macro{},
+		&models.TicketChecklistTemplate{},
+		&models.TicketChecklistItem{},
 	)
 	if err != nil {
 		return err

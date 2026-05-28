@@ -1102,5 +1102,27 @@
     "sort_order": "Reihenfolge",
     "applied": "Makro angewendet",
     "placeholders": "Platzhalter"
+  },
+  "ticketChecklist": {
+    "title": "Checklisten",
+    "new_template": "Neue Checkliste",
+    "edit_template": "Checkliste bearbeiten",
+    "name": "Name",
+    "description": "Beschreibung",
+    "items": "Einträge",
+    "add_item": "Eintrag hinzufügen",
+    "item_placeholder": "Checklisteneintrag…",
+    "no_items": "Keine Einträge definiert.",
+    "no_templates": "Noch keine Checklistenvorlagen definiert.",
+    "active": "Aktiv",
+    "sort_order": "Reihenfolge",
+    "apply": "Checkliste anwenden",
+    "applied": "Checkliste angewendet",
+    "apply_failed": "Checkliste konnte nicht angewendet werden",
+    "close_blocked": "Alle Checklisteneinträge abhaken, bevor geschlossen wird.",
+    "delete_item": "Checklisteneintrag löschen",
+    "drag_reorder": "Ziehen zum Sortieren",
+    "saved": "Checklistenvorlage gespeichert",
+    "deleted": "Checklistenvorlage gelöscht"
   }
 }

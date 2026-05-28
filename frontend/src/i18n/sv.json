@@ -1102,5 +1102,27 @@
     "sort_order": "Ordning",
     "applied": "Makro tillämpat",
     "placeholders": "Platshållare"
+  },
+  "ticketChecklist": {
+    "title": "Checklistor",
+    "new_template": "Ny checklista",
+    "edit_template": "Redigera checklista",
+    "name": "Namn",
+    "description": "Beskrivning",
+    "items": "Punkter",
+    "add_item": "Lägg till punkt",
+    "item_placeholder": "Checklistpunkt…",
+    "no_items": "Inga punkter definierade.",
+    "no_templates": "Inga checklistmallar ännu.",
+    "active": "Aktiv",
+    "sort_order": "Ordning",
+    "apply": "Tillämpa checklista",
+    "applied": "Checklista tillämpad",
+    "apply_failed": "Kunde inte tillämpa checklista",
+    "close_blocked": "Bocka av alla punkter innan stängning.",
+    "delete_item": "Ta bort punkt",
+    "drag_reorder": "Dra för att ordna om",
+    "saved": "Checklistmall sparad",
+    "deleted": "Checklistmall borttagen"
   }
 }

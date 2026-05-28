@@ -1102,5 +1102,27 @@
     "sort_order": "Ordem",
     "applied": "Macro aplicado",
     "placeholders": "Variáveis"
+  },
+  "ticketChecklist": {
+    "title": "Listas de verificação",
+    "new_template": "Nova lista",
+    "edit_template": "Editar lista",
+    "name": "Nome",
+    "description": "Descrição",
+    "items": "Itens",
+    "add_item": "Adicionar item",
+    "item_placeholder": "Item da lista…",
+    "no_items": "Nenhum item definido.",
+    "no_templates": "Ainda não há modelos de lista.",
+    "active": "Ativo",
+    "sort_order": "Ordem",
+    "apply": "Aplicar lista",
+    "applied": "Lista aplicada",
+    "apply_failed": "Falha ao aplicar lista",
+    "close_blocked": "Conclua todos os itens antes de fechar.",
+    "delete_item": "Eliminar item",
+    "drag_reorder": "Arrastar para reordenar",
+    "saved": "Modelo de lista guardado",
+    "deleted": "Modelo de lista eliminado"
   }
 }

@@ -1102,5 +1102,27 @@
     "sort_order": "Röðun",
     "applied": "Fjölvi notað",
     "placeholders": "Staðgengilstákn"
+  },
+  "ticketChecklist": {
+    "title": "Gátlistar",
+    "new_template": "Nýr gátlisti",
+    "edit_template": "Breyta gátlista",
+    "name": "Heiti",
+    "description": "Lýsing",
+    "items": "Atriði",
+    "add_item": "Bæta við atriði",
+    "item_placeholder": "Atriði gátlista…",
+    "no_items": "Engin atriði skilgreind.",
+    "no_templates": "Engar sniðmát gátlista skilgreind enn.",
+    "active": "Virkt",
+    "sort_order": "Röð",
+    "apply": "Nota gátlista",
+    "applied": "Gátlisti notaður",
+    "apply_failed": "Ekki tókst að nota gátlista",
+    "close_blocked": "Ljúktu við öll atriði áður en lokað er.",
+    "delete_item": "Eyða atriði",
+    "drag_reorder": "Dragðu til að endurraða",
+    "saved": "Sniðmát gátlista vistað",
+    "deleted": "Sniðmát gátlista eytt"
   }
 }

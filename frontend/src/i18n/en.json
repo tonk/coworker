@@ -1169,5 +1169,27 @@
     "sort_order": "Order",
     "applied": "Macro applied",
     "placeholders": "Placeholders"
+  },
+  "ticketChecklist": {
+    "title": "Checklists",
+    "new_template": "New checklist",
+    "edit_template": "Edit checklist",
+    "name": "Name",
+    "description": "Description",
+    "items": "Items",
+    "add_item": "Add item",
+    "item_placeholder": "Checklist item…",
+    "no_items": "No items defined.",
+    "no_templates": "No checklist templates defined yet.",
+    "active": "Active",
+    "sort_order": "Order",
+    "apply": "Apply checklist",
+    "applied": "Checklist applied",
+    "apply_failed": "Failed to apply checklist",
+    "close_blocked": "Complete all checklist items before closing.",
+    "delete_item": "Delete checklist item",
+    "drag_reorder": "Drag to reorder",
+    "saved": "Checklist template saved",
+    "deleted": "Checklist template deleted"
   }
 }

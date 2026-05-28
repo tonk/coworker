@@ -152,6 +152,12 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.PUT("/macros/:id", handlers.AdminUpdateMacro)
 			admin.DELETE("/macros/:id", handlers.AdminDeleteMacro)
 
+			// Ticket checklist templates (helpdesk)
+			admin.GET("/ticket-checklist-templates", handlers.AdminListTicketChecklistTemplates)
+			admin.POST("/ticket-checklist-templates", handlers.AdminCreateTicketChecklistTemplate)
+			admin.PUT("/ticket-checklist-templates/:id", handlers.AdminUpdateTicketChecklistTemplate)
+			admin.DELETE("/ticket-checklist-templates/:id", handlers.AdminDeleteTicketChecklistTemplate)
+
 			// IMAP test & poll
 			admin.POST("/imap/test", handlers.AdminTestIMAP)
 			admin.POST("/imap/poll", handlers.AdminPollIMAP)
@@ -167,6 +173,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Macros — active list visible to all helpdesk users
 		protected.GET("/macros", handlers.ListMacros)
+
+		// Ticket checklist templates — active list visible to all helpdesk users
+		protected.GET("/ticket-checklist-templates", handlers.ListTicketChecklistTemplates)
 
 		// Users (for direct messages / user lookup)
 		protected.GET("/users", handlers.ListAllUsers)
@@ -213,6 +222,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				inbox.POST("/inbox/:ticketId/messages", handlers.CreateInboxTicketMessage)
 				inbox.DELETE("/inbox/:ticketId", handlers.DeleteInboxTicket)
 				inbox.POST("/inbox/:ticketId/macros/:macroId", handlers.ApplyInboxMacro)
+				inbox.POST("/inbox/:ticketId/checklist/templates/:templateId", handlers.ApplyInboxTicketChecklistTemplate)
+				inbox.PUT("/inbox/:ticketId/checklist/:itemId", handlers.UpdateInboxTicketChecklistItem)
+				inbox.DELETE("/inbox/:ticketId/checklist/:itemId", handlers.DeleteInboxTicketChecklistItem)
+				inbox.PATCH("/inbox/:ticketId/checklist/reorder", handlers.ReorderInboxTicketChecklistItems)
 				inbox.POST("/inbox/:ticketId/spam", handlers.MarkInboxSpam)
 				inbox.DELETE("/inbox/:ticketId/spam", handlers.UnmarkInboxSpam)
 			}
@@ -239,6 +252,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				tickets.GET("/:ticketId/history", handlers.GetTicketHistory)
 				tickets.GET("/:ticketId/raw-email", handlers.GetTicketRawEmail)
 				tickets.POST("/:ticketId/macros/:macroId", handlers.ApplyMacro)
+				tickets.POST("/:ticketId/checklist/templates/:templateId", handlers.ApplyTicketChecklistTemplate)
+				tickets.PUT("/:ticketId/checklist/:itemId", handlers.UpdateTicketChecklistItem)
+				tickets.DELETE("/:ticketId/checklist/:itemId", handlers.DeleteTicketChecklistItem)
+				tickets.PATCH("/:ticketId/checklist/reorder", handlers.ReorderTicketChecklistItems)
 				tickets.POST("/:ticketId/spam", handlers.MarkSpam)
 				tickets.DELETE("/:ticketId/spam", handlers.UnmarkSpam)
 			}

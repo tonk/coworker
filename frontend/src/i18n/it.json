@@ -1102,5 +1102,27 @@
     "sort_order": "Ordine",
     "applied": "Macro applicata",
     "placeholders": "Segnaposto"
+  },
+  "ticketChecklist": {
+    "title": "Checklist",
+    "new_template": "Nuova checklist",
+    "edit_template": "Modifica checklist",
+    "name": "Nome",
+    "description": "Descrizione",
+    "items": "Elementi",
+    "add_item": "Aggiungi elemento",
+    "item_placeholder": "Elemento checklist…",
+    "no_items": "Nessun elemento definito.",
+    "no_templates": "Nessun modello checklist definito.",
+    "active": "Attivo",
+    "sort_order": "Ordine",
+    "apply": "Applica checklist",
+    "applied": "Checklist applicata",
+    "apply_failed": "Impossibile applicare la checklist",
+    "close_blocked": "Completa tutti gli elementi prima di chiudere.",
+    "delete_item": "Elimina elemento",
+    "drag_reorder": "Trascina per riordinare",
+    "saved": "Modello checklist salvato",
+    "deleted": "Modello checklist eliminato"
   }
 }

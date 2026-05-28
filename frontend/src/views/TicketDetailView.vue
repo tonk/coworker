@@ -17,8 +17,8 @@
               <option value="new">{{ $t('ticket.status_new') }}</option>
               <option value="open">{{ $t('ticket.status_open') }}</option>
               <option value="pending">{{ $t('ticket.status_pending') }}</option>
-              <option value="pending_close">{{ $t('ticket.status_pending_close') }}</option>
-              <option value="closed">{{ $t('ticket.status_closed') }}</option>
+              <option value="pending_close" :disabled="checklistBlocksClose">{{ $t('ticket.status_pending_close') }}</option>
+              <option value="closed" :disabled="checklistBlocksClose">{{ $t('ticket.status_closed') }}</option>
             </select>
             <select class="form-input form-input-sm" :value="ticket.priority" @change="updatePriority($event.target.value)">
               <option value="low">{{ $t('ticket.priority_low') }}</option>
@@ -29,6 +29,10 @@
             <select v-if="macros.length" class="form-input form-input-sm" :value="''" :disabled="applyingMacro" @change="applyMacro($event.target.value); $event.target.value = ''">
               <option value="" disabled>{{ $t('macro.apply_macro') }}</option>
               <option v-for="m in macros" :key="m.id" :value="m.id">{{ m.name }}</option>
+            </select>
+            <select v-if="checklistTemplates.length && !ticket.checklist_template_id" class="form-input form-input-sm" :value="''" :disabled="applyingChecklist" @change="applyChecklist($event.target.value); $event.target.value = ''">
+              <option value="" disabled>{{ $t('ticketChecklist.apply') }}</option>
+              <option v-for="t in checklistTemplates" :key="t.id" :value="t.id">{{ t.name }}</option>
             </select>
             <button v-if="!ticket.is_spam" class="btn btn-secondary btn-sm" @click="toggleSpam(true)">{{ $t('ticket.mark_spam') }}</button>
             <button v-else class="btn btn-secondary btn-sm" @click="toggleSpam(false)">{{ $t('ticket.unmark_spam') }}</button>
@@ -94,6 +98,33 @@
         <div class="email-body markdown-body selectable" v-html="renderMarkdown(ticket.description)"></div>
       </div>
       <AttachmentList v-if="ticket.attachments?.length" :attachments="ticket.attachments" :can-delete="false" />
+
+      <div v-if="checklist.length || ticket.checklist_template_id" class="checklist-section">
+        <div class="checklist-header">
+          <h4>{{ $t('checklist.title') }}</h4>
+          <span v-if="checklist.length" class="checklist-progress">
+            {{ checklist.filter(i => i.is_completed).length }}/{{ checklist.length }}
+          </span>
+        </div>
+        <p v-if="checklistBlocksClose" class="checklist-close-hint" role="status">{{ $t('ticketChecklist.close_blocked') }}</p>
+        <div v-if="checklist.length" class="checklist-progress-bar">
+          <div class="checklist-progress-fill" :style="{ width: checklistPct + '%' }"></div>
+        </div>
+        <div class="checklist-items" ref="checklistListEl">
+          <div v-for="item in checklist" :key="item.id" class="checklist-item" :data-id="item.id">
+            <span class="checklist-drag-handle" :title="$t('ticketChecklist.drag_reorder')" aria-hidden="true">⠿</span>
+            <input
+              type="checkbox"
+              class="checklist-checkbox"
+              :checked="item.is_completed"
+              :aria-label="item.body"
+              @change="toggleChecklistItem(item)"
+            />
+            <span class="checklist-body" :class="{ completed: item.is_completed }">{{ item.body }}</span>
+            <button class="btn-icon-xs btn-danger" @click="removeChecklistItem(item)" :title="$t('ticketChecklist.delete_item')" :aria-label="$t('ticketChecklist.delete_item')">×</button>
+          </div>
+        </div>
+      </div>
 
       <div v-if="ticket.sla_policy_id && !isInbox" class="sla-card">
         <h4>{{ ticket.sla_policy?.name || $t('sla.sla') }}</h4>
@@ -278,8 +309,11 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import Sortable from 'sortablejs'
 import { ticketsApi } from '@/api/tickets'
 import { macrosApi } from '@/api/macros'
+import { ticketChecklistsApi } from '@/api/ticketChecklists'
 import client from '@/api/client'
 import { attachmentsApi } from '@/api/attachments'
 import { customersApi } from '@/api/customers'
@@ -296,6 +330,7 @@ import DatePicker from '@/components/common/DatePicker.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
 
 const { formatDateTime, formatDate } = useDateFormat()
+const { t } = useI18n()
 const auth = useAuthStore()
 const ticketsStore = useTicketsStore()
 
@@ -351,6 +386,41 @@ const moveTargetCustomer = ref(null)
 const moving = ref(false)
 const macros = ref([])
 const applyingMacro = ref(false)
+const checklistTemplates = ref([])
+const applyingChecklist = ref(false)
+const checklist = ref([])
+const checklistListEl = ref(null)
+let sortableInstance = null
+
+const checklistPct = computed(() => {
+  if (!checklist.value.length) return 0
+  return Math.round(checklist.value.filter(i => i.is_completed).length / checklist.value.length * 100)
+})
+
+const checklistBlocksClose = computed(() =>
+  checklist.value.some(i => !i.is_completed)
+)
+
+function syncChecklistFromTicket(t) {
+  checklist.value = t?.checklist_items ? [...t.checklist_items] : []
+}
+
+function checklistApi() {
+  if (isInbox.value) {
+    return {
+      apply: (templateId) => ticketChecklistsApi.applyInbox(ticketId.value, templateId),
+      updateItem: (itemId, data) => ticketChecklistsApi.updateItemInbox(ticketId.value, itemId, data),
+      deleteItem: (itemId) => ticketChecklistsApi.deleteItemInbox(ticketId.value, itemId),
+      reorder: (items) => ticketChecklistsApi.reorderInbox(ticketId.value, items),
+    }
+  }
+  return {
+    apply: (templateId) => ticketChecklistsApi.apply(customerId.value, ticketId.value, templateId),
+    updateItem: (itemId, data) => ticketChecklistsApi.updateItem(customerId.value, ticketId.value, itemId, data),
+    deleteItem: (itemId) => ticketChecklistsApi.deleteItem(customerId.value, ticketId.value, itemId),
+    reorder: (items) => ticketChecklistsApi.reorder(customerId.value, ticketId.value, items),
+  }
+}
 
 function apiUpdate(data) {
   return isInbox.value
@@ -441,6 +511,7 @@ async function fetchTicket() {
       ? await ticketsApi.inboxGet(ticketId.value)
       : await ticketsApi.get(customerId.value, ticketId.value)
     ticket.value = data
+    syncChecklistFromTicket(data)
     if (ticket.value.attachments === null) ticket.value.attachments = []
     if (ticket.value.messages) {
       for (const m of ticket.value.messages) {
@@ -510,6 +581,76 @@ async function loadMacros() {
   }
 }
 
+async function loadChecklistTemplates() {
+  try {
+    const { data } = await ticketChecklistsApi.listTemplates()
+    checklistTemplates.value = data || []
+  } catch {
+    checklistTemplates.value = []
+  }
+}
+
+async function applyChecklist(templateId) {
+  if (!templateId) return
+  applyingChecklist.value = true
+  try {
+    const { data } = await checklistApi().apply(templateId)
+    ticket.value = data
+    syncChecklistFromTicket(data)
+    ui.success(t('ticketChecklist.applied'))
+  } catch (e) {
+    ui.error(e.response?.data?.error || t('ticketChecklist.apply_failed'))
+  } finally {
+    applyingChecklist.value = false
+  }
+}
+
+async function toggleChecklistItem(item) {
+  const completed = !item.is_completed
+  try {
+    const { data } = await checklistApi().updateItem(item.id, { is_completed: completed })
+    const idx = checklist.value.findIndex(i => i.id === item.id)
+    if (idx !== -1) checklist.value[idx] = data
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update checklist item')
+  }
+}
+
+async function removeChecklistItem(item) {
+  try {
+    await checklistApi().deleteItem(item.id)
+    checklist.value = checklist.value.filter(i => i.id !== item.id)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to delete checklist item')
+  }
+}
+
+function initChecklistSortable() {
+  if (!checklistListEl.value || sortableInstance) return
+  sortableInstance = new Sortable(checklistListEl.value, {
+    animation: 150,
+    handle: '.checklist-drag-handle',
+    onEnd(evt) {
+      const moved = checklist.value.splice(evt.oldIndex, 1)[0]
+      checklist.value.splice(evt.newIndex, 0, moved)
+      const items = checklist.value.map((it, i) => ({ id: it.id, position: (i + 1) * 1000 }))
+      checklist.value.forEach((it, i) => { it.position = (i + 1) * 1000 })
+      checklistApi().reorder(items).catch(() => {})
+    },
+  })
+}
+
+watch(checklist, async (val) => {
+  if (sortableInstance) {
+    sortableInstance.destroy()
+    sortableInstance = null
+  }
+  if (val.length) {
+    await nextTick()
+    initChecklistSortable()
+  }
+})
+
 async function toggleSpam(markAsSpam) {
   try {
     const { data } = isInbox.value
@@ -530,6 +671,7 @@ async function applyMacro(macroId) {
       ? await macrosApi.applyInbox(ticketId.value, macroId)
       : await macrosApi.apply(customerId.value, ticketId.value, macroId)
     ticket.value = data.ticket
+    syncChecklistFromTicket(data.ticket)
     if (data.macro_messages?.length) {
       newMessage.value = data.macro_messages.join('\n\n')
       msgEditorTab.value = 'edit'
@@ -548,7 +690,7 @@ watch([() => route.params.ticketId, () => route.name], () => {
   fetchTicket()
 })
 
-onMounted(() => { fetchTicket(); loadMacros() })
+onMounted(() => { fetchTicket(); loadMacros(); loadChecklistTemplates() })
 
 // Refresh messages when IMAP delivers a reply to this ticket
 async function refreshMessages() {
@@ -586,6 +728,7 @@ async function updateStatus(status) {
     }
     const { data } = await apiUpdate(payload)
     ticket.value = data
+    syncChecklistFromTicket(data)
     ui.success('Status updated')
     if (status === 'pending' || status === 'pending_close') {
       await nextTick()
@@ -1209,4 +1352,21 @@ async function assignToCustomer() {
 .move-section h4 { font-size: 14px; margin: 0 0 8px; }
 .move-row { display: flex; gap: 6px; align-items: center; }
 .move-row select { flex: 1; max-width: 280px; }
+
+.checklist-section { margin-bottom: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
+.checklist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.checklist-header h4 { margin: 0; font-size: 14px; }
+.checklist-progress { font-size: 12px; font-weight: 600; color: var(--color-text-muted); }
+.checklist-close-hint { font-size: 12px; color: var(--color-warning, #92400e); margin: 0 0 8px; }
+.checklist-progress-bar { height: 4px; background: var(--color-border); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+.checklist-progress-fill { height: 100%; background: var(--color-primary); border-radius: 2px; transition: width .3s; }
+.checklist-items { display: flex; flex-direction: column; gap: 4px; }
+.checklist-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.checklist-drag-handle { color: var(--color-text-muted); cursor: grab; font-size: 14px; flex-shrink: 0; user-select: none; }
+.checklist-drag-handle:active { cursor: grabbing; }
+.checklist-drag-handle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.checklist-checkbox { width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; accent-color: var(--color-primary); }
+.checklist-body { flex: 1; font-size: 13px; line-height: 1.4; }
+.checklist-body.completed { text-decoration: line-through; color: var(--color-text-muted); }
+.checklist-item .btn-icon-xs:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 </style>

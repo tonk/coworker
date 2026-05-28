@@ -24,6 +24,7 @@ type Ticket struct {
 	ReminderAt            *time.Time      `json:"reminder_at,omitempty"`
 	CloseAt               *time.Time      `json:"close_at,omitempty"`
 	IsSpam                bool            `gorm:"default:false" json:"is_spam"`
+	ChecklistTemplateID   *uint           `gorm:"index" json:"checklist_template_id,omitempty"`
 	EmailMessageID        *string         `gorm:"uniqueIndex;size:998" json:"email_message_id,omitempty"`
 	FromEmail             *string         `gorm:"size:254" json:"from_email,omitempty"`
 	FromName              *string         `gorm:"size:150" json:"from_name,omitempty"`
@@ -37,7 +38,8 @@ type Ticket struct {
 	Owner                 *User           `json:"owner,omitempty"`
 	Group                 *UserGroup      `json:"group,omitempty"`
 	SlaPolicy             *SlaPolicy      `json:"sla_policy,omitempty"`
-	Attachments           []Attachment    `gorm:"-" json:"attachments,omitempty"`
+	Attachments           []Attachment           `gorm:"-" json:"attachments,omitempty"`
+	ChecklistItems        []TicketChecklistItem  `gorm:"foreignKey:TicketID" json:"checklist_items,omitempty"`
 }
 
 type TicketMessage struct {

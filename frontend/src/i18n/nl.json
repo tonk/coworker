@@ -1102,5 +1102,27 @@
     "sort_order": "Volgorde",
     "applied": "Macro toegepast",
     "placeholders": "Plaatsvervangers"
+  },
+  "ticketChecklist": {
+    "title": "Checklists",
+    "new_template": "Nieuwe checklist",
+    "edit_template": "Checklist bewerken",
+    "name": "Naam",
+    "description": "Beschrijving",
+    "items": "Items",
+    "add_item": "Item toevoegen",
+    "item_placeholder": "Checklistitem…",
+    "no_items": "Geen items gedefinieerd.",
+    "no_templates": "Nog geen checklisttemplates gedefinieerd.",
+    "active": "Actief",
+    "sort_order": "Volgorde",
+    "apply": "Checklist toepassen",
+    "applied": "Checklist toegepast",
+    "apply_failed": "Checklist toepassen mislukt",
+    "close_blocked": "Vink alle checklistitems af voordat u sluit.",
+    "delete_item": "Checklistitem verwijderen",
+    "drag_reorder": "Sleep om te herschikken",
+    "saved": "Checklisttemplate opgeslagen",
+    "deleted": "Checklisttemplate verwijderd"
   }
 }

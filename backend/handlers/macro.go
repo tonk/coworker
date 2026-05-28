@@ -230,6 +230,11 @@ func applyMacroActions(c *gin.Context, ticket *models.Ticket, macro *models.Macr
 		}
 	}
 
+	if newStatus, ok := updates["status"].(string); ok && statusRequiresChecklistComplete(newStatus) && ticketChecklistBlocksClose(ticket.ID) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errChecklistIncomplete})
+		return
+	}
+
 	if len(updates) > 0 {
 		database.DB.Model(ticket).Updates(updates)
 	}
@@ -261,6 +266,7 @@ func applyMacroActions(c *gin.Context, ticket *models.Ticket, macro *models.Macr
 			updated.Messages[i].Attachments = []models.Attachment{}
 		}
 	}
+	attachTicketChecklist(&updated)
 
 	if pendingMessages == nil {
 		pendingMessages = []string{}

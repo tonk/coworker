@@ -1102,5 +1102,27 @@
     "sort_order": "Järjestys",
     "applied": "Makro käytetty",
     "placeholders": "Muuttujat"
+  },
+  "ticketChecklist": {
+    "title": "Tarkistuslistat",
+    "new_template": "Uusi tarkistuslista",
+    "edit_template": "Muokkaa tarkistuslistaa",
+    "name": "Nimi",
+    "description": "Kuvaus",
+    "items": "Kohdat",
+    "add_item": "Lisää kohta",
+    "item_placeholder": "Tarkistuslistan kohta…",
+    "no_items": "Kohtia ei ole määritetty.",
+    "no_templates": "Tarkistuslistapohjia ei vielä ole.",
+    "active": "Aktiivinen",
+    "sort_order": "Järjestys",
+    "apply": "Käytä tarkistuslistaa",
+    "applied": "Tarkistuslista käytetty",
+    "apply_failed": "Tarkistuslistan käyttö epäonnistui",
+    "close_blocked": "Merkitse kaikki kohdat ennen sulkemista.",
+    "delete_item": "Poista kohta",
+    "drag_reorder": "Vedä järjestääksesi",
+    "saved": "Tarkistuslistapohja tallennettu",
+    "deleted": "Tarkistuslistapohja poistettu"
   }
 }
