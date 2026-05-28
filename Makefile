@@ -55,7 +55,7 @@ build: build-frontend embed-web build-backend
 	@cp -r deploy $(DIST_DIR)/deploy
 	@cp INSTALL.md $(DIST_DIR)/INSTALL.md
 	@cp README.md $(DIST_DIR)/README.md
-	@cp -r docs $(DIST_DIR)/docs
+	@rm -rf $(DIST_DIR)/docs && cp -r docs $(DIST_DIR)/docs
 	@echo "Build complete. Output: $(DIST_DIR)/"
 
 build-frontend:
@@ -86,7 +86,7 @@ build-arm64: build-frontend embed-web build-backend-arm64
 	@cp -r deploy $(DIST_ARM64)/deploy
 	@cp INSTALL.md $(DIST_ARM64)/INSTALL.md
 	@cp README.md $(DIST_ARM64)/README.md
-	@cp -r docs $(DIST_ARM64)/docs
+	@rm -rf $(DIST_ARM64)/docs && cp -r docs $(DIST_ARM64)/docs
 	@echo "ARM64 server build complete. Output: $(DIST_ARM64)/"
 
 build-backend-arm64:
