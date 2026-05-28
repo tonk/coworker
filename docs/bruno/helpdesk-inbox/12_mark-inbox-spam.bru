@@ -1,0 +1,15 @@
+meta {
+  name: Mark Inbox Ticket as Spam
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/api/v1/tickets/inbox/{{ticketId}}/spam
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

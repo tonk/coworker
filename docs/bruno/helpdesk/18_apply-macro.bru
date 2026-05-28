@@ -1,0 +1,19 @@
+meta {
+  name: Apply Macro
+  type: http
+  seq: 18
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/macros/{{macroId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Applies a macro to the ticket. Returns {ticket, macro_messages} — post macro_messages as ticket messages if non-empty.
+}

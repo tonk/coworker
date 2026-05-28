@@ -1,0 +1,29 @@
+meta {
+  name: Create Inbox Ticket
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/tickets/inbox
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Cannot reset password",
+    "description": "User reports the reset link expires immediately.",
+    "type": "incident",
+    "priority": "high"
+  }
+}
+
+docs {
+  type: incident | problem | service_request | change_request (default: service_request).
+  priority: low | medium | high | critical (default: medium).
+}

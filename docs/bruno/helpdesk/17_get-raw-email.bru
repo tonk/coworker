@@ -1,0 +1,19 @@
+meta {
+  name: Get Raw Email
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/raw-email
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Returns the original raw email body for tickets created via IMAP ingestion. Returns 404 if no raw email is stored.
+}

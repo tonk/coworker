@@ -1,0 +1,15 @@
+meta {
+  name: Unmark Inbox Ticket Spam
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/tickets/inbox/{{ticketId}}/spam
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

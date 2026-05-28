@@ -1,0 +1,22 @@
+meta {
+  name: Update Macro (Admin)
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/v1/admin/macros/{{macroId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Close and thank",
+    "is_active": true
+  }
+}

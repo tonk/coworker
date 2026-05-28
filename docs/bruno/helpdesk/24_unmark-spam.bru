@@ -1,0 +1,19 @@
+meta {
+  name: Unmark Spam
+  type: http
+  seq: 24
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/spam
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Removes spam flag and reopens ticket.
+}

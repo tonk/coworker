@@ -1,0 +1,22 @@
+meta {
+  name: Update Checklist Template (Admin)
+  type: http
+  seq: 11
+}
+
+put {
+  url: {{baseUrl}}/api/v1/admin/ticket-checklist-templates/{{templateId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Bug triage",
+    "is_active": true
+  }
+}

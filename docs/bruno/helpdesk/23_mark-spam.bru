@@ -1,0 +1,19 @@
+meta {
+  name: Mark as Spam
+  type: http
+  seq: 23
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/spam
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Marks ticket as spam and sets status to closed.
+}

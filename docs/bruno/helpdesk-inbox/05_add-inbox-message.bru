@@ -1,0 +1,21 @@
+meta {
+  name: Add Inbox Message
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/tickets/inbox/{{ticketId}}/messages
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "body": "Looking into this now."
+  }
+}

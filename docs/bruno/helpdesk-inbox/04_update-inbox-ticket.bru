@@ -1,0 +1,27 @@
+meta {
+  name: Update Inbox Ticket
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/v1/tickets/inbox/{{ticketId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "status": "open",
+    "assigned_to_id": 3,
+    "customer_id": 1
+  }
+}
+
+docs {
+  Set customer_id to move the ticket to a customer. Supports all standard ticket fields.
+}

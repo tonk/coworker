@@ -1,0 +1,19 @@
+meta {
+  name: List Inbox Tickets
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/tickets/inbox
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Lists tickets not assigned to any customer. Append ?include_spam=true to include spam tickets.
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Create Checklist Template (Admin)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/ticket-checklist-templates
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Bug triage",
+    "description": "Standard steps for bug reports",
+    "items": ["Reproduce the issue", "Check error logs", "Identify root cause", "Apply fix", "Verify in staging"],
+    "is_active": true,
+    "sort_order": 0
+  }
+}
+
+docs {
+  items is an ordered array of strings (checklist item labels).
+}

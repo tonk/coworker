@@ -1,0 +1,15 @@
+meta {
+  name: Apply Inbox Checklist Template
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/tickets/inbox/{{ticketId}}/checklist/templates/{{templateId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

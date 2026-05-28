@@ -1,0 +1,21 @@
+meta {
+  name: Update Checklist Item
+  type: http
+  seq: 20
+}
+
+put {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/checklist/{{itemId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "is_completed": true
+  }
+}

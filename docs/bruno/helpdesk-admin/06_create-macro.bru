@@ -1,0 +1,33 @@
+meta {
+  name: Create Macro (Admin)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/macros
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Close and thank",
+    "description": "Sets status to closed and sends a closing message",
+    "actions": [
+      {"type": "set_status", "value": "closed"},
+      {"type": "add_message", "value": "Hi {fname}, your ticket {ticket_id} has been resolved. Thanks!"}
+    ],
+    "is_active": true,
+    "sort_order": 0
+  }
+}
+
+docs {
+  action types: set_status, set_priority, set_type, add_tag, add_message.
+  Placeholders in add_message: {email}, {fname}, {name}, {subject}, {ticket_id}, {agent}, {agent_fname}.
+}

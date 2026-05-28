@@ -1,0 +1,19 @@
+meta {
+  name: Apply Checklist Template
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/checklist/templates/{{templateId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Attaches a checklist template to the ticket and creates its items. A ticket can only have one template applied.
+}

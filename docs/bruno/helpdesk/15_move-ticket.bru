@@ -1,0 +1,25 @@
+meta {
+  name: Move Ticket
+  type: http
+  seq: 15
+}
+
+put {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/tickets/{{ticketId}}/move
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "target_customer_id": 2
+  }
+}
+
+docs {
+  Moves ticket to a different customer. Caller must have access to both the source and target customer.
+}

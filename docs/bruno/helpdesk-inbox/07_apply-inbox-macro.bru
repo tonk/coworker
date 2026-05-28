@@ -1,0 +1,19 @@
+meta {
+  name: Apply Inbox Macro
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/v1/tickets/inbox/{{ticketId}}/macros/{{macroId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Applies a macro to an inbox ticket. Returns {ticket, macro_messages}.
+}

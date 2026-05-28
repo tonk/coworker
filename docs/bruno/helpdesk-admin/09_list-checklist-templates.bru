@@ -1,0 +1,15 @@
+meta {
+  name: List Checklist Templates (Admin)
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/v1/admin/ticket-checklist-templates
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

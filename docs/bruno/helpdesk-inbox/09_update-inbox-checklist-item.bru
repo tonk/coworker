@@ -1,0 +1,21 @@
+meta {
+  name: Update Inbox Checklist Item
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/v1/tickets/inbox/{{ticketId}}/checklist/{{itemId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "is_completed": true
+  }
+}
