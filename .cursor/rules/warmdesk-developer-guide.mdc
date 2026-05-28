@@ -1,10 +1,3 @@
----
-description: WarmDesk developer guide — architecture, conventions, dev/build, accessibility
-alwaysApply: true
----
-
-Keep this file in sync with `CLAUDE.md` at the repository root.
-
 # WarmDesk — Developer Guide for Claude
 
 Cursor loads the same content automatically via [.cursor/rules/warmdesk-developer-guide.mdc](.cursor/rules/warmdesk-developer-guide.mdc). Update both files when you change this documentation.
@@ -129,6 +122,7 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 | `gin_mode` | `GIN_MODE` | `release` — set to `debug` for local development |
 | `smtp.host` / `.port` / `.from` / `.username` / `.password` / `.use_tls` | — | port `587`, rest empty (overridable via system settings) |
 | `livekit_url` / `livekit_api_key` / `livekit_api_secret` / `livekit_room_prefix` | `LIVEKIT_*` | *(empty — required for voice/video calls)* |
+| `oauth2.google_client_id` / `.google_client_secret` / `.office_client_id` / `.office_client_secret` | — | *(empty — required for IMAP OAuth2 auth)* |
 
 ---
 
@@ -273,7 +267,7 @@ The helpdesk module is gated by the `helpdesk_enabled` user flag (default `false
 | Model | Key fields |
 |---|---|
 | `Ticket` | `CustomerID`, `Title`, `Description`, `Type` (incident/problem/service_request/change_request), `Priority` (low/medium/high/critical), `Status` (open/in_progress/resolved/closed/pending), `AssignedToID`, `OwnerID`, `GroupID`, `ReminderAt *time.Time`, `SlaPolicyID`, `SlaResponseDeadline`, `SlaResolutionDeadline`, `SlaBreached bool`, `FirstResponseAt *time.Time` |
-| `TicketMessage` | `TicketID`, `UserID`, `Body` — internal messages on a ticket |
+| `TicketMessage` | `TicketID`, `UserID`, `Body`, `EmailSent bool` — internal messages on a ticket; `EmailSent` is `true` when the message triggered an outbound email reply |
 | `TicketTag` | `TicketID`, `Name` — free-form tags |
 | `TicketLink` | `TicketID`, `LinkedTicketID`, `LinkType` — links between tickets |
 | `TicketCardLink` | `TicketID`, `CardID` — links from a ticket to a board card |
@@ -310,7 +304,7 @@ All ticket routes live under `/api/v1/customers/:customerId/tickets` and require
 ### Frontend
 
 - **`TicketListView.vue`** — lists tickets for one customer; shows `DashboardNews` at the top so news is visible to helpdesk-first users.
-- **`TicketDetailView.vue`** — full ticket detail with inline title editing, status/priority/type/assignee dropdowns, tag management, SLA card, linked tickets/cards panel, internal messages with attachments, and the pending reminder `DatePicker`.
+- **`TicketDetailView.vue`** — full ticket detail with inline title editing, status/priority/type/assignee dropdowns, tag management, SLA card, linked tickets/cards panel, internal messages with attachments, and the pending reminder `DatePicker`. The original email body is rendered as plain text with `white-space: pre-wrap` (selectable via `.selectable` class to override `body { user-select: none }`). Messages from agents that triggered an email reply show an ✉ badge (`email_sent` field). Clicking the ticket number (`#123`) copies `Ticket#123` to the clipboard.
 - **`components/admin/SlaPoliciesTab.vue`** — admin UI for CRUD on SLA policies.
 - **`components/common/DatePicker.vue`** — custom calendar picker that uses CSS custom properties for theming and respects `auth.user.date_time_format` and `auth.user.week_start`. Emits `update:modelValue` with a `YYYY-MM-DD` string (or `null` on clear). Does **not** use a native `<input type="date">` at all.
 - **`components/common/DashboardNews.vue`** — self-contained news widget that fetches active news, manages dismissed IDs in `localStorage` (key `dashboard_news_dismissed_ids`), and renders the widget grid. Used in `DashboardView`, `CustomersView`, and `TicketListView`.
@@ -321,6 +315,64 @@ All ticket routes live under `/api/v1/customers/:customerId/tickets` and require
 ### User setting: `dashboard_default`
 
 Stored on `User.DashboardDefault` (GORM default `"boards"`). Values: `"boards"` | `"tickets"`. Set via `PUT /auth/me`. In `DashboardView.vue`, if `dashboard_default === "tickets"` and `helpdeskEnabled`, the component immediately redirects to the first starred customer's tickets page (or first customer, or `/customers` as fallback). The setting is exposed in **Settings → Dashboard shows**.
+
+---
+
+## IMAP OAuth2
+
+The IMAP polling service supports OAuth2 authentication via the XOAUTH2 SASL mechanism (with OAUTHBEARER as fallback). This requires registering an OAuth 2.0 application with the email provider.
+
+### Configuration (`warmdesk.yaml`)
+
+Application-level client credentials are configured in the YAML file (not the database):
+
+```yaml
+oauth2:
+  google_client_id: "xxxx.apps.googleusercontent.com"
+  google_client_secret: "GOCSPX-xxxx"
+  office_client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  office_client_secret: "xxxx~xxxx"
+```
+
+**Google (Gmail):**
+1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → Create project → OAuth consent screen (External, scope `https://mail.google.com/`)
+2. Credentials → Create OAuth 2.0 Client ID → Web application
+3. Authorized Redirect URI: `https://your-domain/api/v1/admin/imap/oauth2/callback`
+
+**Office 365 (Outlook):**
+1. [Azure Portal → App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps) → New registration
+2. Accounts in any organizational directory + personal Microsoft accounts
+3. Redirect URI: Web → `https://your-domain/api/v1/admin/imap/oauth2/callback`
+4. API permissions → Microsoft Graph → Delegated → `IMAP.AccessAsUser.All` + `offline_access`
+
+### UI flow (Admin → Settings → Incoming Mail)
+
+1. Set **Authentication** to **OAuth2**
+2. Select the **Email Provider** (Google or Office 365)
+3. Click **Authorize** — a popup opens to the provider's consent screen
+4. After granting access, the popup closes and tokens are stored in the database
+5. The polling service automatically refreshes the access token via the stored refresh token before it expires
+
+### Backend implementation
+
+| File | Role |
+|---|---|
+| `handlers/oauth2.go` | OAuth2 auth URL generation, callback (code → token exchange), status, disconnect, `RefreshIMAPOAuth2Token()` |
+| `services/xoauth2.go` | Custom XOAUTH2 SASL client (`user=...\x01auth=Bearer ...\x01\x01`) |
+| `services/imap_service.go` | `connectAndLogin` calls `c.Authenticate()` with XOAUTH2 (then OAUTHBEARER fallback) when `cfg.AuthMechanism == "oauth2"`; `poll` calls token refresher before connecting |
+| `config/config.go` | `IMAPConfig` auth fields + `OAuth2Config` struct for client credentials |
+| `handlers/system.go` | `settingIMAP*` keys for auth mechanism, provider, access token, refresh token, expiry |
+
+Tokens are stored in `system_settings` (same table as passwords). Access tokens are masked in admin API responses (returned as `imap_access_token_set: "true"`). Token refresh happens automatically in `RefreshIMAPOAuth2Token()` up to 5 minutes before expiry.
+
+### Routes
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/v1/admin/imap/oauth2/auth-url?provider=google\|office365` | Returns the OAuth2 authorization URL |
+| `GET` | `/api/v1/admin/imap/oauth2/callback` | Handles the provider callback (code → token exchange) |
+| `GET` | `/api/v1/admin/imap/oauth2/status` | Returns connection status |
+| `POST` | `/api/v1/admin/imap/oauth2/disconnect` | Clears stored tokens, reverts to plain auth |
 
 ---
 

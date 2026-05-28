@@ -540,8 +540,38 @@
               </div>
               <div class="form-group" style="flex:1">
                 <label class="form-label" for="sys-imap-password">{{ $t('admin.imap_password') }}</label>
-                <input id="sys-imap-password" class="form-input" v-model="systemSettings.imap_password" type="password" autocomplete="new-password" :placeholder="imapPasswordPlaceholder" />
+                <input id="sys-imap-password" class="form-input" v-model="systemSettings.imap_password" type="password" autocomplete="new-password" :placeholder="imapPasswordPlaceholder" :disabled="systemSettings.imap_auth_mechanism === 'oauth2'" />
               </div>
+            </div>
+
+            <div class="form-row" style="max-width:500px">
+              <div class="form-group" style="flex:1">
+                <label class="form-label" for="sys-imap-auth">{{ $t('admin.imap_auth_mechanism') }}</label>
+                <select id="sys-imap-auth" class="form-input" v-model="systemSettings.imap_auth_mechanism">
+                  <option value="plain">{{ $t('admin.imap_auth_plain') }}</option>
+                  <option value="oauth2">{{ $t('admin.imap_auth_oauth2') }}</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1" v-if="systemSettings.imap_auth_mechanism === 'oauth2'">
+                <label class="form-label" for="sys-imap-oauth2-provider">{{ $t('admin.imap_oauth2_provider') }}</label>
+                <select id="sys-imap-oauth2-provider" class="form-input" v-model="systemSettings.imap_oauth2_provider">
+                  <option value="">{{ $t('common.select') }}</option>
+                  <option value="google">{{ $t('admin.imap_oauth2_google') }}</option>
+                  <option value="office365">{{ $t('admin.imap_oauth2_office365') }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" v-if="systemSettings.imap_auth_mechanism === 'oauth2'" style="max-width:500px">
+              <template v-if="imapOAuth2Connected">
+                <span class="badge badge-success" style="margin-right:8px">{{ $t('admin.imap_oauth2_connected') }}</span>
+                <button class="btn btn-secondary btn-sm" @click="disconnectImapOAuth2">{{ $t('admin.imap_oauth2_revoke') }}</button>
+              </template>
+              <template v-else>
+                <button class="btn btn-secondary btn-sm" @click="authorizeImapOAuth2" :disabled="imapOAuth2Connecting || !systemSettings.imap_oauth2_provider">
+                  {{ imapOAuth2Connecting ? $t('common.loading') : $t('admin.imap_oauth2_authorize') }}
+                </button>
+              </template>
             </div>
 
             <div class="form-row" style="max-width:500px">
@@ -565,8 +595,8 @@
 
             <div class="form-actions" style="max-width:500px">
               <button class="btn btn-primary" @click="saveImapSettings">{{ $t('common.save') }}</button>
-              <button class="btn btn-secondary btn-sm" @click="testImap" :disabled="imapTesting">{{ imapTesting ? $t('common.saving') : $t('admin.imap_test') }}</button>
-              <button class="btn btn-secondary btn-sm" @click="pollImap" :disabled="imapPolling">{{ imapPolling ? $t('common.saving') : $t('admin.imap_poll') }}</button>
+              <button class="btn btn-secondary btn-sm" @click="testImap" :disabled="imapTesting">{{ imapTesting ? $t('common.loading') : $t('admin.imap_test') }}</button>
+              <button class="btn btn-secondary btn-sm" @click="pollImap" :disabled="imapPolling">{{ imapPolling ? $t('common.loading') : $t('admin.imap_poll') }}</button>
             </div>
 
             <h3 class="settings-subsection">{{ $t('admin.branding_title') }}</h3>
@@ -1970,6 +2000,8 @@ const systemSettings = ref({
   imap_use_tls: true,
   imap_mailbox: 'INBOX',
   imap_poll_interval: '60',
+  imap_auth_mechanism: 'plain',
+  imap_oauth2_provider: '',
   company_name: '',
   company_logo: '',
   company_logo_dark: '',
@@ -1994,6 +2026,8 @@ const imapPasswordSet = ref(false)
 const imapPasswordPlaceholder = computed(() => imapPasswordSet.value ? '••••••••' : '')
 const imapTesting = ref(false)
 const imapPolling = ref(false)
+const imapOAuth2Connected = ref(false)
+const imapOAuth2Connecting = ref(false)
 const smtpTestEmail = ref('')
 const smtpTestSending = ref(false)
 let settingsLoading = false
@@ -2090,6 +2124,9 @@ async function loadSettings() {
     systemSettings.value.imap_use_tls       = data.imap_use_tls !== 'false'
     systemSettings.value.imap_mailbox       = data.imap_mailbox || 'INBOX'
     systemSettings.value.imap_poll_interval = data.imap_poll_interval || '60'
+    systemSettings.value.imap_auth_mechanism  = data.imap_auth_mechanism || 'plain'
+    systemSettings.value.imap_oauth2_provider = data.imap_oauth2_provider || ''
+    imapOAuth2Connected.value = data.imap_auth_mechanism === 'oauth2' && data.imap_access_token_set === 'true'
     systemSettings.value.company_name             = data.company_name || ''
     systemSettings.value.company_logo             = data.company_logo || ''
     systemSettings.value.company_logo_dark        = data.company_logo_dark || ''
@@ -2406,13 +2443,15 @@ async function saveSmtpSettings() {
 async function saveImapSettings() {
   try {
     const payload = {
-      imap_enabled:       systemSettings.value.imap_enabled,
-      imap_host:          systemSettings.value.imap_host,
-      imap_port:          String(systemSettings.value.imap_port || '993'),
-      imap_username:      systemSettings.value.imap_username,
-      imap_use_tls:       systemSettings.value.imap_use_tls,
-      imap_mailbox:       systemSettings.value.imap_mailbox,
-      imap_poll_interval: String(systemSettings.value.imap_poll_interval || '60'),
+      imap_enabled:         systemSettings.value.imap_enabled,
+      imap_host:            systemSettings.value.imap_host,
+      imap_port:            String(systemSettings.value.imap_port || '993'),
+      imap_username:        systemSettings.value.imap_username,
+      imap_use_tls:         systemSettings.value.imap_use_tls,
+      imap_mailbox:         systemSettings.value.imap_mailbox,
+      imap_poll_interval:   String(systemSettings.value.imap_poll_interval || '60'),
+      imap_auth_mechanism:  systemSettings.value.imap_auth_mechanism,
+      imap_oauth2_provider: systemSettings.value.imap_oauth2_provider,
     }
     if (systemSettings.value.imap_password) {
       payload.imap_password = systemSettings.value.imap_password
@@ -2432,11 +2471,12 @@ async function testImap() {
   imapTesting.value = true
   try {
     const body = {
-      host:          systemSettings.value.imap_host,
-      port:          Number(systemSettings.value.imap_port) || 993,
-      username:      systemSettings.value.imap_username,
-      use_tls:       systemSettings.value.imap_use_tls,
-      mailbox:       systemSettings.value.imap_mailbox,
+      host:            systemSettings.value.imap_host,
+      port:            Number(systemSettings.value.imap_port) || 993,
+      username:        systemSettings.value.imap_username,
+      use_tls:         systemSettings.value.imap_use_tls,
+      mailbox:         systemSettings.value.imap_mailbox,
+      auth_mechanism:  systemSettings.value.imap_auth_mechanism || 'plain',
     }
     if (systemSettings.value.imap_password) body.password = systemSettings.value.imap_password
     await client.post('/admin/imap/test', body)
@@ -2457,6 +2497,58 @@ async function pollImap() {
     ui.error(e.response?.data?.error || t('admin.imap_poll_failed'))
   } finally {
     imapPolling.value = false
+  }
+}
+
+async function authorizeImapOAuth2() {
+  const provider = systemSettings.value.imap_oauth2_provider
+  if (!provider) {
+    ui.error('Select an email provider first')
+    return
+  }
+  imapOAuth2Connecting.value = true
+  try {
+    const { data } = await client.get('/admin/imap/oauth2/auth-url', { params: { provider } })
+    // Open the OAuth2 authorization in a popup
+    const popup = window.open(data.url, 'oauth2-auth', 'width=600,height=700')
+    if (!popup) {
+      ui.error('Popup was blocked. Allow popups for this site and try again.')
+      return
+    }
+    // Poll until the popup closes (callback closes it on success)
+    const checkPopup = setInterval(async () => {
+      if (popup.closed) {
+        clearInterval(checkPopup)
+        imapOAuth2Connecting.value = false
+        // Refresh status
+        try {
+          const statusRes = await client.get('/admin/imap/oauth2/status')
+          imapOAuth2Connected.value = statusRes.data.connected
+          if (statusRes.data.connected) {
+            systemSettings.value.imap_auth_mechanism = 'oauth2'
+            systemSettings.value.imap_oauth2_provider = statusRes.data.provider
+            ui.success('Connected')
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }, 500)
+  } catch (e) {
+    imapOAuth2Connecting.value = false
+    ui.error(e.response?.data?.error || 'Authorization failed')
+  }
+}
+
+async function disconnectImapOAuth2() {
+  try {
+    await client.post('/admin/imap/oauth2/disconnect')
+    imapOAuth2Connected.value = false
+    systemSettings.value.imap_auth_mechanism = 'plain'
+    systemSettings.value.imap_oauth2_provider = ''
+    ui.success('Disconnected')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to disconnect')
   }
 }
 

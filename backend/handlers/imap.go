@@ -13,12 +13,14 @@ import (
 func AdminTestIMAP(c *gin.Context) {
 	cfg := GetIMAPSettings()
 	var body struct {
-		Host     *string `json:"host"`
-		Port     *int    `json:"port"`
-		Username *string `json:"username"`
-		Password *string `json:"password"`
-		UseTLS   *bool   `json:"use_tls"`
-		Mailbox  *string `json:"mailbox"`
+		Host          *string `json:"host"`
+		Port          *int    `json:"port"`
+		Username      *string `json:"username"`
+		Password      *string `json:"password"`
+		UseTLS        *bool   `json:"use_tls"`
+		Mailbox       *string `json:"mailbox"`
+		AuthMechanism *string `json:"auth_mechanism"`
+		AccessToken   *string `json:"access_token"`
 	}
 	if err := c.ShouldBindJSON(&body); err == nil {
 		if body.Host != nil {
@@ -38,6 +40,12 @@ func AdminTestIMAP(c *gin.Context) {
 		}
 		if body.Mailbox != nil {
 			cfg.Mailbox = *body.Mailbox
+		}
+		if body.AuthMechanism != nil {
+			cfg.AuthMechanism = *body.AuthMechanism
+		}
+		if body.AccessToken != nil {
+			cfg.AccessToken = *body.AccessToken
 		}
 	}
 	if err := services.TestIMAPConnection(cfg); err != nil {

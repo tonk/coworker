@@ -42,6 +42,7 @@ type TicketMessage struct {
 	TicketID  uint         `gorm:"not null;index" json:"ticket_id"`
 	UserID    uint         `gorm:"not null" json:"user_id"`
 	Body      string       `gorm:"type:text;not null" json:"body"`
+	EmailSent bool         `gorm:"default:false" json:"email_sent"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
 	User      User         `json:"user,omitempty"`

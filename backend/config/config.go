@@ -32,6 +32,7 @@ type Config struct {
 	BaseURL        string `yaml:"base_url"`      // public base URL (e.g. https://desk.example.com) — used in Swagger UI
 	SMTP           SMTPConfig `yaml:"smtp"`
 	IMAP           IMAPConfig `yaml:"imap"`
+	OAuth2         OAuth2Config `yaml:"oauth2"`
 	LiveKitURL        string `yaml:"livekit_url"`         // e.g. wss://livekit.yourcompany.com
 	LiveKitAPIKey     string `yaml:"livekit_api_key"`
 	LiveKitAPISecret  string `yaml:"livekit_api_secret"`
@@ -56,6 +57,20 @@ type IMAPConfig struct {
 	UseTLS       bool   `yaml:"use_tls"`
 	Mailbox      string `yaml:"mailbox"`
 	PollInterval int    `yaml:"poll_interval"` // seconds between polls
+	// OAuth2 authentication
+	AuthMechanism string `yaml:"auth_mechanism"` // "plain" or "oauth2"
+	OAuth2Provider string `yaml:"oauth2_provider"` // "google" or "office365"
+	AccessToken   string `yaml:"access_token"`
+	RefreshToken  string `yaml:"refresh_token"`
+	TokenExpiry   string `yaml:"token_expiry"` // RFC3339 timestamp
+}
+
+// OAuth2Config holds app-level OAuth2 client credentials (set in warmdesk.yaml, not DB).
+type OAuth2Config struct {
+	GoogleClientID     string `yaml:"google_client_id"`
+	GoogleClientSecret string `yaml:"google_client_secret"`
+	OfficeClientID     string `yaml:"office_client_id"`
+	OfficeClientSecret string `yaml:"office_client_secret"`
 }
 
 // Load reads configuration with the following priority (highest first):
@@ -86,7 +101,7 @@ func defaults() *Config {
 		UploadDir:      "./uploads",
 		MaxUploadMB:    25,
 		SMTP:           SMTPConfig{Port: 587},
-		IMAP:           IMAPConfig{Port: 993, UseTLS: true, Mailbox: "INBOX", PollInterval: 60},
+		IMAP: IMAPConfig{Port: 993, UseTLS: true, Mailbox: "INBOX", PollInterval: 60, AuthMechanism: "plain"},
 	}
 }
 

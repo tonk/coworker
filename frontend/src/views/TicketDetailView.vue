@@ -37,7 +37,7 @@
             <template v-if="ticket.sla_response_breached">· {{ $t('sla.response_breached') }}</template>
             <template v-else-if="ticket.sla_resolution_breached">· {{ $t('sla.resolution_breached') }}</template>
           </span>
-          <span>#{{ ticket.id }}</span>
+          <span class="ticket-id-copy" title="Click to copy ticket reference" @click="copyTicketRef">#{{ ticket.id }}</span>
           <span>{{ $t('ticket.created_by') }} {{ ticket.created_by?.display_name || ticket.created_by?.username }}</span>
           <span>{{ formatDateTime(ticket.created_at) }}</span>
           <span v-if="ticket.from_email" class="from-email-badge" :title="ticket.from_email">✉ {{ ticket.from_email }}</span>
@@ -75,7 +75,13 @@
         </div>
       </div>
 
-      <div v-if="ticket.description" class="detail-description markdown-body" v-html="renderMarkdown(ticket.description)"></div>
+      <div v-if="ticket.description" class="detail-description">
+        <div class="detail-desc-header">
+          <span class="detail-desc-label">{{ $t('ticket.original_email') }}</span>
+          <a v-if="ticket.from_email" :href="'mailto:' + ticket.from_email" class="from-email-link" :title="ticket.from_email">{{ ticket.from_email }}</a>
+        </div>
+        <div class="email-body selectable">{{ ticket.description }}</div>
+      </div>
       <AttachmentList v-if="ticket.attachments?.length" :attachments="ticket.attachments" :can-delete="false" />
 
       <div v-if="ticket.sla_policy_id && !isInbox" class="sla-card">
@@ -197,10 +203,13 @@
         <div v-else class="messages-list">
           <div v-for="msg in ticket.messages" :key="msg.id" class="message">
             <div class="message-header">
-              <strong>{{ msg.user?.display_name || msg.user?.username }}</strong>
+              <span class="msg-author-group">
+                <strong>{{ msg.user?.display_name || msg.user?.username }}</strong>
+                <span v-if="msg.email_sent" class="email-sent-badge" :title="$t('ticket.email_sent_hint')">✉</span>
+              </span>
               <span class="message-time">{{ formatDateTime(msg.created_at) }}</span>
             </div>
-            <div class="message-body markdown-body" v-html="renderMarkdown(msg.body)"></div>
+            <div class="message-body markdown-body selectable" v-html="renderMarkdown(msg.body)"></div>
             <AttachmentList v-if="msg.attachments?.length" :attachments="msg.attachments" :can-delete="false" />
           </div>
         </div>
@@ -807,6 +816,24 @@ async function deleteTimeEntry(te) {
   }
 }
 
+async function copyTicketRef() {
+  const text = `Ticket#${ticket.value.id}`
+  try {
+    await navigator.clipboard.writeText(text)
+    ui.success('Copied ' + text)
+  } catch {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    ui.success('Copied ' + text)
+  }
+}
+
 async function deleteTicket() {
   if (!await ui.confirm('Delete this ticket?')) return
   try {
@@ -870,12 +897,50 @@ async function assignToCustomer() {
 .status-pending { background: #f0e6ff; color: #6b21a8; }
 .status-pending_close { background: #d1fae5; color: #065f46; }
 .status-closed { background: #e5e7eb; color: #374151; }
+.detail-desc-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.detail-desc-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+}
+.from-email-link {
+  font-size: 12px;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.from-email-link:hover {
+  text-decoration: underline;
+}
+.email-body {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-text);
+}
 .detail-description {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 24px;
+}
+.msg-author-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.email-sent-badge {
+  font-size: 13px;
+  color: var(--color-primary);
+  cursor: default;
 }
 .messages-section h2 { font-size: 16px; margin: 0 0 16px; }
 .messages-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
@@ -918,6 +983,8 @@ async function assignToCustomer() {
 .sla-card-status.warn { background: #fef3c7; color: #92400e; }
 .sla-card-status.breach { background: #fecaca; color: #b91c1c; }
 .sla-card-check { font-size: 11px; color: var(--color-text-muted); }
+.ticket-id-copy { cursor: pointer; font-variant-numeric: tabular-nums; }
+.ticket-id-copy:hover { color: var(--color-primary); }
 .ticket-type { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
 .type-incident { background: #fecaca; color: #b91c1c; }
 .type-problem { background: #fed7aa; color: #9a3412; }

@@ -107,6 +107,43 @@ allowed_origins: "http://localhost:5173"
 # livekit_api_key: "APIxxxxxxxxxxxxxxxx"
 # livekit_api_secret: "a_long_random_secret_string"
 
+# IMAP OAuth2 client credentials (required for OAuth2-based IMAP authentication).
+# These are app-level credentials obtained by registering an OAuth 2.0 application
+# with the email provider. They are read at startup — changes require a restart.
+#
+# ---
+# Google (Gmail)
+#   1. Go to https://console.cloud.google.com/apis/credentials
+#   2. Create a project → OAuth consent screen (External, add scope:
+#      https://mail.google.com/)
+#   3. Credentials → Create OAuth 2.0 Client ID → Web application
+#   4. Add this callback URL as an Authorized Redirect URI:
+#      https://your-domain/api/v1/admin/imap/oauth2/callback
+#   5. Copy the Client ID and Client Secret below.
+#
+# google_client_id: "xxxx.apps.googleusercontent.com"
+# google_client_secret: "GOCSPX-xxxx"
+#
+# ---
+# Office 365 (Outlook)
+#   1. Go to https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps
+#   2. New registration → name it → Accounts in any organizational directory
+#      + personal Microsoft accounts
+#   3. Redirect URI: Web → https://your-domain/api/v1/admin/imap/oauth2/callback
+#   4. Certificates & secrets → create a client secret
+#   5. API permissions → Add permission → Microsoft Graph → Delegated →
+#      IMAP.AccessAsUser.All + offline_access
+#   6. Copy the Application (client) ID and secret below.
+#
+# office_client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+# office_client_secret: "xxxx~xxxx"
+#
+oauth2:
+  google_client_id: ""
+  google_client_secret: ""
+  office_client_id: ""
+  office_client_secret: ""
+
 # Redis URL for horizontal scaling (optional).
 # When set, WebSocket broadcasts are routed through Redis pub/sub so all
 # server instances deliver the message to their connected clients.

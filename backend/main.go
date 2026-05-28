@@ -117,6 +117,7 @@ func main() {
 	handlers.SetVersion(version)
 	handlers.InitSystemDefaults(cfg)
 	handlers.InitAttachments(cfg)
+	handlers.SetOAuth2Config(&cfg.OAuth2)
 	handlers.InitBackup(cfg)
 	handlers.InitLiveKit(cfg)
 
@@ -144,6 +145,7 @@ func main() {
 	imapSvc := services.NewIMAPService()
 	services.SetIMAPConfigReader(handlers.GetIMAPSettings)
 	services.SetDefaultService(imapSvc)
+	services.SetIMAPOAuth2TokenRefresher(handlers.RefreshIMAPOAuth2Token)
 	imapStop := make(chan struct{})
 	go imapSvc.StartPolling(imapStop)
 	_ = imapStop // server runs for its full lifetime; stop channel is a clean-shutdown hook

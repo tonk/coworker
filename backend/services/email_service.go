@@ -1,6 +1,8 @@
 package services
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"net/mail"
 	"net/smtp"
@@ -87,6 +89,54 @@ func (s *EmailService) Send(to, subject, body string) error {
 	}
 
 	return smtp.SendMail(addr, auth, envelopeAddress(from), []string{to}, []byte(msg))
+}
+
+// SendReply sends an email reply to a ticket's original sender with threading
+// headers (Message-ID, In-Reply-To, References) so the customer's follow-up
+// reply is threaded back to the same ticket by the IMAP polling service.
+func (s *EmailService) SendReply(to, subject, body string, ticketID uint, inReplyTo, references string) error {
+	cfg := s.cfg()
+	if cfg.Host == "" {
+		return nil
+	}
+	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	from := cfg.From
+	if from == "" {
+		from = "warmdesk@localhost"
+	}
+
+	// Generate a unique Message-ID with the ticket ID embedded for lookup
+	randBytes := make([]byte, 8)
+	rand.Read(randBytes) //nolint:errcheck
+	domain := "warmdesk.local"
+	if at := strings.LastIndex(from, "@"); at != -1 {
+		if d := from[at+1:]; d != "" {
+			domain = d
+		}
+	}
+	msgID := fmt.Sprintf("<warmdesk-%d-%s@%s>", ticketID, hex.EncodeToString(randBytes), domain)
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "From: %s\r\n", from)
+	fmt.Fprintf(&b, "To: %s\r\n", to)
+	fmt.Fprintf(&b, "Subject: %s\r\n", subject)
+	fmt.Fprintf(&b, "Message-ID: %s\r\n", msgID)
+	if inReplyTo != "" {
+		fmt.Fprintf(&b, "In-Reply-To: %s\r\n", inReplyTo)
+		fmt.Fprintf(&b, "References: %s\r\n", inReplyTo)
+		if references != "" && references != inReplyTo {
+			fmt.Fprintf(&b, "References: %s %s\r\n", inReplyTo, strings.Trim(references, "<>"))
+		}
+	}
+	fmt.Fprintf(&b, "Content-Type: text/plain; charset=UTF-8\r\n")
+	fmt.Fprintf(&b, "\r\n%s", body)
+
+	var auth smtp.Auth
+	if cfg.Username != "" {
+		auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
+	}
+
+	return smtp.SendMail(addr, auth, envelopeAddress(from), []string{to}, []byte(b.String()))
 }
 
 // SendHTML sends a multipart/alternative email with both a plain-text fallback

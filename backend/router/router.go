@@ -149,6 +149,11 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			// IMAP test & poll
 			admin.POST("/imap/test", handlers.AdminTestIMAP)
 			admin.POST("/imap/poll", handlers.AdminPollIMAP)
+			// IMAP OAuth2 authorization
+			admin.GET("/imap/oauth2/auth-url", handlers.AdminIMAPOAuth2AuthURL)
+			admin.GET("/imap/oauth2/callback", handlers.AdminIMAPOAuth2Callback)
+			admin.GET("/imap/oauth2/status", handlers.AdminIMAPOAuth2Status)
+			admin.POST("/imap/oauth2/disconnect", handlers.AdminIMAPOAuth2Disconnect)
 		}
 
 		// News (active items visible to all authenticated users)
