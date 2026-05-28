@@ -2748,15 +2748,25 @@ onMounted(() => {
 
 function initRowSortable() {
   if (!tbodyEl.value) return
+  if (rowSortable) {
+    rowSortable.destroy()
+    rowSortable = null
+  }
   rowSortable = Sortable.create(tbodyEl.value, {
     animation: 150,
     handle: '.drag-handle',
     draggable: 'tr.tt-row',
-    forceFallback: true,
-    fallbackClass: 'sortable-fallback',
     ghostClass: 'sortable-ghost',
-    onEnd({ oldIndex, newIndex }) {
+    onEnd({ item, oldIndex, newIndex }) {
       if (oldIndex === newIndex) return
+      // Revert SortableJS's DOM move before Vue re-renders so the vdom
+      // patch starts from the known pre-drag order.
+      const rows = Array.from(tbodyEl.value.querySelectorAll('tr.tt-row:not(.tt-newrow)'))
+      if (newIndex < oldIndex) {
+        tbodyEl.value.insertBefore(item, rows[oldIndex + 1] ?? null)
+      } else {
+        tbodyEl.value.insertBefore(item, rows[oldIndex])
+      }
       const arr = [..._keyOrder.value]
       const [moved] = arr.splice(oldIndex, 1)
       arr.splice(newIndex, 0, moved)
