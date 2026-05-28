@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Déplacer vers client",
     "move": "Déplacer",
-    "moved_success": "Ticket déplacé avec succès"
+    "moved_success": "Ticket déplacé avec succès",
+    "spam": "Spam",
+    "mark_spam": "Marquer comme spam",
+    "unmark_spam": "Pas de spam",
+    "show_spam": "Afficher le spam",
+    "hide_spam": "Masquer le spam",
+    "spam_banner": "Ce ticket a été marqué comme spam.",
+    "marked_spam": "Ticket marqué comme spam",
+    "unmarked_spam": "Ticket retiré du spam"
   },
   "inbox": {
     "title": "Boîte de réception",

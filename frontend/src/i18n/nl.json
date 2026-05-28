@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Verplaats naar klant",
     "move": "Verplaats",
-    "moved_success": "Ticket succesvol verplaatst"
+    "moved_success": "Ticket succesvol verplaatst",
+    "spam": "Spam",
+    "mark_spam": "Markeer als spam",
+    "unmark_spam": "Geen spam",
+    "show_spam": "Toon spam",
+    "hide_spam": "Verberg spam",
+    "spam_banner": "Dit ticket is gemarkeerd als spam.",
+    "marked_spam": "Ticket gemarkeerd als spam",
+    "unmarked_spam": "Ticket verwijderd uit spam"
   },
   "inbox": {
     "title": "Inbox",

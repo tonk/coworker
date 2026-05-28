@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Siirrä asiakkaalle",
     "move": "Siirrä",
-    "moved_success": "Tiketti siirretty"
+    "moved_success": "Tiketti siirretty",
+    "spam": "Roskaposti",
+    "mark_spam": "Merkitse roskapostiksi",
+    "unmark_spam": "Ei roskapostia",
+    "show_spam": "Näytä roskaposti",
+    "hide_spam": "Piilota roskaposti",
+    "spam_banner": "Tämä tiketti on merkitty roskapostiksi.",
+    "marked_spam": "Tiketti merkitty roskapostiksi",
+    "unmarked_spam": "Tiketti poistettu roskapostista"
   },
   "inbox": {
     "title": "Postilaatikko",

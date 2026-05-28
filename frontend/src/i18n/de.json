@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Zu Kunde verschieben",
     "move": "Verschieben",
-    "moved_success": "Ticket erfolgreich verschoben"
+    "moved_success": "Ticket erfolgreich verschoben",
+    "spam": "Spam",
+    "mark_spam": "Als Spam markieren",
+    "unmark_spam": "Kein Spam",
+    "show_spam": "Spam anzeigen",
+    "hide_spam": "Spam ausblenden",
+    "spam_banner": "Dieses Ticket wurde als Spam markiert.",
+    "marked_spam": "Ticket als Spam markiert",
+    "unmarked_spam": "Ticket aus Spam entfernt"
   },
   "inbox": {
     "title": "Posteingang",

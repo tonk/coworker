@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Flytt til kunde",
     "move": "Flytt",
-    "moved_success": "Sak flyttet"
+    "moved_success": "Sak flyttet",
+    "spam": "Søppelpost",
+    "mark_spam": "Merk som søppelpost",
+    "unmark_spam": "Ikke søppelpost",
+    "show_spam": "Vis søppelpost",
+    "hide_spam": "Skjul søppelpost",
+    "spam_banner": "Denne billetten er merket som søppelpost.",
+    "marked_spam": "Billett merket som søppelpost",
+    "unmarked_spam": "Billett fjernet fra søppelpost"
   },
   "inbox": {
     "title": "Innboks",

@@ -29,8 +29,11 @@ func ListTickets(c *gin.Context) {
 
 	autoCloseTickets()
 	var tickets []models.Ticket
-	database.DB.Where("customer_id = ?", customerID).
-		Preload("CreatedBy").
+	q := database.DB.Where("customer_id = ?", customerID)
+	if c.Query("include_spam") != "true" {
+		q = q.Where("is_spam = false OR is_spam IS NULL")
+	}
+	q.Preload("CreatedBy").
 		Preload("AssignedTo").
 		Preload("Owner").
 		Preload("Group").
@@ -612,8 +615,11 @@ func requireCustomerAccess(customerID, userID uint, role string) error {
 func ListInboxTickets(c *gin.Context) {
 	autoCloseTickets()
 	var tickets []models.Ticket
-	database.DB.Where("customer_id IS NULL").
-		Preload("CreatedBy").
+	q := database.DB.Where("customer_id IS NULL")
+	if c.Query("include_spam") != "true" {
+		q = q.Where("is_spam = false OR is_spam IS NULL")
+	}
+	q.Preload("CreatedBy").
 		Preload("AssignedTo").
 		Preload("Owner").
 		Preload("Group").
@@ -955,4 +961,94 @@ func GetTicketRawEmail(c *gin.Context) {
 	}
 
 	c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(*rawEmail))
+}
+
+// MarkSpam POST /api/v1/customers/:customerId/tickets/:ticketId/spam
+func MarkSpam(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	customerID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	var ticket models.Ticket
+	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return
+	}
+	database.DB.Model(&ticket).Updates(map[string]any{"is_spam": true, "status": "closed"})
+	database.DB.First(&ticket, ticket.ID)
+	c.JSON(http.StatusOK, ticket)
+}
+
+// UnmarkSpam DELETE /api/v1/customers/:customerId/tickets/:ticketId/spam
+func UnmarkSpam(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	customerID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	var ticket models.Ticket
+	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return
+	}
+	database.DB.Model(&ticket).Updates(map[string]any{"is_spam": false, "status": "open"})
+	database.DB.First(&ticket, ticket.ID)
+	c.JSON(http.StatusOK, ticket)
+}
+
+// MarkInboxSpam POST /api/v1/tickets/inbox/:ticketId/spam
+func MarkInboxSpam(c *gin.Context) {
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	var ticket models.Ticket
+	if err := database.DB.Where("id = ? AND customer_id IS NULL", ticketID).First(&ticket).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return
+	}
+	database.DB.Model(&ticket).Updates(map[string]any{"is_spam": true, "status": "closed"})
+	database.DB.First(&ticket, ticket.ID)
+	c.JSON(http.StatusOK, ticket)
+}
+
+// UnmarkInboxSpam DELETE /api/v1/tickets/inbox/:ticketId/spam
+func UnmarkInboxSpam(c *gin.Context) {
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	var ticket models.Ticket
+	if err := database.DB.Where("id = ? AND customer_id IS NULL", ticketID).First(&ticket).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return
+	}
+	database.DB.Model(&ticket).Updates(map[string]any{"is_spam": false, "status": "open"})
+	database.DB.First(&ticket, ticket.ID)
+	c.JSON(http.StatusOK, ticket)
 }

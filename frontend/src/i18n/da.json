@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Flyt til kunde",
     "move": "Flyt",
-    "moved_success": "Ticket flyttet"
+    "moved_success": "Ticket flyttet",
+    "spam": "Spam",
+    "mark_spam": "Markér som spam",
+    "unmark_spam": "Ikke spam",
+    "show_spam": "Vis spam",
+    "hide_spam": "Skjul spam",
+    "spam_banner": "Denne billet er markeret som spam.",
+    "marked_spam": "Billet markeret som spam",
+    "unmarked_spam": "Billet fjernet fra spam"
   },
   "inbox": {
     "title": "Indbakke",

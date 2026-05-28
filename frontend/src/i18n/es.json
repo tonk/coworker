@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Mover a cliente",
     "move": "Mover",
-    "moved_success": "Ticket movido correctamente"
+    "moved_success": "Ticket movido correctamente",
+    "spam": "Spam",
+    "mark_spam": "Marcar como spam",
+    "unmark_spam": "No es spam",
+    "show_spam": "Mostrar spam",
+    "hide_spam": "Ocultar spam",
+    "spam_banner": "Este ticket ha sido marcado como spam.",
+    "marked_spam": "Ticket marcado como spam",
+    "unmarked_spam": "Ticket eliminado del spam"
   },
   "inbox": {
     "title": "Bandeja de entrada",

@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Færa til viðskiptavinar",
     "move": "Færa",
-    "moved_success": "Miði færður"
+    "moved_success": "Miði færður",
+    "spam": "Ruslpóstur",
+    "mark_spam": "Merkja sem ruslpóst",
+    "unmark_spam": "Ekki ruslpóstur",
+    "show_spam": "Sýna ruslpóst",
+    "hide_spam": "Fela ruslpóst",
+    "spam_banner": "Þessi miði hefur verið merktur sem ruslpóstur.",
+    "marked_spam": "Miði merktur sem ruslpóstur",
+    "unmarked_spam": "Miði fjarlægður úr ruslpósti"
   },
   "inbox": {
     "title": "Pósthólf",

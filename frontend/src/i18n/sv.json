@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Flytta till kund",
     "move": "Flytta",
-    "moved_success": "Ärende flyttat"
+    "moved_success": "Ärende flyttat",
+    "spam": "Spam",
+    "mark_spam": "Markera som skräppost",
+    "unmark_spam": "Inte skräppost",
+    "show_spam": "Visa skräppost",
+    "hide_spam": "Dölj skräppost",
+    "spam_banner": "Det här ärendet har markerats som skräppost.",
+    "marked_spam": "Ärende markerat som skräppost",
+    "unmarked_spam": "Ärende borttaget från skräppost"
   },
   "inbox": {
     "title": "Inkorg",

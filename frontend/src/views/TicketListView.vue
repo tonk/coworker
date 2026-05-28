@@ -11,6 +11,7 @@
             <button role="tab" :aria-selected="viewMode === 'group'" :class="['view-toggle-btn', { active: viewMode === 'group' }]" @click="viewMode = 'group'">⊞ {{ $t('ticket.group_view') }}</button>
             <button role="tab" :aria-selected="viewMode === 'list'" :class="['view-toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
           </div>
+          <button :class="['btn btn-sm', showSpam ? 'btn-warning' : 'btn-secondary']" @click="showSpam = !showSpam">{{ showSpam ? $t('ticket.hide_spam') : $t('ticket.show_spam') }}</button>
           <button class="btn btn-primary btn-sm" @click="showCreate = true">+ {{ $t('ticket.new_ticket') }}</button>
         </div>
       </header>
@@ -44,7 +45,7 @@
                 <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
                 <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
               </div>
-              <h3 class="ticket-card-title">{{ t.title }}</h3>
+              <h3 class="ticket-card-title"><span v-if="t.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ t.title }}</h3>
               <div class="ticket-card-meta">
                 <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
                 <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
@@ -84,7 +85,7 @@
                 <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
                 <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
               </div>
-              <h3 class="ticket-card-title">{{ t.title }}</h3>
+              <h3 class="ticket-card-title"><span v-if="t.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ t.title }}</h3>
               <div class="ticket-card-meta">
                 <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
                 <span v-if="t.reminder_at" class="reminder-badge">
@@ -127,7 +128,7 @@
                 <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
                 <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
               </div>
-              <h3 class="ticket-card-title">{{ t.title }}</h3>
+              <h3 class="ticket-card-title"><span v-if="t.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ t.title }}</h3>
               <div class="ticket-card-meta">
                 <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
                 <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
@@ -167,7 +168,7 @@
                 <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
                 <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
               </div>
-              <h3 class="ticket-card-title">{{ t.title }}</h3>
+              <h3 class="ticket-card-title"><span v-if="t.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ t.title }}</h3>
               <div class="ticket-card-meta">
                 <span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span>
                 <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
@@ -215,7 +216,7 @@
                   <span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span>
                   <span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span>
                 </div>
-                <h3 class="ticket-card-title">{{ t.title }}</h3>
+                <h3 class="ticket-card-title"><span v-if="t.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ t.title }}</h3>
                 <div class="ticket-card-meta">
                   <span v-if="t.status === 'pending' && t.reminder_at" class="reminder-badge">
                     {{ $t('ticket.reminder') }}: {{ formatDate(t.reminder_at) }}
@@ -250,7 +251,7 @@
               <tbody>
                 <tr v-for="t in g.tickets" :key="t.id" class="table-row" @click="openTicket(t)" tabindex="0" @keydown.enter="openTicket(t)">
                   <td class="td-id">#{{ t.id }}</td>
-                  <td class="td-title">{{ t.title }}</td>
+                  <td class="td-title"><span v-if="t.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ t.title }}</td>
                   <td><span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span></td>
                   <td><span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span></td>
                   <td class="td-assignee">{{ t.assigned_to?.display_name || t.assigned_to?.username || '—' }}</td>
@@ -292,7 +293,7 @@
             <tbody>
               <tr v-for="t in sortedTickets" :key="t.id" class="table-row" @click="openTicket(t)" tabindex="0" @keydown.enter="openTicket(t)" :aria-label="t.title">
                 <td class="td-id">#{{ t.id }}</td>
-                <td class="td-title">{{ t.title }}</td>
+                <td class="td-title"><span v-if="t.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ t.title }}</td>
                 <td><span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span></td>
                 <td><span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span></td>
                 <td><span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span></td>
@@ -435,9 +436,14 @@ const pendingFiles = ref([])
 const customerGroups = ref([])
 const customerUsers = ref([])
 const viewMode = ref(localStorage.getItem('ticket_view_mode') || 'cards')
+const showSpam = ref(false)
 
 watch(viewMode, (val) => {
   localStorage.setItem('ticket_view_mode', val)
+})
+
+watch(showSpam, async () => {
+  await fetchTickets()
 })
 const groupSubMode = ref(localStorage.getItem('ticket_group_sub_mode') || 'cards')
 
@@ -599,7 +605,7 @@ async function fetchData() {
     customer.value = data.customer || data
   } catch {}
   try {
-    const { data } = await ticketsApi.list(customerId.value)
+    const { data } = await ticketsApi.list(customerId.value, showSpam.value ? { include_spam: true } : undefined)
     tickets.value = data || []
   } catch {}
   try {
@@ -789,6 +795,10 @@ async function onDescPaste(e) {
 .type-service_request { background: #d1fae5; color: #065f46; }
 .type-change_request { background: #dbeafe; color: #1e40af; }
 .mini-tag { font-size: 10px; background: var(--color-bg-alt); padding: 1px 5px; border-radius: 3px; color: var(--color-text-muted); }
+.spam-tag { display: inline-block; font-size: 10px; font-weight: 700; background: #fecaca; color: #b91c1c; padding: 1px 5px; border-radius: 3px; margin-right: 5px; text-transform: uppercase; letter-spacing: 0.03em; }
+[data-theme="dark"] .spam-tag { background: #7f1d1d; color: #fca5a5; }
+.btn-warning { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.btn-warning:hover { background: #d97706; border-color: #d97706; }
 .mini-tag.more { font-weight: 700; }
 .ticket-tags { display: flex; gap: 3px; align-items: center; }
 .form-row { display: flex; gap: 12px; }

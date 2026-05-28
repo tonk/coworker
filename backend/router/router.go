@@ -213,6 +213,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				inbox.POST("/inbox/:ticketId/messages", handlers.CreateInboxTicketMessage)
 				inbox.DELETE("/inbox/:ticketId", handlers.DeleteInboxTicket)
 				inbox.POST("/inbox/:ticketId/macros/:macroId", handlers.ApplyInboxMacro)
+				inbox.POST("/inbox/:ticketId/spam", handlers.MarkInboxSpam)
+				inbox.DELETE("/inbox/:ticketId/spam", handlers.UnmarkInboxSpam)
 			}
 
 			// Tickets (helpdesk)
@@ -237,6 +239,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				tickets.GET("/:ticketId/history", handlers.GetTicketHistory)
 				tickets.GET("/:ticketId/raw-email", handlers.GetTicketRawEmail)
 				tickets.POST("/:ticketId/macros/:macroId", handlers.ApplyMacro)
+				tickets.POST("/:ticketId/spam", handlers.MarkSpam)
+				tickets.DELETE("/:ticketId/spam", handlers.UnmarkSpam)
 			}
 		}
 

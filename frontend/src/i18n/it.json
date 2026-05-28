@@ -1060,7 +1060,15 @@
     "group_view": "Group View",
     "move_to_customer": "Sposta nel cliente",
     "move": "Sposta",
-    "moved_success": "Ticket spostato con successo"
+    "moved_success": "Ticket spostato con successo",
+    "spam": "Spam",
+    "mark_spam": "Contrassegna come spam",
+    "unmark_spam": "Non è spam",
+    "show_spam": "Mostra spam",
+    "hide_spam": "Nascondi spam",
+    "spam_banner": "Questo ticket è stato contrassegnato come spam.",
+    "marked_spam": "Ticket contrassegnato come spam",
+    "unmarked_spam": "Ticket rimosso dallo spam"
   },
   "inbox": {
     "title": "Posta in arrivo",

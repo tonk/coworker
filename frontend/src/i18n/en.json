@@ -645,7 +645,15 @@
     "created_at": "Created",
     "move_to_customer": "Move to customer",
     "move": "Move",
-    "moved_success": "Ticket moved successfully"
+    "moved_success": "Ticket moved successfully",
+    "spam": "Spam",
+    "mark_spam": "Mark as Spam",
+    "unmark_spam": "Not Spam",
+    "show_spam": "Show Spam",
+    "hide_spam": "Hide Spam",
+    "spam_banner": "This ticket has been marked as spam.",
+    "marked_spam": "Ticket marked as spam",
+    "unmarked_spam": "Ticket removed from spam"
   },
   "feature": {
     "features": "Feature Access",

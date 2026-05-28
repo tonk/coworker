@@ -30,8 +30,13 @@
               <option value="" disabled>{{ $t('macro.apply_macro') }}</option>
               <option v-for="m in macros" :key="m.id" :value="m.id">{{ m.name }}</option>
             </select>
+            <button v-if="!ticket.is_spam" class="btn btn-secondary btn-sm" @click="toggleSpam(true)">{{ $t('ticket.mark_spam') }}</button>
+            <button v-else class="btn btn-secondary btn-sm" @click="toggleSpam(false)">{{ $t('ticket.unmark_spam') }}</button>
             <button class="btn btn-danger btn-sm" @click="deleteTicket">{{ $t('common.delete') }}</button>
           </div>
+        </div>
+        <div v-if="ticket.is_spam" class="spam-banner" role="alert">
+          <span>⚠ {{ $t('ticket.spam_banner') }}</span>
         </div>
         <div class="detail-meta">
           <span class="ticket-type" :class="'type-' + ticket.type">{{ $t('ticket.type_' + ticket.type) }}</span>
@@ -505,6 +510,18 @@ async function loadMacros() {
   }
 }
 
+async function toggleSpam(markAsSpam) {
+  try {
+    const { data } = isInbox.value
+      ? (markAsSpam ? await ticketsApi.inboxMarkSpam(ticketId.value) : await ticketsApi.inboxUnmarkSpam(ticketId.value))
+      : (markAsSpam ? await ticketsApi.markSpam(customerId.value, ticketId.value) : await ticketsApi.unmarkSpam(customerId.value, ticketId.value))
+    ticket.value = { ...ticket.value, ...data }
+    ui.success(markAsSpam ? 'Marked as spam' : 'Removed from spam')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update spam status')
+  }
+}
+
 async function applyMacro(macroId) {
   if (!macroId) return
   applyingMacro.value = true
@@ -972,6 +989,8 @@ async function assignToCustomer() {
 .back-link { font-size: 13px; color: var(--color-primary); text-decoration: none; }
 .back-link:hover { text-decoration: underline; }
 .detail-header { margin-bottom: 24px; }
+.spam-banner { background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: #b91c1c; margin: 6px 0; }
+[data-theme="dark"] .spam-banner { background: #3b1010; border-color: #7f1d1d; color: #fca5a5; }
 .detail-title-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; }
 .detail-title-row h1 { flex: 1; margin: 0; font-size: 22px; }
 .detail-actions { display: flex; gap: 8px; }

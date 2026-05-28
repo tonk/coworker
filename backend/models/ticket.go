@@ -23,6 +23,7 @@ type Ticket struct {
 	SlaResolutionBreached bool            `json:"sla_resolution_breached"`
 	ReminderAt            *time.Time      `json:"reminder_at,omitempty"`
 	CloseAt               *time.Time      `json:"close_at,omitempty"`
+	IsSpam                bool            `gorm:"default:false" json:"is_spam"`
 	EmailMessageID        *string         `gorm:"uniqueIndex;size:998" json:"email_message_id,omitempty"`
 	FromEmail             *string         `gorm:"size:254" json:"from_email,omitempty"`
 	FromName              *string         `gorm:"size:150" json:"from_name,omitempty"`
