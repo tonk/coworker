@@ -302,9 +302,9 @@ async function deleteMacro(m) {
 
 /* Column widths for the macros table */
 :deep(.data-table) th:nth-child(1),
-:deep(.data-table) td:nth-child(1) { width: 20%; min-width: 160px; }
+:deep(.data-table) td:nth-child(1) { width: 28%; min-width: 200px; }
 :deep(.data-table) th:nth-child(2),
-:deep(.data-table) td:nth-child(2) { width: auto; }
+:deep(.data-table) td:nth-child(2) { width: 40%; }
 :deep(.data-table) th:nth-child(3),
 :deep(.data-table) td:nth-child(3) { width: 90px; min-width: 90px; text-align: center; }
 :deep(.data-table) th:nth-child(4),
