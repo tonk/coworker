@@ -1036,7 +1036,10 @@
     "list_view": "List View",
     "status": "Status",
     "created_at": "Created At",
-    "group_view": "Group View"
+    "group_view": "Group View",
+    "move_to_customer": "Flytta till kund",
+    "move": "Flytta",
+    "moved_success": "Ärende flyttat"
   },
   "inbox": {
     "title": "Inkorg",

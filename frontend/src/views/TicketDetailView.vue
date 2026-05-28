@@ -130,6 +130,18 @@
         </div>
       </div>
 
+      <div class="move-section">
+        <h4>{{ $t('ticket.move_to_customer') }}</h4>
+        <div class="move-row">
+          <label class="sr-only" for="move-customer-select">{{ $t('ticket.move_to_customer') }}</label>
+          <select id="move-customer-select" class="form-input form-input-sm" v-model="moveTargetCustomer">
+            <option :value="null">—</option>
+            <option v-for="c in allCustomers" :key="c.id" :value="c.id" :disabled="c.id === customerId">{{ c.name }}</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" @click="moveTicket" :disabled="!moveTargetCustomer || moveTargetCustomer === customerId || moving">{{ $t('ticket.move') }}</button>
+        </div>
+      </div>
+
       <section v-if="auth.timeTrackingEnabled" class="time-section">
         <h4>{{ $t('ticket.time_logged') }} <span v-if="ticketTimeEntries.length" class="count">({{ formatMinutes(totalMinutes) }})</span></h4>
 
@@ -275,6 +287,9 @@ const customerUsers = ref([])
 const editingTitle = ref(false)
 const editTitleVal = ref('')
 const titleInput = ref(null)
+const allCustomers = ref([])
+const moveTargetCustomer = ref(null)
+const moving = ref(false)
 
 function startTitleEdit() {
   editTitleVal.value = ticket.value?.title || ''
@@ -370,6 +385,12 @@ async function fetchTicket() {
       customerUsers.value = members || []
     } catch {
       customerUsers.value = []
+    }
+    try {
+      const { data: customers } = await customersApi.list()
+      allCustomers.value = customers || []
+    } catch {
+      allCustomers.value = []
     }
     try {
       const { data: custDetail } = await customersApi.get(customerId.value)
@@ -665,6 +686,7 @@ function activityIcon(type) {
     tag_added: '+',
     tag_removed: '−',
     dates_changed: '📅',
+    customer_moved: '→',
   }
   return icons[type] || '•'
 }
@@ -688,6 +710,7 @@ function activityLabel(h) {
     case 'tag_added': return `added tag #${h.detail}`
     case 'tag_removed': return `removed tag #${h.detail}`
     case 'dates_changed': return 'updated reminder / close dates'
+    case 'customer_moved': return `moved to customer: ${h.detail}`
     default: return h.detail || h.event_type
   }
 }
@@ -762,6 +785,20 @@ async function deleteTicket() {
     router.push(`/customers/${customerId.value}/tickets`)
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to delete ticket')
+  }
+}
+
+async function moveTicket() {
+  if (!moveTargetCustomer.value || moveTargetCustomer.value === customerId.value) return
+  moving.value = true
+  try {
+    await ticketsApi.move(customerId.value, ticketId.value, moveTargetCustomer.value)
+    ui.success('Ticket moved')
+    router.push(`/customers/${moveTargetCustomer.value}/tickets/${ticketId.value}`)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to move ticket')
+  } finally {
+    moving.value = false
   }
 }
 </script>
@@ -923,5 +960,11 @@ async function deleteTicket() {
 .activity-type-card_unlinked,
 .activity-type-tag_added,
 .activity-type-tag_removed,
-.activity-type-dates_changed { color: var(--color-text-muted); }
+.activity-type-dates_changed,
+.activity-type-customer_moved { color: var(--color-text-muted); }
+
+.move-section { margin-bottom: 24px; }
+.move-section h4 { font-size: 14px; margin: 0 0 8px; }
+.move-row { display: flex; gap: 6px; align-items: center; }
+.move-row select { flex: 1; max-width: 280px; }
 </style>

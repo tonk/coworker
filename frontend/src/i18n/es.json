@@ -1036,7 +1036,10 @@
     "list_view": "List View",
     "status": "Status",
     "created_at": "Created At",
-    "group_view": "Group View"
+    "group_view": "Group View",
+    "move_to_customer": "Mover a cliente",
+    "move": "Mover",
+    "moved_success": "Ticket movido correctamente"
   },
   "inbox": {
     "title": "Bandeja de entrada",

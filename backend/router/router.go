@@ -203,6 +203,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				tickets.POST("", handlers.CreateTicket)
 				tickets.GET("/:ticketId", handlers.GetTicket)
 				tickets.PUT("/:ticketId", handlers.UpdateTicket)
+				tickets.PUT("/:ticketId/move", handlers.MoveTicket)
 				tickets.DELETE("/:ticketId", handlers.DeleteTicket)
 				tickets.POST("/:ticketId/messages", handlers.CreateTicketMessage)
 				tickets.POST("/:ticketId/tags", handlers.AddTicketTag)

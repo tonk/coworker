@@ -382,6 +382,66 @@ func UpdateTicket(c *gin.Context) {
 	c.JSON(http.StatusOK, ticket)
 }
 
+// MoveTicket PUT /api/v1/customers/:customerId/tickets/:ticketId/move
+// Reassigns a ticket from one customer to another. Requires member access on both.
+func MoveTicket(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	customerID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var req struct {
+		TargetCustomerID uint `json:"target_customer_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil || req.TargetCustomerID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "target_customer_id is required"})
+		return
+	}
+	if req.TargetCustomerID == uint(customerID) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ticket is already assigned to that customer"})
+		return
+	}
+	if err := requireCustomerAccess(req.TargetCustomerID, userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "no access to target customer"})
+		return
+	}
+
+	var ticket models.Ticket
+	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return
+	}
+
+	if err := database.DB.Model(&ticket).Update("customer_id", req.TargetCustomerID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to move ticket"})
+		return
+	}
+
+	var targetCustomer models.Customer
+	database.DB.First(&targetCustomer, req.TargetCustomerID)
+	database.DB.Create(&models.TicketHistory{
+		TicketID:  ticket.ID,
+		UserID:    userID,
+		EventType: "customer_moved",
+		Detail:    targetCustomer.Name,
+	})
+
+	database.DB.Preload("CreatedBy").Preload("AssignedTo").Preload("Owner").Preload("Group").Preload("Tags").Preload("SlaPolicy").First(&ticket, ticket.ID)
+	c.JSON(http.StatusOK, ticket)
+}
+
 // DeleteTicket DELETE /api/v1/customers/:customerId/tickets/:ticketId
 func DeleteTicket(c *gin.Context) {
 	userID := middleware.GetUserID(c)

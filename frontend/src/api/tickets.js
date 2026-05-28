@@ -16,6 +16,7 @@ export const ticketsApi = {
   addCardLink:  (cid, id, body)          => client.post(`/customers/${cid}/tickets/${id}/cards`, body),
   removeCardLink:(cid, id, linkId)       => client.delete(`/customers/${cid}/tickets/${id}/cards/${linkId}`),
   getHistory:   (cid, id)                => client.get(`/customers/${cid}/tickets/${id}/history`),
+  move:         (cid, id, targetCid)     => client.put(`/customers/${cid}/tickets/${id}/move`, { target_customer_id: targetCid }),
   inboxList:    ()            => client.get('/tickets/inbox'),
   inboxGet:     (id)          => client.get(`/tickets/inbox/${id}`),
   inboxUpdate:  (id, data)    => client.put(`/tickets/inbox/${id}`, data),

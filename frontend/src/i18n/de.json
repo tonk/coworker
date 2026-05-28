@@ -1036,7 +1036,10 @@
     "list_view": "List View",
     "status": "Status",
     "created_at": "Created At",
-    "group_view": "Group View"
+    "group_view": "Group View",
+    "move_to_customer": "Zu Kunde verschieben",
+    "move": "Verschieben",
+    "moved_success": "Ticket erfolgreich verschoben"
   },
   "inbox": {
     "title": "Posteingang",

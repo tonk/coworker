@@ -1036,7 +1036,10 @@
     "list_view": "List View",
     "status": "Status",
     "created_at": "Created At",
-    "group_view": "Group View"
+    "group_view": "Group View",
+    "move_to_customer": "Flytt til kunde",
+    "move": "Flytt",
+    "moved_success": "Sak flyttet"
   },
   "inbox": {
     "title": "Innboks",

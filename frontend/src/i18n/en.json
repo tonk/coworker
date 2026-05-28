@@ -621,7 +621,10 @@
     "group_view": "Group View",
     "list_view": "List View",
     "status": "Status",
-    "created_at": "Created"
+    "created_at": "Created",
+    "move_to_customer": "Move to customer",
+    "move": "Move",
+    "moved_success": "Ticket moved successfully"
   },
   "feature": {
     "features": "Feature Access",
