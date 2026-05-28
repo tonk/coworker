@@ -18,6 +18,7 @@ export const ticketsApi = {
   getHistory:   (cid, id)                => client.get(`/customers/${cid}/tickets/${id}/history`),
   move:         (cid, id, targetCid)     => client.put(`/customers/${cid}/tickets/${id}/move`, { target_customer_id: targetCid }),
   inboxList:    ()            => client.get('/tickets/inbox'),
+  inboxCreate:  (data)        => client.post('/tickets/inbox', data),
   inboxGet:     (id)          => client.get(`/tickets/inbox/${id}`),
   inboxUpdate:  (id, data)    => client.put(`/tickets/inbox/${id}`, data),
   inboxDelete:  (id)          => client.delete(`/tickets/inbox/${id}`),

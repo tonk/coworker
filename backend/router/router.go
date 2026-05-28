@@ -189,6 +189,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			inbox.Use(middleware.RequireFeature("helpdesk_enabled"))
 			{
 				inbox.GET("/inbox", handlers.ListInboxTickets)
+				inbox.POST("/inbox", handlers.CreateInboxTicket)
 				inbox.GET("/inbox/:ticketId", handlers.GetInboxTicket)
 				inbox.PUT("/inbox/:ticketId", handlers.UpdateInboxTicket)
 				inbox.POST("/inbox/:ticketId/messages", handlers.CreateInboxTicketMessage)

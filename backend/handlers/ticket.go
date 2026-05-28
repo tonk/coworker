@@ -844,6 +844,43 @@ func CreateInboxTicketMessage(c *gin.Context) {
 	c.JSON(http.StatusCreated, msg)
 }
 
+// CreateInboxTicket POST /api/v1/tickets/inbox
+func CreateInboxTicket(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	var req struct {
+		Title       string `json:"title" binding:"required"`
+		Description string `json:"description"`
+		Type        string `json:"type"`
+		Priority    string `json:"priority"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required"})
+		return
+	}
+	ticketType := req.Type
+	if ticketType == "" {
+		ticketType = "service_request"
+	}
+	priority := req.Priority
+	if priority == "" {
+		priority = "medium"
+	}
+	ticket := models.Ticket{
+		Title:       req.Title,
+		Description: req.Description,
+		Type:        ticketType,
+		Priority:    priority,
+		Status:      "new",
+		CreatedByID: userID,
+	}
+	if err := database.DB.Create(&ticket).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create ticket"})
+		return
+	}
+	database.DB.Preload("CreatedBy").First(&ticket, ticket.ID)
+	c.JSON(http.StatusCreated, ticket)
+}
+
 // DeleteInboxTicket DELETE /api/v1/tickets/inbox/:ticketId
 func DeleteInboxTicket(c *gin.Context) {
 	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
