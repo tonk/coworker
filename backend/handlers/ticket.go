@@ -523,6 +523,7 @@ func CreateTicketMessage(c *gin.Context) {
 	}
 
 	database.DB.Preload("User").First(&msg, msg.ID)
+	sendEmailReply(&ticket, msg.Body)
 	msg.Attachments = []models.Attachment{}
 	database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "comment_added"})
 	c.JSON(http.StatusCreated, msg)
@@ -841,7 +842,21 @@ func CreateInboxTicketMessage(c *gin.Context) {
 		database.DB.Model(&ticket).Update("first_response_at", now)
 	}
 	database.DB.Preload("User").First(&msg, msg.ID)
+	sendEmailReply(&ticket, msg.Body)
 	c.JSON(http.StatusCreated, msg)
+}
+
+// sendEmailReply sends a reply to the ticket's original sender when SMTP is configured.
+func sendEmailReply(ticket *models.Ticket, replyBody string) {
+	if ticket.FromEmail == nil || *ticket.FromEmail == "" {
+		return
+	}
+	svc := services.GetEmailService()
+	if svc == nil {
+		return
+	}
+	subject := "Re: [#" + strconv.Itoa(int(ticket.ID)) + "] " + ticket.Title
+	go svc.Send(*ticket.FromEmail, subject, replyBody) //nolint:errcheck
 }
 
 // CreateInboxTicket POST /api/v1/tickets/inbox

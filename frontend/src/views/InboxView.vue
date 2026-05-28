@@ -24,6 +24,7 @@
           <span :class="['ticket-type-badge', `type-${t.type}`]">{{ $t('ticket.type_' + t.type) }}</span>
           <span :class="['ticket-priority', `priority-${t.priority}`]">{{ t.priority }}</span>
           <span :class="['ticket-status', `status-${t.status}`]">{{ t.status }}</span>
+          <span v-if="t.from_email" class="ticket-email-badge" :title="t.from_email" aria-label="From email">✉</span>
         </div>
         <div class="ticket-card-title">{{ t.title }}</div>
         <div class="ticket-card-meta">
@@ -146,6 +147,7 @@ onMounted(async () => {
 .ticket-card { display: block; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 14px 16px; text-decoration: none; color: var(--color-text); transition: border-color .15s; }
 .ticket-card:hover { border-color: var(--color-primary); }
 .ticket-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.ticket-email-badge { font-size: 0.75rem; color: var(--color-text-muted); margin-left: auto; }
 .ticket-id { font-size: 0.78rem; color: var(--color-text-muted); font-weight: 500; }
 .ticket-card-title { font-weight: 500; margin-bottom: 8px; }
 .ticket-card-meta { display: flex; align-items: center; gap: 12px; font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 6px; }

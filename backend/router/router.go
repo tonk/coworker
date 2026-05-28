@@ -145,6 +145,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.POST("/sla-policies", handlers.AdminCreateSlaPolicy)
 			admin.PUT("/sla-policies/:id", handlers.AdminUpdateSlaPolicy)
 			admin.DELETE("/sla-policies/:id", handlers.AdminDeleteSlaPolicy)
+
+			// IMAP test & poll
+			admin.POST("/imap/test", handlers.AdminTestIMAP)
+			admin.POST("/imap/poll", handlers.AdminPollIMAP)
 		}
 
 		// News (active items visible to all authenticated users)

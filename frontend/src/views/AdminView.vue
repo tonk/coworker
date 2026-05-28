@@ -565,6 +565,8 @@
 
             <div class="form-actions" style="max-width:500px">
               <button class="btn btn-primary" @click="saveImapSettings">{{ $t('common.save') }}</button>
+              <button class="btn btn-secondary btn-sm" @click="testImap" :disabled="imapTesting">{{ imapTesting ? $t('common.saving') : $t('admin.imap_test') }}</button>
+              <button class="btn btn-secondary btn-sm" @click="pollImap" :disabled="imapPolling">{{ imapPolling ? $t('common.saving') : $t('admin.imap_poll') }}</button>
             </div>
 
             <h3 class="settings-subsection">{{ $t('admin.branding_title') }}</h3>
@@ -1522,7 +1524,7 @@ import { RouterLink } from 'vue-router'
 import BaseModal from '@/components/common/BaseModal.vue'
 import DateTimeInput from '@/components/common/DateTimeInput.vue'
 import { adminApi } from '@/api/admin'
-import { triggerDownload } from '@/api/client'
+import client, { triggerDownload } from '@/api/client'
 import { groupsApi } from '@/api/groups'
 import { customersApi } from '@/api/customers'
 import { projectsApi } from '@/api/projects'
@@ -1990,6 +1992,8 @@ const smtpPasswordSet = ref(false)
 const smtpPasswordPlaceholder = computed(() => smtpPasswordSet.value ? '••••••••' : '')
 const imapPasswordSet = ref(false)
 const imapPasswordPlaceholder = computed(() => imapPasswordSet.value ? '••••••••' : '')
+const imapTesting = ref(false)
+const imapPolling = ref(false)
 const smtpTestEmail = ref('')
 const smtpTestSending = ref(false)
 let settingsLoading = false
@@ -2421,6 +2425,30 @@ async function saveImapSettings() {
     ui.success('Settings saved')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to save settings')
+  }
+}
+
+async function testImap() {
+  imapTesting.value = true
+  try {
+    await client.post('/admin/imap/test')
+    ui.success(t('admin.imap_test_success'))
+  } catch (e) {
+    ui.error(e.response?.data?.error || t('admin.imap_test_failed'))
+  } finally {
+    imapTesting.value = false
+  }
+}
+
+async function pollImap() {
+  imapPolling.value = true
+  try {
+    await client.post('/admin/imap/poll')
+    ui.success(t('admin.imap_poll_success'))
+  } catch (e) {
+    ui.error(e.response?.data?.error || t('admin.imap_poll_failed'))
+  } finally {
+    imapPolling.value = false
   }
 }
 

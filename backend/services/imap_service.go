@@ -162,6 +162,11 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 		}
 	}
 
+	fromEmail := ""
+	if fromAddr, err := mail.ParseAddress(m.Header.Get("From")); err == nil && fromAddr != nil {
+		fromEmail = fromAddr.Address
+	}
+
 	subject, _ := decodeRFC2047(m.Header.Get("Subject"))
 	subject = strings.TrimSpace(subject)
 	if subject == "" {
@@ -201,6 +206,10 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 	if msgID != "" {
 		msgIDPtr = &msgID
 	}
+	var fromEmailPtr *string
+	if fromEmail != "" {
+		fromEmailPtr = &fromEmail
+	}
 	ticket := models.Ticket{
 		CustomerID:     customerID,
 		Title:          subject,
@@ -210,11 +219,50 @@ func (s *IMAPService) processMessage(msg *imap.Message, section *imap.BodySectio
 		Priority:       "medium",
 		CreatedByID:    systemUserID,
 		EmailMessageID: msgIDPtr,
+		FromEmail:      fromEmailPtr,
 	}
 	if err := database.DB.Create(&ticket).Error; err != nil {
 		return fmt.Errorf("create ticket: %w", err)
 	}
 	log.Printf("imap: created ticket #%d %q", ticket.ID, subject)
+	return nil
+}
+
+// defaultService holds the running IMAPService so handlers can trigger polls.
+var defaultService *IMAPService
+
+func SetDefaultService(s *IMAPService) { defaultService = s }
+func GetDefaultService() *IMAPService  { return defaultService }
+
+// PollOnce runs a single poll cycle using the current live config.
+func (s *IMAPService) PollOnce() error {
+	cfg := s.cfg()
+	if !cfg.Enabled || cfg.Host == "" {
+		return fmt.Errorf("IMAP not configured or disabled")
+	}
+	return s.poll(cfg)
+}
+
+// TestConnection connects and logs in without fetching any messages.
+func (s *IMAPService) TestConnection(cfg config.IMAPConfig) error {
+	if cfg.Host == "" {
+		return fmt.Errorf("host is required")
+	}
+	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	var c *client.Client
+	var err error
+	if cfg.UseTLS {
+		c, err = client.DialTLS(addr, &tls.Config{ServerName: cfg.Host})
+	} else {
+		c, err = client.Dial(addr)
+	}
+	if err != nil {
+		return fmt.Errorf("connect %s: %w", addr, err)
+	}
+	defer c.Logout() //nolint:errcheck
+	if err := c.Login(cfg.Username, cfg.Password); err != nil {
+		return fmt.Errorf("login: %w", err)
+	}
 	return nil
 }
 

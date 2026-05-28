@@ -143,6 +143,7 @@ func main() {
 	// IMAP incoming mail polling
 	imapSvc := services.NewIMAPService()
 	services.SetIMAPConfigReader(handlers.GetIMAPSettings)
+	services.SetDefaultService(imapSvc)
 	imapStop := make(chan struct{})
 	go imapSvc.StartPolling(imapStop)
 	_ = imapStop // server runs for its full lifetime; stop channel is a clean-shutdown hook

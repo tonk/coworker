@@ -40,6 +40,7 @@
           <span>#{{ ticket.id }}</span>
           <span>{{ $t('ticket.created_by') }} {{ ticket.created_by?.display_name || ticket.created_by?.username }}</span>
           <span>{{ formatDateTime(ticket.created_at) }}</span>
+          <span v-if="ticket.from_email" class="from-email-badge" :title="ticket.from_email">✉ {{ ticket.from_email }}</span>
           <span v-if="!isInbox" class="assignee-wrap">
             <label class="sr-only" for="assignee-select">{{ $t('ticket.assigned_to') }}</label>
             <select id="assignee-select" class="form-input form-input-sm" :value="ticket.assigned_to_id" @change="updateAssignedTo($event.target.value)">
@@ -862,6 +863,7 @@ async function assignToCustomer() {
 .detail-title-row h1 { flex: 1; margin: 0; font-size: 22px; }
 .detail-actions { display: flex; gap: 8px; }
 .detail-meta { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--color-text-muted); flex-wrap: wrap; }
+.from-email-badge { font-size: 11px; color: var(--color-text-muted); font-style: italic; }
 .ticket-status { padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
 .status-new { background: #dbeafe; color: #1e40af; }
 .status-open { background: #fef3c7; color: #92400e; }
