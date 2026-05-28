@@ -285,9 +285,11 @@ async function deleteMacro(m) {
 .macro-actions-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .macro-no-actions { font-size: 13px; color: var(--color-text-muted); padding: 8px 0; }
 .macro-action-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
-.macro-action-row .form-input-sm { flex-shrink: 0; }
-.macro-msg-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.macro-msg-area { resize: vertical; min-height: 60px; width: 100%; }
+.macro-action-row > select.form-input-sm:first-of-type { width: 160px; flex: 0 0 160px; }
+.macro-action-row > select.form-input-sm:not(:first-of-type) { flex: 1; min-width: 0; }
+.macro-action-row > input.form-input-sm { flex: 1; min-width: 0; }
+.macro-msg-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.macro-msg-area { resize: vertical; min-height: 60px; width: 100%; box-sizing: border-box; }
 .macro-ph-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
 .macro-ph-label { font-size: 11px; color: var(--color-text-muted); flex-shrink: 0; }
 .macro-ph-chip { font-size: 11px; font-family: monospace; padding: 1px 6px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-surface); color: var(--color-primary); cursor: pointer; line-height: 1.6; }
