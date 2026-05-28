@@ -1071,5 +1071,27 @@
     "assign": "Tildel",
     "assigned_success": "Ticket tildelt kunden.",
     "unassigned": "Ikke tildelt"
+  },
+  "macro": {
+    "title": "Makroer",
+    "new_macro": "Ny makro",
+    "edit_macro": "Rediger makro",
+    "name": "Navn",
+    "description": "Beskrivelse",
+    "actions": "Handlinger",
+    "no_actions": "Ingen handlinger defineret.",
+    "add_action": "Tilføj handling",
+    "action_type": "Type",
+    "action_value": "Værdi",
+    "action_set_status": "Sæt status",
+    "action_set_priority": "Sæt prioritet",
+    "action_set_type": "Sæt type",
+    "action_add_message": "Tilføj besked",
+    "action_add_tag": "Tilføj tag",
+    "apply_macro": "Anvend makro",
+    "no_macros": "Ingen makroer defineret endnu.",
+    "active": "Aktiv",
+    "sort_order": "Rækkefølge",
+    "applied": "Makro anvendt"
   }
 }

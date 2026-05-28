@@ -26,6 +26,10 @@
               <option value="high">{{ $t('ticket.priority_high') }}</option>
               <option value="critical">{{ $t('ticket.priority_critical') }}</option>
             </select>
+            <select v-if="macros.length" class="form-input form-input-sm" :value="''" :disabled="applyingMacro" @change="applyMacro($event.target.value); $event.target.value = ''">
+              <option value="" disabled>{{ $t('macro.apply_macro') }}</option>
+              <option v-for="m in macros" :key="m.id" :value="m.id">{{ m.name }}</option>
+            </select>
             <button class="btn btn-danger btn-sm" @click="deleteTicket">{{ $t('common.delete') }}</button>
           </div>
         </div>
@@ -269,6 +273,7 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { ticketsApi } from '@/api/tickets'
+import { macrosApi } from '@/api/macros'
 import client from '@/api/client'
 import { attachmentsApi } from '@/api/attachments'
 import { customersApi } from '@/api/customers'
@@ -338,6 +343,8 @@ const titleInput = ref(null)
 const allCustomers = ref([])
 const moveTargetCustomer = ref(null)
 const moving = ref(false)
+const macros = ref([])
+const applyingMacro = ref(false)
 
 function apiUpdate(data) {
   return isInbox.value
@@ -488,11 +495,36 @@ async function fetchTicket() {
   loading.value = false
 }
 
+async function loadMacros() {
+  try {
+    const { data } = await macrosApi.list()
+    macros.value = data || []
+  } catch {
+    macros.value = []
+  }
+}
+
+async function applyMacro(macroId) {
+  if (!macroId) return
+  applyingMacro.value = true
+  try {
+    const { data } = isInbox.value
+      ? await macrosApi.applyInbox(ticketId.value, macroId)
+      : await macrosApi.apply(customerId.value, ticketId.value, macroId)
+    ticket.value = data
+    ui.success('Macro applied')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to apply macro')
+  } finally {
+    applyingMacro.value = false
+  }
+}
+
 watch([() => route.params.ticketId, () => route.name], () => {
   fetchTicket()
 })
 
-onMounted(fetchTicket)
+onMounted(() => { fetchTicket(); loadMacros() })
 
 // Refresh messages when IMAP delivers a reply to this ticket
 async function refreshMessages() {

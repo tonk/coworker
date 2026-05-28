@@ -1071,5 +1071,27 @@
     "assign": "Úthluta",
     "assigned_success": "Miðanum úthlutað til viðskiptavinar.",
     "unassigned": "Óúthlutað"
+  },
+  "macro": {
+    "title": "Fjölvi",
+    "new_macro": "Nýtt fjölvi",
+    "edit_macro": "Breyta fjölvi",
+    "name": "Nafn",
+    "description": "Lýsing",
+    "actions": "Aðgerðir",
+    "no_actions": "Engar aðgerðir skilgreindar.",
+    "add_action": "Bæta við aðgerð",
+    "action_type": "Gerð",
+    "action_value": "Gildi",
+    "action_set_status": "Stilla stöðu",
+    "action_set_priority": "Stilla forgang",
+    "action_set_type": "Stilla gerð",
+    "action_add_message": "Bæta við skilaboðum",
+    "action_add_tag": "Bæta við merki",
+    "apply_macro": "Nota fjölvi",
+    "no_macros": "Engin fjölvi skilgreind enn.",
+    "active": "Virkt",
+    "sort_order": "Röðun",
+    "applied": "Fjölvi notað"
   }
 }

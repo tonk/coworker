@@ -1071,5 +1071,27 @@
     "assign": "Asignar",
     "assigned_success": "Ticket asignado al cliente.",
     "unassigned": "Sin asignar"
+  },
+  "macro": {
+    "title": "Macros",
+    "new_macro": "Nuevo macro",
+    "edit_macro": "Editar macro",
+    "name": "Nombre",
+    "description": "Descripción",
+    "actions": "Acciones",
+    "no_actions": "No hay acciones definidas.",
+    "add_action": "Añadir acción",
+    "action_type": "Tipo",
+    "action_value": "Valor",
+    "action_set_status": "Establecer estado",
+    "action_set_priority": "Establecer prioridad",
+    "action_set_type": "Establecer tipo",
+    "action_add_message": "Añadir mensaje",
+    "action_add_tag": "Añadir etiqueta",
+    "apply_macro": "Aplicar macro",
+    "no_macros": "No hay macros definidos.",
+    "active": "Activo",
+    "sort_order": "Orden",
+    "applied": "Macro aplicado"
   }
 }

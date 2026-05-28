@@ -1071,5 +1071,27 @@
     "assign": "Tilordne",
     "assigned_success": "Sak tilordnet kunden.",
     "unassigned": "Ikke tilordnet"
+  },
+  "macro": {
+    "title": "Makroer",
+    "new_macro": "Ny makro",
+    "edit_macro": "Rediger makro",
+    "name": "Navn",
+    "description": "Beskrivelse",
+    "actions": "Handlinger",
+    "no_actions": "Ingen handlinger definert.",
+    "add_action": "Legg til handling",
+    "action_type": "Type",
+    "action_value": "Verdi",
+    "action_set_status": "Sett status",
+    "action_set_priority": "Sett prioritet",
+    "action_set_type": "Sett type",
+    "action_add_message": "Legg til melding",
+    "action_add_tag": "Legg til tagg",
+    "apply_macro": "Bruk makro",
+    "no_macros": "Ingen makroer definert ennå.",
+    "active": "Aktiv",
+    "sort_order": "Rekkefølge",
+    "applied": "Makro brukt"
   }
 }

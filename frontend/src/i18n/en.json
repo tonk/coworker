@@ -1138,5 +1138,27 @@
     "assign": "Assign",
     "assigned_success": "Ticket assigned to customer.",
     "unassigned": "Unassigned"
+  },
+  "macro": {
+    "title": "Macros",
+    "new_macro": "New macro",
+    "edit_macro": "Edit macro",
+    "name": "Name",
+    "description": "Description",
+    "actions": "Actions",
+    "no_actions": "No actions defined.",
+    "add_action": "Add action",
+    "action_type": "Type",
+    "action_value": "Value",
+    "action_set_status": "Set status",
+    "action_set_priority": "Set priority",
+    "action_set_type": "Set type",
+    "action_add_message": "Add message",
+    "action_add_tag": "Add tag",
+    "apply_macro": "Apply macro",
+    "no_macros": "No macros defined yet.",
+    "active": "Active",
+    "sort_order": "Order",
+    "applied": "Macro applied"
   }
 }

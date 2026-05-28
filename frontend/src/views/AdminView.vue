@@ -12,6 +12,7 @@
           <button :class="['tab', { active: tab === 'news' }]" @click="tab = 'news'; loadNews()" role="tab" :aria-selected="tab === 'news'" aria-controls="tab-panel-news" id="tab-btn-news">{{ $t('admin.news_tab') }}</button>
           <button :class="['tab', { active: tab === 'time-tracking' }]" @click="tab = 'time-tracking'; loadAdminTTProjects(); loadAdminTTCustomers()" role="tab" :aria-selected="tab === 'time-tracking'" aria-controls="tab-panel-time-tracking" id="tab-btn-time-tracking">{{ $t('admin.time_tracking') }}</button>
           <button :class="['tab', { active: tab === 'sla' }]" @click="tab = 'sla'" role="tab" :aria-selected="tab === 'sla'" aria-controls="tab-panel-sla" id="tab-btn-sla">{{ $t('sla.title') }}</button>
+          <button :class="['tab', { active: tab === 'macros' }]" @click="tab = 'macros'" role="tab" :aria-selected="tab === 'macros'" aria-controls="tab-panel-macros" id="tab-btn-macros">{{ $t('macro.title') }}</button>
           <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()" role="tab" :aria-selected="tab === 'backup'" aria-controls="tab-panel-backup" id="tab-btn-backup">{{ $t('admin.backup_tab') }}</button>
         </div>
 
@@ -873,6 +874,11 @@
           <SlaPoliciesTab />
         </div>
 
+        <!-- Macros tab -->
+        <div v-show="tab === 'macros'" role="tabpanel" id="tab-panel-macros" aria-labelledby="tab-btn-macros">
+          <MacrosTab />
+        </div>
+
         <!-- Backup / Restore tab -->
         <div v-show="tab === 'backup'" role="tabpanel" id="tab-panel-backup" aria-labelledby="tab-btn-backup">
           <!-- Scheduled backups -->
@@ -1567,6 +1573,7 @@ import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
 import SlaPoliciesTab from '@/components/admin/SlaPoliciesTab.vue'
+import MacrosTab from '@/components/admin/MacrosTab.vue'
 
 const { t } = useI18n()
 const ui = useUIStore()

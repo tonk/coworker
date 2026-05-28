@@ -146,6 +146,12 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.PUT("/sla-policies/:id", handlers.AdminUpdateSlaPolicy)
 			admin.DELETE("/sla-policies/:id", handlers.AdminDeleteSlaPolicy)
 
+			// Macros (helpdesk)
+			admin.GET("/macros", handlers.AdminListMacros)
+			admin.POST("/macros", handlers.AdminCreateMacro)
+			admin.PUT("/macros/:id", handlers.AdminUpdateMacro)
+			admin.DELETE("/macros/:id", handlers.AdminDeleteMacro)
+
 			// IMAP test & poll
 			admin.POST("/imap/test", handlers.AdminTestIMAP)
 			admin.POST("/imap/poll", handlers.AdminPollIMAP)
@@ -158,6 +164,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// News (active items visible to all authenticated users)
 		protected.GET("/news", handlers.ListActiveNews)
+
+		// Macros — active list visible to all helpdesk users
+		protected.GET("/macros", handlers.ListMacros)
 
 		// Users (for direct messages / user lookup)
 		protected.GET("/users", handlers.ListAllUsers)
@@ -203,6 +212,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				inbox.PUT("/inbox/:ticketId", handlers.UpdateInboxTicket)
 				inbox.POST("/inbox/:ticketId/messages", handlers.CreateInboxTicketMessage)
 				inbox.DELETE("/inbox/:ticketId", handlers.DeleteInboxTicket)
+				inbox.POST("/inbox/:ticketId/macros/:macroId", handlers.ApplyInboxMacro)
 			}
 
 			// Tickets (helpdesk)
@@ -226,6 +236,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				tickets.DELETE("/:ticketId/cards/:linkId", handlers.DeleteTicketCardLink)
 				tickets.GET("/:ticketId/history", handlers.GetTicketHistory)
 				tickets.GET("/:ticketId/raw-email", handlers.GetTicketRawEmail)
+				tickets.POST("/:ticketId/macros/:macroId", handlers.ApplyMacro)
 			}
 		}
 

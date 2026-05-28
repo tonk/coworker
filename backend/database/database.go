@@ -419,6 +419,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.TicketMessage{},
 		&models.TicketHistory{},
 		&models.SlaPolicy{},
+		&models.Macro{},
 	)
 	if err != nil {
 		return err
