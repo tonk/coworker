@@ -7,7 +7,7 @@ DOCUMENTATION = r"""
 ---
 module: macro
 short_description: Manage WarmDesk macros
-version_added: "0.10.28"
+version_added: "0.4.2"
 author: "Ton Kersten (@tonk)"
 description:
   - Create, update, or delete WarmDesk macros via the admin API.
