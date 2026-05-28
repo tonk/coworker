@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.26)
+## Latest release (v0.10.27)
 
-- **IMAP inbox** — incoming email automatically creates helpdesk tickets in a dedicated Inbox queue; replies land on the ticket thread and reopen closed tickets.
-- **IMAP OAuth2** — Gmail and Office 365 mailboxes can now authenticate via XOAUTH2/OAUTHBEARER with auto-renewed tokens.
-- **Real-time inbox refresh** — inbox counter, ticket list, and open ticket detail all update live via WebSocket when new mail arrives.
+- **Macro system** — create reusable one-click macros that set status, priority, type, add tags, and pre-fill a reply; apply from a dropdown in the ticket detail view.
+- **Spam handling** — mark tickets as spam to close and hide them; Show/Hide Spam toggle in ticket list and inbox headers.
+- **Larger reply box** — the comment box is taller with a Cancel button to discard the draft.
 
 ## Experiment
 

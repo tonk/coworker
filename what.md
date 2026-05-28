@@ -622,3 +622,8 @@ Create an application that has all these features and requirements
 - Add move ticket between customers: reassign an inbox ticket to a customer, or move an existing ticket to a different customer from the ticket detail view
 - Fix IMAP test connection to use current form values instead of last saved settings
 - Add real-time inbox refresh: broadcast ticket.created and ticket.message.added WebSocket events from the IMAP service; InboxView reloads its list and TicketDetailView refreshes incoming replies in-place without clearing the reply draft
+- Add macro system for helpdesk tickets: create reusable macros with set_status, set_priority, set_type, add_tag, add_message actions; apply from dropdown in ticket detail; admin CRUD in Settings → Macros tab
+- Add macro placeholder expansion: add_message actions support {email}, {fname}, {name}, {subject}, {ticket_id}, {agent}, {agent_fname} with clickable insertion chips in the macro editor; applied macros pre-fill the reply box instead of posting immediately
+- Add spam handling: mark ticket as spam sets is_spam=true and closes it; spam tickets hidden from lists by default; Show/Hide Spam toggle in ticket list and inbox headers; Not Spam restores status to open
+- Add card/group/list views to Inbox matching the customer ticket list layout, with independent localStorage persistence
+- Enlarge reply box to 8 rows (min 180 px) and add a Cancel button to clear the draft and pending attachments

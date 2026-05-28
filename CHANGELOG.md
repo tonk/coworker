@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.10.27 — 2026-05-28
+
+### Added
+- **Macro system** — create reusable macros that set status, priority, type, add tags, and pre-fill a reply message in one click; apply from a dropdown in the ticket detail view.
+- **Macro placeholder expansion** — `add_message` actions support `{email}`, `{fname}`, `{name}`, `{subject}`, `{ticket_id}`, `{agent}`, `{agent_fname}` placeholders; clickable insertion chips in the macro editor.
+- **Macro demo data** — seed program includes six ready-made helpdesk macros (Acknowledge & Investigate, Request More Information, Escalate to Critical, Resolved — Pending Close, Close & Thank, Mark as Duplicate).
+- **Spam handling** — mark any ticket as spam to close it and hide it from the list; red SPAM badge on spam tickets; Show/Hide Spam toggle in ticket list and inbox headers; Not Spam button restores the ticket to open.
+- **Inbox card/group/list views** — the Inbox now has the same three-view layout as customer ticket lists, with independent localStorage persistence.
+- **Larger reply box** — the comment box is now 8 rows tall (min 180 px) with a Cancel button that clears the draft and any pending attachments.
+
+### Fixed
+- **Macro add_message pre-fill** — applying a macro pre-fills the reply box with the expanded text instead of posting it immediately, so agents can review and edit before sending.
+- **Macro action row layout** — type select constrained to 160 px; value inputs use `min-width: 0` so the row no longer overflows the form card.
+
 ## v0.10.26 — 2026-05-28
 
 ### Added
