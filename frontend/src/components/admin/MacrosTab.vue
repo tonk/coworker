@@ -299,4 +299,16 @@ async function deleteMacro(m) {
 .text-muted { color: var(--color-text-muted); font-size: 13px; }
 .loading-state { display: flex; justify-content: center; padding: 48px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+/* Column widths for the macros table */
+:deep(.data-table) th:nth-child(1),
+:deep(.data-table) td:nth-child(1) { width: 20%; min-width: 160px; }
+:deep(.data-table) th:nth-child(2),
+:deep(.data-table) td:nth-child(2) { width: auto; }
+:deep(.data-table) th:nth-child(3),
+:deep(.data-table) td:nth-child(3) { width: 90px; min-width: 90px; text-align: center; }
+:deep(.data-table) th:nth-child(4),
+:deep(.data-table) td:nth-child(4) { width: 90px; min-width: 90px; text-align: center; }
+:deep(.data-table) th:nth-child(5),
+:deep(.data-table) td:nth-child(5) { width: 120px; min-width: 120px; }
 </style>
