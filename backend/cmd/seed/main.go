@@ -2593,15 +2593,17 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Println("→ Creating inbox tickets…")
 
 	type inboxTicketSeed struct {
-		subject      string
-		description  string
-		ticketType   string
-		status       string
-		priority     string
-		createdByKey string
-		assignedToKey string // may be empty
-		createdAgo   time.Duration
-		messages     []ticketMsgSpec
+		subject        string
+		description    string
+		ticketType     string
+		status         string
+		priority       string
+		createdByKey   string
+		assignedToKey  string // may be empty
+		createdAgo     time.Duration
+		messages       []ticketMsgSpec
+		fromEmail      string // set for email-originated tickets
+		emailMessageID string // set for email-originated tickets
 	}
 
 	inboxSeeds := []inboxTicketSeed{
@@ -2640,6 +2642,43 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				{"marc", "I can see the export job in the queue. It appears to be blocked waiting on a database lock. I'm investigating and will have an update within 30 minutes.", 2},
 			},
 		},
+		{
+			subject:        "Login page shows blank screen on Safari 17",
+			description:    "Hi support,\n\nSince yesterday afternoon our users on Safari 17 / macOS Sonoma are seeing a completely blank page when navigating to the login URL. Chrome and Firefox work fine. Clearing the cache didn't help.\n\nOur instance URL: https://desk.example.com\nSafari version: 17.4.1\nmacOS: 14.4 Sonoma\n\nKind regards,\nJennifer Walsh\nIT Operations",
+			ticketType:     "incident",
+			status:         "new",
+			priority:       "high",
+			createdByKey:   "admin",
+			createdAgo:     5 * time.Hour,
+			fromEmail:      "jennifer.walsh@example.com",
+			emailMessageID: "<CABx3+safari-blank-20240523@mail.example.com>",
+		},
+		{
+			subject:        "Request: SSO integration with Okta",
+			description:    "Hello,\n\nWe are evaluating WarmDesk for enterprise rollout and need to confirm whether SAML 2.0 SSO with Okta is supported or on the roadmap. We have approximately 300 users and manual account provisioning is not feasible at that scale.\n\nIf SSO is available, could you point us to the relevant documentation or configuration guide?\n\nThanks,\nDavid Osei\nEnterprise IT Architect\nGlobalCo Ltd.",
+			ticketType:     "service_request",
+			status:         "new",
+			priority:       "medium",
+			createdByKey:   "admin",
+			createdAgo:     26 * time.Hour,
+			fromEmail:      "d.osei@globalco.example",
+			emailMessageID: "<okta-sso-inquiry-20240522@globalco.example>",
+		},
+		{
+			subject:        "Webhook not firing on ticket status change",
+			description:    "Hi,\n\nWe have a webhook configured to POST to our internal automation endpoint whenever a ticket status changes. It worked until last week's release but now the webhook fires only on ticket creation, not on subsequent status updates.\n\nWebhook URL: https://automation.internal.example/warmdesk-hook\nEvent: ticket.status_changed\nLast successful delivery: 2024-05-15 14:32 UTC\n\nI have checked the webhook logs in the admin panel — no entries after the initial creation event.\n\nBest,\nLukas Richter\nDevOps Engineer",
+			ticketType:     "problem",
+			status:         "open",
+			priority:       "high",
+			createdByKey:   "admin",
+			assignedToKey:  "sarah",
+			createdAgo:     48 * time.Hour,
+			fromEmail:      "l.richter@devops.example",
+			emailMessageID: "<webhook-regression-20240521@devops.example>",
+			messages: []ticketMsgSpec{
+				{"sarah", "Thanks for the detailed report. We can reproduce this. The status-change webhook trigger was accidentally removed in the last refactor — a fix is being prepared and should be in the next patch release.", 24},
+			},
+		},
 	}
 
 	for _, is := range inboxSeeds {
@@ -2658,6 +2697,12 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		}
 		if is.assignedToKey != "" {
 			iTicket.AssignedToID = &users[is.assignedToKey].ID
+		}
+		if is.fromEmail != "" {
+			iTicket.FromEmail = &is.fromEmail
+		}
+		if is.emailMessageID != "" {
+			iTicket.EmailMessageID = &is.emailMessageID
 		}
 		if policy, ok := slaByPriority[is.priority]; ok {
 			iTicket.SlaPolicyID = &policy.ID
@@ -3432,6 +3477,9 @@ func removeDemoData(db *gorm.DB) {
 		"Cannot access the admin panel after update",
 		"Question about pricing for additional seats",
 		"Data export stuck at 0% for 3 hours",
+		"Login page shows blank screen on Safari 17",
+		"Request: SSO integration with Okta",
+		"Webhook not firing on ticket status change",
 	}
 	var inboxIDs []uint
 	db.Model(&models.Ticket{}).Where("customer_id IS NULL AND title IN ?", demoInboxTitles).Pluck("id", &inboxIDs)
