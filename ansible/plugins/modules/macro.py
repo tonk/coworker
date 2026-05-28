@@ -41,17 +41,12 @@ options:
     description:
       - List of actions to execute when the macro is applied.
       - Each action is a dict with C(type) and C(value) keys.
-      - Supported types: C(set_status), C(set_priority), C(set_type),
-        C(add_tag), C(add_message).
-      - C(set_status) values: C(new), C(open), C(pending), C(pending_close),
-        C(closed).
-      - C(set_priority) values: C(low), C(medium), C(high), C(critical).
-      - C(set_type) values: C(incident), C(problem), C(service_request),
-        C(change_request).
-      - C(add_tag) value: any tag string.
-      - C(add_message) value: message body, supports placeholders
-        C({email}), C({fname}), C({name}), C({subject}), C({ticket_id}),
-        C({agent}), C({agent_fname}).
+      - "Supported types: C(set_status), C(set_priority), C(set_type), C(add_tag), C(add_message)."
+      - "C(set_status) values: C(new), C(open), C(pending), C(pending_close), C(closed)."
+      - "C(set_priority) values: C(low), C(medium), C(high), C(critical)."
+      - "C(set_type) values: C(incident), C(problem), C(service_request), C(change_request)."
+      - "C(add_tag) value: any tag string."
+      - "C(add_message) value: message body, supports placeholders C({email}), C({fname}), C({name}), C({subject}), C({ticket_id}), C({agent}), C({agent_fname})."
     type: list
     elements: dict
     suboptions:
