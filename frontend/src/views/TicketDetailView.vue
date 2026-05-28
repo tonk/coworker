@@ -511,7 +511,13 @@ async function applyMacro(macroId) {
     const { data } = isInbox.value
       ? await macrosApi.applyInbox(ticketId.value, macroId)
       : await macrosApi.apply(customerId.value, ticketId.value, macroId)
-    ticket.value = data
+    ticket.value = data.ticket
+    if (data.macro_messages?.length) {
+      newMessage.value = data.macro_messages.join('\n\n')
+      msgEditorTab.value = 'edit'
+      await nextTick()
+      document.getElementById('ticket-msg-panel-edit')?.focus()
+    }
     ui.success('Macro applied')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to apply macro')

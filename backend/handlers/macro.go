@@ -201,6 +201,7 @@ var validMacroTypes = map[string]bool{
 
 func applyMacroActions(c *gin.Context, ticket *models.Ticket, macro *models.Macro, userID uint) {
 	updates := map[string]any{}
+	var pendingMessages []string
 
 	for _, action := range macro.Actions {
 		switch action.Type {
@@ -219,11 +220,7 @@ func applyMacroActions(c *gin.Context, ticket *models.Ticket, macro *models.Macr
 		case "add_message":
 			if action.Value != "" {
 				body := expandPlaceholders(action.Value, ticket, userID)
-				database.DB.Create(&models.TicketMessage{
-					TicketID: ticket.ID,
-					UserID:   userID,
-					Body:     body,
-				})
+				pendingMessages = append(pendingMessages, body)
 			}
 		case "add_tag":
 			if action.Value != "" {
@@ -265,7 +262,10 @@ func applyMacroActions(c *gin.Context, ticket *models.Ticket, macro *models.Macr
 		}
 	}
 
-	c.JSON(http.StatusOK, updated)
+	if pendingMessages == nil {
+		pendingMessages = []string{}
+	}
+	c.JSON(http.StatusOK, gin.H{"ticket": updated, "macro_messages": pendingMessages})
 }
 
 // expandPlaceholders replaces template variables in macro message bodies.
