@@ -195,7 +195,11 @@
           >
             <span class="inbox-icon" aria-hidden="true">📥</span>
             <span class="link-text">{{ $t('inbox.title') }}</span>
-            <span v-if="ticketsStore.inboxCount" class="inbox-badge" :aria-label="`${ticketsStore.inboxCount} ${$t('inbox.title')}`" aria-live="polite">{{ ticketsStore.inboxCount }}</span>
+            <span v-if="ticketsStore.inboxCount" class="inbox-badge" :aria-label="`${ticketsStore.inboxUnread} unread, ${ticketsStore.inboxCount} total`" aria-live="polite">
+              <span v-if="ticketsStore.inboxUnread" class="inbox-badge-unread">{{ ticketsStore.inboxUnread }}</span>
+              <span v-if="ticketsStore.inboxUnread" class="inbox-badge-sep">/</span>
+              <span>{{ ticketsStore.inboxCount }}</span>
+            </span>
           </RouterLink>
           <RouterLink
             v-for="c in customersStore.customers"
@@ -843,7 +847,12 @@ onUnmounted(() => {
   line-height: 16px;
   text-align: center;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
+.inbox-badge-unread { color: #fde68a; }
+.inbox-badge-sep { opacity: 0.6; }
 
 .customer-avatar {
   width: 16px;

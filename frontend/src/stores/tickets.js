@@ -5,6 +5,7 @@ import { ticketsApi } from '@/api/tickets'
 export const useTicketsStore = defineStore('tickets', () => {
   const tickets = ref([])
   const inboxCount = ref(0)
+  const inboxUnread = ref(0)
 
   async function fetchTickets(customerId) {
     try {
@@ -16,7 +17,9 @@ export const useTicketsStore = defineStore('tickets', () => {
   async function fetchInboxCount() {
     try {
       const { data } = await ticketsApi.inboxList()
-      inboxCount.value = (data || []).filter(t => t.status !== 'closed').length
+      const active = (data || []).filter(t => t.status !== 'closed')
+      inboxCount.value = active.length
+      inboxUnread.value = active.filter(t => t.status === 'new').length
     } catch {}
   }
 
@@ -41,6 +44,7 @@ export const useTicketsStore = defineStore('tickets', () => {
   return {
     tickets,
     inboxCount,
+    inboxUnread,
     fetchTickets,
     fetchInboxCount,
     createTicket,
