@@ -1092,6 +1092,7 @@
     "no_macros": "Engin fjölvi skilgreind enn.",
     "active": "Virkt",
     "sort_order": "Röðun",
-    "applied": "Fjölvi notað"
+    "applied": "Fjölvi notað",
+    "placeholders": "Staðgengilstákn"
   }
 }

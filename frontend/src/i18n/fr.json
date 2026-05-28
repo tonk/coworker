@@ -1092,6 +1092,7 @@
     "no_macros": "Aucun macro défini.",
     "active": "Actif",
     "sort_order": "Ordre",
-    "applied": "Macro appliqué"
+    "applied": "Macro appliqué",
+    "placeholders": "Variables"
   }
 }

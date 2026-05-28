@@ -1092,6 +1092,7 @@
     "no_macros": "Nog geen macro's gedefinieerd.",
     "active": "Actief",
     "sort_order": "Volgorde",
-    "applied": "Macro toegepast"
+    "applied": "Macro toegepast",
+    "placeholders": "Plaatsvervangers"
   }
 }

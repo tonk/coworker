@@ -1159,6 +1159,7 @@
     "no_macros": "No macros defined yet.",
     "active": "Active",
     "sort_order": "Order",
-    "applied": "Macro applied"
+    "applied": "Macro applied",
+    "placeholders": "Placeholders"
   }
 }

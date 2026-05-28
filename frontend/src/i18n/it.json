@@ -1092,6 +1092,7 @@
     "no_macros": "Nessuna macro definita.",
     "active": "Attivo",
     "sort_order": "Ordine",
-    "applied": "Macro applicata"
+    "applied": "Macro applicata",
+    "placeholders": "Segnaposto"
   }
 }

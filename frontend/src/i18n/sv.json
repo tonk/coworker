@@ -1092,6 +1092,7 @@
     "no_macros": "Inga makron definierade ännu.",
     "active": "Aktiv",
     "sort_order": "Ordning",
-    "applied": "Makro tillämpat"
+    "applied": "Makro tillämpat",
+    "placeholders": "Platshållare"
   }
 }

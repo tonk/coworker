@@ -1092,6 +1092,7 @@
     "no_macros": "Ingen makroer definert ennå.",
     "active": "Aktiv",
     "sort_order": "Rekkefølge",
-    "applied": "Makro brukt"
+    "applied": "Makro brukt",
+    "placeholders": "Plassholdere"
   }
 }

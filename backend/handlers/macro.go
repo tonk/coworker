@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/database"
@@ -149,7 +151,7 @@ func ApplyMacro(c *gin.Context) {
 		return
 	}
 	var ticket models.Ticket
-	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
+	if err := database.DB.Preload("CreatedBy").Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
 		return
 	}
@@ -175,7 +177,7 @@ func ApplyInboxMacro(c *gin.Context) {
 		return
 	}
 	var ticket models.Ticket
-	if err := database.DB.Where("id = ? AND customer_id IS NULL", ticketID).First(&ticket).Error; err != nil {
+	if err := database.DB.Preload("CreatedBy").Where("id = ? AND customer_id IS NULL", ticketID).First(&ticket).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
 		return
 	}
@@ -216,10 +218,11 @@ func applyMacroActions(c *gin.Context, ticket *models.Ticket, macro *models.Macr
 			}
 		case "add_message":
 			if action.Value != "" {
+				body := expandPlaceholders(action.Value, ticket, userID)
 				database.DB.Create(&models.TicketMessage{
 					TicketID: ticket.ID,
 					UserID:   userID,
-					Body:     action.Value,
+					Body:     body,
 				})
 			}
 		case "add_tag":
@@ -263,4 +266,79 @@ func applyMacroActions(c *gin.Context, ticket *models.Ticket, macro *models.Macr
 	}
 
 	c.JSON(http.StatusOK, updated)
+}
+
+// expandPlaceholders replaces template variables in macro message bodies.
+// Supported: {email}, {fname}, {name}, {subject}, {ticket_id}, {agent}, {agent_fname}
+func expandPlaceholders(tmpl string, ticket *models.Ticket, agentID uint) string {
+	fromEmail := ""
+	if ticket.FromEmail != nil {
+		fromEmail = *ticket.FromEmail
+	}
+	senderName, senderFname := parseSenderInfo(fromEmail, &ticket.CreatedBy)
+
+	var agent models.User
+	agentName, agentFname := "", ""
+	if err := database.DB.First(&agent, agentID).Error; err == nil {
+		agentName = agent.DisplayName
+		if agentName == "" {
+			agentName = strings.TrimSpace(agent.FirstName + " " + agent.LastName)
+		}
+		if agentName == "" {
+			agentName = agent.Username
+		}
+		agentFname = agent.FirstName
+		if agentFname == "" {
+			if parts := strings.Fields(agentName); len(parts) > 0 {
+				agentFname = parts[0]
+			}
+		}
+	}
+
+	r := strings.NewReplacer(
+		"{email}", fromEmail,
+		"{fname}", senderFname,
+		"{name}", senderName,
+		"{subject}", ticket.Title,
+		"{ticket_id}", fmt.Sprintf("#%d", ticket.ID),
+		"{agent}", agentName,
+		"{agent_fname}", agentFname,
+	)
+	return r.Replace(tmpl)
+}
+
+// parseSenderInfo extracts display name and first name from a From-style email
+// string (e.g. "John Doe <john@example.com>") or falls back to the ticket creator.
+func parseSenderInfo(fromEmail string, createdBy *models.User) (name, fname string) { //nolint:unparam
+	if fromEmail != "" {
+		if idx := strings.Index(fromEmail, "<"); idx > 0 {
+			display := strings.TrimSpace(fromEmail[:idx])
+			if display != "" {
+				parts := strings.Fields(display)
+				return display, parts[0]
+			}
+		}
+		// plain address — use local part as first name
+		if idx := strings.Index(fromEmail, "@"); idx > 0 {
+			return fromEmail, fromEmail[:idx]
+		}
+		return fromEmail, fromEmail
+	}
+	if createdBy != nil {
+		display := createdBy.DisplayName
+		if display == "" {
+			display = strings.TrimSpace(createdBy.FirstName + " " + createdBy.LastName)
+		}
+		if display == "" {
+			display = createdBy.Username
+		}
+		fn := createdBy.FirstName
+		if fn == "" {
+			if parts := strings.Fields(display); len(parts) > 0 {
+				fn = parts[0]
+			}
+		}
+		return display, fn
+	}
+	return "", ""
 }

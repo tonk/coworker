@@ -90,8 +90,14 @@
 
           <!-- Message textarea -->
           <template v-else-if="action.type === 'add_message'">
-            <label class="sr-only" :for="'act-val-' + idx">{{ $t('macro.action_value') }}</label>
-            <textarea :id="'act-val-' + idx" class="form-input form-input-sm macro-msg-area" v-model="action.value" :placeholder="$t('ticket.message_placeholder')" rows="2"></textarea>
+            <div class="macro-msg-wrap">
+              <label class="sr-only" :for="'act-val-' + idx">{{ $t('macro.action_value') }}</label>
+              <textarea :id="'act-val-' + idx" :ref="el => { if (el) msgRefs[idx] = el }" class="form-input form-input-sm macro-msg-area" v-model="action.value" :placeholder="$t('ticket.message_placeholder')" rows="2"></textarea>
+              <div class="macro-ph-row">
+                <span class="macro-ph-label">{{ $t('macro.placeholders') }}:</span>
+                <button v-for="ph in PLACEHOLDERS" :key="ph" type="button" class="macro-ph-chip" @click="insertPlaceholder(action, ph, idx)">{{ ph }}</button>
+              </div>
+            </div>
           </template>
 
           <button class="btn-icon-xs macro-remove-btn" @click="removeAction(idx)" :aria-label="$t('common.delete')">✕</button>
@@ -144,7 +150,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { macrosApi } from '@/api/macros'
 import { useUIStore } from '@/stores/ui'
 
@@ -154,6 +160,25 @@ const saving = ref(false)
 const macros = ref([])
 const editing = ref(null)
 const form = ref(emptyForm())
+const msgRefs = ref({})
+
+const PLACEHOLDERS = ['{email}', '{fname}', '{name}', '{subject}', '{ticket_id}', '{agent}', '{agent_fname}']
+
+function insertPlaceholder(action, ph, idx) {
+  const el = msgRefs.value[idx]
+  if (el) {
+    const start = el.selectionStart
+    const end = el.selectionEnd
+    const val = action.value || ''
+    action.value = val.slice(0, start) + ph + val.slice(end)
+    nextTick(() => {
+      el.selectionStart = el.selectionEnd = start + ph.length
+      el.focus()
+    })
+  } else {
+    action.value = (action.value || '') + ph
+  }
+}
 
 onMounted(load)
 
@@ -261,8 +286,13 @@ async function deleteMacro(m) {
 .macro-no-actions { font-size: 13px; color: var(--color-text-muted); padding: 8px 0; }
 .macro-action-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
 .macro-action-row .form-input-sm { flex-shrink: 0; }
-.macro-msg-area { resize: vertical; min-height: 60px; flex: 1; }
-.macro-remove-btn { align-self: center; flex-shrink: 0; }
+.macro-msg-wrap { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.macro-msg-area { resize: vertical; min-height: 60px; width: 100%; }
+.macro-ph-row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.macro-ph-label { font-size: 11px; color: var(--color-text-muted); flex-shrink: 0; }
+.macro-ph-chip { font-size: 11px; font-family: monospace; padding: 1px 6px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-surface); color: var(--color-primary); cursor: pointer; line-height: 1.6; }
+.macro-ph-chip:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.macro-remove-btn { align-self: flex-start; flex-shrink: 0; margin-top: 4px; }
 .macro-form-footer { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-border); }
 .text-muted { color: var(--color-text-muted); font-size: 13px; }
 .loading-state { display: flex; justify-content: center; padding: 48px; }

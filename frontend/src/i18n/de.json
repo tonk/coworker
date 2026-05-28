@@ -1092,6 +1092,7 @@
     "no_macros": "Noch keine Makros definiert.",
     "active": "Aktiv",
     "sort_order": "Reihenfolge",
-    "applied": "Makro angewendet"
+    "applied": "Makro angewendet",
+    "placeholders": "Platzhalter"
   }
 }

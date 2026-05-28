@@ -1092,6 +1092,7 @@
     "no_macros": "Makroja ei ole vielä määritetty.",
     "active": "Aktiivinen",
     "sort_order": "Järjestys",
-    "applied": "Makro käytetty"
+    "applied": "Makro käytetty",
+    "placeholders": "Muuttujat"
   }
 }
