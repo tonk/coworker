@@ -226,7 +226,7 @@
               <button role="tab" :aria-selected="msgEditorTab === 'edit'" aria-controls="ticket-msg-panel-edit" id="ticket-msg-tab-edit" :class="['md-tab', { active: msgEditorTab === 'edit' }]" type="button" @click="msgEditorTab = 'edit'">{{ $t('common.edit') }}</button>
               <button role="tab" :aria-selected="msgEditorTab === 'preview'" aria-controls="ticket-msg-panel-preview" id="ticket-msg-tab-preview" :class="['md-tab', { active: msgEditorTab === 'preview' }]" type="button" @click="msgEditorTab = 'preview'">{{ $t('common.preview') }}</button>
             </div>
-            <textarea v-if="msgEditorTab === 'edit'" id="ticket-msg-panel-edit" role="tabpanel" aria-labelledby="ticket-msg-tab-edit" v-model="newMessage" class="form-input md-textarea" rows="3" :placeholder="$t('ticket.message_placeholder')" required @paste="onMsgPaste"></textarea>
+            <textarea v-if="msgEditorTab === 'edit'" id="ticket-msg-panel-edit" role="tabpanel" aria-labelledby="ticket-msg-tab-edit" v-model="newMessage" class="form-input md-textarea" rows="8" :placeholder="$t('ticket.message_placeholder')" required @paste="onMsgPaste"></textarea>
             <div v-else id="ticket-msg-panel-preview" role="tabpanel" aria-labelledby="ticket-msg-tab-preview" class="md-preview markdown-body" v-html="renderMarkdown(newMessage)"></div>
           </div>
           <div v-if="pendingFiles.length" class="pending-attachments">
@@ -235,6 +235,7 @@
           </div>
           <div class="message-form-actions">
             <FileUploadButton @files-selected="onFilesSelected" />
+            <button v-if="newMessage.trim() || pendingFiles.length" type="button" class="btn btn-secondary btn-sm" @click="newMessage = ''; pendingFiles = []; msgEditorTab = 'edit'">{{ $t('common.cancel') }}</button>
             <button type="submit" class="btn btn-primary btn-sm" :disabled="(!newMessage.trim() && !pendingFiles.length) || sending">{{ $t('ticket.send') }}<span v-if="pendingFiles.length" class="pending-badge">· {{ pendingFiles.length }}</span></button>
           </div>
         </form>
@@ -1122,8 +1123,8 @@ async function assignToCustomer() {
 :deep(.md-tab) { padding: 6px 16px; font-size: 12px; font-weight: 600; cursor: pointer; background: none; border: none; border-bottom: 2px solid transparent; color: var(--color-text-muted); transition: color .15s, border-color .15s; }
 :deep(.md-tab:hover) { color: var(--color-text); }
 :deep(.md-tab.active) { color: var(--color-primary); border-bottom-color: var(--color-primary); }
-:deep(.md-textarea) { border: none !important; border-radius: 0 !important; resize: vertical; min-height: 80px; }
-:deep(.md-preview) { padding: 10px 12px; min-height: 80px; }
+:deep(.md-textarea) { border: none !important; border-radius: 0 !important; resize: vertical; min-height: 180px; }
+:deep(.md-preview) { padding: 10px 12px; min-height: 180px; }
 
 .assignee-wrap { display: inline-flex; align-items: center; }
 .assignee-wrap select { font-size: 12px; padding: 1px 6px; height: 22px; max-width: 140px; }
