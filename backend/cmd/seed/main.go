@@ -2394,7 +2394,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			Actions: models.MacroActions{
 				{Type: "set_status", Value: "open"},
 				{Type: "add_tag", Value: "investigating"},
-				{Type: "add_message", Value: "Hi {fname},\n\nThank you for reaching out. We have received your ticket and are currently investigating the issue. We will keep you updated on our progress.\n\nKind regards,\n{agent}"},
+				{Type: "add_message", Value: "Hi {fname},\n\nThank you for reaching out. We have received your ticket and are currently investigating the issue. We will keep you updated on our progress.\n\nKind regards,\n        {agent}"},
 			},
 		},
 		{
@@ -2405,7 +2405,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			Actions: models.MacroActions{
 				{Type: "set_status", Value: "pending"},
 				{Type: "add_tag", Value: "needs-info"},
-				{Type: "add_message", Value: "Hi {fname},\n\nThank you for your message. To help us investigate further, could you please provide the following:\n\n- Steps to reproduce the issue\n- Any error messages or screenshots\n- Browser / OS version\n\nOnce we have this information we can proceed.\n\nKind regards,\n{agent}"},
+				{Type: "add_message", Value: "Hi {fname},\n\nThank you for your message. To help us investigate further, could you please provide the following:\n\n- Steps to reproduce the issue\n- Any error messages or screenshots\n- Browser / OS version\n\nOnce we have this information we can proceed.\n\nKind regards,\n        {agent}"},
 			},
 		},
 		{
@@ -2426,7 +2426,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			SortOrder:   40,
 			Actions: models.MacroActions{
 				{Type: "set_status", Value: "pending_close"},
-				{Type: "add_message", Value: "Hi {fname},\n\nWe are pleased to let you know that your ticket {ticket_id} has been resolved. Please let us know within 3 business days if you experience any further issues — otherwise the ticket will be closed automatically.\n\nThank you for contacting us!\n\nKind regards,\n{agent}"},
+				{Type: "add_message", Value: "Hi {fname},\n\nWe are pleased to let you know that your ticket {ticket_id} has been resolved. Please let us know within 3 business days if you experience any further issues — otherwise the ticket will be closed automatically.\n\nThank you for contacting us!\n\nKind regards,\n        {agent}"},
 			},
 		},
 		{
@@ -2436,7 +2436,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			SortOrder:   50,
 			Actions: models.MacroActions{
 				{Type: "set_status", Value: "closed"},
-				{Type: "add_message", Value: "Hi {fname},\n\nTicket {ticket_id} has been closed. Thank you for contacting us! If you need further assistance, please don't hesitate to open a new ticket.\n\nKind regards,\n{agent}"},
+				{Type: "add_message", Value: "Hi {fname},\n\nTicket {ticket_id} has been closed. Thank you for contacting us! If you need further assistance, please don't hesitate to open a new ticket.\n\nKind regards,\n        {agent}"},
 			},
 		},
 		{
@@ -2447,7 +2447,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			Actions: models.MacroActions{
 				{Type: "add_tag", Value: "duplicate"},
 				{Type: "set_status", Value: "closed"},
-				{Type: "add_message", Value: "Hi {fname},\n\nThis ticket appears to be a duplicate of an existing report. We have merged it with the original and will update you via the primary ticket.\n\nKind regards,\n{agent}"},
+				{Type: "add_message", Value: "Hi {fname},\n\nThis ticket appears to be a duplicate of an existing report. We have merged it with the original and will update you via the primary ticket.\n\nKind regards,\n        {agent}"},
 			},
 		},
 	}
