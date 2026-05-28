@@ -613,3 +613,12 @@ Create an application that has all these features and requirements
 - Merge Board report into Time Tracking as third tab: extract ReportView into BoardReportPanel.vue, embed as "Board" tab in TimeTrackingView, redirect /reports → /time-tracking?tab=board-report, remove duplicate Reports nav entry from AppHeader
 - Add PDF export toggles for page numbers and undeclarable time: show_page_numbers and show_undeclarable query params (default on), checkboxes in export options panel, persisted in localStorage
 - Move PDF font and language selects into export options popover to prevent filter bar wrapping at HD resolution
+- Add helpdesk inbox queue for unassigned email-created tickets: /tickets/inbox route with sidebar badge showing unread/total count
+- Add IMAP polling service: poll a configured mailbox on a configurable interval, create inbox tickets from incoming email, move processed messages to a configurable "Processed" mailbox
+- Add IMAP outbound reply: when an agent sends a message on a ticket that originated from email, send the reply back to the customer via SMTP
+- Add IMAP OAuth2 authentication: support XOAUTH2 and OAUTHBEARER SASL mechanisms for Gmail and Office 365 mailboxes; store and auto-renew refresh tokens; admin UI in Settings → Incoming Mail
+- Add reply threading: match incoming email replies to existing tickets via In-Reply-To, References headers, subject [#N] tag, or X-WarmDesk-Ticket-Id header; reopen closed/resolved tickets on customer reply
+- Add email indicators: show sender name and address on inbox tickets; show ✉ badge on messages that triggered an outbound email reply
+- Add move ticket between customers: reassign an inbox ticket to a customer, or move an existing ticket to a different customer from the ticket detail view
+- Fix IMAP test connection to use current form values instead of last saved settings
+- Add real-time inbox refresh: broadcast ticket.created and ticket.message.added WebSocket events from the IMAP service; InboxView reloads its list and TicketDetailView refreshes incoming replies in-place without clearing the reply draft

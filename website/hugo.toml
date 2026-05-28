@@ -15,12 +15,13 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.10.25"
-  release_date     = "2026-05-27"
+  warmdesk_version = "v0.10.26"
+  release_date     = "2026-05-28"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Board report tab** — the project-board time report is now a third tab inside Time Tracking; Reports menu entry retired, `/reports` redirects automatically.",
-    "**PDF export options** — toggle page numbers and undeclarable time on/off; font and language selects moved into the options panel to keep the filter bar on one line.",
+    "**IMAP inbox** — incoming email automatically creates helpdesk tickets in a dedicated Inbox queue; replies thread onto existing tickets and reopen closed ones.",
+    "**IMAP OAuth2** — authenticate Gmail and Office 365 mailboxes via XOAUTH2/OAUTHBEARER with auto-renewed tokens.",
+    "**Real-time inbox refresh** — inbox counter, ticket list, and open ticket detail update live via WebSocket when new mail arrives.",
   ]
 
 [markup]
@@ -39,7 +40,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.10.25"
+      "warmdesk-version" = "v0.10.26"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]

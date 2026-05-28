@@ -8,9 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.24)
+## Latest release (v0.10.26)
 
-- **Time tracking row drag-and-drop fixed** — reordering rows would stop working after navigating to a different week; now reliably re-attaches after each week load.
+- **IMAP inbox** — incoming email automatically creates helpdesk tickets in a dedicated Inbox queue; replies land on the ticket thread and reopen closed tickets.
+- **IMAP OAuth2** — Gmail and Office 365 mailboxes can now authenticate via XOAUTH2/OAUTHBEARER with auto-renewed tokens.
+- **Real-time inbox refresh** — inbox counter, ticket list, and open ticket detail all update live via WebSocket when new mail arrives.
 
 ## Experiment
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.10.26 — 2026-05-28
+
+### Added
+- **Helpdesk inbox** — unassigned email-created tickets queue in a dedicated Inbox view with its own sidebar badge showing `unread/total` counts; inbox list refreshes live when new mail arrives.
+- **IMAP polling** — automatically creates inbox tickets from incoming email; outbound agent replies are sent back to the customer by email.
+- **IMAP OAuth2** — authenticate to Gmail and Office 365 via XOAUTH2/OAUTHBEARER; refresh tokens are stored and auto-renewed before each poll.
+- **Reply threading** — incoming email replies are matched to existing tickets via `In-Reply-To`, `References` headers, subject `[#N]` tag, or `X-WarmDesk-Ticket-Id` header; closed/resolved tickets are automatically reopened on customer reply.
+- **Email indicators** — tickets and messages show the sender's name and address; an ✉ badge marks messages that triggered an outbound email reply.
+- **Real-time inbox refresh** — inbox counter and ticket list update instantly via WebSocket when IMAP delivers new mail; open ticket detail refreshes incoming replies in-place without clearing a reply draft.
+- **Move ticket between customers** — reassign an unassigned inbox ticket to a customer, or move an existing ticket to a different customer.
+
+### Fixed
+- **IMAP test connection** — "Test connection" now uses the current form values instead of the last saved settings.
+- **Inbox badge format** — badge consistently shows `unread/total`.
+
 ## v0.10.25 — 2026-05-27
 
 ### Added
