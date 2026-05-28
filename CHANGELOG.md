@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.10.28 — 2026-05-28
+
+### Added
+- **Ticket checklist templates** — admins define reusable ordered checklists in Admin → Checklists; agents apply a template to a ticket in one click; closing or moving to pending-close is blocked until every item is checked off; progress bar with n/m counter and drag-to-reorder shown in the ticket detail.
+- **Bruno & Postman collections expanded** — added coverage for macros, checklist templates, inbox tickets, spam, move, history, and raw-email endpoints.
+
+### Fixed
+- **Ansible macro module** — YAML documentation scanner error on `ansible-galaxy` import caused by unquoted colon-space patterns in description bullets; now quoted correctly.
+- **Build** — `make build` now removes `dist/docs/` before copying, preventing a nested `dist/docs/docs/` directory on incremental builds.
+
 ## v0.10.27 — 2026-05-28
 
 ### Added

@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.27)
+## Latest release (v0.10.28)
 
-- **Macro system** — create reusable one-click macros that set status, priority, type, add tags, and pre-fill a reply; apply from a dropdown in the ticket detail view.
-- **Spam handling** — mark tickets as spam to close and hide them; Show/Hide Spam toggle in ticket list and inbox headers.
-- **Larger reply box** — the comment box is taller with a Cancel button to discard the draft.
+- **Ticket checklist templates** — admins define reusable checklists; agents apply with one click; tickets block close until all items are checked off.
+- **Ansible collection v0.4.3** — fixes macro module YAML parse error on galaxy import.
 
 ## Experiment
 

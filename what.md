@@ -627,3 +627,5 @@ Create an application that has all these features and requirements
 - Add spam handling: mark ticket as spam sets is_spam=true and closes it; spam tickets hidden from lists by default; Show/Hide Spam toggle in ticket list and inbox headers; Not Spam restores status to open
 - Add card/group/list views to Inbox matching the customer ticket list layout, with independent localStorage persistence
 - Enlarge reply box to 8 rows (min 180 px) and add a Cancel button to clear the draft and pending attachments
+- Add ticket checklist templates for helpdesk tickets: admins define reusable ordered item lists in Admin → Checklists tab; agents apply a template to a ticket in one click; tickets are blocked from closing or moving to pending_close until all items are checked off; progress bar with n/m counter and drag-to-reorder shown in ticket detail
+- Fix Ansible macro module YAML scanner error on galaxy import: quote description bullets containing colon-space patterns
