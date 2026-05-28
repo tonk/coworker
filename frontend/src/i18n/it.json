@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Posta in arrivo",
+    "empty": "Nessun ticket non assegnato nella posta in arrivo.",
+    "customer": "Cliente",
+    "no_customer": "— nessun cliente —",
+    "assign_customer": "Assegna al cliente",
+    "assign": "Assegna",
+    "assigned_success": "Ticket assegnato al cliente.",
+    "unassigned": "Non assegnato"
   }
 }

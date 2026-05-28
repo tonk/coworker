@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Pósthólf",
+    "empty": "Engar óúthlutaðar miðar í pósthólfinu.",
+    "customer": "Viðskiptavinur",
+    "no_customer": "— enginn viðskiptavinur —",
+    "assign_customer": "Úthluta til viðskiptavinar",
+    "assign": "Úthluta",
+    "assigned_success": "Miðanum úthlutað til viðskiptavinar.",
+    "unassigned": "Óúthlutað"
   }
 }

@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Inkorg",
+    "empty": "Inga otilldelade ärenden i inkorgen.",
+    "customer": "Kund",
+    "no_customer": "— ingen kund —",
+    "assign_customer": "Tilldela kund",
+    "assign": "Tilldela",
+    "assigned_success": "Ärende tilldelat kunden.",
+    "unassigned": "Ej tilldelat"
   }
 }

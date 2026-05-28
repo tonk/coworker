@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Innboks",
+    "empty": "Ingen ikke-tildelte saker i innboksen.",
+    "customer": "Kunde",
+    "no_customer": "— ingen kunde —",
+    "assign_customer": "Tilordne til kunde",
+    "assign": "Tilordne",
+    "assigned_success": "Sak tilordnet kunden.",
+    "unassigned": "Ikke tilordnet"
   }
 }

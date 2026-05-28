@@ -16,7 +16,7 @@ type ticketLinkEntry struct {
 	Title        string `json:"title"`
 	Status       string `json:"status"`
 	Priority     string `json:"priority"`
-	CustomerID   uint   `json:"customer_id"`
+	CustomerID   *uint  `json:"customer_id"`
 }
 
 // ListTicketLinks GET /api/v1/customers/:customerId/tickets/:ticketId/links

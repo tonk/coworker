@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Bandeja de entrada",
+    "empty": "No hay tickets sin asignar en la bandeja de entrada.",
+    "customer": "Cliente",
+    "no_customer": "— sin cliente —",
+    "assign_customer": "Asignar a cliente",
+    "assign": "Asignar",
+    "assigned_success": "Ticket asignado al cliente.",
+    "unassigned": "Sin asignar"
   }
 }

@@ -185,6 +185,16 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			customers.POST("/:customerId/groups/:groupId/members", handlers.CustomerAddGroupMember)
 			customers.DELETE("/:customerId/groups/:groupId/members/:userId", handlers.CustomerRemoveGroupMember)
 
+			inbox := protected.Group("/tickets")
+			inbox.Use(middleware.RequireFeature("helpdesk_enabled"))
+			{
+				inbox.GET("/inbox", handlers.ListInboxTickets)
+				inbox.GET("/inbox/:ticketId", handlers.GetInboxTicket)
+				inbox.PUT("/inbox/:ticketId", handlers.UpdateInboxTicket)
+				inbox.POST("/inbox/:ticketId/messages", handlers.CreateInboxTicketMessage)
+				inbox.DELETE("/inbox/:ticketId", handlers.DeleteInboxTicket)
+			}
+
 			// Tickets (helpdesk)
 			tickets := customers.Group("/:customerId/tickets")
 			tickets.Use(middleware.RequireFeature("helpdesk_enabled"))

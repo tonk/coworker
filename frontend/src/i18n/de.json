@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Posteingang",
+    "empty": "Keine nicht zugewiesenen Tickets im Posteingang.",
+    "customer": "Kunde",
+    "no_customer": "— kein Kunde —",
+    "assign_customer": "Kunden zuweisen",
+    "assign": "Zuweisen",
+    "assigned_success": "Ticket dem Kunden zugewiesen.",
+    "unassigned": "Nicht zugewiesen"
   }
 }

@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Boîte de réception",
+    "empty": "Aucun ticket non attribué dans la boîte de réception.",
+    "customer": "Client",
+    "no_customer": "— aucun client —",
+    "assign_customer": "Attribuer à un client",
+    "assign": "Attribuer",
+    "assigned_success": "Ticket attribué au client.",
+    "unassigned": "Non attribué"
   }
 }

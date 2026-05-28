@@ -189,6 +189,14 @@
       <div v-show="open.helpdesk" class="section-body indented" id="section-body-helpdesk">
         <nav class="sidebar-nav">
           <RouterLink
+            to="/tickets/inbox"
+            class="sidebar-link inbox-link"
+            :aria-label="$t('inbox.title')"
+          >
+            <span class="inbox-icon" aria-hidden="true">📥</span>
+            <span class="link-text">{{ $t('inbox.title') }}</span>
+          </RouterLink>
+          <RouterLink
             v-for="c in customersStore.customers"
             :key="c.id"
             :to="`/customers/${c.id}/tickets`"

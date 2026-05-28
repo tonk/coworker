@@ -4,7 +4,8 @@ import "time"
 
 type Ticket struct {
 	ID                    uint            `gorm:"primaryKey" json:"id"`
-	CustomerID            uint            `gorm:"not null;index" json:"customer_id"`
+	CustomerID            *uint           `gorm:"index" json:"customer_id"`
+	Customer              *Customer       `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
 	Title                 string          `gorm:"not null;size:500" json:"title"`
 	Description           string          `gorm:"type:text" json:"description"`
 	Type                  string          `gorm:"not null;size:30;default:'incident'" json:"type"`

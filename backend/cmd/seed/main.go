@@ -2508,7 +2508,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 
 	createdAt := now.Add(-ts.createdAgo)
 	ticket := models.Ticket{
-		CustomerID:   custID,
+		CustomerID:   &custID,
 		Title:        ts.subject,
 		Description:  ts.description,
 		Type:         ts.ticketType,

@@ -248,13 +248,19 @@ func checkAttachmentAccess(a models.Attachment, userID uint) error {
 		if err := database.DB.Select("customer_id").First(&ticket, tm.TicketID).Error; err != nil {
 			return services.ErrForbidden
 		}
-		return requireCustomerAccess(ticket.CustomerID, userID, "")
+		if ticket.CustomerID == nil {
+			return nil
+		}
+		return requireCustomerAccess(*ticket.CustomerID, userID, "")
 	case "ticket":
 		var ticket models.Ticket
 		if err := database.DB.Select("customer_id").First(&ticket, a.OwnerID).Error; err != nil {
 			return services.ErrForbidden
 		}
-		return requireCustomerAccess(ticket.CustomerID, userID, "")
+		if ticket.CustomerID == nil {
+			return nil
+		}
+		return requireCustomerAccess(*ticket.CustomerID, userID, "")
 	default:
 		return services.ErrForbidden
 	}

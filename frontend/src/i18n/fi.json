@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Postilaatikko",
+    "empty": "Ei määrittämättömiä tikettejä postilaatikossa.",
+    "customer": "Asiakas",
+    "no_customer": "— ei asiakasta —",
+    "assign_customer": "Määritä asiakkaalle",
+    "assign": "Määritä",
+    "assigned_success": "Tiketti määritetty asiakkaalle.",
+    "unassigned": "Määrittämätön"
   }
 }

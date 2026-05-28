@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Inbox",
+    "empty": "Geen ontoegewezen tickets in de inbox.",
+    "customer": "Klant",
+    "no_customer": "— geen klant —",
+    "assign_customer": "Toewijzen aan klant",
+    "assign": "Toewijzen",
+    "assigned_success": "Ticket toegewezen aan klant.",
+    "unassigned": "Niet toegewezen"
   }
 }

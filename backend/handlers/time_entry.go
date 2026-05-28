@@ -127,7 +127,7 @@ func CreateTimeEntry(c *gin.Context) {
 	if req.TicketID != nil && req.CustomerID == nil {
 		var ticket models.Ticket
 		if database.DB.Select("customer_id").First(&ticket, *req.TicketID).Error == nil {
-			req.CustomerID = &ticket.CustomerID
+			req.CustomerID = ticket.CustomerID
 		}
 	}
 

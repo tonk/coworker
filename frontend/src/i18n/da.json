@@ -1025,5 +1025,15 @@
     "status": "Status",
     "created_at": "Created At",
     "group_view": "Group View"
+  },
+  "inbox": {
+    "title": "Indbakke",
+    "empty": "Ingen ikke-tildelte tickets i indbakken.",
+    "customer": "Kunde",
+    "no_customer": "— ingen kunde —",
+    "assign_customer": "Tildel til kunde",
+    "assign": "Tildel",
+    "assigned_success": "Ticket tildelt kunden.",
+    "unassigned": "Ikke tildelt"
   }
 }
