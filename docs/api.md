@@ -66,6 +66,9 @@ collections as plain text files — no account or cloud sync required.
 | `charts` | Velocity, burndown, burnup, CFD, cycle time, throughput, release burndown |
 | `topics` | List, create, get, reply |
 | `reports` | Time report, time entries |
+| `helpdesk` | Customer ticket list, ticket detail, messages, tags, links, macros |
+| `helpdesk-admin` | SLA policies, macros, checklist templates |
+| `helpdesk-inbox` | Inbox list, inbox ticket detail, move, spam |
 | `admin` | User management, system settings, backup |
 | `ticket-api` | Create card, add comment, move card (API key auth) |
 
@@ -421,7 +424,7 @@ The merge request reference uses the internal IID (`!42`); issues use `#42`.
 
 A card reference is a string in the format `PREFIX-NUMBER` where:
 
-- `PREFIX` is the project's 2–8 uppercase letter key (e.g. `PRJ`, `WEB`, `API`)
+- `PREFIX` is the project's 1–10 uppercase letter or digit key (e.g. `PRJ`, `WEB`, `API`)
 - `NUMBER` is the card's sequential number within the project (e.g. `42`)
 
 Examples: `PRJ-1`, `WEBAPP-99`, `API-200`
