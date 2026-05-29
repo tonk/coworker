@@ -497,7 +497,14 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 
 	entries := fetchGridEntries(targetUserID, firstDay, nextMonth)
 	dayFn := func(e models.TimeEntry) int {
-		return e.Date.Day() - 1
+		// Normalise to UTC midnight before comparing to avoid timezone edge cases
+		// where a stored date near midnight appears as the wrong calendar day.
+		entryDay := time.Date(e.Date.Year(), e.Date.Month(), e.Date.Day(), 0, 0, 0, 0, time.UTC)
+		diff := int(entryDay.Sub(firstDay).Hours()) / 24
+		if diff < 0 || diff >= 31 {
+			return -1
+		}
+		return diff
 	}
 	rows := buildGridRows(entries, dayFn, 31)
 
