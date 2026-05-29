@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.10.32 — 2026-05-29
+
+### Added
+- **Grid PDF period picker** — the Grid PDF button now opens a panel with a segmented Week / Month / Year control and context-sensitive date selectors (week number + year, month name + year, or year alone), so any period can be exported without navigating to it first.
+- **`scripts/inject_time.py`** — CLI utility to bulk-create time entries over a date range with optional customer/project lookup, MFA support, dry-run mode, and automatic token refresh.
+
+### Fixed
+- **Grid PDF vertical grid lines** — data rows now draw left and right cell borders across all three grid types (week, month, year); the totals row also gains a horizontal border below it.
+- **PDF export options panel direction** — the Export options dropdown in the Report tab now opens downward instead of upward, preventing it from being clipped at the top of the viewport.
+- **Timesheet new-row column shift** — the inline new-row editor was missing its leading drag-handle cell, causing all columns to shift left compared to the header.
+- **Token refresh in inject_time.py** — switched from a count-based refresh (every 100 entries) to a time-based check (every 13 minutes) so the access token never expires on slow APIs.
+
 ## v0.10.31 — 2026-05-29
 
 ### Added

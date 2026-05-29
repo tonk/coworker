@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.31)
+## Latest release (v0.10.32)
 
-- **Time tracking Grid PDF** — new landscape A4 export in week, month, and year views; holiday cells are amber-tinted, month weekends are light gray.
-- **Dutch "Zonder klant"** — corrected "no customer" translation across all contexts.
-- **Grid PDF fixes** — year header overlap, month label, column offset, and dropdown direction all corrected.
+- **Grid PDF period picker** — export any week, month, or year directly from the picker panel without navigating to it first.
+- **Grid PDF full grid lines** — data rows now have vertical cell separators and the totals row has a bottom border across all three grid types.
+- **Timesheet and report UI fixes** — new-row column alignment corrected; Export options panel opens downward in the Report tab.
 
 ## Experiment
 

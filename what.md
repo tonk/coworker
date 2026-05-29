@@ -648,3 +648,8 @@ Create an application that has all these features and requirements
 - Fix month grid header label removing 'Jaar' prefix: now shows 'mei 2026' not 'mei Jaar 2026'
 - Fix month grid day column index normalisation to UTC midnight to prevent timezone-related offset
 - Fix grid PDF row label to fall back to activity description when no customer or project is linked
+- Replace Grid PDF dropdown with a period-picker panel: segmented Week/Month/Year control with date selectors (week number + year, month name + year, or year alone) initialised from the current view
+- Add vertical grid lines to all data rows in grid PDFs and a horizontal border below the totals row across week, month, and year grids
+- Fix timesheet new-row editor missing drag-handle cell causing column shift when adding a row
+- Fix PDF export options panel in Report tab opening upward and being clipped; now opens downward
+- Add scripts/inject_time.py: bulk time-entry injection CLI with customer/project lookup, MFA support, dry-run mode, and time-based token refresh
