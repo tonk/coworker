@@ -3105,8 +3105,8 @@ td.c-day:focus-within .cell-time-toggle,
 }
 .btn-icon-xs:hover { background: var(--color-bg); color: var(--color-text); }
 .c-day-holiday { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.18); }
-th.c-day-today { background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface)); color: var(--color-primary); }
-td.c-day-today { background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
+.tt-head th.c-day-today { background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface)); color: var(--color-primary); }
+td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-primary) 10%, transparent); }
 .dh-holiday-dot {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--color-warning, #f59e0b); margin: 3px auto 0;
