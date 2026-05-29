@@ -283,6 +283,7 @@
 
             <!-- Inline new-row editor -->
             <tr v-if="addingRow" class="tt-row tt-newrow">
+              <td class="c-drag"></td>
               <td class="c-nr">{{ allRows.length + 1 }}</td>
               <td class="c-info">
                 <select class="nr-sel" v-model="newRow.customer_id" @change="newRow.project_id = null" aria-label="Customer">
