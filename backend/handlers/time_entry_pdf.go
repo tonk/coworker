@@ -471,7 +471,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.SetFont(fontFamily, "B", 8)
 		setTxt(pdf, clrMuted)
 		setFill(pdf, rgb{238, 242, 248})
-		pdf.CellFormat(nonHourW-colCost, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" "+tr.Total, "0", 0, "R", true, 0, "")
+		pdf.CellFormat(nonHourW-colCost, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" - "+tr.Total, "0", 0, "R", true, 0, "")
 		if showCosts {
 			costStr := ""
 			if grpCost > 0 {

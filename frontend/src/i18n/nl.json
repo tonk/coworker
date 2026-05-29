@@ -74,7 +74,7 @@
     },
     "customer": "Klant",
     "contract": "Contract",
-    "no_customer": "Geen klant",
+    "no_customer": "Zonder klant",
     "customer_required": "Een klant is verplicht"
   },
   "customer": {
@@ -802,7 +802,7 @@
     "description": "Omschrijving",
     "time": "Tijd",
     "total": "Totaal",
-    "no_customer": "Geen klant",
+    "no_customer": "Zonder klant",
     "no_project": "Geen project",
     "no_entries": "Geen invoer gevonden.",
     "no_entries_group": "Geen invoer",
@@ -1074,7 +1074,7 @@
     "title": "Inbox",
     "empty": "Geen ontoegewezen tickets in de inbox.",
     "customer": "Klant",
-    "no_customer": "— geen klant —",
+    "no_customer": "— zonder klant —",
     "assign_customer": "Toewijzen aan klant",
     "assign": "Toewijzen",
     "assigned_success": "Ticket toegewezen aan klant.",
