@@ -98,8 +98,8 @@
         >
           {{ $t('timeTracking.tab_board_report') }}
         </button>
-        <button v-if="auth.timeTrackingEnabled" class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
       </div>
+      <button v-if="auth.timeTrackingEnabled" class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
     </div>
 
     <!-- ── Weekly timesheet ────────────────────────────────────────────────── -->
@@ -126,7 +126,7 @@
                   <span class="sort-icon" aria-hidden="true">{{ sortCol === 'desc' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
                 </button>
               </th>
-              <th v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
+              <th v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
                 <div class="dh-abbr">{{ d.abbr }}</div>
                 <div class="dh-date">{{ d.mmdd }}</div>
                 <div v-if="holidayDates.has(d.iso)" class="dh-holiday-dot" aria-hidden="true"></div>
@@ -173,7 +173,7 @@
                 <td class="c-desc">{{ row.description || '—' }}</td>
               </template>
 
-              <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), copiedCell?.sourceKey === row.key + d.iso ? 'c-day-copied' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
+              <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), copiedCell?.sourceKey === row.key + d.iso ? 'c-day-copied' : '', d.isToday ? 'c-day-today' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
                 <input
                   :key="'c' + cellRenderEpoch + '-' + row.key + '-' + d.iso"
                   :id="'tt-cell-' + idx + '-' + di"
@@ -301,7 +301,7 @@
                   @keydown.escape="cancelNewRow"
                 />
               </td>
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
                 <input class="h-inp" :type="timeNotation === 'hhmm' ? 'text' : 'number'" value="" disabled />
               </td>
               <td class="c-total"></td>
@@ -312,7 +312,7 @@
           <tfoot>
             <tr class="tt-foot">
               <td colspan="3" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '', dayOverLimit(d.iso) ? 'c-day-over' : '']" :title="dayExpectedLabel(d.iso)">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '', dayOverLimit(d.iso) ? 'c-day-over' : '', d.isToday ? 'c-day-today' : '']" :title="dayExpectedLabel(d.iso)">
                 {{ dayTotal(d.iso) }}
               </td>
               <td class="c-total grand-total">{{ grandTotal }}</td>
@@ -320,7 +320,7 @@
             </tr>
             <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-undecl">
               <td colspan="3" class="foot-lbl foot-undecl-lbl">{{ $t('timeTracking.undeclarable') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-undecl', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-undecl', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
                 {{ dayUndecl(d.iso) || '' }}
               </td>
               <td class="c-total foot-undecl">{{ fmtTime(grandUndeclTotal) }}</td>
@@ -328,7 +328,7 @@
             </tr>
             <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-decl">
               <td colspan="3" class="foot-lbl foot-decl-lbl">{{ $t('timeTracking.declarable') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-decl', holidayDates.has(d.iso) ? 'c-day-holiday' : '']">
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-decl', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
                 {{ dayDeclarable(d.iso) || '' }}
               </td>
               <td class="c-total grand-total foot-decl">{{ fmtTime(grandDeclarable) }}</td>
@@ -881,7 +881,8 @@ const weekDays = computed(() => {
     // Use local date components so the ISO key matches the visible day name;
     // toISOString() would give the UTC date which is one day behind in UTC+ zones.
     const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    return { iso, mmdd: iso.slice(5), abbr: abbr.format(d) }
+    const todayIso = (() => { const t = new Date(); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}` })()
+    return { iso, mmdd: iso.slice(5), abbr: abbr.format(d), isToday: iso === todayIso }
   })
 })
 
@@ -2832,7 +2833,7 @@ onMounted(async () => {
 .tt-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
   padding: 0 16px;
   height: 48px;
@@ -3104,6 +3105,8 @@ td.c-day:focus-within .cell-time-toggle,
 }
 .btn-icon-xs:hover { background: var(--color-bg); color: var(--color-text); }
 .c-day-holiday { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.18); }
+th.c-day-today { background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface)); color: var(--color-primary); }
+td.c-day-today { background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
 .dh-holiday-dot {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--color-warning, #f59e0b); margin: 3px auto 0;
@@ -3344,7 +3347,7 @@ td.c-day:focus-within .cell-time-toggle,
 }
 .btn-undo:hover:not(:disabled) { background: var(--color-bg); border-color: var(--color-text-muted); color: var(--color-text); }
 .btn-undo:disabled { opacity: 0.5; cursor: not-allowed; }
-.tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.tt-export-group { margin-left: auto; display: flex; gap: 6px; align-items: flex-end; }
 .pdf-options-wrapper { position: relative; }
 .pdf-options-btn {
   display: inline-flex; align-items: center; gap: 6px;
@@ -3602,6 +3605,7 @@ td.c-day:focus-within .cell-time-toggle,
 .tt-manage-btn {
   padding: 0 10px;
   font-size: 14px;
+  margin-left: auto;
 }
 
 /* ── Modal backdrop & dialog ── */

@@ -901,7 +901,7 @@
                   <option value="24h">{{ $t('admin.backup_schedule_24h') }}</option>
                 </select>
               </div>
-              <div class="form-group" style="flex:0 0 160px" v-if="systemSettings.backup_schedule !== 'disabled'">
+              <div class="form-group" style="margin-bottom:0;flex:0 0 160px" v-if="systemSettings.backup_schedule !== 'disabled'">
                 <label class="form-label" for="sys-backup-time">{{ $t('admin.backup_start_time') }}</label>
                 <input
                   id="sys-backup-time"
