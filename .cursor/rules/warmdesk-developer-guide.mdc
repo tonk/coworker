@@ -361,6 +361,23 @@ Stored on `User.DashboardDefault` (GORM default `"boards"`). Values: `"boards"` 
 
 ---
 
+## IMAP polling — how processed mail is handled
+
+After the IMAP poller creates a ticket from an incoming email it **moves** the message to a separate folder so it is never processed twice. The destination defaults to `"Processed"` and is configurable via `processed_mailbox` in `warmdesk.yaml`. The folder is created automatically if it does not exist.
+
+**The poller only watches the source mailbox** (default `INBOX`, configurable via `mailbox`). Emails in the `Processed` folder are never re-scanned — this is intentional. If a user cannot find a message in their inbox, it was successfully picked up and will be in `Processed`.
+
+If the IMAP server does not support `MOVE` (RFC 6851), the service falls back to marking the message as `\Seen` in place rather than relocating it.
+
+Key config keys (all under `smtp:` / system settings in the admin UI):
+
+| Key | Default | Notes |
+|---|---|---|
+| `mailbox` | `INBOX` | Source folder the poller reads |
+| `processed_mailbox` | `Processed` | Destination after a ticket is created |
+
+---
+
 ## IMAP OAuth2
 
 The IMAP polling service supports OAuth2 authentication via the XOAUTH2 SASL mechanism (with OAUTHBEARER as fallback). This requires registering an OAuth 2.0 application with the email provider.
