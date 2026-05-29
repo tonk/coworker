@@ -311,7 +311,7 @@
 
           <tfoot>
             <tr class="tt-foot">
-              <td colspan="3" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
+              <td colspan="4" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
               <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '', dayOverLimit(d.iso) ? 'c-day-over' : '', d.isToday ? 'c-day-today' : '']" :title="dayExpectedLabel(d.iso)">
                 {{ dayTotal(d.iso) }}
               </td>
@@ -319,7 +319,7 @@
               <td class="c-act"></td>
             </tr>
             <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-undecl">
-              <td colspan="3" class="foot-lbl foot-undecl-lbl">{{ $t('timeTracking.undeclarable') }}</td>
+              <td colspan="4" class="foot-lbl foot-undecl-lbl">{{ $t('timeTracking.undeclarable') }}</td>
               <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-undecl', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
                 {{ dayUndecl(d.iso) || '' }}
               </td>
@@ -327,7 +327,7 @@
               <td class="c-act"></td>
             </tr>
             <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-decl">
-              <td colspan="3" class="foot-lbl foot-decl-lbl">{{ $t('timeTracking.declarable') }}</td>
+              <td colspan="4" class="foot-lbl foot-decl-lbl">{{ $t('timeTracking.declarable') }}</td>
               <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-decl', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
                 {{ dayDeclarable(d.iso) || '' }}
               </td>
