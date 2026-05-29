@@ -216,13 +216,14 @@
                   :class="{ 'cell-time-on': !!getEntry(row, d.iso)?.start_time }"
                   :aria-label="$t('timeTracking.set_time_range')"
                   :title="$t('timeTracking.set_time_range')"
-                  @mousedown.prevent="openTimePopup(row, d.iso)"
+                  @mousedown.prevent="openTimePopup(row, d.iso, $event)"
                   tabindex="-1"
                 >⏱</button>
                 <!-- Time range popup -->
                 <div
                   v-if="timePopupKey === row.key + d.iso"
                   class="time-popup"
+                  :class="{ 'time-popup-below': timePopupFlip }"
                   ref="timePopupRef"
                   role="dialog"
                   :aria-label="$t('timeTracking.set_time_range')"
@@ -2015,6 +2016,7 @@ function onCellPaste(event) {
 
 // ── Per-cell time range popup ─────────────────────────────────────────────
 const timePopupKey   = ref('')        // row.key + dateISO when open
+const timePopupFlip  = ref(false)     // true → open downward instead of upward
 const timePopupStart = ref('')
 const timePopupEnd   = ref('')
 const timePopupRef   = ref(null)
@@ -2026,7 +2028,7 @@ function fmtWallClock(mins) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
-function openTimePopup(row, dateISO) {
+function openTimePopup(row, dateISO, event) {
   const key = row.key + dateISO
   if (timePopupKey.value === key) {
     timePopupKey.value = ''
@@ -2035,6 +2037,8 @@ function openTimePopup(row, dateISO) {
   const existing = getEntry(row, dateISO)
   timePopupStart.value = existing?.start_time || ''
   timePopupEnd.value   = existing?.end_time   || ''
+  const rect = event?.currentTarget?.getBoundingClientRect()
+  timePopupFlip.value  = rect ? rect.top < 200 : false
   timePopupKey.value   = key
 }
 
@@ -3016,6 +3020,7 @@ td.c-day:focus-within .cell-time-toggle,
 .time-popup {
   position: absolute;
   bottom: calc(100% + 4px);
+  top: auto;
   left: 0;
   z-index: 300;
   background: var(--color-surface);
@@ -3028,6 +3033,7 @@ td.c-day:focus-within .cell-time-toggle,
   flex-direction: column;
   gap: 6px;
 }
+.time-popup.time-popup-below { bottom: auto; top: calc(100% + 4px); }
 .tp-label {
   display: flex;
   flex-direction: column;
