@@ -15,12 +15,13 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.10.28"
-  release_date     = "2026-05-28"
+  warmdesk_version = "v0.10.29"
+  release_date     = "2026-05-29"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Ticket checklist templates** — admins define reusable checklists; agents apply with one click; tickets block close until all items are checked off.",
-    "**Ansible collection v0.4.3** — fixes macro module YAML parse error on galaxy import.",
+    "**Today column highlight** — current day is tinted in the time tracking grid for instant orientation.",
+    "**Customer access hardened** — non-admin users with no customer assignments now see no customers; group-based access correctly grants ticket access.",
+    "**Time tracking footer fix** — day totals in the Total/Undeclarable/Declarable rows were shifted one column left; now aligned correctly.",
   ]
 
 [markup]
@@ -39,7 +40,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.10.28"
+      "warmdesk-version" = "v0.10.29"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]

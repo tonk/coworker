@@ -629,3 +629,8 @@ Create an application that has all these features and requirements
 - Enlarge reply box to 8 rows (min 180 px) and add a Cancel button to clear the draft and pending attachments
 - Add ticket checklist templates for helpdesk tickets: admins define reusable ordered item lists in Admin → Checklists tab; agents apply a template to a ticket in one click; tickets are blocked from closing or moving to pending_close until all items are checked off; progress bar with n/m counter and drag-to-reorder shown in ticket detail
 - Fix Ansible macro module YAML scanner error on galaxy import: quote description bullets containing colon-space patterns
+- Highlight today's column in the time tracking grid with a primary-colour tint on the header and a box-shadow overlay on data cells
+- Fix customer access strict allowlist: non-admin users with no CustomerAccess rows see no customers; requireCustomerAccess now checks group-based access via getAccessibleCustomerRoles
+- Fix time tracking footer colspan from 3 to 4 so day totals in Total/Undeclarable/Declarable rows align correctly with the day column headers
+- Fix time tracking tab bar: keep Log Time/Report/Board tabs right-aligned with the gear icon at the far right via margin-left:auto on the tab group
+- Fix backup Start time input alignment and time tracking export controls bottom-alignment

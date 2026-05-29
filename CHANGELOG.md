@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.10.29 — 2026-05-29
+
+### Added
+- **Today column highlight** — the current day's column in the time tracking grid is tinted with the primary colour so today is immediately obvious.
+- **IMAP processed-folder docs** — the behaviour of moving processed emails to a `Processed` mailbox is now documented in CLAUDE.md and `warmdesk.yaml.example`, including the configurable `processed_mailbox` key.
+
+### Fixed
+- **Customer access — no rows means no access** — non-admin users with no `CustomerAccess` rows (direct or via group) now correctly see no customers; the stale model comment that documented the opposite behaviour has been corrected. `requireCustomerAccess` now also honours group-based access via `GroupCustomerAccess`.
+- **Time tracking footer colspan** — the Total, Undeclarable, and Declarable footer rows used `colspan="3"` but the table has four fixed columns, shifting all day-column totals one position to the left.
+- **Time tracking tab bar** — the Log Time / Report / Board tabs are now always right-aligned in the header bar; the ⚙ manage-projects button floats to the far right.
+- **Today column CSS specificity** — the `th.c-day-today` background was overridden by the lower-specificity `.tt-head th` rule; fixed with `.tt-head th.c-day-today` and a box-shadow overlay for data cells.
+- **Backup "Start time" alignment** — the Start time input in Scheduled Backups now bottom-aligns with the Interval dropdown.
+- **Time tracking export controls alignment** — PDF font/language selects now bottom-align with the Export XLSX / Export PDF buttons.
+
 ## v0.10.28 — 2026-05-28
 
 ### Added

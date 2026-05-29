@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.28)
+## Latest release (v0.10.29)
 
-- **Ticket checklist templates** — admins define reusable checklists; agents apply with one click; tickets block close until all items are checked off.
-- **Ansible collection v0.4.3** — fixes macro module YAML parse error on galaxy import.
+- **Today column highlight** — current day is tinted in the time tracking grid.
+- **Customer access hardened** — non-admin users with no customer assignments now see no customers; group-based access correctly grants ticket access.
+- **Time tracking footer fix** — day totals in the Total/Undeclarable/Declarable rows were shifted one column left; now aligned correctly.
 
 ## Experiment
 
