@@ -3122,7 +3122,7 @@ td.c-day-today { background: color-mix(in srgb, var(--color-primary) 6%, transpa
 }
 .c-day-selected .h-inp { background: transparent; }
 
-.tt-mode-tabs { display: flex; gap: 2px; }
+.tt-mode-tabs { display: flex; gap: 2px; margin-left: auto; }
 .tt-mode-btn {
   height: 26px;
   display: flex;
@@ -3605,7 +3605,6 @@ td.c-day-today { background: color-mix(in srgb, var(--color-primary) 6%, transpa
 .tt-manage-btn {
   padding: 0 10px;
   font-size: 14px;
-  margin-left: auto;
 }
 
 /* ── Modal backdrop & dialog ── */
