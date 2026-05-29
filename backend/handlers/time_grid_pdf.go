@@ -831,7 +831,7 @@ func drawYearColHeader(pdf *gofpdf.Fpdf, ff string, cols []yearColDef, wLabel, h
 	pdf.SetX(gMargin)
 	setFill(pdf, gClrHdrFill)
 	pdf.CellFormat(wLabel, hdrH, "", "1", 0, "L", true, 0, "")
-	for _, c := range cols {
+	for i, c := range cols {
 		if c.isQtr {
 			setFill(pdf, gClrQtrFill)
 		} else if c.isTot {
@@ -839,9 +839,12 @@ func drawYearColHeader(pdf *gofpdf.Fpdf, ff string, cols []yearColDef, wLabel, h
 		} else {
 			setFill(pdf, gClrHdrFill)
 		}
-		pdf.CellFormat(c.width, hdrH, c.label, "1", 0, "C", true, 0, "")
+		ln := 0
+		if i == len(cols)-1 {
+			ln = 1
+		}
+		pdf.CellFormat(c.width, hdrH, c.label, "1", ln, "C", true, 0, "")
 	}
-	pdf.Ln(0)
 	return pdf.GetY()
 }
 
