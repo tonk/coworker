@@ -895,7 +895,8 @@
     "standby_apply": "Anvend",
     "standby_success": "Standbyvagt logget",
     "standby_error": "Kunne ikke logge standbyvagt",
-    "standby_invalid_range": "Angiv gyldig start- og slutdato/tid"
+    "standby_invalid_range": "Angiv gyldig start- og slutdato/tid",
+    "export_grid": "Gitter PDF"
   },
   "call": {
     "incoming": "Indgående opkald",

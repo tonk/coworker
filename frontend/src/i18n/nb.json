@@ -895,7 +895,8 @@
     "standby_apply": "Bruk",
     "standby_success": "Standbyvakt logget",
     "standby_error": "Kunne ikke logge standbyvakt",
-    "standby_invalid_range": "Angi gyldig start- og sluttdato/tid"
+    "standby_invalid_range": "Angi gyldig start- og sluttdato/tid",
+    "export_grid": "Rutenett PDF"
   },
   "call": {
     "incoming": "Innkommende anrop",

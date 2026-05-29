@@ -895,7 +895,8 @@
     "standby_apply": "Verkställ",
     "standby_success": "Standbypass loggat",
     "standby_error": "Kunde inte logga standbypass",
-    "standby_invalid_range": "Ange giltigt start- och slutdatum/tid"
+    "standby_invalid_range": "Ange giltigt start- och slutdatum/tid",
+    "export_grid": "Rutnät PDF"
   },
   "call": {
     "incoming": "Inkommande samtal",

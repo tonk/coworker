@@ -895,7 +895,8 @@
     "standby_apply": "Aplicar",
     "standby_success": "Guardia registrada",
     "standby_error": "Error al registrar la guardia",
-    "standby_invalid_range": "Introduzca una fecha/hora de inicio y fin válidas"
+    "standby_invalid_range": "Introduzca una fecha/hora de inicio y fin válidas",
+    "export_grid": "PDF cuadrícula"
   },
   "call": {
     "incoming": "Llamada entrante",

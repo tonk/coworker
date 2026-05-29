@@ -895,7 +895,8 @@
     "standby_apply": "Nota",
     "standby_success": "Vakt skráð",
     "standby_error": "Ekki tókst að skrá vakt",
-    "standby_invalid_range": "Sláðu inn gilda upphafs- og lokadagsetningu/tíma"
+    "standby_invalid_range": "Sláðu inn gilda upphafs- og lokadagsetningu/tíma",
+    "export_grid": "Hnitanet PDF"
   },
   "call": {
     "incoming": "Móttekið símtal",

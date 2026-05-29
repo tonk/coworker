@@ -394,6 +394,16 @@
           </div>
           <button class="btn btn-secondary" @click="exportSheetXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
           <button class="btn btn-secondary" @click="exportSheetPDF">{{ $t('timeTracking.export_pdf') }}</button>
+          <div class="pdf-options-wrapper" ref="gridPdfRef">
+            <button class="pdf-options-btn" @click="gridPdfOpen = !gridPdfOpen" :aria-expanded="String(gridPdfOpen)" aria-haspopup="true">
+              {{ $t('timeTracking.export_grid') }}<span class="pdf-opts-chevron" :class="{ open: gridPdfOpen }" aria-hidden="true">›</span>
+            </button>
+            <div v-if="gridPdfOpen" class="pdf-options-panel" role="menu">
+              <button class="pdf-option-item" role="menuitem" @click="exportGridPDF('week'); gridPdfOpen = false">{{ $t('timeTracking.week') }}</button>
+              <button class="pdf-option-item" role="menuitem" @click="exportGridPDF('month'); gridPdfOpen = false">{{ $t('report.period_month') }}</button>
+              <button class="pdf-option-item" role="menuitem" @click="exportGridPDF('year'); gridPdfOpen = false">{{ $t('report.period_year') }}</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -836,6 +846,8 @@ const pdfShowUndeclarable = ref(localStorage.getItem('timeTracking.pdfShowUndecl
 watch(pdfShowUndeclarable, v => localStorage.setItem('timeTracking.pdfShowUndeclarable', v ? '1' : '0'))
 const pdfOptionsOpen = ref(false)
 const pdfOptionsRef = ref(null)
+const gridPdfOpen = ref(false)
+const gridPdfRef = ref(null)
 
 // ── Mode ──────────────────────────────────────────────────────────────────
 // Honour ?tab=board-report from the /reports redirect; also default to board-report
@@ -2520,6 +2532,30 @@ async function exportSheetPDF() {
   }
 }
 
+// Weekly timesheet → Grid PDF (week, month, or year view).
+async function exportGridPDF(gridType) {
+  try {
+    const d = new Date(weekDays.value[0].iso)
+    const params = { grid: gridType, font: pdfFont.value, lang: pdfLang.value }
+    if (gridType === 'week') {
+      params.start_date = weekDays.value[0].iso
+    } else if (gridType === 'month') {
+      params.year = d.getFullYear()
+      params.month = d.getMonth() + 1
+    } else {
+      params.year = d.getFullYear()
+    }
+    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const data = await timeEntriesApi.gridPDF(params)
+    const y = params.year ?? weekInfo.value.year
+    const slug = gridType === 'week' ? `week${weekInfo.value.week}-${y}` : gridType === 'month' ? `month${String(params.month).padStart(2,'0')}-${y}` : `year${y}`
+    await triggerDownload(data, `timesheet-grid-${slug}.pdf`, 'application/pdf')
+  } catch (e) {
+    console.error('[export] grid PDF failed:', e)
+    ui.error(String(e?.message || e))
+  }
+}
+
 // Report tab → XLSX: date-list grouped by period.
 async function exportReportXLSX() {
   if (!report.value) return
@@ -2739,6 +2775,9 @@ async function deleteTTCustomer(c) {
 function onDocClick(e) {
   if (pdfOptionsRef.value && !pdfOptionsRef.value.contains(e.target)) {
     pdfOptionsOpen.value = false
+  }
+  if (gridPdfRef.value && !gridPdfRef.value.contains(e.target)) {
+    gridPdfOpen.value = false
   }
 }
 onMounted(() => {

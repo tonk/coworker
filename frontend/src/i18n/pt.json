@@ -895,7 +895,8 @@
     "standby_apply": "Aplicar",
     "standby_success": "Turno de prontidão registado",
     "standby_error": "Falha ao registar turno de prontidão",
-    "standby_invalid_range": "Introduza uma data/hora de início e fim válidas"
+    "standby_invalid_range": "Introduza uma data/hora de início e fim válidas",
+    "export_grid": "PDF grelha"
   },
   "call": {
     "incoming": "Chamada recebida",

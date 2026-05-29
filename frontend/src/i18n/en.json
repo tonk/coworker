@@ -983,7 +983,8 @@
     "standby_apply": "Apply",
     "standby_success": "Standby shift logged",
     "standby_error": "Failed to log standby shift",
-    "standby_invalid_range": "Enter a valid start and end date/time"
+    "standby_invalid_range": "Enter a valid start and end date/time",
+    "export_grid": "Grid PDF"
   },
   "call": {
     "incoming": "Incoming call",

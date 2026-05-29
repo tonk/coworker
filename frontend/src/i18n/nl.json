@@ -895,7 +895,8 @@
     "standby_apply": "Toepassen",
     "standby_success": "Standby-dienst gelogd",
     "standby_error": "Standby-dienst loggen mislukt",
-    "standby_invalid_range": "Voer een geldige start- en einddatum/tijd in"
+    "standby_invalid_range": "Voer een geldige start- en einddatum/tijd in",
+    "export_grid": "Raster PDF"
   },
   "call": {
     "incoming": "Inkomende oproep",

@@ -895,7 +895,8 @@
     "standby_apply": "Käytä",
     "standby_success": "Valmiusvuoro kirjattu",
     "standby_error": "Valmiusvuoron kirjaus epäonnistui",
-    "standby_invalid_range": "Anna kelvollinen alku- ja loppupäivä/aika"
+    "standby_invalid_range": "Anna kelvollinen alku- ja loppupäivä/aika",
+    "export_grid": "Ruudukko PDF"
   },
   "call": {
     "incoming": "Saapuva puhelu",

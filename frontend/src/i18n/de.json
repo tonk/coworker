@@ -895,7 +895,8 @@
     "standby_apply": "Übernehmen",
     "standby_success": "Bereitschaftsdienst erfasst",
     "standby_error": "Bereitschaftsdienst konnte nicht erfasst werden",
-    "standby_invalid_range": "Gültiges Start- und Enddatum/-zeit eingeben"
+    "standby_invalid_range": "Gültiges Start- und Enddatum/-zeit eingeben",
+    "export_grid": "Raster PDF"
   },
   "call": {
     "incoming": "Eingehender Anruf",

@@ -895,7 +895,8 @@
     "standby_apply": "Applica",
     "standby_success": "Turno di reperibilità registrato",
     "standby_error": "Impossibile registrare il turno di reperibilità",
-    "standby_invalid_range": "Inserire data/ora di inizio e fine valide"
+    "standby_invalid_range": "Inserire data/ora di inizio e fine valide",
+    "export_grid": "PDF griglia"
   },
   "call": {
     "incoming": "Chiamata in arrivo",

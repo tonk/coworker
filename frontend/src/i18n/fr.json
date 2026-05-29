@@ -895,7 +895,8 @@
     "standby_apply": "Appliquer",
     "standby_success": "Garde enregistrée",
     "standby_error": "Échec de l'enregistrement de la garde",
-    "standby_invalid_range": "Saisissez une date/heure de début et de fin valides"
+    "standby_invalid_range": "Saisissez une date/heure de début et de fin valides",
+    "export_grid": "PDF grille"
   },
   "call": {
     "incoming": "Appel entrant",
