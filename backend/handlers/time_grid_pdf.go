@@ -491,14 +491,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 	firstDay := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	nextMonth := firstDay.AddDate(0, 1, 0)
 
-	periodLabel := fmt.Sprintf("%s %d  %s  %s %d",
-		tr.WeekLabel[:0], // remove prefix
-		month,
-		tr.MonthsFull[month-1],
-		tr.YearPrefix, year,
-	)
-	// Build a cleaner period label.
-	periodLabel = fmt.Sprintf("%s  %s  %d", tr.MonthsFull[month-1], tr.YearPrefix, year)
+	periodLabel := fmt.Sprintf("%s  %d", tr.MonthsFull[month-1], year)
 
 	entries := fetchGridEntries(targetUserID, firstDay, nextMonth)
 	dayFn := func(e models.TimeEntry) int {
@@ -519,7 +512,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 	setGridFooter(pdf, ff, companyName, periodLabel, tr)
 
 	drawHeader := func() float64 {
-		line2 := fmt.Sprintf("%s %s %d", tr.MonthsFull[month-1], tr.YearPrefix, year)
+		line2 := fmt.Sprintf("%s %d", tr.MonthsFull[month-1], year)
 		y := drawGridDocHeader(pdf, ff, companyLogo, companyName, employeeName, line2)
 		pdf.SetY(y)
 		return drawMonthColHeader(pdf, ff, tr, year, month, daysInMonth, wLabel, wDay, wTotal, hdrH)
