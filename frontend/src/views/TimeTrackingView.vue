@@ -525,7 +525,7 @@
             >
               {{ $t('timeTracking.pdf_export_options') }}<span class="pdf-opts-chevron" :class="{ open: pdfOptionsOpen }">›</span>
             </button>
-            <div v-if="pdfOptionsOpen" class="pdf-options-panel" role="menu">
+            <div v-if="pdfOptionsOpen" class="pdf-options-panel opens-down" role="menu">
               <div class="pdf-option-selects">
                 <label class="pdf-option-select-label" :for="'pdf-opt-font'">{{ $t('report.pdf_font') }}</label>
                 <select id="pdf-opt-font" class="form-input pdf-option-select" v-model="pdfFont">
@@ -3503,6 +3503,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,.12);
   z-index: 120;
 }
+.pdf-options-panel.opens-down { bottom: auto; top: calc(100% + 4px); }
 .pdf-option-selects {
   display: grid;
   grid-template-columns: auto 1fr;
