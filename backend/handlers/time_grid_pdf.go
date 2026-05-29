@@ -92,6 +92,8 @@ func buildGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) int,
 			}
 		} else if e.Project != nil {
 			label = e.Project.Name
+		} else if e.Description != "" {
+			label = e.Description
 		} else {
 			label = "—"
 		}
