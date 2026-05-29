@@ -20,14 +20,17 @@ import (
 // ── Color palette for grid PDFs ───────────────────────────────────────────────
 
 var (
-	gClrPrimary = rgb{99, 102, 241}
-	gClrText    = rgb{30, 30, 46}
-	gClrMuted   = rgb{100, 116, 139}
-	gClrAlt     = rgb{245, 247, 250}
-	gClrHdrFill = rgb{238, 242, 248}
-	gClrQtrFill = rgb{224, 231, 255}
-	gClrTotFill = rgb{199, 210, 254}
-	gClrWhite   = rgb{255, 255, 255}
+	gClrPrimary    = rgb{99, 102, 241}
+	gClrText       = rgb{30, 30, 46}
+	gClrMuted      = rgb{100, 116, 139}
+	gClrAlt        = rgb{245, 247, 250}
+	gClrHdrFill    = rgb{238, 242, 248}
+	gClrQtrFill    = rgb{224, 231, 255}
+	gClrTotFill    = rgb{199, 210, 254}
+	gClrWhite      = rgb{255, 255, 255}
+	gClrHoliday    = rgb{255, 247, 205} // light amber — holiday cells
+	gClrWeekend    = rgb{232, 233, 240} // light lavender-gray — weekend data cells
+	gClrWeekendHdr = rgb{218, 220, 232} // slightly darker — weekend column headers
 )
 
 // ── Landscape A4 page geometry (mm) ──────────────────────────────────────────
@@ -42,8 +45,9 @@ const (
 // ── gridEntry holds one row of grid data ─────────────────────────────────────
 
 type gridEntry struct {
-	label string
-	cells []int // minutes per column (len == numCols)
+	label    string
+	cells    []int  // minutes per column (len == numCols)
+	holidays []bool // true if column contains at least one is_holiday entry
 }
 
 // ── gridFmt formats minutes as decimal hours, or blank for zero ──────────────
@@ -99,11 +103,17 @@ func buildGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) int,
 		}
 
 		if _, exists := rows[label]; !exists {
-			cells := make([]int, numCols)
-			rows[label] = &gridEntry{label: label, cells: cells}
+			rows[label] = &gridEntry{
+				label:    label,
+				cells:    make([]int, numCols),
+				holidays: make([]bool, numCols),
+			}
 			order = append(order, label)
 		}
 		rows[label].cells[col] += e.Minutes
+		if e.IsHoliday {
+			rows[label].holidays[col] = true
+		}
 	}
 
 	// Sort alphabetically.
@@ -401,19 +411,29 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			pdf.SetY(tableY)
 		}
 		alt := i%2 == 1
+		normalFill := gClrWhite
 		if alt {
-			setFill(pdf, gClrAlt)
-		} else {
-			setFill(pdf, gClrWhite)
+			normalFill = gClrAlt
 		}
 		setTxt(pdf, gClrText)
 		pdf.SetFont(ff, "", 8)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 28), "B", 0, "L", alt, 0, "")
+		setFill(pdf, normalFill)
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 28), "B", 0, "L", true, 0, "")
 		rowTotal := 0
-		for _, m := range r.cells {
+		for ci, m := range r.cells {
 			rowTotal += m
-			pdf.CellFormat(wDay, rowH, gridFmt(m), "B", 0, "C", alt, 0, "")
+			isHol := ci < len(r.holidays) && r.holidays[ci]
+			if isHol {
+				setFill(pdf, gClrHoliday)
+			} else {
+				setFill(pdf, normalFill)
+			}
+			txt := gridFmt(m)
+			if isHol && m == 0 {
+				txt = "•"
+			}
+			pdf.CellFormat(wDay, rowH, txt, "B", 0, "C", true, 0, "")
 		}
 		pdf.SetFont(ff, "B", 8)
 		setFill(pdf, gClrTotFill)
@@ -542,20 +562,34 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 			pdf.SetY(tableY)
 		}
 		alt := i%2 == 1
+		normalFill := gClrWhite
 		if alt {
-			setFill(pdf, gClrAlt)
-		} else {
-			setFill(pdf, gClrWhite)
+			normalFill = gClrAlt
 		}
 		setTxt(pdf, gClrText)
 		pdf.SetFont(ff, "", cellFS)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 24), "B", 0, "L", alt, 0, "")
+		setFill(pdf, normalFill)
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 24), "B", 0, "L", true, 0, "")
 		rowTotal := 0
 		for d := 0; d < 31; d++ {
 			m := r.cells[d]
 			rowTotal += m
-			pdf.CellFormat(wDay, rowH, gridFmt(m), "B", 0, "C", alt, 0, "")
+			isHol := d < len(r.holidays) && r.holidays[d]
+			isWkd := isWeekendDay(year, month, d+1)
+			switch {
+			case isHol:
+				setFill(pdf, gClrHoliday)
+			case isWkd:
+				setFill(pdf, gClrWeekend)
+			default:
+				setFill(pdf, normalFill)
+			}
+			txt := gridFmt(m)
+			if isHol && m == 0 {
+				txt = "•"
+			}
+			pdf.CellFormat(wDay, rowH, txt, "B", 0, "C", true, 0, "")
 		}
 		pdf.SetFont(ff, "B", cellFS)
 		setFill(pdf, gClrTotFill)
@@ -563,12 +597,17 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 	}
 
 	// Totals row.
-	setFill(pdf, gClrTotFill)
 	setTxt(pdf, gClrText)
 	pdf.SetFont(ff, "B", cellFS)
 	pdf.SetX(gMargin)
+	setFill(pdf, gClrTotFill)
 	pdf.CellFormat(wLabel, rowH, tr.Total, "T", 0, "L", true, 0, "")
 	for d := 0; d < 31; d++ {
+		if isWeekendDay(year, month, d+1) {
+			setFill(pdf, gClrWeekend)
+		} else {
+			setFill(pdf, gClrTotFill)
+		}
 		pdf.CellFormat(wDay, rowH, gridFmt(colTotals[d]), "T", 0, "C", true, 0, "")
 	}
 	setFill(pdf, gClrPrimary)
@@ -586,15 +625,20 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 // drawMonthColHeader renders the column headers for the month grid.
 func drawMonthColHeader(pdf *gofpdf.Fpdf, ff string, tr pdfI18n, year, month, daysInMonth int, wLabel, wDay, wTotal, hdrH float64) float64 {
 	_ = tr
-	setFill(pdf, gClrHdrFill)
 	setTxt(pdf, gClrText)
 	pdf.SetFont(ff, "B", 5.5)
 	pdf.SetX(gMargin)
+	setFill(pdf, gClrHdrFill)
 	pdf.CellFormat(wLabel, hdrH, tr.Customer+" / "+tr.Project, "1", 0, "L", true, 0, "")
 	for d := 1; d <= 31; d++ {
-		fill := gClrHdrFill
-		if d > daysInMonth {
-			fill = gClrAlt // greyed-out for days beyond month end
+		var fill rgb
+		switch {
+		case d > daysInMonth:
+			fill = gClrAlt
+		case isWeekendDay(year, month, d):
+			fill = gClrWeekendHdr
+		default:
+			fill = gClrHdrFill
 		}
 		setFill(pdf, fill)
 		pdf.CellFormat(wDay, hdrH, fmt.Sprintf("%d", d), "1", 0, "C", true, 0, "")
@@ -602,6 +646,11 @@ func drawMonthColHeader(pdf *gofpdf.Fpdf, ff string, tr pdfI18n, year, month, da
 	setFill(pdf, gClrTotFill)
 	pdf.CellFormat(wTotal, hdrH, tr.Total, "1", 1, "C", true, 0, "")
 	return pdf.GetY()
+}
+
+func isWeekendDay(year, month, day int) bool {
+	w := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC).Weekday()
+	return w == time.Saturday || w == time.Sunday
 }
 
 // ── Year grid ─────────────────────────────────────────────────────────────────
