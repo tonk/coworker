@@ -16,7 +16,7 @@ readonly WD_USER="warmdesk"
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 FORCE=0
-for arg in "$@"
+for arg in "${@}"
 do
     case "${arg}" in
         -f|--force) FORCE=1 ;;
