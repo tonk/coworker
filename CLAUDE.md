@@ -275,7 +275,11 @@ The helpdesk module is gated by the `helpdesk_enabled` user flag (default `false
 
 ### Access control
 
-Customer access is checked by `requireCustomerAccess` in `handlers/ticket.go`. Users need at least `"member"` role on the customer (via direct `CustomerAccess` or `GroupCustomerAccess`). Global admins bypass this check.
+**Customer visibility is a strict allowlist.** Non-admin users with no `CustomerAccess` rows (direct or via group) see no customers at all — there is no "see everything" fallback for unprivileged users. Global admins always see all customers.
+
+`getAccessibleCustomerRoles(userID)` in `handlers/customer.go` builds the effective role map for a user by combining direct `CustomerAccess` rows with `GroupCustomerAccess` rows (highest role wins). This function is used by `ListCustomers`, `GetCustomer`, and `requireCustomerAccess`.
+
+`requireCustomerAccess` in `handlers/ticket.go` calls `getAccessibleCustomerRoles` and returns `ErrForbidden` if the customer is not in the result — so both direct and group-based assignments grant ticket access.
 
 `ListCustomerMembers` (`handlers/customer_access.go`) only returns **direct** `CustomerAccess` rows — not group-based access. The ticket assignee dropdown in the UI depends on this endpoint, so every customer that uses tickets must have at least one direct `CustomerAccess` row per user who should appear as an assignee.
 
