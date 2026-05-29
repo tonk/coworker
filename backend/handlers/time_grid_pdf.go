@@ -419,7 +419,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		pdf.SetFont(ff, "", 8)
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 28), "B", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 28), "LRB", 0, "L", true, 0, "")
 		rowTotal := 0
 		for ci, m := range r.cells {
 			rowTotal += m
@@ -433,11 +433,11 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			if isHol && m == 0 {
 				txt = "•"
 			}
-			pdf.CellFormat(wDay, rowH, txt, "B", 0, "C", true, 0, "")
+			pdf.CellFormat(wDay, rowH, txt, "LRB", 0, "C", true, 0, "")
 		}
 		pdf.SetFont(ff, "B", 8)
 		setFill(pdf, gClrTotFill)
-		pdf.CellFormat(wTotal, rowH, gridFmt(rowTotal), "B", 1, "C", true, 0, "")
+		pdf.CellFormat(wTotal, rowH, gridFmt(rowTotal), "LRB", 1, "C", true, 0, "")
 	}
 
 	// Totals row.
@@ -445,13 +445,13 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	setTxt(pdf, gClrText)
 	pdf.SetFont(ff, "B", 8)
 	pdf.SetX(gMargin)
-	pdf.CellFormat(wLabel, rowH, tr.Total, "T", 0, "L", true, 0, "")
+	pdf.CellFormat(wLabel, rowH, tr.Total, "1", 0, "L", true, 0, "")
 	for _, m := range colTotals {
-		pdf.CellFormat(wDay, rowH, gridFmt(m), "T", 0, "C", true, 0, "")
+		pdf.CellFormat(wDay, rowH, gridFmt(m), "1", 0, "C", true, 0, "")
 	}
 	setFill(pdf, gClrPrimary)
 	setTxt(pdf, gClrWhite)
-	pdf.CellFormat(wTotal, rowH, gridFmt(grandTotal), "T", 1, "C", true, 0, "")
+	pdf.CellFormat(wTotal, rowH, gridFmt(grandTotal), "1", 1, "C", true, 0, "")
 
 	var buf bytes.Buffer
 	if err := pdf.Output(&buf); err != nil {
@@ -570,7 +570,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		pdf.SetFont(ff, "", cellFS)
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 24), "B", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 24), "LRB", 0, "L", true, 0, "")
 		rowTotal := 0
 		for d := 0; d < 31; d++ {
 			m := r.cells[d]
@@ -589,11 +589,11 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 			if isHol && m == 0 {
 				txt = "•"
 			}
-			pdf.CellFormat(wDay, rowH, txt, "B", 0, "C", true, 0, "")
+			pdf.CellFormat(wDay, rowH, txt, "LRB", 0, "C", true, 0, "")
 		}
 		pdf.SetFont(ff, "B", cellFS)
 		setFill(pdf, gClrTotFill)
-		pdf.CellFormat(wTotal, rowH, gridFmt(rowTotal), "B", 1, "C", true, 0, "")
+		pdf.CellFormat(wTotal, rowH, gridFmt(rowTotal), "LRB", 1, "C", true, 0, "")
 	}
 
 	// Totals row.
@@ -601,18 +601,18 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 	pdf.SetFont(ff, "B", cellFS)
 	pdf.SetX(gMargin)
 	setFill(pdf, gClrTotFill)
-	pdf.CellFormat(wLabel, rowH, tr.Total, "T", 0, "L", true, 0, "")
+	pdf.CellFormat(wLabel, rowH, tr.Total, "1", 0, "L", true, 0, "")
 	for d := 0; d < 31; d++ {
 		if isWeekendDay(year, month, d+1) {
 			setFill(pdf, gClrWeekend)
 		} else {
 			setFill(pdf, gClrTotFill)
 		}
-		pdf.CellFormat(wDay, rowH, gridFmt(colTotals[d]), "T", 0, "C", true, 0, "")
+		pdf.CellFormat(wDay, rowH, gridFmt(colTotals[d]), "1", 0, "C", true, 0, "")
 	}
 	setFill(pdf, gClrPrimary)
 	setTxt(pdf, gClrWhite)
-	pdf.CellFormat(wTotal, rowH, gridFmt(grandTotal), "T", 1, "C", true, 0, "")
+	pdf.CellFormat(wTotal, rowH, gridFmt(grandTotal), "1", 1, "C", true, 0, "")
 
 	var buf bytes.Buffer
 	if err := pdf.Output(&buf); err != nil {
@@ -813,14 +813,14 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		setTxt(pdf, gClrText)
 		pdf.SetFont(ff, "", 7)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 28), "B", 0, "L", alt, 0, "")
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 28), "LRB", 0, "L", alt, 0, "")
 		for ci, c := range cols {
 			val := r.cells[ci]
 			txt := gridFmt(val)
 			if c.isQtr {
 				setFill(pdf, gClrQtrFill)
 				pdf.SetFont(ff, "B", 7)
-				pdf.CellFormat(c.width, rowH, txt, "B", 0, "C", true, 0, "")
+				pdf.CellFormat(c.width, rowH, txt, "LRB", 0, "C", true, 0, "")
 				if alt {
 					setFill(pdf, gClrAlt)
 				} else {
@@ -830,7 +830,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			} else if c.isTot {
 				setFill(pdf, gClrTotFill)
 				pdf.SetFont(ff, "B", 7)
-				pdf.CellFormat(c.width, rowH, txt, "B", 1, "C", true, 0, "")
+				pdf.CellFormat(c.width, rowH, txt, "LRB", 1, "C", true, 0, "")
 				if alt {
 					setFill(pdf, gClrAlt)
 				} else {
@@ -838,7 +838,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 				}
 				pdf.SetFont(ff, "", 7)
 			} else {
-				pdf.CellFormat(c.width, rowH, txt, "B", 0, "C", alt, 0, "")
+				pdf.CellFormat(c.width, rowH, txt, "LRB", 0, "C", alt, 0, "")
 			}
 		}
 	}
@@ -848,7 +848,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	setTxt(pdf, gClrText)
 	pdf.SetFont(ff, "B", 7.5)
 	pdf.SetX(gMargin)
-	pdf.CellFormat(wLabel, rowH, tr.Total, "T", 0, "L", true, 0, "")
+	pdf.CellFormat(wLabel, rowH, tr.Total, "1", 0, "L", true, 0, "")
 	for ci, c := range cols {
 		val := colTotals[ci]
 		txt := gridFmt(val)
@@ -864,7 +864,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		if c.isTot {
 			nl = 1
 		}
-		pdf.CellFormat(c.width, rowH, txt, "T", nl, "C", true, 0, "")
+		pdf.CellFormat(c.width, rowH, txt, "1", nl, "C", true, 0, "")
 	}
 
 	var buf bytes.Buffer
