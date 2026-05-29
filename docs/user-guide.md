@@ -12,9 +12,10 @@
 8. [Notifications & @Mentions](#8-notifications--mentions)
 9. [Time Reports](#9-time-reports)
 10. [Time Tracking](#10-time-tracking)
-11. [User Settings](#11-user-settings)
-12. [Customers](#12-customers)
-13. [Search](#13-search)
+11. [Helpdesk](#11-helpdesk)
+12. [User Settings](#12-user-settings)
+13. [Customers](#13-customers)
+14. [Search](#14-search)
 
 ---
 
@@ -510,48 +511,58 @@ SMTP. The email contains the sender, context, and message preview.
 
 ## 9. Time Reports
 
+Time reports are accessed from the **Time Tracking** page (`/time-tracking`) via the **Board** tab. The `/reports` route redirects there automatically.
+
 ### Generating a report
 
-Open **Reports** from the main navigation. Choose:
+Go to **Time Tracking → Board** and choose:
 
 | Filter | Options |
 |--------|---------|
-| **Period** | All time / This year / This month / This week (ISO week) |
+| **Period** | Month / Year |
+| **Year / Month** | Select the period to report on |
 | **Project** | All projects or a specific one |
 | **Assignees** | All or one or more specific users |
 
-The report shows a table of cards with time logged, grouped by project. Totals
-are shown in H:MM format.
+Click **Generate Report**. The report shows a table of cards with time logged, grouped by project or customer. Totals are shown in H:MM format.
 
 ### Exporting
 
-Before exporting you can choose two options that are saved for your next visit:
+Click **PDF Options** to expand the export settings before downloading:
 
 | Option | Description |
 |--------|-------------|
 | **PDF Font** | Font used in the PDF: Inter, Roboto, Open Sans, Source Code Pro, FreeSans, FreeSerif, or FreeMono |
-| **PDF Language** | Language for all PDF labels. **Auto** follows your UI language. You can also pin it to English, Nederlands, Deutsch, Français, or Español — useful when your interface is in one language but the report is for someone else. |
+| **PDF Language** | Language for all PDF labels. **Auto** follows your UI language. |
+| **Show abbreviations** | Include the card reference prefix in the PDF |
+| **Page break per customer** | When grouping by customer, each customer starts on a new page |
+| **Show page numbers** | Include page numbers in the PDF footer |
+| **Show undeclarable time** | Include the undeclarable breakdown rows |
 
-- **PDF** — click **Export PDF** to download a server-generated PDF. The PDF
-  includes the company name and logo (if configured in Admin → Branding),
-  per-project totals shown as pill badges in the project header bars, column
-  headers, subtotals, and a grand total.
-- **Excel (XLSX)** — click **Export Excel** to download a `.xlsx` file with the
-  same data ready for further analysis.
+- **Export PDF** — downloads a server-generated PDF including the company name and logo (if configured in Admin → Branding), per-project totals, and a grand total.
+- **Export XLSX** — downloads a `.xlsx` file with the same data.
 
 ---
 
 ## 10. Time Tracking
 
 Time tracking is an optional module (enabled in User Settings). When active, the
-**Time Tracking** page (`/time-tracking`) shows a weekly grid where you log
-hours per customer, project, and activity across the seven days of any week.
+**Time Tracking** page (`/time-tracking`) has three tabs:
 
-### Weekly grid
+| Tab | Purpose |
+|-----|---------|
+| **Log Time** | Weekly grid — enter hours per day |
+| **Report** | Personal time-tracking report with PDF/XLSX export |
+| **Board** | Project-board time report extracted from card time entries |
+
+The ⚙ button at the far right of the tab bar opens the time-tracking project and customer manager.
+
+### Weekly grid (Log Time tab)
 
 Each row represents a customer + project + activity combination. Columns are
-the days of the week. Click a cell to enter the number of hours worked that day.
-The row total, day totals, and grand total update automatically.
+the days of the week. **Today's column is highlighted** with a tint so the
+current day is immediately visible. Click a cell to enter the number of hours
+worked that day. The row total, day totals, and grand total update automatically.
 
 Use the week picker (left/right arrows or the week label) to navigate between
 weeks. An **Add holidays** dropdown in the navigation bar lets you insert public
@@ -579,7 +590,73 @@ Projects and customers created by a **global admin** are labelled **Global (crea
 
 ---
 
-## 11. User Settings
+## 11. Helpdesk
+
+The helpdesk module must be enabled for your account by an administrator. When enabled, a **Tickets** section appears in the sidebar under each of your customers, and an **Inbox** entry appears for unassigned tickets.
+
+### Inbox
+
+The **Inbox** (`/tickets/inbox`) shows tickets that arrived by email but have not yet been assigned to a customer. The sidebar badge shows `unread / total` counts. From the inbox you can:
+
+- Open a ticket to read the full email body and reply
+- Move the ticket to a customer
+- Mark it as spam to close and hide it
+
+### Customer ticket list
+
+Click a customer name in the sidebar and then **Tickets** to see all tickets for that customer. The list can be switched between card, group, and list views. Use the filter bar to narrow by status, priority, type, assignee, or tag.
+
+**Statuses:**
+
+| Status | Meaning |
+|--------|---------|
+| New | Just created, not yet acknowledged |
+| Open | Being worked on |
+| Pending | Waiting for customer response; optional reminder date |
+| Pending close | Resolved, pending automatic closure; a close date is shown |
+| Closed | Resolved and closed |
+
+### Ticket detail
+
+Click a ticket to open the detail view. From here you can:
+
+| Action | Where |
+|--------|-------|
+| Edit the title | Click the title text |
+| Change status, priority, type | Dropdowns in the right panel |
+| Assign to an agent | **Assigned to** dropdown |
+| Assign to a group | **Group** dropdown |
+| Add / remove tags | Tag chips in the right panel |
+| Set a reminder date | **Reminder** date picker (pending tickets) |
+| Set a close date | **Close at** date picker (pending-close tickets) |
+| View SLA deadlines | **SLA** card in the right panel |
+| Link to another ticket | **Linked tickets** section |
+| Link to a board card | **Linked cards** section |
+| Reply | Text area at the bottom of the messages panel |
+| Attach files | Drag-and-drop or click the attachment button in the reply area |
+| Mark as spam | **Mark as Spam** button in the header |
+
+Clicking the ticket number (`#123`) in the header copies `Ticket#123` to the clipboard.
+
+The original email body (for email-created tickets) is shown as plain text. Messages that triggered an outbound email reply show a ✉ badge.
+
+### Checklist
+
+If an administrator has defined checklist templates, click **Apply Template** in the checklist section to add all its items in one click. Check items off as they are completed. A ticket cannot be moved to `Pending close` or `Closed` status until every checklist item is checked.
+
+### Macros
+
+Macros are one-click action sequences defined by administrators. Click the **Apply Macro** dropdown in the ticket detail header and select a macro. The macro applies its configured actions immediately (status, priority, tags) and pre-fills the reply box with any message template so you can review and edit before sending.
+
+### Pending and auto-close
+
+A ticket in **Pending** status can have a **Reminder** date. Pending tickets with a due reminder float to the top of the ticket list.
+
+A ticket in **Pending close** status has a **Close at** date. When that date passes the ticket is automatically closed by the server on the next list or detail load.
+
+---
+
+## 12. User Settings
 
 Open User Settings by clicking your display name in the header.
 
@@ -597,11 +674,12 @@ Open User Settings by clicking your display name in the header.
 | **Font** | Interface font (system, inter, roboto, etc.) |
 | **Font size** | Small / Medium / Large |
 | **Sidebar position** | Left (default) or right |
+| **Dashboard shows** | **Boards** (default) — open the dashboard on login; **Tickets** — redirect to your first starred customer's ticket list on login (requires helpdesk access) |
 | **Change password** | Enter your current password and a new one. Active password requirements (minimum length, character classes) are listed beneath the new-password field. |
 
 ---
 
-## 12. Customers
+## 13. Customers
 
 The **Customers** page (`/customers`) lists the customer organisations you have
 access to. Each customer can have one or more contracts, and contracts can be
@@ -654,7 +732,7 @@ Global admins can do all of this regardless of their customer role.
 
 ---
 
-## 13. Search
+## 14. Search
 
 The global search bar (magnifying glass icon in the header) searches across:
 

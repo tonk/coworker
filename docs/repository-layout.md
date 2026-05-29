@@ -16,7 +16,7 @@ warmdesk/
 |---|---|
 | `ansible/` | Ansible collection (`ansilabnl.warmdesk`) for automating WarmDesk via playbooks |
 | `backend/` | Go server — REST API, WebSocket, database, business logic |
-| `deploy/` | Deployment templates — systemd service, nginx/Apache config, `.desktop` entry |
+| `deploy/` | Deployment templates — systemd service, nginx/Apache config, `.desktop` entry, `get_warmdesk` update script |
 | `docs/` | User-facing documentation (admin guide, API docs, user guide) |
 | `frontend/` | Vue 3 web app + Tauri desktop wrapper |
 | `screenshots/` | Screenshots used in README.md |
@@ -50,7 +50,8 @@ warmdesk/
 | `migrate/` | Pre-AutoMigrate data fixups (e.g. backfilling key prefixes) |
 | `models/` | GORM model structs (User, Project, Card, …) |
 | `router/` | All routes registered in one place |
-| `services/` | Business logic shared across handlers (auth, ordering, project helpers) |
+| `services/` | Business logic shared across handlers (auth, ordering, project helpers, IMAP polling, XOAUTH2) |
+| `staticweb/` | Embeds the compiled frontend into the Go binary (files placed here at build time) |
 | `ws/` | WebSocket hub — real-time broadcast, in-memory and Redis pub/sub |
 
 ## `frontend/`

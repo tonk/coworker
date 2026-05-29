@@ -1,113 +1,116 @@
 # Releasing WarmDesk
 
-This document describes how we cut a versioned release. The repo root script **`./release`** automates the mechanical version bumps; **you still author** `CHANGELOG.md` and the bullet list under **Latest release** in `README.md`.
+## Overview
 
-## What a release involves
+Releases are cut from the `main` branch. Every release:
 
-| Step | What | Automated? |
-|------|------|----------------|
-| 1 | Add a `## vX.Y.Z — YYYY-MM-DD` section to `CHANGELOG.md` with user-facing notes | No — write by hand |
-| 2 | Update **Latest release** bullets in `README.md` (short highlights for readers) | No — write by hand |
-| 3 | Bump version strings in `website/hugo.toml`, Tauri `Cargo.toml` / `tauri.conf.json`, and the README heading line | Yes — `./release bump` |
-| 4 | Refresh `frontend/src-tauri/Cargo.lock` after Tauri version change | Yes — `cargo metadata` inside `./release` |
-| 5 | Commit, annotated tag `vX.Y.Z`, push `main` and the tag | Manual, or `./release publish` |
+1. Updates `CHANGELOG.md` with a new `## vX.Y.Z — YYYY-MM-DD` section.
+2. Updates `README.md` — the **Latest release** heading and bullet highlights.
+3. Appends new-feature bullets to `what.md`.
+4. Bumps version strings in `website/hugo.toml` (and the AsciiDoc attribute).
+5. Bumps `ansible/galaxy.yml` version if anything under `ansible/` changed since the last tag.
+6. Commits with message `chore: release vX.Y.Z — CHANGELOG, README, what.md`.
+7. Creates an annotated tag `vX.Y.Z` and pushes branch + tag.
 
-The **Git tag** drives the build: `make` and CI use `git describe --tags --match 'v*'` for embedding the version in the Go binary (`-ldflags "-X main.version=..."`).
+The **Git tag** drives the build: `make` and CI use
+`git describe --tags --match 'v*'` to embed the version string in the Go
+binary via `-ldflags "-X main.version=..."`.
 
-Files touched by **`./release bump`**:
+---
 
-- `website/hugo.toml` — `params.warmdesk_version`, `params.release_date` (today’s date in UTC unless `RELEASE_DATE` is set), and `markup.asciidocext.attributes` **`warmdesk-version`** (AsciiDoc attribute `{warmdesk-version}` in the theme)
-- `frontend/src-tauri/tauri.conf.json` — `"version"` (semver **without** the `v` prefix)
-- `frontend/src-tauri/Cargo.toml` — `version = "x.y.z"`
-- `README.md` — **only** the line `## Latest release (vX.Y.Z)`; bullets below are yours
+## Primary workflow — Claude Code `/release` skill
 
-Not modified by the script (by design):
+The recommended approach is to invoke the `/release` skill in Claude Code. Run:
 
-- `CHANGELOG.md`
-- `frontend/package.json` — npm package version is independent (frontend embed version comes from git / build)
-- Go source — uses linker flags from git describe at build time
+```
+/release v0.10.30
+```
 
-## Commands reference
+Claude Code will:
+- Collect all commits since the last tag (`git log --oneline vX.Y.W..HEAD`).
+- Write a user-facing `CHANGELOG.md` entry (Added / Fixed / Changed sections).
+- Update the **Latest release** heading and bullets in `README.md`.
+- Append bullets to `what.md`.
+- Update `website/hugo.toml` (`warmdesk_version`, `release_date`, `warmdesk-version`).
+- Bump `ansible/galaxy.yml` if Ansible files changed.
+- Commit, tag, and push.
 
-### Show help
+---
+
+## Manual workflow — `./release` script
+
+The repo root `./release` script automates the mechanical version bumps.
+Use it when releasing outside Claude Code.
+
+### Commands reference
 
 ```bash
+# Show help
 ./release help
+
+# Bump version strings only (usual workflow)
+# Edit CHANGELOG.md and README.md bullets first, then:
+./release bump v0.10.30
+
+# Dry run (no file writes)
+./release --dry-run bump v0.10.30
+
+# One-shot: bump + commit + tag + push
+./release publish v0.10.30
 ```
 
-### Bump versions only (usual workflow)
+**Files touched by `./release bump`:**
 
-After editing `CHANGELOG.md` and README bullets:
+| File | What changes |
+|------|-------------|
+| `website/hugo.toml` | `params.warmdesk_version`, `params.release_date`, `markup.asciidocext.attributes["warmdesk-version"]` |
+| `frontend/src-tauri/tauri.conf.json` | `"version"` (semver without `v` prefix) |
+| `frontend/src-tauri/Cargo.toml` | `version = "x.y.z"` |
+| `README.md` | Only the `## Latest release (vX.Y.Z)` heading line |
 
-```bash
-./release bump v0.9.40
-# or equivalently:
-./release v0.9.40
-```
+**Not modified by the script** (update manually):
 
-Dry run (no file writes):
+- `CHANGELOG.md` — write by hand before running the script
+- `what.md` — append new-feature bullets by hand
+- `frontend/package.json` — independent; not used for versioning
+- Go source — version comes from linker flags at build time
 
-```bash
-./release --dry-run bump v0.9.40
-```
-
-Use a fixed date for the website (e.g. when documenting retroactively):
-
-```bash
-RELEASE_DATE=2026-05-08 ./release bump v0.9.35
-```
-
-### Sanity-check version strings
+### Manual git commands (reference)
 
 ```bash
-./release check
-./release check v0.9.40
-```
+V=v0.10.30
+D=$(date -u +%Y-%m-%d)
 
-### One-shot: bump + commit + tag + push
+# After editing CHANGELOG.md, README.md bullets, and what.md:
+./release bump $V
 
-Use only when you are ready to commit **everything** in the working tree (including your CHANGELOG/README edits):
-
-```bash
-./release publish v0.9.40
-```
-
-This runs `bump`, then `git add -A`, `git commit -m "Release v0.9.40"`, annotated tag `v0.9.40`, `git push origin main`, and `git push origin v0.9.40`.
-
-If you prefer a manual commit message or staged files only, run **`./release bump`** and then git yourself.
-
-## Equivalent manual commands (historical)
-
-These are roughly what the automation does; you do **not** need to run them if you use `./release bump`:
-
-```bash
-# From repository root; example tag v0.9.40, date 2026-05-10
-V=v0.9.40
-D=2026-05-10
-BARE=0.9.40
-
-# Edit website/hugo.toml (warmdesk_version, release_date, warmdesk-version attribute)
-# Edit frontend/src-tauri/tauri.conf.json and Cargo.toml version to $BARE
-# Edit README.md heading to "## Latest release ($V)"
-
-( cd frontend/src-tauri && cargo metadata --format-version 1 > /dev/null )
-
-git add -A
-git commit -m "Release $V"
-git tag -a "$V" -m "WarmDesk $V"
+git add CHANGELOG.md README.md what.md website/hugo.toml ansible/galaxy.yml
+git commit -m "chore: release $V — CHANGELOG, README, what.md"
+git tag -a "$V" -m "Release $V"
 git push origin main
 git push origin "$V"
 ```
 
+---
+
 ## CI / GitHub Actions
 
-Pushing tag **`v*`** triggers the release workflow (artifacts, signing, GitHub Release page, etc.—see `.github/workflows/release.yml`). Ensure `CHANGELOG.md` and README are committed **before** the tag push.
+Pushing a `v*` tag triggers the release workflow (see
+`.github/workflows/release.yml`), which builds all artefacts (Linux amd64 +
+arm64 tarballs, AppImage, deb, rpm, Windows installer, macOS DMG), signs them,
+and publishes the GitHub Release page.
+
+Ensure `CHANGELOG.md` and `README.md` are committed **before** pushing the tag.
+
+---
 
 ## Checklist
 
-- [ ] `CHANGELOG.md` section for this tag
-- [ ] `README.md` bullets under Latest release
-- [ ] `./release bump vX.Y.Z` (or `publish` if you want one shot)
-- [ ] `git diff` review
-- [ ] Tag on `main` with matching `vX.Y.Z`
-- [ ] Push branch + tag; confirm workflow success
+- [ ] `CHANGELOG.md` — new section with user-facing notes
+- [ ] `README.md` — **Latest release** bullets updated
+- [ ] `what.md` — new-feature bullets appended
+- [ ] `website/hugo.toml` — version and date bumped
+- [ ] `ansible/galaxy.yml` — version bumped (if Ansible files changed)
+- [ ] Commit message: `chore: release vX.Y.Z — CHANGELOG, README, what.md`
+- [ ] Annotated tag `vX.Y.Z` on `main`
+- [ ] Branch and tag pushed; CI workflow succeeds

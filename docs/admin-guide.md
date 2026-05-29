@@ -10,16 +10,18 @@
 6. [First Admin Account](#6-first-admin-account)
 7. [Admin Panel](#7-admin-panel)
 8. [SMTP Email](#8-smtp-email)
-9. [Company Branding](#9-company-branding)
-10. [System Settings](#10-system-settings)
-11. [Password Policy](#11-password-policy)
-12. [Horizontal Scaling](#12-horizontal-scaling)
-13. [Desktop Apps](#13-desktop-apps)
-14. [Updates](#14-updates)
-15. [Backup and Recovery](#15-backup-and-recovery)
-16. [Demo Data](#16-demo-data)
-17. [Migration Tools](#17-migration-tools)
-18. [Security Checklist](#18-security-checklist)
+9. [Incoming Mail (IMAP)](#9-incoming-mail-imap)
+10. [Helpdesk Configuration](#10-helpdesk-configuration)
+11. [Company Branding](#11-company-branding)
+12. [System Settings](#12-system-settings)
+13. [Password Policy](#13-password-policy)
+14. [Horizontal Scaling](#14-horizontal-scaling)
+15. [Desktop Apps](#15-desktop-apps)
+16. [Updates](#16-updates)
+17. [Backup and Recovery](#17-backup-and-recovery)
+18. [Demo Data](#18-demo-data)
+19. [Migration Tools](#19-migration-tools)
+20. [Security Checklist](#20-security-checklist)
 
 ---
 
@@ -541,7 +543,151 @@ connections from the WarmDesk server's IP without authentication.
 
 ---
 
-## 9. Company Branding
+## 9. Incoming Mail (IMAP)
+
+WarmDesk can poll a mailbox and automatically create helpdesk tickets from incoming email.
+
+### Configuring the connection
+
+Go to **Admin → Settings → Incoming Mail** and fill in:
+
+| Field | Notes |
+|-------|-------|
+| **IMAP Host** | Hostname of your mail server, e.g. `imap.gmail.com` |
+| **IMAP Port** | Typically `993` (TLS) |
+| **Username** | Mailbox username / email address |
+| **Password** | Mailbox password or app-specific password |
+| **Authentication** | `Plain` (username + password) or `OAuth2` (Google / Office 365) |
+| **Mailbox** | Source folder to poll; default `INBOX` |
+| **Processed mailbox** | Folder messages are moved to after a ticket is created; default `Processed`. The folder is created automatically if it does not exist. |
+| **Poll interval (seconds)** | How often to check for new mail; default `60` |
+
+Click **Test Connection** to verify the settings before saving. Once saved, the poller starts automatically on next poll cycle.
+
+### Processed folder behaviour
+
+After the poller picks up an email and creates a ticket, the message is **moved** from the source mailbox to the processed mailbox. This prevents the same email from being turned into a duplicate ticket on the next poll. The poller only ever reads from the source mailbox — emails in the processed folder are never re-scanned.
+
+If the IMAP server does not support `MOVE` (RFC 6851), the message is marked `\Seen` in place instead.
+
+> **Tip:** if a user cannot find a message in their inbox, it was successfully processed and will be in the **Processed** folder.
+
+### OAuth2 authentication (Google and Office 365)
+
+OAuth2 avoids storing a plain password and is required by providers that have disabled basic auth.
+
+1. Set **Authentication** to **OAuth2** and select the **Email Provider**.
+2. Click **Authorize** — a popup opens to the provider consent screen.
+3. Grant access. The popup closes and tokens are stored in the database.
+4. The poller refreshes the access token automatically before it expires.
+
+Obtaining client credentials:
+
+**Google (Gmail):**
+1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → Create project → OAuth consent screen (External, add scope `https://mail.google.com/`)
+2. Credentials → Create OAuth 2.0 Client ID → Web application → add Authorized Redirect URI: `https://your-domain/api/v1/admin/imap/oauth2/callback`
+3. Add the Client ID and Client Secret to `warmdesk.yaml`:
+
+```yaml
+oauth2:
+  google_client_id: "xxxx.apps.googleusercontent.com"
+  google_client_secret: "GOCSPX-xxxx"
+```
+
+**Office 365 (Outlook):**
+1. [Azure Portal → App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps) → New registration → Accounts in any organizational directory + personal Microsoft accounts
+2. Redirect URI: Web → `https://your-domain/api/v1/admin/imap/oauth2/callback`
+3. API permissions → Microsoft Graph → Delegated → `IMAP.AccessAsUser.All` + `offline_access`
+4. Add to `warmdesk.yaml`:
+
+```yaml
+oauth2:
+  office_client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  office_client_secret: "xxxx~xxxx"
+```
+
+OAuth2 client credentials are read at startup — a restart is required after changing them in the YAML file.
+
+### Reply threading
+
+Incoming replies are matched to existing tickets via:
+- `In-Reply-To` / `References` email headers
+- `[#N]` tag in the subject line
+- `X-WarmDesk-Ticket-Id` header
+
+When a match is found, the reply is appended as a message on the existing ticket and the ticket is reopened if it was closed or pending-close. If no match is found, a new ticket is created.
+
+### Outbound replies
+
+When an agent sends a message on a ticket that originated from email, WarmDesk sends the reply back to the customer via SMTP. Outbound replies use the SMTP settings from **Admin → Settings → Email**.
+
+---
+
+## 10. Helpdesk Configuration
+
+The helpdesk module is an optional feature that must be enabled per user. Once enabled, a user can access the **Customers → Tickets** views and the **Inbox**.
+
+### Enabling helpdesk access
+
+In **Admin → Users → Edit User**, toggle **Helpdesk** on. Global admins always have helpdesk access regardless of this flag.
+
+### SLA policies
+
+SLA policies define response and resolution deadlines based on ticket priority.
+
+Go to **Admin → Settings → SLA Policies**:
+
+| Field | Notes |
+|-------|-------|
+| **Name** | Descriptive label, e.g. "Standard" |
+| **Response time (minutes)** | Time from ticket creation to first agent response |
+| **Resolution time (minutes)** | Time from ticket creation to closure |
+| **Priority filter** | Comma-separated priorities this policy applies to (e.g. `high,critical`). Leave empty for a catch-all that applies to all unmatched priorities. |
+| **Active** | Inactive policies are ignored; a policy can be disabled without deleting it |
+
+When a ticket is created, the best matching active policy is applied and the response / resolution deadlines are computed immediately. Breach status is recalculated on every list and detail load.
+
+### Macros
+
+Macros are one-click action sequences that agents apply to tickets.
+
+Go to **Admin → Settings → Macros** to create and manage macros. Each macro has:
+- A **Name** and optional **Description**
+- An ordered list of **Actions**
+
+| Action type | Effect |
+|-------------|--------|
+| `set_status` | Set ticket status (`new`, `open`, `pending`, `pending_close`, `closed`) |
+| `set_priority` | Set priority (`low`, `medium`, `high`, `critical`) |
+| `set_type` | Set type (`incident`, `problem`, `service_request`, `change_request`) |
+| `add_tag` | Add a tag (idempotent) |
+| `add_message` | Pre-fill the reply box with a template; supports placeholders `{email}`, `{fname}`, `{name}`, `{subject}`, `{ticket_id}`, `{agent}`, `{agent_fname}` |
+
+Drag actions to reorder. Use the **Insert placeholder** chips below an `add_message` action to click-insert placeholders.
+
+Agents apply macros from the **Apply Macro** dropdown in the ticket detail view. `add_message` actions pre-fill the reply box rather than posting immediately, so the agent can review and edit before sending.
+
+### Checklist templates
+
+Checklist templates let admins define reusable ordered item lists that agents apply to tickets in one click.
+
+Go to **Admin → Settings → Checklists**:
+
+1. Click **+ New Template**, enter a name, and add items.
+2. Drag items to reorder. Click × to delete.
+3. Save.
+
+When an agent opens a ticket and clicks **Apply Template** in the checklist section, all items from the template are added to the ticket's checklist. Tickets are blocked from moving to `pending_close` or `closed` status until every checklist item is checked off.
+
+### Customer access for helpdesk users
+
+Non-admin users must be explicitly assigned to at least one customer (directly or via a group) to see any customers or their tickets. A user with no customer assignments sees an empty customer list and cannot access any ticket.
+
+Customer access is **additive** — a user's effective role is the highest role from all direct and group assignments. Both direct `CustomerAccess` rows and `GroupCustomerAccess` rows grant ticket access.
+
+---
+
+## 11. Company Branding
 
 Go to **Admin → Settings → Branding** to set:
 
@@ -556,7 +702,7 @@ Changes take effect immediately — the login screen and reports both reflect th
 
 ---
 
-## 10. System Settings
+## 12. System Settings
 
 ### Session timeout
 
@@ -648,7 +794,7 @@ Individual users can override any of these in their own User Settings.
 
 ---
 
-## 11. Password Policy
+## 13. Password Policy
 
 **Admin → Settings → Password Policy**
 
@@ -668,7 +814,7 @@ The active requirements are displayed to users beneath the new-password field in
 
 ---
 
-## 12. Horizontal Scaling
+## 14. Horizontal Scaling
 
 WarmDesk uses WebSocket connections for real-time updates. In a single-instance
 setup, connections are managed in memory. When running multiple instances behind
@@ -715,7 +861,7 @@ redis-cli -h redis-host ping
 
 ---
 
-## 13. Desktop Apps
+## 15. Desktop Apps
 
 WarmDesk ships Tauri-based desktop apps that wrap the web frontend and connect
 to a WarmDesk server. The apps are standalone — they do not bundle the server.
@@ -769,7 +915,25 @@ See [INSTALL.md](../INSTALL.md) — the `make appimage`, `make dmg`, and
 
 ---
 
-## 14. Updates
+## 16. Updates
+
+### Using the `get_warmdesk` script (recommended for tarball installs)
+
+The `get_warmdesk` script is included in every server tarball (`dist/get_warmdesk`). Run it as root to download and install the latest release automatically:
+
+```bash
+sudo get_warmdesk            # install latest if a newer version is available
+sudo get_warmdesk --force    # install even if already on the latest version
+```
+
+The script:
+1. Detects the installed version and the latest GitHub release.
+2. Downloads the matching tarball for the current architecture (`amd64` or `arm64`).
+3. Stops the `warmdesk` systemd service.
+4. Extracts the tarball over the install directory.
+5. Restarts the service and prints its status.
+
+### From source
 
 ```bash
 # Pull latest source
@@ -794,7 +958,7 @@ manual migration step is needed.
 
 ---
 
-## 15. Backup and Recovery
+## 17. Backup and Recovery
 
 ### What to back up
 
@@ -893,7 +1057,7 @@ gunzip -c /backup/warmdesk-20260416.sql.gz | psql -U warmdesk warmdesk
 
 ---
 
-## 16. Demo Data
+## 18. Demo Data
 
 The `warmdesk-seed` binary ships alongside `warmdesk` and populates the
 database with realistic demo content for evaluation and testing.
@@ -960,7 +1124,7 @@ customer, contract, project, and user per slot.
 
 ---
 
-## 17. Migration Tools
+## 19. Migration Tools
 
 `warmdesk-export` and `warmdesk-import` are standalone binaries (shipped in
 `dist/` alongside the main server) for moving projects between WarmDesk and
@@ -1026,7 +1190,7 @@ cd dist
 
 ---
 
-## 18. Security Checklist
+## 20. Security Checklist
 
 Before exposing WarmDesk to the internet:
 
