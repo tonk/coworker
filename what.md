@@ -634,3 +634,6 @@ Create an application that has all these features and requirements
 - Fix time tracking footer colspan from 3 to 4 so day totals in Total/Undeclarable/Declarable rows align correctly with the day column headers
 - Fix time tracking tab bar: keep Log Time/Report/Board tabs right-aligned with the gear icon at the far right via margin-left:auto on the tab group
 - Fix backup Start time input alignment and time tracking export controls bottom-alignment
+- Add get_warmdesk update script to server tarball: auto-detects architecture (amd64/arm64), downloads latest release from GitHub, stops/starts systemd service, uses $(id -u) root check and then/do on own lines
+- Fix time range popup clipping: flip to open downward when trigger cell is within 200px of the top of the viewport
+- Sync admin guide, user guide, release.md, repository-layout.md, and api.md with current feature set

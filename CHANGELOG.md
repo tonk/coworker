@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.10.30 — 2026-05-29
+
+### Added
+- **`get_warmdesk` update script** — included in every server tarball; run as root to download and install the latest release automatically, with architecture auto-detection (`amd64` / `arm64`) and a `--force` flag.
+
+### Fixed
+- **Time range popup clipping** — the start/end time picker now flips to open downward when the cell is in one of the top rows, preventing it from being cut off above the viewport.
+
+### Changed
+- **Documentation sync** — admin guide now covers the helpdesk module, IMAP incoming mail, and the `get_warmdesk` update script; user guide adds a full Helpdesk section, fixes the Time Reports route, and documents all three Time Tracking tabs; `release.md` reflects the Claude Code skill workflow; `api.md` corrects the card prefix rules (1–10 chars/digits) and adds the three helpdesk Bruno folders.
+
 ## v0.10.29 — 2026-05-29
 
 ### Added
