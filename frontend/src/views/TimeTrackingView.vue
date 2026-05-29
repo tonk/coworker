@@ -2050,7 +2050,9 @@ function openTimePopup(row, dateISO, event) {
   timePopupStart.value = existing?.start_time || ''
   timePopupEnd.value   = existing?.end_time   || ''
   const rect = event?.currentTarget?.getBoundingClientRect()
-  timePopupFlip.value  = rect ? rect.top < 200 : false
+  const scrollEl = event?.currentTarget?.closest('.tt-scroll')
+  const scrollTop = scrollEl ? scrollEl.getBoundingClientRect().top : 0
+  timePopupFlip.value = rect ? (rect.top - scrollTop) < 200 : false
   timePopupKey.value   = key
 }
 
@@ -3410,7 +3412,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 }
 .pdf-opts-chevron.open { transform: rotate(-90deg); }
 .pdf-options-panel {
-  position: absolute; top: calc(100% + 4px); right: 0;
+  position: absolute; bottom: calc(100% + 4px); top: auto; right: 0;
   min-width: 280px; padding: 6px 0;
   background: var(--color-surface); border: 1px solid var(--color-border);
   border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,.12);
