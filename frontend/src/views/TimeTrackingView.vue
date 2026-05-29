@@ -395,13 +395,43 @@
           <button class="btn btn-secondary" @click="exportSheetXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
           <button class="btn btn-secondary" @click="exportSheetPDF">{{ $t('timeTracking.export_pdf') }}</button>
           <div class="pdf-options-wrapper" ref="gridPdfRef">
-            <button class="pdf-options-btn" @click="gridPdfOpen = !gridPdfOpen" :aria-expanded="String(gridPdfOpen)" aria-haspopup="true">
+            <button class="pdf-options-btn" :class="{ 'is-active': gridPdfOpen }" @click="openGridPdf" :aria-expanded="String(gridPdfOpen)" aria-haspopup="dialog">
               {{ $t('timeTracking.export_grid') }}<span class="pdf-opts-chevron" :class="{ open: gridPdfOpen }" aria-hidden="true">›</span>
             </button>
-            <div v-if="gridPdfOpen" class="pdf-options-panel" role="menu">
-              <button class="pdf-option-item" role="menuitem" @click="exportGridPDF('week'); gridPdfOpen = false">{{ $t('timeTracking.week') }}</button>
-              <button class="pdf-option-item" role="menuitem" @click="exportGridPDF('month'); gridPdfOpen = false">{{ $t('report.period_month') }}</button>
-              <button class="pdf-option-item" role="menuitem" @click="exportGridPDF('year'); gridPdfOpen = false">{{ $t('report.period_year') }}</button>
+            <div v-if="gridPdfOpen" class="pdf-options-panel grid-pdf-panel" role="dialog" :aria-label="$t('timeTracking.export_grid')">
+              <div class="grid-pdf-section-label">{{ $t('report.period') }}</div>
+              <div class="grid-pdf-type-row" role="group" :aria-label="$t('report.period')">
+                <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'week' }" @click="gridPdfType = 'week'" role="radio" :aria-checked="String(gridPdfType === 'week')">{{ $t('report.period_week') }}</button>
+                <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'month' }" @click="gridPdfType = 'month'" role="radio" :aria-checked="String(gridPdfType === 'month')">{{ $t('report.period_month') }}</button>
+                <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'year' }" @click="gridPdfType = 'year'" role="radio" :aria-checked="String(gridPdfType === 'year')">{{ $t('report.period_year') }}</button>
+              </div>
+              <div class="grid-pdf-date-row">
+                <template v-if="gridPdfType === 'week'">
+                  <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfWeek" :aria-label="$t('timeTracking.week')">
+                    <option v-for="w in 53" :key="w" :value="w">{{ $t('timeTracking.week_n', { n: w }) }}</option>
+                  </select>
+                  <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfWeekYear" :aria-label="$t('report.year')">
+                    <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
+                  </select>
+                </template>
+                <template v-else-if="gridPdfType === 'month'">
+                  <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfMonth" :aria-label="$t('report.period_month')">
+                    <option v-for="(name, idx) in gridPdfMonthNames" :key="idx + 1" :value="idx + 1">{{ name }}</option>
+                  </select>
+                  <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfMonthYear" :aria-label="$t('report.year')">
+                    <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
+                  </select>
+                </template>
+                <template v-else>
+                  <select class="form-input pdf-option-select grid-pdf-select grid-pdf-select-full" v-model.number="gridPdfYear" :aria-label="$t('report.period_year')">
+                    <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
+                  </select>
+                </template>
+              </div>
+              <div class="pdf-options-divider" role="separator"></div>
+              <div class="grid-pdf-actions">
+                <button class="btn btn-primary grid-pdf-export-btn" @click="exportGridPDFFromPanel">{{ $t('timeTracking.export_grid') }}</button>
+              </div>
             </div>
           </div>
         </div>
@@ -776,7 +806,7 @@ import {
   parseWallClock as parseShiftWallClock,
 } from '@/utils/shiftTimeEntries'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 const auth = useAuthStore()
 const ui = useUIStore()
@@ -848,6 +878,20 @@ const pdfOptionsOpen = ref(false)
 const pdfOptionsRef = ref(null)
 const gridPdfOpen = ref(false)
 const gridPdfRef = ref(null)
+const gridPdfType = ref('week')
+const gridPdfWeek = ref(1)
+const gridPdfWeekYear = ref(new Date().getFullYear())
+const gridPdfMonth = ref(1)
+const gridPdfMonthYear = ref(new Date().getFullYear())
+const gridPdfYear = ref(new Date().getFullYear())
+const gridPdfYears = computed(() => {
+  const y = new Date().getFullYear()
+  return Array.from({ length: 5 }, (_, i) => y - i)
+})
+const gridPdfMonthNames = computed(() => {
+  const fmt = new Intl.DateTimeFormat(locale.value || 'en', { month: 'long' })
+  return Array.from({ length: 12 }, (_, i) => fmt.format(new Date(2024, i, 1)))
+})
 
 // ── Mode ──────────────────────────────────────────────────────────────────
 // Honour ?tab=board-report from the /reports redirect; also default to board-report
@@ -2534,6 +2578,46 @@ async function exportSheetPDF() {
   }
 }
 
+// Open grid PDF panel, initialising selectors from the current week view.
+function openGridPdf() {
+  if (!gridPdfOpen.value) {
+    const d = new Date(weekDays.value[0].iso)
+    gridPdfWeek.value = weekInfo.value.week
+    gridPdfWeekYear.value = weekInfo.value.year
+    gridPdfMonth.value = d.getMonth() + 1
+    gridPdfMonthYear.value = d.getFullYear()
+    gridPdfYear.value = d.getFullYear()
+  }
+  gridPdfOpen.value = !gridPdfOpen.value
+}
+
+// Export grid PDF using the period and date selected in the panel.
+async function exportGridPDFFromPanel() {
+  gridPdfOpen.value = false
+  try {
+    const params = { grid: gridPdfType.value, font: pdfFont.value, lang: pdfLang.value }
+    let slug
+    if (gridPdfType.value === 'week') {
+      params.year = gridPdfWeekYear.value
+      params.week = gridPdfWeek.value
+      slug = `week${gridPdfWeek.value}-${gridPdfWeekYear.value}`
+    } else if (gridPdfType.value === 'month') {
+      params.year = gridPdfMonthYear.value
+      params.month = gridPdfMonth.value
+      slug = `month${String(gridPdfMonth.value).padStart(2, '0')}-${gridPdfMonthYear.value}`
+    } else {
+      params.year = gridPdfYear.value
+      slug = `year${gridPdfYear.value}`
+    }
+    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const data = await timeEntriesApi.gridPDF(params)
+    await triggerDownload(data, `timesheet-grid-${slug}.pdf`, 'application/pdf')
+  } catch (e) {
+    console.error('[export] grid PDF failed:', e)
+    ui.error(String(e?.message || e))
+  }
+}
+
 // Weekly timesheet → Grid PDF (week, month, or year view).
 async function exportGridPDF(gridType) {
   try {
@@ -3440,6 +3524,31 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 }
 .pdf-option-item:hover { background: var(--color-surface-2); }
 .pdf-option-item input[type="checkbox"] { accent-color: var(--color-primary); cursor: pointer; flex-shrink: 0; }
+.grid-pdf-panel { min-width: 230px; padding: 10px 0 8px; }
+.grid-pdf-section-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0 14px 6px;
+}
+.grid-pdf-type-row { display: flex; padding: 0 14px 10px; }
+.grid-pdf-type-btn {
+  flex: 1; padding: 5px 4px;
+  font-size: 13px; cursor: pointer; line-height: 1.3;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface); color: var(--color-text);
+  transition: background .12s, color .12s, border-color .12s;
+}
+.grid-pdf-type-btn:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.grid-pdf-type-btn:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.grid-pdf-type-btn:not(:first-child) { margin-left: -1px; }
+.grid-pdf-type-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); z-index: 1; position: relative; }
+.grid-pdf-type-btn:hover:not(.active) { background: var(--color-surface-2); border-color: var(--color-primary); z-index: 1; position: relative; }
+.grid-pdf-date-row { display: flex; gap: 8px; padding: 0 14px 8px; }
+.grid-pdf-select { flex: 1; min-width: 0; }
+.grid-pdf-select-full { width: 100%; }
+.grid-pdf-actions { display: flex; justify-content: flex-end; padding: 6px 14px 2px; }
+.grid-pdf-export-btn { font-size: 13px; height: 30px; padding: 0 14px; }
 .filter-label {
   font-size: 12px;
   font-weight: 600;
