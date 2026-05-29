@@ -637,3 +637,14 @@ Create an application that has all these features and requirements
 - Add get_warmdesk update script to server tarball: auto-detects architecture (amd64/arm64), downloads latest release from GitHub, stops/starts systemd service, uses $(id -u) root check and then/do on own lines
 - Fix time range popup clipping: flip to open downward when trigger cell is within 200px of the top of the viewport
 - Sync admin guide, user guide, release.md, repository-layout.md, and api.md with current feature set
+- Add Grid PDF export for time tracking: landscape A4 grids for week (7 day columns), month (31 day columns, 5.5pt font, greyed past-month days), and year (12 month + 4 quarter columns); Grid PDF dropdown in Log Time export bar
+- Add holiday cell indicators to grid PDFs: amber background, bullet '•' for 0-minute holiday entries
+- Add weekend column highlights to month grid PDF: light gray Sat/Sun columns in header and data rows
+- Fix Dutch 'no customer' translation from 'Geen klant' to 'Zonder klant' in all three i18n contexts
+- Change PDF customer subtotal row label format from '<Customer> Total' to '<Customer> - Total'
+- Fix grid PDF and PDF Options dropdowns opening upward instead of downward
+- Fix time range popup flip to use scroll container position instead of viewport position
+- Fix year grid column header row overlapping first data row (Ln(0) → ln=1 on last header cell)
+- Fix month grid header label removing 'Jaar' prefix: now shows 'mei 2026' not 'mei Jaar 2026'
+- Fix month grid day column index normalisation to UTC midnight to prevent timezone-related offset
+- Fix grid PDF row label to fall back to activity description when no customer or project is linked

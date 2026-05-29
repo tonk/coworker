@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.10.31 — 2026-05-29
+
+### Added
+- **Time tracking Grid PDF export** — new landscape A4 PDF grid for week (7 day columns with day abbreviation and date), month (31 day columns at compact 5.5 pt, days beyond month end greyed), and year (12 month + 4 quarter + yearly total columns). Accessible via **Grid PDF ▸** dropdown in the Log Time tab export bar. All three views honour the selected PDF font and language.
+- **Holiday indicators in grid PDFs** — cells with a holiday entry are highlighted in amber; 0-minute holidays show `•` so the day is marked even when no hours were logged.
+- **Weekend column highlights in month grid PDF** — Saturday and Sunday columns are tinted light gray in both the column header and all data rows.
+
+### Fixed
+- **Dutch "no customer" translation** — changed from "Geen klant" to "Zonder klant" in all three contexts (project dropdown, time tracking dropdown, inbox display).
+- **PDF customer subtotal label** — the customer subtotal row in the report PDF now reads `<Customer> - Total` instead of `<Customer> Total`.
+- **Grid PDF dropdown opens upward** — the Grid PDF and PDF Options dropdowns in the export bar now open upward instead of being hidden below the viewport.
+- **Time range popup** — the start/end time picker now correctly flips downward for top rows by measuring position relative to the scroll container, not the viewport.
+- **Year grid header overlap** — the column header row no longer overlaps the first data row (was using `Ln(0)` instead of `ln=1` on the last header cell).
+- **Month grid header label** — month PDF header now shows "mei 2026" instead of "mei Jaar 2026".
+- **Month grid day column offset** — day index computation normalised to UTC midnight to prevent timezone-related column misplacement.
+- **Grid PDF row label** — falls back to the activity description when no customer or project is linked.
+
 ## v0.10.30 — 2026-05-29
 
 ### Added

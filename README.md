@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.30)
+## Latest release (v0.10.31)
 
-- **`get_warmdesk` update script** — ships in every server tarball; one command to download and install the latest release with architecture auto-detection.
-- **Docs overhaul** — admin guide covers helpdesk and IMAP; user guide adds a full Helpdesk section and fixes Time Reports/Tracking docs.
-- **Time range popup fix** — start/end time picker no longer clips off-screen for top rows.
+- **Time tracking Grid PDF** — new landscape A4 export in week, month, and year views; holiday cells are amber-tinted, month weekends are light gray.
+- **Dutch "Zonder klant"** — corrected "no customer" translation across all contexts.
+- **Grid PDF fixes** — year header overlap, month label, column offset, and dropdown direction all corrected.
 
 ## Experiment
 
