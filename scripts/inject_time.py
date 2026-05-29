@@ -16,6 +16,7 @@ Usage:
 
 import argparse
 import sys
+import time
 from datetime import date, datetime, timedelta
 from getpass import getpass
 
@@ -210,10 +211,11 @@ def main():
 
     # -------------------------------------------------------- Create entries
     created = 0
+    token_obtained_at = time.monotonic()
     print("Creating time entries …")
     for d in days:
-        # Refresh token if needed (access tokens expire in 15 min)
-        if created > 0 and created % 100 == 0:
+        # Refresh token if it is approaching expiry (access tokens expire in 15 min).
+        if created > 0 and (time.monotonic() - token_obtained_at) > 780:
             print("  Refreshing token …")
             tokens = api("post", f"{api_base}/auth/refresh", headers=headers, json={
                 "refresh_token": refresh_token,
@@ -221,6 +223,7 @@ def main():
             access_token = tokens["access_token"]
             refresh_token = tokens["refresh_token"]
             headers["Authorization"] = f"Bearer {access_token}"
+            token_obtained_at = time.monotonic()
 
         payload = {
             "date": d.isoformat(),
