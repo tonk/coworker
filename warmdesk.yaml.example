@@ -107,6 +107,17 @@ allowed_origins: "http://localhost:5173"
 # livekit_api_key: "APIxxxxxxxxxxxxxxxx"
 # livekit_api_secret: "a_long_random_secret_string"
 
+# IMAP mailbox settings.
+# The poller reads new messages from `mailbox` (default INBOX) and moves each
+# processed message to `processed_mailbox` (default Processed) so it is never
+# turned into a duplicate ticket.  The destination folder is created automatically
+# if it does not exist.  If the server does not support MOVE the message is
+# marked \Seen in place instead.
+#
+# imap:
+#   mailbox: "INBOX"       # source folder to poll
+#   processed_mailbox: "Processed"   # destination after a ticket is created
+
 # IMAP OAuth2 client credentials (required for OAuth2-based IMAP authentication).
 # These are app-level credentials obtained by registering an OAuth 2.0 application
 # with the email provider. They are read at startup — changes require a restart.
