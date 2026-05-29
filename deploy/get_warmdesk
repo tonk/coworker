@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# get_warmdesk — download and install the latest WarmDesk server release from GitHub
+#
+# Usage: get_warmdesk [--force|-f]
+#
+# Must be run as root (needed for systemctl).  Reads the warmdesk user's home
+# directory from the system passwd database and assumes the binary lives under
+# ${WHOME}/run/.
+
+set -euo pipefail
+
+# ── Configuration ─────────────────────────────────────────────────────────────
+readonly REPO="tonk/warmdesk"
+readonly SERVICE="warmdesk"
+readonly WD_USER="warmdesk"
+
+# ── Argument parsing ──────────────────────────────────────────────────────────
+FORCE=0
+for arg in "${@:-}"; do
+    case "${arg}" in
+        -f|--force) FORCE=1 ;;
+        -h|--help)
+            echo "Usage: $(basename "$0") [--force|-f]"
+            echo "  --force, -f   Install even if already on the latest version"
+            exit 0 ;;
+        *) echo "Unknown option: ${arg}" >&2
+           echo "Usage: $(basename "$0") [--force|-f]" >&2
+           exit 1 ;;
+    esac
+done
+
+# ── Root check ────────────────────────────────────────────────────────────────
+if [[ ${EUID} -ne 0 ]]; then
+    echo "Error: must be run as root (needed for systemctl)." >&2
+    exit 1
+fi
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+WHOME="$(getent passwd "${WD_USER}" | cut -d: -f6)"
+if [[ -z "${WHOME}" ]]; then
+    echo "Error: user '${WD_USER}' not found." >&2
+    exit 1
+fi
+INSTALL_DIR="${WHOME}/run"
+BINARY="${INSTALL_DIR}/warmdesk"
+
+# ── Architecture detection ────────────────────────────────────────────────────
+case "$(uname -m)" in
+    x86_64)  ARCH="amd64"  ;;
+    aarch64) ARCH="arm64"  ;;
+    *) echo "Error: unsupported architecture $(uname -m)." >&2; exit 1 ;;
+esac
+
+# ── Version detection ─────────────────────────────────────────────────────────
+LATEST="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
+    | grep '"tag_name"' | head -1 \
+    | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')"
+
+if [[ -z "${LATEST}" ]]; then
+    echo "Error: could not determine latest release version from GitHub." >&2
+    exit 1
+fi
+
+if [[ -x "${BINARY}" ]]; then
+    CURRENT="$("${BINARY}" -version 2>/dev/null || true)"
+else
+    CURRENT=""
+fi
+
+echo "Installed : ${CURRENT:-(not installed)}"
+echo "Available : ${LATEST}"
+
+if [[ "${CURRENT}" == "${LATEST}" && ${FORCE} -eq 0 ]]; then
+    echo "WarmDesk is already at the latest version (${LATEST})."
+    exit 0
+fi
+
+# ── Download ──────────────────────────────────────────────────────────────────
+TARBALL="warmdesk-${LATEST}-linux-${ARCH}.tar.gz"
+URL="https://github.com/${REPO}/releases/download/${LATEST}/${TARBALL}"
+TMPFILE="$(mktemp "${WHOME}/${TARBALL}.XXXXXX")"
+trap 'rm -f "${TMPFILE}"' EXIT
+
+echo "Downloading ${TARBALL} ..."
+if ! curl -fL --progress-bar "${URL}" -o "${TMPFILE}"; then
+    echo "Error: download failed." >&2
+    exit 1
+fi
+
+# ── Install ───────────────────────────────────────────────────────────────────
+echo "Stopping ${SERVICE} ..."
+systemctl stop "${SERVICE}"
+
+echo "Extracting to ${INSTALL_DIR} ..."
+cd "${INSTALL_DIR}"
+rm -rf web deploy docs
+tar -xf "${TMPFILE}"
+chown -R "${WD_USER}:${WD_USER}" "${WHOME}"
+
+echo "Starting ${SERVICE} ..."
+systemctl start "${SERVICE}"
+sleep 2
+systemctl status "${SERVICE}" --no-pager
+
+echo "Done — WarmDesk updated to ${LATEST}."
