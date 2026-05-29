@@ -611,14 +611,15 @@ func refreshSlaBreachStatus(ticket *models.Ticket) {
 	_ = changed
 }
 
-// requireCustomerAccess checks that the user has member or admin access to the customer.
+// requireCustomerAccess checks that the user has member or admin access to the customer,
+// honouring both direct CustomerAccess rows and group-based GroupCustomerAccess rows.
 // Admins bypass all checks.
 func requireCustomerAccess(customerID, userID uint, role string) error {
 	if role == "admin" {
 		return nil
 	}
-	var access models.CustomerAccess
-	if err := database.DB.Where("customer_id = ? AND user_id = ?", customerID, userID).First(&access).Error; err != nil {
+	accessible := getAccessibleCustomerRoles(userID)
+	if _, ok := accessible[customerID]; !ok {
 		return services.ErrForbidden
 	}
 	return nil
