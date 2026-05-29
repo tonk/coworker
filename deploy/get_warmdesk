@@ -16,7 +16,8 @@ readonly WD_USER="warmdesk"
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 FORCE=0
-for arg in "${@:-}"; do
+for arg in "${@:-}"
+do
     case "${arg}" in
         -f|--force) FORCE=1 ;;
         -h|--help)
@@ -30,14 +31,16 @@ for arg in "${@:-}"; do
 done
 
 # ── Root check ────────────────────────────────────────────────────────────────
-if [[ ${EUID} -ne 0 ]]; then
+if [[ $(id -u) -ne 0 ]]
+then
     echo "Error: must be run as root (needed for systemctl)." >&2
     exit 1
 fi
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 WHOME="$(getent passwd "${WD_USER}" | cut -d: -f6)"
-if [[ -z "${WHOME}" ]]; then
+if [[ -z "${WHOME}" ]]
+then
     echo "Error: user '${WD_USER}' not found." >&2
     exit 1
 fi
@@ -56,12 +59,14 @@ LATEST="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
     | grep '"tag_name"' | head -1 \
     | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')"
 
-if [[ -z "${LATEST}" ]]; then
+if [[ -z "${LATEST}" ]]
+then
     echo "Error: could not determine latest release version from GitHub." >&2
     exit 1
 fi
 
-if [[ -x "${BINARY}" ]]; then
+if [[ -x "${BINARY}" ]]
+then
     CURRENT="$("${BINARY}" -version 2>/dev/null || true)"
 else
     CURRENT=""
@@ -70,7 +75,8 @@ fi
 echo "Installed : ${CURRENT:-(not installed)}"
 echo "Available : ${LATEST}"
 
-if [[ "${CURRENT}" == "${LATEST}" && ${FORCE} -eq 0 ]]; then
+if [[ "${CURRENT}" == "${LATEST}" && ${FORCE} -eq 0 ]]
+then
     echo "WarmDesk is already at the latest version (${LATEST})."
     exit 0
 fi
@@ -82,7 +88,8 @@ TMPFILE="$(mktemp "${WHOME}/${TARBALL}.XXXXXX")"
 trap 'rm -f "${TMPFILE}"' EXIT
 
 echo "Downloading ${TARBALL} ..."
-if ! curl -fL --progress-bar "${URL}" -o "${TMPFILE}"; then
+if ! curl -fL --progress-bar "${URL}" -o "${TMPFILE}"
+then
     echo "Error: download failed." >&2
     exit 1
 fi
