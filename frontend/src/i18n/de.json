@@ -579,7 +579,7 @@
     "req_upper": "Ein Großbuchstabe (A–Z)",
     "req_lower": "Ein Kleinbuchstabe (a–z)",
     "req_digit": "Eine Ziffer (0–9)",
-    "req_special": "Ein Sonderzeichen (!@#$…)",
+    "req_special": "Ein Sonderzeichen (!{'@'}#$…)",
     "working_hours": "Arbeitszeiten",
     "working_hours_hint": "Legen Sie Ihre übliche Startzeit für jeden Wochentag fest. Leer lassen für freie Tage.",
     "dashboard_default": "Dashboard shows",

@@ -614,7 +614,7 @@
     "req_upper": "Hástafur (A–Ö)",
     "req_lower": "Lágstafur (a–ö)",
     "req_digit": "Tala (0–9)",
-    "req_special": "Sértákn (!@#$…)",
+    "req_special": "Sértákn (!{'@'}#$…)",
     "working_hours": "Vinnutími",
     "working_hours_hint": "Stillu inn venjulegan upphafstíma fyrir hvern vikudag. Skildu eftir autt á frídögum.",
     "dashboard_default": "Dashboard shows",

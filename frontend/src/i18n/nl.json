@@ -579,7 +579,7 @@
     "req_upper": "Één hoofdletter (A–Z)",
     "req_lower": "Één kleine letter (a–z)",
     "req_digit": "Één cijfer (0–9)",
-    "req_special": "Één speciaal teken (!@#$…)",
+    "req_special": "Één speciaal teken (!{'@'}#$…)",
     "working_hours": "Werktijden",
     "working_hours_hint": "Stel uw gebruikelijke starttijd in voor elke dag van de week. Laat leeg voor dagen dat u niet werkt.",
     "dashboard_default": "Dashboard shows",

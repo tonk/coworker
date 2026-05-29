@@ -614,7 +614,7 @@
     "req_upper": "Iso kirjain (A–Ö)",
     "req_lower": "Pieni kirjain (a–ö)",
     "req_digit": "Numero (0–9)",
-    "req_special": "Erikoismerkki (!@#$…)",
+    "req_special": "Erikoismerkki (!{'@'}#$…)",
     "working_hours": "Työajat",
     "working_hours_hint": "Aseta tavanomainen aloitusaika jokaiselle viikonpäivälle. Jätä tyhjäksi vapaapäiville.",
     "dashboard_default": "Dashboard shows",

@@ -706,7 +706,7 @@
     "req_upper": "An uppercase letter (A–Z)",
     "req_lower": "A lowercase letter (a–z)",
     "req_digit": "A digit (0–9)",
-    "req_special": "A special character (!@#$…)",
+    "req_special": "A special character (!{'@'}#$…)",
     "working_hours": "Working Hours",
     "working_hours_hint": "Set your usual start time for each day of the week. Leave blank for days you don't work."
   },

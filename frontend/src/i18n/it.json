@@ -614,7 +614,7 @@
     "req_upper": "Una maiuscola (A–Z)",
     "req_lower": "Una minuscola (a–z)",
     "req_digit": "Una cifra (0–9)",
-    "req_special": "Un carattere speciale (!@#$…)",
+    "req_special": "Un carattere speciale (!{'@'}#$…)",
     "working_hours": "Orario di lavoro",
     "working_hours_hint": "Imposta l'orario di inizio abituale per ogni giorno. Lascia vuoto per i giorni liberi.",
     "dashboard_default": "Dashboard shows",

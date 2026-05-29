@@ -614,7 +614,7 @@
     "req_upper": "Et stort bogstav (A–Z)",
     "req_lower": "Et lille bogstav (a–z)",
     "req_digit": "Et ciffer (0–9)",
-    "req_special": "Et specialtegn (!@#$…)",
+    "req_special": "Et specialtegn (!{'@'}#$…)",
     "working_hours": "Arbejdstid",
     "working_hours_hint": "Indstil din sædvanlige starttid for hver ugedag. Lad være tom på fridage.",
     "dashboard_default": "Dashboard shows",

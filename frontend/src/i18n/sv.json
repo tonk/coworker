@@ -614,7 +614,7 @@
     "req_upper": "En stor bokstav (A–Ö)",
     "req_lower": "En liten bokstav (a–ö)",
     "req_digit": "En siffra (0–9)",
-    "req_special": "Ett specialtecken (!@#$…)",
+    "req_special": "Ett specialtecken (!{'@'}#$…)",
     "working_hours": "Arbetstid",
     "working_hours_hint": "Ange din vanliga starttid för varje veckodag. Lämna tomt för lediga dagar.",
     "dashboard_default": "Dashboard shows",
