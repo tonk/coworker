@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.10.33 — 2026-05-29
+
+### Fixed
+- **Settings view blank screen** — bare `@` in the `req_special` translation string (`!@#$…`) was treated as a vue-i18n linked-message prefix, causing `SyntaxError: 10` when SettingsView loaded. Escaped to `{'@'}` in all 12 language files.
+
 ## v0.10.32 — 2026-05-29
 
 ### Added

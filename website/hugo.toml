@@ -15,7 +15,7 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.10.32"
+  warmdesk_version = "v0.10.33"
   release_date     = "2026-05-29"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
@@ -40,7 +40,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.10.32"
+      "warmdesk-version" = "v0.10.33"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]

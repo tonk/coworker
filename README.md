@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.32)
+## Latest release (v0.10.33)
 
+- **Settings view blank screen fixed** — bare `@` in the special-character password hint was misread by vue-i18n as a linked message, crashing SettingsView in all languages.
 - **Grid PDF period picker** — export any week, month, or year directly from the picker panel without navigating to it first.
-- **Grid PDF full grid lines** — data rows now have vertical cell separators and the totals row has a bottom border across all three grid types.
-- **Timesheet and report UI fixes** — new-row column alignment corrected; Export options panel opens downward in the Report tab.
+- **Grid PDF full grid lines** — data rows now have vertical cell separators and the totals row has a bottom border.
 
 ## Experiment
 

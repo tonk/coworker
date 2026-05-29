@@ -653,3 +653,4 @@ Create an application that has all these features and requirements
 - Fix timesheet new-row editor missing drag-handle cell causing column shift when adding a row
 - Fix PDF export options panel in Report tab opening upward and being clipped; now opens downward
 - Add scripts/inject_time.py: bulk time-entry injection CLI with customer/project lookup, MFA support, dry-run mode, and time-based token refresh
+- Fix settings view blank screen: escape bare @ in req_special i18n string to {'@'} in all 12 languages so vue-i18n does not treat it as a linked-message reference
