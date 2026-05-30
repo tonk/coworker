@@ -1120,6 +1120,7 @@
     "sla": "SLA",
     "name": "Policy name",
     "new_policy": "New Policy",
+    "edit_policy": "Edit Policy",
     "response_time": "Response time",
     "resolution_time": "Resolution time",
     "priority_filter": "Priority filter",

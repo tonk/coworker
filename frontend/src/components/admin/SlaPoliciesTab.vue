@@ -4,6 +4,50 @@
       <button class="btn btn-primary btn-sm" @click="startCreate">+ {{ $t('sla.new_policy') }}</button>
     </div>
 
+    <!-- Create / Edit form card -->
+    <div v-if="editing" class="sla-form-card">
+      <h3 class="sla-form-title">{{ editing.id ? $t('sla.edit_policy') : $t('sla.new_policy') }}</h3>
+
+      <div class="sla-form-row">
+        <div class="sla-form-field" style="flex:2">
+          <label class="sla-label" for="sla-name">{{ $t('sla.name') }}</label>
+          <input id="sla-name" class="form-input" v-model="form.name" :placeholder="$t('sla.name')" />
+        </div>
+        <div class="sla-form-field" style="align-self:flex-end">
+          <label class="toggle-label">
+            <input type="checkbox" v-model="form.is_active" />
+            {{ $t('sla.active') }}
+          </label>
+        </div>
+      </div>
+
+      <div class="sla-form-row">
+        <div class="sla-form-field">
+          <label class="sla-label" for="sla-resp">{{ $t('sla.response_time') }}</label>
+          <div class="sla-input-unit">
+            <input id="sla-resp" class="form-input" type="number" min="0" v-model.number="form.response_time_minutes" placeholder="0" />
+            <span class="sla-unit">min</span>
+          </div>
+        </div>
+        <div class="sla-form-field">
+          <label class="sla-label" for="sla-resol">{{ $t('sla.resolution_time') }}</label>
+          <div class="sla-input-unit">
+            <input id="sla-resol" class="form-input" type="number" min="0" v-model.number="form.resolution_time_minutes" placeholder="0" />
+            <span class="sla-unit">min</span>
+          </div>
+        </div>
+        <div class="sla-form-field" style="flex:1;min-width:160px">
+          <label class="sla-label" for="sla-filter">{{ $t('sla.priority_filter') }}</label>
+          <input id="sla-filter" class="form-input" v-model="form.priority_filter" :placeholder="$t('sla.priority_filter_placeholder')" />
+        </div>
+      </div>
+
+      <div class="sla-form-footer">
+        <button class="btn btn-primary btn-sm" @click="confirmSave">{{ $t('common.save') }}</button>
+        <button class="btn btn-secondary btn-sm" @click="cancelEdit">{{ $t('common.cancel') }}</button>
+      </div>
+    </div>
+
     <div v-if="loading" class="loading-state">
       <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
     </div>
@@ -20,84 +64,24 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-if="editing && editing.id === 0">
-          <td colspan="6" style="padding:8px">
-            <div class="sla-form-row">
-              <label class="sr-only" for="sla-name">{{ $t('sla.name') }}</label>
-              <input id="sla-name" class="form-input" v-model="form.name" :placeholder="$t('sla.name')" style="flex:2;min-width:160px" />
-              <div class="sla-time-field">
-                <label class="sla-field-label" for="sla-resp">{{ $t('sla.response_time') }}</label>
-                <div class="sla-input-unit">
-                  <input id="sla-resp" class="form-input" type="number" min="0" v-model.number="form.response_time_minutes" placeholder="0" />
-                  <span class="sla-unit">min</span>
-                </div>
-              </div>
-              <div class="sla-time-field">
-                <label class="sla-field-label" for="sla-resol">{{ $t('sla.resolution_time') }}</label>
-                <div class="sla-input-unit">
-                  <input id="sla-resol" class="form-input" type="number" min="0" v-model.number="form.resolution_time_minutes" placeholder="0" />
-                  <span class="sla-unit">min</span>
-                </div>
-              </div>
-              <label class="sr-only" for="sla-filter">{{ $t('sla.priority_filter') }}</label>
-              <input id="sla-filter" class="form-input" v-model="form.priority_filter" :placeholder="$t('sla.priority_filter_placeholder')" style="flex:1;min-width:120px" />
-              <label class="toggle-label" style="white-space:nowrap;font-size:12px">
-                <input type="checkbox" v-model="form.is_active" />
-                {{ $t('sla.active') }}
-              </label>
-              <button class="btn btn-primary btn-sm" @click="confirmSave">{{ $t('common.save') }}</button>
-              <button class="btn btn-secondary btn-sm" @click="cancelEdit">{{ $t('common.cancel') }}</button>
+        <tr v-for="p in policies" :key="p.id">
+          <td><button type="button" class="name-link" @click="startEdit(p)">{{ p.name }}</button></td>
+          <td>{{ fmtMinutes(p.response_time_minutes) }}</td>
+          <td>{{ fmtMinutes(p.resolution_time_minutes) }}</td>
+          <td><code>{{ p.priority_filter || $t('sla.all') }}</code></td>
+          <td>
+            <span :class="['badge', p.is_active ? 'badge-active' : 'badge-inactive']">
+              {{ p.is_active ? $t('sla.yes') : $t('sla.no') }}
+            </span>
+          </td>
+          <td>
+            <div class="actions-cell">
+              <button class="btn btn-ghost btn-sm" @click="startEdit(p)">{{ $t('common.edit') }}</button>
+              <button class="btn btn-ghost btn-sm btn-danger" @click="deletePolicy(p)">{{ $t('common.delete') }}</button>
             </div>
           </td>
         </tr>
-        <tr v-for="p in policies" :key="p.id">
-          <template v-if="editing && editing.id === p.id">
-            <td colspan="6" style="padding:8px">
-              <div class="sla-form-row">
-                <input class="form-input" v-model="form.name" style="flex:2;min-width:160px" />
-                <div class="sla-time-field">
-                  <label class="sla-field-label">{{ $t('sla.response_time') }}</label>
-                  <div class="sla-input-unit">
-                    <input class="form-input" type="number" min="0" v-model.number="form.response_time_minutes" />
-                    <span class="sla-unit">min</span>
-                  </div>
-                </div>
-                <div class="sla-time-field">
-                  <label class="sla-field-label">{{ $t('sla.resolution_time') }}</label>
-                  <div class="sla-input-unit">
-                    <input class="form-input" type="number" min="0" v-model.number="form.resolution_time_minutes" />
-                    <span class="sla-unit">min</span>
-                  </div>
-                </div>
-                <input class="form-input" v-model="form.priority_filter" style="flex:1;min-width:120px" />
-                <label class="toggle-label" style="white-space:nowrap;font-size:12px">
-                  <input type="checkbox" v-model="form.is_active" />
-                  {{ $t('sla.active') }}
-                </label>
-                <button class="btn btn-primary btn-sm" @click="confirmSave">{{ $t('common.save') }}</button>
-                <button class="btn btn-secondary btn-sm" @click="editing = null">{{ $t('common.cancel') }}</button>
-              </div>
-            </td>
-          </template>
-          <template v-else>
-            <td><strong>{{ p.name }}</strong></td>
-            <td>{{ fmtMinutes(p.response_time_minutes) }}</td>
-            <td>{{ fmtMinutes(p.resolution_time_minutes) }}</td>
-            <td><code>{{ p.priority_filter || $t('sla.all') }}</code></td>
-            <td>
-              <span :class="['badge', p.is_active ? 'badge-active' : 'badge-inactive']">
-                {{ p.is_active ? $t('sla.yes') : $t('sla.no') }}
-              </span>
-            </td>
-            <td>
-              <div class="actions-cell">
-                <button class="btn btn-ghost btn-sm" @click="startEdit(p)">{{ $t('common.edit') }}</button>
-                <button class="btn btn-ghost btn-sm btn-danger" @click="deletePolicy(p)">{{ $t('common.delete') }}</button>
-              </div>
-            </td>
-          </template>
-        </tr>
-        <tr v-if="!policies.length && !(editing && editing.id === 0)">
+        <tr v-if="!policies.length && !editing">
           <td colspan="6" style="text-align:center;color:var(--color-text-muted)">{{ $t('sla.no_policies') }}</td>
         </tr>
       </tbody>
@@ -114,9 +98,13 @@ const ui = useUIStore()
 const loading = ref(true)
 const policies = ref([])
 const editing = ref(null)
-const form = ref({ name: '', response_time_minutes: 0, resolution_time_minutes: 0, priority_filter: '', is_active: true })
+const form = ref(emptyForm())
 
 onMounted(load)
+
+function emptyForm() {
+  return { name: '', response_time_minutes: 0, resolution_time_minutes: 0, priority_filter: '', is_active: true }
+}
 
 async function load() {
   loading.value = true
@@ -128,7 +116,7 @@ async function load() {
 }
 
 function startCreate() {
-  form.value = { name: '', response_time_minutes: 0, resolution_time_minutes: 0, priority_filter: '', is_active: true }
+  form.value = emptyForm()
   editing.value = { id: 0 }
 }
 
@@ -182,11 +170,47 @@ function fmtMinutes(m) {
 </script>
 
 <style scoped>
-.sla-form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
-.sla-time-field { display: flex; flex-direction: column; gap: 2px; }
-.sla-field-label { font-size: 11px; color: var(--color-text-muted); white-space: nowrap; padding-left: 2px; }
-.sla-input-unit { display: flex; align-items: center; gap: 4px; }
-.sla-input-unit .form-input { width: 90px; }
+.sla-form-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.sla-form-title { font-size: 15px; font-weight: 600; margin: 0 0 16px; }
+.sla-form-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px; }
+.sla-form-field { display: flex; flex-direction: column; gap: 4px; min-width: 120px; }
+.sla-label { font-size: 12px; font-weight: 600; color: var(--color-text-muted); }
+.sla-input-unit { display: flex; align-items: center; gap: 6px; }
+.sla-input-unit .form-input { width: 110px; }
 .sla-unit { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+.sla-form-footer { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-border); }
 .loading-state { display: flex; justify-content: center; padding: 48px; }
+
+/* Column widths for the SLA table */
+:deep(.data-table) th:nth-child(1),
+:deep(.data-table) td:nth-child(1) { width: 30%; min-width: 180px; }
+:deep(.data-table) th:nth-child(2),
+:deep(.data-table) td:nth-child(2) { width: 120px; min-width: 100px; }
+:deep(.data-table) th:nth-child(3),
+:deep(.data-table) td:nth-child(3) { width: 120px; min-width: 100px; }
+:deep(.data-table) th:nth-child(4),
+:deep(.data-table) td:nth-child(4) { min-width: 120px; }
+:deep(.data-table) th:nth-child(5),
+:deep(.data-table) td:nth-child(5) { width: 90px; min-width: 90px; text-align: center; }
+:deep(.data-table) th:nth-child(6),
+:deep(.data-table) td:nth-child(6) { width: 120px; min-width: 120px; }
+
+.name-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  text-align: left;
+}
+.name-link:hover { text-decoration: underline; }
+.name-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 2px; }
 </style>
