@@ -335,10 +335,10 @@ func setGridFooter(pdf *gofpdf.Fpdf, ff, companyName, periodLabel string, tr pdf
 // ── Week grid ─────────────────────────────────────────────────────────────────
 
 func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, weekStart time.Time, targetUserID uint) (bytes.Buffer, string, error) {
-	// Column widths.
+	// Column widths: 74 label + 7×25 days + 28 total = 277mm (full body width).
 	const (
-		wLabel = 60.0
-		wDay   = 27.0
+		wLabel = 74.0
+		wDay   = 25.0
 		wTotal = 28.0
 		rowH   = 6.5
 	)
@@ -419,7 +419,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		pdf.SetFont(ff, "", 8)
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 28), "LRB", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 34), "LRB", 0, "L", true, 0, "")
 		rowTotal := 0
 		for ci, m := range r.cells {
 			rowTotal += m
@@ -501,15 +501,18 @@ func drawWeekColHeader(pdf *gofpdf.Fpdf, ff string, tr pdfI18n, dayHeaders []str
 
 func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, year, month int, targetUserID uint) (bytes.Buffer, string, error) {
 	const (
-		wLabel  = 46.0
-		wDay    = 7.0
-		wTotal  = 14.0
-		rowH    = 5.5
-		hdrH    = 6.0
-		cellFS  = 5.5
+		wDay   = 7.0
+		wTotal = 14.0
+		rowH   = 5.5
+		hdrH   = 6.0
+		cellFS = 5.5
 	)
 
 	daysInMonth := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	// Label column fills all space not taken by day columns and the total column.
+	wLabel := gBodyW - float64(daysInMonth)*wDay - wTotal
+	// Approx char capacity at cellFS pt (FreeSans ~1.7 mm/char at 5.5 pt).
+	labelMaxChars := int(wLabel / 1.7)
 	firstDay := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	nextMonth := firstDay.AddDate(0, 1, 0)
 
@@ -526,9 +529,9 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		}
 		return diff
 	}
-	rows := buildGridRows(entries, dayFn, 31)
+	rows := buildGridRows(entries, dayFn, daysInMonth)
 
-	colTotals := make([]int, 31)
+	colTotals := make([]int, daysInMonth)
 	grandTotal := 0
 	for _, r := range rows {
 		for i, m := range r.cells {
@@ -570,9 +573,9 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		pdf.SetFont(ff, "", cellFS)
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 24), "LRB", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, labelMaxChars), "LRB", 0, "L", true, 0, "")
 		rowTotal := 0
-		for d := 0; d < 31; d++ {
+		for d := 0; d < daysInMonth; d++ {
 			m := r.cells[d]
 			rowTotal += m
 			isHol := d < len(r.holidays) && r.holidays[d]
@@ -602,7 +605,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 	pdf.SetX(gMargin)
 	setFill(pdf, gClrTotFill)
 	pdf.CellFormat(wLabel, rowH, tr.Total, "1", 0, "L", true, 0, "")
-	for d := 0; d < 31; d++ {
+	for d := 0; d < daysInMonth; d++ {
 		if isWeekendDay(year, month, d+1) {
 			setFill(pdf, gClrWeekend)
 		} else {
@@ -630,17 +633,12 @@ func drawMonthColHeader(pdf *gofpdf.Fpdf, ff string, tr pdfI18n, year, month, da
 	pdf.SetX(gMargin)
 	setFill(pdf, gClrHdrFill)
 	pdf.CellFormat(wLabel, hdrH, tr.Customer+" / "+tr.Project, "1", 0, "L", true, 0, "")
-	for d := 1; d <= 31; d++ {
-		var fill rgb
-		switch {
-		case d > daysInMonth:
-			fill = gClrAlt
-		case isWeekendDay(year, month, d):
-			fill = gClrWeekendHdr
-		default:
-			fill = gClrHdrFill
+	for d := 1; d <= daysInMonth; d++ {
+		if isWeekendDay(year, month, d) {
+			setFill(pdf, gClrWeekendHdr)
+		} else {
+			setFill(pdf, gClrHdrFill)
 		}
-		setFill(pdf, fill)
 		pdf.CellFormat(wDay, hdrH, fmt.Sprintf("%d", d), "1", 0, "C", true, 0, "")
 	}
 	setFill(pdf, gClrTotFill)
@@ -665,11 +663,11 @@ type yearColDef struct {
 }
 
 func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, year int, targetUserID uint) (bytes.Buffer, string, error) {
-	// Column layout: 60 label + months+quarters + 15 total
+	// Column layout: 74 label + months+quarters + 15 total = 277mm (full body width).
 	// Jan(12) Feb(12) Mar(12) Q1(11) Apr(12) May(12) Jun(12) Q2(11)
 	// Jul(12) Aug(12) Sep(12) Q3(11) Oct(12) Nov(12) Dec(12) Q4(11) Total(15)
 	const (
-		wLabel   = 60.0
+		wLabel   = 74.0
 		wMonth   = 12.0
 		wQtr     = 11.0
 		wYrTotal = 15.0
@@ -813,7 +811,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		setTxt(pdf, gClrText)
 		pdf.SetFont(ff, "", 7)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 28), "LRB", 0, "L", alt, 0, "")
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 34), "LRB", 0, "L", alt, 0, "")
 		for ci, c := range cols {
 			val := r.cells[ci]
 			txt := gridFmt(val)
