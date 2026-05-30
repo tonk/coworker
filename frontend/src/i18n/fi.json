@@ -319,7 +319,7 @@
     "edit_user": "Muokkaa käyttäjää",
     "edit_project": "Muokkaa projektia",
     "unarchive": "Reaktivoi",
-    "create_user": "Luo käyttäjä",
+    "create_user": "Uusi käyttäjä",
     "assign_projects": "Määritä projektit",
     "assign_customers": "Asiakaskäyttöoikeus",
     "assign_customers_hint": "vain määritetyt asiakkaat ovat näkyvissä",
@@ -758,7 +758,7 @@
   },
   "groups": {
     "title": "Groups",
-    "create": "Create Group",
+    "create": "Uusi ryhmä",
     "edit": "Edit Group",
     "delete": "Delete Group",
     "delete_confirm": "Delete this group? Members will lose access granted through this group.",

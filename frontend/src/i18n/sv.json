@@ -319,7 +319,7 @@
     "edit_user": "Redigera användare",
     "edit_project": "Redigera projekt",
     "unarchive": "Återaktivera",
-    "create_user": "Skapa användare",
+    "create_user": "Ny användare",
     "assign_projects": "Tilldela projekt",
     "assign_customers": "Kundåtkomst",
     "assign_customers_hint": "bara tilldelade kunder är synliga",
@@ -758,7 +758,7 @@
   },
   "groups": {
     "title": "Groups",
-    "create": "Create Group",
+    "create": "Ny grupp",
     "edit": "Edit Group",
     "delete": "Delete Group",
     "delete_confirm": "Delete this group? Members will lose access granted through this group.",

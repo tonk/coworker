@@ -319,7 +319,7 @@
     "edit_user": "Editar usuario",
     "edit_project": "Editar proyecto",
     "unarchive": "Desarchivar",
-    "create_user": "Crear usuario",
+    "create_user": "Nuevo usuario",
     "assign_projects": "Asignar proyectos",
     "assign_customers": "Acceso a clientes",
     "assign_customers_hint": "solo los clientes asignados son visibles",
@@ -758,7 +758,7 @@
   },
   "groups": {
     "title": "Grupos",
-    "create": "Crear grupo",
+    "create": "Nuevo grupo",
     "edit": "Editar grupo",
     "delete": "Eliminar grupo",
     "delete_confirm": "¿Eliminar este grupo? Los miembros perderán el acceso concedido a través de este grupo.",

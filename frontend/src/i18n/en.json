@@ -325,7 +325,7 @@
     "purge_project": "Permanently Delete",
     "purge_project_confirm": "Permanently delete \"{name}\"? This cannot be undone — all cards, columns, labels, chat history and sprints will be lost forever.",
     "purge_project_success": "Project \"{name}\" permanently deleted",
-    "create_user": "Create User",
+    "create_user": "New User",
     "assign_projects": "Assign Projects",
     "assign_customers": "Customer Access",
     "assign_customers_hint": "only assigned customers are visible",
@@ -847,7 +847,7 @@
   },
   "groups": {
     "title": "Groups",
-    "create": "Create Group",
+    "create": "New Group",
     "edit": "Edit Group",
     "delete": "Delete Group",
     "delete_confirm": "Delete this group? Members will lose access granted through this group.",

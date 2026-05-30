@@ -319,7 +319,7 @@
     "edit_user": "Gebruiker bewerken",
     "edit_project": "Project bewerken",
     "unarchive": "Dearchiveren",
-    "create_user": "Gebruiker aanmaken",
+    "create_user": "Nieuwe gebruiker",
     "assign_projects": "Projecten toewijzen",
     "assign_customers": "Klanttoegang",
     "assign_customers_hint": "alleen toegewezen klanten zijn zichtbaar",
@@ -758,7 +758,7 @@
   },
   "groups": {
     "title": "Groepen",
-    "create": "Groep aanmaken",
+    "create": "Nieuwe groep",
     "edit": "Groep bewerken",
     "delete": "Groep verwijderen",
     "delete_confirm": "Deze groep verwijderen? Leden verliezen de toegang die via deze groep is verleend.",

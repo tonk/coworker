@@ -319,7 +319,7 @@
     "edit_user": "Breyta notanda",
     "edit_project": "Breyta verkefni",
     "unarchive": "Enduractivera",
-    "create_user": "Stofna notanda",
+    "create_user": "Nýr notandi",
     "assign_projects": "Úthluta verkefnum",
     "assign_customers": "Aðgangur að viðskiptavinum",
     "assign_customers_hint": "aðeins úthlutaðir viðskiptavinir eru sýnilegir",
@@ -758,7 +758,7 @@
   },
   "groups": {
     "title": "Groups",
-    "create": "Create Group",
+    "create": "Ný hópur",
     "edit": "Edit Group",
     "delete": "Delete Group",
     "delete_confirm": "Delete this group? Members will lose access granted through this group.",
