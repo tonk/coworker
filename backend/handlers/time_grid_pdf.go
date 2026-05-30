@@ -419,7 +419,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		pdf.SetFont(ff, "", 8)
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 34), "LRB", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 36), "LRB", 0, "L", true, 0, "")
 		rowTotal := 0
 		for ci, m := range r.cells {
 			rowTotal += m
@@ -511,8 +511,8 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 	daysInMonth := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day()
 	// Label column fills all space not taken by day columns and the total column.
 	wLabel := gBodyW - float64(daysInMonth)*wDay - wTotal
-	// Approx char capacity at cellFS pt (FreeSans ~1.7 mm/char at 5.5 pt).
-	labelMaxChars := int(wLabel / 1.7)
+	// Approx char capacity at cellFS pt (FreeSans ~1.4 mm/char at 5.5 pt).
+	labelMaxChars := int(wLabel / 1.4)
 	firstDay := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	nextMonth := firstDay.AddDate(0, 1, 0)
 
@@ -811,7 +811,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		setTxt(pdf, gClrText)
 		pdf.SetFont(ff, "", 7)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 34), "LRB", 0, "L", alt, 0, "")
+		pdf.CellFormat(wLabel, rowH, truncate(r.label, 42), "LRB", 0, "L", alt, 0, "")
 		for ci, c := range cols {
 			val := r.cells[ci]
 			txt := gridFmt(val)
