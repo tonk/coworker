@@ -163,7 +163,7 @@
                 <span v-if="card.closed" class="closed-badge">{{ $t('board.closed') }}</span>
               </td>
               <td class="col-assignees">{{ card.assignees.join(', ') || '—' }}</td>
-              <td class="col-updated">{{ card.updated_at }}</td>
+              <td class="col-updated">{{ formatDateTime(card.updated_at) }}</td>
               <td class="col-time time-value">{{ formatMinutes(card.time_spent_minutes) }}</td>
             </tr>
           </tbody>

@@ -174,7 +174,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">{{ $t('sprint.target_date') }}</label>
-      <input type="date" class="form-input" v-model="releaseForm.target_date" style="max-width:200px" />
+      <DatePicker v-model="releaseForm.target_date" style="max-width:200px" />
     </div>
     <template #footer>
       <button class="btn btn-secondary" @click="closeReleaseModal">{{ $t('common.cancel') }}</button>
@@ -194,6 +194,7 @@ import { useUIStore } from '@/stores/ui'
 import { projectsApi } from '@/api/projects'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
+import DatePicker from '@/components/common/DatePicker.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
 
 Chart.register(...registerables)

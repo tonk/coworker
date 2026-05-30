@@ -621,7 +621,7 @@
             </thead>
             <tbody>
               <tr v-for="e in grp.entries" :key="e.id">
-                <td>{{ e.date.slice(0,10) }}</td>
+                <td>{{ formatDate(e.date) }}</td>
                 <td>{{ e.customer?.name || '—' }}</td>
                 <td>{{ e.project?.name || '—' }}</td>
                 <td>{{ e.description || '—' }}</td>

@@ -290,11 +290,21 @@
             <div class="slot-card-bottom">
               <div class="slot-field">
                 <label class="slot-field-label">{{ $t('contract.slot_start') }}</label>
-                <input class="form-input" type="time" v-model="slot.start_time" :aria-label="$t('contract.slot_start')" />
+                <input class="form-input" type="text"
+                  :value="formatSlotTime(slot.start_time)"
+                  :placeholder="slotTimePlaceholder"
+                  :aria-label="$t('contract.slot_start')"
+                  @input="slot.start_time = parseSlotTime($event.target.value) ?? slot.start_time"
+                  @blur="onSlotTimeBlur(slot, 'start_time', $event)" />
               </div>
               <div class="slot-field">
                 <label class="slot-field-label">{{ $t('contract.slot_end') }}</label>
-                <input class="form-input" type="time" v-model="slot.end_time" :aria-label="$t('contract.slot_end')" />
+                <input class="form-input" type="text"
+                  :value="formatSlotTime(slot.end_time)"
+                  :placeholder="slotTimePlaceholder"
+                  :aria-label="$t('contract.slot_end')"
+                  @input="slot.end_time = parseSlotTime($event.target.value) ?? slot.end_time"
+                  @blur="onSlotTimeBlur(slot, 'end_time', $event)" />
               </div>
               <div class="slot-field slot-field-days">
                 <label class="slot-field-label">{{ $t('contract.slot_days') }}</label>
@@ -419,6 +429,53 @@ const showEdit = ref(false)
 const editForm = ref({ name: '', description: '', logo_url: '' })
 
 const { formatDate, dateOnlyFormat } = useDateFormat()
+
+const prefers12HourSlotTime = computed(() => {
+  const fmt = auth.user?.date_time_format || 'YYYY-MM-DD HH:mm'
+  return fmt.includes('hh') && fmt.includes('a')
+})
+
+function formatSlotTime(raw) {
+  if (!raw) return ''
+  const [hhStr, mmStr] = raw.split(':')
+  const hh = Number(hhStr), mm = Number(mmStr)
+  if (!Number.isInteger(hh) || !Number.isInteger(mm)) return ''
+  if (!prefers12HourSlotTime.value) return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`
+  const suffix = hh < 12 ? 'am' : 'pm'
+  const h12 = hh % 12 || 12
+  return `${String(h12).padStart(2,'0')}:${String(mm).padStart(2,'0')} ${suffix}`
+}
+
+function parseSlotTime(input) {
+  const val = (input || '').trim()
+  if (!val) return ''
+  if (prefers12HourSlotTime.value) {
+    const m = val.match(/^(\d{1,2}):(\d{2})\s*([ap]m)$/i)
+    if (!m) return null
+    let hh = Number(m[1]); const mm = Number(m[2]); const mer = m[3].toLowerCase()
+    if (hh < 1 || hh > 12 || mm < 0 || mm > 59) return null
+    if (mer === 'am') hh = hh === 12 ? 0 : hh
+    else hh = hh === 12 ? 12 : hh + 12
+    return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`
+  }
+  const m = val.match(/^(\d{1,2}):(\d{2})$/)
+  if (!m) return null
+  const hh = Number(m[1]), mm = Number(m[2])
+  if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null
+  return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`
+}
+
+function onSlotTimeBlur(slot, field, event) {
+  const parsed = parseSlotTime(event.target.value)
+  if (parsed === null) {
+    event.target.value = formatSlotTime(slot[field])
+  } else {
+    slot[field] = parsed
+    event.target.value = formatSlotTime(parsed)
+  }
+}
+
+const slotTimePlaceholder = computed(() => prefers12HourSlotTime.value ? 'hh:mm am' : 'HH:mm')
 
 const showAddContract = ref(false)
 const editingContract = ref(null)
