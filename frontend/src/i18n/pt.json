@@ -319,7 +319,6 @@
     "edit_user": "Editar utilizador",
     "edit_project": "Editar projeto",
     "unarchive": "Reativar",
-    "create_user": "Novo utilizador",
     "assign_projects": "Atribuir projetos",
     "assign_customers": "Acesso a clientes",
     "assign_customers_hint": "apenas os clientes atribuídos são visíveis",
@@ -467,7 +466,8 @@
     "time_tracking": "Registo de tempo",
     "tt_projects_title": "Projetos de registo de tempo",
     "tt_customers_title": "Clientes de registo de tempo",
-    "show_inactive": "Mostrar inativos"
+    "show_inactive": "Mostrar inativos",
+    "new_user": "Novo utilizador"
   },
   "report": {
     "title": "Relatório de tempo",
@@ -540,7 +540,10 @@
     "go_back": "Voltar",
     "go_forward": "Avançar",
     "duplicate": "Duplicar",
-    "or": "ou"
+    "or": "ou",
+    "status": "Estado",
+    "filename": "Nome do arquivo",
+    "file_size": "Tamanho"
   },
   "about": {
     "repository": "Repositório",

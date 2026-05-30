@@ -319,7 +319,6 @@
     "edit_user": "Editar usuario",
     "edit_project": "Editar proyecto",
     "unarchive": "Desarchivar",
-    "create_user": "Nuevo usuario",
     "assign_projects": "Asignar proyectos",
     "assign_customers": "Acceso a clientes",
     "assign_customers_hint": "solo los clientes asignados son visibles",
@@ -467,7 +466,8 @@
     "time_tracking": "Registro de tiempo",
     "tt_projects_title": "Proyectos de registro de tiempo",
     "tt_customers_title": "Clientes de registro de tiempo",
-    "show_inactive": "Mostrar inactivos"
+    "show_inactive": "Mostrar inactivos",
+    "new_user": "Nuevo usuario"
   },
   "update": {
     "available": "Hay una nueva versión de WarmDesk disponible: v{version}.",
@@ -505,7 +505,10 @@
     "go_back": "Atrás",
     "go_forward": "Adelante",
     "duplicate": "Duplicar",
-    "or": "o"
+    "or": "o",
+    "status": "Estado",
+    "filename": "Nombre de archivo",
+    "file_size": "Tamaño"
   },
   "about": {
     "repository": "Repositorio",

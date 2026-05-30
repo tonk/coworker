@@ -319,7 +319,6 @@
     "edit_user": "Modifica utente",
     "edit_project": "Modifica progetto",
     "unarchive": "Riattiva",
-    "create_user": "Nuovo utente",
     "assign_projects": "Assegna progetti",
     "assign_customers": "Accesso clienti",
     "assign_customers_hint": "solo i clienti assegnati sono visibili",
@@ -467,7 +466,8 @@
     "time_tracking": "Registrazione tempo",
     "tt_projects_title": "Progetti di registrazione tempo",
     "tt_customers_title": "Clienti di registrazione tempo",
-    "show_inactive": "Mostra inattivi"
+    "show_inactive": "Mostra inattivi",
+    "new_user": "Nuovo utente"
   },
   "report": {
     "title": "Report ore",
@@ -540,7 +540,10 @@
     "go_back": "Indietro",
     "go_forward": "Avanti",
     "duplicate": "Duplica",
-    "or": "o"
+    "or": "o",
+    "status": "Stato",
+    "filename": "Nome file",
+    "file_size": "Dimensione"
   },
   "about": {
     "repository": "Repository",

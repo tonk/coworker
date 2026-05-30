@@ -4027,6 +4027,7 @@ func removeDemoData(db *gorm.DB) {
 			db.Unscoped().Where("source_ticket_id IN ? OR target_ticket_id IN ?", ticketIDs, ticketIDs).Delete(&models.TicketLink{})
 			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketCardLink{})
 			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketHistory{})
+			db.Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketView{})
 			db.Where("owner_type = 'ticket' AND owner_id IN ?", ticketIDs).Delete(&models.Attachment{})
 			db.Unscoped().Where("id IN ?", ticketIDs).Delete(&models.Ticket{})
 		}
@@ -4048,6 +4049,7 @@ func removeDemoData(db *gorm.DB) {
 		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketChecklistItem{})
 		db.Unscoped().Where("source_ticket_id IN ? OR target_ticket_id IN ?", inboxIDs, inboxIDs).Delete(&models.TicketLink{})
 		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketHistory{})
+		db.Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketView{})
 		db.Where("owner_type = 'ticket' AND owner_id IN ?", inboxIDs).Delete(&models.Attachment{})
 		db.Unscoped().Where("id IN ?", inboxIDs).Delete(&models.Ticket{})
 	}

@@ -319,7 +319,6 @@
     "edit_user": "Rediger bruger",
     "edit_project": "Rediger projekt",
     "unarchive": "Genaktiver",
-    "create_user": "Ny bruger",
     "assign_projects": "Tildel projekter",
     "assign_customers": "Kundeadgang",
     "assign_customers_hint": "kun tildelte kunder er synlige",
@@ -467,7 +466,8 @@
     "time_tracking": "Tidsregistrering",
     "tt_projects_title": "Tidsregistreringsprojekter",
     "tt_customers_title": "Tidsregistreringskunder",
-    "show_inactive": "Vis inaktive"
+    "show_inactive": "Vis inaktive",
+    "new_user": "Ny bruger"
   },
   "report": {
     "title": "Tidsrapport",
@@ -540,7 +540,10 @@
     "go_back": "Gå tilbage",
     "go_forward": "Gå frem",
     "duplicate": "Duplikér",
-    "or": "eller"
+    "or": "eller",
+    "status": "Status",
+    "filename": "Filnavn",
+    "file_size": "Størrelse"
   },
   "about": {
     "repository": "Repository",

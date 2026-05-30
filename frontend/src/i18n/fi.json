@@ -319,7 +319,6 @@
     "edit_user": "Muokkaa käyttäjää",
     "edit_project": "Muokkaa projektia",
     "unarchive": "Reaktivoi",
-    "create_user": "Uusi käyttäjä",
     "assign_projects": "Määritä projektit",
     "assign_customers": "Asiakaskäyttöoikeus",
     "assign_customers_hint": "vain määritetyt asiakkaat ovat näkyvissä",
@@ -467,7 +466,8 @@
     "time_tracking": "Ajanseuranta",
     "tt_projects_title": "Ajanseurantaprojektit",
     "tt_customers_title": "Ajanseuranta-asiakkaat",
-    "show_inactive": "Näytä passiiviset"
+    "show_inactive": "Näytä passiiviset",
+    "new_user": "Uusi käyttäjä"
   },
   "report": {
     "title": "Aikaraportti",
@@ -540,7 +540,10 @@
     "go_back": "Takaisin",
     "go_forward": "Eteenpäin",
     "duplicate": "Kopioi",
-    "or": "tai"
+    "or": "tai",
+    "status": "Tila",
+    "filename": "Tiedostonimi",
+    "file_size": "Koko"
   },
   "about": {
     "repository": "Tietovarasto",

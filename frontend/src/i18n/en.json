@@ -322,11 +322,11 @@
     "deleted": "Deleted",
     "show_deleted": "Show deleted",
     "show_inactive": "Show inactive",
+    "new_user": "New User",
     "restore": "Restore",
     "purge_project": "Permanently Delete",
     "purge_project_confirm": "Permanently delete \"{name}\"? This cannot be undone — all cards, columns, labels, chat history and sprints will be lost forever.",
     "purge_project_success": "Project \"{name}\" permanently deleted",
-    "create_user": "New User",
     "assign_projects": "Assign Projects",
     "assign_customers": "Customer Access",
     "assign_customers_hint": "only assigned customers are visible",
@@ -542,7 +542,10 @@
     "go_back": "Go back",
     "go_forward": "Go forward",
     "duplicate": "Duplicate",
-    "or": "or"
+    "or": "or",
+    "status": "Status",
+    "filename": "Filename",
+    "file_size": "Size"
   },
   "about": {
     "repository": "Repository",

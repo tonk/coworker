@@ -319,7 +319,6 @@
     "edit_user": "Gebruiker bewerken",
     "edit_project": "Project bewerken",
     "unarchive": "Dearchiveren",
-    "create_user": "Nieuwe gebruiker",
     "assign_projects": "Projecten toewijzen",
     "assign_customers": "Klanttoegang",
     "assign_customers_hint": "alleen toegewezen klanten zijn zichtbaar",
@@ -467,7 +466,8 @@
     "time_tracking": "Urenregistratie",
     "tt_projects_title": "Urenregistratieprojecten",
     "tt_customers_title": "Urenregistratieklanten",
-    "show_inactive": "Inactieven tonen"
+    "show_inactive": "Inactieven tonen",
+    "new_user": "Nieuwe gebruiker"
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",
@@ -505,7 +505,10 @@
     "go_back": "Ga terug",
     "go_forward": "Ga vooruit",
     "duplicate": "Dupliceer",
-    "or": "of"
+    "or": "of",
+    "status": "Status",
+    "filename": "Bestandsnaam",
+    "file_size": "Grootte"
   },
   "about": {
     "repository": "Repository",

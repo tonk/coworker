@@ -319,7 +319,6 @@
     "edit_user": "Redigera användare",
     "edit_project": "Redigera projekt",
     "unarchive": "Återaktivera",
-    "create_user": "Ny användare",
     "assign_projects": "Tilldela projekt",
     "assign_customers": "Kundåtkomst",
     "assign_customers_hint": "bara tilldelade kunder är synliga",
@@ -467,7 +466,8 @@
     "time_tracking": "Tidsregistrering",
     "tt_projects_title": "Tidsregistreringsprojekt",
     "tt_customers_title": "Tidsregistreringskunder",
-    "show_inactive": "Visa inaktiva"
+    "show_inactive": "Visa inaktiva",
+    "new_user": "Ny användare"
   },
   "report": {
     "title": "Tidsrapport",
@@ -540,7 +540,10 @@
     "go_back": "Gå tillbaka",
     "go_forward": "Gå framåt",
     "duplicate": "Duplicera",
-    "or": "eller"
+    "or": "eller",
+    "status": "Status",
+    "filename": "Filnamn",
+    "file_size": "Storlek"
   },
   "about": {
     "repository": "Arkiv",

@@ -319,7 +319,6 @@
     "edit_user": "Modifier l'utilisateur",
     "edit_project": "Modifier le projet",
     "unarchive": "Désarchiver",
-    "create_user": "Nouvel utilisateur",
     "assign_projects": "Attribuer des projets",
     "assign_customers": "Accès clients",
     "assign_customers_hint": "seuls les clients assignés sont visibles",
@@ -467,7 +466,8 @@
     "time_tracking": "Suivi du temps",
     "tt_projects_title": "Projets de suivi du temps",
     "tt_customers_title": "Clients de suivi du temps",
-    "show_inactive": "Afficher inactifs"
+    "show_inactive": "Afficher inactifs",
+    "new_user": "Nouvel utilisateur"
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",
@@ -505,7 +505,10 @@
     "go_back": "Retour",
     "go_forward": "Avancer",
     "duplicate": "Dupliquer",
-    "or": "ou"
+    "or": "ou",
+    "status": "Statut",
+    "filename": "Nom du fichier",
+    "file_size": "Taille"
   },
   "about": {
     "repository": "Dépôt",

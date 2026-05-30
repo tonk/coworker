@@ -319,7 +319,6 @@
     "edit_user": "Breyta notanda",
     "edit_project": "Breyta verkefni",
     "unarchive": "Enduractivera",
-    "create_user": "Nýr notandi",
     "assign_projects": "Úthluta verkefnum",
     "assign_customers": "Aðgangur að viðskiptavinum",
     "assign_customers_hint": "aðeins úthlutaðir viðskiptavinir eru sýnilegir",
@@ -467,7 +466,8 @@
     "time_tracking": "Tímaskráning",
     "tt_projects_title": "Tímaskráningarverkefni",
     "tt_customers_title": "Tímaskráningarviðskiptavinir",
-    "show_inactive": "Sýna óvirka"
+    "show_inactive": "Sýna óvirka",
+    "new_user": "Nýr notandi"
   },
   "report": {
     "title": "Tímaskýrsla",
@@ -540,7 +540,10 @@
     "go_back": "Fara til baka",
     "go_forward": "Fara áfram",
     "duplicate": "Afrita",
-    "or": "eða"
+    "or": "eða",
+    "status": "Staða",
+    "filename": "Skráarheiti",
+    "file_size": "Stærð"
   },
   "about": {
     "repository": "Gagnasafn",

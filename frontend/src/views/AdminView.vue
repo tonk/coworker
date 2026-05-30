@@ -20,7 +20,7 @@
         <!-- Users tab -->
         <div v-show="tab === 'users'" role="tabpanel" id="tab-panel-users" aria-labelledby="tab-btn-users">
           <div class="tab-toolbar">
-            <button class="btn btn-primary btn-sm" @click="openCreateUser">+ {{ $t('admin.create_user') }}</button>
+            <button class="btn btn-primary btn-sm" @click="openCreateUser">+ {{ $t('admin.new_user') }}</button>
             <label class="toggle-label" style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
               <input type="checkbox" v-model="showInactiveUsers" />
               {{ $t('admin.show_inactive') }}
@@ -44,7 +44,7 @@
                 <th>{{ $t('admin.last_login') }}</th>
                 <th>{{ $t('admin.last_password_change') }}</th>
                 <th>{{ $t('admin.mfa_enabled') }}</th>
-                <th>Status</th>
+                <th>{{ $t('common.status') }}</th>
                 <th>{{ $t('common.actions') }}</th>
               </tr>
             </thead>
@@ -176,7 +176,7 @@
                   <span class="sort-indicator">{{ projectSortDir === 'asc' ? '↑' : '↓' }}</span>
                 </th>
                 <th>{{ $t('admin.owner') }}</th>
-                <th>Status</th>
+                <th>{{ $t('common.status') }}</th>
                 <th>{{ $t('admin.open_cards') }}</th>
                 <th>{{ $t('common.actions') }}</th>
               </tr>
@@ -961,8 +961,8 @@
               <thead>
                 <tr>
                   <th>{{ $t('timeTracking.date') }}</th>
-                  <th>Filename</th>
-                  <th>Size</th>
+                  <th>{{ $t('common.filename') }}</th>
+                  <th>{{ $t('common.file_size') }}</th>
                   <th>{{ $t('common.actions') }}</th>
                 </tr>
               </thead>
@@ -989,7 +989,7 @@
   </main>
 
   <!-- Create User Modal -->
-  <BaseModal v-if="showCreateUser" :title="$t('admin.create_user')" @close="showCreateUser = false">
+  <BaseModal v-if="showCreateUser" :title="$t('admin.new_user')" @close="showCreateUser = false">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label" for="new-user-first">{{ $t('settings.first_name') }}</label>
