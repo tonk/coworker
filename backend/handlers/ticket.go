@@ -685,6 +685,7 @@ func ListInboxTickets(c *gin.Context) {
 
 // GetInboxTicket GET /api/v1/tickets/inbox/:ticketId
 func GetInboxTicket(c *gin.Context) {
+	userID := middleware.GetUserID(c)
 	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
@@ -723,7 +724,28 @@ func GetInboxTicket(c *gin.Context) {
 		}
 	}
 	attachTicketChecklist(&ticket)
+
+	database.DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "ticket_id"}, {Name: "user_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"viewed_at"}),
+	}).Create(&models.TicketView{TicketID: ticket.ID, UserID: userID, ViewedAt: time.Now()})
+
 	c.JSON(http.StatusOK, ticket)
+}
+
+// GetInboxTicketViewers returns all users who viewed an inbox ticket, ordered by most recent first.
+func GetInboxTicketViewers(c *gin.Context) {
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	var viewers []models.TicketView
+	database.DB.Where("ticket_id = ?", ticketID).
+		Preload("User").
+		Order("viewed_at desc").
+		Find(&viewers)
+	c.JSON(http.StatusOK, viewers)
 }
 
 // UpdateInboxTicket PUT /api/v1/tickets/inbox/:ticketId

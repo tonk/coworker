@@ -26,6 +26,7 @@ export const ticketsApi = {
   inboxUpdate:  (id, data)    => client.put(`/tickets/inbox/${id}`, data),
   inboxDelete:  (id)          => client.delete(`/tickets/inbox/${id}`),
   inboxMessage: (id, body)    => client.post(`/tickets/inbox/${id}/messages`, { body }),
+  inboxGetViewers: (id)       => client.get(`/tickets/inbox/${id}/viewers`),
   inboxMarkSpam:   (id)       => client.post(`/tickets/inbox/${id}/spam`),
   inboxUnmarkSpam: (id)       => client.delete(`/tickets/inbox/${id}/spam`),
 }

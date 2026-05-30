@@ -277,7 +277,7 @@
         </form>
       </section>
 
-      <section v-if="!isInbox && viewers.length" class="viewers-section">
+      <section v-if="viewers.length" class="viewers-section">
         <div class="viewers-row">
           <div
             v-for="v in viewers"
@@ -606,6 +606,14 @@ async function fetchTicket() {
       // Fetch viewers
       try {
         const { data: v } = await ticketsApi.getViewers(customerId.value, ticketId.value)
+        viewers.value = v || []
+      } catch {
+        viewers.value = []
+      }
+    } else {
+      // Inbox: fetch viewers
+      try {
+        const { data: v } = await ticketsApi.inboxGetViewers(ticketId.value)
         viewers.value = v || []
       } catch {
         viewers.value = []
