@@ -905,10 +905,11 @@
                 <label class="form-label" for="sys-backup-time">{{ $t('admin.backup_start_time') }}</label>
                 <input
                   id="sys-backup-time"
-                  type="time"
+                  type="text"
                   class="form-input"
                   v-model="backupStartTimeDisplay"
                   :placeholder="backupTimePlaceholder"
+                  @blur="onBackupStartTimeBlur"
                 />
               </div>
               <div class="form-group" style="flex:0 0 100px" v-if="systemSettings.backup_schedule !== 'disabled'">
@@ -2276,7 +2277,12 @@ watch([() => systemSettings.value.backup_start_time, prefers12HourTime], () => {
   backupStartTimeDisplay.value = formatBackupStartTime(systemSettings.value.backup_start_time)
 }, { immediate: true })
 
-const backupNextRunDisplay = computed(() => {
+const backupLastRun = computed(() => {
+  const v = systemSettings.value.backup_last_run
+  return v ? formatDateTime(v) : '–'
+})
+
+const backupNextRun = computed(() => {
   const hours = { '6h': 6, '8h': 8, '12h': 12, '24h': 24 }[systemSettings.value.backup_schedule]
   if (!hours) return '–'
   const startTime = systemSettings.value.backup_start_time
