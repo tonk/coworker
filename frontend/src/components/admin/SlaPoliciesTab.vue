@@ -24,13 +24,23 @@
           <td colspan="6" style="padding:8px">
             <div class="sla-form-row">
               <label class="sr-only" for="sla-name">{{ $t('sla.name') }}</label>
-              <input id="sla-name" class="form-input" v-model="form.name" :placeholder="$t('sla.name')" style="flex:2" />
-              <label class="sr-only" for="sla-resp">{{ $t('sla.response_time') }}</label>
-              <input id="sla-resp" class="form-input" type="number" min="0" v-model.number="form.response_time_minutes" :placeholder="'0'" style="width:80px" title="minutes" />
-              <label class="sr-only" for="sla-resol">{{ $t('sla.resolution_time') }}</label>
-              <input id="sla-resol" class="form-input" type="number" min="0" v-model.number="form.resolution_time_minutes" :placeholder="'0'" style="width:80px" title="minutes" />
+              <input id="sla-name" class="form-input" v-model="form.name" :placeholder="$t('sla.name')" style="flex:2;min-width:160px" />
+              <div class="sla-time-field">
+                <label class="sla-field-label" for="sla-resp">{{ $t('sla.response_time') }}</label>
+                <div class="sla-input-unit">
+                  <input id="sla-resp" class="form-input" type="number" min="0" v-model.number="form.response_time_minutes" placeholder="0" />
+                  <span class="sla-unit">min</span>
+                </div>
+              </div>
+              <div class="sla-time-field">
+                <label class="sla-field-label" for="sla-resol">{{ $t('sla.resolution_time') }}</label>
+                <div class="sla-input-unit">
+                  <input id="sla-resol" class="form-input" type="number" min="0" v-model.number="form.resolution_time_minutes" placeholder="0" />
+                  <span class="sla-unit">min</span>
+                </div>
+              </div>
               <label class="sr-only" for="sla-filter">{{ $t('sla.priority_filter') }}</label>
-              <input id="sla-filter" class="form-input" v-model="form.priority_filter" :placeholder="$t('sla.priority_filter_placeholder')" style="flex:1" />
+              <input id="sla-filter" class="form-input" v-model="form.priority_filter" :placeholder="$t('sla.priority_filter_placeholder')" style="flex:1;min-width:120px" />
               <label class="toggle-label" style="white-space:nowrap;font-size:12px">
                 <input type="checkbox" v-model="form.is_active" />
                 {{ $t('sla.active') }}
@@ -44,10 +54,22 @@
           <template v-if="editing && editing.id === p.id">
             <td colspan="6" style="padding:8px">
               <div class="sla-form-row">
-                <input class="form-input" v-model="form.name" style="flex:2" />
-                <input class="form-input" type="number" min="0" v-model.number="form.response_time_minutes" style="width:80px" />
-                <input class="form-input" type="number" min="0" v-model.number="form.resolution_time_minutes" style="width:80px" />
-                <input class="form-input" v-model="form.priority_filter" style="flex:1" />
+                <input class="form-input" v-model="form.name" style="flex:2;min-width:160px" />
+                <div class="sla-time-field">
+                  <label class="sla-field-label">{{ $t('sla.response_time') }}</label>
+                  <div class="sla-input-unit">
+                    <input class="form-input" type="number" min="0" v-model.number="form.response_time_minutes" />
+                    <span class="sla-unit">min</span>
+                  </div>
+                </div>
+                <div class="sla-time-field">
+                  <label class="sla-field-label">{{ $t('sla.resolution_time') }}</label>
+                  <div class="sla-input-unit">
+                    <input class="form-input" type="number" min="0" v-model.number="form.resolution_time_minutes" />
+                    <span class="sla-unit">min</span>
+                  </div>
+                </div>
+                <input class="form-input" v-model="form.priority_filter" style="flex:1;min-width:120px" />
                 <label class="toggle-label" style="white-space:nowrap;font-size:12px">
                   <input type="checkbox" v-model="form.is_active" />
                   {{ $t('sla.active') }}
@@ -160,6 +182,11 @@ function fmtMinutes(m) {
 </script>
 
 <style scoped>
-.sla-form-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sla-form-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.sla-time-field { display: flex; flex-direction: column; gap: 2px; }
+.sla-field-label { font-size: 11px; color: var(--color-text-muted); white-space: nowrap; padding-left: 2px; }
+.sla-input-unit { display: flex; align-items: center; gap: 4px; }
+.sla-input-unit .form-input { width: 90px; }
+.sla-unit { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
 .loading-state { display: flex; justify-content: center; padding: 48px; }
 </style>
