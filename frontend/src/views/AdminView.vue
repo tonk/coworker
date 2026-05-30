@@ -21,6 +21,7 @@
         <div v-show="tab === 'users'" role="tabpanel" id="tab-panel-users" aria-labelledby="tab-btn-users">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="openCreateUser">+ {{ $t('admin.create_user') }}</button>
+            <input v-model="userSearch" class="form-input admin-search" type="search" :placeholder="$t('common.search')" aria-label="Search users" />
           </div>
 
           <div v-if="loading" class="loading-state">
@@ -153,10 +154,11 @@
         <div v-show="tab === 'projects'" role="tabpanel" id="tab-panel-projects" aria-labelledby="tab-btn-projects">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="showCreateProject = true">+ {{ $t('project.new_project') }}</button>
-            <label class="toggle-label" style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <label class="toggle-label" style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
               <input type="checkbox" v-model="showDeletedProjects" @change="loadProjects()" />
               {{ $t('admin.show_deleted') }}
             </label>
+            <input v-model="projectSearch" class="form-input admin-search" type="search" :placeholder="$t('common.search')" aria-label="Search projects" />
           </div>
           <div v-if="loadingProjects" class="loading-state">
             <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
@@ -223,6 +225,7 @@
         <div v-show="tab === 'groups'" role="tabpanel" id="tab-panel-groups" aria-labelledby="tab-btn-groups">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="openCreateGroup">+ {{ $t('groups.create') }}</button>
+            <input v-model="groupSearch" class="form-input admin-search" type="search" :placeholder="$t('common.search')" aria-label="Search groups" />
           </div>
           <div v-if="loadingGroups" class="loading-state">
             <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
@@ -271,6 +274,7 @@
         <div v-show="tab === 'customers'" role="tabpanel" id="tab-panel-customers" aria-labelledby="tab-btn-customers">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="showCreateCustomer = true">+ {{ $t('customer.new_customer') }}</button>
+            <input v-model="customerSearch" class="form-input admin-search" type="search" :placeholder="$t('common.search')" aria-label="Search customers" />
           </div>
           <div v-if="loadingCustomers" class="loading-state">
             <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
@@ -1674,6 +1678,11 @@ const loadingProjects = ref(false)
 const showDeletedProjects = ref(false)
 let projectsLoaded = false
 
+const userSearch = ref('')
+const projectSearch = ref('')
+const groupSearch = ref('')
+const customerSearch = ref('')
+
 const editUser = ref(null)
 const editProject = ref(null)
 const showCreateUser = ref(false)
@@ -1760,8 +1769,17 @@ function toggleCustomerSort() { customerSortDir.value = customerSortDir.value ==
 function toggleProjectSort() { projectSortDir.value = projectSortDir.value === 'asc' ? 'desc' : 'asc' }
 
 const sortedUsers = computed(() => {
+  const q = userSearch.value.trim().toLowerCase()
   const mul = userSortDir.value === 'asc' ? 1 : -1
-  return [...users.value].sort((a, b) => {
+  const list = q
+    ? users.value.filter(u =>
+        (u.display_name || '').toLowerCase().includes(q) ||
+        (u.username || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q) ||
+        (u.first_name || '').toLowerCase().includes(q) ||
+        (u.last_name || '').toLowerCase().includes(q))
+    : users.value
+  return [...list].sort((a, b) => {
     const an = (a.display_name || a.username || '').toLowerCase()
     const bn = (b.display_name || b.username || '').toLowerCase()
     return mul * an.localeCompare(bn)
@@ -1769,22 +1787,42 @@ const sortedUsers = computed(() => {
 })
 
 const sortedGroups = computed(() => {
+  const q = groupSearch.value.trim().toLowerCase()
   const mul = groupSortDir.value === 'asc' ? 1 : -1
-  return [...groups.value].sort((a, b) =>
+  const list = q
+    ? groups.value.filter(g =>
+        (g.name || '').toLowerCase().includes(q) ||
+        (g.description || '').toLowerCase().includes(q))
+    : groups.value
+  return [...list].sort((a, b) =>
     mul * (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
   )
 })
 
 const sortedCustomers = computed(() => {
+  const q = customerSearch.value.trim().toLowerCase()
   const mul = customerSortDir.value === 'asc' ? 1 : -1
-  return [...adminCustomers.value].sort((a, b) =>
+  const list = q
+    ? adminCustomers.value.filter(c =>
+        (c.name || '').toLowerCase().includes(q) ||
+        (c.description || '').toLowerCase().includes(q))
+    : adminCustomers.value
+  return [...list].sort((a, b) =>
     mul * (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
   )
 })
 
 const sortedProjects = computed(() => {
+  const q = projectSearch.value.trim().toLowerCase()
   const mul = projectSortDir.value === 'asc' ? 1 : -1
-  return [...projects.value].sort((a, b) =>
+  const list = q
+    ? projects.value.filter(p =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.slug || '').toLowerCase().includes(q) ||
+        (p.key_prefix || '').toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q))
+    : projects.value
+  return [...list].sort((a, b) =>
     mul * (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase())
   )
 })
@@ -3110,7 +3148,8 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 
 .loading-state { display: flex; justify-content: center; padding: 60px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.tab-toolbar { margin-bottom: 16px; }
+.tab-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.admin-search { width: 260px; margin-left: auto; }
 .settings-section { max-width: 560px; }
 .settings-section h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
 .settings-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
