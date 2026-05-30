@@ -11,6 +11,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"log"
@@ -2050,6 +2052,60 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d topics\n", totalTopics)
 
+	// ── 4b. Chat messages (project-level chat panel) ──────────────────────────
+	fmt.Println("→ Creating project chat messages…")
+
+	type chatMsgSpec struct {
+		project string
+		author  string
+		body    string
+		ago     time.Duration
+	}
+	chatMsgSpecs := []chatMsgSpec{
+		// website-redesign
+		{"website-redesign", "admin", "Morning everyone! Quick reminder: design freeze is this Friday. Get your open Review cards merged before then.", 71 * time.Hour},
+		{"website-redesign", "sarah", "On it — dark mode PR should be merged today. Only the Safari flicker left to sort.", 70*time.Hour + 45*time.Minute},
+		{"website-redesign", "marc", "The cookie consent banner is done. Moving the card to Review now.", 70 * time.Hour},
+		{"website-redesign", "priya", "Accessibility report is in — 23 issues. I'll paste the critical ones here: missing `alt` on 11 images and 4 inputs without labels.", 68 * time.Hour},
+		{"website-redesign", "sarah", "Thanks Priya, I'll tackle the `alt` tags this afternoon.", 67*time.Hour + 30*time.Minute},
+		{"website-redesign", "admin", "Lighthouse score is now 94 🎉 Great work on the image optimisation.", 24 * time.Hour},
+		// mobile-app-v2
+		{"mobile-app-v2", "sarah", "Avatar cropper library decision: going with `react-easy-crop`. Lightweight and well-maintained.", 96 * time.Hour},
+		{"mobile-app-v2", "marc", "Sounds good. I'll unblock the avatar upload sub-card once you push the branch.", 95*time.Hour + 40*time.Minute},
+		{"mobile-app-v2", "lisa", "Android build pipeline is green again after the Gradle upgrade. Tests passing on API 34.", 94 * time.Hour},
+		{"mobile-app-v2", "marc", "App crashes on empty conversation list is fixed and in the hotfix build. Sending to TestFlight now.", 48 * time.Hour},
+		{"mobile-app-v2", "sarah", "TestFlight link sent to internal testers. 24-hour soak before submission.", 47 * time.Hour},
+		// devops-infra
+		{"devops-infra", "marc", "Postgres migration is scheduled for Saturday 02:00 UTC. I'll be on-call.", 120 * time.Hour},
+		{"devops-infra", "lisa", "I'll be secondary on-call. Rollback script is tested and ready.", 119*time.Hour + 50*time.Minute},
+		{"devops-infra", "raj", "Monitoring dashboards updated to show Postgres metrics. Alerting thresholds are set.", 119 * time.Hour},
+		{"devops-infra", "marc", "Migration complete ✅ 4.2 M rows, 8 minutes, zero errors.", 95 * time.Hour},
+		{"devops-infra", "lisa", "Confirmed — all services healthy on Postgres. Slow query log is clean.", 94*time.Hour + 30*time.Minute},
+		{"devops-infra", "admin", "Nice work team. Post-mortem scheduled for Monday 10:00.", 94 * time.Hour},
+		// product-platform
+		{"product-platform", "priya", "Sprint 5 planning is locked. Capacity: 34 points. Goal: polish and launch readiness.", 168 * time.Hour},
+		{"product-platform", "james", "I've picked up the payment webhook integration card. Starting today.", 167 * time.Hour},
+		{"product-platform", "elena", "API rate limiting is done and deployed to staging. Needs a second review before prod.", 48 * time.Hour},
+		{"product-platform", "raj", "Reviewed! Two minor comments, nothing blocking. LGTM.", 47 * time.Hour},
+	}
+
+	totalChatMsgs := 0
+	now2 := time.Now()
+	for _, cm := range chatMsgSpecs {
+		pd := projects[cm.project]
+		u := users[cm.author]
+		t := now2.Add(-cm.ago)
+		must(db.Create(&models.ChatMessage{
+			ProjectID: pd.project.ID,
+			UserID:    u.ID,
+			Body:      cm.body,
+			CreatedAt: t,
+			UpdatedAt: t,
+		}).Error)
+		totalChatMsgs++
+	}
+	fmt.Printf("   Created %d project chat messages\n", totalChatMsgs)
+
 	// ── 5. Conversations (DMs + group chat) ──────────────────────────────────
 	fmt.Println("→ Creating conversations…")
 
@@ -3341,7 +3397,396 @@ Hope to see you there!`,
 	}
 	fmt.Printf("   Created %d news items\n", totalNewsItems)
 
-	// ── 12. Summary ──────────────────────────────────────────────────────────────
+	// ── 12. Ticket tags ───────────────────────────────────────────────────────
+	fmt.Println("→ Creating ticket tags…")
+
+	type ticketTagSeed struct {
+		subject string
+		tags    []string
+	}
+	ticketTagSeeds := []ticketTagSeed{
+		{"Login page returns 500 on Safari", []string{"safari", "authentication", "regression"}},
+		{"Kubernetes cluster node drain failing", []string{"kubernetes", "production", "infrastructure"}},
+		{"Invoice #2024-0042 shows wrong VAT amount", []string{"billing", "finance"}},
+		{"Rate limiting causing 429 errors on API", []string{"api", "performance", "rate-limit"}},
+		{"Request: Read-only dashboard access for intern", []string{"access-management", "change-request"}},
+	}
+	totalTicketTags := 0
+	for _, ts := range ticketTagSeeds {
+		if t, ok := createdTickets[ts.subject]; ok {
+			for _, tag := range ts.tags {
+				must(db.Create(&models.TicketTag{TicketID: t.ID, Name: tag}).Error)
+				totalTicketTags++
+			}
+		}
+	}
+	fmt.Printf("   Created %d ticket tags\n", totalTicketTags)
+
+	// ── 13. Ticket links ──────────────────────────────────────────────────────
+	fmt.Println("→ Creating ticket links…")
+
+	type ticketLinkSeed struct{ src, tgt string }
+	ticketLinkSeeds := []ticketLinkSeed{
+		// Both are Safari login failures — clearly related
+		{"Login page returns 500 on Safari", "Login page returns 500 on Safari"},
+		// Rate limiting and the webhook regression are both API-layer issues
+		{"Rate limiting causing 429 errors on API", "Kubernetes cluster node drain failing"},
+		// SSO request and the intern access request are both identity/access topics
+		{"SSO integration — SAML metadata endpoint", "Request: Read-only dashboard access for intern"},
+	}
+	totalTicketLinks := 0
+	// Use inbox tickets map too
+	allTickets := map[string]*models.Ticket{}
+	for k, v := range createdTickets {
+		allTickets[k] = v
+	}
+	for _, ls := range ticketLinkSeeds {
+		src, ok1 := allTickets[ls.src]
+		tgt, ok2 := allTickets[ls.tgt]
+		if ok1 && ok2 && src.ID != tgt.ID {
+			must(db.Create(&models.TicketLink{SourceTicketID: src.ID, TargetTicketID: tgt.ID}).Error)
+			totalTicketLinks++
+		}
+	}
+	fmt.Printf("   Created %d ticket links\n", totalTicketLinks)
+
+	// ── 14. Ticket checklist items (applied to tickets) ───────────────────────
+	fmt.Println("→ Applying ticket checklist items…")
+
+	// Apply the Offboarding template to the "Request: Read-only dashboard access" ticket
+	// and create a partial incident response checklist on a critical ticket.
+	type ticketChecklistSeed struct {
+		subject string
+		items   []struct {
+			body string
+			done bool
+		}
+	}
+	ticketChecklistSeeds := []ticketChecklistSeed{
+		{
+			subject: "Request: Read-only dashboard access for intern",
+			items: []struct {
+				body string
+				done bool
+			}{
+				{"Verify intern's identity and approval from manager", true},
+				{"Create user account with read-only role", false},
+				{"Assign to devops-infra project as viewer", false},
+				{"Send access instructions to alex.chen@globex.com", false},
+				{"Confirm access is working with the intern", false},
+			},
+		},
+		{
+			subject: "Data export stuck at 0% for 3 hours",
+			items: []struct {
+				body string
+				done bool
+			}{
+				{"Confirm export job ID in queue", true},
+				{"Check for blocking database locks", true},
+				{"Resolve lock and restart the job", false},
+				{"Verify export completes successfully", false},
+				{"Notify customer once export is available", false},
+			},
+		},
+	}
+	totalChecklistItems := 0
+	// Build a lookup that includes inbox tickets (customer_id IS NULL) by title
+	var inboxTicketModels []models.Ticket
+	db.Where("customer_id IS NULL").Find(&inboxTicketModels)
+	inboxByTitle := map[string]*models.Ticket{}
+	for i := range inboxTicketModels {
+		inboxByTitle[inboxTicketModels[i].Title] = &inboxTicketModels[i]
+	}
+	for _, cs := range ticketChecklistSeeds {
+		var ticketID uint
+		if t, ok := createdTickets[cs.subject]; ok {
+			ticketID = t.ID
+		} else if t, ok := inboxByTitle[cs.subject]; ok {
+			ticketID = t.ID
+		}
+		if ticketID == 0 {
+			continue
+		}
+		for j, item := range cs.items {
+			must(db.Create(&models.TicketChecklistItem{
+				TicketID:    ticketID,
+				Body:        item.body,
+				IsCompleted: item.done,
+				Position:    float64((j + 1) * 1000),
+			}).Error)
+			totalChecklistItems++
+		}
+	}
+	fmt.Printf("   Created %d ticket checklist items\n", totalChecklistItems)
+
+	// ── 15. Ticket history ────────────────────────────────────────────────────
+	fmt.Println("→ Creating ticket history entries…")
+
+	type ticketHistorySeed struct {
+		subject   string
+		inbox     bool
+		events    []struct {
+			userKey   string
+			eventType string
+			detail    string
+			hoursAgo  int
+		}
+	}
+	ticketHistorySeeds := []ticketHistorySeed{
+		{
+			subject: "Login page returns 500 on Safari",
+			events: []struct {
+				userKey   string
+				eventType string
+				detail    string
+				hoursAgo  int
+			}{
+				{"sarah", "created", "", 3},
+				{"marc", "assignee_changed", "Assigned to Marc Dubois", 3},
+				{"marc", "status_changed", "open", 2},
+				{"marc", "comment_added", "", 2},
+				{"sarah", "comment_added", "", 1},
+			},
+		},
+		{
+			subject: "Invoice #2024-0042 shows wrong VAT amount",
+			events: []struct {
+				userKey   string
+				eventType string
+				detail    string
+				hoursAgo  int
+			}{
+				{"admin", "created", "", 168},
+				{"priya", "assignee_changed", "Assigned to Priya Nair", 167},
+				{"priya", "status_changed", "open", 150},
+				{"priya", "comment_added", "", 120},
+				{"admin", "comment_added", "", 118},
+				{"priya", "comment_added", "", 96},
+				{"priya", "status_changed", "pending_close", 95},
+			},
+		},
+		{
+			subject: "Rate limiting causing 429 errors on API",
+			events: []struct {
+				userKey   string
+				eventType string
+				detail    string
+				hoursAgo  int
+			}{
+				{"sarah", "created", "", 336},
+				{"raj", "assignee_changed", "Assigned to Raj Sharma", 335},
+				{"raj", "status_changed", "open", 320},
+				{"raj", "comment_added", "", 312},
+				{"sarah", "comment_added", "", 310},
+				{"raj", "comment_added", "", 308},
+				{"raj", "status_changed", "pending_close", 307},
+			},
+		},
+		{
+			subject: "Cannot access the admin panel after update",
+			inbox:   true,
+			events: []struct {
+				userKey   string
+				eventType string
+				detail    string
+				hoursAgo  int
+			}{
+				{"admin", "created", "", 2},
+				{"sarah", "assignee_changed", "Assigned to Sarah Chen", 2},
+				{"sarah", "status_changed", "open", 1},
+				{"sarah", "comment_added", "", 1},
+			},
+		},
+		{
+			subject: "Webhook not firing on ticket status change",
+			inbox:   true,
+			events: []struct {
+				userKey   string
+				eventType string
+				detail    string
+				hoursAgo  int
+			}{
+				{"admin", "created", "", 48},
+				{"sarah", "assignee_changed", "Assigned to Sarah Chen", 47},
+				{"sarah", "status_changed", "open", 40},
+				{"sarah", "comment_added", "", 24},
+			},
+		},
+	}
+	totalHistoryEntries := 0
+	for _, hs := range ticketHistorySeeds {
+		var ticketID uint
+		if hs.inbox {
+			if t, ok := inboxByTitle[hs.subject]; ok {
+				ticketID = t.ID
+			}
+		} else {
+			if t, ok := createdTickets[hs.subject]; ok {
+				ticketID = t.ID
+			}
+		}
+		if ticketID == 0 {
+			continue
+		}
+		for _, ev := range hs.events {
+			u := users[ev.userKey]
+			if u == nil {
+				continue
+			}
+			t := now.Add(-time.Duration(ev.hoursAgo) * time.Hour)
+			must(db.Create(&models.TicketHistory{
+				TicketID:  ticketID,
+				UserID:    u.ID,
+				EventType: ev.eventType,
+				Detail:    ev.detail,
+				CreatedAt: t,
+			}).Error)
+			totalHistoryEntries++
+		}
+	}
+	fmt.Printf("   Created %d ticket history entries\n", totalHistoryEntries)
+
+	// ── 16. Attachments (demo records — download requires actual files) ────────
+	fmt.Println("→ Creating demo attachment records…")
+
+	// Attachments point to non-existent stored files; the UI shows filenames
+	// and sizes correctly. Downloads return 404. Acceptable for demo purposes.
+	type attachSeed struct {
+		ownerType string
+		ownerKey  string // card title key or ticket subject key
+		uploader  string
+		filename  string
+		mimeType  string
+		sizeBytes int64
+	}
+	attachSeeds := []attachSeed{
+		// Card comment attachments (owner_type = "card_comment" — we attach to the card itself for simplicity using card owner_type)
+		// Ticket message attachments
+		{"ticket", "Login page returns 500 on Safari", "marc", "safari-error-screenshot.png", "image/png", 184320},
+		{"ticket", "Kubernetes cluster node drain failing", "lisa", "kubectl-drain-output.txt", "text/plain", 4096},
+		{"ticket", "Invoice #2024-0042 shows wrong VAT amount", "priya", "invoice-2024-0042-corrected.pdf", "application/pdf", 512000},
+		{"ticket", "Rate limiting causing 429 errors on API", "raj", "rate-limit-loadtest-results.csv", "text/csv", 28672},
+	}
+	totalAttachments := 0
+	for i, as := range attachSeeds {
+		var ownerID uint
+		if t, ok := createdTickets[as.ownerKey]; ok {
+			ownerID = t.ID
+		}
+		if ownerID == 0 {
+			continue
+		}
+		u := users[as.uploader]
+		if u == nil {
+			continue
+		}
+		must(db.Create(&models.Attachment{
+			OwnerType:  as.ownerType,
+			OwnerID:    ownerID,
+			UploaderID: u.ID,
+			Filename:   as.filename,
+			StoredName: fmt.Sprintf("seed_placeholder_%03d_%s", i, as.filename),
+			MimeType:   as.mimeType,
+			SizeBytes:  as.sizeBytes,
+		}).Error)
+		totalAttachments++
+	}
+	fmt.Printf("   Created %d demo attachment records\n", totalAttachments)
+
+	// ── 17. Message reactions ─────────────────────────────────────────────────
+	fmt.Println("→ Creating message reactions…")
+
+	// Fetch the first few conversation messages per conversation to react to.
+	type reactSeed struct {
+		ownerType string
+		body      string // match by body prefix to find the message ID
+		userKey   string
+		emoji     string
+	}
+	reactSeeds := []reactSeed{
+		{"conv_message", "Hey Sarah, quick question", "sarah", "👍"},
+		{"conv_message", "PR is up!", "admin", "🎉"},
+		{"conv_message", "PR is up!", "marc", "🎉"},
+		{"conv_message", "Migration complete", "admin", "🎉"},
+		{"conv_message", "Migration complete", "lisa", "✅"},
+		{"conv_message", "Migration complete", "raj", "👏"},
+		{"conv_message", "All 4.2 M rows migrated cleanly", "marc", "🚀"},
+		{"chat_message", "Morning everyone", "sarah", "👋"},
+		{"chat_message", "Lighthouse score is now 94", "sarah", "🎉"},
+		{"chat_message", "Lighthouse score is now 94", "marc", "🚀"},
+		{"chat_message", "Migration complete", "lisa", "✅"},
+		{"chat_message", "Migration complete", "raj", "🎉"},
+	}
+	totalReactions := 0
+	for _, rs := range reactSeeds {
+		u := users[rs.userKey]
+		if u == nil {
+			continue
+		}
+		var ownerID uint
+		if rs.ownerType == "conv_message" {
+			var msg models.ConversationMessage
+			if db.Where("body LIKE ?", rs.body+"%").First(&msg).Error == nil {
+				ownerID = msg.ID
+			}
+		} else {
+			var msg models.ChatMessage
+			if db.Where("body LIKE ?", rs.body+"%").First(&msg).Error == nil {
+				ownerID = msg.ID
+			}
+		}
+		if ownerID == 0 {
+			continue
+		}
+		// Skip duplicates silently (uniqueIndex on owner_type+owner_id+user_id+emoji)
+		db.Create(&models.MessageReaction{
+			OwnerType: rs.ownerType,
+			OwnerID:   ownerID,
+			UserID:    u.ID,
+			Emoji:     rs.emoji,
+		})
+		totalReactions++
+	}
+	fmt.Printf("   Created %d message reactions\n", totalReactions)
+
+	// ── 18. Project webhooks ──────────────────────────────────────────────────
+	fmt.Println("→ Creating project webhooks…")
+
+	webhookToken := func(raw string) (hash, hint string) {
+		h := sha256.Sum256([]byte(raw))
+		hash = hex.EncodeToString(h[:])
+		hint = raw[len(raw)-8:]
+		return
+	}
+	type webhookSeedSpec struct {
+		project     string
+		name        string
+		webhookType string
+		rawToken    string
+	}
+	webhookSpecs := []webhookSeedSpec{
+		{"website-redesign", "CI/CD Notifications", "generic", "demo-token-website-ci-webhook"},
+		{"devops-infra", "Gitea Push Events", "gitea", "demo-token-devops-gitea-webhook"},
+		{"product-platform", "Release Notifications", "generic", "demo-token-platform-release-hook"},
+	}
+	totalWebhooks := 0
+	for _, ws := range webhookSpecs {
+		pd := projects[ws.project]
+		hash, hint := webhookToken(ws.rawToken)
+		must(db.Create(&models.ProjectWebhook{
+			ProjectID:   pd.project.ID,
+			Name:        ws.name,
+			TokenHash:   hash,
+			TokenHint:   hint,
+			Type:        ws.webhookType,
+			CreatedByID: users["admin"].ID,
+		}).Error)
+		totalWebhooks++
+	}
+	fmt.Printf("   Created %d project webhooks\n", totalWebhooks)
+
+	// ── 19. Summary ──────────────────────────────────────────────────────────────
 	fmt.Println()
 	fmt.Println("✅ Demo data seeded successfully!")
 	fmt.Println()
@@ -3529,6 +3974,9 @@ func removeDemoData(db *gorm.DB) {
 			db.Unscoped().Where("topic_id IN ?", topicIDs).Delete(&models.TopicReply{})
 		}
 		db.Unscoped().Where("project_id IN ?", projectIDs).Delete(&models.Topic{})
+		// Chat messages and webhooks
+		db.Where("project_id IN ?", projectIDs).Delete(&models.ChatMessage{})
+		db.Where("project_id IN ?", projectIDs).Delete(&models.ProjectWebhook{})
 		// Delete time entries referencing these projects (covers tonk's TT entries)
 		db.Where("project_id IN ?", projectIDs).Delete(&models.TimeEntry{})
 		db.Unscoped().Where("id IN ?", projectIDs).Delete(&models.Project{})
@@ -3541,6 +3989,12 @@ func removeDemoData(db *gorm.DB) {
 			Where("user_id IN ?", userIDs).
 			Pluck("conversation_id", &convIDs)
 		if len(convIDs) > 0 {
+			// Collect conv message IDs to clean up reactions
+			var convMsgIDs []uint
+			db.Model(&models.ConversationMessage{}).Where("conversation_id IN ?", convIDs).Pluck("id", &convMsgIDs)
+			if len(convMsgIDs) > 0 {
+				db.Where("owner_type = 'conv_message' AND owner_id IN ?", convMsgIDs).Delete(&models.MessageReaction{})
+			}
 			db.Unscoped().Where("conversation_id IN ?", convIDs).Delete(&models.ConversationMessage{})
 			db.Where("conversation_id IN ?", convIDs).Delete(&models.ConversationMember{})
 			db.Unscoped().Where("id IN ?", convIDs).Delete(&models.Conversation{})
@@ -3572,6 +4026,8 @@ func removeDemoData(db *gorm.DB) {
 			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketChecklistItem{})
 			db.Unscoped().Where("source_ticket_id IN ? OR target_ticket_id IN ?", ticketIDs, ticketIDs).Delete(&models.TicketLink{})
 			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketCardLink{})
+			db.Unscoped().Where("ticket_id IN ?", ticketIDs).Delete(&models.TicketHistory{})
+			db.Where("owner_type = 'ticket' AND owner_id IN ?", ticketIDs).Delete(&models.Attachment{})
 			db.Unscoped().Where("id IN ?", ticketIDs).Delete(&models.Ticket{})
 		}
 	}
@@ -3591,6 +4047,8 @@ func removeDemoData(db *gorm.DB) {
 		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketTag{})
 		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketChecklistItem{})
 		db.Unscoped().Where("source_ticket_id IN ? OR target_ticket_id IN ?", inboxIDs, inboxIDs).Delete(&models.TicketLink{})
+		db.Unscoped().Where("ticket_id IN ?", inboxIDs).Delete(&models.TicketHistory{})
+		db.Where("owner_type = 'ticket' AND owner_id IN ?", inboxIDs).Delete(&models.Attachment{})
 		db.Unscoped().Where("id IN ?", inboxIDs).Delete(&models.Ticket{})
 	}
 	demoSlaNames := []string{"Critical — 1h response / 4h resolution", "High — 2h response / 8h resolution", "Standard — 4h response / 24h resolution"}
