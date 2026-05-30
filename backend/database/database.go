@@ -418,6 +418,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.TicketCardLink{},
 		&models.TicketMessage{},
 		&models.TicketHistory{},
+		&models.TicketView{},
 		&models.SlaPolicy{},
 		&models.Macro{},
 		&models.TicketChecklistTemplate{},

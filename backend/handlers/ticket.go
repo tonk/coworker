@@ -11,6 +11,7 @@ import (
 	"github.com/tonk/warmdesk/models"
 	"github.com/tonk/warmdesk/services"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // ListTickets GET /api/v1/customers/:customerId/tickets
@@ -108,7 +109,39 @@ func GetTicket(c *gin.Context) {
 
 	attachTicketChecklist(&ticket)
 
+	// Record / refresh the view timestamp for the current user.
+	database.DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "ticket_id"}, {Name: "user_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"viewed_at"}),
+	}).Create(&models.TicketView{TicketID: ticket.ID, UserID: userID, ViewedAt: time.Now()})
+
 	c.JSON(http.StatusOK, ticket)
+}
+
+// GetTicketViewers returns all users who have viewed the ticket, ordered by most recent first.
+func GetTicketViewers(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	customerID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	var viewers []models.TicketView
+	database.DB.Where("ticket_id = ?", ticketID).
+		Preload("User").
+		Order("viewed_at desc").
+		Find(&viewers)
+	c.JSON(http.StatusOK, viewers)
 }
 
 // CreateTicket POST /api/v1/customers/:customerId/tickets

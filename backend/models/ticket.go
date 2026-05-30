@@ -55,6 +55,15 @@ type TicketMessage struct {
 	Attachments []Attachment `gorm:"-" json:"attachments,omitempty"`
 }
 
+// TicketView records the last time each user viewed a ticket.
+type TicketView struct {
+	ID       uint      `gorm:"primaryKey" json:"id"`
+	TicketID uint      `gorm:"not null;uniqueIndex:idx_ticket_view" json:"ticket_id"`
+	UserID   uint      `gorm:"not null;uniqueIndex:idx_ticket_view" json:"user_id"`
+	ViewedAt time.Time `json:"viewed_at"`
+	User     User      `json:"user"`
+}
+
 // TicketHistory records activity events on a ticket.
 type TicketHistory struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`

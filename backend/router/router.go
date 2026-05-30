@@ -249,6 +249,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				tickets.GET("/:ticketId/cards", handlers.ListTicketCardLinks)
 				tickets.POST("/:ticketId/cards", handlers.CreateTicketCardLink)
 				tickets.DELETE("/:ticketId/cards/:linkId", handlers.DeleteTicketCardLink)
+				tickets.GET("/:ticketId/viewers", handlers.GetTicketViewers)
 				tickets.GET("/:ticketId/history", handlers.GetTicketHistory)
 				tickets.GET("/:ticketId/raw-email", handlers.GetTicketRawEmail)
 				tickets.POST("/:ticketId/macros/:macroId", handlers.ApplyMacro)

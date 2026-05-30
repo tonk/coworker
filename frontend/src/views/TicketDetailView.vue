@@ -277,6 +277,29 @@
         </form>
       </section>
 
+      <section v-if="!isInbox && viewers.length" class="viewers-section">
+        <div class="viewers-row">
+          <div
+            v-for="v in viewers"
+            :key="v.user_id"
+            class="viewer-wrap"
+          >
+            <div
+              class="viewer-avatar"
+              :style="viewerAvatarBg(v.user)"
+              :aria-label="(v.user?.display_name || v.user?.username) + ' — ' + formatDateTime(v.viewed_at)"
+            >
+              <img v-if="viewerAvatarSrc(v.user)" :src="viewerAvatarSrc(v.user)" class="viewer-avatar-img" alt="" aria-hidden="true" @error="e => e.target.style.display='none'" />
+              <span v-else class="viewer-initials" aria-hidden="true">{{ viewerInitials(v.user) }}</span>
+            </div>
+            <div class="viewer-tooltip" role="tooltip">
+              <span class="viewer-tooltip-name">{{ v.user?.display_name || v.user?.username }}</span>
+              <span class="viewer-tooltip-date">{{ formatDateTime(v.viewed_at) }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section v-if="!isInbox" class="activity-section">
         <button class="activity-toggle" @click="showActivity = !showActivity" :aria-expanded="showActivity">
           <span class="activity-toggle-icon" :class="{ rotated: showActivity }">▸</span>
@@ -328,6 +351,7 @@ import AttachmentList from '@/components/common/AttachmentList.vue'
 import FileUploadButton from '@/components/common/FileUploadButton.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { avatarUrl } from '@/composables/useAvatar'
 
 const { formatDateTime, formatDate } = useDateFormat()
 const { t } = useI18n()
@@ -336,6 +360,17 @@ const ticketsStore = useTicketsStore()
 
 function renderMarkdown(text) {
   return DOMPurify.sanitize(marked.parse(text || ''))
+}
+
+const AVATAR_COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6','#ef4444','#14b8a6']
+function viewerAvatarBg(user) {
+  const idx = (user?.username?.charCodeAt(0) || 0) % AVATAR_COLORS.length
+  return { background: AVATAR_COLORS[idx] }
+}
+function viewerAvatarSrc(user) { return avatarUrl(user) }
+function viewerInitials(user) {
+  const name = user?.display_name || user?.username || '?'
+  return name.slice(0, 2).toUpperCase()
 }
 
 async function showOriginalEmail() {
@@ -367,6 +402,7 @@ const showRawEmail = ref(false)
 const rawEmailContent = ref('')
 const rawEmailLoading = ref(false)
 const history = ref([])
+const viewers = ref([])
 const showActivity = ref(false)
 const loading = ref(true)
 const newMessage = ref('')
@@ -566,6 +602,13 @@ async function fetchTicket() {
         history.value = h || []
       } catch {
         history.value = []
+      }
+      // Fetch viewers
+      try {
+        const { data: v } = await ticketsApi.getViewers(customerId.value, ticketId.value)
+        viewers.value = v || []
+      } catch {
+        viewers.value = []
       }
     }
   } catch {}
@@ -1316,6 +1359,18 @@ async function assignToCustomer() {
 .te-num { width: 60px; text-align: center; }
 .te-project { min-width: 130px; max-width: 180px; }
 .te-desc { flex: 1; min-width: 120px; }
+
+.viewers-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border); }
+.viewers-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.viewer-wrap { position: relative; display: inline-flex; }
+.viewer-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: default; flex-shrink: 0; border: 2px solid var(--color-surface, #fff); }
+.viewer-avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.viewer-initials { font-size: 10px; font-weight: 700; color: #fff; line-height: 1; }
+.viewer-tooltip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--color-surface-raised, #1e1e2e); color: var(--color-text); border: 1px solid var(--color-border); border-radius: 6px; padding: 6px 10px; white-space: nowrap; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.15); z-index: 100; pointer-events: none; }
+.viewer-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--color-border); }
+.viewer-wrap:hover .viewer-tooltip, .viewer-wrap:focus-within .viewer-tooltip { display: flex; flex-direction: column; gap: 2px; }
+.viewer-tooltip-name { font-weight: 600; }
+.viewer-tooltip-date { color: var(--color-text-muted); font-size: 11px; }
 
 .activity-section { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 20px; }
 .activity-toggle { display: flex; align-items: center; gap: 6px; width: 100%; background: none; border: none; cursor: pointer; font-size: 14px; color: var(--color-text-muted); padding: 4px 0; margin-bottom: 12px; }
