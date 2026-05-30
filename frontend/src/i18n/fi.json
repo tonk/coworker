@@ -466,7 +466,8 @@
     "news_show_on_login": "Näytä tervetuloviestinä kirjautumisessa",
     "time_tracking": "Ajanseuranta",
     "tt_projects_title": "Ajanseurantaprojektit",
-    "tt_customers_title": "Ajanseuranta-asiakkaat"
+    "tt_customers_title": "Ajanseuranta-asiakkaat",
+    "show_inactive": "Näytä passiiviset"
   },
   "report": {
     "title": "Aikaraportti",

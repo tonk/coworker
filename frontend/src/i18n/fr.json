@@ -466,7 +466,8 @@
     "news_show_on_login": "Afficher comme message de bienvenue à la connexion",
     "time_tracking": "Suivi du temps",
     "tt_projects_title": "Projets de suivi du temps",
-    "tt_customers_title": "Clients de suivi du temps"
+    "tt_customers_title": "Clients de suivi du temps",
+    "show_inactive": "Afficher inactifs"
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",

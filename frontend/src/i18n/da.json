@@ -466,7 +466,8 @@
     "news_show_on_login": "Vis som velkomstbesked ved login",
     "time_tracking": "Tidsregistrering",
     "tt_projects_title": "Tidsregistreringsprojekter",
-    "tt_customers_title": "Tidsregistreringskunder"
+    "tt_customers_title": "Tidsregistreringskunder",
+    "show_inactive": "Vis inaktive"
   },
   "report": {
     "title": "Tidsrapport",

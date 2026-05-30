@@ -466,7 +466,8 @@
     "news_show_on_login": "Als Willkommensnachricht beim Login anzeigen",
     "time_tracking": "Zeiterfassung",
     "tt_projects_title": "Zeiterfassungsprojekte",
-    "tt_customers_title": "Zeiterfassungskunden"
+    "tt_customers_title": "Zeiterfassungskunden",
+    "show_inactive": "Inaktive anzeigen"
   },
   "update": {
     "available": "Eine neue Version von WarmDesk ist verfügbar: v{version}.",

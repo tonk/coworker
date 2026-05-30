@@ -321,6 +321,7 @@
     "unarchive": "Unarchive",
     "deleted": "Deleted",
     "show_deleted": "Show deleted",
+    "show_inactive": "Show inactive",
     "restore": "Restore",
     "purge_project": "Permanently Delete",
     "purge_project_confirm": "Permanently delete \"{name}\"? This cannot be undone — all cards, columns, labels, chat history and sprints will be lost forever.",

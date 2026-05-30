@@ -466,7 +466,8 @@
     "news_show_on_login": "Toon als welkomstbericht bij inloggen",
     "time_tracking": "Urenregistratie",
     "tt_projects_title": "Urenregistratieprojecten",
-    "tt_customers_title": "Urenregistratieklanten"
+    "tt_customers_title": "Urenregistratieklanten",
+    "show_inactive": "Inactieven tonen"
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

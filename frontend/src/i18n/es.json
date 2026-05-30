@@ -466,7 +466,8 @@
     "news_show_on_login": "Mostrar como mensaje de bienvenida al iniciar sesión",
     "time_tracking": "Registro de tiempo",
     "tt_projects_title": "Proyectos de registro de tiempo",
-    "tt_customers_title": "Clientes de registro de tiempo"
+    "tt_customers_title": "Clientes de registro de tiempo",
+    "show_inactive": "Mostrar inactivos"
   },
   "update": {
     "available": "Hay una nueva versión de WarmDesk disponible: v{version}.",

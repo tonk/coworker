@@ -466,7 +466,8 @@
     "news_show_on_login": "Sýna sem velkomnarskilaboð við innskráningu",
     "time_tracking": "Tímaskráning",
     "tt_projects_title": "Tímaskráningarverkefni",
-    "tt_customers_title": "Tímaskráningarviðskiptavinir"
+    "tt_customers_title": "Tímaskráningarviðskiptavinir",
+    "show_inactive": "Sýna óvirka"
   },
   "report": {
     "title": "Tímaskýrsla",

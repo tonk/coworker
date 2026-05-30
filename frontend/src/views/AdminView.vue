@@ -21,6 +21,10 @@
         <div v-show="tab === 'users'" role="tabpanel" id="tab-panel-users" aria-labelledby="tab-btn-users">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="openCreateUser">+ {{ $t('admin.create_user') }}</button>
+            <label class="toggle-label" style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+              <input type="checkbox" v-model="showInactiveUsers" />
+              {{ $t('admin.show_inactive') }}
+            </label>
             <input v-model="userSearch" class="form-input admin-search" type="search" :placeholder="$t('common.search')" aria-label="Search users" />
           </div>
 
@@ -1678,6 +1682,7 @@ const loadingProjects = ref(false)
 const showDeletedProjects = ref(false)
 let projectsLoaded = false
 
+const showInactiveUsers = ref(false)
 const userSearch = ref('')
 const projectSearch = ref('')
 const groupSearch = ref('')
@@ -1771,14 +1776,13 @@ function toggleProjectSort() { projectSortDir.value = projectSortDir.value === '
 const sortedUsers = computed(() => {
   const q = userSearch.value.trim().toLowerCase()
   const mul = userSortDir.value === 'asc' ? 1 : -1
-  const list = q
-    ? users.value.filter(u =>
-        (u.display_name || '').toLowerCase().includes(q) ||
-        (u.username || '').toLowerCase().includes(q) ||
-        (u.email || '').toLowerCase().includes(q) ||
-        (u.first_name || '').toLowerCase().includes(q) ||
-        (u.last_name || '').toLowerCase().includes(q))
-    : users.value
+  let list = showInactiveUsers.value ? users.value : users.value.filter(u => u.is_active)
+  if (q) list = list.filter(u =>
+    (u.display_name || '').toLowerCase().includes(q) ||
+    (u.username || '').toLowerCase().includes(q) ||
+    (u.email || '').toLowerCase().includes(q) ||
+    (u.first_name || '').toLowerCase().includes(q) ||
+    (u.last_name || '').toLowerCase().includes(q))
   return [...list].sort((a, b) => {
     const an = (a.display_name || a.username || '').toLowerCase()
     const bn = (b.display_name || b.username || '').toLowerCase()

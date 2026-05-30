@@ -466,7 +466,8 @@
     "news_show_on_login": "Mostra come messaggio di benvenuto al login",
     "time_tracking": "Registrazione tempo",
     "tt_projects_title": "Progetti di registrazione tempo",
-    "tt_customers_title": "Clienti di registrazione tempo"
+    "tt_customers_title": "Clienti di registrazione tempo",
+    "show_inactive": "Mostra inattivi"
   },
   "report": {
     "title": "Report ore",
