@@ -58,42 +58,6 @@ WEB_DIR=./web ./warmdesk
 
 ---
 
-## Repository layout
-
-```
-backend/
-  main.go            # entry point — config, DB, services, router
-  cmd/               # auxiliary binaries (e.g. seed)
-  config/            # Config struct + env var / YAML loading
-  database/          # GORM init, AutoMigrate for all models
-  docs/              # Swagger-generated API docs (do not hand-edit)
-  handlers/          # One file per feature area (card.go, report.go, …)
-  middleware/        # auth, api_key, cors, ratelimit, ip_allowlist, security_headers
-  migrate/           # one-off data migration helpers (separate from AutoMigrate)
-  models/            # GORM model structs (board.go, user.go, project.go, …)
-  router/            # Single router.go — all routes in one place
-  services/          # Business logic (auth, email, project helpers, ordering, git)
-  staticweb/         # Embeds the built frontend (dist/web) into the Go binary
-  ws/                # WebSocket hub + client + pub/sub (memory & Redis)
-
-frontend/
-  src/
-    api/             # Axios wrappers, one file per domain (projects.js, reports.js, …)
-    components/      # Reusable Vue components (board/, call/, chat/, common/, layout/)
-    composables/     # useTheme, useWebSocket, useDateFormat, useAvatar, useLiveKitGroupCall, …
-    i18n/            # en.json + nl, de, fr, es, da, sv, nb, fi, is, pt, it — all keys must be mirrored
-    router/          # index.js — all routes + auth guards
-    stores/          # Pinia stores (auth, board, chat, project, sprint, topics, ui, …)
-    styles/          # Global CSS custom properties (light/dark theme vars)
-    utils/           # Small framework-agnostic helpers
-    views/           # Page-level Vue components
-
-frontend/src-tauri/  # Rust/Tauri config (minimal — mostly tauri.conf.json)
-deploy/              # systemd / nginx / apache templates
-```
-
----
-
 ## Configuration
 
 Config is loaded in priority order: CLI flag `--config` → `CONFIG_FILE` env var → `warmdesk.yaml` in CWD → built-in defaults. Every YAML key has a matching environment variable override.
@@ -188,25 +152,6 @@ Settings (SMTP, locale defaults, company branding, session timeout, …) are sto
 
 ## Backend conventions
 
-### Handlers
-Every handler follows the same pattern:
-```go
-func DoThing(c *gin.Context) {
-    userID := middleware.GetUserID(c)
-    // 1. Parse & validate path params
-    // 2. Load project, check membership with services.RequireProjectRole(...)
-    // 3. Bind JSON body
-    // 4. DB operation
-    // 5. Broadcast WS event if needed
-    // 6. Return JSON
-}
-```
-
-Error responses always use `gin.H{"error": "..."}`:
-```go
-c.JSON(http.StatusBadRequest, gin.H{"error": "invalid column id"})
-```
-
 ### Project access control
 ```go
 project, err := services.GetProjectBySlug(slug)   // 404 if not found
@@ -229,13 +174,7 @@ services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "me
 ## Frontend conventions
 
 ### API calls
-All HTTP calls go through `src/api/client.js` (Axios with token refresh). Each domain has its own API file:
-```js
-// src/api/projects.js
-export const projectsApi = {
-  updateCard: (slug, id, data) => client.put(`/projects/${slug}/cards/${id}`, data),
-}
-```
+All HTTP calls go through `src/api/client.js` (Axios with token refresh). Each domain has its own API file in `src/api/`.
 
 ### i18n
 **All language files must be kept in sync.** When adding a key to `en.json`, add the same key (with a translated value or a placeholder) to all other language files (`nl`, `de`, `fr`, `es`, `da`, `sv`, `nb`, `fi`, `is`, `pt`, `it`). Keys are namespaced by feature: `board.*`, `report.*`, `admin.*`, `common.*`, etc.
@@ -261,17 +200,6 @@ Files are stored in `upload_dir` (default `./uploads`) with randomised hex names
 ## Helpdesk (ticketing)
 
 The helpdesk module is gated by the `helpdesk_enabled` user flag (default `false`). Admins always have access. The feature middleware is `middleware.RequireFeature("helpdesk_enabled")`.
-
-### Models (`models/ticket.go`, `models/sla.go`)
-
-| Model | Key fields |
-|---|---|
-| `Ticket` | `CustomerID`, `Title`, `Description`, `Type` (incident/problem/service_request/change_request), `Priority` (low/medium/high/critical), `Status` (new/open/pending/pending_close/closed), `AssignedToID`, `OwnerID`, `GroupID`, `ReminderAt *time.Time`, `CloseAt *time.Time`, `IsSpam bool`, `SlaPolicyID`, `SlaResponseDeadline`, `SlaResolutionDeadline`, `SlaResponseBreached bool`, `SlaResolutionBreached bool`, `FirstResponseAt *time.Time` |
-| `TicketMessage` | `TicketID`, `UserID`, `Body`, `EmailSent bool` — internal messages on a ticket; `EmailSent` is `true` when the message triggered an outbound email reply |
-| `TicketTag` | `TicketID`, `Name` — free-form tags |
-| `TicketLink` | `TicketID`, `LinkedTicketID`, `LinkType` — links between tickets |
-| `TicketCardLink` | `TicketID`, `CardID` — links from a ticket to a board card |
-| `SlaPolicy` | `Name`, `ResponseTimeMinutes`, `ResolutionTimeMinutes`, `PriorityFilter` (comma-separated), `IsActive` |
 
 ### Access control
 
@@ -317,13 +245,6 @@ Macros are reusable action sequences that agents can apply to tickets in one cli
 | `add_tag` | Adds a tag (idempotent via `FirstOrCreate`) |
 | `add_message` | Appends a message body; supports placeholders `{email}`, `{fname}`, `{name}`, `{subject}`, `{ticket_id}`, `{agent}`, `{agent_fname}` |
 
-**Routes:**
-- `GET/POST /api/v1/admin/macros` — list all / create (admin only)
-- `PUT/DELETE /api/v1/admin/macros/:id` — update / delete (admin only)
-- `GET /api/v1/macros` — list active macros (all authenticated helpdesk users)
-- `POST /api/v1/customers/:customerId/tickets/:ticketId/macros/:macroId` — apply to ticket
-- `POST /api/v1/tickets/inbox/:ticketId/macros/:macroId` — apply to inbox ticket
-
 **Frontend:** `components/admin/MacrosTab.vue` (admin CRUD with drag-and-drop placeholder insertion). Apply dropdown lives in `TicketDetailView.vue`.
 
 **Apply response:** `{ticket, macro_messages}` — `macro_messages` is a list of expanded message bodies for `add_message` actions; the frontend POSTs them as ticket messages.
@@ -344,16 +265,8 @@ All ticket routes live under `/api/v1/customers/:customerId/tickets` and require
 
 ### Frontend
 
-- **`TicketListView.vue`** — lists tickets for one customer; shows `DashboardNews` at the top so news is visible to helpdesk-first users.
-- **`TicketDetailView.vue`** — full ticket detail with inline title editing, status/priority/type/assignee/group dropdowns, tag management, SLA card, linked tickets/cards panel, internal messages with attachments, the pending reminder `DatePicker`, macro apply dropdown, and spam mark/unmark controls. The original email body is rendered as plain text with `white-space: pre-wrap` (selectable via `.selectable` class to override `body { user-select: none }`). Messages from agents that triggered an email reply show an ✉ badge (`email_sent` field). Clicking the ticket number (`#123`) copies `Ticket#123` to the clipboard.
-- **`components/admin/MacrosTab.vue`** — admin UI for macro CRUD with drag-and-drop placeholder insertion buttons.
-- **`components/admin/SlaPoliciesTab.vue`** — admin UI for CRUD on SLA policies.
-- **`components/common/DatePicker.vue`** — custom calendar picker that uses CSS custom properties for theming and respects `auth.user.date_time_format` and `auth.user.week_start`. Emits `update:modelValue` with a `YYYY-MM-DD` string (or `null` on clear). Does **not** use a native `<input type="date">` at all.
-- **`components/common/DashboardNews.vue`** — self-contained news widget that fetches active news, manages dismissed IDs in `localStorage` (key `dashboard_news_dismissed_ids`), and renders the widget grid. Used in `DashboardView`, `CustomersView`, and `TicketListView`.
-- **`stores/tickets.js`** — Pinia store for ticket list state.
-- **`api/tickets.js`** — Axios wrappers for all ticket endpoints.
-- **`api/macros.js`** — Axios wrappers for macro CRUD and apply endpoints.
-- **`api/sla.js`** — Axios wrappers for SLA policy admin endpoints.
+- **`components/common/DatePicker.vue`** — custom calendar picker; does **not** use a native `<input type="date">`. Respects `auth.user.date_time_format` and `auth.user.week_start`. Emits `update:modelValue` with a `YYYY-MM-DD` string (or `null` on clear).
+- **`components/common/DashboardNews.vue`** — manages dismissed news IDs in `localStorage` under key `dashboard_news_dismissed_ids`.
 
 ### User setting: `dashboard_default`
 
@@ -413,26 +326,7 @@ oauth2:
 4. After granting access, the popup closes and tokens are stored in the database
 5. The polling service automatically refreshes the access token via the stored refresh token before it expires
 
-### Backend implementation
-
-| File | Role |
-|---|---|
-| `handlers/oauth2.go` | OAuth2 auth URL generation, callback (code → token exchange), status, disconnect, `RefreshIMAPOAuth2Token()` |
-| `services/xoauth2.go` | Custom XOAUTH2 SASL client (`user=...\x01auth=Bearer ...\x01\x01`) |
-| `services/imap_service.go` | `connectAndLogin` calls `c.Authenticate()` with XOAUTH2 (then OAUTHBEARER fallback) when `cfg.AuthMechanism == "oauth2"`; `poll` calls token refresher before connecting |
-| `config/config.go` | `IMAPConfig` auth fields + `OAuth2Config` struct for client credentials |
-| `handlers/system.go` | `settingIMAP*` keys for auth mechanism, provider, access token, refresh token, expiry |
-
-Tokens are stored in `system_settings` (same table as passwords). Access tokens are masked in admin API responses (returned as `imap_access_token_set: "true"`). Token refresh happens automatically in `RefreshIMAPOAuth2Token()` up to 5 minutes before expiry.
-
-### Routes
-
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/api/v1/admin/imap/oauth2/auth-url?provider=google\|office365` | Returns the OAuth2 authorization URL |
-| `GET` | `/api/v1/admin/imap/oauth2/callback` | Handles the provider callback (code → token exchange) |
-| `GET` | `/api/v1/admin/imap/oauth2/status` | Returns connection status |
-| `POST` | `/api/v1/admin/imap/oauth2/disconnect` | Clears stored tokens, reverts to plain auth |
+Tokens are stored in `system_settings`. Access tokens are masked in admin API responses (returned as `imap_access_token_set: "true"`). Token refresh happens automatically in `RefreshIMAPOAuth2Token()` up to 5 minutes before expiry.
 
 ---
 
@@ -519,35 +413,9 @@ npm run test:watch    # vitest watch mode
 
 Test dependencies: `github.com/stretchr/testify` (Go assertions), `vitest` / `@vue/test-utils` / `jsdom` (frontend).
 
-### Backend — test index
-
-| Package | File | What it tests | Tests |
-|---------|------|---------------|-------|
-| `services` | `auth_service_test.go` | JWT issuance/validation (access, refresh, MFA, WS, media, passkey), bcrypt hash/verify, TOTP generate/verify, expired/invalid signature | 13 |
-| `services` | `email_service_test.go` | `envelopeAddress` (plain, display-name, invalid), `ExtractMentions` (none, single, multiple, dupes, underscore) | 8 |
-| `services` | `email_template_test.go` | `WrapHTML`/`WrapText` with fallback, custom branding, version-strip, empty company, instance URL | 8 |
-| `services` | `order_service_test.go` | `MidPosition`, `PositionAfter` — ordering slot calculation with various neighbours | 10 |
-| `services` | `project_service_test.go` | `keyPrefixBase` (11 cases), `slugify` (11 cases), `itoa` (8 cases) | 30 subtests |
-| `middleware` | `cors_test.go` | `ParseOrigins` — empty, single, multiple, trimming, skips empty, Tauri origins always included | 6 |
-| `ws` | `ws_test.go` | `memoryPubSub` (IsLocal, Publish, Subscribe/cancel), `InitPubSub`, `StartPubSubListener`, all ~40 message type constants, struct constructors | 4 funcs |
-| `config` | `config_test.go` | `defaults()` — all ~25 default field values asserted | 1 |
-| `cmd/training` | `main_test.go` | `getName()` with index/rollover, `projectAvatarURL`, `groupAvatarURL`, constants | 6 |
-
 The `testutil` package (`backend/testutil/db.go`) provides `SetupTestDB()` which returns an in-memory SQLite database with all models migrated — use it in tests that need a real database.
 
-### Frontend — test index
-
-| File | What it tests | Tests |
-|------|---------------|-------|
-| `composables/useUpdateCheck.test.js` | `isNewer` (semver comparison, leading v, dev), `pickAsset` (platform/arch matching, Tauri detection) | 11 |
-| `composables/useDateFormat.test.js` | `pad`, `applyFormat` (Date, ISO string, 12h, midnight, invalid), `dateOnlyFmt` | 10 |
-| `utils/shiftTimeEntries.test.js` | `parseWallClock`, `fmtWallClock`, `wallClockSpanMinutes`, `addDaysISO`, `splitShiftIntoDayEntries`, `weekendStandbyDefaults` | 13 |
-| `utils/contractSlotPreview.test.js` | `parseSlotHHMM`, `slotDayTypeMatches`, `slotCoverageOnWeekday`, `slotPreviewReady`, `buildSlotPreviewDays`, `formatSlotPreviewTime` | 18 |
-| `utils/emoticons.test.js` | EMOTICONS sort order, QUICK_REACTION_EMOJIS, EMOJI_SHORTCODES underscore aliases, `detectEmoticon`, `detectEmojiShortcode` | 9 |
-
-**Total: 141+ tests** (61 backend + 5 test files / 80 frontend across 5 test files)
-
-Config lives in `frontend/vitest.config.ts`. Component tests use `@vue/test-utils` `mount()`/`shallowMount()`, store tests use `@pinia/testing`. Pure functions are exported for direct testing (e.g. `isNewer`, `pickAsset` from `useUpdateCheck.js`, `pad`/`applyFormat`/`dateOnlyFmt` from `useDateFormat.js`).
+Config lives in `frontend/vitest.config.ts`. Component tests use `@vue/test-utils` `mount()`/`shallowMount()`, store tests use `@pinia/testing`. Pure functions are exported for direct testing.
 
 ### E2E screenshots (Playwright)
 
@@ -565,29 +433,6 @@ cd frontend && npm run screenshots:dev
 **Prerequisites:** Go, Node.js, Chrome/Chromium (installed automatically by Playwright). The first full run will install the Playwright browser binary via `npx playwright install chromium`.
 
 The spec (`frontend/e2e/screenshots.spec.js`) logs in as `demo.admin` / `demo1234` and captures each view. Auth state is saved/reused via Playwright `storageState`.
-
-| Screenshot | Route / action |
-|---|---|
-| `01-login.png` | `/login` page |
-| `02-dashboard.png` | Dashboard after login |
-| `03-board.png` | `/projects/website-redesign` |
-| `04-card-detail.png` | Click first card on board |
-| `05-topics.png` | `/projects/website-redesign/topics`, open first topic |
-| `06-messages.png` | `/chats` (direct messages) |
-| `07-report.png` | `/time-tracking` → Board tab |
-| `08-admin-users.png` | `/admin` (users tab) |
-| `09-admin-settings.png` | `/admin` → Settings tab |
-| `10-user-settings.png` | `/settings` |
-| `13-gant.png` | `/projects/website-redesign/gantt` |
-| `14-cumulative.png` | `/projects/product-platform/charts` → Cumulative tab |
-| `15-scrum-backlog.png` | `/projects/product-platform/backlog` |
-| `16-scrum-throughput.png` | `/projects/product-platform/charts` → Throughput tab |
-| `17-scrum-burndown.png` | `/projects/product-platform/charts` → Burndown tab + select sprint |
-| `18-scrum-burnup.png` | `/projects/product-platform/charts` → Burnup tab + select sprint |
-| `19-scrum-release.png` | `/projects/product-platform/charts` → Release tab |
-| `20-standby-shift.png` | `/time-tracking` |
-| `21-ticket-list.png` | `/customers/{id}/tickets` — ticket list for first customer |
-| `22-ticket-detail.png` | `/customers/{id}/tickets/{ticketId}` — click first ticket |
 
 **Screenshots 11–12 (chat reactions)** require interaction in the embedded chat panel and are not yet automated — capture manually or run with `DEBUG=pw:api` to verify selectors.
 
