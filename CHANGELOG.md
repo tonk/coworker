@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.10.34 — 2026-05-30
+
+### Added
+- **Ticket viewers** — a row of avatars at the bottom of every ticket (including inbox tickets) shows who has viewed it and when; hover an avatar for the full name and last-viewed timestamp.
+- **Admin search boxes** — live search input on the Users, Groups, Customers, and Projects tabs in the Admin panel; filters all visible rows as you type.
+- **"Show inactive" toggle** — Admin → Users now hides inactive users by default; a "Show inactive" checkbox restores them, matching the "Show deleted" pattern on the Projects tab.
+- **Seed: 8 previously empty feature areas** — the demo seed now populates project chat messages, ticket tags, ticket-to-ticket links, ticket checklist items, ticket history trails, demo file attachment records, emoji reactions on messages, and project webhooks.
+
+### Fixed
+- **Date/time format consistency** — five places were showing raw ISO timestamps or using native `<input type="date/time">` elements that ignored the user's format setting: board report "Updated" column, time-tracking personal report date column, Charts view release target-date picker, and contract slot start/end time inputs. All now respect the user's format via `formatDate`, `DatePicker`, or format-aware text inputs.
+- **Backup schedule start time** — the "Start time" input was a native `<input type="time">` that bypassed the user's 12 h/24 h preference; replaced with a text input using parse-and-reformat logic on blur.
+- **Grid PDF customer/project label column** — label columns were truncated too aggressively in all three grid types. Year and week now use the full page width; month computes label width dynamically from the actual days in the month; truncation limits recalibrated from measured font metrics.
+- **SLA policies form** — replaced cramped inline table-row edit (six fields on one line) with a card-above-table layout matching the Macros tab: labeled rows, sensible input widths, and a Save/Cancel footer.
+- **Admin "Create User" / "Create Group" renamed** — button labels now read "New User" and "New Group", consistent with "New Customer" and "New Project"; updated across all 12 locales.
+- **Admin panel hardcoded column headers** — "Status", "Filename", and "Size" are now translated via `$t()` in all 12 locales.
+- **Board report "Updated" column** — was using `formatDateTime`; corrected to `formatDate`.
+- **Seed `--reset` missing TicketView cleanup** — `ticket_views` rows are now deleted for both customer and inbox tickets on reset.
+
+### Changed
+- **Grid PDF month: no phantom day columns** — months shorter than 31 days no longer render empty greyed columns; the freed space goes to the label column.
+
 ## v0.10.33 — 2026-05-29
 
 ### Fixed

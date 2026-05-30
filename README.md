@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.33)
+## Latest release (v0.10.34)
 
-- **Settings view blank screen fixed** — bare `@` in the special-character password hint was misread by vue-i18n as a linked message, crashing SettingsView in all languages.
-- **Grid PDF period picker** — export any week, month, or year directly from the picker panel without navigating to it first.
-- **Grid PDF full grid lines** — data rows now have vertical cell separators and the totals row has a bottom border.
+- **Ticket viewers** — avatars at the bottom of every ticket show who viewed it and when.
+- **Admin search & "Show inactive"** — live search on Users, Groups, Customers, and Projects tabs; inactive users hidden by default with a toggle to reveal them.
+- **Date/time format consistency** — all remaining raw ISO date displays and native date/time inputs now respect the user's configured format.
 
 ## Experiment
 
@@ -352,7 +352,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Passkey sign-in** — register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page; uses WebAuthn discoverable credentials so no username is required before the authenticator prompt; browser-only (Tauri desktop excluded)
 - **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
 - **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
-- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create and restore database backups; restrict API access to specific IPs or CIDR ranges
+- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); live search on Users, Groups, Customers, and Projects tabs; inactive users hidden by default with a "Show inactive" toggle; toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create and restore database backups; restrict API access to specific IPs or CIDR ranges
 - **SMTP email** — configurable from the admin panel without a server restart; username and password are optional for relay servers
 - **Session timeout** — configurable idle timeout (default 60 minutes); set to 0 to disable
 - **Topics** — threaded discussions per project with markdown support and replies

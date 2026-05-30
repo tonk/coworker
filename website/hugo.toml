@@ -15,13 +15,13 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.10.33"
-  release_date     = "2026-05-29"
+  warmdesk_version = "v0.10.34"
+  release_date     = "2026-05-30"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Time tracking Grid PDF** — new landscape A4 export in week, month, and year views; holiday cells amber-tinted, month weekends light gray.",
-    "**Dutch 'Zonder klant'** — corrected 'no customer' translation across all contexts.",
-    "**Grid PDF fixes** — year header overlap, month label, column offset, and dropdown direction all corrected.",
+    "**Ticket viewers** — avatar row on every ticket shows who viewed it and when.",
+    "**Admin search & 'Show inactive'** — live search on Users, Groups, Customers, and Projects; inactive users hidden by default.",
+    "**Date/time format consistency** — all remaining raw dates and native date/time inputs now respect the user's configured format.",
   ]
 
 [markup]
@@ -40,7 +40,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.10.33"
+      "warmdesk-version" = "v0.10.34"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]

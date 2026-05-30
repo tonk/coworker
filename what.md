@@ -654,3 +654,13 @@ Create an application that has all these features and requirements
 - Fix PDF export options panel in Report tab opening upward and being clipped; now opens downward
 - Add scripts/inject_time.py: bulk time-entry injection CLI with customer/project lookup, MFA support, dry-run mode, and time-based token refresh
 - Fix settings view blank screen: escape bare @ in req_special i18n string to {'@'} in all 12 languages so vue-i18n does not treat it as a linked-message reference
+- Fix grid PDF customer/project label columns: widen year (60→74 mm) and week (60→74 mm) using available page space; month computes label width dynamically from days in the month; remove phantom empty columns for short months; recalibrate truncation limits from measured font metrics
+- Add ticket viewers: avatar row at the bottom of every ticket (customer and inbox) showing who viewed it and when; upsert via ON CONFLICT on (ticket_id, user_id) so each user appears once with their last view time
+- Fix date/time format consistency: replace native <input type="date/time"> and raw ISO interpolations in board report, time-tracking personal report, Charts release picker, and contract slot time inputs with useDateFormat()-based equivalents
+- Fix backup schedule start time: replace native <input type="time"> with text input using parse-and-reformat logic; also fix backupLastRun/backupNextRun computed names that were mismatched with template references
+- Redesign SLA policies admin form: replace cramped inline table-row edit with card-above-table layout matching the Macros tab (labeled rows, explicit column widths, Save/Cancel footer)
+- Add live search boxes to Admin Users, Groups, Customers, and Projects tabs; add "Show inactive" toggle to Users tab (inactive hidden by default)
+- Rename "Create User"/"Create Group" buttons to "New User"/"New Group" across all 12 locales to match "New Customer"/"New Project"
+- Fix admin panel hardcoded Status, Filename, Size column headers: add common.status/filename/file_size i18n keys to all 12 locales
+- Seed 8 previously empty feature areas: project chat messages, ticket tags, ticket-to-ticket links, ticket checklist items applied to tickets, ticket history entries, demo attachment records, emoji reactions on messages, project webhooks
+- Fix seed --reset to delete TicketView rows for both customer and inbox tickets
