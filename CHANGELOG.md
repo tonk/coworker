@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.10.35 — 2026-05-31
+
+### Added
+- **Customer portal role** — new `customer` global role lets end-customers log in and view/comment on tickets for their assigned customers; blocked from boards, chat, and time tracking; private (internal) notes are hidden from them; customer-role users cannot create, update, or delete tickets or apply macros/tags.
+- **Private ticket messages** — a **Private** checkbox on the reply form marks a comment as an internal note: not emailed to the ticket's original sender, hidden from users with the `customer` role, and displayed with an amber border and 🔒 badge.
+- **Expanded Prometheus metrics** — `GET /api/v1/metrics` now also exposes `warmdesk_users_total{role,active}`, `warmdesk_customers_total`, `warmdesk_tickets_total{status}`, `warmdesk_tickets_by_priority_total{priority}`, `warmdesk_sla_breaches_total{type}`, and `warmdesk_ticket_messages_total{visibility}` in addition to the existing project/card/backup metrics.
+- **Prometheus scrape config** — `docs/prometheus.yml` is a ready-made scrape config for WarmDesk (basic auth, 30 s interval, instance relabel).
+- **Grafana dashboard** — `docs/grafana-dashboard.json` is a pre-built dashboard covering all metrics across four rows: Projects & Cards, Helpdesk, Users, and Backup Health.
+- **Seed: metrics and customer-portal demo accounts** — `demo.metrics` (metrics role, for Prometheus scraping), `demo.cust1` (Alice Porter, customer role, assigned to Acme Corporation), and `demo.cust2` (Bob Mason, customer role, assigned to Globex Systems and Initech Ltd).
+
 ## v0.10.34 — 2026-05-30
 
 ### Added

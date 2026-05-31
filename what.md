@@ -664,3 +664,8 @@ Create an application that has all these features and requirements
 - Fix admin panel hardcoded Status, Filename, Size column headers: add common.status/filename/file_size i18n keys to all 12 locales
 - Seed 8 previously empty feature areas: project chat messages, ticket tags, ticket-to-ticket links, ticket checklist items applied to tickets, ticket history entries, demo attachment records, emoji reactions on messages, project webhooks
 - Fix seed --reset to delete TicketView rows for both customer and inbox tickets
+- Add customer global role: view and comment on assigned customers' tickets only; blocked from boards, chat, and time tracking
+- Add private ticket messages: internal notes not emailed to the ticket sender and hidden from customer-role users; shown with amber highlight and lock badge
+- Expand Prometheus metrics: add warmdesk_users_total, warmdesk_customers_total, warmdesk_tickets_total, warmdesk_tickets_by_priority_total, warmdesk_sla_breaches_total, warmdesk_ticket_messages_total
+- Add docs/prometheus.yml Prometheus scrape config and docs/grafana-dashboard.json Grafana dashboard covering all metrics
+- Add seed demo accounts for metrics role (demo.metrics) and customer portal (demo.cust1 Alice Porter, demo.cust2 Bob Mason)

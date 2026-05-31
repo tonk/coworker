@@ -29,6 +29,10 @@ func AddTicketTag(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 
 	var ticket models.Ticket
 	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
@@ -71,6 +75,10 @@ func RemoveTicketTag(c *gin.Context) {
 		return
 	}
 	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	if err := requireNotCustomerRole(role); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}

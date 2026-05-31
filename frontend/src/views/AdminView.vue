@@ -69,6 +69,7 @@
                     <option value="viewer">{{ $t('admin.role_viewer') }}</option>
                     <option value="metrics">{{ $t('admin.role_metrics') }}</option>
                     <option value="backup">{{ $t('admin.role_backup') }}</option>
+                    <option value="customer">{{ $t('admin.role_customer') }}</option>
                   </select>
                 </td>
                 <td>
@@ -127,20 +128,25 @@
                   <td>{{ user.display_name || user.username }}</td>
                   <td style="text-align:center;">
                     <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
+                    <template v-else-if="user.global_role === 'customer'"><span class="feat-check feat-off">—</span></template>
                     <input v-else type="checkbox" class="feat-toggle" :checked="user.board_enabled !== false" @change="toggleFeature(user, 'board_enabled', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
                     <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
+                    <template v-else-if="user.global_role === 'customer'"><span class="feat-check feat-off">—</span></template>
                     <input v-else type="checkbox" class="feat-toggle" :checked="user.chat_enabled !== false" @change="toggleFeature(user, 'chat_enabled', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
-                    <input type="checkbox" class="feat-toggle" :checked="!!user.time_tracking_enabled" @change="toggleFeature(user, 'time_tracking_enabled', $event.target.checked)" />
+                    <template v-if="user.global_role === 'customer'"><span class="feat-check feat-off">—</span></template>
+                    <input v-else type="checkbox" class="feat-toggle" :checked="!!user.time_tracking_enabled" @change="toggleFeature(user, 'time_tracking_enabled', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
-                    <input type="checkbox" class="feat-toggle" :checked="!!user.time_tracking_viewer" @change="toggleFeature(user, 'time_tracking_viewer', $event.target.checked)" />
+                    <template v-if="user.global_role === 'customer'"><span class="feat-check feat-off">—</span></template>
+                    <input v-else type="checkbox" class="feat-toggle" :checked="!!user.time_tracking_viewer" @change="toggleFeature(user, 'time_tracking_viewer', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
                     <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
+                    <template v-else-if="user.global_role === 'customer'"><span class="feat-check feat-always">✓</span></template>
                     <input v-else type="checkbox" class="feat-toggle" :checked="!!user.helpdesk_enabled" @change="toggleFeature(user, 'helpdesk_enabled', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
@@ -151,6 +157,7 @@
               </tbody>
             </table>
             <p v-if="sortedUsers.some(u => u.global_role === 'admin')" style="font-size:12px;color:var(--color-text-muted);margin-top:8px;">{{ $t('admin.admins_bypass_features') }}</p>
+            <p v-if="sortedUsers.some(u => u.global_role === 'customer')" style="font-size:12px;color:var(--color-text-muted);margin-top:4px;">{{ $t('admin.customer_role_hint') }}</p>
           </div>
         </div>
 

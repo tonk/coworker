@@ -80,7 +80,11 @@ func GetTicket(c *gin.Context) {
 		Preload("Tags").
 		Preload("SlaPolicy").
 		Preload("Messages", func(db *gorm.DB) *gorm.DB {
-			return db.Order("created_at asc")
+			q := db.Order("created_at asc")
+			if role == "customer" {
+				q = q.Where("is_private = false OR is_private IS NULL")
+			}
+			return q
 		}).
 		Preload("Messages.User").
 		First(&ticket).Error; err != nil {
@@ -154,6 +158,10 @@ func CreateTicket(c *gin.Context) {
 		return
 	}
 	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	if err := requireNotCustomerRole(role); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
@@ -231,6 +239,10 @@ func UpdateTicket(c *gin.Context) {
 		return
 	}
 	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	if err := requireNotCustomerRole(role); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
@@ -444,6 +456,10 @@ func MoveTicket(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 
 	var req struct {
 		TargetCustomerID uint `json:"target_customer_id" binding:"required"`
@@ -503,6 +519,10 @@ func DeleteTicket(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 
 	var ticket models.Ticket
 	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
@@ -544,33 +564,41 @@ func CreateTicketMessage(c *gin.Context) {
 	}
 
 	var req struct {
-		Body string `json:"body" binding:"required"`
+		Body      string `json:"body" binding:"required"`
+		IsPrivate bool   `json:"is_private"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Body == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "body is required"})
 		return
 	}
+	// Customer-role users cannot post internal/private notes.
+	if req.IsPrivate && role == "customer" {
+		req.IsPrivate = false
+	}
 
 	msg := models.TicketMessage{
-		TicketID: ticket.ID,
-		UserID:   userID,
-		Body:     req.Body,
+		TicketID:  ticket.ID,
+		UserID:    userID,
+		Body:      req.Body,
+		IsPrivate: req.IsPrivate,
 	}
 	if err := database.DB.Create(&msg).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create message"})
 		return
 	}
 
-	if ticket.FirstResponseAt == nil && userID != ticket.CreatedByID && ticket.SlaResponseDeadline != nil {
+	if !msg.IsPrivate && ticket.FirstResponseAt == nil && userID != ticket.CreatedByID && ticket.SlaResponseDeadline != nil {
 		now := time.Now()
 		database.DB.Model(&ticket).Update("first_response_at", now)
 	}
 
 	database.DB.Preload("User").First(&msg, msg.ID)
-	sendEmailReply(&ticket, msg.Body)
-	if ticket.FromEmail != nil && *ticket.FromEmail != "" {
-		database.DB.Model(&msg).Update("email_sent", true)
-		msg.EmailSent = true
+	if !msg.IsPrivate {
+		sendEmailReply(&ticket, msg.Body)
+		if ticket.FromEmail != nil && *ticket.FromEmail != "" {
+			database.DB.Model(&msg).Update("email_sent", true)
+			msg.EmailSent = true
+		}
 	}
 	msg.Attachments = []models.Attachment{}
 	database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "comment_added"})
@@ -646,13 +674,23 @@ func refreshSlaBreachStatus(ticket *models.Ticket) {
 
 // requireCustomerAccess checks that the user has member or admin access to the customer,
 // honouring both direct CustomerAccess rows and group-based GroupCustomerAccess rows.
-// Admins bypass all checks.
+// Admins bypass all checks. Customer-role users are checked against their CustomerAccess rows.
 func requireCustomerAccess(customerID, userID uint, role string) error {
 	if role == "admin" {
 		return nil
 	}
 	accessible := getAccessibleCustomerRoles(userID)
 	if _, ok := accessible[customerID]; !ok {
+		return services.ErrForbidden
+	}
+	return nil
+}
+
+// requireNotCustomerRole returns ErrForbidden for "customer" global-role users.
+// Applied to ticket write operations (create, update, delete, tags, macros, spam, etc.)
+// that customer-portal users are not permitted to perform.
+func requireNotCustomerRole(role string) error {
+	if role == "customer" {
 		return services.ErrForbidden
 	}
 	return nil
@@ -907,27 +945,31 @@ func CreateInboxTicketMessage(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Body string `json:"body" binding:"required"`
+		Body      string `json:"body" binding:"required"`
+		IsPrivate bool   `json:"is_private"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Body == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "body is required"})
 		return
 	}
 	msg := models.TicketMessage{
-		TicketID: ticket.ID,
-		UserID:   userID,
-		Body:     req.Body,
+		TicketID:  ticket.ID,
+		UserID:    userID,
+		Body:      req.Body,
+		IsPrivate: req.IsPrivate,
 	}
 	if err := database.DB.Create(&msg).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create message"})
 		return
 	}
-	if ticket.FirstResponseAt == nil {
+	if !msg.IsPrivate && ticket.FirstResponseAt == nil {
 		now := time.Now()
 		database.DB.Model(&ticket).Update("first_response_at", now)
 	}
 	database.DB.Preload("User").First(&msg, msg.ID)
-	sendEmailReply(&ticket, msg.Body)
+	if !msg.IsPrivate {
+		sendEmailReply(&ticket, msg.Body)
+	}
 	c.JSON(http.StatusCreated, msg)
 }
 
@@ -1057,6 +1099,10 @@ func MarkSpam(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 	var ticket models.Ticket
 	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
@@ -1082,6 +1128,10 @@ func UnmarkSpam(c *gin.Context) {
 		return
 	}
 	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	if err := requireNotCustomerRole(role); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}

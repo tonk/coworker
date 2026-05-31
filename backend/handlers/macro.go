@@ -150,6 +150,10 @@ func ApplyMacro(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 	var ticket models.Ticket
 	if err := database.DB.Preload("CreatedBy").Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})

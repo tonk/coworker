@@ -92,6 +92,20 @@ func BackupAuth() gin.HandlerFunc {
 	}
 }
 
+// BlockCustomerRole returns 403 for users with the "customer" global role.
+// Apply to route groups that customer-portal users must not access
+// (boards, chat, time tracking, etc.). Ticket read/comment routes are exempt.
+func BlockCustomerRole() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, _ := c.Get(ContextGlobalRole)
+		if role == "customer" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+		c.Next()
+	}
+}
+
 func GetUserID(c *gin.Context) uint {
 	v, _ := c.Get(ContextUserID)
 	id, _ := v.(uint)

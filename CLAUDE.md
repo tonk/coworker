@@ -107,7 +107,7 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 - **Media tickets**: 5-minute purpose-`"media"` JWTs from `IssueMediaTicket`, used to grant attachment downloads to `<img>`/`<video>` elements that can't send the `Authorization` header.
 - **API keys**: SHA-256 hash stored in DB. Auth via `X-API-Key` header or `?api_key=` query param. Used for the Ticket API (CI/CD automation).
 - **Passwords**: hashed with bcrypt, cost factor 12 (pinned in `services/auth_service.go`).
-- Middleware sets context keys consumed by handlers: `middleware.GetUserID(c)`, `middleware.GetGlobalRole(c)`, `middleware.GetUsername(c)`. `middleware.AdminOnly()` gates admin-only routes; `middleware.MetricsAuth()` and `BackupAuth()` protect the metrics and backup endpoints.
+- Middleware sets context keys consumed by handlers: `middleware.GetUserID(c)`, `middleware.GetGlobalRole(c)`, `middleware.GetUsername(c)`. `middleware.AdminOnly()` gates admin-only routes; `middleware.MetricsAuth()` and `BackupAuth()` protect the metrics and backup endpoints; `middleware.BlockCustomerRole()` is applied to project, chat, and time-tracking route groups to restrict the `customer` global role to helpdesk access only.
 
 ### Security hardening
 
@@ -201,13 +201,15 @@ Files are stored in `upload_dir` (default `./uploads`) with randomised hex names
 
 The helpdesk module is gated by the `helpdesk_enabled` user flag (default `false`). Admins always have access. The feature middleware is `middleware.RequireFeature("helpdesk_enabled")`.
 
+Users with the `customer` global role bypass the `helpdesk_enabled` flag and go straight to ticket access — but are blocked from everything else (boards, chat, time tracking) by `middleware.BlockCustomerRole()` on those route groups.
+
 ### Access control
 
 **Customer visibility is a strict allowlist.** Non-admin users with no `CustomerAccess` rows (direct or via group) see no customers at all — there is no "see everything" fallback for unprivileged users. Global admins always see all customers.
 
 `getAccessibleCustomerRoles(userID)` in `handlers/customer.go` builds the effective role map for a user by combining direct `CustomerAccess` rows with `GroupCustomerAccess` rows (highest role wins). This function is used by `ListCustomers`, `GetCustomer`, and `requireCustomerAccess`.
 
-`requireCustomerAccess` in `handlers/ticket.go` calls `getAccessibleCustomerRoles` and returns `ErrForbidden` if the customer is not in the result — so both direct and group-based assignments grant ticket access.
+`requireCustomerAccess` in `handlers/ticket.go` calls `getAccessibleCustomerRoles` and returns `ErrForbidden` if the customer is not in the result — so both direct and group-based assignments grant ticket access. The `customer` global role passes through this check (they still need a `CustomerAccess` row) but is then restricted to read and comment operations by `requireNotCustomerRole()`, which is applied to every write handler (create/update/delete ticket, tags, links, macros, spam, checklists). Customer-role users cannot mark messages as private.
 
 `ListCustomerMembers` (`handlers/customer_access.go`) only returns **direct** `CustomerAccess` rows — not group-based access. The ticket assignee dropdown in the UI depends on this endpoint, so every customer that uses tickets must have at least one direct `CustomerAccess` row per user who should appear as an assignee.
 
@@ -248,6 +250,16 @@ Macros are reusable action sequences that agents can apply to tickets in one cli
 **Frontend:** `components/admin/MacrosTab.vue` (admin CRUD with drag-and-drop placeholder insertion). Apply dropdown lives in `TicketDetailView.vue`.
 
 **Apply response:** `{ticket, macro_messages}` — `macro_messages` is a list of expanded message bodies for `add_message` actions; the frontend POSTs them as ticket messages.
+
+### Private messages
+
+`TicketMessage` has an `IsPrivate bool` field (GORM default `false`). A private message is an **internal note** — it is:
+
+- **Not emailed** to the ticket's original sender (`sendEmailReply` is skipped; `first_response_at` is not set).
+- **Hidden from `customer`-role users** — `GetTicket` adds `WHERE is_private = false OR is_private IS NULL` to the messages preload when the requester has the `customer` global role.
+- Shown in the UI with an amber highlight and a 🔒 badge.
+
+`CreateTicketMessage` accepts `{ "body": "...", "is_private": true }`. If a `customer`-role user sends `is_private: true` it is silently reset to `false` server-side.
 
 ### Spam marking
 

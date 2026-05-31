@@ -4,13 +4,14 @@
 
 1. [Authentication](#1-authentication)
 2. [Ticket API](#2-ticket-api)
-3. [Generic Webhook](#3-generic-webhook)
-4. [Git Platform Webhooks](#4-git-platform-webhooks)
-   - [Gitea / Forgejo](#41-gitea--forgejo)
-   - [GitHub](#42-github)
-   - [GitLab](#43-gitlab)
-5. [Card References](#5-card-references)
-6. [Response Formats](#6-response-formats)
+3. [Helpdesk — Ticket Messages](#3-helpdesk--ticket-messages)
+4. [Generic Webhook](#4-generic-webhook)
+5. [Git Platform Webhooks](#5-git-platform-webhooks)
+   - [Gitea / Forgejo](#51-gitea--forgejo)
+   - [GitHub](#52-github)
+   - [GitLab](#53-gitlab)
+6. [Card References](#6-card-references)
+7. [Response Formats](#7-response-formats)
 
 See also: [Interactive API (Swagger UI)](#interactive-api-swagger-ui) · [Bruno Collection](#bruno-collection)
 
@@ -237,7 +238,70 @@ curl -s -X PATCH "$BASE/$PROJECT/cards/$CARD_ID/move" \
 
 ---
 
-## 3. Generic Webhook
+## 3. Helpdesk — Ticket Messages
+
+All ticket message endpoints are under `/api/v1/customers/:customerId/tickets/:ticketId/messages` and require the `helpdesk_enabled` feature flag (or the `customer` global role) and customer access.
+
+### Post a message
+
+```
+POST /api/v1/customers/{customerId}/tickets/{ticketId}/messages
+```
+
+**Body**
+
+```json
+{
+  "body":       "We have reproduced the issue and are working on a fix.",
+  "is_private": false
+}
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `body` | string | yes | Message text; Markdown supported |
+| `is_private` | bool | no | Default `false`. When `true`, the message is an internal note: not emailed to the ticket's original sender and hidden from users with the `customer` global role. Users with the `customer` global role cannot set this field — it is silently reset to `false`. |
+
+**Response** `201 Created` — the created message object.
+
+```json
+{
+  "id": 42,
+  "ticket_id": 7,
+  "user_id": 3,
+  "body": "We have reproduced the issue and are working on a fix.",
+  "from_name": "",
+  "email_sent": true,
+  "is_private": false,
+  "created_at": "2025-06-01T10:15:00Z",
+  "updated_at": "2025-06-01T10:15:00Z",
+  "user": { "id": 3, "display_name": "Sarah Chen", "username": "demo.sarah" },
+  "attachments": []
+}
+```
+
+`email_sent` is `true` when an email reply was dispatched to the ticket's original sender. It is always `false` for private messages.
+
+### Inbox messages
+
+The same body schema applies to inbox (unassigned) tickets:
+
+```
+POST /api/v1/tickets/inbox/{ticketId}/messages
+```
+
+### Access by role
+
+| Global role | Can read messages | Can post messages | Can post private messages |
+|---|---|---|---|
+| `admin` | ✓ all | ✓ | ✓ |
+| `user` / `viewer` | ✓ all | ✓ | ✓ |
+| `customer` | ✓ public only | ✓ | ✗ (silently downgraded) |
+| `metrics` / `backup` | ✗ | ✗ | ✗ |
+
+---
+
+## 4. Generic Webhook
 
 The generic webhook accepts plain JSON and posts a formatted message to the
 project chat. Use it for any custom automation that doesn't fit a specific git
@@ -286,7 +350,7 @@ curl -s -X POST https://warmdesk.example.com/api/v1/webhooks/TOKEN \
 
 ---
 
-## 4. Git Platform Webhooks
+## 5. Git Platform Webhooks
 
 Git platform webhooks do two things simultaneously:
 
@@ -296,7 +360,7 @@ Git platform webhooks do two things simultaneously:
    contains a card reference (e.g. `PRJ-42`). The linked event appears in the
    **Git Links** section of the card detail.
 
-### 4.1 Gitea / Forgejo
+### 5.1 Gitea / Forgejo
 
 **Endpoint**
 
@@ -339,7 +403,7 @@ signature is present it is verified against the webhook token.
 
 ---
 
-### 4.2 GitHub
+### 5.2 GitHub
 
 **Endpoint**
 
@@ -383,7 +447,7 @@ The PR status is set to `merged` if `pull_request.merged` is `true`; otherwise
 
 ---
 
-### 4.3 GitLab
+### 5.3 GitLab
 
 **Endpoint**
 
@@ -420,7 +484,7 @@ The merge request reference uses the internal IID (`!42`); issues use `#42`.
 
 ---
 
-## 5. Card References
+## 6. Card References
 
 A card reference is a string in the format `PREFIX-NUMBER` where:
 
@@ -466,7 +530,7 @@ Each linked event stores:
 
 ---
 
-## 6. Response Formats
+## 7. Response Formats
 
 ### Success
 

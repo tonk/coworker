@@ -265,7 +265,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Direct messages (legacy 1-on-1)
 		dm := protected.Group("/direct-messages")
-		dm.Use(middleware.RequireFeature("chat_enabled"))
+		dm.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("chat_enabled"))
 		{
 			dm.GET("/conversations", handlers.ListConversations)
 			dm.GET("/:userId", handlers.ListDirectMessages)
@@ -328,7 +328,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Conversations (1-on-1 and group)
 		convs := protected.Group("/conversations")
-		convs.Use(middleware.RequireFeature("chat_enabled"))
+		convs.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("chat_enabled"))
 		{
 			convs.GET("", handlers.GetConversations)
 			convs.POST("", handlers.CreateConversation)
@@ -346,7 +346,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Projects
 		projects := protected.Group("/projects")
-		projects.Use(middleware.RequireFeature("board_enabled"))
+		projects.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("board_enabled"))
 		{
 			projects.GET("", handlers.ListProjects)
 			projects.POST("", handlers.CreateProject)

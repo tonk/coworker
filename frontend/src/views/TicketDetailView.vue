@@ -243,11 +243,12 @@
         </div>
 
         <div v-else class="messages-list">
-          <div v-for="msg in ticket.messages" :key="msg.id" class="message">
+          <div v-for="msg in ticket.messages" :key="msg.id" :class="['message', { 'message--private': msg.is_private }]">
             <div class="message-header">
               <span class="msg-author-group">
                 <strong>{{ msg.from_name || msg.user?.display_name || msg.user?.username }}</strong>
                 <span v-if="msg.email_sent" class="email-sent-badge" :title="$t('ticket.email_sent_hint')">✉</span>
+                <span v-if="msg.is_private" class="private-badge" :title="$t('ticket.private_hint')">🔒 {{ $t('ticket.private') }}</span>
               </span>
               <span class="message-time">{{ formatDateTime(msg.created_at) }}</span>
             </div>
@@ -271,7 +272,11 @@
           </div>
           <div class="message-form-actions">
             <FileUploadButton @files-selected="onFilesSelected" />
-            <button v-if="newMessage.trim() || pendingFiles.length" type="button" class="btn btn-secondary btn-sm" @click="newMessage = ''; pendingFiles = []; msgEditorTab = 'edit'">{{ $t('common.cancel') }}</button>
+            <label v-if="auth.user?.global_role !== 'customer'" class="private-checkbox-label">
+              <input type="checkbox" v-model="newMsgPrivate" />
+              {{ $t('ticket.private') }}
+            </label>
+            <button v-if="newMessage.trim() || pendingFiles.length" type="button" class="btn btn-secondary btn-sm" @click="newMessage = ''; pendingFiles = []; newMsgPrivate = false; msgEditorTab = 'edit'">{{ $t('common.cancel') }}</button>
             <button type="submit" class="btn btn-primary btn-sm" :disabled="(!newMessage.trim() && !pendingFiles.length) || sending">{{ $t('ticket.send') }}<span v-if="pendingFiles.length" class="pending-badge">· {{ pendingFiles.length }}</span></button>
           </div>
         </form>
@@ -406,6 +411,7 @@ const viewers = ref([])
 const showActivity = ref(false)
 const loading = ref(true)
 const newMessage = ref('')
+const newMsgPrivate = ref(false)
 const pendingFiles = ref([])
 const sending = ref(false)
 const newTagName = ref('')
@@ -875,10 +881,10 @@ async function submitMessage() {
     const sendBody = body || '📎'
     let newMsg
     if (isInbox.value) {
-      const { data } = await ticketsApi.inboxMessage(ticketId.value, sendBody)
+      const { data } = await ticketsApi.inboxMessage(ticketId.value, sendBody, newMsgPrivate.value)
       newMsg = { ...data, attachments: [] }
     } else {
-      const { data } = await ticketsApi.addMessage(customerId.value, ticketId.value, sendBody)
+      const { data } = await ticketsApi.addMessage(customerId.value, ticketId.value, sendBody, newMsgPrivate.value)
       newMsg = { ...data, attachments: [] }
       if (pendingFiles.value.length) {
         const filesToUpload = [...pendingFiles.value]
@@ -900,6 +906,7 @@ async function submitMessage() {
     if (!ticket.value.messages) ticket.value.messages = []
     ticket.value.messages.push(newMsg)
     newMessage.value = ''
+    newMsgPrivate.value = false
     await nextTick()
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to send message')
@@ -1269,6 +1276,39 @@ async function assignToCustomer() {
   border-radius: 8px;
   padding: 12px;
 }
+.message--private {
+  background: #fffbeb;
+  border-color: #f59e0b;
+}
+[data-theme="dark"] .message--private {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: #d97706;
+}
+.private-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #92400e;
+  background: #fde68a;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+[data-theme="dark"] .private-badge {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+.private-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  margin-right: auto;
+  user-select: none;
+}
+.private-checkbox-label:has(input:checked) { color: #92400e; }
+[data-theme="dark"] .private-checkbox-label:has(input:checked) { color: #fbbf24; }
 .message-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
 .message-time { color: var(--color-text-muted); }
 .message-body { font-size: 14px; }

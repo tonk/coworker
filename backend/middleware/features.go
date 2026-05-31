@@ -14,7 +14,7 @@ func RequireFeature(feature string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := GetUserID(c)
 		role := GetGlobalRole(c)
-		if role == "admin" {
+		if role == "admin" || (role == "customer" && feature == "helpdesk_enabled") {
 			c.Next()
 			return
 		}

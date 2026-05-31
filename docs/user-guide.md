@@ -633,12 +633,23 @@ Click a ticket to open the detail view. From here you can:
 | Link to another ticket | **Linked tickets** section |
 | Link to a board card | **Linked cards** section |
 | Reply | Text area at the bottom of the messages panel |
+| Post an internal note | Enable the **Private** checkbox before sending |
 | Attach files | Drag-and-drop or click the attachment button in the reply area |
 | Mark as spam | **Mark as Spam** button in the header |
 
 Clicking the ticket number (`#123`) in the header copies `Ticket#123` to the clipboard.
 
 The original email body (for email-created tickets) is shown as plain text. Messages that triggered an outbound email reply show a ✉ badge.
+
+### Internal notes (private messages)
+
+Before clicking **Send**, tick the **Private** checkbox beneath the reply box to mark the message as an internal note. Private messages:
+
+- Are **not emailed** to the ticket's original sender — they are staff-only communications.
+- Are **not visible to users with the Customer role** — customer-portal users see only public replies.
+- Are shown with an **amber border and a 🔒 Private badge** so they are visually distinct from public replies.
+
+> The **Private** checkbox is hidden for users with the Customer role, who can only post public replies.
 
 ### Checklist
 

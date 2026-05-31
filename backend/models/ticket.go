@@ -49,6 +49,7 @@ type TicketMessage struct {
 	Body      string       `gorm:"type:text;not null" json:"body"`
 	FromName  string       `gorm:"size:150" json:"from_name"`
 	EmailSent bool         `gorm:"default:false" json:"email_sent"`
+	IsPrivate bool         `gorm:"default:false" json:"is_private"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
 	User      User         `json:"user,omitempty"`

@@ -297,6 +297,32 @@ func main() {
 			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=viewer",
 			HelpdeskEnabled: true,
 		},
+		// Metrics-only account: read-only Prometheus scraper.
+		"metrics": {
+			Email: "metrics@demo.example", Username: "demo.metrics",
+			PasswordHash: hashPassword("demo1234"), GlobalRole: "metrics",
+			FirstName: "Metrics", LastName: "Scraper", DisplayName: "Metrics Scraper",
+			IsActive: true, EmailNotifications: false,
+			AvatarURL: "https://api.dicebear.com/9.x/avataaars/svg?seed=metrics-scraper",
+			BoardEnabled: false, ChatEnabled: false,
+		},
+		// Customer-portal users: can only view and comment on tickets for their assigned customers.
+		"cust1": {
+			Email: "alice@acme.example", Username: "demo.cust1",
+			PasswordHash: hashPassword("demo1234"), GlobalRole: "customer",
+			FirstName: "Alice", LastName: "Porter", DisplayName: "Alice Porter",
+			IsActive: true, EmailNotifications: false,
+			AvatarURL:    "https://api.dicebear.com/9.x/avataaars/svg?seed=alice-porter",
+			BoardEnabled: false, ChatEnabled: false,
+		},
+		"cust2": {
+			Email: "bob@globex.example", Username: "demo.cust2",
+			PasswordHash: hashPassword("demo1234"), GlobalRole: "customer",
+			FirstName: "Bob", LastName: "Mason", DisplayName: "Bob Mason",
+			IsActive: true, EmailNotifications: false,
+			AvatarURL:    "https://api.dicebear.com/9.x/avataaars/svg?seed=bob-mason",
+			BoardEnabled: false, ChatEnabled: false,
+		},
 	}
 
 	for _, u := range users {
@@ -2357,11 +2383,18 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			must(db.Create(&models.CustomerFavorite{UserID: users["admin"].ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["sarah"].ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["marc"].ID, CustomerID: cust.ID}).Error)
+			// Alice Porter is an Acme contact with customer-portal access
+			must(db.Create(&models.CustomerFavorite{UserID: users["cust1"].ID, CustomerID: cust.ID}).Error)
 		case "Globex Systems":
 			// Tonk, Marc and Lisa own the DevOps contract for Globex
 			must(db.Create(&models.CustomerFavorite{UserID: tonk.ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["marc"].ID, CustomerID: cust.ID}).Error)
 			must(db.Create(&models.CustomerFavorite{UserID: users["lisa"].ID, CustomerID: cust.ID}).Error)
+			// Bob Mason is a Globex contact with customer-portal access
+			must(db.Create(&models.CustomerFavorite{UserID: users["cust2"].ID, CustomerID: cust.ID}).Error)
+		case "Initech Ltd":
+			// Bob Mason also has access to Initech (second assigned customer)
+			must(db.Create(&models.CustomerFavorite{UserID: users["cust2"].ID, CustomerID: cust.ID}).Error)
 		}
 
 		for _, conSpec := range cs.contracts {
@@ -3011,6 +3044,10 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{"Initech Ltd", "admin", "admin"},
 		{"Initech Ltd", "sarah", "member"},
 		{"Initech Ltd", "priya", "member"},
+		// Customer-portal users (read/comment only via "customer" global role)
+		{"Acme Corporation", "cust1", "member"},  // Alice Porter — Acme only
+		{"Globex Systems", "cust2", "member"},    // Bob Mason — Globex + Initech
+		{"Initech Ltd", "cust2", "member"},
 	}
 	for _, cm := range custMemberSpecs {
 		var cust models.Customer
@@ -3791,20 +3828,23 @@ Hope to see you there!`,
 	fmt.Println("✅ Demo data seeded successfully!")
 	fmt.Println()
 	fmt.Println("  Accounts (password: demo1234)")
-	fmt.Println("  ┌─────────────────────┬─────────────────────┬────────┐")
-	fmt.Println("  │ Username            │ Display name        │ Role   │")
-	fmt.Println("  ├─────────────────────┼─────────────────────┼────────┤")
-	fmt.Println("  │ tonk                │ Ton Kersten         │ admin  │  ← system admin (not reset)")
-	fmt.Println("  │ demo.admin          │ Alex Admin          │ admin  │")
-	fmt.Println("  │ demo.sarah          │ Sarah Chen          │ user   │  ← project admin: website-redesign")
-	fmt.Println("  │ demo.marc           │ Marc Dubois         │ user   │  ← project admin: mobile-app-v2")
-	fmt.Println("  │ demo.lisa           │ Lisa Park           │ user   │  ← project admin: devops-infra")
-	fmt.Println("  │ demo.priya          │ Priya Nair          │ user   │")
-	fmt.Println("  │ demo.james          │ James O'Brien       │ user   │")
-	fmt.Println("  │ demo.elena          │ Elena Kovač         │ user   │")
-	fmt.Println("  │ demo.raj            │ Raj Sharma          │ user   │")
-	fmt.Println("  │ demo.viewer         │ Victor Viewer       │ viewer │")
-	fmt.Println("  └─────────────────────┴─────────────────────┴────────┘")
+	fmt.Println("  ┌─────────────────────┬─────────────────────┬──────────┐")
+	fmt.Println("  │ Username            │ Display name        │ Role     │")
+	fmt.Println("  ├─────────────────────┼─────────────────────┼──────────┤")
+	fmt.Println("  │ tonk                │ Ton Kersten         │ admin    │  ← system admin (not reset)")
+	fmt.Println("  │ demo.admin          │ Alex Admin          │ admin    │")
+	fmt.Println("  │ demo.sarah          │ Sarah Chen          │ user     │  ← project admin: website-redesign")
+	fmt.Println("  │ demo.marc           │ Marc Dubois         │ user     │  ← project admin: mobile-app-v2")
+	fmt.Println("  │ demo.lisa           │ Lisa Park           │ user     │  ← project admin: devops-infra")
+	fmt.Println("  │ demo.priya          │ Priya Nair          │ user     │")
+	fmt.Println("  │ demo.james          │ James O'Brien       │ user     │")
+	fmt.Println("  │ demo.elena          │ Elena Kovač         │ user     │")
+	fmt.Println("  │ demo.raj            │ Raj Sharma          │ user     │")
+	fmt.Println("  │ demo.viewer         │ Victor Viewer       │ viewer   │")
+	fmt.Println("  │ demo.metrics        │ Metrics Scraper     │ metrics  │  ← GET /api/v1/metrics only")
+	fmt.Println("  │ demo.cust1          │ Alice Porter        │ customer │  ← Acme Corporation only")
+	fmt.Println("  │ demo.cust2          │ Bob Mason           │ customer │  ← Globex Systems + Initech Ltd")
+	fmt.Println("  └─────────────────────┴─────────────────────┴──────────┘")
 	fmt.Println()
 	fmt.Printf("  Projects      : %d (%d kanban, %d scrum)\n", len(demoProjects), len(demoProjects)-2, 2)
 	fmt.Printf("  Cards         : %d\n", totalCards)
@@ -3836,6 +3876,8 @@ Hope to see you there!`,
 	fmt.Println("  │ demo.sarah          │ Acme Corporation                                             │")
 	fmt.Println("  │ demo.marc           │ Acme Corporation, Globex Systems                             │")
 	fmt.Println("  │ demo.lisa           │ Globex Systems                                               │")
+	fmt.Println("  │ demo.cust1          │ Acme Corporation                                             │")
+	fmt.Println("  │ demo.cust2          │ Globex Systems, Initech Ltd                                  │")
 	fmt.Println("  └─────────────────────┴──────────────────────────────────────────────────────────────┘")
 	fmt.Println()
 	// Additional dynamic summary box
@@ -3926,7 +3968,7 @@ func joinNames(arr []string) string {
 // removeDemoData deletes all records created by the seed (identified by the
 // demo users and projects), then the users themselves,
 func removeDemoData(db *gorm.DB) {
-	demoUsernames := []string{"demo.admin", "demo.sarah", "demo.marc", "demo.lisa", "demo.viewer", "demo.priya", "demo.james", "demo.elena", "demo.raj"}
+	demoUsernames := []string{"demo.admin", "demo.sarah", "demo.marc", "demo.lisa", "demo.viewer", "demo.priya", "demo.james", "demo.elena", "demo.raj", "demo.metrics", "demo.cust1", "demo.cust2"}
 	demoSlugs := []string{"website-redesign", "mobile-app-v2", "devops-infra", "product-platform", "api-platform", "marketing", "travel-tt", "holidays-tt", "study-tt", "internal-tt"}
 	demoCustomerNames := []string{"Acme Corporation", "Globex Systems", "Initech Ltd", "Smart Owl Consulting", "Personal"}
 

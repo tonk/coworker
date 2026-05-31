@@ -365,10 +365,13 @@ admin users only).
 | `viewer` | Read-only access; cannot create or modify anything |
 | `metrics` | Can only call `GET /api/v1/metrics`; no access to any other endpoint |
 | `backup` | Can only call `POST /api/v1/backup`; no access to any other endpoint |
+| `customer` | Customer-portal access: can view and comment on tickets for assigned customers only; blocked from boards, chat, and time tracking |
 
 The `metrics` role is intended for Prometheus scraper accounts. Create a dedicated user, set their role to `metrics`, generate an API key in User Settings, and configure Prometheus to send `Authorization: Bearer <token>` (or `?api_key=<key>`) with each scrape request.
 
 The `backup` role is intended for automated backup scripts and cron jobs. See [section 15](#15-backup-and-recovery) for setup instructions.
+
+The `customer` role is intended for end-customers who need a self-service portal to follow their own tickets. Assign the user to one or more customers via **Admin → Users → (click user) → Customer Access**. They can read all non-private messages and post replies, but cannot create, update, or delete tickets; cannot add tags, links, or apply macros; and cannot see internal (private) notes.
 
 ### Groups
 
@@ -429,9 +432,9 @@ members. They cannot remove themselves from the customer (prevents self-lockout)
 
 ### Prometheus metrics
 
-`GET /api/v1/metrics` returns project, column, and card counts in Prometheus text format. Accessible to `admin` and `metrics` roles.
+`GET /api/v1/metrics` returns operational metrics in Prometheus text format. Accessible to `admin` and `metrics` roles.
 
-Example Prometheus scrape config:
+A ready-made Prometheus scrape config is in **`docs/prometheus.yml`**. Minimal example:
 
 ```yaml
 scrape_configs:
@@ -440,8 +443,9 @@ scrape_configs:
       - targets: ['warmdesk.example.com']
     metrics_path: /api/v1/metrics
     scheme: https
-    authorization:
-      credentials: <api-key>
+    basic_auth:
+      username: metrics-user
+      password: <password>
 ```
 
 Metrics exposed:
@@ -451,6 +455,28 @@ Metrics exposed:
 | `warmdesk_projects_total` | — | Active (non-archived) project count |
 | `warmdesk_columns_total` | `project`, `project_name` | Column count per project |
 | `warmdesk_cards_total` | `project`, `column`, `status` | Card count per column; `status` is `open` or `closed` |
+| `warmdesk_users_total` | `role`, `active` | User count per global role and active state (`true`/`false`) |
+| `warmdesk_customers_total` | — | Total number of customers |
+| `warmdesk_tickets_total` | `status` | Ticket count by status (`new`, `open`, `pending`, `pending_close`, `closed`) |
+| `warmdesk_tickets_by_priority_total` | `priority` | Open ticket count by priority (`low`, `medium`, `high`, `critical`) |
+| `warmdesk_sla_breaches_total` | `type` | Open tickets currently breaching SLA; `type` is `response` or `resolution` |
+| `warmdesk_ticket_messages_total` | `visibility` | Ticket message count; `visibility` is `public` or `private` |
+| `warmdesk_backup_last_run_timestamp_seconds` | — | Unix timestamp of last backup attempt (0 if never) |
+| `warmdesk_backup_last_success` | — | `1` = success, `0` = failed, `-1` = never run |
+| `warmdesk_backup_files_total` | — | Number of backup files currently stored |
+
+### Grafana dashboard
+
+A pre-built Grafana dashboard is included at **`docs/grafana-dashboard.json`**. It covers all the metrics above across four sections: Projects & Cards, Helpdesk, Users, and Backup Health.
+
+To import it:
+
+1. In Grafana, go to **Dashboards → Import**.
+2. Click **Upload dashboard JSON file** and select `docs/grafana-dashboard.json`.
+3. Select your Prometheus data source when prompted.
+4. Click **Import**.
+
+The dashboard includes an **Instance** template variable that is auto-populated from the `instance` label, so it works with multiple WarmDesk deployments in the same Grafana.
 
 ### Customers
 

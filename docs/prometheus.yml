@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: warmdesk
+    # The metrics endpoint requires HTTP Basic Auth with a user that has the
+    # "metrics" or "admin" global role (e.g. the demo.metrics seed account).
+    # Use an API key instead of a password if you prefer:
+    #   params:
+    #     api_key: ["<your-api-key>"]
+    basic_auth:
+      username: demo.metrics
+      password: demo1234
+
+    # Replace with your WarmDesk base URL. For HTTPS deployments change the
+    # scheme to "https" and adjust tls_config if you use a self-signed cert.
+    scheme: http
+    static_configs:
+      - targets:
+          - localhost:8080
+
+    metrics_path: /api/v1/metrics
+
+    # Optional: label every scraped metric with the environment name so you
+    # can run multiple WarmDesk instances in the same Prometheus.
+    relabel_configs:
+      - target_label: instance
+        replacement: warmdesk-prod

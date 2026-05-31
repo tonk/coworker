@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.34)
+## Latest release (v0.10.35)
 
-- **Ticket viewers** — avatars at the bottom of every ticket show who viewed it and when.
-- **Admin search & "Show inactive"** — live search on Users, Groups, Customers, and Projects tabs; inactive users hidden by default with a toggle to reveal them.
-- **Date/time format consistency** — all remaining raw ISO date displays and native date/time inputs now respect the user's configured format.
+- **Customer portal role** — new `customer` global role for end-customers: view and comment on their own tickets, private internal notes hidden from them.
+- **Private ticket messages** — mark any reply as a private internal note (🔒): not emailed to the customer, hidden from customer-role users, highlighted in amber.
+- **Expanded Prometheus metrics** — users by role, customer count, tickets by status/priority, SLA breaches, and message visibility added to `/api/v1/metrics`; Grafana dashboard included in `docs/`.
 
 ## Experiment
 
@@ -142,6 +142,9 @@ Demo accounts created (password for all: `demo1234`):
 | `demo.elena` | Elena Kovač | user | |
 | `demo.raj` | Raj Sharma | user | |
 | `demo.viewer` | Victor Viewer | viewer | |
+| `demo.metrics` | Metrics Scraper | metrics | For Prometheus scraping (`GET /api/v1/metrics`) |
+| `demo.cust1` | Alice Porter | customer | Customer portal — Acme Corporation only |
+| `demo.cust2` | Bob Mason | customer | Customer portal — Globex Systems + Initech Ltd |
 
 ## Configuration
 
@@ -337,7 +340,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Comment replies** — reply to any comment; replies are visually indented
 - **Time tracking** — log hours and minutes spent directly on a card; the weekly timesheet also supports time-tracking-only projects and customers (lightweight entries that don't create a board or CRM record), managed via the ⚙ button in the time-tracking view; each time-tracking project can carry an *undeclarable minutes* value (travel time, holidays, etc.) that is automatically subtracted from totals in the sheet, report, PDF, and XLSX export
 - **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
-- **Role-based access** — global roles (admin / user / viewer / metrics / backup) and per-project roles (owner / admin / member / viewer); project admins can manage columns
+- **Role-based access** — global roles (admin / user / viewer / metrics / backup / customer) and per-project roles (owner / admin / member / viewer); project admins can manage columns; the `customer` role gives end-customers a read/comment-only ticket portal
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
 - **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management; every user group automatically gets a linked group conversation that stays in sync with group membership
 - **1:1 and group video calls** — call any user from a direct message conversation with WebRTC peer-to-peer for 1:1 calls, and start LiveKit-powered group video rooms in any group chat; includes call settings for microphone, camera, and speaker plus in-app status guidance when LiveKit is not configured

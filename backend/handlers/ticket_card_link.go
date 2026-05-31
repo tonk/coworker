@@ -84,6 +84,10 @@ func CreateTicketCardLink(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 
 	var req struct {
 		CardID *uint  `json:"card_id"`
@@ -174,6 +178,10 @@ func DeleteTicketCardLink(c *gin.Context) {
 	}
 
 	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	if err := requireNotCustomerRole(role); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 		return
 	}

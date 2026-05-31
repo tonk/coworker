@@ -25,7 +25,7 @@ type User struct {
 	LastName            string         `gorm:"size:100" json:"last_name"`
 	DisplayName         string         `gorm:"size:150" json:"display_name"`
 	AvatarURL           string         `gorm:"size:500" json:"avatar_url"`
-	GlobalRole          string         `gorm:"not null;default:'user'" json:"global_role"` // "admin" | "user" | "viewer" | "metrics" | "backup"
+	GlobalRole          string         `gorm:"not null;default:'user'" json:"global_role"` // "admin" | "user" | "viewer" | "metrics" | "backup" | "customer"
 	Locale              string         `gorm:"size:10;default:'en'" json:"locale"`
 	Theme               string         `gorm:"size:20;default:'system'" json:"theme"` // "light" | "dark" | "system"
 	DateTimeFormat      string         `gorm:"size:50;default:'YYYY-MM-DD HH:mm'" json:"date_time_format"`
