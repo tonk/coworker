@@ -117,13 +117,13 @@
                     <span>{{ $t('timeTracking.customer') }}</span>
                     <span class="sub">{{ $t('timeTracking.project') }}</span>
                   </span>
-                  <span class="sort-icon" aria-hidden="true">{{ sortCol === 'info' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                  <span class="sort-icon" aria-hidden="true">{{ sortCol === 'info' ? (sortDir === 'asc' ? '△' : '▽') : '▽' }}</span>
                 </button>
               </th>
               <th class="c-desc">
                 <button class="sort-btn" :class="{ 'sort-active': sortCol === 'desc' }" @click="toggleSort('desc')" :title="$t('timeTracking.sort_by_activity')" :aria-label="sortCol === 'desc' ? (sortDir === 'asc' ? 'Sort by activity descending' : 'Sort by activity ascending') : 'Sort by activity ascending'">
                   <span class="sort-label">{{ $t('timeTracking.activity') }}</span>
-                  <span class="sort-icon" aria-hidden="true">{{ sortCol === 'desc' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+                  <span class="sort-icon" aria-hidden="true">{{ sortCol === 'desc' ? (sortDir === 'asc' ? '△' : '▽') : '▽' }}</span>
                 </button>
               </th>
               <th v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">

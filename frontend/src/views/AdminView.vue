@@ -38,7 +38,7 @@
                 <th style="width: 48px;"></th>
                 <th class="sortable-th" @click="toggleUserSort()">
                   {{ $t('admin.user') }}
-                  <span class="sort-indicator">{{ userSortDir === 'asc' ? '↑' : '↓' }}</span>
+                  <span class="sort-indicator">{{ userSortDir === 'asc' ? '△' : '▽' }}</span>
                 </th>
                 <th>{{ $t('admin.global_role') }}</th>
                 <th>{{ $t('admin.last_login') }}</th>
@@ -180,7 +180,7 @@
               <tr>
                 <th class="sortable-th" @click="toggleProjectSort()">
                   {{ $t('project.project_name') }}
-                  <span class="sort-indicator">{{ projectSortDir === 'asc' ? '↑' : '↓' }}</span>
+                  <span class="sort-indicator">{{ projectSortDir === 'asc' ? '△' : '▽' }}</span>
                 </th>
                 <th>{{ $t('admin.owner') }}</th>
                 <th>{{ $t('common.status') }}</th>
@@ -246,7 +246,7 @@
               <tr>
                 <th class="sortable-th" @click="toggleGroupSort()">
                   {{ $t('groups.name') }}
-                  <span class="sort-indicator">{{ groupSortDir === 'asc' ? '↑' : '↓' }}</span>
+                  <span class="sort-indicator">{{ groupSortDir === 'asc' ? '△' : '▽' }}</span>
                 </th>
                 <th>{{ $t('groups.members') }}</th>
                 <th>{{ $t('admin.projects') }}</th>
@@ -296,7 +296,7 @@
                 <th style="width: 48px;"></th>
                 <th class="sortable-th" @click="toggleCustomerSort()">
                   {{ $t('customer.name') }}
-                  <span class="sort-indicator">{{ customerSortDir === 'asc' ? '↑' : '↓' }}</span>
+                  <span class="sort-indicator">{{ customerSortDir === 'asc' ? '△' : '▽' }}</span>
                 </th>
                 <th>{{ $t('contract.contracts') }}</th>
                 <th>{{ $t('customer.projects') }}</th>
