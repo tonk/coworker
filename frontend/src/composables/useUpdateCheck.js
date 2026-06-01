@@ -16,36 +16,45 @@ export function isNewer(current, latest) {
   return pb > pa
 }
 
-function detectPlatform() {
-  const plat = (navigator.platform || '').toLowerCase()
-  if (plat.includes('win')) return 'windows'
-  if (plat.includes('mac')) return 'macos'
-  if (plat.includes('linux')) {
-    if (plat.includes('aarch64') || plat.includes('arm64')) return 'linux-arm64'
-    return 'linux'
+let _installMethod = null
+
+export async function detectInstallMethod() {
+  if (_installMethod) return _installMethod
+
+  if (window.__TAURI_INTERNALS__) {
+    try {
+      const { invoke } = await import('@tauri-apps/api/core')
+      _installMethod = await invoke('installation_method')
+      return _installMethod
+    } catch {}
   }
-  return null
+
+  const plat = (navigator.platform || '').toLowerCase()
+  if (plat.includes('win')) _installMethod = 'windows'
+  else if (plat.includes('mac')) _installMethod = 'dmg'
+  else if (plat.includes('linux')) _installMethod = 'portable'
+  else _installMethod = 'unknown'
+  return _installMethod
 }
 
-export function pickAsset(assets, tag) {
-  if (!window.__TAURI_INTERNALS__ || !assets) return null
-  const platform = detectPlatform()
-  if (!platform) return null
+export function pickAsset(assets, tag, method) {
+  if (!window.__TAURI_INTERNALS__ || !assets || !method) return null
 
   const candidates = []
 
-  if (platform === 'macos') {
+  if (method === 'dmg') {
     candidates.push(`WarmDesk-${tag}-universal.dmg`)
-  } else if (platform === 'windows') {
+  } else if (method === 'windows') {
     candidates.push(`WarmDesk-${tag}-x64-portable.zip`)
     candidates.push(`WarmDesk-${tag}-x64-setup.exe`)
-  } else if (platform === 'linux') {
+  } else if (method === 'appimage') {
     candidates.push(`WarmDesk-${tag}-x86_64.AppImage`)
+  } else if (method === 'deb') {
     candidates.push(`WarmDesk-${tag}-amd64.deb`)
+  } else if (method === 'rpm') {
     candidates.push(`WarmDesk-${tag}-x86_64.rpm`)
+  } else if (method === 'portable') {
     candidates.push(`warmdesk-${tag}-linux-amd64.tar.gz`)
-  } else if (platform === 'linux-arm64') {
-    candidates.push(`warmdesk-${tag}-linux-arm64.tar.gz`)
   }
 
   for (const name of candidates) {
@@ -62,6 +71,8 @@ export function useUpdateCheck() {
   const downloadUrl = ref(null)
 
   async function check(currentVersion) {
+    const method = await detectInstallMethod()
+
     const cached = sessionStorage.getItem(CACHE_KEY)
     if (cached) {
       const { tag, url, assets, expires } = JSON.parse(cached)
@@ -69,7 +80,7 @@ export function useUpdateCheck() {
         if (isNewer(currentVersion, tag)) {
           latestVersion.value = tag.replace(/^v/, '')
           releaseUrl.value = url
-          downloadUrl.value = pickAsset(assets, tag)
+          downloadUrl.value = pickAsset(assets, tag, method)
           updateAvailable.value = true
         }
         return
@@ -90,7 +101,7 @@ export function useUpdateCheck() {
       if (tag && isNewer(currentVersion, tag)) {
         latestVersion.value = tag.replace(/^v/, '')
         releaseUrl.value = url
-        downloadUrl.value = pickAsset(assets, tag)
+        downloadUrl.value = pickAsset(assets, tag, method)
         updateAvailable.value = true
       }
     } catch {

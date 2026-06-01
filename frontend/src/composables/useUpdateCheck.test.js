@@ -48,20 +48,50 @@ describe('pickAsset', () => {
     { name: 'warmdesk-v1.2.3-linux-amd64.tar.gz', browser_download_url: 'https://example.com/tar' },
   ]
 
+  const TAG = 'v1.2.3'
+
   beforeEach(() => {
     window.__TAURI_INTERNALS__ = {}
   })
 
   it('returns null when not in Tauri', () => {
     window.__TAURI_INTERNALS__ = undefined
-    expect(pickAsset(assets, 'v1.2.3')).toBeNull()
+    expect(pickAsset(assets, TAG, 'appimage')).toBeNull()
   })
 
   it('returns null when assets is empty', () => {
-    expect(pickAsset([], 'v1.2.3')).toBeNull()
+    expect(pickAsset([], TAG, 'appimage')).toBeNull()
+  })
+
+  it('returns null when method is missing', () => {
+    expect(pickAsset(assets, TAG)).toBeNull()
   })
 
   it('returns null when no match found', () => {
-    expect(pickAsset(assets, 'v9.9.9')).toBeNull()
+    expect(pickAsset(assets, 'v9.9.9', 'appimage')).toBeNull()
+  })
+
+  it('picks AppImage for appimage method', () => {
+    expect(pickAsset(assets, TAG, 'appimage')).toBe('https://example.com/appimage')
+  })
+
+  it('picks .deb for deb method', () => {
+    expect(pickAsset(assets, TAG, 'deb')).toBe('https://example.com/deb')
+  })
+
+  it('picks .rpm for rpm method', () => {
+    expect(pickAsset(assets, TAG, 'rpm')).toBe('https://example.com/rpm')
+  })
+
+  it('picks .dmg for dmg method', () => {
+    expect(pickAsset(assets, TAG, 'dmg')).toBe('https://example.com/dmg')
+  })
+
+  it('picks portable zip for windows method', () => {
+    expect(pickAsset(assets, TAG, 'windows')).toBe('https://example.com/zip')
+  })
+
+  it('picks tar.gz for portable method', () => {
+    expect(pickAsset(assets, TAG, 'portable')).toBe('https://example.com/tar')
   })
 })

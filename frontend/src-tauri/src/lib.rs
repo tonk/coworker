@@ -93,7 +93,7 @@ pub fn run() {
         .manage(RuntimeSettings {
             runtime_server_url: runtime_server_url_override.clone(),
         })
-        .invoke_handler(tauri::generate_handler![runtime_server_url, fetch_binary_b64])
+        .invoke_handler(tauri::generate_handler![runtime_server_url, installation_method, fetch_binary_b64])
         .on_page_load(move |window, _payload| {
             if let Some(url) = &runtime_server_url_for_page_load {
                 // Ensure the override is present in every page context.
@@ -183,6 +183,121 @@ struct RuntimeSettings {
 #[tauri::command]
 fn runtime_server_url(state: tauri::State<'_, RuntimeSettings>) -> Option<String> {
     state.runtime_server_url.clone()
+}
+
+/// Returns how the desktop client was installed.
+/// - `"appimage"`  — running as an AppImage
+/// - `"deb"`       — installed via .deb package (dpkg-based system)
+/// - `"rpm"`       — installed via .rpm package (rpm-based system)
+/// - `"portable"`  — portable archive or source build
+/// - `"dmg"`       — macOS DMG
+/// - `"windows"`   — Windows installer / portable
+#[tauri::command]
+fn installation_method() -> String {
+    #[cfg(target_os = "linux")]
+    {
+        if std::env::var("APPDIR").is_ok() {
+            return "appimage".to_string();
+        }
+        // Resolve symlinks so dpkg/rpm get the real on-disk path.
+        let exe = match std::env::current_exe()
+            .ok()
+            .and_then(|p| std::fs::canonicalize(p).ok())
+        {
+            Some(p) => p,
+            None => return "portable".to_string(),
+        };
+        let exe_str = exe.to_string_lossy();
+        match linux_os_family().as_str() {
+            "debian" => {
+                // dpkg --search <path>: exit 0 when the path is owned by a package.
+                let owned = std::process::Command::new("dpkg")
+                    .args(["--search", exe_str.as_ref()])
+                    .output()
+                    .map(|o| o.status.success())
+                    .unwrap_or(false);
+                if owned { "deb".to_string() } else { "portable".to_string() }
+            }
+            "redhat" => {
+                // rpm -qf <path>: exit 0 when the path is owned by a package.
+                let owned = std::process::Command::new("rpm")
+                    .args(["-qf", exe_str.as_ref()])
+                    .output()
+                    .map(|o| o.status.success())
+                    .unwrap_or(false);
+                if owned { "rpm".to_string() } else { "portable".to_string() }
+            }
+            _ => "portable".to_string(),
+        }
+    }
+    #[cfg(target_os = "macos")]
+    {
+        "dmg".to_string()
+    }
+    #[cfg(target_os = "windows")]
+    {
+        "windows".to_string()
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
+    {
+        "unknown".to_string()
+    }
+}
+
+/// Parse /etc/os-release and return the distro family: `"debian"`, `"redhat"`, or `"unknown"`.
+///
+/// Explicit ID= lists are checked first (source: Ansible OS_FAMILY_MAP) so that distros
+/// without a useful ID_LIKE= (e.g. Amazon Linux 2) are still classified correctly.
+/// The id_like keyword fallback handles future or unlisted distros that follow conventions.
+#[cfg(target_os = "linux")]
+fn linux_os_family() -> String {
+    let content = match std::fs::read_to_string("/etc/os-release") {
+        Ok(c) => c,
+        Err(_) => return "unknown".to_string(),
+    };
+    let mut id = String::new();
+    let mut id_like = String::new();
+    for line in content.lines() {
+        if let Some(v) = line.strip_prefix("ID=") {
+            id = v.trim_matches('"').to_lowercase();
+        } else if let Some(v) = line.strip_prefix("ID_LIKE=") {
+            id_like = v.trim_matches('"').to_lowercase();
+        }
+    }
+
+    // RedHat family: RHEL, Fedora, and all known rebuilds/derivatives.
+    const REDHAT_IDS: &[&str] = &[
+        "rhel", "fedora", "centos", "scientific", "slc", "ascendos",
+        "cloudlinux", "psbm", "ol", "ovs", "amzn", "virtuozzo",
+        "xenenterprise", "alinux", "euleros", "hce", "openeuler",
+        "almalinux", "rocky", "tencentos", "eurolinux", "kylin",
+        "miraclelinux",
+    ];
+    // Debian family: Debian, Ubuntu, and all known derivatives.
+    const DEBIAN_IDS: &[&str] = &[
+        "debian", "ubuntu", "raspbian", "neon", "linuxmint", "devuan",
+        "kali", "parrot", "pop", "pardus", "deepin", "osmc",
+        "univention", "cumulus-linux",
+    ];
+
+    if REDHAT_IDS.contains(&id.as_str()) {
+        return "redhat".to_string();
+    }
+    if DEBIAN_IDS.contains(&id.as_str()) {
+        return "debian".to_string();
+    }
+
+    // Fallback: id_like keyword matching for unlisted/future distros.
+    if id_like.contains("debian") || id_like.contains("ubuntu") {
+        "debian".to_string()
+    } else if id_like.contains("rhel")
+        || id_like.contains("fedora")
+        || id_like.contains("centos")
+    {
+        "redhat".to_string()
+    } else {
+        "unknown".to_string()
+    }
 }
 
 fn parse_server_url_override(args: &[String]) -> Option<String> {
