@@ -334,6 +334,39 @@ func ListBacklog(c *gin.Context) {
 	c.JSON(http.StatusOK, cards)
 }
 
+// ReorderBacklog PATCH /projects/:projectSlug/backlog/reorder
+func ReorderBacklog(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	slug := c.Param("projectSlug")
+
+	project, err := services.GetProjectBySlug(slug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "member"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var req []struct {
+		ID       uint    `json:"id"`
+		Position float64 `json:"position"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	for _, item := range req {
+		database.DB.Model(&models.Card{}).
+			Where("id = ? AND project_id = ?", item.ID, project.ID).
+			Update("position", item.Position)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "reordered"})
+}
+
 // AddCardToSprint POST /projects/:projectSlug/sprints/:sprintId/cards/:cardId
 func AddCardToSprint(c *gin.Context) {
 	userID := middleware.GetUserID(c)

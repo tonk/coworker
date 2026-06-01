@@ -480,6 +480,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 			// Backlog (Scrum)
 			projects.GET("/:projectSlug/backlog", handlers.ListBacklog)
+			projects.PATCH("/:projectSlug/backlog/reorder", handlers.ReorderBacklog)
 
 			// Releases (Scrum)
 			projects.GET("/:projectSlug/releases", handlers.ListReleases)

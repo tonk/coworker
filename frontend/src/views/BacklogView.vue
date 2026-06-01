@@ -39,6 +39,7 @@
         <div v-if="!sprintStore.backlog.length" class="backlog-empty">
           {{ $t('sprint.no_backlog') }}
         </div>
+        <div ref="backlogListEl">
         <div
           v-for="card in sprintStore.backlog"
           :key="card.id"
@@ -46,6 +47,7 @@
           @click="openCard(card)"
         >
           <div class="backlog-card-title">
+            <span class="backlog-drag-handle" @click.stop aria-hidden="true" :title="$t('ticketChecklist.drag_reorder')">⠿</span>
             <span class="card-ref">{{ projectStore.currentProject?.key_prefix }}-{{ card.card_number }}</span>
             {{ card.title }}
           </div>
@@ -66,6 +68,7 @@
               </select>
             </div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -251,9 +254,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import Sortable from 'sortablejs'
 import { useSprintStore } from '@/stores/sprint'
 import { useProjectStore } from '@/stores/project'
 import { useBoardStore } from '@/stores/board'
@@ -283,6 +287,28 @@ const selectedCard = ref(null)
 const projectMembers = ref([])
 const showCreateSprint = ref(false)
 const editingSprintId = ref(null)
+const backlogListEl = ref(null)
+let backlogSortable = null
+
+function initBacklogSortable() {
+  if (!backlogListEl.value || backlogSortable) return
+  backlogSortable = new Sortable(backlogListEl.value, {
+    animation: 150,
+    handle: '.backlog-drag-handle',
+    onEnd(evt) {
+      const moved = sprintStore.backlog.splice(evt.oldIndex, 1)[0]
+      sprintStore.backlog.splice(evt.newIndex, 0, moved)
+      const items = sprintStore.backlog.map((c, i) => ({ id: c.id, position: (i + 1) * 1000 }))
+      sprintStore.backlog.forEach((c, i) => { c.position = (i + 1) * 1000 })
+      sprintStore.reorderBacklog(items).catch(() => {})
+    },
+  })
+}
+
+watch(() => sprintStore.backlog.length, async (len) => {
+  if (backlogSortable) { backlogSortable.destroy(); backlogSortable = null }
+  if (len) { await nextTick(); initBacklogSortable() }
+})
 const sprintForm = ref({ name: '', goal: '', startDate: '', endDate: '' })
 const displayStartDate = ref('')
 const displayEndDate = ref('')
@@ -328,6 +354,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  if (backlogSortable) { backlogSortable.destroy(); backlogSortable = null }
   disconnect()
   sprintStore.reset()
   boardStore.reset()
@@ -634,7 +661,22 @@ const yTicks = computed(() => {
   font-size: 13px;
   margin-bottom: 6px;
   line-height: 1.4;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
+
+.backlog-drag-handle {
+  color: var(--color-text-muted);
+  cursor: grab;
+  font-size: 14px;
+  flex-shrink: 0;
+  user-select: none;
+  opacity: 0;
+  transition: opacity .1s;
+}
+.backlog-card:hover .backlog-drag-handle { opacity: 1; }
+.backlog-drag-handle:active { cursor: grabbing; }
 
 .card-ref {
   font-size: 11px;

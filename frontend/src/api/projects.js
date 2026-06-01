@@ -124,6 +124,7 @@ export const projectsApi = {
   removeCardFromSprint: (slug, sprintId, cardId)  => client.delete(`/projects/${slug}/sprints/${sprintId}/cards/${cardId}`),
   reorderSprintCards:   (slug, sprintId, items)   => client.patch(`/projects/${slug}/sprints/${sprintId}/cards/reorder`, items),
   listBacklog:          (slug)                    => client.get(`/projects/${slug}/backlog`),
+  reorderBacklog:       (slug, items)             => client.patch(`/projects/${slug}/backlog/reorder`, items),
 
   // Releases (Scrum)
   listReleases:            (slug)                      => client.get(`/projects/${slug}/releases`),
