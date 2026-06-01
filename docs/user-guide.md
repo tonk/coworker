@@ -632,24 +632,33 @@ Click a ticket to open the detail view. From here you can:
 | View SLA deadlines | **SLA** card in the right panel |
 | Link to another ticket | **Linked tickets** section |
 | Link to a board card | **Linked cards** section |
-| Reply | Text area at the bottom of the messages panel |
+| Post a new message | Compose area at the bottom of the messages panel |
 | Post an internal note | Enable the **Private** checkbox before sending |
-| Attach files | Drag-and-drop or click the attachment button in the reply area |
+| Attach files to a message | Drag-and-drop or click the attachment button in the compose area |
+| Reply to a specific message | Click the **Reply** button below that message |
 | Mark as spam | **Mark as Spam** button in the header |
 
 Clicking the ticket number (`#123`) in the header copies `Ticket#123` to the clipboard.
 
 The original email body (for email-created tickets) is shown as plain text. Messages that triggered an outbound email reply show a ✉ badge.
 
+### Threaded replies
+
+Click the **Reply** button beneath any message to open an inline reply form directly below it. The reply is nested under the parent message and indented to show the thread structure. Replies can be nested to any depth.
+
+> File attachments are only available in the main compose area at the bottom of the panel, not in inline reply forms.
+
 ### Internal notes (private messages)
 
-Before clicking **Send**, tick the **Private** checkbox beneath the reply box to mark the message as an internal note. Private messages:
+Before clicking **Send**, tick the **Private** checkbox beneath the compose area to mark the message as an internal note. Private messages:
 
 - Are **not emailed** to the ticket's original sender — they are staff-only communications.
 - Are **not visible to users with the Customer role** — customer-portal users see only public replies.
 - Are shown with an **amber border and a 🔒 Private badge** so they are visually distinct from public replies.
 
 > The **Private** checkbox is hidden for users with the Customer role, who can only post public replies.
+
+When using the inline **Reply** form to respond to a private message, the reply automatically inherits the private status — no checkbox is shown, but the reply will also be an internal note.
 
 ### Checklist
 
