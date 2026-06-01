@@ -14,6 +14,7 @@ type Sprint struct {
 	ProjectID uint           `gorm:"not null;index" json:"project_id"`
 	Name      string         `gorm:"not null;size:200" json:"name"`
 	Goal      string         `gorm:"type:text" json:"goal"`
+	Position  float64    `gorm:"default:0" json:"position"`
 	// "planning" | "active" | "completed"
 	Status    string     `gorm:"size:20;default:'planning'" json:"status"`
 	StartDate *time.Time `json:"start_date"`

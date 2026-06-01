@@ -470,6 +470,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			// Sprints (Scrum)
 			projects.GET("/:projectSlug/sprints", handlers.ListSprints)
 			projects.POST("/:projectSlug/sprints", handlers.CreateSprint)
+			projects.PATCH("/:projectSlug/sprints/reorder", handlers.ReorderSprints)
 			projects.PUT("/:projectSlug/sprints/:sprintId", handlers.UpdateSprint)
 			projects.DELETE("/:projectSlug/sprints/:sprintId", handlers.DeleteSprint)
 			projects.POST("/:projectSlug/sprints/:sprintId/start", handlers.StartSprint)

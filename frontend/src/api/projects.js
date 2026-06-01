@@ -125,6 +125,7 @@ export const projectsApi = {
   reorderSprintCards:   (slug, sprintId, items)   => client.patch(`/projects/${slug}/sprints/${sprintId}/cards/reorder`, items),
   listBacklog:          (slug)                    => client.get(`/projects/${slug}/backlog`),
   reorderBacklog:       (slug, items)             => client.patch(`/projects/${slug}/backlog/reorder`, items),
+  reorderSprints:       (slug, items)             => client.patch(`/projects/${slug}/sprints/reorder`, items),
 
   // Releases (Scrum)
   listReleases:            (slug)                      => client.get(`/projects/${slug}/releases`),

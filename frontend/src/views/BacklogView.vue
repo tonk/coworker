@@ -85,9 +85,11 @@
           {{ $t('sprint.no_sprints') }}
         </div>
 
+        <div ref="sprintListEl">
         <div v-for="sprint in sprintStore.sprints" :key="sprint.id" class="sprint-block">
           <div class="sprint-block-header">
             <div class="sprint-block-title">
+              <span class="sprint-drag-handle" @click.stop aria-hidden="true" :title="$t('ticketChecklist.drag_reorder')">⠿</span>
               <span class="sprint-status-badge" :class="sprint.status">{{ $t(`sprint.status_${sprint.status}`) }}</span>
               <strong>{{ sprint.name }}</strong>
               <span v-if="sprint.goal" class="sprint-goal-text">{{ sprint.goal }}</span>
@@ -133,6 +135,7 @@
               </template>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -289,6 +292,28 @@ const showCreateSprint = ref(false)
 const editingSprintId = ref(null)
 const backlogListEl = ref(null)
 let backlogSortable = null
+const sprintListEl = ref(null)
+let sprintSortable = null
+
+function initSprintSortable() {
+  if (!sprintListEl.value || sprintSortable) return
+  sprintSortable = new Sortable(sprintListEl.value, {
+    animation: 150,
+    handle: '.sprint-drag-handle',
+    onEnd(evt) {
+      const moved = sprintStore.sprints.splice(evt.oldIndex, 1)[0]
+      sprintStore.sprints.splice(evt.newIndex, 0, moved)
+      const items = sprintStore.sprints.map((s, i) => ({ id: s.id, position: (i + 1) * 1000 }))
+      sprintStore.sprints.forEach((s, i) => { s.position = (i + 1) * 1000 })
+      sprintStore.reorderSprints(items).catch(() => {})
+    },
+  })
+}
+
+watch(() => sprintStore.sprints.length, async (len) => {
+  if (sprintSortable) { sprintSortable.destroy(); sprintSortable = null }
+  if (len) { await nextTick(); initSprintSortable() }
+})
 
 function initBacklogSortable() {
   if (!backlogListEl.value || backlogSortable) return
@@ -355,6 +380,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (backlogSortable) { backlogSortable.destroy(); backlogSortable = null }
+  if (sprintSortable) { sprintSortable.destroy(); sprintSortable = null }
   disconnect()
   sprintStore.reset()
   boardStore.reset()
@@ -746,6 +772,18 @@ const yTicks = computed(() => {
   margin-bottom: 8px;
   flex-wrap: wrap;
 }
+
+.sprint-drag-handle {
+  color: var(--color-text-muted);
+  cursor: grab;
+  font-size: 14px;
+  flex-shrink: 0;
+  user-select: none;
+  opacity: 0;
+  transition: opacity .1s;
+}
+.sprint-block-header:hover .sprint-drag-handle { opacity: 1; }
+.sprint-drag-handle:active { cursor: grabbing; }
 
 .sprint-goal-text {
   font-size: 12px;

@@ -78,6 +78,10 @@ export const useSprintStore = defineStore('sprint', () => {
     await projectsApi.reorderBacklog(projectSlug.value, items)
   }
 
+  async function reorderSprints(items) {
+    await projectsApi.reorderSprints(projectSlug.value, items)
+  }
+
   async function removeCardFromSprint(sprintId, cardId) {
     await projectsApi.removeCardFromSprint(projectSlug.value, sprintId, cardId)
     const sprint = sprints.value.find(s => s.id === sprintId)
@@ -135,6 +139,6 @@ export const useSprintStore = defineStore('sprint', () => {
     activeSprint, planningSprints, completedSprints,
     loadSprints, loadBacklog, createSprint, updateSprint, deleteSprint,
     startSprint, completeSprint, addCardToSprint, removeCardFromSprint,
-    reorderBacklog, handleWsEvent, reset,
+    reorderBacklog, reorderSprints, handleWsEvent, reset,
   }
 })
