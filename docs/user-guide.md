@@ -662,7 +662,14 @@ When using the inline **Reply** form to respond to a private message, the reply 
 
 ### Checklist
 
-If an administrator has defined checklist templates, click **Apply Template** in the checklist section to add all its items in one click. Check items off as they are completed. A ticket cannot be moved to `Pending close` or `Closed` status until every checklist item is checked.
+If an administrator has defined checklist templates, select one from the **Apply checklist** dropdown in the ticket header. All items from that template are added to the ticket at once. Only one template can be applied per ticket — the dropdown disappears after you apply one.
+
+Once items are added you can:
+- Check items off as they are completed (a progress bar shows the percentage done).
+- Delete individual items with the **×** button.
+- Drag items to reorder them.
+
+Changing the ticket status to `Pending close` or `Closed` is blocked while any checklist item remains unchecked.
 
 ### Macros
 
