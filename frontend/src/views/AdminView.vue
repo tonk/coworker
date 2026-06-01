@@ -89,12 +89,12 @@
                 </td>
                 <td>
                   <div class="actions-cell">
-                    <button class="btn btn-secondary btn-sm" @click="openEditUser(user)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-ghost btn-sm" @click="openEditUser(user)">{{ $t('common.edit') }}</button>
                     <template v-if="user.id !== auth.user?.id">
-                      <button class="btn btn-secondary btn-sm" @click="toggleActive(user)">
+                      <button class="btn btn-ghost btn-sm" @click="toggleActive(user)">
                         {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
                       </button>
-                      <button class="btn btn-danger btn-sm" @click="deleteUser(user)">{{ $t('common.delete') }}</button>
+                      <button class="btn btn-ghost btn-sm btn-danger" @click="deleteUser(user)">{{ $t('common.delete') }}</button>
                     </template>
                   </div>
                 </td>
@@ -216,15 +216,15 @@
                 <td>
                   <div class="actions-cell">
                   <template v-if="showDeletedProjects">
-                    <button class="btn btn-secondary btn-sm" @click="restoreProject(project)">{{ $t('admin.restore') }}</button>
-                    <button class="btn btn-danger btn-sm" @click="purgeProject(project)">{{ $t('admin.purge_project') }}</button>
+                    <button class="btn btn-ghost btn-sm" @click="restoreProject(project)">{{ $t('admin.restore') }}</button>
+                    <button class="btn btn-ghost btn-sm btn-danger" @click="purgeProject(project)">{{ $t('admin.purge_project') }}</button>
                   </template>
                   <template v-else>
-                    <button class="btn btn-secondary btn-sm" @click="openEditProject(project)">{{ $t('common.edit') }}</button>
-                    <button class="btn btn-secondary btn-sm" @click="toggleArchive(project)">
+                    <button class="btn btn-ghost btn-sm" @click="openEditProject(project)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-ghost btn-sm" @click="toggleArchive(project)">
                       {{ project.is_archived ? $t('admin.unarchive') : $t('project.archive') }}
                     </button>
-                    <button class="btn btn-danger btn-sm" @click="deleteProject(project)">{{ $t('common.delete') }}</button>
+                    <button class="btn btn-ghost btn-sm btn-danger" @click="deleteProject(project)">{{ $t('common.delete') }}</button>
                   </template>
                   </div>
                 </td>
@@ -269,9 +269,9 @@
                 <td>{{ g.customer_count }}</td>
                 <td>
                   <div class="actions-cell">
-                    <button class="btn btn-secondary btn-sm" @click="openEditGroup(g)">{{ $t('common.edit') }}</button>
-                    <button class="btn btn-secondary btn-sm" @click="openGroupDetail(g)">{{ $t('groups.members') }}</button>
-                    <button class="btn btn-danger btn-sm" @click="deleteGroup(g)">{{ $t('common.delete') }}</button>
+                    <button class="btn btn-ghost btn-sm" @click="openEditGroup(g)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-ghost btn-sm" @click="openGroupDetail(g)">{{ $t('groups.members') }}</button>
+                    <button class="btn btn-ghost btn-sm btn-danger" @click="deleteGroup(g)">{{ $t('common.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -320,8 +320,8 @@
                 <td>{{ c.project_count }}</td>
                 <td>
                   <div class="actions-cell">
-                    <button class="btn btn-secondary btn-sm" @click="openEditCustomer(c)">{{ $t('common.edit') }}</button>
-                    <button class="btn btn-danger btn-sm" @click="deleteAdminCustomer(c)">{{ $t('common.delete') }}</button>
+                    <button class="btn btn-ghost btn-sm" @click="openEditCustomer(c)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-ghost btn-sm btn-danger" @click="deleteAdminCustomer(c)">{{ $t('common.delete') }}</button>
                   </div>
                 </td>
               </tr>
@@ -728,7 +728,6 @@
           <div v-if="newsLoading" class="loading-state">
             <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
           </div>
-          <div v-else-if="!newsItems.length" class="empty-hint">{{ $t('admin.news_empty') }}</div>
           <table v-else class="data-table">
             <thead>
               <tr>
@@ -740,6 +739,9 @@
               </tr>
             </thead>
             <tbody>
+              <tr v-if="!newsItems.length">
+                <td colspan="5" style="text-align:center;color:var(--color-text-muted)">{{ $t('admin.news_empty') }}</td>
+              </tr>
               <tr v-for="item in newsItems" :key="item.id">
                 <td><button type="button" class="name-link" @click="openEditNews(item)">{{ item.title }}</button><br><small style="color:var(--color-text-muted);white-space:pre-wrap">{{ item.text?.slice(0, 80) }}{{ item.text?.length > 80 ? '…' : '' }}</small></td>
                 <td><small>{{ item.start_date ? formatDateTime(item.start_date) : '—' }}</small></td>
@@ -764,6 +766,7 @@
         <div v-show="tab === 'time-tracking'" role="tabpanel" id="tab-panel-time-tracking" aria-labelledby="tab-btn-time-tracking">
           <div class="tab-toolbar">
             <h2 class="tab-section-title">{{ $t('admin.tt_projects_title') }}</h2>
+            <button v-if="!addingTTProject && !editingTTProject" class="btn btn-primary btn-sm" @click="addingTTProject = true; nextTick(() => newTTProjRef?.focus())">+ {{ $t('timeTracking.tt_project_add') }}</button>
           </div>
           <div v-if="loadingTTProjects" class="loading-state">
             <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
@@ -823,13 +826,11 @@
                 </tr>
               </tbody>
             </table>
-            <div v-if="!addingTTProject && !editingTTProject" style="margin-bottom:16px">
-              <button class="btn btn-secondary btn-sm" @click="addingTTProject = true; nextTick(() => newTTProjRef?.focus())">+ {{ $t('timeTracking.tt_project_add') }}</button>
-            </div>
           </div>
 
           <div class="tab-toolbar" style="margin-top:24px">
             <h2 class="tab-section-title">{{ $t('admin.tt_customers_title') }}</h2>
+            <button v-if="!addingTTCustomer && !editingTTCustomer" class="btn btn-primary btn-sm" @click="addingTTCustomer = true; nextTick(() => newTTCustRef?.focus())">+ {{ $t('timeTracking.tt_customer_add') }}</button>
           </div>
           <div v-if="loadingTTCustomers" class="loading-state">
             <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
@@ -880,9 +881,6 @@
                 </tr>
               </tbody>
             </table>
-            <div v-if="!addingTTCustomer && !editingTTCustomer" style="margin-bottom:16px">
-              <button class="btn btn-secondary btn-sm" @click="addingTTCustomer = true; nextTick(() => newTTCustRef?.focus())">+ {{ $t('timeTracking.tt_customer_add') }}</button>
-            </div>
           </div>
         </div>
 

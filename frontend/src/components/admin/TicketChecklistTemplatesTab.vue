@@ -242,7 +242,7 @@ async function confirmSave() {
 }
 
 async function deleteTemplate(tmpl) {
-  if (!confirm(t('common.confirm_delete'))) return
+  if (!await ui.confirm(t('common.confirm_delete'))) return
   try {
     await ticketChecklistsApi.delete(tmpl.id)
     await load()
