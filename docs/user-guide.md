@@ -6,6 +6,7 @@
 2. [The Interface](#2-the-interface)
 3. [Projects](#3-projects)
 4. [Kanban Board](#4-kanban-board)
+   - [4b. Scrum Board](#4b-scrum-board)
 5. [Cards](#5-cards)
 6. [Topics](#6-topics)
 7. [Chats & Direct Messages](#7-chats--direct-messages)
@@ -203,17 +204,87 @@ Return to the board with the breadcrumb at the top of the page.
 ### Charts
 
 Click the **📊 Charts** button in the board toolbar to open the project's
-analytics view. Four charts are available for Kanban boards:
+analytics view. Available charts depend on the board type.
+
+**Kanban boards:**
 
 | Chart | What it shows |
 |-------|---------------|
 | **CFD** (Cumulative Flow Diagram) | Daily card counts per column over the selected period. A widening band for a column signals growing WIP or a blocked stage. |
-| **Cycle Time** | Distribution of how long each card spent in progress — from the moment it first left the starting column until it was closed. |
-| **Lead Time** | Distribution of total time from card creation to closure, including any time spent waiting in the initial column. |
-| **Throughput** | Number of cards closed per week over the selected period — a direct measure of delivery rate. |
+| **Cycle Time** (Control Chart) | Scatter plot of how long each card spent open, plotted by close date, with a 7-day rolling average line to reveal trends. |
+| **Lead Time** | Distribution of total time from card creation to closure, bucketed by duration. |
+| **Throughput** | Number of cards closed per week — a direct measure of delivery rate. |
+
+**Scrum boards** include all of the above plus:
+
+| Chart | What it shows |
+|-------|---------------|
+| **Velocity** | Committed vs completed story points per sprint — shows delivery consistency over time. |
+| **Burndown** | Remaining story points per day within a sprint against the ideal line. |
+| **Burnup** | Cumulative completed points vs total scope per day within a sprint. |
+| **Sprint Report** | Post-sprint breakdown: which cards were completed, which were not, with story-point totals and a completion percentage. Select any sprint from the dropdown. |
+| **Epic Burndown** | Remaining cards (and story points) per day for a single epic, from epic creation to today, with an ideal line. Select an epic from the dropdown. |
+| **Release Burndown** | Combined burndown across all sprints linked to a release. |
 
 Use the time-range selectors at the top of each chart to zoom in or out.
 Hover over any data point to see the exact values.
+
+---
+
+## 4b. Scrum Board
+
+Projects created with the **Scrum** board type get a full sprint-planning workflow alongside the standard Kanban board. Switch between views using the toolbar buttons.
+
+### Epics
+
+Epics are named milestones that group related cards — similar to themes or features that span multiple sprints.
+
+Open the **⚡ Epics** view from the board toolbar to manage epics:
+
+- **Create** an epic with a name, description, colour, and status (Open / Done).
+- **Reorder** epics by dragging the ⠿ handle.
+- **Expand** an epic (click **▸**) to see its cards inline — click any card to open the full detail.
+- **Edit or delete** an epic using the action buttons on the right.
+
+A card belongs to at most one epic. To assign a card to an epic, open the card detail and select the epic from the **Epic** dropdown — the assignment saves immediately.
+
+Cards on the board display a thin **colour bar** across the top and a small **epic name badge** when they belong to an epic. In the Backlog, each card shows its epic badge alongside the sprint selector. Use the **filter dropdown** in the Backlog header to show only cards from a specific epic (or cards with no epic).
+
+### Product Backlog
+
+Open the **📋 Backlog** view from the board toolbar. The left panel lists all open cards that are not assigned to a planning or active sprint.
+
+- **Drag cards** using the ⠿ handle to change their priority order — the new order is saved automatically.
+- **Assign a card to a sprint** using the sprint dropdown on each card.
+- **Filter by epic** using the dropdown in the panel header.
+
+### Sprints
+
+The right panel of the Backlog view shows all sprints. Project members can:
+
+| Action | How |
+|--------|-----|
+| Create a sprint | **+ New Sprint** button (top-right of the Sprints panel) |
+| Edit name, goal, or dates | **Edit** button on the sprint header |
+| Reorder sprints | Drag the ⠿ handle on the sprint header |
+| Sort sprints | Click the **△▽** button to sort ascending or descending by sprint number; click again to return to custom order |
+| Start a sprint | **Start** button (planning sprints only) |
+| Complete a sprint | **Complete** button (active sprint only); unfinished cards return to the backlog |
+| Remove a card from a sprint | **✕** button on the card row |
+
+Only one sprint can be active at a time.
+
+### Sprint Board
+
+Click **🏃 Sprint Board** in the toolbar to see only the cards in the active sprint, arranged in your project columns. Use it like a regular Kanban board during the sprint.
+
+### Sprint Report
+
+After a sprint ends, open **📊 Charts → Sprint Report** and select the sprint to see:
+
+- A summary bar with committed cards/points, completed cards/points, and a completion percentage.
+- A table of **completed** cards (highlighted in green).
+- A table of **not-completed** cards (highlighted in amber), showing which column each card was left in.
 
 ---
 

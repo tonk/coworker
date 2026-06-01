@@ -3594,6 +3594,44 @@ The agenda is deliberately light — good food, good company, and a chance to ca
 
 Hope to see you there!`,
 		},
+		{
+			title:        "New: Threaded ticket replies and Epics for Scrum ⚡",
+			sidebarColor: "#8b5cf6",
+			active:       true,
+			startDate:    days(0),
+			text: `Two significant improvements landed this week — one for the helpdesk, one for Scrum teams.
+
+---
+
+### Threaded replies in tickets
+
+Ticket messages now support **threaded replies**. Click the **Reply** button beneath any message to open an inline reply form directly below it. Replies are indented under their parent and can be nested to any depth, making it easy to track side-conversations without losing the main thread.
+
+A few things to note:
+
+- File attachments are still added through the main compose area at the bottom — the inline reply form is text-only.
+- When you reply to a **private (internal) note**, the reply automatically inherits the private status — no checkbox is shown, but the reply is also an internal note.
+- The private note checkbox is hidden for users with the **Customer** role, who can only post public replies.
+
+---
+
+### Epics for Scrum boards ⚡
+
+Scrum projects now have a full **Epics** layer — a way to group cards into named, colour-coded milestones that span multiple sprints.
+
+**Managing epics:**
+Open the **⚡ Epics** view from the board toolbar. Create an epic with a name, colour, and optional description. Drag the ⠿ handle to reorder. Click **▸** on any epic to expand it and see its cards inline; click a card to open the full detail.
+
+**Assigning cards to epics:**
+Open a card and select the epic from the new **Epic** dropdown — saves immediately. Cards show a colour bar across the top and a small epic badge on the board and in the backlog.
+
+**Filtering and reporting:**
+- The **Backlog** view has a new epic filter — show all cards, cards without an epic, or cards from a specific epic.
+- **📊 Charts → Epic Burndown**: select an epic to see remaining cards and story points per day, with an ideal line, from epic creation to today.
+- **📊 Charts → Sprint Report**: select any sprint to see a post-sprint breakdown — completed cards (green), not-completed cards (amber), story point totals, and a completion percentage.
+
+Happy shipping! 🚀`,
+		},
 	}
 
 	totalNewsItems := 0
@@ -4296,6 +4334,7 @@ func removeDemoData(db *gorm.DB) {
 		"Q2 retrospective highlights",
 		"Security reminder: enable MFA on your account",
 		"Team lunch — Friday 12:30",
+		"New: Threaded ticket replies and Epics for Scrum ⚡",
 	}
 	db.Unscoped().Where("title IN ?", demoNewsTitles).Delete(&models.NewsItem{})
 
