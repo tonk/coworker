@@ -19,6 +19,9 @@
           <RouterLink :to="`/projects/${slug}/sprint`" class="btn btn-ghost btn-sm">
             🏃 {{ $t('sprint.board') }}
           </RouterLink>
+          <RouterLink :to="`/projects/${slug}/epics`" class="btn btn-ghost btn-sm">
+            ⚡ {{ $t('epic.title') }}
+          </RouterLink>
         </template>
         <RouterLink :to="`/projects/${slug}/charts`" class="btn btn-ghost btn-sm">
           📊 {{ $t('sprint.charts') }}

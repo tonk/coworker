@@ -1,5 +1,7 @@
 <template>
   <div class="board-card" :class="{ 'board-card--closed': card.closed, 'board-card--overdue': isOverdue }" role="button" tabindex="0" @click="$emit('open', card)" @keydown.enter="$emit('open', card)" @keydown.space.prevent="$emit('open', card)">
+    <!-- Epic colour bar -->
+    <div v-if="card.epic" class="card-epic-bar" :style="{ background: card.epic.color }" :title="card.epic.name"></div>
     <!-- Assignee avatars — top right (shows multi-assignees if present, else primary) -->
     <div v-if="allAssignees.length" class="card-avatars">
       <div
@@ -24,6 +26,7 @@
       </div>
     </div>
 
+    <div v-if="card.epic" class="card-epic-badge" :style="{ background: card.epic.color + '22', color: card.epic.color }">{{ card.epic.name }}</div>
     <div class="card-ref" v-if="card.card_number">{{ cardRef }}</div>
     <div class="card-priority" v-if="card.priority !== 'none'">
       <span :class="`badge priority-${card.priority}`">{{ $t(`board.priorities.${card.priority}`) }}</span>
@@ -89,6 +92,26 @@ const isOverdue = computed(() => {
 </script>
 
 <style scoped>
+.card-epic-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+.card-epic-badge {
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px;
+  padding: 1px 6px;
+  margin-bottom: 4px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .board-card {
   position: relative;
   background: var(--color-surface);

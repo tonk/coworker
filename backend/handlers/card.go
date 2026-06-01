@@ -47,7 +47,7 @@ func ListCards(c *gin.Context) {
 	}
 
 	var cards []models.Card
-	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").Preload("Epic").
 		Where("column_id = ? AND project_id = ? AND parent_card_id IS NULL", colID, project.ID).
 		Order("position asc").Find(&cards)
 
@@ -189,10 +189,10 @@ func GetCard(c *gin.Context) {
 	}
 
 	var card models.Card
-	if err := database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Watchers").Preload("Comments.User").Preload("Tags").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
+	if err := database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Watchers").Preload("Comments.User").Preload("Tags").Preload("Epic").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err != nil {
 		// Deleted cards are visible to project admins/owners and system admins
 		if services.RequireProjectRole(project.ID, userID, globalRole, "admin") == nil {
-			if err2 := database.DB.Unscoped().Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Watchers").Preload("Comments.User").Preload("Tags").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err2 != nil {
+			if err2 := database.DB.Unscoped().Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Watchers").Preload("Comments.User").Preload("Tags").Preload("Epic").Where("id = ? AND project_id = ?", cardID, project.ID).First(&card).Error; err2 != nil {
 				c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
 				return
 			}
@@ -260,6 +260,7 @@ func UpdateCard(c *gin.Context) {
 		StartDate         json.RawMessage `json:"start_date"` // "YYYY-MM-DD" string or null
 		DueDate           json.RawMessage `json:"due_date"`   // "YYYY-MM-DD" string or null
 		AssigneeID        json.RawMessage `json:"assignee_id"`
+		EpicID            json.RawMessage `json:"epic_id"` // uint or null
 		TimeSpentMinutes  *int            `json:"time_spent_minutes"`
 		StoryPoints       *int            `json:"story_points"`
 		Closed            *bool           `json:"closed"`
@@ -330,6 +331,16 @@ func UpdateCard(c *gin.Context) {
 	}
 	if req.ExternalIssueRef != nil {
 		updates["external_issue_ref"] = *req.ExternalIssueRef
+	}
+	if len(req.EpicID) > 0 {
+		if string(req.EpicID) == "null" {
+			updates["epic_id"] = nil
+		} else {
+			var eid uint
+			if json.Unmarshal(req.EpicID, &eid) == nil {
+				updates["epic_id"] = eid
+			}
+		}
 	}
 
 	// Record activity events for tracked field changes
@@ -408,7 +419,7 @@ func UpdateCard(c *gin.Context) {
 	}
 
 	database.DB.Model(&card).Updates(updates)
-	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").First(&card, card.ID)
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").Preload("Epic").First(&card, card.ID)
 
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCardUpdated, Payload: card})
 	c.JSON(http.StatusOK, card)

@@ -479,6 +479,13 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			projects.DELETE("/:projectSlug/sprints/:sprintId/cards/:cardId", handlers.RemoveCardFromSprint)
 			projects.PATCH("/:projectSlug/sprints/:sprintId/cards/reorder", handlers.ReorderSprintCards)
 
+			// Epics
+			projects.GET("/:projectSlug/epics", handlers.ListEpics)
+			projects.POST("/:projectSlug/epics", handlers.CreateEpic)
+			projects.PATCH("/:projectSlug/epics/reorder", handlers.ReorderEpics)
+			projects.PUT("/:projectSlug/epics/:epicId", handlers.UpdateEpic)
+			projects.DELETE("/:projectSlug/epics/:epicId", handlers.DeleteEpic)
+
 			// Backlog (Scrum)
 			projects.GET("/:projectSlug/backlog", handlers.ListBacklog)
 			projects.PATCH("/:projectSlug/backlog/reorder", handlers.ReorderBacklog)

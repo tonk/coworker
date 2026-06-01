@@ -46,6 +46,16 @@
         <div v-else class="description-text comment-text" v-html="renderMarkdown(form.description)"></div>
       </div>
 
+      <div v-if="epicsStore.epics.length || form.epic_id" class="detail-row">
+        <div class="form-group half">
+          <label class="form-label" for="card-epic">{{ $t('epic.epic') }}</label>
+          <select id="card-epic" class="form-input" v-model="form.epic_id" @change="saveEpic">
+            <option :value="null">— {{ $t('epic.no_epic') }} —</option>
+            <option v-for="e in epicsStore.epics" :key="e.id" :value="e.id">{{ e.name }}</option>
+          </select>
+        </div>
+      </div>
+
       <div class="detail-row">
         <div class="form-group half">
           <label class="form-label">{{ $t('board.priority') }}</label>
@@ -569,6 +579,7 @@ import { ticketsApi } from '@/api/tickets'
 import { attachmentsApi } from '@/api/attachments'
 import { useUIStore } from '@/stores/ui'
 import { useSystemStore } from '@/stores/system'
+import { useEpicsStore } from '@/stores/epics'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
 
@@ -590,6 +601,7 @@ const memberUsers = computed(() => props.members.map(m => m.user).filter(Boolean
 const boardStore = useBoardStore()
 const systemStore = useSystemStore()
 const projectStore = useProjectStore()
+const epicsStore = useEpicsStore()
 const ui = useUIStore()
 const router = useRouter()
 
@@ -1085,6 +1097,9 @@ watch(() => boardStore.checklistEvent, (event) => {
 
 onMounted(async () => {
   document.addEventListener('keydown', onKeyDown)
+  if (epicsStore.projectSlug !== props.projectSlug) {
+    epicsStore.loadEpics(props.projectSlug)
+  }
   if (isNew.value) return
   const [histRes, checkRes, linksRes] = await Promise.all([
     projectsApi.getCardHistory(props.projectSlug, props.card.id).catch(() => ({ data: [] })),
@@ -1118,6 +1133,7 @@ const form = ref({
   start_date: props.card.start_date ? props.card.start_date.slice(0, 10) : '',
   due_date: props.card.due_date ? props.card.due_date.slice(0, 10) : '',
   assignee_id: props.card.assignee_id || null,
+  epic_id: props.card.epic_id || null,
   story_points: props.card.story_points ?? null,
   external_issue_url: props.card.external_issue_url || '',
   external_issue_ref: props.card.external_issue_ref || '',
@@ -1276,6 +1292,11 @@ async function toggleLabel(label) {
   }
 }
 
+async function saveEpic() {
+  if (props.readonly || !props.card.id) return
+  await boardStore.updateCardData(props.card.id, { epic_id: form.value.epic_id ?? null })
+}
+
 async function save() {
   if (props.readonly) return
   saving.value = true
@@ -1287,6 +1308,7 @@ async function save() {
       start_date: form.value.start_date || null,
       due_date: form.value.due_date || null,
       assignee_id: form.value.assignee_id,
+      epic_id: form.value.epic_id ?? null,
       story_points: form.value.story_points,
       external_issue_url: form.value.external_issue_url || '',
       external_issue_ref: form.value.external_issue_ref || '',

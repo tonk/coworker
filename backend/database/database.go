@@ -400,6 +400,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.CustomerFavorite{},
 		&models.CustomerAccess{},
 		&models.CardReference{},
+		&models.Epic{},
 		&models.Sprint{},
 		&models.SprintCard{},
 		&models.Release{},

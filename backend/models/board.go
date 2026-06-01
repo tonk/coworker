@@ -6,6 +6,22 @@ import (
 	"gorm.io/gorm"
 )
 
+type Epic struct {
+	ID          uint           `gorm:"primaryKey" json:"id"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	ProjectID   uint           `gorm:"not null;index" json:"project_id"`
+	Name        string         `gorm:"not null;size:200" json:"name"`
+	Description string         `gorm:"type:text" json:"description"`
+	Color       string         `gorm:"size:7;default:'#6366f1'" json:"color"`
+	Status      string         `gorm:"size:20;default:'open'" json:"status"`
+	Position    float64        `gorm:"default:0" json:"position"`
+	// Computed at query time
+	CardCount int `gorm:"-" json:"card_count"`
+	DoneCount int `gorm:"-" json:"done_count"`
+}
+
 type Column struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
@@ -45,6 +61,8 @@ type Card struct {
 	ClosedAt          *time.Time     `json:"closed_at"`
 	ExternalIssueURL  string         `gorm:"size:2000" json:"external_issue_url"`
 	ExternalIssueRef  string         `gorm:"size:200" json:"external_issue_ref"`
+	EpicID            *uint          `gorm:"index" json:"epic_id"`
+	Epic              *Epic          `gorm:"foreignKey:EpicID" json:"epic,omitempty"`
 	ParentCardID      *uint          `gorm:"index" json:"parent_card_id,omitempty"`
 	SubCardCount      int            `gorm:"-" json:"sub_card_count"`
 	SubCardsDone      int            `gorm:"-" json:"sub_cards_done"`

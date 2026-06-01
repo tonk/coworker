@@ -16,6 +16,7 @@ const routes = [
   { path: '/projects/:slug/topics', name: 'topics', component: lazyWithReload(() => import('@/views/TopicsView.vue')), meta: { boardOnly: true } },
   { path: '/projects/:slug/gantt', name: 'gantt', component: lazyWithReload(() => import('@/views/GanttView.vue')), meta: { boardOnly: true } },
   { path: '/projects/:slug/backlog', name: 'backlog', component: lazyWithReload(() => import('@/views/BacklogView.vue')), meta: { boardOnly: true } },
+  { path: '/projects/:slug/epics', name: 'epics', component: lazyWithReload(() => import('@/views/EpicsView.vue')), meta: { boardOnly: true } },
   { path: '/projects/:slug/sprint', name: 'sprint-board', component: lazyWithReload(() => import('@/views/SprintBoardView.vue')), meta: { boardOnly: true } },
   { path: '/projects/:slug/charts', name: 'charts', component: lazyWithReload(() => import('@/views/ChartsView.vue')), meta: { boardOnly: true } },
   { path: '/news', name: 'news', component: lazyWithReload(() => import('@/views/NewsView.vue')) },

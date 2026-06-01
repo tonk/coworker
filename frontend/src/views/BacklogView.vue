@@ -12,6 +12,9 @@
         <RouterLink v-if="sprintStore.activeSprint" :to="`/projects/${slug}/sprint`" class="btn btn-ghost btn-sm">
           🏃 {{ $t('sprint.board') }}
         </RouterLink>
+        <RouterLink :to="`/projects/${slug}/epics`" class="btn btn-ghost btn-sm">
+          ⚡ {{ $t('epic.title') }}
+        </RouterLink>
         <RouterLink :to="`/projects/${slug}/charts`" class="btn btn-ghost btn-sm">
           📊 {{ $t('sprint.charts') }}
         </RouterLink>
@@ -34,14 +37,19 @@
       <div class="backlog-column">
         <div class="backlog-column-header">
           <h2>{{ $t('sprint.backlog_title') }}</h2>
-          <span class="card-count">{{ sprintStore.backlog.length }} {{ $t('sprint.cards') }}</span>
+          <select v-if="epicsStore.epics.length" class="sprint-select" v-model="epicFilter" :aria-label="$t('epic.filter_by_epic')">
+            <option :value="null">{{ $t('epic.all_epics') }}</option>
+            <option value="none">{{ $t('epic.no_epic') }}</option>
+            <option v-for="e in epicsStore.epics" :key="e.id" :value="e.id">{{ e.name }}</option>
+          </select>
+          <span class="card-count">{{ filteredBacklog.length }} {{ $t('sprint.cards') }}</span>
         </div>
-        <div v-if="!sprintStore.backlog.length" class="backlog-empty">
+        <div v-if="!filteredBacklog.length" class="backlog-empty">
           {{ $t('sprint.no_backlog') }}
         </div>
         <div ref="backlogListEl">
         <div
-          v-for="card in sprintStore.backlog"
+          v-for="card in filteredBacklog"
           :key="card.id"
           class="backlog-card"
           @click="openCard(card)"
@@ -52,6 +60,7 @@
             {{ card.title }}
           </div>
           <div class="backlog-card-meta">
+            <span v-if="card.epic" class="epic-badge-sm" :style="{ background: card.epic.color + '22', color: card.epic.color }">{{ card.epic.name }}</span>
             <span v-if="card.story_points != null" class="sp-badge">{{ card.story_points }} SP</span>
             <span v-if="card.priority && card.priority !== 'none'" class="priority-badge" :class="card.priority">{{ card.priority }}</span>
             <div class="backlog-card-actions">
@@ -275,6 +284,7 @@ import { useProjectStore } from '@/stores/project'
 import { useBoardStore } from '@/stores/board'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
+import { useEpicsStore } from '@/stores/epics'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { projectsApi } from '@/api/projects'
@@ -291,6 +301,14 @@ const projectStore = useProjectStore()
 const boardStore = useBoardStore()
 const ui = useUIStore()
 const auth = useAuthStore()
+const epicsStore = useEpicsStore()
+
+const epicFilter = ref(null) // null = all, 'none' = no epic, number = epic id
+const filteredBacklog = computed(() => {
+  if (epicFilter.value === null) return sprintStore.backlog
+  if (epicFilter.value === 'none') return sprintStore.backlog.filter(c => !c.epic_id)
+  return sprintStore.backlog.filter(c => c.epic_id === epicFilter.value)
+})
 
 const { formatDate, dateOnlyFormat } = useDateFormat()
 
@@ -393,6 +411,7 @@ onMounted(async () => {
     sprintStore.loadBacklog(slug.value),
     boardStore.loadBoard(slug.value),
     projectStore.fetchProject(slug.value),
+    epicsStore.loadEpics(slug.value),
   ])
   const { data } = await projectsApi.listMembers(slug.value)
   projectMembers.value = data
@@ -405,6 +424,7 @@ onUnmounted(() => {
   disconnect()
   sprintStore.reset()
   boardStore.reset()
+  epicsStore.reset()
 })
 
 function fmtDate(d) {
@@ -761,6 +781,18 @@ const yTicks = computed(() => {
 .priority-badge.low { background: #dcfce7; color: #166534; }
 
 .backlog-card-actions { margin-left: auto; }
+
+.epic-badge-sm {
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .sprint-select {
   font-size: 12px;

@@ -191,6 +191,26 @@
     "add_item_placeholder": "New checklist item…",
     "progress": "{done} of {total} done"
   },
+  "epic": {
+    "title": "Epics",
+    "epic": "Epic",
+    "new_epic": "New Epic",
+    "edit_epic": "Edit Epic",
+    "no_epics": "No epics yet. Create your first epic!",
+    "name": "Epic name",
+    "description": "Description",
+    "color": "Color",
+    "status": "Status",
+    "status_open": "Open",
+    "status_done": "Done",
+    "no_epic": "No Epic",
+    "all_epics": "All Epics",
+    "filter_by_epic": "Filter by Epic",
+    "cards_done": "cards done",
+    "save_failed": "Failed to save epic",
+    "deleted": "Epic deleted",
+    "delete_confirm": "Delete epic"
+  },
   "board": {
     "add_column": "Add Column",
     "add_card": "Add Card",

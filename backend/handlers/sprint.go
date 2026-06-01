@@ -311,7 +311,7 @@ func ListBacklog(c *gin.Context) {
 		Where("sprints.project_id = ? AND sprints.status IN ? AND sprints.deleted_at IS NULL", project.ID, []string{"planning", "active"}).
 		Pluck("sprint_cards.card_id", &sprintedIDs)
 
-	q := database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").
+	q := database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").Preload("Epic").
 		Where("project_id = ? AND parent_card_id IS NULL AND closed = false", project.ID)
 	if len(sprintedIDs) > 0 {
 		q = q.Not("id IN ?", sprintedIDs)
