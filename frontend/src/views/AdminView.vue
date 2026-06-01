@@ -57,7 +57,7 @@
                   </div>
                 </td>
                 <td>
-                  <strong>{{ user.display_name || user.username }}</strong>
+                  <button type="button" class="name-link" @click="openEditUser(user)">{{ user.display_name || user.username }}</button>
                   <br>
                   <small>{{ user.first_name }} {{ user.last_name }}</small>
                   <br><small class="email">{{ user.email }}</small>
@@ -194,7 +194,8 @@
                   <div class="entity-cell">
                     <img v-if="projectAvatar(project)" :src="projectAvatar(project)" class="entity-avatar" alt="" />
                     <span v-else class="project-dot" :style="{ background: project.color || '#6366f1' }"></span>
-                    <strong>{{ project.name }}</strong>
+                    <button v-if="!showDeletedProjects" type="button" class="name-link" @click="openEditProject(project)">{{ project.name }}</button>
+                    <strong v-else>{{ project.name }}</strong>
                   </div>
                   <br>
                   <small>{{ project.slug }} &middot; <code>{{ project.key_prefix }}</code></small>
@@ -259,7 +260,7 @@
                 <td>
                   <div class="entity-cell">
                     <img v-if="groupAvatar(g)" :src="groupAvatar(g)" class="entity-avatar" alt="" />
-                    <strong>{{ g.name }}</strong>
+                    <button type="button" class="name-link" @click="openEditGroup(g)">{{ g.name }}</button>
                   </div>
                   <div v-if="g.description" style="font-size:12px;color:var(--color-text-muted)">{{ g.description }}</div>
                 </td>
@@ -740,7 +741,7 @@
             </thead>
             <tbody>
               <tr v-for="item in newsItems" :key="item.id">
-                <td><strong>{{ item.title }}</strong><br><small style="color:var(--color-text-muted);white-space:pre-wrap">{{ item.text?.slice(0, 80) }}{{ item.text?.length > 80 ? '…' : '' }}</small></td>
+                <td><button type="button" class="name-link" @click="openEditNews(item)">{{ item.title }}</button><br><small style="color:var(--color-text-muted);white-space:pre-wrap">{{ item.text?.slice(0, 80) }}{{ item.text?.length > 80 ? '…' : '' }}</small></td>
                 <td><small>{{ item.start_date ? formatDateTime(item.start_date) : '—' }}</small></td>
                 <td><small>{{ item.end_date ? formatDateTime(item.end_date) : '—' }}</small></td>
                 <td>
@@ -807,7 +808,7 @@
                   <template v-else>
                     <td>
                       <span class="tt-admin-dot" :style="{ background: p.color || '#6366f1' }"></span>
-                      <strong>{{ p.name }}</strong>
+                      <button type="button" class="name-link" @click="startEditTTProject(p)">{{ p.name }}</button>
                       <span v-if="isGlobalTTEntity(p)" class="ttp-badge">{{ $t('timeTracking.tt_project_global') }}</span>
                     </td>
                     <td><small>{{ p.created_by?.display_name || p.created_by?.username }}</small></td>
@@ -865,7 +866,7 @@
                   </template>
                   <template v-else>
                     <td>
-                      <strong>{{ c.name }}</strong>
+                      <button type="button" class="name-link" @click="startEditTTCustomer(c)">{{ c.name }}</button>
                       <span v-if="isGlobalTTEntity(c)" class="ttp-badge">{{ $t('timeTracking.tt_customer_global') }}</span>
                     </td>
                     <td><small>{{ c.created_by?.display_name || c.created_by?.username }}</small></td>
@@ -3357,4 +3358,7 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .feat-on { color: var(--color-primary); }
 .feat-off { color: var(--color-text-muted); }
 .feat-toggle { width: 18px; height: 18px; cursor: pointer; }
+.name-link { background: none; border: none; padding: 0; font: inherit; font-weight: 600; color: var(--color-primary); cursor: pointer; text-align: left; }
+.name-link:hover { text-decoration: underline; }
+.name-link:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 2px; }
 </style>
