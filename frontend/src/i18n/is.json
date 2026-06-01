@@ -161,6 +161,7 @@
     "progress": "{done} af {total} lokið"
   },
   "card_ref": {
+    "create_card": "Búa til spjald",
     "linked_cards": "Tengd spjöld",
     "add_link_placeholder": "Tengja spjald með tilvísun, t.d. WEB-4…",
     "remove_link": "Fjarlægja tengil"
@@ -1077,7 +1078,11 @@
     "hide_spam": "Fela ruslpóst",
     "spam_banner": "Þessi miði hefur verið merktur sem ruslpóstur.",
     "marked_spam": "Miði merktur sem ruslpóstur",
-    "unmarked_spam": "Miði fjarlægður úr ruslpósti"
+    "unmarked_spam": "Miði fjarlægður úr ruslpósti",
+    "reply": "Svara",
+    "reply_placeholder": "Skrifa svar…",
+    "set_private": "Setja sem einkaaðila",
+    "set_public": "Setja sem opinbert"
   },
   "inbox": {
     "title": "Pósthólf",

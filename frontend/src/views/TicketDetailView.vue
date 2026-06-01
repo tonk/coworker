@@ -200,6 +200,20 @@
           </select>
           <button class="btn btn-secondary btn-sm" @click="moveTicket" :disabled="!moveTargetCustomer || moveTargetCustomer === customerId || moving">{{ $t('ticket.move') }}</button>
         </div>
+        <h4 style="margin-top:16px">{{ $t('card_ref.create_card') }}</h4>
+        <div class="move-row">
+          <label class="sr-only" for="create-card-project">{{ $t('board.select_project') }}</label>
+          <select id="create-card-project" class="form-input form-input-sm" v-model="createCardProjectSlug" @change="loadCreateCardColumns">
+            <option value="" disabled>{{ $t('board.select_project') }}</option>
+            <option v-for="p in allProjects" :key="p.slug" :value="p.slug">{{ p.name }}</option>
+          </select>
+          <label class="sr-only" for="create-card-column">{{ $t('board.select_column') }}</label>
+          <select id="create-card-column" class="form-input form-input-sm" v-model="createCardColumnId" :disabled="!createCardProjectSlug">
+            <option value="" disabled>{{ $t('board.select_column') }}</option>
+            <option v-for="col in createCardColumns" :key="col.id" :value="col.id">{{ col.name }}</option>
+          </select>
+          <button class="btn btn-primary btn-sm" @click="doCreateCard" :disabled="!createCardColumnId || creatingCard">{{ creatingCard ? $t('common.creating') : $t('common.create') }}</button>
+        </div>
       </div>
 
       <section v-if="auth.timeTrackingEnabled && !isInbox" class="time-section">
@@ -243,17 +257,27 @@
         </div>
 
         <div v-else class="messages-list">
-          <div v-for="msg in ticket.messages" :key="msg.id" :class="['message', { 'message--private': msg.is_private }]">
+          <div v-for="item in threadedMessages" :key="item.msg.id" :class="['message', { 'message--private': item.msg.is_private }]" :style="item.depth > 0 ? { marginLeft: `${32 + (item.depth - 1) * 32}px` } : undefined">
             <div class="message-header">
               <span class="msg-author-group">
-                <strong>{{ msg.from_name || msg.user?.display_name || msg.user?.username }}</strong>
-                <span v-if="msg.email_sent" class="email-sent-badge" :title="$t('ticket.email_sent_hint')">✉</span>
-                <span v-if="msg.is_private" class="private-badge" :title="$t('ticket.private_hint')">🔒 {{ $t('ticket.private') }}</span>
+                <strong>{{ item.msg.from_name || item.msg.user?.display_name || item.msg.user?.username }}</strong>
+                <span v-if="item.msg.email_sent" class="email-sent-badge" :title="$t('ticket.email_sent_hint')">✉</span>
+                <span v-if="item.msg.is_private" class="private-badge" :title="$t('ticket.private_hint')">🔒 {{ $t('ticket.private') }}</span>
               </span>
-              <span class="message-time">{{ formatDateTime(msg.created_at) }}</span>
+              <span class="message-time">{{ formatDateTime(item.msg.created_at) }}</span>
             </div>
-            <div class="message-body markdown-body selectable" v-html="renderMarkdown(msg.body)"></div>
-            <AttachmentList v-if="msg.attachments?.length" :attachments="msg.attachments" :can-delete="false" />
+            <div class="message-body markdown-body selectable" v-html="renderMarkdown(item.msg.body)"></div>
+            <div class="message-actions">
+              <button v-if="auth.user?.global_role !== 'customer'" class="btn btn-ghost btn-xs" @click="togglePrivate(item.msg)">{{ item.msg.is_private ? $t('ticket.set_public') : $t('ticket.set_private') }}</button>
+              <button class="btn btn-ghost btn-xs" @click="startReply(item.msg)">{{ $t('ticket.reply') }}</button>
+            </div>
+            <form v-if="replyingToMsgId === item.msg.id" class="message-reply-form" :style="{ marginLeft: `${32 + item.depth * 32}px` }" @submit.prevent="submitReply()">
+              <textarea v-model="replyText" class="form-input reply-textarea" rows="3" :placeholder="$t('ticket.reply_placeholder')" required></textarea>
+              <div class="reply-form-actions">
+                <button type="button" class="btn btn-secondary btn-sm" @click="cancelReply">{{ $t('common.cancel') }}</button>
+                <button type="submit" class="btn btn-primary btn-sm" :disabled="!replyText.trim() || sendingReply">{{ $t('ticket.send') }}</button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -345,6 +369,7 @@ import { ticketChecklistsApi } from '@/api/ticketChecklists'
 import client from '@/api/client'
 import { attachmentsApi } from '@/api/attachments'
 import { customersApi } from '@/api/customers'
+import { projectsApi } from '@/api/projects'
 import { timeEntriesApi } from '@/api/timeEntries'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
@@ -426,6 +451,11 @@ const titleInput = ref(null)
 const allCustomers = ref([])
 const moveTargetCustomer = ref(null)
 const moving = ref(false)
+const createCardProjectSlug = ref('')
+const createCardColumnId = ref(null)
+const createCardColumns = ref([])
+const allProjects = ref([])
+const creatingCard = ref(false)
 const macros = ref([])
 const applyingMacro = ref(false)
 const checklistTemplates = ref([])
@@ -556,9 +586,7 @@ async function fetchTicket() {
     syncChecklistFromTicket(data)
     if (ticket.value.attachments === null) ticket.value.attachments = []
     if (ticket.value.messages) {
-      for (const m of ticket.value.messages) {
-        if (m.attachments === null) m.attachments = []
-      }
+      initMessageAttachments(ticket.value.messages)
     }
 
     // Load customers for assign/move panel
@@ -915,6 +943,99 @@ async function submitMessage() {
   }
 }
 
+const topLevelMessages = computed(() =>
+  (ticket.value?.messages || []).filter(m => !m.parent_id)
+)
+
+function flattenMessages(messages, depth = 0) {
+  const result = []
+  for (const msg of messages) {
+    result.push({ msg, depth })
+    if (msg.replies && msg.replies.length) {
+      result.push(...flattenMessages(msg.replies, depth + 1))
+    }
+  }
+  return result
+}
+
+const threadedMessages = computed(() => flattenMessages(topLevelMessages.value))
+
+const replyingToMsgId = ref(null)
+const replyText = ref('')
+const sendingReply = ref(false)
+
+function initMessageAttachments(messages) {
+  for (const m of messages) {
+    if (m.attachments === null) m.attachments = []
+    if (m.replies) initMessageAttachments(m.replies)
+  }
+}
+
+function findMessageById(msgId, messages = topLevelMessages.value) {
+  for (const msg of messages) {
+    if (msg.id === msgId) return msg
+    if (msg.replies) {
+      const found = findMessageById(msgId, msg.replies)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+function startReply(msg) {
+  replyingToMsgId.value = msg.id
+  replyText.value = ''
+}
+
+function cancelReply() {
+  replyingToMsgId.value = null
+  replyText.value = ''
+}
+
+async function submitReply() {
+  const body = replyText.value.trim()
+  const targetId = replyingToMsgId.value
+  if (!body || !targetId) return
+  sendingReply.value = true
+  try {
+    const targetMsg = findMessageById(targetId)
+    const isPrivate = targetMsg?.is_private || false
+    let newMsg
+    if (isInbox.value) {
+      const { data } = await ticketsApi.inboxMessage(ticketId.value, body, isPrivate, targetId)
+      newMsg = { ...data, attachments: [] }
+    } else {
+      const { data } = await ticketsApi.addMessage(customerId.value, ticketId.value, body, isPrivate, targetId)
+      newMsg = { ...data, attachments: [] }
+    }
+    newMsg.user = auth.user
+    if (targetMsg) {
+      if (!targetMsg.replies) targetMsg.replies = []
+      targetMsg.replies.push(newMsg)
+    }
+    cancelReply()
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to send reply')
+  } finally {
+    sendingReply.value = false
+  }
+}
+
+async function togglePrivate(msg) {
+  const newVal = !msg.is_private
+  msg.is_private = newVal
+  try {
+    if (isInbox.value) {
+      await ticketsApi.inboxUpdateMessage(ticketId.value, msg.id, { is_private: newVal })
+    } else {
+      await ticketsApi.updateMessage(customerId.value, ticketId.value, msg.id, { is_private: newVal })
+    }
+  } catch (e) {
+    msg.is_private = !newVal
+    ui.error(e.response?.data?.error || 'Failed to update message')
+  }
+}
+
 async function addTag() {
   const name = newTagName.value.trim().replace(/^#/, '').toLowerCase()
   if (!name) return
@@ -994,6 +1115,47 @@ function openTicket(t) {
 
 function openCard(c) {
   router.push({ name: 'board', params: { slug: c.project_slug }, query: { card: c.card_id } })
+}
+
+async function loadCreateCardProjects() {
+  if (allProjects.value.length) return
+  try {
+    const { data } = await projectsApi.list()
+    allProjects.value = data || []
+  } catch {
+    allProjects.value = []
+  }
+}
+
+async function loadCreateCardColumns() {
+  await loadCreateCardProjects()
+  if (!createCardProjectSlug.value) { createCardColumns.value = []; return }
+  try {
+    const { data } = await projectsApi.listColumns(createCardProjectSlug.value)
+    createCardColumns.value = data || []
+  } catch {
+    createCardColumns.value = []
+  }
+  createCardColumnId.value = null
+}
+
+async function doCreateCard() {
+  if (!createCardColumnId.value) return
+  creatingCard.value = true
+  try {
+    const { data } = await ticketsApi.createCard(customerId.value, ticketId.value, {
+      project_slug: createCardProjectSlug.value,
+      column_id: createCardColumnId.value,
+    })
+    // Reload linked cards to show the new one
+    const { data: cards } = await ticketsApi.listCards(customerId.value, ticketId.value)
+    linkedCards.value = cards || []
+    ui.success('Card created and linked')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to create card')
+  } finally {
+    creatingCard.value = false
+  }
 }
 
 function slaWarning(t) {
@@ -1309,6 +1471,12 @@ async function assignToCustomer() {
 }
 .private-checkbox-label:has(input:checked) { color: #92400e; }
 [data-theme="dark"] .private-checkbox-label:has(input:checked) { color: #fbbf24; }
+.message-actions { display: flex; gap: 4px; margin-top: 8px; }
+.btn-ghost.btn-xs { background: none; border: none; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--color-text-muted); padding: 2px 6px; border-radius: 4px; }
+.btn-ghost.btn-xs:hover { background: var(--color-bg-alt); color: var(--color-text); }
+.message-reply-form { margin-bottom: 12px; padding: 8px; background: var(--color-bg-alt); border-radius: 6px; }
+.reply-textarea { width: 100%; resize: vertical; min-height: 60px; font-size: 13px; }
+.reply-form-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
 .message-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
 .message-time { color: var(--color-text-muted); }
 .message-body { font-size: 14px; }

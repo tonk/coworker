@@ -161,6 +161,7 @@
     "progress": "{done} of {total} done"
   },
   "card_ref": {
+    "create_card": "Create card",
     "linked_cards": "Linked Cards",
     "add_link_placeholder": "Link card by ref, e.g. WEB-4…",
     "remove_link": "Remove link"
@@ -661,7 +662,11 @@
     "hide_spam": "Hide Spam",
     "spam_banner": "This ticket has been marked as spam.",
     "marked_spam": "Ticket marked as spam",
-    "unmarked_spam": "Ticket removed from spam"
+    "unmarked_spam": "Ticket removed from spam",
+    "reply": "Reply",
+    "reply_placeholder": "Write a reply…",
+    "set_private": "Set as private",
+    "set_public": "Set as public"
   },
   "feature": {
     "features": "Feature Access",

@@ -161,6 +161,7 @@
     "progress": "{done} de {total} concluído"
   },
   "card_ref": {
+    "create_card": "Criar cartão",
     "linked_cards": "Cartões vinculados",
     "add_link_placeholder": "Vincular cartão por referência, ex. WEB-4…",
     "remove_link": "Remover vínculo"
@@ -1077,7 +1078,11 @@
     "hide_spam": "Ocultar spam",
     "spam_banner": "Este ticket foi marcado como spam.",
     "marked_spam": "Ticket marcado como spam",
-    "unmarked_spam": "Ticket removido do spam"
+    "unmarked_spam": "Ticket removido do spam",
+    "reply": "Responder",
+    "reply_placeholder": "Escrever uma resposta…",
+    "set_private": "Definir como privado",
+    "set_public": "Definir como público"
   },
   "inbox": {
     "title": "Caixa de entrada",

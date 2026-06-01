@@ -161,6 +161,7 @@
     "progress": "{done} av {total} fullført"
   },
   "card_ref": {
+    "create_card": "Opprett kort",
     "linked_cards": "Tilknyttede kort",
     "add_link_placeholder": "Koble kort via ref, f.eks. WEB-4…",
     "remove_link": "Fjern kobling"
@@ -1077,7 +1078,11 @@
     "hide_spam": "Skjul søppelpost",
     "spam_banner": "Denne billetten er merket som søppelpost.",
     "marked_spam": "Billett merket som søppelpost",
-    "unmarked_spam": "Billett fjernet fra søppelpost"
+    "unmarked_spam": "Billett fjernet fra søppelpost",
+    "reply": "Svar",
+    "reply_placeholder": "Skriv et svar…",
+    "set_private": "Sett som privat",
+    "set_public": "Sett som offentlig"
   },
   "inbox": {
     "title": "Innboks",

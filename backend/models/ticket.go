@@ -43,17 +43,20 @@ type Ticket struct {
 }
 
 type TicketMessage struct {
-	ID        uint         `gorm:"primaryKey" json:"id"`
-	TicketID  uint         `gorm:"not null;index" json:"ticket_id"`
-	UserID    uint         `gorm:"not null" json:"user_id"`
-	Body      string       `gorm:"type:text;not null" json:"body"`
-	FromName  string       `gorm:"size:150" json:"from_name"`
-	EmailSent bool         `gorm:"default:false" json:"email_sent"`
-	IsPrivate bool         `gorm:"default:false" json:"is_private"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
-	User      User         `json:"user,omitempty"`
-	Attachments []Attachment `gorm:"-" json:"attachments,omitempty"`
+	ID        uint             `gorm:"primaryKey" json:"id"`
+	TicketID  uint             `gorm:"not null;index" json:"ticket_id"`
+	UserID    uint             `gorm:"not null" json:"user_id"`
+	Body      string           `gorm:"type:text;not null" json:"body"`
+	FromName  string           `gorm:"size:150" json:"from_name"`
+	EmailSent bool             `gorm:"default:false" json:"email_sent"`
+	IsPrivate bool             `gorm:"default:false" json:"is_private"`
+	ParentID  *uint            `gorm:"index" json:"parent_id,omitempty"`
+	Parent    *TicketMessage   `gorm:"foreignKey:ParentID" json:"-"`
+	Replies   []TicketMessage  `gorm:"foreignKey:ParentID" json:"replies,omitempty"`
+	CreatedAt time.Time        `json:"created_at"`
+	UpdatedAt time.Time        `json:"updated_at"`
+	User      User             `json:"user,omitempty"`
+	Attachments []Attachment   `gorm:"-" json:"attachments,omitempty"`
 }
 
 // TicketView records the last time each user viewed a ticket.

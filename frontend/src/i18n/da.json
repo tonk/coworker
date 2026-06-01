@@ -161,6 +161,7 @@
     "progress": "{done} af {total} færdig"
   },
   "card_ref": {
+    "create_card": "Opret kort",
     "linked_cards": "Tilknyttede kort",
     "add_link_placeholder": "Tilknyt kort via ref, f.eks. WEB-4…",
     "remove_link": "Fjern tilknytning"
@@ -1077,7 +1078,11 @@
     "hide_spam": "Skjul spam",
     "spam_banner": "Denne billet er markeret som spam.",
     "marked_spam": "Billet markeret som spam",
-    "unmarked_spam": "Billet fjernet fra spam"
+    "unmarked_spam": "Billet fjernet fra spam",
+    "reply": "Svar",
+    "reply_placeholder": "Skriv et svar…",
+    "set_private": "Sæt som privat",
+    "set_public": "Sæt som offentlig"
   },
   "inbox": {
     "title": "Indbakke",

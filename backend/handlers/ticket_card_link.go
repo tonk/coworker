@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
 	"github.com/tonk/warmdesk/services"
+	"github.com/tonk/warmdesk/ws"
+	"gorm.io/gorm"
 )
 
 // ListTicketCardLinks GET /api/v1/customers/:customerId/tickets/:ticketId/cards
@@ -155,6 +158,132 @@ func CreateTicketCardLink(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, link)
 	database.DB.Create(&models.TicketHistory{TicketID: uint(ticketID), UserID: userID, EventType: "card_linked"})
+}
+
+// CreateCardFromTicket POST /api/v1/customers/:customerId/tickets/:ticketId/create-card
+// Creates a card from the ticket in the given project/column and links them.
+func CreateCardFromTicket(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+
+	customerID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var req struct {
+		ProjectSlug string `json:"project_slug" binding:"required"`
+		ColumnID    uint   `json:"column_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "project_slug and column_id required"})
+		return
+	}
+
+	// Load the ticket
+	var ticket models.Ticket
+	if err := database.DB.Preload("Tags").First(&ticket, ticketID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return
+	}
+
+	// Resolve the project
+	project, err := services.GetProjectBySlug(req.ProjectSlug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	if err := services.RequireProjectRole(project.ID, userID, role, "member"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	// Verify the column belongs to the project
+	var col models.Column
+	if err := database.DB.Where("id = ? AND project_id = ?", req.ColumnID, project.ID).First(&col).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "column not found in this project"})
+		return
+	}
+
+	// Strip date prefix from ticket title for the card
+	cardTitle := strings.TrimSpace(ticket.Title)
+	cardTitle = regexp.MustCompile(`^\[\d{4}-\d{2}-\d{2}\]\s*`).ReplaceAllString(cardTitle, "")
+
+	// Map ticket priority to card priority
+	cardPriority := ticket.Priority
+	if cardPriority == "" {
+		cardPriority = "none"
+	}
+
+	// Resolve position
+	var maxPos float64
+	database.DB.Model(&models.Card{}).Where("column_id = ?", req.ColumnID).Select("COALESCE(MAX(position), 0)").Scan(&maxPos)
+
+	// Atomically increment card counter
+	database.DB.Model(&models.Project{}).Where("id = ?", project.ID).
+		UpdateColumn("card_counter", gorm.Expr("card_counter + 1"))
+	var updatedProject models.Project
+	database.DB.Select("card_counter").First(&updatedProject, project.ID)
+
+	// Build the card
+	card := models.Card{
+		ColumnID:    req.ColumnID,
+		ProjectID:   project.ID,
+		Title:       cardTitle,
+		Description: ticket.Description,
+		Priority:    cardPriority,
+		AssigneeID:  ticket.AssignedToID,
+		CreatedByID: userID,
+		Position:    maxPos + 1000,
+		CardNumber:  updatedProject.CardCounter,
+	}
+	database.DB.Create(&card)
+
+	// Copy ticket tags as card tags
+	for _, tag := range ticket.Tags {
+		database.DB.Create(&models.CardTag{CardID: card.ID, Name: tag.Name})
+	}
+
+	database.DB.Create(&models.CardHistory{CardID: card.ID, UserID: userID, EventType: "created"})
+
+	// Create the link
+	link := models.TicketCardLink{
+		TicketID:    uint(ticketID),
+		CardID:      card.ID,
+		CreatedByID: userID,
+	}
+	database.DB.Create(&link)
+
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Assignees").Preload("Tags").First(&card, card.ID)
+
+	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCardCreated, Payload: card})
+	database.DB.Create(&models.TicketHistory{
+		TicketID:  uint(ticketID),
+		UserID:    userID,
+		EventType: "card_linked",
+		Detail:    project.KeyPrefix + "-" + strconv.Itoa(card.CardNumber),
+	})
+
+	c.JSON(http.StatusCreated, gin.H{
+		"card":       card,
+		"link_id":    link.ID,
+		"project_slug": req.ProjectSlug,
+		"project_key": project.KeyPrefix,
+	})
 }
 
 // DeleteTicketCardLink DELETE /api/v1/customers/:customerId/tickets/:ticketId/cards/:linkId

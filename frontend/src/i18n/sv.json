@@ -161,6 +161,7 @@
     "progress": "{done} av {total} klara"
   },
   "card_ref": {
+    "create_card": "Skapa kort",
     "linked_cards": "Länkade kort",
     "add_link_placeholder": "Länka kort via ref, t.ex. WEB-4…",
     "remove_link": "Ta bort länk"
@@ -1077,7 +1078,11 @@
     "hide_spam": "Dölj skräppost",
     "spam_banner": "Det här ärendet har markerats som skräppost.",
     "marked_spam": "Ärende markerat som skräppost",
-    "unmarked_spam": "Ärende borttaget från skräppost"
+    "unmarked_spam": "Ärende borttaget från skräppost",
+    "reply": "Svara",
+    "reply_placeholder": "Skriv ett svar…",
+    "set_private": "Ange som privat",
+    "set_public": "Ange som offentlig"
   },
   "inbox": {
     "title": "Inkorg",

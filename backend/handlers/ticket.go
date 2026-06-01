@@ -10,7 +10,6 @@ import (
 	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
 	"github.com/tonk/warmdesk/services"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -79,14 +78,6 @@ func GetTicket(c *gin.Context) {
 		Preload("Group").
 		Preload("Tags").
 		Preload("SlaPolicy").
-		Preload("Messages", func(db *gorm.DB) *gorm.DB {
-			q := db.Order("created_at asc")
-			if role == "customer" {
-				q = q.Where("is_private = false OR is_private IS NULL")
-			}
-			return q
-		}).
-		Preload("Messages.User").
 		First(&ticket).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
 		return
@@ -98,16 +89,47 @@ func GetTicket(c *gin.Context) {
 		ticket.Attachments = am[ticket.ID]
 	}
 
-	// Load per-message attachments
-	msgIDs := make([]uint, len(ticket.Messages))
-	for i, m := range ticket.Messages {
+	// Load all messages flat and build nested tree for arbitrary depth
+	var allMessages []models.TicketMessage
+	q := database.DB.Where("ticket_id = ?", ticket.ID).Order("created_at asc")
+	if role == "customer" {
+		q = q.Where("is_private = false OR is_private IS NULL")
+	}
+	if err := q.Preload("User").Find(&allMessages).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load messages"})
+		return
+	}
+
+	msgIDs := make([]uint, len(allMessages))
+	for i, m := range allMessages {
 		msgIDs[i] = m.ID
 	}
 	attachMap := LoadAttachments("ticket_message", msgIDs)
-	for i := range ticket.Messages {
-		ticket.Messages[i].Attachments = attachMap[ticket.Messages[i].ID]
-		if ticket.Messages[i].Attachments == nil {
-			ticket.Messages[i].Attachments = []models.Attachment{}
+
+	messageMap := make(map[uint]*models.TicketMessage)
+	for i := range allMessages {
+		messageMap[allMessages[i].ID] = &allMessages[i]
+		allMessages[i].Attachments = attachMap[allMessages[i].ID]
+		if allMessages[i].Attachments == nil {
+			allMessages[i].Attachments = []models.Attachment{}
+		}
+	}
+
+	for i := range allMessages {
+		if allMessages[i].ParentID != nil {
+			if parent, ok := messageMap[*allMessages[i].ParentID]; ok {
+				if parent.Replies == nil {
+					parent.Replies = []models.TicketMessage{}
+				}
+				parent.Replies = append(parent.Replies, allMessages[i])
+			}
+		}
+	}
+
+	ticket.Messages = nil
+	for i := range allMessages {
+		if allMessages[i].ParentID == nil {
+			ticket.Messages = append(ticket.Messages, allMessages[i])
 		}
 	}
 
@@ -566,6 +588,7 @@ func CreateTicketMessage(c *gin.Context) {
 	var req struct {
 		Body      string `json:"body" binding:"required"`
 		IsPrivate bool   `json:"is_private"`
+		ParentID  *uint  `json:"parent_id,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Body == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "body is required"})
@@ -576,11 +599,21 @@ func CreateTicketMessage(c *gin.Context) {
 		req.IsPrivate = false
 	}
 
+	// Validate parent message belongs to the same ticket if set.
+	if req.ParentID != nil {
+		var parent models.TicketMessage
+		if err := database.DB.Where("id = ? AND ticket_id = ?", *req.ParentID, ticket.ID).First(&parent).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "parent message not found"})
+			return
+		}
+	}
+
 	msg := models.TicketMessage{
 		TicketID:  ticket.ID,
 		UserID:    userID,
 		Body:      req.Body,
 		IsPrivate: req.IsPrivate,
+		ParentID:  req.ParentID,
 	}
 	if err := database.DB.Create(&msg).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create message"})
@@ -603,6 +636,72 @@ func CreateTicketMessage(c *gin.Context) {
 	msg.Attachments = []models.Attachment{}
 	database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "comment_added"})
 	c.JSON(http.StatusCreated, msg)
+}
+
+// UpdateTicketMessage PATCH /api/v1/customers/:customerId/tickets/:ticketId/messages/:msgId
+func UpdateTicketMessage(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	customerID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	msgID, err := strconv.ParseUint(c.Param("msgId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid message id"})
+		return
+	}
+	if err := requireCustomerAccess(uint(customerID), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var ticket models.Ticket
+	if err := database.DB.Where("id = ? AND customer_id = ?", ticketID, customerID).First(&ticket).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return
+	}
+
+	var msg models.TicketMessage
+	if err := database.DB.Where("id = ? AND ticket_id = ?", msgID, ticket.ID).First(&msg).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "message not found"})
+		return
+	}
+
+	var req struct {
+		IsPrivate *bool `json:"is_private"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	// Customer-role users cannot make messages private.
+	if req.IsPrivate != nil && *req.IsPrivate && role == "customer" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	updates := map[string]interface{}{}
+	if req.IsPrivate != nil {
+		updates["is_private"] = *req.IsPrivate
+	}
+
+	if len(updates) > 0 {
+		if err := database.DB.Model(&msg).Updates(updates).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update message"})
+			return
+		}
+	}
+	database.DB.Preload("User").First(&msg, msg.ID)
+	database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "comment_updated"})
+	c.JSON(http.StatusOK, msg)
 }
 
 // GetTicketHistory GET /api/v1/customers/:customerId/tickets/:ticketId/history
@@ -738,10 +837,6 @@ func GetInboxTicket(c *gin.Context) {
 		Preload("Group").
 		Preload("Tags").
 		Preload("SlaPolicy").
-		Preload("Messages", func(db *gorm.DB) *gorm.DB {
-			return db.Order("created_at asc")
-		}).
-		Preload("Messages.User").
 		First(&ticket).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
 		return
@@ -750,15 +845,44 @@ func GetInboxTicket(c *gin.Context) {
 	if am := LoadAttachments("ticket", []uint{ticket.ID}); len(am[ticket.ID]) > 0 {
 		ticket.Attachments = am[ticket.ID]
 	}
-	msgIDs := make([]uint, len(ticket.Messages))
-	for i, m := range ticket.Messages {
+
+	var allMessages []models.TicketMessage
+	if err := database.DB.Where("ticket_id = ?", ticket.ID).Order("created_at asc").
+		Preload("User").Find(&allMessages).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load messages"})
+		return
+	}
+
+	msgIDs := make([]uint, len(allMessages))
+	for i, m := range allMessages {
 		msgIDs[i] = m.ID
 	}
 	attachMap := LoadAttachments("ticket_message", msgIDs)
-	for i := range ticket.Messages {
-		ticket.Messages[i].Attachments = attachMap[ticket.Messages[i].ID]
-		if ticket.Messages[i].Attachments == nil {
-			ticket.Messages[i].Attachments = []models.Attachment{}
+
+	messageMap := make(map[uint]*models.TicketMessage)
+	for i := range allMessages {
+		messageMap[allMessages[i].ID] = &allMessages[i]
+		allMessages[i].Attachments = attachMap[allMessages[i].ID]
+		if allMessages[i].Attachments == nil {
+			allMessages[i].Attachments = []models.Attachment{}
+		}
+	}
+
+	for i := range allMessages {
+		if allMessages[i].ParentID != nil {
+			if parent, ok := messageMap[*allMessages[i].ParentID]; ok {
+				if parent.Replies == nil {
+					parent.Replies = []models.TicketMessage{}
+				}
+				parent.Replies = append(parent.Replies, allMessages[i])
+			}
+		}
+	}
+
+	ticket.Messages = nil
+	for i := range allMessages {
+		if allMessages[i].ParentID == nil {
+			ticket.Messages = append(ticket.Messages, allMessages[i])
 		}
 	}
 	attachTicketChecklist(&ticket)
@@ -947,16 +1071,25 @@ func CreateInboxTicketMessage(c *gin.Context) {
 	var req struct {
 		Body      string `json:"body" binding:"required"`
 		IsPrivate bool   `json:"is_private"`
+		ParentID  *uint  `json:"parent_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Body == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "body is required"})
 		return
+	}
+	if req.ParentID != nil {
+		var parent models.TicketMessage
+		if err := database.DB.Where("id = ? AND ticket_id = ?", *req.ParentID, ticket.ID).First(&parent).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "parent message not found"})
+			return
+		}
 	}
 	msg := models.TicketMessage{
 		TicketID:  ticket.ID,
 		UserID:    userID,
 		Body:      req.Body,
 		IsPrivate: req.IsPrivate,
+		ParentID:  req.ParentID,
 	}
 	if err := database.DB.Create(&msg).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create message"})
@@ -971,6 +1104,51 @@ func CreateInboxTicketMessage(c *gin.Context) {
 		sendEmailReply(&ticket, msg.Body)
 	}
 	c.JSON(http.StatusCreated, msg)
+}
+
+// UpdateInboxTicketMessage PATCH /api/v1/tickets/inbox/:ticketId/messages/:msgId
+func UpdateInboxTicketMessage(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
+		return
+	}
+	msgID, err := strconv.ParseUint(c.Param("msgId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid message id"})
+		return
+	}
+	var ticket models.Ticket
+	if err := database.DB.Where("id = ? AND customer_id IS NULL", ticketID).First(&ticket).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ticket not found"})
+		return
+	}
+	var msg models.TicketMessage
+	if err := database.DB.Where("id = ? AND ticket_id = ?", msgID, ticket.ID).First(&msg).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "message not found"})
+		return
+	}
+	var req struct {
+		IsPrivate *bool `json:"is_private"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+	updates := map[string]interface{}{}
+	if req.IsPrivate != nil {
+		updates["is_private"] = *req.IsPrivate
+	}
+	if len(updates) > 0 {
+		if err := database.DB.Model(&msg).Updates(updates).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update message"})
+			return
+		}
+	}
+	database.DB.Preload("User").First(&msg, msg.ID)
+	database.DB.Create(&models.TicketHistory{TicketID: ticket.ID, UserID: userID, EventType: "comment_updated"})
+	c.JSON(http.StatusOK, msg)
 }
 
 // sendEmailReply sends a reply to the ticket's original sender when SMTP is configured.

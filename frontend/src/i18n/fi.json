@@ -161,6 +161,7 @@
     "progress": "{done} / {total} valmis"
   },
   "card_ref": {
+    "create_card": "Luo kortti",
     "linked_cards": "Linkitetyt kortit",
     "add_link_placeholder": "Linkitä kortti viitteellä, esim. WEB-4…",
     "remove_link": "Poista linkki"
@@ -1077,7 +1078,11 @@
     "hide_spam": "Piilota roskaposti",
     "spam_banner": "Tämä tiketti on merkitty roskapostiksi.",
     "marked_spam": "Tiketti merkitty roskapostiksi",
-    "unmarked_spam": "Tiketti poistettu roskapostista"
+    "unmarked_spam": "Tiketti poistettu roskapostista",
+    "reply": "Vastaa",
+    "reply_placeholder": "Kirjoita vastaus…",
+    "set_private": "Aseta yksityiseksi",
+    "set_public": "Aseta julkiseksi"
   },
   "inbox": {
     "title": "Postilaatikko",

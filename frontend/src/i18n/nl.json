@@ -161,6 +161,7 @@
     "progress": "{done} van {total} gedaan"
   },
   "card_ref": {
+    "create_card": "Kaart aanmaken",
     "linked_cards": "Gekoppelde kaarten",
     "add_link_placeholder": "Koppel kaart via ref, bijv. WEB-4…",
     "remove_link": "Koppeling verwijderen"
@@ -1077,7 +1078,11 @@
     "hide_spam": "Verberg spam",
     "spam_banner": "Dit ticket is gemarkeerd als spam.",
     "marked_spam": "Ticket gemarkeerd als spam",
-    "unmarked_spam": "Ticket verwijderd uit spam"
+    "unmarked_spam": "Ticket verwijderd uit spam",
+    "reply": "Antwoord",
+    "reply_placeholder": "Schrijf een antwoord…",
+    "set_private": "Instellen als privé",
+    "set_public": "Instellen als openbaar"
   },
   "inbox": {
     "title": "Inbox",
