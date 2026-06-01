@@ -115,7 +115,7 @@ func GetTicket(c *gin.Context) {
 		}
 	}
 
-	for i := range allMessages {
+	for i := len(allMessages) - 1; i >= 0; i-- {
 		if allMessages[i].ParentID != nil {
 			if parent, ok := messageMap[*allMessages[i].ParentID]; ok {
 				if parent.Replies == nil {
@@ -868,7 +868,7 @@ func GetInboxTicket(c *gin.Context) {
 		}
 	}
 
-	for i := range allMessages {
+	for i := len(allMessages) - 1; i >= 0; i-- {
 		if allMessages[i].ParentID != nil {
 			if parent, ok := messageMap[*allMessages[i].ParentID]; ok {
 				if parent.Replies == nil {
