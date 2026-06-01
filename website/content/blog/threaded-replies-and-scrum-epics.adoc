@@ -1,0 +1,96 @@
+---
+title: "Threaded ticket replies and Epics for Scrum boards"
+date: "2026-06-01"
+author: "Ton Kersten"
+description: "Two new features land in WarmDesk: threaded replies inside helpdesk tickets, and an Epic layer for Scrum projects that groups cards into colour-coded milestones with burndown charts."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+Two features that teams have been asking for are now in WarmDesk: threaded replies inside helpdesk tickets, and Epics for Scrum projects.
+
+== Threaded replies in tickets
+
+Ticket conversations can now branch into threads.
+Click the *Reply* button beneath any message to open an inline reply form directly below it.
+The reply is indented under its parent and displayed as part of the same conversation thread.
+Threads can nest to any depth, so a single ticket can hold multiple parallel sub-conversations without the messages running into each other.
+
+=== What works the same
+
+The main compose area at the bottom of the ticket still works exactly as before.
+Messages sent from there are top-level replies and trigger outbound email when the ticket has a sender address.
+File attachments are available in the main compose area; the inline reply form is text-only.
+
+=== Private notes in threads
+
+When you reply to a private (internal) note using the inline form, the reply automatically inherits the private status.
+No checkbox is shown — the reply is marked as an internal note server-side.
+This ensures that a staff-only conversation stays staff-only even when threaded.
+
+Users with the *Customer* role cannot mark messages private and cannot see private notes in the thread.
+
+== Epics for Scrum projects
+
+Epics give Scrum teams a layer above cards — named, colour-coded milestones that group related cards together across multiple sprints.
+
+=== Managing epics
+
+Open the *⚡ Epics* view from the board toolbar (visible on Scrum projects).
+From there you can:
+
+* *Create* an epic with a name, optional description, and a colour.
+* *Set the status* to Open or Done.
+* *Reorder* epics by dragging the ⠿ handle.
+* *Expand* an epic (click ▸) to see its cards inline — click any card to open the full detail.
+
+=== Assigning cards to epics
+
+Open a card and select the epic from the *Epic* dropdown in the card detail.
+The assignment saves immediately.
+A card belongs to at most one epic.
+
+Cards on the Kanban board display a thin colour bar across the top and a small epic name badge when they belong to an epic, making it easy to see which theme a sprint is carrying at a glance.
+
+=== Backlog integration
+
+The Product Backlog view shows each card's epic badge alongside the sprint selector.
+A filter dropdown in the backlog header lets you narrow the view to:
+
+* *All epics* — the default view.
+* *No epic* — cards that have not been assigned to any epic.
+* *A specific epic* — to focus on one milestone at a time.
+
+Drag-to-reorder still works in filtered mode; the position is saved within the full backlog, not just the filtered subset.
+
+=== Epic Burndown chart
+
+A new *Epic Burndown* tab appears in the charts view for Scrum projects.
+Select an epic from the dropdown to see:
+
+* *Remaining cards* per day from epic creation to today.
+* *Remaining story points* per day (when cards carry story points).
+* An *ideal burndown line* showing the straight-line path to zero.
+
+This makes it straightforward to answer questions like "is this feature on track?" without having to count cards manually.
+
+=== Sprint Report
+
+While it is not part of the Epic feature itself, the same release adds a *Sprint Report* to the charts view.
+Select any sprint to see:
+
+* A summary bar: committed cards and story points, completed cards and story points, and a completion percentage.
+* A *Completed* table (green) listing every card that was closed during the sprint.
+* A *Not Completed* table (amber) listing cards that were carried over, with the column each card was left in.
+
+The Sprint Report is the primary tool for sprint retrospectives — it answers "what did we ship?" and "what did we not ship, and why?" without having to search through the board history.
+
+== Upgrade
+
+Both features are part of WarmDesk v0.10.37.
+Database columns for epics are added automatically on first boot via GORM AutoMigrate — no manual migration required.
+Existing tickets and Scrum projects are unaffected: threaded replies are opt-in per message, and cards are not assigned to any epic until you do so explicitly.
+
+Download from the link:../download[download page] or pull the latest release tag.
