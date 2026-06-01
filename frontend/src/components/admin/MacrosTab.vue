@@ -38,7 +38,9 @@
 
         <div v-if="!form.actions.length" class="macro-no-actions">{{ $t('macro.no_actions') }}</div>
 
+        <div ref="actionsListEl" class="macro-actions-list">
         <div v-for="(action, idx) in form.actions" :key="idx" class="macro-action-row">
+          <span class="macro-drag-handle" :title="$t('ticketChecklist.drag_reorder')" aria-hidden="true">⠿</span>
           <label class="sr-only" :for="'act-type-' + idx">{{ $t('macro.action_type') }}</label>
           <select :id="'act-type-' + idx" class="form-input form-input-sm" v-model="action.type" @change="onActionTypeChange(action)">
             <option value="set_status">{{ $t('macro.action_set_status') }}</option>
@@ -102,6 +104,7 @@
 
           <button class="btn-icon-xs macro-remove-btn" @click="removeAction(idx)" :aria-label="$t('common.delete')">✕</button>
         </div>
+        </div>
       </div>
 
       <div class="macro-form-footer">
@@ -153,6 +156,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import Sortable from 'sortablejs'
 import { macrosApi } from '@/api/macros'
 import { useUIStore } from '@/stores/ui'
 
@@ -164,6 +168,37 @@ const editing = ref(null)
 const form = ref(emptyForm())
 const formSnapshot = ref('')
 const msgRefs = ref({})
+const actionsListEl = ref(null)
+let sortableInstance = null
+
+function initActionsSortable() {
+  if (!actionsListEl.value || sortableInstance) return
+  sortableInstance = new Sortable(actionsListEl.value, {
+    animation: 150,
+    handle: '.macro-drag-handle',
+    onEnd(evt) {
+      const moved = form.value.actions.splice(evt.oldIndex, 1)[0]
+      form.value.actions.splice(evt.newIndex, 0, moved)
+    },
+  })
+}
+
+function destroyActionsSortable() {
+  if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null }
+}
+
+watch(editing, async (val) => {
+  destroyActionsSortable()
+  if (val) {
+    await nextTick()
+    if (form.value.actions.length) initActionsSortable()
+  }
+})
+
+watch(() => form.value.actions.length, async (len) => {
+  destroyActionsSortable()
+  if (len) { await nextTick(); initActionsSortable() }
+})
 
 const PLACEHOLDERS = ['{email}', '{fname}', '{name}', '{subject}', '{ticket_id}', '{agent}', '{agent_fname}']
 
@@ -316,7 +351,10 @@ async function deleteMacro(m) {
 .macro-actions-section { margin-top: 16px; }
 .macro-actions-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .macro-no-actions { font-size: 13px; color: var(--color-text-muted); padding: 8px 0; }
+.macro-actions-list { display: flex; flex-direction: column; }
 .macro-action-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.macro-drag-handle { color: var(--color-text-muted); cursor: grab; font-size: 14px; flex-shrink: 0; user-select: none; padding: 0 2px; margin-top: 4px; }
+.macro-drag-handle:active { cursor: grabbing; }
 .macro-action-row > select.form-input-sm:first-of-type { width: 160px; flex: 0 0 160px; }
 .macro-action-row > select.form-input-sm:not(:first-of-type) { flex: 1; min-width: 0; }
 .macro-action-row > input.form-input-sm { flex: 1; min-width: 0; }
