@@ -1537,6 +1537,189 @@ func main() {
 	}
 	fmt.Printf("   Created %d sprints\n", totalSprints)
 
+	// ── 3b2. Epics (scrum projects) ───────────────────────────────────────────
+	fmt.Println("→ Creating epics for scrum projects…")
+
+	type epicSpec struct {
+		name        string
+		description string
+		color       string
+		status      string
+		cardTitles  []string
+	}
+
+	scrumEpics := map[string][]epicSpec{
+		"product-platform": {
+			{
+				name:        "Discovery & Planning",
+				description: "Up-front research, user interviews, wireframes, and project kick-off.",
+				color:       "#3b82f6",
+				status:      "done",
+				cardTitles: []string{
+					"Product market research and user interviews",
+					"Competitor analysis and positioning",
+					"Technical feasibility study",
+					"Initial wireframes and UX sketches",
+					"Project charter and team kick-off",
+				},
+			},
+			{
+				name:        "Authentication & Security",
+				description: "Secure login, token management, password hashing, and access control.",
+				color:       "#ef4444",
+				status:      "done",
+				cardTitles: []string{
+					"OAuth 2.0 provider integration",
+					"JWT token management and refresh",
+					"Bcrypt password hashing",
+					"User registration and login flow",
+					"Role-based access control (RBAC)",
+				},
+			},
+			{
+				name:        "Core Platform",
+				description: "Monorepo setup, CI/CD, design system, database schema, and staging deployment.",
+				color:       "#8b5cf6",
+				status:      "done",
+				cardTitles: []string{
+					"Set up monorepo and CI/CD pipeline",
+					"Design system and component library",
+					"Database schema v1 with migrations",
+					"Deployment to staging (Docker + nginx)",
+				},
+			},
+			{
+				name:        "User Experience",
+				description: "Dashboard, onboarding, notifications, search, and internationalisation.",
+				color:       "#10b981",
+				status:      "open",
+				cardTitles: []string{
+					"Admin dashboard scaffolding",
+					"User invitation and onboarding flow",
+					"User dashboard overview screen",
+					"Email notification service",
+					"Full-text search endpoint",
+					"API rate limiting middleware",
+					"Multi-language support (i18n)",
+					"Fix sorting bug on dashboard table",
+				},
+			},
+			{
+				name:        "Growth & Launch",
+				description: "Payment integration, analytics, performance tuning, and public launch.",
+				color:       "#f59e0b",
+				status:      "open",
+				cardTitles: []string{
+					"Stripe payment integration",
+					"Analytics event tracking",
+					"Performance audit and optimizations",
+					"Launch checklist and public docs",
+					"Mobile app wrapper (Capacitor)",
+				},
+			},
+		},
+		"api-platform": {
+			{
+				name:        "Foundation",
+				description: "OpenAPI spec, Go project structure, containerisation, and operational endpoints.",
+				color:       "#3b82f6",
+				status:      "done",
+				cardTitles: []string{
+					"Design API schema and OpenAPI spec",
+					"Set up Go project structure with CI/CD",
+					"Implement health-check and metrics endpoints",
+					"Docker containerisation and registry setup",
+					"Error response standardisation (RFC 7807)",
+				},
+			},
+			{
+				name:        "Core API",
+				description: "CRUD endpoints, pagination, validation, database migrations, and logging.",
+				color:       "#8b5cf6",
+				status:      "done",
+				cardTitles: []string{
+					"Implement resource CRUD endpoints",
+					"Pagination and filtering support",
+					"Request validation middleware",
+					"Database migrations with versioning",
+					"Structured logging with correlation IDs",
+				},
+			},
+			{
+				name:        "Security & Developer Experience",
+				description: "API key auth, rate limiting, interactive docs, webhooks, and client SDKs.",
+				color:       "#10b981",
+				status:      "done",
+				cardTitles: []string{
+					"API key authentication and rotation",
+					"Rate limiting per API key",
+					"Interactive API documentation (Swagger UI)",
+					"Webhook delivery with retry logic",
+					"Audit log for all API mutations",
+					"Python SDK for the public API",
+					"JavaScript / TypeScript SDK",
+				},
+			},
+			{
+				name:        "Stability & Performance",
+				description: "Integration tests, load testing, v0 deprecation, bug fixes, and batch support.",
+				color:       "#f59e0b",
+				status:      "open",
+				cardTitles: []string{
+					"End-to-end integration test suite",
+					"Load testing and performance benchmarks",
+					"API changelog and versioning policy",
+					"Deprecate v0 endpoints and notify users",
+					"Fix response envelope inconsistency bug",
+					"Add batch API endpoints for bulk operations",
+					"Improve error messages with actionable hints",
+					"Support cursor-based pagination",
+					"Fix null pointer in optional field serialisation",
+				},
+			},
+			{
+				name:        "GA Launch",
+				description: "Developer portal, self-service key management, SLA monitoring, and launch announcement.",
+				color:       "#ec4899",
+				status:      "open",
+				cardTitles: []string{
+					"Public developer portal and onboarding docs",
+					"API key self-service management console",
+					"SLA monitoring and status-page integration",
+					"Launch announcement and developer blog post",
+					"GraphQL gateway layer",
+					"Multi-region failover support",
+				},
+			},
+		},
+	}
+
+	totalEpics := 0
+	for slug, epicSpecs := range scrumEpics {
+		pd := projects[slug]
+		for i, es := range epicSpecs {
+			epic := &models.Epic{
+				ProjectID:   pd.project.ID,
+				Name:        es.name,
+				Description: es.description,
+				Color:       es.color,
+				Status:      es.status,
+				Position:    float64((i + 1) * 1000),
+			}
+			must(db.Create(epic).Error)
+
+			// Link cards to this epic
+			for _, title := range es.cardTitles {
+				key := slug + "/" + title
+				if c, ok := createdCards[key]; ok {
+					must(db.Model(c).Update("epic_id", epic.ID).Error)
+				}
+			}
+			totalEpics++
+		}
+	}
+	fmt.Printf("   Created %d epics\n", totalEpics)
+
 	// ── 3c. Card history (column moves — feeds the CFD chart) ─────────────────
 	fmt.Println("→ Creating card history for CFD chart…")
 
