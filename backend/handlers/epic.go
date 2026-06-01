@@ -174,6 +174,45 @@ func DeleteEpic(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
 
+// ListEpicCards GET /projects/:projectSlug/epics/:epicId/cards
+func ListEpicCards(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	slug := c.Param("projectSlug")
+	epicID, err := strconv.ParseUint(c.Param("epicId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid epic id"})
+		return
+	}
+	project, err := services.GetProjectBySlug(slug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "viewer"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+	var epic models.Epic
+	if err := database.DB.Where("id = ? AND project_id = ?", epicID, project.ID).First(&epic).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "epic not found"})
+		return
+	}
+	var cards []models.Card
+	database.DB.Preload("Labels").Preload("Assignee").Preload("Tags").
+		Where("epic_id = ? AND project_id = ? AND parent_card_id IS NULL", epicID, project.ID).
+		Order("closed asc, position asc").Find(&cards)
+	for i := range cards {
+		var total, done int64
+		database.DB.Model(&models.Card{}).Where("parent_card_id = ?", cards[i].ID).Count(&total)
+		if total > 0 {
+			database.DB.Model(&models.Card{}).Where("parent_card_id = ? AND closed = true", cards[i].ID).Count(&done)
+		}
+		cards[i].SubCardCount = int(total)
+		cards[i].SubCardsDone = int(done)
+	}
+	c.JSON(http.StatusOK, cards)
+}
+
 // ReorderEpics PATCH /projects/:projectSlug/epics/reorder
 func ReorderEpics(c *gin.Context) {
 	userID := middleware.GetUserID(c)

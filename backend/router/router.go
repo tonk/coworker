@@ -483,6 +483,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			projects.GET("/:projectSlug/epics", handlers.ListEpics)
 			projects.POST("/:projectSlug/epics", handlers.CreateEpic)
 			projects.PATCH("/:projectSlug/epics/reorder", handlers.ReorderEpics)
+			projects.GET("/:projectSlug/epics/:epicId/cards", handlers.ListEpicCards)
 			projects.PUT("/:projectSlug/epics/:epicId", handlers.UpdateEpic)
 			projects.DELETE("/:projectSlug/epics/:epicId", handlers.DeleteEpic)
 

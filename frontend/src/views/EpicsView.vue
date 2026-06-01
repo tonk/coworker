@@ -6,7 +6,7 @@
         <h1 class="board-project-name">{{ projectStore.currentProject?.name }}</h1>
       </div>
       <div class="epics-toolbar-right">
-        <RouterLink :to="`/projects/${slug}`" class="btn btn-ghost btn-sm">📌 {{ $t('board.board') }}</RouterLink>
+        <RouterLink :to="`/projects/${slug}`" class="btn btn-ghost btn-sm">📌 Board</RouterLink>
         <RouterLink :to="`/projects/${slug}/backlog`" class="btn btn-ghost btn-sm">📋 {{ $t('sprint.backlog_title') }}</RouterLink>
         <button v-if="canManage" class="btn btn-primary btn-sm" @click="startCreate">+ {{ $t('epic.new_epic') }}</button>
       </div>
@@ -48,8 +48,12 @@
     </div>
 
     <div v-else ref="epicsListEl" class="epics-list">
-      <div v-for="epic in epicsStore.epics" :key="epic.id" class="epic-row">
+      <div v-for="epic in epicsStore.epics" :key="epic.id" class="epic-block">
+        <div class="epic-row">
         <span class="epic-drag-handle" aria-hidden="true" :title="$t('ticketChecklist.drag_reorder')">⠿</span>
+        <button class="epic-expand-btn" @click="toggleExpand(epic)" :aria-label="expandedId === epic.id ? $t('epic.collapse') : $t('epic.expand')" :aria-expanded="expandedId === epic.id">
+          {{ expandedId === epic.id ? '▾' : '▸' }}
+        </button>
         <span class="epic-color-dot" :style="{ background: epic.color }"></span>
         <div class="epic-row-main">
           <button type="button" class="epic-name-btn" @click="startEdit(epic)">{{ epic.name }}</button>
@@ -66,9 +70,40 @@
           <button class="btn btn-ghost btn-sm" @click="startEdit(epic)">{{ $t('common.edit') }}</button>
           <button class="btn btn-ghost btn-sm btn-danger" @click="confirmDelete(epic)">{{ $t('common.delete') }}</button>
         </div>
+        </div>
+
+        <!-- Expanded card list -->
+        <div v-if="expandedId === epic.id" class="epic-cards-panel">
+          <div v-if="epicCardsLoading" class="epic-cards-loading">
+            <div class="spinner" style="width:20px;height:20px;border-width:2px"></div>
+          </div>
+          <div v-else-if="!epicCards.length" class="epic-cards-empty">{{ $t('epic.no_cards') }}</div>
+          <div
+            v-for="card in epicCards"
+            :key="card.id"
+            class="epic-card-row"
+            @click="openCard(card)"
+          >
+            <span class="epic-card-closed" v-if="card.closed">✓</span>
+            <span class="epic-card-ref">{{ projectStore.currentProject?.key_prefix }}-{{ card.card_number }}</span>
+            <span class="epic-card-title" :class="{ 'is-closed': card.closed }">{{ card.title }}</span>
+            <span v-if="card.story_points != null" class="sp-badge sp-sm">{{ card.story_points }} SP</span>
+            <span v-if="card.priority && card.priority !== 'none'" class="priority-badge" :class="card.priority">{{ card.priority }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
+  <CardDetail
+    v-if="selectedCard"
+    :card="selectedCard"
+    :labels="projectStore.currentProject?.labels || []"
+    :members="projectMembers"
+    :project-slug="slug"
+    @close="selectedCard = null"
+    @deleted="selectedCard = null; loadExpandedCards()"
+  />
 </template>
 
 <script setup>
@@ -82,6 +117,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import { projectsApi } from '@/api/projects'
+import { epicsApi } from '@/api/epics'
+import CardDetail from '@/components/board/CardDetail.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -98,6 +135,43 @@ const nameInputEl = ref(null)
 const epicsListEl = ref(null)
 let sortableInstance = null
 const projectMembers = ref([])
+const selectedCard = ref(null)
+
+const expandedId = ref(null)
+const epicCards = ref([])
+const epicCardsLoading = ref(false)
+
+async function toggleExpand(epic) {
+  if (expandedId.value === epic.id) {
+    expandedId.value = null
+    epicCards.value = []
+    return
+  }
+  expandedId.value = epic.id
+  await loadExpandedCards()
+}
+
+async function loadExpandedCards() {
+  if (!expandedId.value) return
+  epicCardsLoading.value = true
+  try {
+    const { data } = await epicsApi.listCards(slug.value, expandedId.value)
+    epicCards.value = data || []
+  } catch {
+    epicCards.value = []
+  } finally {
+    epicCardsLoading.value = false
+  }
+}
+
+async function openCard(card) {
+  try {
+    const { data } = await projectsApi.getCard(slug.value, card.id)
+    selectedCard.value = data
+  } catch {
+    selectedCard.value = card
+  }
+}
 
 function projectAvatar(project) {
   return resolveAssetUrl(project?.avatar || '')
@@ -240,9 +314,12 @@ onUnmounted(() => {
 }
 .epic-row:hover { box-shadow: 0 1px 4px rgba(0,0,0,.08); }
 
+.epic-block { display: flex; flex-direction: column; }
 .epic-drag-handle { color: var(--color-text-muted); cursor: grab; font-size: 14px; flex-shrink: 0; user-select: none; opacity: 0; transition: opacity .1s; }
 .epic-row:hover .epic-drag-handle { opacity: 1; }
 .epic-drag-handle:active { cursor: grabbing; }
+.epic-expand-btn { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--color-text-muted); padding: 0 4px; flex-shrink: 0; line-height: 1; }
+.epic-expand-btn:hover { color: var(--color-text); }
 
 .epic-color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
 
@@ -265,4 +342,34 @@ onUnmounted(() => {
 .epic-row-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+.epic-cards-panel {
+  border-left: 3px solid var(--color-border);
+  margin: 0 0 2px 46px;
+  padding: 4px 0;
+  background: var(--color-bg);
+  border-radius: 0 0 6px 6px;
+}
+.epic-cards-loading { display: flex; justify-content: center; padding: 12px; }
+.epic-cards-empty { padding: 10px 14px; font-size: 13px; color: var(--color-text-muted); }
+.epic-card-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.epic-card-row:hover { background: var(--color-surface); }
+.epic-card-closed { color: var(--color-success, #22c55e); font-weight: 700; font-size: 12px; flex-shrink: 0; }
+.epic-card-ref { font-size: 11px; color: var(--color-text-muted); font-family: monospace; flex-shrink: 0; }
+.epic-card-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.epic-card-title.is-closed { text-decoration: line-through; color: var(--color-text-muted); }
+.sp-badge { font-size: 11px; background: var(--color-primary); color: #fff; border-radius: 9999px; padding: 1px 7px; font-weight: 600; flex-shrink: 0; }
+.sp-badge.sp-sm { font-size: 10px; padding: 1px 5px; }
+.priority-badge { font-size: 11px; border-radius: 4px; padding: 1px 6px; font-weight: 600; text-transform: capitalize; flex-shrink: 0; }
+.priority-badge.high, .priority-badge.critical { background: #fee2e2; color: #b91c1c; }
+.priority-badge.medium { background: #fef3c7; color: #92400e; }
+.priority-badge.low { background: #dcfce7; color: #166534; }
 </style>

@@ -209,7 +209,10 @@
     "cards_done": "cards done",
     "save_failed": "Failed to save epic",
     "deleted": "Epic deleted",
-    "delete_confirm": "Delete epic"
+    "delete_confirm": "Delete epic",
+    "expand": "Show cards",
+    "collapse": "Hide cards",
+    "no_cards": "No cards in this epic yet."
   },
   "board": {
     "add_column": "Add Column",
