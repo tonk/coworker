@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.35)
+## Latest release (v0.10.37)
 
-- **Customer portal role** — new `customer` global role for end-customers: view and comment on their own tickets, private internal notes hidden from them.
-- **Private ticket messages** — mark any reply as a private internal note (🔒): not emailed to the customer, hidden from customer-role users, highlighted in amber.
-- **Expanded Prometheus metrics** — users by role, customer count, tickets by status/priority, SLA breaches, and message visibility added to `/api/v1/metrics`; Grafana dashboard included in `docs/`.
+- **Epics for Scrum** — colour-coded milestones that group cards across sprints; Epic Burndown chart shows remaining cards and story points per day.
+- **Sprint Report** — post-sprint breakdown of completed vs not-completed cards with story-point totals and a completion percentage.
+- **Backlog and sprint drag-to-reorder** — reorder backlog cards and sprints by dragging; sprint list also supports ascending/descending sort by sprint number.
 
 ## Experiment
 

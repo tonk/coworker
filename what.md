@@ -669,3 +669,17 @@ Create an application that has all these features and requirements
 - Expand Prometheus metrics: add warmdesk_users_total, warmdesk_customers_total, warmdesk_tickets_total, warmdesk_tickets_by_priority_total, warmdesk_sla_breaches_total, warmdesk_ticket_messages_total
 - Add docs/prometheus.yml Prometheus scrape config and docs/grafana-dashboard.json Grafana dashboard covering all metrics
 - Add seed demo accounts for metrics role (demo.metrics) and customer portal (demo.cust1 Alice Porter, demo.cust2 Bob Mason)
+- Add Epics layer to Scrum projects: colour-coded milestones that group cards across sprints, with CRUD API, EpicsView (create/edit/reorder/expand), card detail Epic selector, board colour bar and badge, backlog epic filter
+- Add Epic Burndown chart: remaining cards and story points per day from epic creation to today with ideal line; select any epic from dropdown
+- Add Sprint Report chart: post-sprint completed vs not-completed breakdown with story-point totals and completion percentage
+- Enhance Cycle Time (Control Chart) with 7-day rolling average line
+- Add drag-to-reorder for Product Backlog cards (persisted via PATCH /backlog/reorder)
+- Add drag-to-reorder for sprint list with ascending/descending sort toggle (△▽ button)
+- Add drag-to-reorder for macro actions and checklist template items in admin editors
+- Add click-to-edit names in all admin panel list views (Users, Groups, Projects, News, TT projects/customers)
+- Detect desktop app installation method (AppImage/deb/rpm/portable/dmg/windows) using /etc/os-release OS family + dpkg/rpm ownership query; show platform-specific download URL in update banner
+- Widen ticket detail view max-width from 900 px to 1400 px
+- Consolidate sort indicators to outline triangles (△/▽) throughout the UI
+- Fix 28 English i18n button/action labels to standard title case
+- Unify admin panel button styles to btn-ghost/btn-ghost btn-danger throughout
+- Move Time Tracking add buttons to toolbar; fix News empty state; fix TicketChecklistTemplatesTab to use ui.confirm()

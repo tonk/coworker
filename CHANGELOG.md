@@ -1,5 +1,38 @@
 # Changelog
 
+## v0.10.37 — 2026-06-01
+
+### Added
+- **Epics for Scrum projects** — colour-coded milestones that group cards across sprints. Manage epics in the new ⚡ Epics view (create, reorder, expand to see cards inline); assign a card to an epic from the card detail Epic dropdown. Cards show a colour bar and badge on the board and backlog. Epics have Open / Done status.
+- **Epic Burndown chart** — new chart tab showing remaining cards and story points per day from epic creation to today, with an ideal burn-down line. Select any epic from the dropdown.
+- **Sprint Report chart** — new chart tab showing completed vs not-completed cards for any sprint, with story-point totals and a completion percentage. Replaces manual post-sprint counting.
+- **Control Chart enhancement** — the Cycle Time scatter plot now overlays a 7-day rolling average line, making trend analysis easier.
+- **Backlog drag-to-reorder** — cards in the Product Backlog can be reordered by dragging the ⠿ handle; new position is persisted immediately.
+- **Sprint list drag-to-reorder** — sprints in the Backlog view can be reordered by dragging; a △▽ sort button toggles ascending / descending sort by sprint ID, disabling drag while active.
+- **Drag-to-reorder in admin editors** — macro actions and checklist template items in the Admin panel can now be reordered by dragging the ⠿ handle.
+- **Click-to-edit names in all admin lists** — clicking the name in Users, Groups, Projects, News, and Time Tracking project/customer tables opens the edit form directly, matching the existing Macros and Checklist Templates behaviour.
+- **Platform-specific update download URL** — the desktop app now detects its installation method (AppImage, .deb, .rpm, portable tar.gz, DMG, Windows) and links to the matching binary in the update banner. Linux detection uses `/etc/os-release` OS family plus `dpkg --search` / `rpm -qf` ownership queries; covers all distros from the Ansible OS\_FAMILY\_MAP.
+- **Seed: epics with card assignments** — `product-platform` and `api-platform` demo projects now have five epics each with cards pre-assigned and back-dated `created_at` values so the Epic Burndown chart shows meaningful history.
+- **Blog post** — `website/content/blog/threaded-replies-and-scrum-epics.adoc` covers the new threaded replies and Epics features.
+- **Docs: Scrum Board section** — `docs/user-guide.md` gains a new §4b covering Epics, Product Backlog, Sprints, Sprint Board, and Sprint Report.
+
+### Fixed
+- **Epic badge lost on board refresh** — `GetProject` was missing `Preload("Columns.Cards.Epic")`; the colour bar and badge disappeared after a page refresh even though the data was present after a card save.
+- **Epics page "Board" link** — used a non-existent i18n key `board.board`; replaced with the hardcoded string used by every other toolbar.
+- **Sort button invisible** — the sprint sort button had `opacity: 0.35` at the button level combined with `opacity: 0.25` on the span, making it effectively invisible. Removed button-level opacity; inactive triangles now render at 40 % muted.
+- **Admin: TicketChecklistTemplatesTab used native `confirm()`** — replaced with `ui.confirm()` to match every other admin section.
+- **Admin: button style inconsistency** — Users, Projects, Groups, and Customers used `btn-secondary` / `btn-danger`; now unified to `btn-ghost` / `btn-ghost btn-danger` matching all other admin tabs.
+- **Admin: Time Tracking add buttons below table** — moved to the tab toolbar above the table and changed to `btn-primary`, matching all other "New" buttons.
+- **Admin: News empty state was a `<div>` outside the table** — replaced with a `<tr><td colspan="5">` inside tbody, matching every other admin table.
+- **Ticket detail max-width** — was 900 px (≈62 % of a 1536 px screen); raised to 1 400 px so the Apply Macro and Apply Checklist dropdowns are no longer cut off.
+- **Sort indicators** — `BoardColumn` used `↑`/`↓` arrows and `NewsView` used SVG chevrons; both now use `△`/`▽` outline triangles matching every other sort indicator.
+- **Button/action label capitalisation** — 28 English i18n strings corrected to standard title case (e.g. "Add item" → "Add Item", "Log time" → "Log Time").
+- **Docs: ticket checklist section** — described "Apply Template" as a button in the checklist section; corrected to the "Apply Checklist" dropdown in the ticket header; documented one-template-per-ticket limit, per-item delete, and drag-to-reorder.
+- **Docs: ticket messages section** — "Reply" table row implied a single compose area; split into new-message vs inline threaded reply; added Threaded Replies and private-inheritance sections.
+
+### Changed
+- **Linux installation-method detection** — now reads `/etc/os-release` to identify the OS family (Debian/RedHat), then runs `dpkg --search` or `rpm -qf` on the canonical exe path to confirm package ownership. Previously relied on the exe path starting with `/usr/lib/` which was incorrect for most package managers. Covers all distros in the Ansible OS\_FAMILY\_MAP including Alma Linux, Rocky, Amazon Linux 2, Oracle Linux, Kylin, MIRACLE, EuroLinux, and others.
+
 ## v0.10.36 — 2026-06-01
 
 ### Added
