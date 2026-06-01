@@ -98,6 +98,98 @@
         <div v-else class="chart-wrap"><canvas ref="cfdCanvas"></canvas></div>
       </div>
 
+      <!-- ── Sprint Report ─────────────────────────────────────────────── -->
+      <div v-if="activeTab === 'sprint-report'" class="chart-panel">
+        <div class="chart-panel-header">
+          <h2>{{ $t('sprint.sprint_report') }}</h2>
+          <select class="form-input sprint-select" v-model="selectedSprintReportId" @change="loadSprintReport">
+            <option :value="null" disabled>— {{ $t('sprint.select_sprint') }} —</option>
+            <option v-for="s in sprintStore.sprints" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+        <div v-if="sprintReportLoading" class="chart-loading"><div class="spinner"></div></div>
+        <div v-else-if="!selectedSprintReportId" class="chart-empty">{{ $t('sprint.select_sprint_hint') }}</div>
+        <div v-else-if="sprintReport" class="sprint-report">
+          <!-- Summary cards -->
+          <div class="sr-summary">
+            <div class="sr-stat">
+              <div class="sr-stat-value">{{ sprintReport.summary.committed_count }}</div>
+              <div class="sr-stat-label">{{ $t('sprint.sr_committed') }}</div>
+            </div>
+            <div class="sr-stat sr-stat-green">
+              <div class="sr-stat-value">{{ sprintReport.summary.completed_count }}</div>
+              <div class="sr-stat-label">{{ $t('sprint.sr_completed') }}</div>
+            </div>
+            <div class="sr-stat sr-stat-red">
+              <div class="sr-stat-value">{{ sprintReport.summary.committed_count - sprintReport.summary.completed_count }}</div>
+              <div class="sr-stat-label">{{ $t('sprint.sr_incomplete') }}</div>
+            </div>
+            <div class="sr-stat">
+              <div class="sr-stat-value">{{ sprintReport.summary.committed_points }}</div>
+              <div class="sr-stat-label">{{ $t('sprint.sr_committed_pts') }}</div>
+            </div>
+            <div class="sr-stat sr-stat-green">
+              <div class="sr-stat-value">{{ sprintReport.summary.completed_points }}</div>
+              <div class="sr-stat-label">{{ $t('sprint.sr_completed_pts') }}</div>
+            </div>
+            <div class="sr-stat">
+              <div class="sr-stat-value">{{ sprintReport.summary.committed_points ? Math.round(sprintReport.summary.completed_points / sprintReport.summary.committed_points * 100) : 0 }}%</div>
+              <div class="sr-stat-label">{{ $t('sprint.sr_completion') }}</div>
+            </div>
+          </div>
+
+          <!-- Completed cards -->
+          <div v-if="sprintReport.completed.length" class="sr-section">
+            <h3 class="sr-section-title sr-done">✓ {{ $t('sprint.sr_completed_cards') }} ({{ sprintReport.completed.length }})</h3>
+            <table class="sr-table">
+              <thead><tr><th>{{ $t('board.card') }}</th><th>{{ $t('board.assignee') }}</th><th>{{ $t('board.priority') }}</th><th>SP</th></tr></thead>
+              <tbody>
+                <tr v-for="c in sprintReport.completed" :key="c.id">
+                  <td><span class="sr-ref">{{ c.card_ref }}</span> {{ c.title }}</td>
+                  <td>{{ c.assignee || '—' }}</td>
+                  <td><span v-if="c.priority !== 'none'" :class="['priority-badge', c.priority]">{{ c.priority }}</span><span v-else>—</span></td>
+                  <td>{{ c.story_points ?? '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Incomplete cards -->
+          <div v-if="sprintReport.incomplete.length" class="sr-section">
+            <h3 class="sr-section-title sr-incomplete">⚠ {{ $t('sprint.sr_incomplete_cards') }} ({{ sprintReport.incomplete.length }})</h3>
+            <table class="sr-table">
+              <thead><tr><th>{{ $t('board.card') }}</th><th>{{ $t('board.assignee') }}</th><th>{{ $t('board.priority') }}</th><th>{{ $t('board.column') }}</th><th>SP</th></tr></thead>
+              <tbody>
+                <tr v-for="c in sprintReport.incomplete" :key="c.id">
+                  <td><span class="sr-ref">{{ c.card_ref }}</span> {{ c.title }}</td>
+                  <td>{{ c.assignee || '—' }}</td>
+                  <td><span v-if="c.priority !== 'none'" :class="['priority-badge', c.priority]">{{ c.priority }}</span><span v-else>—</span></td>
+                  <td class="sr-col-name">{{ c.column_name }}</td>
+                  <td>{{ c.story_points ?? '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-if="!sprintReport.completed.length && !sprintReport.incomplete.length" class="chart-empty">{{ $t('sprint.no_chart_data') }}</div>
+        </div>
+      </div>
+
+      <!-- ── Epic Burndown ──────────────────────────────────────────────── -->
+      <div v-if="activeTab === 'epic-burndown'" class="chart-panel">
+        <div class="chart-panel-header">
+          <h2>{{ $t('sprint.epic_burndown') }}</h2>
+          <select class="form-input sprint-select" v-model="selectedEpicBurndownId" @change="loadEpicBurndown">
+            <option :value="null" disabled>— {{ $t('epic.epic') }} —</option>
+            <option v-for="e in epics" :key="e.id" :value="e.id">{{ e.name }}</option>
+          </select>
+        </div>
+        <div v-if="epicBurndownLoading" class="chart-loading"><div class="spinner"></div></div>
+        <div v-else-if="!selectedEpicBurndownId" class="chart-empty">{{ $t('sprint.select_epic_hint') }}</div>
+        <div v-else-if="!epicBurndownData.length" class="chart-empty">{{ $t('sprint.no_chart_data') }}</div>
+        <div v-else class="chart-wrap"><canvas ref="epicBurndownCanvas"></canvas></div>
+      </div>
+
       <!-- ── Release Burndown ─────────────────────────────────────────── -->
       <div v-if="activeTab === 'release-burndown'" class="chart-panel">
         <div class="chart-panel-header">
@@ -196,6 +288,7 @@ import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
+import { useEpicsStore } from '@/stores/epics'
 
 Chart.register(...registerables)
 
@@ -203,8 +296,11 @@ const { t } = useI18n()
 const route = useRoute()
 const projectStore = useProjectStore()
 const sprintStore = useSprintStore()
+const epicsStore = useEpicsStore()
 const ui = useUIStore()
 const { formatDate } = useDateFormat()
+
+const epics = computed(() => epicsStore.epics)
 
 const slug = computed(() => route.params.slug)
 
@@ -225,6 +321,8 @@ const tabs = computed(() => {
     { key: 'burndown',         icon: '📉', label: 'sprint.burndown' },
     { key: 'burnup',           icon: '📈', label: 'sprint.burnup' },
     { key: 'cfd',              icon: '🌊', label: 'sprint.cfd' },
+    { key: 'sprint-report',    icon: '📋', label: 'sprint.sprint_report' },
+    { key: 'epic-burndown',    icon: '⚡', label: 'sprint.epic_burndown' },
     { key: 'release-burndown', icon: '🚀', label: 'sprint.release_burndown' },
     { key: 'cycle-time',       icon: '⏱',  label: 'sprint.cycle_time' },
     { key: 'lead-time',        icon: '📐', label: 'sprint.lead_time' },
@@ -239,6 +337,18 @@ const velocitySprints = ref([])
 
 const cycleTimeLoading = ref(false)
 const cycleTimeCards = ref([])
+
+// Sprint Report
+const selectedSprintReportId = ref(null)
+const sprintReportLoading = ref(false)
+const sprintReport = ref(null)
+
+// Epic Burndown
+const selectedEpicBurndownId = ref(null)
+const epicBurndownLoading = ref(false)
+const epicBurndownData = ref([])
+const epicBurndownMeta = ref(null)
+const epicBurndownCanvas = ref(null)
 
 // ── Per-chart state ──────────────────────────────────────────────────────────
 const selectedSprintId = ref(null)
@@ -584,15 +694,23 @@ function renderCycleTime() {
   if (!cycleTimeCanvas.value || !cycleTimeCards.value.length) return
   charts.cycleTime?.destroy()
   const primary = cssVar('--color-primary') || '#6366f1'
-  const data = cycleTimeCards.value.map(c => ({ x: new Date(c.closed_at).getTime(), y: c.days_open, label: c.card_ref }))
+  const sorted = [...cycleTimeCards.value].sort((a, b) => new Date(a.closed_at) - new Date(b.closed_at))
+  const points = sorted.map(c => ({ x: new Date(c.closed_at).getTime(), y: c.days_open, label: c.card_ref }))
+  const avgY = rollingAverage(points, 7)
+  const avgData = points.map((p, i) => ({ x: p.x, y: Math.round(avgY[i] * 10) / 10 }))
   charts.cycleTime = new Chart(cycleTimeCanvas.value, {
     type: 'scatter',
-    data: { datasets: [{ label: t('sprint.days_open'), data, backgroundColor: primary + '99', borderColor: primary, pointRadius: 5, pointHoverRadius: 7 }] },
+    data: {
+      datasets: [
+        { label: t('sprint.days_open'), data: points, backgroundColor: primary + '88', borderColor: primary, pointRadius: 5, pointHoverRadius: 7, order: 2 },
+        { label: t('sprint.rolling_avg'), data: avgData, type: 'line', borderColor: '#ef4444', borderWidth: 2, pointRadius: 0, fill: false, tension: 0.4, order: 1 },
+      ],
+    },
     options: {
       responsive: true,
       plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => `${ctx.raw.label}: ${ctx.raw.y} days` } },
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.type === 'line' ? `${t('sprint.rolling_avg')}: ${ctx.raw.y}d` : `${ctx.raw.label}: ${ctx.raw.y}d` } },
       },
       scales: {
         x: { type: 'linear', ticks: { callback: v => formatDate(new Date(v)) } },
@@ -630,6 +748,88 @@ function renderLeadTime() {
   })
 }
 
+// ── Sprint Report ─────────────────────────────────────────────────────────────
+
+async function loadSprintReport() {
+  if (!selectedSprintReportId.value) return
+  sprintReportLoading.value = true
+  sprintReport.value = null
+  try {
+    const { data } = await projectsApi.getSprintReport(slug.value, selectedSprintReportId.value)
+    sprintReport.value = data
+  } catch { sprintReport.value = null }
+  finally { sprintReportLoading.value = false }
+}
+
+// ── Epic Burndown ─────────────────────────────────────────────────────────────
+
+async function loadEpicBurndown() {
+  if (!selectedEpicBurndownId.value) return
+  epicBurndownLoading.value = true
+  epicBurndownData.value = []
+  try {
+    const { data } = await projectsApi.getEpicBurndown(slug.value, selectedEpicBurndownId.value)
+    epicBurndownData.value = data.data || []
+    epicBurndownMeta.value = data.epic || null
+  } catch { epicBurndownData.value = [] }
+  finally { epicBurndownLoading.value = false }
+  await nextTick()
+  renderEpicBurndown()
+}
+
+function renderEpicBurndown() {
+  if (!epicBurndownCanvas.value || !epicBurndownData.value.length) return
+  charts.epicBurndown?.destroy()
+  const color = epicBurndownMeta.value?.color || cssVar('--color-primary') || '#6366f1'
+  const labels = epicBurndownData.value.map(d => d.date)
+  const remaining = epicBurndownData.value.map(d => d.remaining_cards)
+  const ideal = epicBurndownData.value.map(d => d.ideal_remaining)
+  charts.epicBurndown = new Chart(epicBurndownCanvas.value, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: t('sprint.remaining'),
+          data: remaining,
+          borderColor: color,
+          backgroundColor: color + '22',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+        },
+        {
+          label: t('sprint.ideal'),
+          data: ideal,
+          borderColor: '#9ca3af',
+          borderDash: [6, 4],
+          fill: false,
+          pointRadius: 0,
+          tension: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        x: { ticks: { maxTicksLimit: 12 } },
+        y: { beginAtZero: true, title: { display: true, text: t('sprint.cards') } },
+      },
+    },
+  })
+}
+
+// ── Control Chart: add rolling average to cycle-time scatter ─────────────────
+
+function rollingAverage(data, window) {
+  return data.map((_, i) => {
+    const slice = data.slice(Math.max(0, i - Math.floor(window / 2)), Math.min(data.length, i + Math.ceil(window / 2)))
+    return slice.reduce((s, v) => s + v.y, 0) / slice.length
+  })
+}
+
 // ── Tab switching ─────────────────────────────────────────────────────────────
 
 watch(activeTab, async (tab) => {
@@ -643,6 +843,7 @@ watch(activeTab, async (tab) => {
   if (tab === 'release-burndown' && releaseBurndownData.value.length)        renderReleaseBurndown()
   if (tab === 'cycle-time'       && cycleTimeCards.value.length)             renderCycleTime()
   if (tab === 'lead-time'        && cycleTimeCards.value.length)             renderLeadTime()
+  if (tab === 'epic-burndown'    && epicBurndownData.value.length)           renderEpicBurndown()
   if (tab === 'cfd'              && !cfdLabels.value.length)                 loadCFD()
   if (tab === 'release-burndown' && !releases.value.length)                  loadReleases()
   if ((tab === 'cycle-time' || tab === 'lead-time') && !cycleTimeCards.value.length) loadCycleTime()
@@ -670,6 +871,7 @@ async function init() {
   activeTab.value = 'velocity'
   await Promise.all([
     sprintStore.loadSprints(slug.value),
+    epicsStore.loadEpics(slug.value),
     loadVelocity(),
   ])
   await nextTick()
@@ -812,4 +1014,32 @@ onBeforeUnmount(() => Object.values(charts).forEach(c => c?.destroy()))
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Sprint Report */
+.sprint-report { display: flex; flex-direction: column; gap: 24px; padding: 4px 0; }
+.sr-summary { display: flex; gap: 12px; flex-wrap: wrap; }
+.sr-stat { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 8px; padding: 14px 20px; min-width: 110px; text-align: center; }
+.sr-stat-green { border-color: #86efac; background: #f0fdf4; }
+.sr-stat-red   { border-color: #fca5a5; background: #fef2f2; }
+[data-theme="dark"] .sr-stat-green { background: #14532d; border-color: #166534; }
+[data-theme="dark"] .sr-stat-red   { background: #450a0a; border-color: #7f1d1d; }
+.sr-stat-value { font-size: 28px; font-weight: 700; line-height: 1.1; }
+.sr-stat-label { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
+.sr-section { }
+.sr-section-title { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
+.sr-done       { color: #16a34a; }
+.sr-incomplete { color: #d97706; }
+[data-theme="dark"] .sr-done       { color: #4ade80; }
+[data-theme="dark"] .sr-incomplete { color: #fbbf24; }
+.sr-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sr-table th { text-align: left; padding: 6px 10px; font-size: 11px; font-weight: 600; color: var(--color-text-muted); border-bottom: 1px solid var(--color-border); }
+.sr-table td { padding: 7px 10px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.sr-table tr:last-child td { border-bottom: none; }
+.sr-table tr:hover td { background: var(--color-bg); }
+.sr-ref { font-size: 11px; color: var(--color-text-muted); font-family: monospace; margin-right: 6px; }
+.sr-col-name { color: var(--color-text-muted); font-size: 12px; }
+.priority-badge { font-size: 11px; border-radius: 4px; padding: 1px 6px; font-weight: 600; text-transform: capitalize; }
+.priority-badge.high, .priority-badge.critical { background: #fee2e2; color: #b91c1c; }
+.priority-badge.medium { background: #fef3c7; color: #92400e; }
+.priority-badge.low    { background: #dcfce7; color: #166534; }
 </style>

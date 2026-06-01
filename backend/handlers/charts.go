@@ -621,3 +621,185 @@ func sprintSummary(s *models.Sprint, totalPoints int) gin.H {
 		"total_points": totalPoints,
 	}
 }
+
+// ── Sprint Report ─────────────────────────────────────────────────────────────
+
+type sprintReportCard struct {
+	ID          uint    `json:"id"`
+	CardRef     string  `json:"card_ref"`
+	Title       string  `json:"title"`
+	StoryPoints *int    `json:"story_points"`
+	Assignee    string  `json:"assignee"`
+	ColumnName  string  `json:"column_name"`
+	Priority    string  `json:"priority"`
+}
+
+// GetSprintReport GET /projects/:projectSlug/sprints/:sprintId/report
+func GetSprintReport(c *gin.Context) {
+	project, ok := requireScrumProject(c)
+	if !ok {
+		return
+	}
+	sprintID, err := strconv.ParseUint(c.Param("sprintId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid sprint id"})
+		return
+	}
+	var sprint models.Sprint
+	if err := database.DB.Where("id = ? AND project_id = ?", sprintID, project.ID).First(&sprint).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "sprint not found"})
+		return
+	}
+
+	var sprintCardIDs []uint
+	database.DB.Model(&models.SprintCard{}).Where("sprint_id = ?", sprintID).Pluck("card_id", &sprintCardIDs)
+
+	if len(sprintCardIDs) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"sprint": sprint, "completed": []sprintReportCard{}, "incomplete": []sprintReportCard{},
+			"summary": gin.H{"committed_count": 0, "completed_count": 0, "committed_points": 0, "completed_points": 0},
+		})
+		return
+	}
+
+	type cardRow struct {
+		ID           uint
+		CardNumber   int
+		Title        string
+		StoryPoints  *int
+		Priority     string
+		Closed       bool
+		ColumnName   string
+		AssigneeName string
+	}
+	var rows []cardRow
+	database.DB.Model(&models.Card{}).
+		Select("cards.id, cards.card_number, cards.title, cards.story_points, cards.priority, cards.closed, columns.name as column_name, COALESCE(NULLIF(users.display_name,''), users.username, '') as assignee_name").
+		Joins("LEFT JOIN columns ON columns.id = cards.column_id").
+		Joins("LEFT JOIN users ON users.id = cards.assignee_id").
+		Where("cards.id IN ? AND cards.deleted_at IS NULL", sprintCardIDs).
+		Find(&rows)
+
+	completed := []sprintReportCard{}
+	incomplete := []sprintReportCard{}
+	committedPoints, completedPoints := 0, 0
+
+	for _, row := range rows {
+		card := sprintReportCard{
+			ID:          row.ID,
+			CardRef:     fmt.Sprintf("%s-%d", project.KeyPrefix, row.CardNumber),
+			Title:       row.Title,
+			StoryPoints: row.StoryPoints,
+			Assignee:    row.AssigneeName,
+			ColumnName:  row.ColumnName,
+			Priority:    row.Priority,
+		}
+		if row.StoryPoints != nil {
+			committedPoints += *row.StoryPoints
+		}
+		if row.Closed {
+			completed = append(completed, card)
+			if row.StoryPoints != nil {
+				completedPoints += *row.StoryPoints
+			}
+		} else {
+			incomplete = append(incomplete, card)
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"sprint": sprint, "completed": completed, "incomplete": incomplete,
+		"summary": gin.H{
+			"committed_count":  len(rows),
+			"completed_count":  len(completed),
+			"committed_points": committedPoints,
+			"completed_points": completedPoints,
+		},
+	})
+}
+
+// ── Epic Burndown ─────────────────────────────────────────────────────────────
+
+// GetEpicBurndown GET /projects/:projectSlug/epics/:epicId/burndown
+func GetEpicBurndown(c *gin.Context) {
+	project, ok := requireProjectAccess(c)
+	if !ok {
+		return
+	}
+	epicID, err := strconv.ParseUint(c.Param("epicId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid epic id"})
+		return
+	}
+	var epic models.Epic
+	if err := database.DB.Where("id = ? AND project_id = ?", epicID, project.ID).First(&epic).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "epic not found"})
+		return
+	}
+
+	type cardData struct {
+		StoryPoints *int
+		ClosedAt    *time.Time
+	}
+	var cards []cardData
+	database.DB.Model(&models.Card{}).
+		Select("story_points, closed_at").
+		Where("epic_id = ? AND parent_card_id IS NULL AND deleted_at IS NULL", epicID).
+		Find(&cards)
+
+	if len(cards) == 0 {
+		c.JSON(http.StatusOK, gin.H{"epic": gin.H{"id": epic.ID, "name": epic.Name, "color": epic.Color}, "data": []interface{}{}})
+		return
+	}
+
+	totalCards := len(cards)
+	totalPoints := 0
+	for _, card := range cards {
+		if card.StoryPoints != nil {
+			totalPoints += *card.StoryPoints
+		}
+	}
+
+	startDay := epic.CreatedAt.UTC().Truncate(24 * time.Hour)
+	endDay := time.Now().UTC().Truncate(24 * time.Hour)
+	totalDays := endDay.Sub(startDay).Hours() / 24
+	if totalDays < 1 {
+		totalDays = 1
+	}
+
+	type epicBurnDay struct {
+		Date            string  `json:"date"`
+		RemainingCards  int     `json:"remaining_cards"`
+		RemainingPoints int     `json:"remaining_points"`
+		IdealRemaining  float64 `json:"ideal_remaining"`
+	}
+
+	var data []epicBurnDay
+	for d := startDay; !d.After(endDay); d = d.AddDate(0, 0, 1) {
+		closedCards, closedPoints := 0, 0
+		for _, card := range cards {
+			if card.ClosedAt != nil && !card.ClosedAt.UTC().Truncate(24*time.Hour).After(d) {
+				closedCards++
+				if card.StoryPoints != nil {
+					closedPoints += *card.StoryPoints
+				}
+			}
+		}
+		dayIndex := d.Sub(startDay).Hours() / 24
+		idealRemaining := float64(totalCards) * (1 - dayIndex/totalDays)
+		if idealRemaining < 0 {
+			idealRemaining = 0
+		}
+		data = append(data, epicBurnDay{
+			Date:            d.Format("2006-01-02"),
+			RemainingCards:  totalCards - closedCards,
+			RemainingPoints: totalPoints - closedPoints,
+			IdealRemaining:  math.Round(idealRemaining*10) / 10,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"epic": gin.H{"id": epic.ID, "name": epic.Name, "color": epic.Color, "total_cards": totalCards, "total_points": totalPoints},
+		"data": data,
+	})
+}

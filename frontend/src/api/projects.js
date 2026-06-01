@@ -143,4 +143,6 @@ export const projectsApi = {
   getCycleTimeChart:       (slug)           => client.get(`/projects/${slug}/charts/cycle-time`),
   getThroughputChart:      (slug, weeks)    => client.get(`/projects/${slug}/charts/throughput`, { params: { weeks } }),
   getReleaseBurndownChart: (slug, releaseId) => client.get(`/projects/${slug}/charts/release-burndown/${releaseId}`),
+  getSprintReport:         (slug, sprintId) => client.get(`/projects/${slug}/charts/sprint-report/${sprintId}`),
+  getEpicBurndown:         (slug, epicId)   => client.get(`/projects/${slug}/epics/${epicId}/burndown`),
 }

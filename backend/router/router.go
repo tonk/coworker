@@ -507,6 +507,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			projects.GET("/:projectSlug/charts/cycle-time", handlers.GetCycleTimeChart)
 			projects.GET("/:projectSlug/charts/throughput", handlers.GetThroughputChart)
 			projects.GET("/:projectSlug/charts/release-burndown/:releaseId", handlers.GetReleaseBurndownChart)
+			projects.GET("/:projectSlug/charts/sprint-report/:sprintId", handlers.GetSprintReport)
+			projects.GET("/:projectSlug/epics/:epicId/burndown", handlers.GetEpicBurndown)
 		}
 	}
 

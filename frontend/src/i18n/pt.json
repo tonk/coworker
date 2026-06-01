@@ -764,7 +764,20 @@
     "completed_cards": "Cartões Concluídos",
     "sort_asc": "Sort ascending",
     "sort_desc": "Sort descending",
-    "sort_none": "Back to custom order"
+    "sort_none": "Back to custom order",
+    "sprint_report": "Sprint Report",
+    "epic_burndown": "Epic Burndown",
+    "sr_committed": "Committed",
+    "sr_completed": "Completed",
+    "sr_incomplete": "Incomplete",
+    "sr_committed_pts": "Committed SP",
+    "sr_completed_pts": "Completed SP",
+    "sr_completion": "Completion",
+    "sr_completed_cards": "Completed",
+    "sr_incomplete_cards": "Not Completed",
+    "select_sprint_hint": "Select a sprint to view the report.",
+    "select_epic_hint": "Select an epic to view the burndown.",
+    "rolling_avg": "7-day rolling avg"
   },
   "groups": {
     "title": "Groups",
