@@ -77,7 +77,7 @@
         <div class="sprints-column-header">
           <h2>{{ $t('sprint.title') }}</h2>
           <button
-            class="sprint-sort-btn"
+            :class="['sprint-sort-btn', { 'is-sorted': sprintSortDir }]"
             @click="toggleSprintSort"
             :aria-label="sprintSortDir === 'asc' ? $t('sprint.sort_desc') : sprintSortDir === 'desc' ? $t('sprint.sort_none') : $t('sprint.sort_asc')"
             :title="sprintSortDir === 'asc' ? $t('sprint.sort_desc') : sprintSortDir === 'desc' ? $t('sprint.sort_none') : $t('sprint.sort_asc')"
@@ -810,16 +810,19 @@ const yTicks = computed(() => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--color-text-muted);
   padding: 2px 4px;
   border-radius: 3px;
   display: flex;
   gap: 1px;
   line-height: 1;
+  opacity: 0.35;
 }
-.sprint-sort-btn:hover { background: var(--color-bg); }
-.sprint-sort-btn .sort-active { color: var(--color-primary); }
+.sprint-sort-btn:hover { background: var(--color-bg); opacity: 1; }
+.sprint-sort-btn.is-sorted { opacity: 1; }
+.sprint-sort-btn span { opacity: 0.25; }
+.sprint-sort-btn .sort-active { color: var(--color-primary); opacity: 1; font-size: 15px; }
 
 .sprint-goal-text {
   font-size: 12px;
