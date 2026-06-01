@@ -273,6 +273,7 @@ func GetProject(c *gin.Context) {
 		Preload("Columns.Cards.Assignee").
 		Preload("Columns.Cards.Labels").
 		Preload("Columns.Cards.Tags").
+		Preload("Columns.Cards.Epic").
 		Preload("Labels").
 		Preload("Members.User").
 		Preload("Customer").
