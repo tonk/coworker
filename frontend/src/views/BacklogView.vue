@@ -76,6 +76,15 @@
       <div class="sprints-column">
         <div class="sprints-column-header">
           <h2>{{ $t('sprint.title') }}</h2>
+          <button
+            class="sprint-sort-btn"
+            @click="toggleSprintSort"
+            :aria-label="sprintSortDir === 'asc' ? $t('sprint.sort_desc') : sprintSortDir === 'desc' ? $t('sprint.sort_none') : $t('sprint.sort_asc')"
+            :title="sprintSortDir === 'asc' ? $t('sprint.sort_desc') : sprintSortDir === 'desc' ? $t('sprint.sort_none') : $t('sprint.sort_asc')"
+          >
+            <span :class="{ 'sort-active': sprintSortDir === 'asc' }">△</span>
+            <span :class="{ 'sort-active': sprintSortDir === 'desc' }">▽</span>
+          </button>
           <button v-if="canManage" class="btn btn-primary btn-sm" @click="showCreateSprint = true">
             + {{ $t('sprint.new_sprint') }}
           </button>
@@ -86,7 +95,7 @@
         </div>
 
         <div ref="sprintListEl">
-        <div v-for="sprint in sprintStore.sprints" :key="sprint.id" class="sprint-block">
+        <div v-for="sprint in displayedSprints" :key="sprint.id" class="sprint-block">
           <div class="sprint-block-header">
             <div class="sprint-block-title">
               <span class="sprint-drag-handle" @click.stop aria-hidden="true" :title="$t('ticketChecklist.drag_reorder')">⠿</span>
@@ -294,9 +303,21 @@ const backlogListEl = ref(null)
 let backlogSortable = null
 const sprintListEl = ref(null)
 let sprintSortable = null
+const sprintSortDir = ref(null) // null = custom/drag order, 'asc', 'desc'
+
+const displayedSprints = computed(() => {
+  if (!sprintSortDir.value) return sprintStore.sprints
+  return [...sprintStore.sprints].sort((a, b) =>
+    sprintSortDir.value === 'asc' ? a.id - b.id : b.id - a.id
+  )
+})
+
+function toggleSprintSort() {
+  sprintSortDir.value = sprintSortDir.value === null ? 'asc' : sprintSortDir.value === 'asc' ? 'desc' : null
+}
 
 function initSprintSortable() {
-  if (!sprintListEl.value || sprintSortable) return
+  if (!sprintListEl.value || sprintSortable || sprintSortDir.value) return
   sprintSortable = new Sortable(sprintListEl.value, {
     animation: 150,
     handle: '.sprint-drag-handle',
@@ -310,9 +331,9 @@ function initSprintSortable() {
   })
 }
 
-watch(() => sprintStore.sprints.length, async (len) => {
+watch([() => sprintStore.sprints.length, sprintSortDir], async ([len]) => {
   if (sprintSortable) { sprintSortable.destroy(); sprintSortable = null }
-  if (len) { await nextTick(); initSprintSortable() }
+  if (len && !sprintSortDir.value) { await nextTick(); initSprintSortable() }
 })
 
 function initBacklogSortable() {
@@ -784,6 +805,21 @@ const yTicks = computed(() => {
 }
 .sprint-block-header:hover .sprint-drag-handle { opacity: 1; }
 .sprint-drag-handle:active { cursor: grabbing; }
+
+.sprint-sort-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: flex;
+  gap: 1px;
+  line-height: 1;
+}
+.sprint-sort-btn:hover { background: var(--color-bg); }
+.sprint-sort-btn .sort-active { color: var(--color-primary); }
 
 .sprint-goal-text {
   font-size: 12px;

@@ -761,7 +761,10 @@
     "delete_release": "Eliminar Versión",
     "edit_release": "Editar Versión",
     "total_cards": "Total de Tarjetas",
-    "completed_cards": "Tarjetas Completadas"
+    "completed_cards": "Tarjetas Completadas",
+    "sort_asc": "Sort ascending",
+    "sort_desc": "Sort descending",
+    "sort_none": "Back to custom order"
   },
   "groups": {
     "title": "Grupos",

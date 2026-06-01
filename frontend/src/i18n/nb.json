@@ -761,7 +761,10 @@
     "delete_release": "Slett Release",
     "edit_release": "Rediger Release",
     "total_cards": "Totalt kort",
-    "completed_cards": "Fullførte kort"
+    "completed_cards": "Fullførte kort",
+    "sort_asc": "Sort ascending",
+    "sort_desc": "Sort descending",
+    "sort_none": "Back to custom order"
   },
   "groups": {
     "title": "Groups",

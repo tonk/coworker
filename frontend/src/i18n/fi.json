@@ -761,7 +761,10 @@
     "delete_release": "Poista Julkaisu",
     "edit_release": "Muokkaa Julkaisua",
     "total_cards": "Kortit yhteensä",
-    "completed_cards": "Valmiit kortit"
+    "completed_cards": "Valmiit kortit",
+    "sort_asc": "Sort ascending",
+    "sort_desc": "Sort descending",
+    "sort_none": "Back to custom order"
   },
   "groups": {
     "title": "Groups",

@@ -761,7 +761,10 @@
     "delete_release": "Release verwijderen",
     "edit_release": "Release bewerken",
     "total_cards": "Totaal kaarten",
-    "completed_cards": "Voltooide kaarten"
+    "completed_cards": "Voltooide kaarten",
+    "sort_asc": "Sort ascending",
+    "sort_desc": "Sort descending",
+    "sort_none": "Back to custom order"
   },
   "groups": {
     "title": "Groepen",

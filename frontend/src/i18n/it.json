@@ -761,7 +761,10 @@
     "delete_release": "Elimina Versione",
     "edit_release": "Modifica Versione",
     "total_cards": "Schede Totali",
-    "completed_cards": "Schede Completate"
+    "completed_cards": "Schede Completate",
+    "sort_asc": "Sort ascending",
+    "sort_desc": "Sort descending",
+    "sort_none": "Back to custom order"
   },
   "groups": {
     "title": "Groups",

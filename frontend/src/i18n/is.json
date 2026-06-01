@@ -761,7 +761,10 @@
     "delete_release": "Eyða Útgáfu",
     "edit_release": "Breyta Útgáfu",
     "total_cards": "Spjald samtals",
-    "completed_cards": "Fullkláruð spjald"
+    "completed_cards": "Fullkláruð spjald",
+    "sort_asc": "Sort ascending",
+    "sort_desc": "Sort descending",
+    "sort_none": "Back to custom order"
   },
   "groups": {
     "title": "Groups",
