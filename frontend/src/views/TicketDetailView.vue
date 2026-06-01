@@ -1346,7 +1346,7 @@ async function assignToCustomer() {
 </script>
 
 <style scoped>
-.ticket-detail-main { padding: 24px; max-width: 900px; margin: 0 auto; }
+.ticket-detail-main { padding: 24px; max-width: 1400px; margin: 0 auto; }
 .loading-state { display: flex; justify-content: center; padding: 48px; }
 .empty-state { text-align: center; padding: 64px 24px; color: var(--color-text-muted); }
 .back-link { font-size: 13px; color: var(--color-primary); text-decoration: none; }
