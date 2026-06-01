@@ -35,10 +35,13 @@
           <button class="btn btn-secondary btn-sm" @click="addItem">+ {{ $t('ticketChecklist.add_item') }}</button>
         </div>
         <div v-if="!form.items.length" class="tcl-no-items">{{ $t('ticketChecklist.no_items') }}</div>
-        <div v-for="(item, idx) in form.items" :key="idx" class="tcl-item-row">
-          <label class="sr-only" :for="'tcl-item-' + idx">{{ $t('ticketChecklist.items') }}</label>
-          <input :id="'tcl-item-' + idx" class="form-input form-input-sm" v-model="form.items[idx]" :placeholder="$t('ticketChecklist.item_placeholder')" />
-          <button class="btn-icon-xs tcl-remove-btn" @click="removeItem(idx)" :aria-label="$t('common.delete')">✕</button>
+        <div ref="itemsListEl" class="tcl-items-list">
+          <div v-for="(item, idx) in form.items" :key="idx" class="tcl-item-row">
+            <span class="tcl-drag-handle" :title="$t('ticketChecklist.drag_reorder')" aria-hidden="true">⠿</span>
+            <label class="sr-only" :for="'tcl-item-' + idx">{{ $t('ticketChecklist.items') }}</label>
+            <input :id="'tcl-item-' + idx" class="form-input form-input-sm" v-model="form.items[idx]" :placeholder="$t('ticketChecklist.item_placeholder')" />
+            <button class="btn-icon-xs tcl-remove-btn" @click="removeItem(idx)" :aria-label="$t('common.delete')">✕</button>
+          </div>
         </div>
       </div>
 
@@ -90,8 +93,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import Sortable from 'sortablejs'
 import { ticketChecklistsApi } from '@/api/ticketChecklists'
 import { useUIStore } from '@/stores/ui'
 
@@ -103,6 +107,37 @@ const templates = ref([])
 const editing = ref(null)
 const form = ref(emptyForm())
 const formSnapshot = ref('')
+const itemsListEl = ref(null)
+let sortableInstance = null
+
+function initItemsSortable() {
+  if (!itemsListEl.value || sortableInstance) return
+  sortableInstance = new Sortable(itemsListEl.value, {
+    animation: 150,
+    handle: '.tcl-drag-handle',
+    onEnd(evt) {
+      const moved = form.value.items.splice(evt.oldIndex, 1)[0]
+      form.value.items.splice(evt.newIndex, 0, moved)
+    },
+  })
+}
+
+function destroyItemsSortable() {
+  if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null }
+}
+
+watch(editing, async (val) => {
+  destroyItemsSortable()
+  if (val) {
+    await nextTick()
+    if (form.value.items.length) initItemsSortable()
+  }
+})
+
+watch(() => form.value.items.length, async (len) => {
+  destroyItemsSortable()
+  if (len) { await nextTick(); initItemsSortable() }
+})
 
 onMounted(load)
 
@@ -233,9 +268,12 @@ async function deleteTemplate(tmpl) {
 .tcl-items-section { margin-top: 16px; }
 .tcl-items-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .tcl-no-items { font-size: 13px; color: var(--color-text-muted); padding: 8px 0; }
+.tcl-items-list { display: flex; flex-direction: column; }
 .tcl-item-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .tcl-item-row .form-input { flex: 1; min-width: 0; }
 .tcl-remove-btn { flex-shrink: 0; }
+.tcl-drag-handle { color: var(--color-text-muted); cursor: grab; font-size: 14px; flex-shrink: 0; user-select: none; padding: 0 2px; }
+.tcl-drag-handle:active { cursor: grabbing; }
 .tcl-form-footer { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-border); }
 .text-muted { color: var(--color-text-muted); font-size: 13px; }
 .loading-state { display: flex; justify-content: center; padding: 48px; }
