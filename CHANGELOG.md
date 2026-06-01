@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.10.36 — 2026-06-01
+
+### Added
+- **Threaded ticket messages** — messages can now be replied to at any depth, building a nested thread tree. The reply form appears inline directly below the message being replied to. Nesting is unlimited: the backend loads all messages flat and builds the tree in-memory instead of relying on fixed-depth GORM Preload chains.
+- **Private reply inheritance** — replying to a private (internal) message automatically marks the reply as private, keeping internal notes contained.
+
+### Fixed
+- **Deep nesting persistence** — replies deeper than 1 level were lost on page refresh because the forward-iteration tree builder snapshot-copied children before their own subtrees were populated. Fixed by building the tree bottom-up (reverse iteration) so every child's subtree is fully assembled before it's copied into its parent.
+
 ## v0.10.35 — 2026-05-31
 
 ### Added
