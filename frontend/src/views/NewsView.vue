@@ -29,12 +29,7 @@
               :title="sortDir === 'desc' ? $t('news.sort_desc') : $t('news.sort_asc')"
               @click="sortDir = sortDir === 'desc' ? 'asc' : 'desc'"
             >
-              <svg v-if="sortDir === 'desc'" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4,6 8,10 12,6"/>
-              </svg>
-              <svg v-else viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4,10 8,6 12,10"/>
-              </svg>
+              {{ sortDir === 'asc' ? '△' : '▽' }}
             </button>
           </div>
         </div>

@@ -68,7 +68,7 @@
         <option value="priority">{{ $t('board.sort_priority') }}</option>
       </select>
       <button v-if="sortField" class="sort-dir-btn" @click="sortDir = sortDir === 'asc' ? 'desc' : 'asc'" :title="sortDir === 'asc' ? $t('board.sort_asc') : $t('board.sort_desc')" :aria-label="sortDir === 'asc' ? $t('board.sort_desc_action') : $t('board.sort_asc_action')">
-        {{ sortDir === 'asc' ? '↑' : '↓' }}
+        {{ sortDir === 'asc' ? '△' : '▽' }}
       </button>
     </div>
 
