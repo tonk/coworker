@@ -1545,16 +1545,16 @@ func main() {
 		description string
 		color       string
 		status      string
+		startDays   int // days in the past for created_at
 		cardTitles  []string
 	}
 
 	scrumEpics := map[string][]epicSpec{
 		"product-platform": {
 			{
-				name:        "Discovery & Planning",
+				name: "Discovery & Planning", startDays: 77,
 				description: "Up-front research, user interviews, wireframes, and project kick-off.",
-				color:       "#3b82f6",
-				status:      "done",
+				color: "#3b82f6", status: "done",
 				cardTitles: []string{
 					"Product market research and user interviews",
 					"Competitor analysis and positioning",
@@ -1564,10 +1564,9 @@ func main() {
 				},
 			},
 			{
-				name:        "Authentication & Security",
+				name: "Authentication & Security", startDays: 63,
 				description: "Secure login, token management, password hashing, and access control.",
-				color:       "#ef4444",
-				status:      "done",
+				color: "#ef4444", status: "done",
 				cardTitles: []string{
 					"OAuth 2.0 provider integration",
 					"JWT token management and refresh",
@@ -1577,10 +1576,9 @@ func main() {
 				},
 			},
 			{
-				name:        "Core Platform",
+				name: "Core Platform", startDays: 35,
 				description: "Monorepo setup, CI/CD, design system, database schema, and staging deployment.",
-				color:       "#8b5cf6",
-				status:      "done",
+				color: "#8b5cf6", status: "done",
 				cardTitles: []string{
 					"Set up monorepo and CI/CD pipeline",
 					"Design system and component library",
@@ -1589,10 +1587,9 @@ func main() {
 				},
 			},
 			{
-				name:        "User Experience",
+				name: "User Experience", startDays: 21,
 				description: "Dashboard, onboarding, notifications, search, and internationalisation.",
-				color:       "#10b981",
-				status:      "open",
+				color: "#10b981", status: "open",
 				cardTitles: []string{
 					"Admin dashboard scaffolding",
 					"User invitation and onboarding flow",
@@ -1605,10 +1602,9 @@ func main() {
 				},
 			},
 			{
-				name:        "Growth & Launch",
+				name: "Growth & Launch", startDays: 7,
 				description: "Payment integration, analytics, performance tuning, and public launch.",
-				color:       "#f59e0b",
-				status:      "open",
+				color: "#f59e0b", status: "open",
 				cardTitles: []string{
 					"Stripe payment integration",
 					"Analytics event tracking",
@@ -1620,10 +1616,9 @@ func main() {
 		},
 		"api-platform": {
 			{
-				name:        "Foundation",
+				name: "Foundation", startDays: 91,
 				description: "OpenAPI spec, Go project structure, containerisation, and operational endpoints.",
-				color:       "#3b82f6",
-				status:      "done",
+				color: "#3b82f6", status: "done",
 				cardTitles: []string{
 					"Design API schema and OpenAPI spec",
 					"Set up Go project structure with CI/CD",
@@ -1633,10 +1628,9 @@ func main() {
 				},
 			},
 			{
-				name:        "Core API",
+				name: "Core API", startDays: 77,
 				description: "CRUD endpoints, pagination, validation, database migrations, and logging.",
-				color:       "#8b5cf6",
-				status:      "done",
+				color: "#8b5cf6", status: "done",
 				cardTitles: []string{
 					"Implement resource CRUD endpoints",
 					"Pagination and filtering support",
@@ -1646,10 +1640,9 @@ func main() {
 				},
 			},
 			{
-				name:        "Security & Developer Experience",
+				name: "Security & Developer Experience", startDays: 63,
 				description: "API key auth, rate limiting, interactive docs, webhooks, and client SDKs.",
-				color:       "#10b981",
-				status:      "done",
+				color: "#10b981", status: "done",
 				cardTitles: []string{
 					"API key authentication and rotation",
 					"Rate limiting per API key",
@@ -1661,10 +1654,9 @@ func main() {
 				},
 			},
 			{
-				name:        "Stability & Performance",
+				name: "Stability & Performance", startDays: 49,
 				description: "Integration tests, load testing, v0 deprecation, bug fixes, and batch support.",
-				color:       "#f59e0b",
-				status:      "open",
+				color: "#f59e0b", status: "open",
 				cardTitles: []string{
 					"End-to-end integration test suite",
 					"Load testing and performance benchmarks",
@@ -1678,10 +1670,9 @@ func main() {
 				},
 			},
 			{
-				name:        "GA Launch",
+				name: "GA Launch", startDays: 21,
 				description: "Developer portal, self-service key management, SLA monitoring, and launch announcement.",
-				color:       "#ec4899",
-				status:      "open",
+				color: "#ec4899", status: "open",
 				cardTitles: []string{
 					"Public developer portal and onboarding docs",
 					"API key self-service management console",
@@ -1707,6 +1698,10 @@ func main() {
 				Position:    float64((i + 1) * 1000),
 			}
 			must(db.Create(epic).Error)
+			// Backdate created_at so the burndown chart has meaningful history
+			epicCreatedAt := time.Now().UTC().AddDate(0, 0, -es.startDays).Truncate(24 * time.Hour)
+			must(db.Model(epic).UpdateColumn("created_at", epicCreatedAt).Error)
+			epic.CreatedAt = epicCreatedAt
 
 			// Link cards to this epic
 			for _, title := range es.cardTitles {
