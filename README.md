@@ -48,6 +48,8 @@ The result is a ~30,000 line Go backend and a ~30,000 line Vue 3 frontend that a
 | *Release burndown — progress across all sprints in a release* | *Standby shift entry — split on-call shifts across multiple days* |
 | ![Ticket list](screenshots/21-ticket-list.png) | ![Ticket detail](screenshots/22-ticket-detail.png) |
 | *Helpdesk ticket list with SLA status* | *Ticket detail — status, priority, assignee, SLA card, and messages* |
+| ![Ticket inbox](screenshots/23-ticket-inbox.png) | |
+| *Ticket inbox — all unassigned tickets grouped by status with SLA indicators* | |
 
 ## Quick Start
 
