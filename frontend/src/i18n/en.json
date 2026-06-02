@@ -728,6 +728,7 @@
     "accent_red": "Red",
     "accent_green": "Green",
     "accent_orange": "Orange",
+    "accent_custom": "Custom colour",
     "time_notation": "Time notation",
     "time_notation_decimal": "Decimal (e.g. 8.25)",
     "time_notation_hhmm": "Hours:Minutes (e.g. 8:15)",

@@ -20,12 +20,27 @@ function applyTheme(value) {
   }
 }
 
+function darkenHex(hex, amount = 0.82) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgb(${Math.round(r * amount)}, ${Math.round(g * amount)}, ${Math.round(b * amount)})`
+}
+
 function applyAccentColor(value) {
   const root = document.documentElement
   if (!value || value === 'blue') {
     root.removeAttribute('data-accent')
+    root.style.removeProperty('--color-primary')
+    root.style.removeProperty('--color-primary-hover')
+  } else if (value.startsWith('#')) {
+    root.removeAttribute('data-accent')
+    root.style.setProperty('--color-primary', value)
+    root.style.setProperty('--color-primary-hover', darkenHex(value))
   } else {
     root.setAttribute('data-accent', value)
+    root.style.removeProperty('--color-primary')
+    root.style.removeProperty('--color-primary-hover')
   }
 }
 

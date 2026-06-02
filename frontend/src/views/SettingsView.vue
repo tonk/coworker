@@ -77,6 +77,19 @@
                   :aria-pressed="form.accent_color === c.value"
                   @click="form.accent_color = c.value"
                 ></button>
+                <label
+                  class="accent-swatch accent-swatch-custom"
+                  :class="{ active: isCustomAccent }"
+                  :title="$t('settings.accent_custom')"
+                  :aria-label="$t('settings.accent_custom')"
+                >
+                  <input
+                    type="color"
+                    class="accent-color-input"
+                    :value="customAccentValue"
+                    @input="onCustomAccent($event.target.value)"
+                  />
+                </label>
               </div>
             </div>
             <div class="form-group">
@@ -428,6 +441,14 @@ const accentColors = [
   { value: 'green',  hex: '#22c55e' },
   { value: 'orange', hex: '#f97316' },
 ]
+
+const isCustomAccent = computed(() => form.value.accent_color?.startsWith('#'))
+const customAccentValue = computed(() => isCustomAccent.value ? form.value.accent_color : '#6366f1')
+
+function onCustomAccent(hex) {
+  form.value.accent_color = hex
+  setAccentColor(hex)
+}
 const { formatDateTime } = useDateFormat()
 const { t: $t } = useI18n()
 
@@ -810,6 +831,14 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
   outline-color: var(--color-text);
   transform: scale(1.15);
 }
+.accent-swatch-custom {
+  background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+  display: flex; align-items: center; justify-content: center;
+}
+.accent-color-input {
+  width: 0; height: 0; opacity: 0; position: absolute; pointer-events: none;
+}
+.accent-swatch-custom:hover { cursor: pointer; }
 
 .form-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
 

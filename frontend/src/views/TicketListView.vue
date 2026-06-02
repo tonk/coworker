@@ -279,44 +279,45 @@
 
         <!-- List view -->
         <template v-else-if="viewMode === 'list'">
-          <table class="ticket-table">
-            <thead>
-              <tr>
-                <th class="th-sort" :class="sortClass('id')" @click="toggleSort('id')"># <span class="sort-arrow">{{ sortArrow('id') }}</span></th>
-                <th class="th-sort th-title" :class="sortClass('title')" @click="toggleSort('title')">{{ $t('ticket.title') }} <span class="sort-arrow">{{ sortArrow('title') }}</span></th>
-                <th class="th-sort" :class="sortClass('status')" @click="toggleSort('status')">{{ $t('ticket.status') }} <span class="sort-arrow">{{ sortArrow('status') }}</span></th>
-                <th class="th-sort" :class="sortClass('priority')" @click="toggleSort('priority')">{{ $t('ticket.priority') }} <span class="sort-arrow">{{ sortArrow('priority') }}</span></th>
-                <th class="th-sort" :class="sortClass('type')" @click="toggleSort('type')">{{ $t('ticket.type') }} <span class="sort-arrow">{{ sortArrow('type') }}</span></th>
-                <th class="th-sort" :class="sortClass('assigned_to')" @click="toggleSort('assigned_to')">{{ $t('ticket.assigned_to') }} <span class="sort-arrow">{{ sortArrow('assigned_to') }}</span></th>
-                <th class="th-sort" :class="sortClass('created_at')" @click="toggleSort('created_at')">{{ $t('ticket.created_at') }} <span class="sort-arrow">{{ sortArrow('created_at') }}</span></th>
-                <th class="th-tags">{{ $t('ticket.tags') }}</th>
-                <th>SLA</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="t in sortedTickets" :key="t.id" class="table-row" @click="openTicket(t)" tabindex="0" @keydown.enter="openTicket(t)" :aria-label="t.title">
-                <td class="td-id">#{{ t.id }}</td>
-                <td class="td-title"><span v-if="t.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ t.title }}</td>
-                <td><span class="ticket-status" :class="'status-' + t.status">{{ $t('ticket.status_' + t.status) }}</span></td>
-                <td><span class="ticket-priority" :class="'pri-' + t.priority">{{ t.priority }}</span></td>
-                <td><span class="ticket-type" :class="'type-' + t.type">{{ $t('ticket.type_' + t.type) }}</span></td>
-                <td class="td-assignee">{{ t.assigned_to?.display_name || t.assigned_to?.username || '—' }}</td>
-                <td class="td-date">{{ formatDate(t.created_at) }}</td>
-                <td>
-                  <span v-if="t.tags?.length" class="ticket-tags">
-                    <span v-for="tag in t.tags.slice(0, 2)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
-                    <span v-if="t.tags.length > 2" class="mini-tag more">+{{ t.tags.length - 2 }}</span>
-                  </span>
-                </td>
-                <td>
-                  <span v-if="t.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(t)">{{ $t('sla.breached') }}</span>
-                  <span v-else-if="slaWarning(t)" class="sla-badge sla-warning" :title="slaTitle(t)">{{ $t('sla.warning') }}</span>
-                  <span v-else-if="t.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(t)">{{ $t('sla.on_track') }}</span>
-                  <span v-else>—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <template v-for="section in listSections" :key="section.key">
+            <div class="pending-reminder-divider"><span class="pending-reminder-label">{{ section.label }}</span></div>
+            <table class="ticket-table">
+              <thead>
+                <tr>
+                  <th class="th-sort" :class="sortClass('id')" @click="toggleSort('id')"># <span class="sort-arrow">{{ sortArrow('id') }}</span></th>
+                  <th class="th-sort th-title" :class="sortClass('title')" @click="toggleSort('title')">{{ $t('ticket.title') }} <span class="sort-arrow">{{ sortArrow('title') }}</span></th>
+                  <th class="th-sort" :class="sortClass('priority')" @click="toggleSort('priority')">{{ $t('ticket.priority') }} <span class="sort-arrow">{{ sortArrow('priority') }}</span></th>
+                  <th class="th-sort" :class="sortClass('type')" @click="toggleSort('type')">{{ $t('ticket.type') }} <span class="sort-arrow">{{ sortArrow('type') }}</span></th>
+                  <th class="th-sort" :class="sortClass('assigned_to')" @click="toggleSort('assigned_to')">{{ $t('ticket.assigned_to') }} <span class="sort-arrow">{{ sortArrow('assigned_to') }}</span></th>
+                  <th class="th-sort" :class="sortClass('created_at')" @click="toggleSort('created_at')">{{ $t('ticket.created_at') }} <span class="sort-arrow">{{ sortArrow('created_at') }}</span></th>
+                  <th class="th-tags">{{ $t('ticket.tags') }}</th>
+                  <th>SLA</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="tk in section.tickets" :key="tk.id" class="table-row" @click="openTicket(tk)" tabindex="0" @keydown.enter="openTicket(tk)" :aria-label="tk.title">
+                  <td class="td-id">#{{ tk.id }}</td>
+                  <td class="td-title"><span v-if="tk.is_spam" class="spam-tag">{{ $t('ticket.spam') }}</span>{{ tk.title }}</td>
+                  <td><span class="ticket-priority" :class="'pri-' + tk.priority">{{ tk.priority }}</span></td>
+                  <td><span class="ticket-type" :class="'type-' + tk.type">{{ $t('ticket.type_' + tk.type) }}</span></td>
+                  <td class="td-assignee">{{ tk.assigned_to?.display_name || tk.assigned_to?.username || '—' }}</td>
+                  <td class="td-date">{{ formatDate(tk.created_at) }}</td>
+                  <td>
+                    <span v-if="tk.tags?.length" class="ticket-tags">
+                      <span v-for="tag in tk.tags.slice(0, 2)" :key="tag.id" class="mini-tag">#{{ tag.name }}</span>
+                      <span v-if="tk.tags.length > 2" class="mini-tag more">+{{ tk.tags.length - 2 }}</span>
+                    </span>
+                  </td>
+                  <td>
+                    <span v-if="tk.sla_response_breached" class="sla-badge sla-breach" :title="slaTitle(tk)">{{ $t('sla.breached') }}</span>
+                    <span v-else-if="slaWarning(tk)" class="sla-badge sla-warning" :title="slaTitle(tk)">{{ $t('sla.warning') }}</span>
+                    <span v-else-if="tk.sla_policy_id" class="sla-badge sla-ok" :title="slaTitle(tk)">{{ $t('sla.on_track') }}</span>
+                    <span v-else>—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
         </template>
       </template>
     </div>
@@ -402,6 +403,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import client from '@/api/client'
 import { customersApi } from '@/api/customers'
@@ -416,6 +418,7 @@ import { useDateFormat } from '@/composables/useDateFormat'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
+const { t } = useI18n()
 const { formatDate } = useDateFormat()
 
 function renderMarkdown(text) {
@@ -526,40 +529,32 @@ const groupedTickets = computed(() => {
   })).filter(g => g.tickets.length > 0)
 })
 
-const sortedTickets = computed(() => {
-  const f = sortField.value
-  const d = sortDir.value
-  const arr = [...visibleTickets.value]
-  arr.sort((a, b) => {
+function sortByField(arr, f, d) {
+  return [...arr].sort((a, b) => {
     let va, vb
-    if (f === 'priority') {
-      va = priorityRank[a.priority] || 0
-      vb = priorityRank[b.priority] || 0
-    } else if (f === 'status') {
-      va = a.status
-      vb = b.status
-    } else if (f === 'type') {
-      va = a.type
-      vb = b.type
-    } else if (f === 'assigned_to') {
-      va = (a.assigned_to?.display_name || a.assigned_to?.username || '').toLowerCase()
-      vb = (b.assigned_to?.display_name || b.assigned_to?.username || '').toLowerCase()
-    } else if (f === 'id') {
-      va = a.id
-      vb = b.id
-    } else if (f === 'title') {
-      va = a.title.toLowerCase()
-      vb = b.title.toLowerCase()
-    } else {
-      va = a[f]
-      vb = b[f]
-    }
+    if (f === 'priority') { va = priorityRank[a.priority] || 0; vb = priorityRank[b.priority] || 0 }
+    else if (f === 'type') { va = a.type; vb = b.type }
+    else if (f === 'assigned_to') { va = (a.assigned_to?.display_name || a.assigned_to?.username || '').toLowerCase(); vb = (b.assigned_to?.display_name || b.assigned_to?.username || '').toLowerCase() }
+    else if (f === 'id') { va = a.id; vb = b.id }
+    else if (f === 'title') { va = a.title.toLowerCase(); vb = b.title.toLowerCase() }
+    else { va = a[f]; vb = b[f] }
     if (va < vb) return -1 * d
     if (va > vb) return 1 * d
     return 0
   })
-  return arr
-})
+}
+
+const listSections = computed(() => [
+  { key: 'new',            label: t('ticket.status_new'),        tickets: visibleTickets.value.filter(tk => tk.status === 'new') },
+  { key: 'open',           label: t('ticket.status_open'),       tickets: visibleTickets.value.filter(tk => tk.status === 'open') },
+  { key: 'pending',        label: t('ticket.status_pending'),    tickets: visibleTickets.value.filter(tk => tk.status === 'pending' && !tk.reminder_at) },
+  { key: 'pending-remind', label: t('ticket.pending_reminders'), tickets: visibleTickets.value.filter(tk => tk.status === 'pending' && tk.reminder_at).sort((a, b) => new Date(a.reminder_at) - new Date(b.reminder_at)) },
+  { key: 'pending-close',  label: t('ticket.resolved_closed'),   tickets: visibleTickets.value.filter(tk => tk.status === 'pending_close') },
+  { key: 'closed',         label: t('ticket.status_closed'),     tickets: visibleTickets.value.filter(tk => tk.status === 'closed') },
+].filter(s => s.tickets.length > 0).map(s => ({ ...s, tickets: sortByField(s.tickets, sortField.value, sortDir.value) }))
+)
+
+const sortedTickets = computed(() => sortByField(visibleTickets.value, sortField.value, sortDir.value))
 
 function toggleSort(field) {
   if (sortField.value === field) {
@@ -831,9 +826,9 @@ async function onDescPaste(e) {
 .sla-breach { background: #fecaca; color: #b91c1c; }
 .pending-reminder-divider {
   display: flex; align-items: center; gap: 12px;
-  margin: 24px 0 16px;
-  color: var(--color-text-muted);
-  font-size: 12px;
+  margin: 40px 0 16px;
+  color: var(--color-primary);
+  font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -841,14 +836,16 @@ async function onDescPaste(e) {
 .pending-reminder-divider::before {
   content: '';
   flex: 1;
-  height: 1px;
-  background: var(--color-border);
+  height: 2px;
+  background: var(--color-primary);
+  opacity: 0.4;
 }
 .pending-reminder-divider::after {
   content: '';
   flex: 1;
-  height: 1px;
-  background: var(--color-border);
+  height: 2px;
+  background: var(--color-primary);
+  opacity: 0.4;
 }
 .reminder-badge {
   font-size: 10px;
@@ -892,6 +889,21 @@ async function onDescPaste(e) {
 .table-row { cursor: pointer; transition: background .1s; }
 .table-row:hover { background: var(--color-bg-alt); }
 .table-row:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+
+/* Dark mode */
+[data-theme="dark"] .type-incident { background: #3a1015; color: #ef4444; }
+[data-theme="dark"] .type-problem { background: #3a2010; color: #f97316; }
+[data-theme="dark"] .type-service_request { background: #0a2a1a; color: #34d399; }
+[data-theme="dark"] .type-change_request { background: #0a1a3a; color: #60a5fa; }
+[data-theme="dark"] .pri-low { background: #1a3a24; color: #6fcf97; }
+[data-theme="dark"] .pri-medium { background: #3a3010; color: #f2c94c; }
+[data-theme="dark"] .pri-high { background: #3a2010; color: #f2994a; }
+[data-theme="dark"] .pri-critical { background: #3a1015; color: #eb5757; }
+[data-theme="dark"] .status-new { background: #0a1a3a; color: #60a5fa; }
+[data-theme="dark"] .status-open { background: #3a3010; color: #f2c94c; }
+[data-theme="dark"] .status-pending { background: #2a1040; color: #c084fc; }
+[data-theme="dark"] .status-pending_close { background: #0a2a1a; color: #34d399; }
+[data-theme="dark"] .status-closed { background: #1f2937; color: #9ca3af; }
 
 /* Markdown editor tabs */
 :deep(.md-editor) { border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
