@@ -828,7 +828,7 @@
             </table>
           </div>
 
-          <div class="tab-toolbar" style="margin-top:24px">
+          <div class="tab-toolbar" style="margin-top:48px">
             <h2 class="tab-section-title">{{ $t('admin.tt_customers_title') }}</h2>
             <button v-if="!addingTTCustomer && !editingTTCustomer" class="btn btn-primary btn-sm" @click="addingTTCustomer = true; nextTick(() => newTTCustRef?.focus())">+ {{ $t('timeTracking.tt_customer_add') }}</button>
           </div>

@@ -279,17 +279,16 @@ async function deleteTemplate(tmpl) {
 .loading-state { display: flex; justify-content: center; padding: 48px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 
-/* Column widths — match MacrosTab */
-:deep(.data-table) th:nth-child(1),
-:deep(.data-table) td:nth-child(1) { width: 28%; min-width: 200px; }
-:deep(.data-table) th:nth-child(2),
-:deep(.data-table) td:nth-child(2) { width: 40%; }
-:deep(.data-table) th:nth-child(3),
-:deep(.data-table) td:nth-child(3) { width: 90px; min-width: 90px; text-align: center; }
-:deep(.data-table) th:nth-child(4),
-:deep(.data-table) td:nth-child(4) { width: 90px; min-width: 90px; text-align: center; }
-:deep(.data-table) th:nth-child(5),
-:deep(.data-table) td:nth-child(5) { width: 120px; min-width: 120px; }
+.tab-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.data-table { width: 100%; border-collapse: collapse; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
+.data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--color-border); font-size: 13px; vertical-align: middle; }
+.data-table th { font-weight: 600; color: var(--color-text-muted); font-size: 12px; background: var(--color-bg); }
+.data-table small { color: var(--color-text-muted); font-size: 11px; }
+.actions-cell { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge-active { background: #dcfce7; color: #166534; }
+.badge-inactive { background: #fee2e2; color: #991b1b; }
+[data-theme="dark"] .badge-active { background: #14532d; color: #86efac; }
+[data-theme="dark"] .badge-inactive { background: #450a0a; color: #fca5a5; }
 .name-link {
   background: none;
   border: none;
