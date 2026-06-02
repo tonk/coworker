@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.37)
+## Latest release (v0.10.38)
 
-- **Epics for Scrum** — colour-coded milestones that group cards across sprints; Epic Burndown chart shows remaining cards and story points per day.
-- **Sprint Report** — post-sprint breakdown of completed vs not-completed cards with story-point totals and a completion percentage.
-- **Backlog and sprint drag-to-reorder** — reorder backlog cards and sprints by dragging; sprint list also supports ascending/descending sort by sprint number.
+- **Empty timesheet rows persist** — blank rows stay in the Log Time grid when hours are cleared; layout is saved per week and restored on return.
+- **Copy Previous Week keeps empty rows** — copies the full previous-week row layout in order, including blank separator rows.
+- **Standby times in week grid PDF** — overnight shifts show start/end labels per day with separate connector lines for each shift.
 
 ## Experiment
 

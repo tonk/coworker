@@ -682,4 +682,7 @@ Create an application that has all these features and requirements
 - Consolidate sort indicators to outline triangles (△/▽) throughout the UI
 - Fix 28 English i18n button/action labels to standard title case
 - Unify admin panel button styles to btn-ghost/btn-ghost btn-danger throughout
+- Persist empty timesheet rows in the Log Time grid per ISO week; do not remove blank rows when all hours are cleared
+- Copy Previous Week includes empty rows from the previous week in the same order
+- Week grid PDF shows start/end times on cells; overnight standby shifts render as separate two-day spans with connector lines
 - Move Time Tracking add buttons to toolbar; fix News empty state; fix TicketChecklistTemplatesTab to use ui.confirm()

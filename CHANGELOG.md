@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.10.38 — 2026-06-02
+
+### Added
+- **Persist empty timesheet rows** — blank rows in the Log Time grid are no longer removed when all hours are cleared; row layout is saved per ISO week and restored when you return to that week.
+- **Copy Previous Week includes empty rows** — the copy action brings over the previous week's full row layout (including blank separator rows) in the same order, not just rows that had time entries.
+- **Standby time ranges in week grid PDF** — cells with start/end times show them below the hours in a smaller indigo label; overnight standby shifts render as separate two-day spans with start time on the first day, end time on the second, and a connector line between them.
+
+### Fixed
+- **Week grid PDF layout broken by time labels** — drawing time annotations no longer disrupts the PDF cursor, so day columns stay continuous and the total column aligns correctly.
+- **Week grid PDF merged consecutive standby shifts** — back-to-back overnight shifts (e.g. Tue 19:00→Wed 07:00 and Wed 19:00→Thu 07:00) no longer collapse into one long span; each shift gets its own line and readable start/end labels.
+
 ## v0.10.37 — 2026-06-01
 
 ### Added
