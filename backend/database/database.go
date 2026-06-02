@@ -411,6 +411,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.GroupCustomerAccess{},
 		&models.TimeEntry{},
 		&models.TimeEntryRowOrder{},
+		&models.TimeEntryWeekRowOrder{},
 		&models.NewsItem{},
 		&models.PasskeyCredential{},
 		&models.Ticket{},

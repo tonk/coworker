@@ -631,8 +631,46 @@ func setDeclarable(groups []timeEntryGroup) []timeEntryGroup {
 }
 
 // GetTimeEntryRowOrder returns the saved row-key order for the current user.
+// Optional query params year + week return the ISO-week-specific layout (includes empty rows).
 func GetTimeEntryRowOrder(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	keys := loadTimeEntryRowOrderKeys(userID, c.Query("year"), c.Query("week"))
+	c.JSON(http.StatusOK, gin.H{"keys": keys})
+}
+
+// UpdateTimeEntryRowOrder saves the row-key order for the current user.
+// Optional query params year + week persist the layout for that ISO week.
+func UpdateTimeEntryRowOrder(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	var body struct {
+		Keys []string `json:"keys"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	if err := saveTimeEntryRowOrderKeys(userID, c.Query("year"), c.Query("week"), body.Keys); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save order"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func loadTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string) []string {
+	if yearStr != "" && weekStr != "" {
+		year, yErr := strconv.Atoi(yearStr)
+		week, wErr := strconv.Atoi(weekStr)
+		if yErr == nil && wErr == nil && week >= 1 && week <= 53 {
+			var weekOrder models.TimeEntryWeekRowOrder
+			if err := database.DB.Where("user_id = ? AND year = ? AND week = ?", userID, year, week).First(&weekOrder).Error; err == nil && weekOrder.OrderedKeys != "" {
+				var keys []string
+				if json.Unmarshal([]byte(weekOrder.OrderedKeys), &keys) == nil && keys != nil {
+					return keys
+				}
+			}
+		}
+	}
+
 	var order models.TimeEntryRowOrder
 	database.DB.Where("user_id = ?", userID).First(&order)
 	var keys []string
@@ -644,27 +682,27 @@ func GetTimeEntryRowOrder(c *gin.Context) {
 	if keys == nil {
 		keys = []string{}
 	}
-	c.JSON(http.StatusOK, gin.H{"keys": keys})
+	return keys
 }
 
-// UpdateTimeEntryRowOrder saves the row-key order for the current user.
-func UpdateTimeEntryRowOrder(c *gin.Context) {
-	userID := middleware.GetUserID(c)
-	var body struct {
-		Keys []string `json:"keys"`
+func saveTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string, keys []string) error {
+	raw, _ := json.Marshal(keys)
+	if yearStr != "" && weekStr != "" {
+		year, yErr := strconv.Atoi(yearStr)
+		week, wErr := strconv.Atoi(weekStr)
+		if yErr == nil && wErr == nil && week >= 1 && week <= 53 {
+			weekOrder := models.TimeEntryWeekRowOrder{
+				UserID:      userID,
+				Year:        year,
+				Week:        week,
+				OrderedKeys: string(raw),
+			}
+			return database.DB.Save(&weekOrder).Error
+		}
 	}
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
-		return
-	}
-	raw, _ := json.Marshal(body.Keys)
 	order := models.TimeEntryRowOrder{
 		UserID:      userID,
 		OrderedKeys: string(raw),
 	}
-	if err := database.DB.Save(&order).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save order"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"ok": true})
+	return database.DB.Save(&order).Error
 }

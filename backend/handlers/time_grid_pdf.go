@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -31,6 +32,7 @@ var (
 	gClrHoliday    = rgb{255, 247, 205} // light amber — holiday cells
 	gClrWeekend    = rgb{232, 233, 240} // light lavender-gray — weekend data cells
 	gClrWeekendHdr = rgb{218, 220, 232} // slightly darker — weekend column headers
+	gClrTimeRange  = rgb{79, 70, 229}   // indigo — start/end times in week grid cells
 )
 
 // ── Landscape A4 page geometry (mm) ──────────────────────────────────────────
@@ -48,6 +50,26 @@ type gridEntry struct {
 	label    string
 	cells    []int  // minutes per column (len == numCols)
 	holidays []bool // true if column contains at least one is_holiday entry
+}
+
+// weekGridCell holds per-day data for the week PDF including optional time ranges.
+type weekGridCell struct {
+	minutes      int
+	holiday      bool
+	singleRange  string // same-day start–end (e.g. "09:00–17:00")
+	eveningStart string // overnight shift begins (e.g. "19:00", ends 23:59)
+	morningEnd   string // overnight shift ends (e.g. "07:00", started 00:00)
+}
+
+type weekGridRow struct {
+	label string
+	cells []weekGridCell
+}
+
+// weekCellSpan marks a multi-day time range rendered as start/end labels with a connector line.
+type weekCellSpan struct {
+	startCol, endCol   int
+	startTime, endTime string
 }
 
 // ── gridFmt formats minutes as decimal hours, or blank for zero ──────────────
@@ -123,6 +145,135 @@ func buildGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) int,
 		result = append(result, *rows[k])
 	}
 	return result
+}
+
+func timeEntryRowKey(e models.TimeEntry) string {
+	custKey, projKey := "", ""
+	if e.CustomerID != nil {
+		custKey = strconv.FormatUint(uint64(*e.CustomerID), 10)
+	}
+	if e.ProjectID != nil {
+		projKey = strconv.FormatUint(uint64(*e.ProjectID), 10)
+	}
+	return custKey + "|" + projKey + "|" + e.Description
+}
+
+func timeEntryRowLabel(e models.TimeEntry) string {
+	if e.Customer != nil && e.Customer.Name != "" {
+		if e.Project != nil {
+			return e.Customer.Name + " / " + e.Project.Name
+		}
+		return e.Customer.Name
+	}
+	if e.Project != nil {
+		return e.Project.Name
+	}
+	if e.Description != "" {
+		return e.Description
+	}
+	return "—"
+}
+
+func loadWeekGridRowOrder(userID uint, weekStart time.Time) []string {
+	if userID == 0 {
+		return nil
+	}
+	year, week := weekStart.ISOWeek()
+	var weekOrder models.TimeEntryWeekRowOrder
+	if err := database.DB.Where("user_id = ? AND year = ? AND week = ?", userID, year, week).First(&weekOrder).Error; err != nil {
+		return nil
+	}
+	var keys []string
+	if weekOrder.OrderedKeys == "" || json.Unmarshal([]byte(weekOrder.OrderedKeys), &keys) != nil || keys == nil {
+		return nil
+	}
+	return keys
+}
+
+func buildWeekGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) int, savedOrder []string) []weekGridRow {
+	type key = string
+	order := []key{}
+	rows := map[key]*weekGridRow{}
+
+	for _, e := range entries {
+		col := dayFn(e)
+		if col < 0 || col >= 7 {
+			continue
+		}
+		k := timeEntryRowKey(e)
+		if _, exists := rows[k]; !exists {
+			rows[k] = &weekGridRow{
+				label: timeEntryRowLabel(e),
+				cells: make([]weekGridCell, 7),
+			}
+			order = append(order, k)
+		}
+		cell := &rows[k].cells[col]
+		cell.minutes += e.Minutes
+		if e.IsHoliday {
+			cell.holiday = true
+		}
+		st, et := "", ""
+		if e.StartTime != nil {
+			st = *e.StartTime
+		}
+		if e.EndTime != nil {
+			et = *e.EndTime
+		}
+		switch {
+		case st != "" && st != "00:00" && et == "23:59":
+			cell.eveningStart = st
+		case (st == "" || st == "00:00") && et != "" && et != "23:59":
+			cell.morningEnd = et
+		case st != "" && et != "":
+			cell.singleRange = st + "–" + et
+		}
+	}
+
+	if len(savedOrder) > 0 {
+		seen := map[key]bool{}
+		merged := make([]key, 0, len(savedOrder))
+		for _, k := range savedOrder {
+			if rows[k] != nil && !seen[k] {
+				merged = append(merged, k)
+				seen[k] = true
+			}
+		}
+		for _, k := range order {
+			if !seen[k] {
+				merged = append(merged, k)
+			}
+		}
+		order = merged
+	} else {
+		sort.Strings(order)
+	}
+
+	result := make([]weekGridRow, 0, len(order))
+	for _, k := range order {
+		result = append(result, *rows[k])
+	}
+	return result
+}
+
+func findWeekCellSpans(cells []weekGridCell) []weekCellSpan {
+	var spans []weekCellSpan
+	for i := 0; i < len(cells)-1; i++ {
+		if cells[i].eveningStart == "" || cells[i+1].morningEnd == "" {
+			continue
+		}
+		spans = append(spans, weekCellSpan{
+			startCol:  i,
+			endCol:    i + 1,
+			startTime: cells[i].eveningStart,
+			endTime:   cells[i+1].morningEnd,
+		})
+	}
+	return spans
+}
+
+func weekCellLeft(col int, wLabel, wDay float64) float64 {
+	return gMargin + wLabel + float64(col)*wDay
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -334,13 +485,34 @@ func setGridFooter(pdf *gofpdf.Fpdf, ff, companyName, periodLabel string, tr pdf
 
 // ── Week grid ─────────────────────────────────────────────────────────────────
 
+func weekRowHasTimes(r weekGridRow) bool {
+	for _, c := range r.cells {
+		if c.singleRange != "" || c.eveningStart != "" || c.morningEnd != "" {
+			return true
+		}
+	}
+	return false
+}
+
+func drawWeekGridTimeAt(pdf *gofpdf.Fpdf, ff, txt string, x, y float64) {
+	if txt == "" {
+		return
+	}
+	pdf.SetFont(ff, "", 5.5)
+	setTxt(pdf, gClrTimeRange)
+	tw := pdf.GetStringWidth(txt)
+	pdf.Text(x-tw/2, y, txt)
+}
+
 func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, weekStart time.Time, targetUserID uint) (bytes.Buffer, string, error) {
 	// Column widths: 74 label + 7×25 days + 28 total = 277mm (full body width).
 	const (
-		wLabel = 74.0
-		wDay   = 25.0
-		wTotal = 28.0
-		rowH   = 6.5
+		wLabel    = 74.0
+		wDay      = 25.0
+		wTotal    = 28.0
+		baseRowH  = 6.5
+		tallRowH  = 10.0
+		timeBaseY = 1.8 // mm above cell bottom for time labels / connector
 	)
 
 	// Period label.
@@ -363,15 +535,16 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		}
 		return diff
 	}
-	rows := buildGridRows(entries, dayFn, 7)
+	savedOrder := loadWeekGridRowOrder(targetUserID, weekStart)
+	rows := buildWeekGridRows(entries, dayFn, savedOrder)
 
 	// Column totals.
 	colTotals := make([]int, 7)
 	grandTotal := 0
 	for _, r := range rows {
-		for i, m := range r.cells {
-			colTotals[i] += m
-			grandTotal += m
+		for i, c := range r.cells {
+			colTotals[i] += c.minutes
+			grandTotal += c.minutes
 		}
 	}
 
@@ -392,7 +565,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	drawHeader := func() float64 {
 		y := drawGridDocHeader(pdf, ff, companyLogo, line1Left, employeeName, periodLabel)
 		pdf.SetY(y)
-		return drawWeekColHeader(pdf, ff, tr, dayHeaders, wLabel, wDay, wTotal, rowH*1.4)
+		return drawWeekColHeader(pdf, ff, tr, dayHeaders, wLabel, wDay, wTotal, baseRowH*1.4)
 	}
 
 	pdf.AddPage()
@@ -405,36 +578,69 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 
 	// Data rows.
 	for i, r := range rows {
+		rowH := baseRowH
+		if weekRowHasTimes(r) {
+			rowH = tallRowH
+		}
 		if pdf.GetY() > gPageH-gMargin-rowH*3 {
 			pdf.AddPage()
 			tableY = drawHeader()
 			pdf.SetY(tableY)
 		}
+		rowY := pdf.GetY()
 		alt := i%2 == 1
 		normalFill := gClrWhite
 		if alt {
 			normalFill = gClrAlt
 		}
+		spans := findWeekCellSpans(r.cells)
+
 		setTxt(pdf, gClrText)
 		pdf.SetFont(ff, "", 8)
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
 		pdf.CellFormat(wLabel, rowH, truncate(r.label, 36), "LRB", 0, "L", true, 0, "")
 		rowTotal := 0
-		for ci, m := range r.cells {
-			rowTotal += m
-			isHol := ci < len(r.holidays) && r.holidays[ci]
-			if isHol {
+		for _, c := range r.cells {
+			rowTotal += c.minutes
+			if c.holiday {
 				setFill(pdf, gClrHoliday)
 			} else {
 				setFill(pdf, normalFill)
 			}
-			txt := gridFmt(m)
-			if isHol && m == 0 {
+			txt := gridFmt(c.minutes)
+			if c.holiday && c.minutes == 0 {
 				txt = "•"
 			}
 			pdf.CellFormat(wDay, rowH, txt, "LRB", 0, "C", true, 0, "")
 		}
+
+		// Time labels and connector lines use absolute coordinates so the table
+		// row layout (continuous cells) is not disturbed.
+		timeY := rowY + rowH - timeBaseY
+		lineY := timeY - 0.6
+		for ci, c := range r.cells {
+			cellX := weekCellLeft(ci, wLabel, wDay)
+			if c.singleRange != "" {
+				drawWeekGridTimeAt(pdf, ff, c.singleRange, cellX+wDay/2, timeY)
+			}
+			if c.morningEnd != "" {
+				drawWeekGridTimeAt(pdf, ff, c.morningEnd, cellX+wDay*0.28, timeY)
+			}
+			if c.eveningStart != "" {
+				drawWeekGridTimeAt(pdf, ff, c.eveningStart, cellX+wDay*0.72, timeY)
+			}
+		}
+		setDraw(pdf, gClrTimeRange)
+		pdf.SetLineWidth(0.35)
+		for _, sp := range spans {
+			x1 := weekCellLeft(sp.startCol, wLabel, wDay) + wDay*0.72
+			x2 := weekCellLeft(sp.endCol, wLabel, wDay) + wDay*0.28
+			pdf.Line(x1, lineY, x2, lineY)
+		}
+
+		setTxt(pdf, gClrText)
+		pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
 		pdf.SetFont(ff, "B", 8)
 		setFill(pdf, gClrTotFill)
 		pdf.CellFormat(wTotal, rowH, gridFmt(rowTotal), "LRB", 1, "C", true, 0, "")
@@ -445,13 +651,13 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	setTxt(pdf, gClrText)
 	pdf.SetFont(ff, "B", 8)
 	pdf.SetX(gMargin)
-	pdf.CellFormat(wLabel, rowH, tr.Total, "1", 0, "L", true, 0, "")
+	pdf.CellFormat(wLabel, baseRowH, tr.Total, "1", 0, "L", true, 0, "")
 	for _, m := range colTotals {
-		pdf.CellFormat(wDay, rowH, gridFmt(m), "1", 0, "C", true, 0, "")
+		pdf.CellFormat(wDay, baseRowH, gridFmt(m), "1", 0, "C", true, 0, "")
 	}
 	setFill(pdf, gClrPrimary)
 	setTxt(pdf, gClrWhite)
-	pdf.CellFormat(wTotal, rowH, gridFmt(grandTotal), "1", 1, "C", true, 0, "")
+	pdf.CellFormat(wTotal, baseRowH, gridFmt(grandTotal), "1", 1, "C", true, 0, "")
 
 	var buf bytes.Buffer
 	if err := pdf.Output(&buf); err != nil {

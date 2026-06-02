@@ -1126,6 +1126,71 @@ function rowKey(customerId, projectId, description) {
   return `${customerId ?? ''}|${projectId ?? ''}|${description ?? ''}`
 }
 
+function parseRowKey(key) {
+  const i1 = key.indexOf('|')
+  const i2 = key.indexOf('|', i1 + 1)
+  if (i1 < 0 || i2 < 0) return { customer_id: null, project_id: null, description: '' }
+  const cid = key.slice(0, i1)
+  const pid = key.slice(i1 + 1, i2)
+  return {
+    customer_id: cid ? Number(cid) : null,
+    project_id:  pid ? Number(pid) : null,
+    description: key.slice(i2 + 1),
+  }
+}
+
+function rowFromKey(key) {
+  const { customer_id, project_id, description } = parseRowKey(key)
+  const cust = allCustomers.value.find(c => c.id === customer_id)
+  const proj = allProjects.value.find(p => p.id === project_id)
+  return {
+    key,
+    customer_id,
+    customer_name: cust?.name || '',
+    project_id,
+    project_name:  proj?.name || '',
+    description,
+    is_holiday: false,
+  }
+}
+
+function weekOrderParams() {
+  return { year: weekInfo.value.year, week: weekInfo.value.week }
+}
+
+function entryKeySet() {
+  const s = new Set()
+  for (const e of rawEntries.value) {
+    s.add(rowKey(e.customer_id, e.project_id, e.description))
+  }
+  return s
+}
+
+function restoreEmptyRowsFromOrder(keys) {
+  if (!keys?.length) return
+  const seen = entryKeySet()
+  for (const k of keys) {
+    if (seen.has(k)) continue
+    if (localRows.value.some(r => r.key === k)) continue
+    localRows.value.push(rowFromKey(k))
+  }
+}
+
+function ensureLocalRow(row) {
+  const k = row.key
+  if (entryKeySet().has(k)) return
+  if (localRows.value.some(r => r.key === k)) return
+  localRows.value.push({
+    key:           k,
+    customer_id:   row.customer_id,
+    customer_name: row.customer_name || '',
+    project_id:    row.project_id,
+    project_name:  row.project_name || '',
+    description:   row.description || '',
+    is_holiday:    false,
+  })
+}
+
 // Rows derived from existing entries this week
 const entryRows = computed(() => {
   const seen = new Map()
@@ -1181,7 +1246,7 @@ let _saveOrderTimer = null
 function _scheduleSaveOrder(keys) {
   clearTimeout(_saveOrderTimer)
   _saveOrderTimer = setTimeout(() => {
-    timeEntriesApi.setRowOrder(keys).catch(() => {})
+    timeEntriesApi.setRowOrder(keys, weekOrderParams()).catch(() => {})
   }, 600)
 }
 
@@ -1371,8 +1436,17 @@ async function loadWeek() {
     const to   = weekDays.value[6].iso
     const params = { from, to }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
-    const { data } = await timeEntriesApi.list(params)
+    const [{ data }, orderRes] = await Promise.all([
+      timeEntriesApi.list(params),
+      timeEntriesApi.getRowOrder(weekOrderParams()).catch(() => ({ data: { keys: [] } })),
+    ])
     rawEntries.value = data
+    const keys = orderRes.data?.keys
+    if (keys?.length) {
+      _serverOrder.value = keys
+      _keyOrder.value = null
+      restoreEmptyRowsFromOrder(keys)
+    }
   } catch {
     ui.error(t('timeTracking.load_error'))
   } finally {
@@ -1484,6 +1558,7 @@ async function restoreCellChange(change) {
     if (existing) {
       await timeEntriesApi.remove(existing.id)
       rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+      ensureLocalRow(row)
     }
     return
   }
@@ -1578,6 +1653,7 @@ async function onCellBlur(row, dateISO, rawVal) {
       } else {
         await timeEntriesApi.remove(existing.id)
         rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+        ensureLocalRow(row)
         changed = true
       }
     } else if (minutes > 0 && existing) {
@@ -1752,6 +1828,7 @@ async function toggleCellHoliday(row, dateISO) {
         // 0-minute holiday marker — removing holiday means removing the entry entirely
         await timeEntriesApi.remove(existing.id)
         rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+        ensureLocalRow(row)
       } else {
         const { data } = await timeEntriesApi.update(existing.id, {
           customer_id: row.customer_id || null,
@@ -1935,6 +2012,7 @@ async function pasteCellDataOne(row, dateISO, src) {
     } else if (existing) {
       await timeEntriesApi.remove(existing.id)
       rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+      ensureLocalRow(row)
     }
   } finally {
     if (savingCell.value === ck) savingCell.value = ''
@@ -2440,28 +2518,30 @@ async function copyPrevWeek() {
     prevEnd.setDate(prevEnd.getDate() + 6)
 
     const toLocalISO = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    const params = {
+    const listParams = {
       from: toLocalISO(prevStart),
       to:   toLocalISO(prevEnd),
     }
-    // Mirror the active user selection, but never "all employees" (0)
-    if (canViewOtherUsers.value) {
-      params.user_id = selectedUserId.value || auth.user?.id
-    }
+    const prevWeekInfo = (() => {
+      const thu = new Date(prevStart)
+      thu.setDate(thu.getDate() + (weekStartDay.value === 0 ? 4 : 3))
+      const d = new Date(Date.UTC(thu.getFullYear(), thu.getMonth(), thu.getDate()))
+      const y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+      return { year: d.getUTCFullYear(), week: Math.ceil(((d - y0) / 86400000 + 1) / 7) }
+    })()
+    const orderParams = { year: prevWeekInfo.year, week: prevWeekInfo.week }
 
-    const { data } = await timeEntriesApi.list(params)
+    const [{ data }, orderRes] = await Promise.all([
+      timeEntriesApi.list(listParams),
+      timeEntriesApi.getRowOrder(orderParams).catch(() => ({ data: { keys: [] } })),
+    ])
 
-    if (!data?.length) {
-      ui.info(t('timeTracking.copy_prev_nothing'))
-      return
-    }
-
-    // Collect unique rows from previous week, preserving insertion order
-    const prevRows = new Map()
+    const savedOrder = orderRes.data?.keys || []
+    const rowMap = new Map()
     for (const e of data) {
       const k = rowKey(e.customer_id, e.project_id, e.description)
-      if (!prevRows.has(k)) {
-        prevRows.set(k, {
+      if (!rowMap.has(k)) {
+        rowMap.set(k, {
           key:           k,
           customer_id:   e.customer_id,
           customer_name: e.customer?.name || '',
@@ -2472,19 +2552,43 @@ async function copyPrevWeek() {
       }
     }
 
-    // Only add rows not already present in the current week
-    const existing = new Set(allRows.value.map(r => r.key))
-    let added = 0
-    for (const [k, row] of prevRows) {
-      if (!existing.has(k)) {
-        localRows.value.push(row)
-        added++
+    let orderedKeys
+    if (savedOrder.length) {
+      orderedKeys = savedOrder
+    } else if (data.length) {
+      orderedKeys = []
+      const seen = new Set()
+      for (const e of [...data].sort((a, b) => a.id - b.id)) {
+        const k = rowKey(e.customer_id, e.project_id, e.description)
+        if (!seen.has(k)) {
+          seen.add(k)
+          orderedKeys.push(k)
+        }
       }
+    } else {
+      ui.info(t('timeTracking.copy_prev_nothing'))
+      return
     }
 
-    if (added === 0) {
-      ui.info(t('timeTracking.copy_prev_nothing'))
+    const existing = new Set(allRows.value.map(r => r.key))
+    const toAdd = []
+    for (const k of orderedKeys) {
+      if (existing.has(k)) continue
+      toAdd.push(rowMap.get(k) || rowFromKey(k))
+      existing.add(k)
     }
+
+    if (toAdd.length === 0) {
+      ui.info(t('timeTracking.copy_prev_nothing'))
+      return
+    }
+
+    for (const row of toAdd) {
+      localRows.value.push(row)
+    }
+    const newKeys = toAdd.map(r => r.key)
+    _keyOrder.value = [...(_keyOrder.value || []), ...newKeys]
+    _scheduleSaveOrder(_keyOrder.value)
   } catch {
     ui.error(t('timeTracking.copy_prev_error'))
   } finally {
