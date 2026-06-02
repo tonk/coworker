@@ -686,3 +686,9 @@ Create an application that has all these features and requirements
 - Copy Previous Week includes empty rows from the previous week in the same order
 - Week grid PDF shows start/end times on cells; overnight standby shifts render as separate two-day spans with connector lines
 - Move Time Tracking add buttons to toolbar; fix News empty state; fix TicketChecklistTemplatesTab to use ui.confirm()
+- Apply consistent grid styling (borders, header background, cell padding) to admin SLA Policies, Macros, and Checklists tabs matching the Time Tracking tab
+- Rename "Add Project" / "Add Customer" to "New Project" / "New Customer" across all 12 locales for UI consistency
+- Add spam count badge on Show Spam button in ticket list and inbox views; always fetch full ticket list including spam and filter client-side
+- Add two demo spam tickets to the seed (phishing email, SEO pitch)
+- Show explicit per-status sections (New / Open / Pending / Closed) in card and list views for both inbox and customer ticket pages; section dividers use accent colour
+- Add custom accent colour picker (rainbow swatch) in Settings; supports any hex colour beyond the four presets

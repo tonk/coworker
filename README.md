@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.38)
+## Latest release (v0.10.39)
 
-- **Empty timesheet rows persist** — blank rows stay in the Log Time grid when hours are cleared; layout is saved per week and restored on return.
-- **Copy Previous Week keeps empty rows** — copies the full previous-week row layout in order, including blank separator rows.
-- **Standby times in week grid PDF** — overnight shifts show start/end labels per day with separate connector lines for each shift.
+- **Ticket list sections** — card and list views now show explicit New / Open / Pending / Closed sections with accent-coloured dividers, matching the group view layout.
+- **Spam badge** — a red count badge on the "Show Spam" button tells agents how many spam tickets are hidden, in both the inbox and customer ticket views.
+- **Custom accent colour** — a colour picker in Settings lets users choose any accent colour beyond the four built-in presets.
 
 ## Experiment
 

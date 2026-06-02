@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.10.39 — 2026-06-02
+
+### Added
+- **Spam badge on Show Spam button** — a red count badge appears on the "Show Spam" button in ticket list and inbox views whenever spam tickets are hidden, so agents know spam is waiting without having to toggle the filter.
+- **Custom accent colour** — a rainbow colour-picker swatch in Settings lets users choose any colour as their accent, beyond the four built-in presets; the colour is applied live via CSS custom properties.
+- **Ticket list sections in card and list views** — both the customer ticket view and the inbox now show explicit per-status sections (New / Open / Pending / Pending reminders / Pending close / Closed) in card and list view, matching the group view layout; section dividers use the user's accent colour.
+
+### Fixed
+- **Show Spam toggle re-fetched unnecessarily** — toggling the spam filter in ticket list and inbox now filters client-side without an extra network request; the full ticket list (including spam) is loaded once per page load.
+- **Spam tickets missing from seed** — the demo seed now includes two spam tickets (a phishing email and an SEO pitch) so the spam workflow can be demonstrated.
+
+### Changed
+- **Admin panel tab grids** — SLA Policies, Macros, and Checklists tabs now use the same grid styling (borders, header background, cell padding) as the Time Tracking tab.
+- **"Add Project" / "Add Customer" renamed to "New Project" / "New Customer"** across all 12 locale files for consistency with the rest of the UI.
+- **Dark-mode ticket badge colours** — type, priority, and status badges in the customer ticket list now have proper dark-mode colour overrides (parity with the inbox).
+
 ## v0.10.38 — 2026-06-02
 
 ### Added
