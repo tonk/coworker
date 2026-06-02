@@ -9,7 +9,10 @@
             <button role="tab" :aria-selected="viewMode === 'group'" :class="['view-toggle-btn', { active: viewMode === 'group' }]" @click="viewMode = 'group'">⊞ {{ $t('ticket.group_view') }}</button>
             <button role="tab" :aria-selected="viewMode === 'list'" :class="['view-toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
           </div>
-          <button :class="['btn btn-sm', showSpam ? 'btn-warning' : 'btn-secondary']" @click="showSpam = !showSpam">{{ showSpam ? $t('ticket.hide_spam') : $t('ticket.show_spam') }}</button>
+          <button :class="['btn btn-sm', showSpam ? 'btn-warning' : 'btn-secondary']" @click="showSpam = !showSpam">
+            {{ showSpam ? $t('ticket.hide_spam') : $t('ticket.show_spam') }}
+            <span v-if="!showSpam && spamCount > 0" class="spam-count-badge">{{ spamCount }}</span>
+          </button>
           <button class="btn btn-primary btn-sm" @click="showCreate = true">+ {{ $t('ticket.new_ticket') }}</button>
         </div>
       </header>
@@ -326,7 +329,8 @@ const viewMode = ref(localStorage.getItem('inbox_view_mode') || 'cards')
 watch(viewMode, val => localStorage.setItem('inbox_view_mode', val))
 
 const showSpam = ref(false)
-watch(showSpam, () => loadInbox())
+const spamCount = computed(() => tickets.value.filter(t => t.is_spam).length)
+const visibleTickets = computed(() => showSpam.value ? tickets.value : tickets.value.filter(t => !t.is_spam))
 
 const groupSubMode = ref(localStorage.getItem('inbox_group_sub_mode') || 'cards')
 watch(groupSubMode, val => localStorage.setItem('inbox_group_sub_mode', val))
@@ -339,17 +343,17 @@ const groupSortDir = ref(-1)
 const priorityRank = { low: 1, medium: 2, high: 3, critical: 4 }
 
 const regularTickets = computed(() =>
-  tickets.value.filter(t => t.status !== 'pending_close' && t.status !== 'closed' && !(t.status === 'pending' && t.reminder_at))
+  visibleTickets.value.filter(t => t.status !== 'pending_close' && t.status !== 'closed' && !(t.status === 'pending' && t.reminder_at))
 )
 const pendingReminderTickets = computed(() =>
-  tickets.value.filter(t => t.status === 'pending' && t.reminder_at)
+  visibleTickets.value.filter(t => t.status === 'pending' && t.reminder_at)
     .sort((a, b) => new Date(a.reminder_at) - new Date(b.reminder_at))
 )
 const pendingCloseTickets = computed(() =>
-  tickets.value.filter(t => t.status === 'pending_close')
+  visibleTickets.value.filter(t => t.status === 'pending_close')
 )
 const closedTickets = computed(() =>
-  tickets.value.filter(t => t.status === 'closed')
+  visibleTickets.value.filter(t => t.status === 'closed')
 )
 
 const statusGroups = [
@@ -376,11 +380,11 @@ function sortTickets(arr, field, dir) {
 
 const groupedTickets = computed(() =>
   statusGroups
-    .map(g => ({ ...g, tickets: sortTickets(tickets.value.filter(t => t.status === g.status), groupSortField.value, groupSortDir.value) }))
+    .map(g => ({ ...g, tickets: sortTickets(visibleTickets.value.filter(t => t.status === g.status), groupSortField.value, groupSortDir.value) }))
     .filter(g => g.tickets.length > 0)
 )
 
-const sortedTickets = computed(() => sortTickets(tickets.value, sortField.value, sortDir.value))
+const sortedTickets = computed(() => sortTickets(visibleTickets.value, sortField.value, sortDir.value))
 
 function toggleSort(field) {
   if (sortField.value === field) sortDir.value *= -1
@@ -450,7 +454,7 @@ async function submitCreate() {
 async function loadInbox() {
   loading.value = true
   try {
-    const { data } = await ticketsApi.inboxList(showSpam.value ? { include_spam: true } : undefined)
+    const { data } = await ticketsApi.inboxList({ include_spam: true })
     tickets.value = data || []
     const active = (data || []).filter(t => t.status !== 'closed')
     ticketsStore.inboxCount = active.length
@@ -510,6 +514,7 @@ watch(() => ticketsStore.inboxRefreshKey, loadInbox)
 .mini-tag.more { font-weight: 700; }
 .spam-tag { display: inline-block; font-size: 10px; font-weight: 700; background: #fecaca; color: #b91c1c; padding: 1px 5px; border-radius: 3px; margin-right: 5px; text-transform: uppercase; letter-spacing: 0.03em; }
 [data-theme="dark"] .spam-tag { background: #7f1d1d; color: #fca5a5; }
+.spam-count-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #ef4444; color: #fff; font-size: 11px; font-weight: 700; line-height: 1; margin-left: 4px; }
 .btn-warning { background: #f59e0b; color: #fff; border-color: #f59e0b; }
 .btn-warning:hover { background: #d97706; border-color: #d97706; }
 .sla-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }

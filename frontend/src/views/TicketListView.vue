@@ -11,7 +11,10 @@
             <button role="tab" :aria-selected="viewMode === 'group'" :class="['view-toggle-btn', { active: viewMode === 'group' }]" @click="viewMode = 'group'">⊞ {{ $t('ticket.group_view') }}</button>
             <button role="tab" :aria-selected="viewMode === 'list'" :class="['view-toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
           </div>
-          <button :class="['btn btn-sm', showSpam ? 'btn-warning' : 'btn-secondary']" @click="showSpam = !showSpam">{{ showSpam ? $t('ticket.hide_spam') : $t('ticket.show_spam') }}</button>
+          <button :class="['btn btn-sm', showSpam ? 'btn-warning' : 'btn-secondary']" @click="showSpam = !showSpam">
+            {{ showSpam ? $t('ticket.hide_spam') : $t('ticket.show_spam') }}
+            <span v-if="!showSpam && spamCount > 0" class="spam-count-badge">{{ spamCount }}</span>
+          </button>
           <button class="btn btn-primary btn-sm" @click="showCreate = true">+ {{ $t('ticket.new_ticket') }}</button>
         </div>
       </header>
@@ -442,9 +445,8 @@ watch(viewMode, (val) => {
   localStorage.setItem('ticket_view_mode', val)
 })
 
-watch(showSpam, async () => {
-  await fetchTickets()
-})
+const spamCount = computed(() => tickets.value.filter(t => t.is_spam).length)
+const visibleTickets = computed(() => showSpam.value ? tickets.value : tickets.value.filter(t => !t.is_spam))
 const groupSubMode = ref(localStorage.getItem('ticket_group_sub_mode') || 'cards')
 
 watch(groupSubMode, (val) => {
@@ -466,21 +468,21 @@ function isResolvedOrClosed(t) {
 }
 
 const regularTickets = computed(() => {
-  return tickets.value.filter(t => !isPendingReminder(t) && !isResolvedOrClosed(t))
+  return visibleTickets.value.filter(t => !isPendingReminder(t) && !isResolvedOrClosed(t))
 })
 
 const pendingReminderTickets = computed(() => {
-  return tickets.value
+  return visibleTickets.value
     .filter(t => isPendingReminder(t))
     .sort((a, b) => new Date(a.reminder_at) - new Date(b.reminder_at))
 })
 
 const pendingCloseTickets = computed(() => {
-  return tickets.value.filter(t => t.status === 'pending_close')
+  return visibleTickets.value.filter(t => t.status === 'pending_close')
 })
 
 const closedTickets = computed(() => {
-  return tickets.value.filter(t => t.status === 'closed')
+  return visibleTickets.value.filter(t => t.status === 'closed')
 })
 
 const statusGroups = [
@@ -496,7 +498,7 @@ const groupedTickets = computed(() => {
   const d = groupSortDir.value
   return statusGroups.map(g => ({
     ...g,
-    tickets: tickets.value.filter(t => t.status === g.status).sort((a, b) => {
+    tickets: visibleTickets.value.filter(t => t.status === g.status).sort((a, b) => {
       let va, vb
       if (f === 'priority') {
         va = priorityRank[a.priority] || 0
@@ -527,7 +529,7 @@ const groupedTickets = computed(() => {
 const sortedTickets = computed(() => {
   const f = sortField.value
   const d = sortDir.value
-  const arr = [...tickets.value]
+  const arr = [...visibleTickets.value]
   arr.sort((a, b) => {
     let va, vb
     if (f === 'priority') {
@@ -605,7 +607,7 @@ async function fetchData() {
     customer.value = data.customer || data
   } catch {}
   try {
-    const { data } = await ticketsApi.list(customerId.value, showSpam.value ? { include_spam: true } : undefined)
+    const { data } = await ticketsApi.list(customerId.value, { include_spam: true })
     tickets.value = data || []
   } catch {}
   try {
@@ -797,6 +799,7 @@ async function onDescPaste(e) {
 .mini-tag { font-size: 10px; background: var(--color-bg-alt); padding: 1px 5px; border-radius: 3px; color: var(--color-text-muted); }
 .spam-tag { display: inline-block; font-size: 10px; font-weight: 700; background: #fecaca; color: #b91c1c; padding: 1px 5px; border-radius: 3px; margin-right: 5px; text-transform: uppercase; letter-spacing: 0.03em; }
 [data-theme="dark"] .spam-tag { background: #7f1d1d; color: #fca5a5; }
+.spam-count-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #ef4444; color: #fff; font-size: 11px; font-weight: 700; line-height: 1; margin-left: 4px; }
 .btn-warning { background: #f59e0b; color: #fff; border-color: #f59e0b; }
 .btn-warning:hover { background: #d97706; border-color: #d97706; }
 .mini-tag.more { font-weight: 700; }

@@ -2760,16 +2760,17 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		hoursAgo int // hours before the ticket was created (positive = before)
 	}
 	type ticketSeed struct {
-		customerIdx  int
-		subject      string
-		description  string
-		ticketType   string
-		status       string
-		priority     string
-		createdByKey string
+		customerIdx   int
+		subject       string
+		description   string
+		ticketType    string
+		status        string
+		priority      string
+		isSpam        bool
+		createdByKey  string
 		assignedToKey string
-		createdAgo   time.Duration // how long ago the ticket was created
-		messages     []ticketMsgSpec
+		createdAgo    time.Duration // how long ago the ticket was created
+		messages      []ticketMsgSpec
 	}
 
 	// Build a lookup from customer name → demoCustomerIDs index
@@ -2856,6 +2857,32 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			},
 		},
 		{
+			customerIdx:   customerIdx["Acme Corporation"],
+			subject:       "🎉 Congratulations! You've been selected for a $500 Amazon gift card",
+			description:   "Dear valued customer,\n\nYou have been randomly selected to receive a **$500 Amazon gift card**! To claim your reward, simply click the link below and enter your billing details within 24 hours.\n\nhttps://totally-legit-rewards.xyz/claim?ref=acme\n\nThis offer expires soon — act now!\n\nBest regards,\nRewards Team",
+			ticketType:    "incident",
+			status:        "closed",
+			priority:      "low",
+			isSpam:        true,
+			createdByKey:  "admin",
+			assignedToKey: "admin",
+			createdAgo:    96 * time.Hour,
+			messages:      nil,
+		},
+		{
+			customerIdx:   customerIdx["Initech Ltd"],
+			subject:       "Enhance your team's productivity with AI-powered SEO tools",
+			description:   "Hi there,\n\nI came across your company and wanted to share an incredible opportunity.\n\nOur AI-powered SEO platform has helped **10,000+ businesses** triple their organic traffic in just 30 days. We offer:\n\n- Automated keyword research\n- Bulk backlink generation\n- AI content spinning (100% undetectable!)\n\nSign up today and get 50% off with code: SPAM2024\n\nUnsubscribe: https://definitely-not-spam.biz/unsub",
+			ticketType:    "service_request",
+			status:        "closed",
+			priority:      "low",
+			isSpam:        true,
+			createdByKey:  "admin",
+			assignedToKey: "admin",
+			createdAgo:    240 * time.Hour,
+			messages:      nil,
+		},
+		{
 			customerIdx:  customerIdx["Globex Systems"],
 			subject:      "Request: Read-only dashboard access for intern",
 			description:  "Globex's new intern, Alex Chen, needs read-only access to the DevOps monitoring dashboard. No write permissions required.\n\n**Details:**\n- Name: Alex Chen\n- Email: alex.chen@globex.com\n- Access level: Read-only (view only, no edit/delete)\n- Scope: devops-infra project only\n\nPlease provision and notify.",
@@ -2883,6 +2910,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		Type:         ts.ticketType,
 		Status:       ts.status,
 		Priority:     ts.priority,
+		IsSpam:       ts.isSpam,
 		CreatedByID:  createdBy.ID,
 		AssignedToID: &assignedTo.ID,
 		CreatedAt:    createdAt,
