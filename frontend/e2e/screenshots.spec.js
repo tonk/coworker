@@ -340,4 +340,16 @@ test.describe('screenshots', () => {
     await page.screenshot(ss('22-ticket-detail'))
     await context.close()
   })
+
+  // ── 23: Ticket inbox ───────────────────────────────────────────────
+  test('23-ticket-inbox', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
+    await page.goto(`${BASE_URL}/tickets/inbox`)
+    await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
+    await page.waitForSelector('.ticket-card, .empty-state', { timeout: 8000 }).catch(() => {})
+    await page.screenshot(ss('23-ticket-inbox'))
+    await context.close()
+  })
 })
