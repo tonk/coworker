@@ -692,3 +692,5 @@ Create an application that has all these features and requirements
 - Add two demo spam tickets to the seed (phishing email, SEO pitch)
 - Show explicit per-status sections (New / Open / Pending / Closed) in card and list views for both inbox and customer ticket pages; section dividers use accent colour
 - Add custom accent colour picker (rainbow swatch) in Settings; supports any hex colour beyond the four presets
+- Show undeclarable time inline in weekly timesheet grid cells: red amount below logged time, footer total row shows net declarable with undeclarable deducted in red
+- Show declarable vs. undeclarable in week/month/year grid PDF exports: declarable as primary value per cell, red undeclarable sub-row below totals; per-cell undeclarable labels in week PDF

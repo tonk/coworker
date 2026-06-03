@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.39)
+## Latest release (v0.10.40)
 
-- **Ticket list sections** — card and list views now show explicit New / Open / Pending / Closed sections with accent-coloured dividers, matching the group view layout.
-- **Spam badge** — a red count badge on the "Show Spam" button tells agents how many spam tickets are hidden, in both the inbox and customer ticket views.
-- **Custom accent colour** — a colour picker in Settings lets users choose any accent colour beyond the four built-in presets.
+- **Undeclarable time inline** — the weekly timesheet grid shows the undeclarable portion of each cell in red below the logged time; totals show net declarable time with undeclarable deducted.
+- **Grid PDFs show declarable vs. undeclarable** — week, month, and year PDF exports now display declarable time as the primary value with a red undeclarable row below the totals.
 
 ## Experiment
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.10.40 — 2026-06-03
+
+### Added
+- **Undeclarable time shown inline in the weekly timesheet grid** — when a project has undeclarable minutes configured, each day cell now shows the undeclarable amount in red below the logged time, and the footer total row shows net declarable time with the undeclarable deducted and highlighted in red.
+
+### Changed
+- **Grid PDF exports show declarable vs. undeclarable** — the week, month, and year grid PDFs now display declarable time as the primary value in each cell and total column. A red undeclarable row appears below the totals row. Per-cell undeclarable amounts are shown in the week PDF via absolute positioning, keeping the cell borders intact.
+
 ## v0.10.39 — 2026-06-02
 
 ### Added
