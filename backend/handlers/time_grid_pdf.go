@@ -743,16 +743,16 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		setTxt(pdf, gClrDanger)
 		pdf.SetFont(ff, "", 7)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, baseRowH*0.8, "  "+tr.Undeclarable, "B", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, baseRowH*0.8, "  "+tr.Undeclarable, "LRB", 0, "L", true, 0, "")
 		for _, u := range colUndecl {
 			txt := ""
 			if u > 0 {
 				txt = "−" + gridFmt(u)
 			}
-			pdf.CellFormat(wDay, baseRowH*0.8, txt, "B", 0, "C", true, 0, "")
+			pdf.CellFormat(wDay, baseRowH*0.8, txt, "LRB", 0, "C", true, 0, "")
 		}
 		setFill(pdf, gClrPrimary)
-		pdf.CellFormat(wTotal, baseRowH*0.8, "−"+gridFmt(grandUndecl), "B", 1, "C", true, 0, "")
+		pdf.CellFormat(wTotal, baseRowH*0.8, "−"+gridFmt(grandUndecl), "LRB", 1, "C", true, 0, "")
 		setTxt(pdf, gClrText)
 	}
 
@@ -962,7 +962,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		setTxt(pdf, gClrDanger)
 		pdf.SetFont(ff, "", cellFS-0.5)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, undeclRowH, "  "+tr.Undeclarable, "B", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, undeclRowH, "  "+tr.Undeclarable, "LRB", 0, "L", true, 0, "")
 		for d := 0; d < daysInMonth; d++ {
 			u := colUndecl[d]
 			txt := ""
@@ -974,10 +974,10 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 			} else {
 				setFill(pdf, gClrTotFill)
 			}
-			pdf.CellFormat(wDay, undeclRowH, txt, "B", 0, "C", true, 0, "")
+			pdf.CellFormat(wDay, undeclRowH, txt, "LRB", 0, "C", true, 0, "")
 		}
 		setFill(pdf, gClrPrimary)
-		pdf.CellFormat(wTotal, undeclRowH, "−"+gridFmt(grandUndecl), "B", 1, "C", true, 0, "")
+		pdf.CellFormat(wTotal, undeclRowH, "−"+gridFmt(grandUndecl), "LRB", 1, "C", true, 0, "")
 		setTxt(pdf, gClrText)
 	}
 
@@ -1280,7 +1280,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		setTxt(pdf, gClrDanger)
 		pdf.SetFont(ff, "", 6.5)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, undeclRowH, "  "+tr.Undeclarable, "B", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, undeclRowH, "  "+tr.Undeclarable, "LRB", 0, "L", true, 0, "")
 		for ci, c := range cols {
 			u := colUndecl[ci]
 			txt := ""
@@ -1298,7 +1298,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			if c.isTot {
 				nl = 1
 			}
-			pdf.CellFormat(c.width, undeclRowH, txt, "B", nl, "C", true, 0, "")
+			pdf.CellFormat(c.width, undeclRowH, txt, "LRB", nl, "C", true, 0, "")
 		}
 		setTxt(pdf, gClrText)
 	}
