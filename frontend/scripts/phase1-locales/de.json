@@ -1,0 +1,211 @@
+{
+  "field_button": "Weitere Informationen",
+  "fields": {
+    "ticket_reminder": "Legt ein Follow-up-Datum für pending-Tickets fest. Tickets mit fälliger Erinnerung werden oben in der Liste sortiert.",
+    "ticket_close_date": "Bei Status „Pending close“ wird das Ticket an diesem Datum automatisch geschlossen.",
+    "ticket_macros": "Führt eine vordefinierte Aktionsfolge aus (Status ändern, Antwort hinzufügen, Tags usw.), die von einem Administrator definiert wurde.",
+    "ticket_checklist": "Alle Checklistenelemente müssen abgeschlossen sein, bevor das Ticket geschlossen werden kann, wenn eine Vorlage angewendet wurde."
+  },
+  "pages": {
+    "cardDetail": {
+      "title": "Kartendetails",
+      "intro": "Bearbeiten Sie alle Felder einer Karte: Beschreibung, Daten, Zuständige, Checklisten, Anhänge und Links.",
+      "tasks": [
+        "Verwenden Sie das ⋮-Menü, um Abschnitte ein- oder auszublenden (Checkliste, Unterkarten, Git-Links usw.).",
+        "Fügen Sie Unterkarten für kleinere Aufgaben hinzu — sie erscheinen nur hier, nicht auf dem Board.",
+        "Verknüpfen Sie verwandte Karten oder Tickets im Abschnitt Verknüpfte Karten.",
+        "Kopieren oder übertragen Sie die Karte über die Aktionen in der Fußzeile in ein anderes Projekt.",
+        "Drücken Sie Esc, um dieses Panel zu schließen."
+      ],
+      "shortcuts": [
+        "Esc — Kartendetails schließen"
+      ]
+    },
+    "projectSettingsGeneral": {
+      "title": "Projekt — Allgemein",
+      "intro": "Name, Erscheinungsbild, Kundenverknüpfung und Vertrag für dieses Projekt.",
+      "tasks": [
+        "Weisen Sie einen Kunden und Vertrag für Zeiterfassung und Berichte zu.",
+        "Laden Sie einen Projekt-Avatar hoch, der in der Seitenleiste und Board-Symbolleiste angezeigt wird.",
+        "Der Board-Typ (Kanban oder Scrum) wurde bei der Erstellung festgelegt und kann nicht geändert werden."
+      ]
+    },
+    "projectSettingsMembers": {
+      "title": "Projekt — Mitglieder",
+      "intro": "Wer auf dieses Projekt zugreifen kann und mit welcher Rolle.",
+      "tasks": [
+        "Laden Sie Benutzer per Benutzername mit der Rolle viewer, member oder owner ein.",
+        "Fügen Sie eine ganze Gruppe hinzu, um allen Mitgliedern gleichzeitig Zugriff zu gewähren.",
+        "Owner können Einstellungen ändern; viewer sehen das Board nur lesend."
+      ]
+    },
+    "projectSettingsLabels": {
+      "title": "Projekt — Labels",
+      "intro": "Farbige Tags auf Karten zum Filtern und visuellen Gruppieren.",
+      "tasks": [
+        "Erstellen Sie Labels mit Name und Farbe.",
+        "Löschen Sie ungenutzte Labels — sie werden von allen Karten entfernt."
+      ]
+    },
+    "projectSettingsApiKeys": {
+      "title": "Projekt — API-Schlüssel",
+      "intro": "Schlüssel für die Ticket-API und Automatisierung (CI/CD, das Karten erstellt).",
+      "tasks": [
+        "Erstellen Sie einen Schlüssel mit aussagekräftigem Namen.",
+        "Kopieren Sie den Schlüssel bei Anzeige — er kann später nicht mehr abgerufen werden.",
+        "Widerrufen Sie Schlüssel, die nicht mehr benötigt werden."
+      ]
+    },
+    "projectSettingsWebhooks": {
+      "title": "Projekt — Webhooks",
+      "intro": "GitHub- und GitLab-Webhooks, die Karten aus Commits und MRs erstellen oder aktualisieren.",
+      "tasks": [
+        "Kopieren Sie Webhook-URL und Token in die Repository-Einstellungen.",
+        "Generieren Sie den Token neu, wenn er kompromittiert wurde.",
+        "Jede Plattform hat einen eigenen URL-Pfad — verwenden Sie die passende Registerkarte."
+      ]
+    },
+    "projectSettingsDeletedCards": {
+      "title": "Projekt — Gelöschte Karten",
+      "intro": "Weich gelöschte Karten, die wiederhergestellt oder endgültig entfernt werden können.",
+      "tasks": [
+        "Öffnen Sie eine gelöschte Karte, um den Inhalt vor der Wiederherstellung zu prüfen.",
+        "Wiederherstellen bringt die Karte in ihre ursprüngliche Spalte zurück.",
+        "Endgültiges Löschen kann nicht rückgängig gemacht werden."
+      ]
+    },
+    "settingsProfile": {
+      "title": "Profil & Einstellungen",
+      "intro": "Ihr Name, Sprache, Design, Benachrichtigungen und Dashboard-Standardwerte.",
+      "tasks": [
+        "Legen Sie Sprache, Zeitzone und Datums-/Zeitformat für die gesamte Oberfläche fest.",
+        "Aktivieren Sie E-Mail-Benachrichtigungen für Erwähnungen, DMs und Karten-Zuweisungen.",
+        "Wählen Sie Boards oder Tickets als Standardansicht nach der Anmeldung.",
+        "Schalten Sie persönliche Zeiterfassung ein oder aus, wenn Ihre Organisation Stundenzettel nutzt."
+      ]
+    },
+    "settingsWorkingHours": {
+      "title": "Arbeitszeiten",
+      "intro": "Standard-Startzeit pro Wochentag — als Hinweis im Zeiterfassungsraster verwendet.",
+      "tasks": [
+        "Lassen Sie einen Tag leer, wenn Sie an diesem Tag nicht arbeiten.",
+        "Zeiten verwenden Ihre gewählte Schreibweise (Dezimal oder hh:mm).",
+        "Speichern Sie das Profil nach der Bearbeitung — Arbeitszeiten sind Teil Ihres Profils."
+      ]
+    },
+    "settingsPassword": {
+      "title": "Passwort ändern",
+      "intro": "Aktualisieren Sie Ihr Anmeldepasswort. Richtlinien legt Ihr Administrator fest.",
+      "tasks": [
+        "Geben Sie Ihr aktuelles Passwort und dann ein neues ein, das die aufgeführten Anforderungen erfüllt.",
+        "Möglicherweise müssen Sie ein abgelaufenes Passwort ändern, bevor Sie fortfahren können."
+      ]
+    },
+    "settingsMfa": {
+      "title": "Zwei-Faktor-Authentifizierung",
+      "intro": "Fügen Sie eine TOTP-App (Google Authenticator usw.) für zusätzliche Anmeldesicherheit hinzu.",
+      "tasks": [
+        "Scannen Sie den QR-Code oder geben Sie das Geheimnis manuell in Ihrer Authenticator-App ein.",
+        "Geben Sie einen 6-stelligen Code ein, um die Einrichtung zu bestätigen.",
+        "Bewahren Sie Wiederherstellungszugang sicher auf — bei aktivierter MFA benötigen Sie bei jeder Anmeldung den App-Code."
+      ]
+    },
+    "settingsPasskey": {
+      "title": "Passkeys",
+      "intro": "Melden Sie sich mit Geräte-Biometrie oder einem Sicherheitsschlüssel statt mit Passwort an.",
+      "tasks": [
+        "Registrieren Sie einen Passkey auf dem Gerät, mit dem Sie sich anmelden.",
+        "Sie können mehrere Passkeys registrieren und alte entfernen.",
+        "Passkeys funktionieren je nach Serverrichtlinie neben Passwort und MFA."
+      ]
+    },
+    "settingsApiKeys": {
+      "title": "Persönliche API-Schlüssel",
+      "intro": "Ihre eigenen API-Schlüssel für Skripte und Integrationen (nicht Projekt-Ticket-Schlüssel).",
+      "tasks": [
+        "Erstellen Sie einen benannten Schlüssel und kopieren Sie ihn sofort.",
+        "Widerrufen Sie Schlüssel, die Sie nicht mehr verwenden."
+      ]
+    },
+    "chartsVelocity": {
+      "title": "Velocity-Diagramm",
+      "intro": "Abgeschlossene Story Points pro Sprint — hilft bei der Prognose künftiger Sprints.",
+      "tasks": [
+        "Es erscheinen nur abgeschlossene Sprints.",
+        "Stellen Sie sicher, dass Karten Story Points haben, damit die Balken aussagekräftig sind."
+      ]
+    },
+    "chartsThroughput": {
+      "title": "Durchsatz",
+      "intro": "Anzahl geschlossener Karten pro Sprint oder pro Woche (Kanban).",
+      "tasks": [
+        "Wählen Sie bei Kanban 4–26 Wochen im Dropdown.",
+        "Bei Scrum wird der Durchsatz nach abgeschlossenem Sprint gruppiert."
+      ]
+    },
+    "chartsBurndown": {
+      "title": "Burndown",
+      "intro": "Verbleibende Story Points im ausgewählten Sprint im Zeitverlauf.",
+      "tasks": [
+        "Wählen Sie den aktiven oder einen vergangenen Sprint im Dropdown.",
+        "Die Ideallinie geht von gleichmäßigem Verbrauch aus; die Ist-Linie folgt abgeschlossenen Karten."
+      ]
+    },
+    "chartsBurnup": {
+      "title": "Burn-up",
+      "intro": "Kumuliert abgeschlossene Arbeit in einem Sprint im Vergleich zum Gesamtumfang.",
+      "tasks": [
+        "Umfangsänderungen (Karten mitten im Sprint hinzugefügt) erscheinen als Stufen in der Gesamtlinie.",
+        "Wählen Sie den zu analysierenden Sprint."
+      ]
+    },
+    "chartsCfd": {
+      "title": "Kumulativer Fluss",
+      "intro": "Gestapelte Flächen mit Kartenanzahl pro Spalte im Zeitverlauf.",
+      "tasks": [
+        "Wachsende Bänder in einer Spalte können auf einen Engpass hinweisen.",
+        "Verfügbar für Kanban- und Scrum-Projekte."
+      ]
+    },
+    "chartsSprintReport": {
+      "title": "Sprint-Bericht",
+      "intro": "Zusammenfassung eines abgeschlossenen Sprints: zugesagte vs. abgeschlossene Arbeit.",
+      "tasks": [
+        "Wählen Sie einen Sprint, um übernommene und abgeschlossene Karten zu sehen.",
+        "Nutzen Sie ihn nach Sprint-Review-Meetings."
+      ]
+    },
+    "chartsEpicBurndown": {
+      "title": "Epic-Burndown",
+      "intro": "Verbleibende Story Points für ein Epic im Zeitverlauf.",
+      "tasks": [
+        "Wählen Sie ein Epic im Dropdown.",
+        "Verknüpfen Sie Karten im Kartendetail mit dem Epic für genaue Summen."
+      ]
+    },
+    "chartsReleaseBurndown": {
+      "title": "Release-Burndown",
+      "intro": "Fortschritt zu einem Release-Ziel über Epics und Sprints hinweg.",
+      "tasks": [
+        "Konfigurieren Sie den Release-Umfang über Epics und Sprint-Planung.",
+        "Nutzen Sie es für Release-Tracking mit festem Datum."
+      ]
+    },
+    "chartsCycleTime": {
+      "title": "Cycle Time",
+      "intro": "Wie lange Karten in Bearbeitung sind (Start bis erledigt).",
+      "tasks": [
+        "Setzen Sie Startdaten auf Karten für genaue Messung.",
+        "Das Streudiagramm zeigt die Cycle Time pro Karte."
+      ]
+    },
+    "chartsLeadTime": {
+      "title": "Lead Time",
+      "intro": "Zeit von der Kartenerstellung bis zur Fertigstellung.",
+      "tasks": [
+        "Nützlich für Kanban-Flussmetriken und SLA-ähnliches Tracking auf Boards.",
+        "Jeder Punkt ist eine abgeschlossene Karte."
+      ]
+    }
+  }
+}

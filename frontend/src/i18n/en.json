@@ -861,7 +861,7 @@
     "charts": "Charts",
     "burndown": "Burndown",
     "burnup": "Burnup",
-    "select_sprint": "Select Sprint",
+    "select_sprint": "Select sprint",
     "no_chart_data": "No data available for this sprint.",
     "ideal_line": "Ideal",
     "remaining_points": "Remaining",
@@ -881,7 +881,6 @@
     "sr_completion": "Completion",
     "sr_completed_cards": "Completed",
     "sr_incomplete_cards": "Not Completed",
-    "select_sprint": "Select sprint",
     "select_sprint_hint": "Select a sprint to view the report.",
     "select_epic_hint": "Select an epic to view the burndown.",
     "rolling_avg": "7-day rolling avg",
@@ -1247,5 +1246,547 @@
     "drag_reorder": "Drag to reorder",
     "saved": "Checklist template saved",
     "deleted": "Checklist template deleted"
+  },
+  "help": {
+    "button": "Help",
+    "title": "Help",
+    "tasks_heading": "Common tasks",
+    "shortcuts_heading": "Keyboard shortcuts",
+    "pages": {
+      "default": {
+        "title": "WarmDesk",
+        "intro": "Context-sensitive help for the page you are on. Open this panel anytime from the help button in the header.",
+        "tasks": [
+          "Use the sidebar to switch projects, customers, and chats.",
+          "Press Ctrl+K (⌘K on Mac) to search cards, tickets, and people.",
+          "Open Settings from the user menu to change language, theme, and notifications."
+        ]
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "intro": "Your home view: pinned projects, recent activity, and quick access to starred customers.",
+        "tasks": [
+          "Star projects and customers in the sidebar to pin them here.",
+          "Create a new project with the button on this page.",
+          "Set Dashboard shows in Settings to open Tickets instead of Boards on login."
+        ]
+      },
+      "board": {
+        "title": "Kanban board",
+        "intro": "Manage work as cards moving through columns. Drag cards to update status.",
+        "tasks": [
+          "Drag a card to another column to change its status.",
+          "Click a card to edit details, comments, checklists, and attachments.",
+          "Open the chat panel to discuss work with the project team.",
+          "Set a WIP limit on a column header to cap work in progress."
+        ],
+        "shortcuts": [
+          "Esc — close the open card detail panel"
+        ]
+      },
+      "backlog": {
+        "title": "Backlog",
+        "intro": "Scrum backlog: prioritise cards that are not yet in an active sprint.",
+        "tasks": [
+          "Drag cards to reorder priority.",
+          "Move cards into the active sprint from the sprint panel.",
+          "Create new cards directly in the backlog."
+        ]
+      },
+      "sprintBoard": {
+        "title": "Sprint board",
+        "intro": "The active sprint shown as a Kanban board with a fixed scope.",
+        "tasks": [
+          "Move cards across columns as work progresses.",
+          "Complete the sprint from the sprint menu when all work is done or carried over.",
+          "Open Charts to view burndown for this sprint."
+        ]
+      },
+      "epics": {
+        "title": "Epics",
+        "intro": "Group related cards under epics for Scrum planning and burndown tracking.",
+        "tasks": [
+          "Create an epic and assign a colour.",
+          "Link cards to an epic from the card detail panel.",
+          "Open an epic to see its cards and burndown chart."
+        ]
+      },
+      "gantt": {
+        "title": "Gantt chart",
+        "intro": "Timeline view of cards with start and due dates.",
+        "tasks": [
+          "Set start and due dates on cards to see them on the timeline.",
+          "Drag bars to adjust dates when you have edit access.",
+          "Scroll horizontally to move through time."
+        ]
+      },
+      "charts": {
+        "title": "Charts",
+        "intro": "Scrum analytics: burndown, velocity, and epic progress for this project.",
+        "tasks": [
+          "Select a sprint to view its burndown chart.",
+          "Switch tabs to compare velocity across sprints.",
+          "Select an epic to see remaining work over time."
+        ]
+      },
+      "topics": {
+        "title": "Topics",
+        "intro": "Structured discussions separate from the board chat — useful for decisions and long threads.",
+        "tasks": [
+          "Create a topic with a title and optional description.",
+          "Reply in threads to keep conversation organised.",
+          "Close a topic when the discussion is resolved."
+        ]
+      },
+      "projectSettings": {
+        "title": "Project settings",
+        "intro": "Configure members, integrations, and project-specific options.",
+        "tasks": [
+          "Invite members and set their project role (viewer, member, owner).",
+          "Configure GitHub or GitLab webhooks for automation.",
+          "Manage project API keys for CI/CD ticket creation."
+        ]
+      },
+      "settings": {
+        "title": "User settings",
+        "intro": "Your personal profile, security, appearance, and notification preferences.",
+        "tasks": [
+          "Update display name, email, avatar, and date/time format.",
+          "Enable MFA or register a passkey for stronger sign-in.",
+          "Choose whether the dashboard opens on Boards or Tickets.",
+          "Set working hours used as defaults in time tracking."
+        ]
+      },
+      "chats": {
+        "title": "Chats",
+        "intro": "Direct messages and group conversations with voice and video calls.",
+        "tasks": [
+          "Start a chat from the People list in the sidebar.",
+          "Use @mentions in project chat or DMs to notify someone.",
+          "Start a voice or video call from the conversation header.",
+          "React to messages with emoji hover actions."
+        ],
+        "shortcuts": [
+          "Enter — send message",
+          "Esc — cancel message edit",
+          "@ — mention a user",
+          ":name: — insert emoji by shortcode"
+        ]
+      },
+      "news": {
+        "title": "News",
+        "intro": "Announcements from your organisation shown on the dashboard and this page.",
+        "tasks": [
+          "Read pinned announcements from administrators.",
+          "Dismiss items from the dashboard; they remain listed here."
+        ]
+      },
+      "customers": {
+        "title": "Customers",
+        "intro": "Customer records used for contracts, time tracking, and helpdesk tickets.",
+        "tasks": [
+          "Open a customer to view contracts and members.",
+          "Star customers to pin them in the sidebar.",
+          "Jump to tickets for a customer when helpdesk is enabled."
+        ]
+      },
+      "customerDetail": {
+        "title": "Customer detail",
+        "intro": "Contracts, assigned members, and links to tickets for one customer.",
+        "tasks": [
+          "Review contract rates and undeclarable time rules.",
+          "See which agents have access to this customer's tickets.",
+          "Open the ticket list for this customer from the header actions."
+        ]
+      },
+      "tickets": {
+        "title": "Tickets",
+        "intro": "Helpdesk ticket list for one customer — filter, sort, and create new tickets.",
+        "tasks": [
+          "Use filters for status, priority, assignee, and tags.",
+          "Switch between table and card views.",
+          "Create a ticket manually or wait for incoming email (when IMAP is configured)."
+        ]
+      },
+      "inbox": {
+        "title": "Inbox",
+        "intro": "Tickets that arrived by email and are not yet linked to a customer.",
+        "tasks": [
+          "Review new email tickets and assign them to a customer.",
+          "Mark spam to hide unwanted mail from the default list.",
+          "Open a ticket to reply or merge it into an existing case."
+        ]
+      },
+      "ticketDetail": {
+        "title": "Ticket detail",
+        "intro": "View and update a ticket, reply to the requester, and apply macros or checklists.",
+        "tasks": [
+          "Change status, priority, type, assignee, and tags from the header.",
+          "Add a public reply (emailed to the requester) or a private internal note.",
+          "Apply a macro to run preset actions in one click.",
+          "Set a reminder date on pending tickets or a close date on pending close."
+        ]
+      },
+      "timeTracking": {
+        "title": "Time tracking",
+        "intro": "Log hours, run personal reports, and export board time reports.",
+        "tasks": [
+          "Switch tabs for Log Time, Report, or Board report.",
+          "Navigate weeks with the arrows or click the week label.",
+          "Managers can view other users' sheets when permitted."
+        ]
+      },
+      "timeTrackingSheet": {
+        "title": "Log time",
+        "intro": "Weekly grid: enter hours per customer, project, and activity.",
+        "tasks": [
+          "Type hours in a cell — use your preferred decimal or hh:mm format from settings.",
+          "Click the clock icon to set start/end times on an entry.",
+          "Copy the previous week or use standby shift for contract overnight rates.",
+          "Drag row handles to reorder lines."
+        ],
+        "shortcuts": [
+          "Arrow keys — move between cells",
+          "Shift + arrows — extend selection",
+          "Ctrl+C / Ctrl+V — copy and paste cells",
+          "Ctrl+Z — undo last edit",
+          "Del — clear selected cells",
+          "Esc — clear selection"
+        ]
+      },
+      "timeTrackingReport": {
+        "title": "Time report",
+        "intro": "Personal time report with grouping, filters, and PDF/XLSX export.",
+        "tasks": [
+          "Set the date range and group by customer, project, or activity.",
+          "Expand groups to see individual entries.",
+          "Export PDF or Excel for billing or archiving."
+        ]
+      },
+      "timeTrackingBoardReport": {
+        "title": "Board time report",
+        "intro": "Project-board time aggregated for reporting — requires report viewer permission.",
+        "tasks": [
+          "Filter by project, customer, assignee, and date range.",
+          "Review declarable vs undeclarable totals when configured.",
+          "Download PDF or XLSX from the export buttons."
+        ]
+      },
+      "admin": {
+        "title": "Administration",
+        "intro": "Manage users, projects, system settings, helpdesk configuration, and backups.",
+        "tasks": [
+          "Use the tabs to switch between Users, Settings, SLA, Macros, and more.",
+          "Changes to SMTP, IMAP, and security settings apply without a server restart.",
+          "Open this help panel on each tab for specific guidance."
+        ]
+      },
+      "adminUsers": {
+        "title": "Users",
+        "intro": "Create and manage user accounts, roles, and feature flags.",
+        "tasks": [
+          "Set global role: admin, member, viewer, or customer (tickets only).",
+          "Enable helpdesk, time tracking, or report access per user.",
+          "Assign customers to customer-role users for ticket visibility."
+        ]
+      },
+      "adminGroups": {
+        "title": "Groups",
+        "intro": "Organise users and grant customer access to whole teams at once.",
+        "tasks": [
+          "Create a group and add members.",
+          "Assign customer access with a role — highest role wins when combined with direct access."
+        ]
+      },
+      "adminCustomers": {
+        "title": "Customers (admin)",
+        "intro": "Create customers, contracts, and access rules.",
+        "tasks": [
+          "Add contracts with rates used in time reports.",
+          "Assign agents to customers for ticket access and assignee dropdowns.",
+          "Configure undeclarable minutes on time-tracking-only projects."
+        ]
+      },
+      "adminProjects": {
+        "title": "Projects (admin)",
+        "intro": "Overview of all projects, board type, and archival.",
+        "tasks": [
+          "Create Kanban or Scrum projects — board type is fixed after creation.",
+          "Archive projects to hide them without deleting history.",
+          "Restore archived projects when needed."
+        ]
+      },
+      "adminSettings": {
+        "title": "System settings",
+        "intro": "SMTP, IMAP, branding, security, and defaults for new users and projects.",
+        "tasks": [
+          "Configure outgoing mail before password reset and notifications work.",
+          "Set up IMAP polling to create tickets from incoming email.",
+          "Restrict API access with allowed IP ranges — test carefully before saving.",
+          "Upload a company logo shown on reports and optionally on the login page."
+        ]
+      },
+      "adminNews": {
+        "title": "News (admin)",
+        "intro": "Publish announcements shown on the dashboard and News page.",
+        "tasks": [
+          "Write markdown content with a title and optional expiry date.",
+          "Pin important items so they stay visible.",
+          "Leave date empty to show immediately with no end date."
+        ]
+      },
+      "adminTimeTracking": {
+        "title": "Time tracking (admin)",
+        "intro": "Manage time-tracking-only projects and customers used on timesheets.",
+        "tasks": [
+          "Create TT projects with optional undeclarable minutes per entry.",
+          "Link TT customers to billing entities on reports.",
+          "Set hourly rates on customer contracts for cost columns in exports."
+        ]
+      },
+      "adminSla": {
+        "title": "SLA policies",
+        "intro": "Define response and resolution targets by ticket priority.",
+        "tasks": [
+          "Create a policy matching a priority or use a catch-all.",
+          "Set targets in hours; breach flags update when tickets are viewed.",
+          "Deactivate a policy instead of deleting if you may need it again."
+        ]
+      },
+      "adminMacros": {
+        "title": "Macros",
+        "intro": "Reusable action sequences agents apply to tickets in one click.",
+        "tasks": [
+          "Combine set status, set priority, add tag, and add message actions.",
+          "Use placeholders like {agent}, {subject}, and {ticket_id} in messages.",
+          "Drag placeholders from the list into message action text."
+        ]
+      },
+      "adminTicketChecklists": {
+        "title": "Ticket checklists",
+        "intro": "Templates applied to tickets — items must be completed before closing.",
+        "tasks": [
+          "Define checklist items in a template.",
+          "Agents apply a template from the ticket detail view.",
+          "Closing is blocked until every item is checked off."
+        ]
+      },
+      "adminBackup": {
+        "title": "Backup",
+        "intro": "Download and restore database backups.",
+        "tasks": [
+          "Create a backup before major upgrades or migrations.",
+          "Download the file and store it off the server.",
+          "Restore replaces the live database — schedule downtime first."
+        ]
+      },
+      "cardDetail": {
+        "title": "Card detail",
+        "intro": "Edit all fields on a card: description, dates, assignees, checklists, attachments, and links.",
+        "tasks": [
+          "Use the ⋮ menu to show or hide sections (checklist, sub-cards, git links, etc.).",
+          "Add sub-cards for smaller tasks — they only appear here, not on the board.",
+          "Link related cards or tickets with the linked cards section.",
+          "Copy or transfer the card to another project from the footer actions.",
+          "Press Esc to close this panel."
+        ],
+        "shortcuts": [
+          "Esc — close card detail"
+        ]
+      },
+      "projectSettingsGeneral": {
+        "title": "Project — General",
+        "intro": "Name, appearance, customer link, and contract for this project.",
+        "tasks": [
+          "Assign a customer and contract for time tracking and reporting.",
+          "Upload a project avatar shown in the sidebar and board toolbar.",
+          "Board type (Kanban or Scrum) was set at creation and cannot be changed."
+        ]
+      },
+      "projectSettingsMembers": {
+        "title": "Project — Members",
+        "intro": "Who can access this project and with what role.",
+        "tasks": [
+          "Invite users by username with viewer, member, or owner role.",
+          "Add a whole group to grant access to every member at once.",
+          "Owners can change settings; viewers see the board read-only."
+        ]
+      },
+      "projectSettingsLabels": {
+        "title": "Project — Labels",
+        "intro": "Colour tags applied to cards for filtering and visual grouping.",
+        "tasks": [
+          "Create labels with a name and colour.",
+          "Delete unused labels — they are removed from all cards."
+        ]
+      },
+      "projectSettingsApiKeys": {
+        "title": "Project — API keys",
+        "intro": "Keys for the Ticket API and automation (CI/CD creating cards).",
+        "tasks": [
+          "Create a key with a descriptive name.",
+          "Copy the key when shown — it cannot be retrieved later.",
+          "Revoke keys that are no longer needed."
+        ]
+      },
+      "projectSettingsWebhooks": {
+        "title": "Project — Webhooks",
+        "intro": "GitHub and GitLab webhooks that create or update cards from commits and MRs.",
+        "tasks": [
+          "Copy the webhook URL and token into your repository settings.",
+          "Regenerate the token if it is compromised.",
+          "Each platform has its own URL path — use the matching tab."
+        ]
+      },
+      "projectSettingsDeletedCards": {
+        "title": "Project — Deleted cards",
+        "intro": "Soft-deleted cards that can be restored or permanently removed.",
+        "tasks": [
+          "Open a deleted card to review its contents before restoring.",
+          "Restore returns the card to its original column.",
+          "Permanent delete cannot be undone."
+        ]
+      },
+      "settingsProfile": {
+        "title": "Profile & preferences",
+        "intro": "Your name, locale, theme, notifications, and dashboard defaults.",
+        "tasks": [
+          "Set language, timezone, and date/time format for the whole UI.",
+          "Enable email notifications for mentions, DMs, and card assignments.",
+          "Choose Boards or Tickets as the default view after login.",
+          "Toggle personal time tracking if your organisation uses timesheets."
+        ]
+      },
+      "settingsWorkingHours": {
+        "title": "Working hours",
+        "intro": "Default start time per weekday — used as hints on the time-tracking grid.",
+        "tasks": [
+          "Leave a day blank if you do not work that day.",
+          "Times use your chosen time notation (decimal or hh:mm).",
+          "Save profile after editing — working hours are part of your profile."
+        ]
+      },
+      "settingsPassword": {
+        "title": "Change password",
+        "intro": "Update your login password. Policy rules are set by your administrator.",
+        "tasks": [
+          "Enter your current password, then a new one meeting the listed requirements.",
+          "You may be forced to change an expired password before continuing."
+        ]
+      },
+      "settingsMfa": {
+        "title": "Two-factor authentication",
+        "intro": "Add a TOTP app (Google Authenticator, etc.) for extra sign-in security.",
+        "tasks": [
+          "Scan the QR code or enter the secret manually in your authenticator app.",
+          "Enter a 6-digit code to confirm setup.",
+          "Store recovery access safely — you need the app code on every login when enabled."
+        ]
+      },
+      "settingsPasskey": {
+        "title": "Passkeys",
+        "intro": "Sign in with device biometrics or a security key instead of a password.",
+        "tasks": [
+          "Register a passkey from the device you use to sign in.",
+          "You can register multiple passkeys and remove old ones.",
+          "Passkeys work alongside password and MFA depending on server policy."
+        ]
+      },
+      "settingsApiKeys": {
+        "title": "Personal API keys",
+        "intro": "Your own API keys for scripts and integrations (not project ticket keys).",
+        "tasks": [
+          "Create a named key and copy it immediately.",
+          "Revoke keys you no longer use."
+        ]
+      },
+      "chartsVelocity": {
+        "title": "Velocity chart",
+        "intro": "Story points completed per sprint — helps forecast future sprints.",
+        "tasks": [
+          "Only completed sprints appear.",
+          "Ensure cards have story points set for meaningful bars."
+        ]
+      },
+      "chartsThroughput": {
+        "title": "Throughput",
+        "intro": "Number of cards closed per sprint or per week (Kanban).",
+        "tasks": [
+          "For Kanban, pick 4–26 weeks in the dropdown.",
+          "For Scrum, throughput is grouped by completed sprint."
+        ]
+      },
+      "chartsBurndown": {
+        "title": "Burndown",
+        "intro": "Remaining story points in the selected sprint over time.",
+        "tasks": [
+          "Select the active or a past sprint from the dropdown.",
+          "Ideal line assumes even burn; actual line follows card completions."
+        ]
+      },
+      "chartsBurnup": {
+        "title": "Burn-up",
+        "intro": "Cumulative work completed in a sprint versus total scope.",
+        "tasks": [
+          "Scope changes (cards added mid-sprint) show as steps in the total line.",
+          "Select the sprint to analyse."
+        ]
+      },
+      "chartsCfd": {
+        "title": "Cumulative flow",
+        "intro": "Stacked areas showing card count per column over time.",
+        "tasks": [
+          "Growing bands in one column may indicate a bottleneck.",
+          "Available for both Kanban and Scrum projects."
+        ]
+      },
+      "chartsSprintReport": {
+        "title": "Sprint report",
+        "intro": "Summary of a completed sprint: committed vs completed work.",
+        "tasks": [
+          "Select a sprint to see carried-over and completed cards.",
+          "Use after sprint review meetings."
+        ]
+      },
+      "chartsEpicBurndown": {
+        "title": "Epic burndown",
+        "intro": "Remaining story points for one epic over time.",
+        "tasks": [
+          "Select an epic from the dropdown.",
+          "Link cards to the epic from card detail for accurate totals."
+        ]
+      },
+      "chartsReleaseBurndown": {
+        "title": "Release burndown",
+        "intro": "Progress toward a release target across epics and sprints.",
+        "tasks": [
+          "Configure release scope via epics and sprint planning.",
+          "Use for fixed-date release tracking."
+        ]
+      },
+      "chartsCycleTime": {
+        "title": "Cycle time",
+        "intro": "How long cards spend in progress (start to done).",
+        "tasks": [
+          "Set start dates on cards for accurate measurement.",
+          "Scatter plot shows per-card cycle time."
+        ]
+      },
+      "chartsLeadTime": {
+        "title": "Lead time",
+        "intro": "Time from card creation to completion.",
+        "tasks": [
+          "Useful for Kanban flow metrics and SLA-style tracking on boards.",
+          "Each dot is one completed card."
+        ]
+      }
+    },
+    "field_button": "More information",
+    "fields": {
+      "ticket_reminder": "Sets a follow-up date for pending tickets. Tickets with a due reminder are sorted to the top of the list.",
+      "ticket_close_date": "When status is Pending close, the ticket is automatically closed on this date.",
+      "ticket_macros": "Runs a preset sequence of actions (change status, add reply, tags, etc.) defined by an administrator.",
+      "ticket_checklist": "Checklist items must all be completed before the ticket can be closed when a template is applied."
+    }
   }
 }

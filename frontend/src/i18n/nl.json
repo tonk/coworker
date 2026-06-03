@@ -1177,5 +1177,547 @@
     "expand": "Show cards",
     "collapse": "Hide cards",
     "no_cards": "No cards in this epic yet."
+  },
+  "help": {
+    "button": "Hulp",
+    "title": "Hulp",
+    "tasks_heading": "Veelvoorkomende taken",
+    "shortcuts_heading": "Sneltoetsen",
+    "pages": {
+      "default": {
+        "title": "WarmDesk",
+        "intro": "Contextgevoelige help voor de pagina waar u zich bevindt. Open dit paneel op elk moment via de helpknop in de kop.",
+        "tasks": [
+          "Gebruik de zijbalk om te wisselen tussen projecten, klanten en chats.",
+          "Druk op Ctrl+K (⌘K op Mac) om te zoeken in kaarten, tickets en personen.",
+          "Open Instellingen via het gebruikersmenu om taal, thema en meldingen aan te passen."
+        ]
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "intro": "Uw startpagina: vastgezette projecten, recente activiteit en snelle toegang tot favoriete klanten.",
+        "tasks": [
+          "Markeer projecten en klanten als favoriet in de zijbalk om ze hier vast te zetten.",
+          "Maak een nieuw project aan met de knop op deze pagina.",
+          "Stel Dashboard toont in bij Instellingen in om bij inloggen Tickets in plaats van Borden te openen."
+        ]
+      },
+      "board": {
+        "title": "Kanban-bord",
+        "intro": "Beheer werk als kaarten die door kolommen bewegen. Sleep kaarten om de status bij te werken.",
+        "tasks": [
+          "Sleep een kaart naar een andere kolom om de status te wijzigen.",
+          "Klik op een kaart om details, opmerkingen, checklists en bijlagen te bewerken.",
+          "Open het chatpaneel om werk te bespreken met het projectteam.",
+          "Stel een WIP-limiet in op een kolomkop om lopend werk te beperken."
+        ],
+        "shortcuts": [
+          "Esc — sluit het open kaartdetailpaneel"
+        ]
+      },
+      "backlog": {
+        "title": "Backlog",
+        "intro": "Scrum-backlog: prioriteer kaarten die nog niet in een actieve sprint zitten.",
+        "tasks": [
+          "Sleep kaarten om de prioriteit te wijzigen.",
+          "Verplaats kaarten naar de actieve sprint via het sprintpaneel.",
+          "Maak nieuwe kaarten direct aan in de backlog."
+        ]
+      },
+      "sprintBoard": {
+        "title": "Sprintbord",
+        "intro": "De actieve sprint als Kanban-bord met een vaste scope.",
+        "tasks": [
+          "Verplaats kaarten tussen kolommen naarmate het werk vordert.",
+          "Rond de sprint af via het sprintmenu wanneer al het werk klaar is of wordt meegenomen.",
+          "Open Grafieken om de burndown van deze sprint te bekijken."
+        ]
+      },
+      "epics": {
+        "title": "Epics",
+        "intro": "Groepeer gerelateerde kaarten onder epics voor Scrum-planning en burndown-tracking.",
+        "tasks": [
+          "Maak een epic aan en wijs een kleur toe.",
+          "Koppel kaarten aan een epic via het kaartdetailpaneel.",
+          "Open een epic om de bijbehorende kaarten en burndown-grafiek te zien."
+        ]
+      },
+      "gantt": {
+        "title": "Gantt-diagram",
+        "intro": "Tijdlijnweergave van kaarten met start- en einddatums.",
+        "tasks": [
+          "Stel start- en einddatums in op kaarten om ze op de tijdlijn te zien.",
+          "Sleep balken om datums aan te passen wanneer u bewerkingsrechten hebt.",
+          "Scroll horizontaal om door de tijd te navigeren."
+        ]
+      },
+      "charts": {
+        "title": "Grafieken",
+        "intro": "Scrum-analyses: burndown, velocity en epic-voortgang voor dit project.",
+        "tasks": [
+          "Selecteer een sprint om de burndown-grafiek te bekijken.",
+          "Wissel van tabblad om velocity tussen sprints te vergelijken.",
+          "Selecteer een epic om resterend werk over tijd te zien."
+        ]
+      },
+      "topics": {
+        "title": "Onderwerpen",
+        "intro": "Gestructureerde discussies, los van de bordchat — handig voor beslissingen en lange threads.",
+        "tasks": [
+          "Maak een onderwerp aan met een titel en optionele beschrijving.",
+          "Reageer in threads om het gesprek overzichtelijk te houden.",
+          "Sluit een onderwerp wanneer de discussie is afgerond."
+        ]
+      },
+      "projectSettings": {
+        "title": "Projectinstellingen",
+        "intro": "Configureer leden, integraties en projectspecifieke opties.",
+        "tasks": [
+          "Nodig leden uit en stel hun projectrol in (viewer, member, owner).",
+          "Configureer GitHub- of GitLab-webhooks voor automatisering.",
+          "Beheer project-API-sleutels voor CI/CD-ticketcreatie."
+        ]
+      },
+      "settings": {
+        "title": "Gebruikersinstellingen",
+        "intro": "Uw persoonlijke profiel, beveiliging, uiterlijk en meldingsvoorkeuren.",
+        "tasks": [
+          "Werk weergavenaam, e-mail, avatar en datum-/tijdnotatie bij.",
+          "Schakel MFA in of registreer een passkey voor sterker inloggen.",
+          "Kies of het dashboard opent op Borden of Tickets.",
+          "Stel werkuren in die als standaard worden gebruikt bij tijdregistratie."
+        ]
+      },
+      "chats": {
+        "title": "Chats",
+        "intro": "Directe berichten en groepsgesprekken met spraak- en videogesprekken.",
+        "tasks": [
+          "Start een chat vanuit de personenlijst in de zijbalk.",
+          "Gebruik @mentions in projectchat of DM's om iemand te melden.",
+          "Start een spraak- of videogesprek via de kop van het gesprek.",
+          "Reageer op berichten met emoji via hover-acties."
+        ],
+        "shortcuts": [
+          "Enter — bericht verzenden",
+          "Esc — berichtbewerking annuleren",
+          "@ — gebruiker vermelden",
+          ":name: — emoji invoegen via shortcode"
+        ]
+      },
+      "news": {
+        "title": "Nieuws",
+        "intro": "Aankondigingen van uw organisatie op het dashboard en op deze pagina.",
+        "tasks": [
+          "Lees vastgezette aankondigingen van beheerders.",
+          "Sluit items op het dashboard; ze blijven hier zichtbaar in de lijst."
+        ]
+      },
+      "customers": {
+        "title": "Klanten",
+        "intro": "Klantgegevens voor contracten, tijdregistratie en helpdesktickets.",
+        "tasks": [
+          "Open een klant om contracten en leden te bekijken.",
+          "Markeer klanten als favoriet om ze in de zijbalk vast te zetten.",
+          "Ga naar tickets voor een klant wanneer helpdesk is ingeschakeld."
+        ]
+      },
+      "customerDetail": {
+        "title": "Klantdetail",
+        "intro": "Contracten, toegewezen leden en links naar tickets voor één klant.",
+        "tasks": [
+          "Bekijk contracttarieven en regels voor niet-declareerbare tijd.",
+          "Zie welke agents toegang hebben tot tickets van deze klant.",
+          "Open de ticketlijst voor deze klant via acties in de kop."
+        ]
+      },
+      "tickets": {
+        "title": "Tickets",
+        "intro": "Helpdeskticketlijst voor één klant — filter, sorteer en maak nieuwe tickets aan.",
+        "tasks": [
+          "Gebruik filters voor status, prioriteit, toegewezen persoon en tags.",
+          "Wissel tussen tabel- en kaartweergave.",
+          "Maak handmatig een ticket aan of wacht op binnenkomende e-mail (wanneer IMAP is geconfigureerd)."
+        ]
+      },
+      "inbox": {
+        "title": "Postvak IN",
+        "intro": "Tickets die per e-mail zijn binnengekomen en nog niet aan een klant zijn gekoppeld.",
+        "tasks": [
+          "Beoordeel nieuwe e-mailtickets en wijs ze toe aan een klant.",
+          "Markeer spam om ongewenste mail te verbergen in de standaardlijst.",
+          "Open een ticket om te antwoorden of samen te voegen met een bestaand dossier."
+        ]
+      },
+      "ticketDetail": {
+        "title": "Ticketdetail",
+        "intro": "Bekijk en werk een ticket bij, antwoord aan de aanvrager en pas macro's of checklists toe.",
+        "tasks": [
+          "Wijzig status, prioriteit, type, toegewezen persoon en tags via de kop.",
+          "Voeg een openbaar antwoord toe (per e-mail naar de aanvrager) of een privé interne notitie.",
+          "Pas een macro toe om vooraf ingestelde acties in één klik uit te voeren.",
+          "Stel een herinneringsdatum in bij pending-tickets of een sluitingsdatum bij pending close."
+        ]
+      },
+      "timeTracking": {
+        "title": "Tijdregistratie",
+        "intro": "Registreer uren, maak persoonlijke rapporten en exporteer bordtijdrapporten.",
+        "tasks": [
+          "Wissel van tabblad voor Tijd registreren, Rapport of Bordrapport.",
+          "Navigeer tussen weken met de pijlen of klik op het weeklabel.",
+          "Managers kunnen de urenstaten van andere gebruikers bekijken wanneer toegestaan."
+        ]
+      },
+      "timeTrackingSheet": {
+        "title": "Tijd registreren",
+        "intro": "Wekelijks raster: voer uren in per klant, project en activiteit.",
+        "tasks": [
+          "Typ uren in een cel — gebruik uw voorkeursnotatie decimaal of uu:mm uit instellingen.",
+          "Klik op het klokpictogram om start-/eindtijden op een regel in te stellen.",
+          "Kopieer de vorige week of gebruik standby-dienst voor contractuele nachttarieven.",
+          "Sleep rijhandvatten om regels te herschikken."
+        ],
+        "shortcuts": [
+          "Pijltjestoetsen — tussen cellen navigeren",
+          "Shift + pijltjes — selectie uitbreiden",
+          "Ctrl+C / Ctrl+V — cellen kopiëren en plakken",
+          "Ctrl+Z — laatste wijziging ongedaan maken",
+          "Del — geselecteerde cellen wissen",
+          "Esc — selectie opheffen"
+        ]
+      },
+      "timeTrackingReport": {
+        "title": "Tijdrapport",
+        "intro": "Persoonlijk tijdrapport met groepering, filters en PDF/XLSX-export.",
+        "tasks": [
+          "Stel het datumbereik in en groepeer op klant, project of activiteit.",
+          "Vouw groepen uit om individuele regels te zien.",
+          "Exporteer PDF of Excel voor facturatie of archivering."
+        ]
+      },
+      "timeTrackingBoardReport": {
+        "title": "Bordtijdrapport",
+        "intro": "Projectbordtijd geaggregeerd voor rapportage — vereist rapportweergaverechten.",
+        "tasks": [
+          "Filter op project, klant, toegewezen persoon en datumbereik.",
+          "Bekijk declareerbare vs. niet-declareerbare totalen wanneer geconfigureerd.",
+          "Download PDF of XLSX via de exportknoppen."
+        ]
+      },
+      "admin": {
+        "title": "Beheer",
+        "intro": "Beheer gebruikers, projecten, systeeminstellingen, helpdeskconfiguratie en back-ups.",
+        "tasks": [
+          "Gebruik de tabbladen om te wisselen tussen Gebruikers, Instellingen, SLA, Macro's en meer.",
+          "Wijzigingen aan SMTP, IMAP en beveiligingsinstellingen worden toegepast zonder serverherstart.",
+          "Open dit helppaneel op elk tabblad voor specifieke uitleg."
+        ]
+      },
+      "adminUsers": {
+        "title": "Gebruikers",
+        "intro": "Maak gebruikersaccounts aan en beheer rollen en functievlaggen.",
+        "tasks": [
+          "Stel globale rol in: admin, member, viewer of customer (alleen tickets).",
+          "Schakel helpdesk, tijdregistratie of rapporttoegang per gebruiker in.",
+          "Wijs klanten toe aan gebruikers met customer-rol voor ticketzichtbaarheid."
+        ]
+      },
+      "adminGroups": {
+        "title": "Groepen",
+        "intro": "Organiseer gebruikers en geef hele teams tegelijk klanttoegang.",
+        "tasks": [
+          "Maak een groep aan en voeg leden toe.",
+          "Wijs klanttoegang toe met een rol — hoogste rol wint bij combinatie met directe toegang."
+        ]
+      },
+      "adminCustomers": {
+        "title": "Klanten (beheer)",
+        "intro": "Maak klanten, contracten en toegangsregels aan.",
+        "tasks": [
+          "Voeg contracten toe met tarieven voor tijdrapporten.",
+          "Wijs agents toe aan klanten voor tickettoegang en toegewezen-personenlijsten.",
+          "Configureer niet-declareerbare minuten op alleen-tijdregistratieprojecten."
+        ]
+      },
+      "adminProjects": {
+        "title": "Projecten (beheer)",
+        "intro": "Overzicht van alle projecten, bordtype en archivering.",
+        "tasks": [
+          "Maak Kanban- of Scrum-projecten aan — bordtype is na aanmaak vast.",
+          "Archiveer projecten om ze te verbergen zonder geschiedenis te verwijderen.",
+          "Herstel gearchiveerde projecten wanneer nodig."
+        ]
+      },
+      "adminSettings": {
+        "title": "Systeeminstellingen",
+        "intro": "SMTP, IMAP, branding, beveiliging en standaardwaarden voor nieuwe gebruikers en projecten.",
+        "tasks": [
+          "Configureer uitgaande mail voordat wachtwoordreset en meldingen werken.",
+          "Stel IMAP-polling in om tickets te maken van binnenkomende e-mail.",
+          "Beperk API-toegang met toegestane IP-bereiken — test zorgvuldig vóór opslaan.",
+          "Upload een bedrijfslogo voor rapporten en optioneel op de inlogpagina."
+        ]
+      },
+      "adminNews": {
+        "title": "Nieuws (beheer)",
+        "intro": "Publiceer aankondigingen op het dashboard en de Nieuws-pagina.",
+        "tasks": [
+          "Schrijf markdown-inhoud met een titel en optionele vervaldatum.",
+          "Zet belangrijke items vast zodat ze zichtbaar blijven.",
+          "Laat datum leeg om direct te tonen zonder einddatum."
+        ]
+      },
+      "adminTimeTracking": {
+        "title": "Tijdregistratie (beheer)",
+        "intro": "Beheer alleen-tijdregistratieprojecten en klanten voor urenstaten.",
+        "tasks": [
+          "Maak TT-projecten aan met optionele niet-declareerbare minuten per regel.",
+          "Koppel TT-klanten aan facturatie-entiteiten in rapporten.",
+          "Stel uurtarieven in op klantcontracten voor kostkolommen in exports."
+        ]
+      },
+      "adminSla": {
+        "title": "SLA-beleid",
+        "intro": "Definieer responstijden en oplossingsdoelen per ticketprioriteit.",
+        "tasks": [
+          "Maak een beleid dat bij een prioriteit past of gebruik een catch-all.",
+          "Stel doelen in uren in; schendingsmarkeringen worden bijgewerkt wanneer tickets worden bekeken.",
+          "Deactiveer een beleid in plaats van verwijderen als u het later weer nodig hebt."
+        ]
+      },
+      "adminMacros": {
+        "title": "Macro's",
+        "intro": "Herbruikbare actiereeksen die agents in één klik op tickets toepassen.",
+        "tasks": [
+          "Combineer acties voor status instellen, prioriteit instellen, tag toevoegen en bericht toevoegen.",
+          "Gebruik placeholders zoals {agent}, {subject} en {ticket_id} in berichten.",
+          "Sleep placeholders vanuit de lijst naar tekst van berichtacties."
+        ]
+      },
+      "adminTicketChecklists": {
+        "title": "Ticketchecklists",
+        "intro": "Sjablonen toegepast op tickets — items moeten afgevinkt zijn vóór sluiten.",
+        "tasks": [
+          "Definieer checklistitems in een sjabloon.",
+          "Agents passen een sjabloon toe vanuit de ticketdetailweergave.",
+          "Sluiten wordt geblokkeerd totdat elk item is afgevinkt."
+        ]
+      },
+      "adminBackup": {
+        "title": "Back-up",
+        "intro": "Download en herstel databaseback-ups.",
+        "tasks": [
+          "Maak een back-up vóór grote upgrades of migraties.",
+          "Download het bestand en bewaar het buiten de server.",
+          "Herstellen vervangt de live database — plan eerst onderhoudstijd in."
+        ]
+      },
+      "cardDetail": {
+        "title": "Kaartdetail",
+        "intro": "Bewerk alle velden op een kaart: beschrijving, datums, toegewezen personen, checklists, bijlagen en koppelingen.",
+        "tasks": [
+          "Gebruik het ⋮-menu om secties te tonen of te verbergen (checklist, subkaarten, git-koppelingen, enz.).",
+          "Voeg subkaarten toe voor kleinere taken — ze verschijnen alleen hier, niet op het bord.",
+          "Koppel gerelateerde kaarten of tickets via de sectie gekoppelde kaarten.",
+          "Kopieer of verplaats de kaart naar een ander project via acties in de voettekst.",
+          "Druk op Esc om dit paneel te sluiten."
+        ],
+        "shortcuts": [
+          "Esc — kaartdetail sluiten"
+        ]
+      },
+      "projectSettingsGeneral": {
+        "title": "Project — Algemeen",
+        "intro": "Naam, uiterlijk, klantkoppeling en contract voor dit project.",
+        "tasks": [
+          "Wijs een klant en contract toe voor tijdregistratie en rapportage.",
+          "Upload een projectavatar die in de zijbalk en op de bordwerkbalk wordt getoond.",
+          "Bordtype (Kanban of Scrum) is bij aanmaak ingesteld en kan niet worden gewijzigd."
+        ]
+      },
+      "projectSettingsMembers": {
+        "title": "Project — Leden",
+        "intro": "Wie toegang heeft tot dit project en met welke rol.",
+        "tasks": [
+          "Nodig gebruikers uit op gebruikersnaam met rol viewer, member of owner.",
+          "Voeg een hele groep toe om alle leden tegelijk toegang te geven.",
+          "Owners kunnen instellingen wijzigen; viewers zien het bord alleen-lezen."
+        ]
+      },
+      "projectSettingsLabels": {
+        "title": "Project — Labels",
+        "intro": "Kleurtags op kaarten voor filteren en visuele groepering.",
+        "tasks": [
+          "Maak labels aan met een naam en kleur.",
+          "Verwijder ongebruikte labels — ze worden van alle kaarten verwijderd."
+        ]
+      },
+      "projectSettingsApiKeys": {
+        "title": "Project — API-sleutels",
+        "intro": "Sleutels voor de Ticket-API en automatisering (CI/CD die kaarten aanmaakt).",
+        "tasks": [
+          "Maak een sleutel aan met een beschrijvende naam.",
+          "Kopieer de sleutel wanneer deze wordt getoond — later ophalen is niet mogelijk.",
+          "Trek sleutels in die niet meer nodig zijn."
+        ]
+      },
+      "projectSettingsWebhooks": {
+        "title": "Project — Webhooks",
+        "intro": "GitHub- en GitLab-webhooks die kaarten aanmaken of bijwerken vanuit commits en MR's.",
+        "tasks": [
+          "Kopieer de webhook-URL en het token naar de instellingen van uw repository.",
+          "Genereer het token opnieuw als het is gecompromitteerd.",
+          "Elk platform heeft een eigen URL-pad — gebruik het bijbehorende tabblad."
+        ]
+      },
+      "projectSettingsDeletedCards": {
+        "title": "Project — Verwijderde kaarten",
+        "intro": "Zacht verwijderde kaarten die kunnen worden hersteld of permanent verwijderd.",
+        "tasks": [
+          "Open een verwijderde kaart om de inhoud te bekijken vóór herstel.",
+          "Herstellen plaatst de kaart terug in de oorspronkelijke kolom.",
+          "Permanent verwijderen kan niet ongedaan worden gemaakt."
+        ]
+      },
+      "settingsProfile": {
+        "title": "Profiel en voorkeuren",
+        "intro": "Uw naam, taal, thema, meldingen en dashboardstandaarden.",
+        "tasks": [
+          "Stel taal, tijdzone en datum-/tijdnotatie in voor de hele interface.",
+          "Schakel e-mailmeldingen in voor mentions, DM's en kaarttoewijzingen.",
+          "Kies Borden of Tickets als standaardweergave na inloggen.",
+          "Schakel persoonlijke tijdregistratie in als uw organisatie urenstaten gebruikt."
+        ]
+      },
+      "settingsWorkingHours": {
+        "title": "Werkuren",
+        "intro": "Standaard starttijd per weekdag — gebruikt als hints op het tijdregistratieraster.",
+        "tasks": [
+          "Laat een dag leeg als u die dag niet werkt.",
+          "Tijden gebruiken uw gekozen tijdnotatie (decimaal of uu:mm).",
+          "Sla het profiel op na bewerken — werkuren maken deel uit van uw profiel."
+        ]
+      },
+      "settingsPassword": {
+        "title": "Wachtwoord wijzigen",
+        "intro": "Werk uw inlogwachtwoord bij. Beleidsregels worden door uw beheerder ingesteld.",
+        "tasks": [
+          "Voer uw huidige wachtwoord in, daarna een nieuw wachtwoord dat aan de vermelde eisen voldoet.",
+          "U moet mogelijk een verlopen wachtwoord wijzigen voordat u verder kunt gaan."
+        ]
+      },
+      "settingsMfa": {
+        "title": "Tweefactorauthenticatie",
+        "intro": "Voeg een TOTP-app toe (Google Authenticator, enz.) voor extra inlogbeveiliging.",
+        "tasks": [
+          "Scan de QR-code of voer het geheim handmatig in uw authenticator-app in.",
+          "Voer een 6-cijferige code in om de instelling te bevestigen.",
+          "Bewaar hersteltoegang veilig — u hebt de app-code bij elke login nodig wanneer dit is ingeschakeld."
+        ]
+      },
+      "settingsPasskey": {
+        "title": "Passkeys",
+        "intro": "Log in met biometrie van uw apparaat of een beveiligingssleutel in plaats van een wachtwoord.",
+        "tasks": [
+          "Registreer een passkey vanaf het apparaat waarmee u inlogt.",
+          "U kunt meerdere passkeys registreren en oude verwijderen.",
+          "Passkeys werken naast wachtwoord en MFA, afhankelijk van het serverbeleid."
+        ]
+      },
+      "settingsApiKeys": {
+        "title": "Persoonlijke API-sleutels",
+        "intro": "Uw eigen API-sleutels voor scripts en integraties (niet project-ticketsleutels).",
+        "tasks": [
+          "Maak een benoemde sleutel aan en kopieer deze direct.",
+          "Trek sleutels in die u niet meer gebruikt."
+        ]
+      },
+      "chartsVelocity": {
+        "title": "Velocity-grafiek",
+        "intro": "Story points voltooid per sprint — helpt toekomstige sprints te voorspellen.",
+        "tasks": [
+          "Alleen voltooide sprints worden getoond.",
+          "Zorg dat kaarten story points hebben voor betekenisvolle balken."
+        ]
+      },
+      "chartsThroughput": {
+        "title": "Doorvoer",
+        "intro": "Aantal kaarten gesloten per sprint of per week (Kanban).",
+        "tasks": [
+          "Kies voor Kanban 4–26 weken in het keuzemenu.",
+          "Voor Scrum wordt doorvoer gegroepeerd per voltooide sprint."
+        ]
+      },
+      "chartsBurndown": {
+        "title": "Burndown",
+        "intro": "Resterende story points in de geselecteerde sprint over tijd.",
+        "tasks": [
+          "Selecteer de actieve of een eerdere sprint in het keuzemenu.",
+          "Ideale lijn gaat uit van gelijkmatige burn; werkelijke lijn volgt kaartvoltooiingen."
+        ]
+      },
+      "chartsBurnup": {
+        "title": "Burn-up",
+        "intro": "Cumulatief voltooid werk in een sprint versus totale scope.",
+        "tasks": [
+          "Scopewijzigingen (kaarten toegevoegd midden in de sprint) tonen als stappen in de totaallijn.",
+          "Selecteer de sprint om te analyseren."
+        ]
+      },
+      "chartsCfd": {
+        "title": "Cumulatieve flow",
+        "intro": "Gestapelde vlakken met kaartenaantal per kolom over tijd.",
+        "tasks": [
+          "Groeiende banden in één kolom kunnen op een knelpunt wijzen.",
+          "Beschikbaar voor zowel Kanban- als Scrum-projecten."
+        ]
+      },
+      "chartsSprintReport": {
+        "title": "Sprintrapport",
+        "intro": "Samenvatting van een voltooide sprint: toegezegd versus voltooid werk.",
+        "tasks": [
+          "Selecteer een sprint om meegenomen en voltooide kaarten te zien.",
+          "Gebruik na sprintreview-vergaderingen."
+        ]
+      },
+      "chartsEpicBurndown": {
+        "title": "Epic-burndown",
+        "intro": "Resterende story points voor één epic over tijd.",
+        "tasks": [
+          "Selecteer een epic in het keuzemenu.",
+          "Koppel kaarten aan de epic via kaartdetail voor nauwkeurige totalen."
+        ]
+      },
+      "chartsReleaseBurndown": {
+        "title": "Release-burndown",
+        "intro": "Voortgang naar een release-doel over epics en sprints.",
+        "tasks": [
+          "Configureer release-scope via epics en sprintplanning.",
+          "Gebruik voor release-tracking met vaste datum."
+        ]
+      },
+      "chartsCycleTime": {
+        "title": "Doorlooptijd",
+        "intro": "Hoe lang kaarten in uitvoering zijn (start tot klaar).",
+        "tasks": [
+          "Stel startdatums in op kaarten voor nauwkeurige meting.",
+          "Spreidingsdiagram toont doorlooptijd per kaart."
+        ]
+      },
+      "chartsLeadTime": {
+        "title": "Lead time",
+        "intro": "Tijd van kaartaanmaak tot voltooiing.",
+        "tasks": [
+          "Nuttig voor Kanban-flowmetrieken en SLA-achtige tracking op borden.",
+          "Elke stip is één voltooide kaart."
+        ]
+      }
+    },
+    "field_button": "Meer informatie",
+    "fields": {
+      "ticket_reminder": "Stelt een follow-updatum in voor pending-tickets. Tickets met een vervallen herinnering worden bovenaan de lijst gesorteerd.",
+      "ticket_close_date": "Wanneer de status Pending close is, wordt het ticket automatisch gesloten op deze datum.",
+      "ticket_macros": "Voert een vooraf ingestelde reeks acties uit (status wijzigen, antwoord toevoegen, tags, enz.) gedefinieerd door een beheerder.",
+      "ticket_checklist": "Alle checklistitems moeten zijn afgevinkt voordat het ticket kan worden gesloten wanneer een sjabloon is toegepast."
+    }
   }
 }

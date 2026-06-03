@@ -1096,6 +1096,7 @@ watch(() => boardStore.checklistEvent, (event) => {
 })
 
 onMounted(async () => {
+  ui.setHelpContext('cardDetail')
   document.addEventListener('keydown', onKeyDown)
   if (epicsStore.projectSlug !== props.projectSlug) {
     epicsStore.loadEpics(props.projectSlug)
@@ -1115,6 +1116,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  ui.setHelpContext(null)
   document.removeEventListener('keydown', onKeyDown)
   document.removeEventListener('click', onSectionsMenuDocClick)
   sortableInstance?.destroy()

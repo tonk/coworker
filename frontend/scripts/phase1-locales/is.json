@@ -1,0 +1,211 @@
+{
+  "field_button": "Nánari upplýsingar",
+  "fields": {
+    "ticket_reminder": "Setur eftirfylgnidagsetningu fyrir biðmiða. Miðar með skilinn áminningu eru raðaðir efst á listanum.",
+    "ticket_close_date": "Þegar staða er Biðlokun lokar miðinn sjálfkrafa á þessari dagsetningu.",
+    "ticket_macros": "Keyrir fyrirfram skilgreinda röð aðgerða (breyta stöðu, bæta við svari, merki o.s.frv.) sem stjórnandi hefur skilgreint.",
+    "ticket_checklist": "Öllum atriðum gátlista verður að ljúka áður en hægt er að loka miða þegar sniðmát er notað."
+  },
+  "pages": {
+    "cardDetail": {
+      "title": "Upplýsingar spils",
+      "intro": "Breyttu öllum reitum á spili: lýsing, dagsetningar, úthlutanir, gátlistar, viðhengi og tenglar.",
+      "tasks": [
+        "Notaðu ⋮ valmyndina til að sýna eða fela hluta (gátlisti, undirspil, git tenglar o.s.frv.).",
+        "Bættu við undirspilum fyrir minni verkefni — þau birtast aðeins hér, ekki á töflunni.",
+        "Tengdu tengd spil eða miða í hlutanum fyrir tengd spil.",
+        "Afritaðu eða færðu spilið yfir í annað verkefni úr aðgerðum í fæti.",
+        "Ýttu á Esc til að loka þessum glugga."
+      ],
+      "shortcuts": [
+        "Esc — loka upplýsingum spils"
+      ]
+    },
+    "projectSettingsGeneral": {
+      "title": "Verkefni — Almennt",
+      "intro": "Nafn, útlit, tenging við viðskiptavin og samningur fyrir þetta verkefni.",
+      "tasks": [
+        "Úthlutaðu viðskiptavini og samningi fyrir tímaskráningu og skýrslugerð.",
+        "Hladdu upp auðkennismynd verkefnis sem birtist í hliðarstiku og verkfæraslá töflu.",
+        "Taflutegund (Kanban eða Scrum) var stillt við stofnun og er ekki hægt að breyta."
+      ]
+    },
+    "projectSettingsMembers": {
+      "title": "Verkefni — Meðlimir",
+      "intro": "Hver hefur aðgang að þessu verkefni og með hvaða hlutverki.",
+      "tasks": [
+        "Bjóddu notendum með notandanafni og hlutverki áhorfanda, meðlims eða eiganda.",
+        "Bættu við heilum hóp til að veita öllum meðlimum hans aðgang í einu.",
+        "Eigendur geta breytt stillingum; áhorfendur sjá töfluna aðeins til lestrar."
+      ]
+    },
+    "projectSettingsLabels": {
+      "title": "Verkefni — Merki",
+      "intro": "Litað merki á spilum til síu og sjónrænnar flokkunar.",
+      "tasks": [
+        "Búðu til merki með nafni og lit.",
+        "Eyða ónotuðum merkjum — þau eru fjarlægð af öllum spilum."
+      ]
+    },
+    "projectSettingsApiKeys": {
+      "title": "Verkefni — API lyklar",
+      "intro": "Lyklar fyrir miða-API og sjálfvirkni (CI/CD sem býr til spil).",
+      "tasks": [
+        "Búðu til lykil með lýsandi nafni.",
+        "Afritaðu lykilinn þegar hann birtist — ekki er hægt að ná í hann síðar.",
+        "Afturkallaðu lykla sem ekki eru lengur nauðsynlegir."
+      ]
+    },
+    "projectSettingsWebhooks": {
+      "title": "Verkefni — Webhook",
+      "intro": "GitHub og GitLab webhook sem búa til eða uppfæra spil úr commitum og MR.",
+      "tasks": [
+        "Afritaðu webhook slóð og lykil inn í stillingar gagnahlasins.",
+        "Endurgerðu lykilinn ef hann hefur verið í hættu.",
+        "Hver vettvangur hefur sína eigin URL slóð — notaðu viðeigandi flipa."
+      ]
+    },
+    "projectSettingsDeletedCards": {
+      "title": "Verkefni — Eydd spil",
+      "intro": "Mjúk eydd spil sem hægt er að endurheimta eða fjarlægja varanlega.",
+      "tasks": [
+        "Opnaðu eytt spil til að skoða innihald þess áður en endurheimt er.",
+        "Endurheimt skilar spilinu í upprunalegan dálk.",
+        "Varanleg eyðing er óafturkræf."
+      ]
+    },
+    "settingsProfile": {
+      "title": "Prófíll og kjörstillingar",
+      "intro": "Nafn þitt, tungumál, þema, tilkynningar og sjálfgefnar stillingar mælaborðs.",
+      "tasks": [
+        "Stilltu tungumál, tímabelti og dagsetningar-/tímasnið fyrir allt viðmót.",
+        "Virkjaðu tölvupósttilkynningar fyrir tilvísanir, bein skilaboð og úthlutun spila.",
+        "Veldu Töflur eða Miða sem sjálfgefna sýn eftir innskráningu.",
+        "Kveiktu eða slökktu á persónulegri tímaskráningu ef fyrirtækið þitt notar tímaeyðublöð."
+      ]
+    },
+    "settingsWorkingHours": {
+      "title": "Vinnutími",
+      "intro": "Sjálfgefin upphafstími á hverjum vinnudegi — notað sem vísbending í hnitaneti tímaskráningar.",
+      "tasks": [
+        "Skildu dag eftir tóman ef þú vinnur ekki þann dag.",
+        "Tímar nota valið tímamerki (tugabrot eða hh:mm).",
+        "Vistaðu prófíl eftir breytingu — vinnutími er hluti af prófílnum þínum."
+      ]
+    },
+    "settingsPassword": {
+      "title": "Breyta lykilorði",
+      "intro": "Uppfærðu innskráningarlykilorðið þitt. Reglur stefnu eru settar af stjórnanda.",
+      "tasks": [
+        "Sláðu inn núverandi lykilorð og síðan nýtt sem uppfyllir skráðar kröfur.",
+        "Þú gætir verið neyddur til að breyta útrunnum lykilorði áður en hægt er að halda áfram."
+      ]
+    },
+    "settingsMfa": {
+      "title": "Tveggja þátta auðkenning",
+      "intro": "Bættu við TOTP forriti (Google Authenticator o.s.frv.) fyrir aukið öryggi við innskráningu.",
+      "tasks": [
+        "Skannaðu QR kóðann eða sláðu leynilykilinn handvirkt inn í auðkenningarforritið þitt.",
+        "Sláðu inn 6 stafa kóða til að staðfesta uppsetningu.",
+        "Geymdu endurheimtaraðgang örugglega — þú þarft forritskóðann við hverja innskráningu þegar MFA er virkt."
+      ]
+    },
+    "settingsPasskey": {
+      "title": "Lykilorðslyklar",
+      "intro": "Skráðu þig inn með lífkennum tækis eða öryggislykli í stað lykilorðs.",
+      "tasks": [
+        "Skráðu lykilorðslykil af tækinu sem þú notar til innskráningar.",
+        "Þú getur skráð marga lykilorðslykla og fjarlægt gamla.",
+        "Lykilorðslyklar virka ásamt lykilorði og MFA eftir stefnu þjóns."
+      ]
+    },
+    "settingsApiKeys": {
+      "title": "Persónulegir API lyklar",
+      "intro": "Þínir eigin API lyklar fyrir forrit og samþættingar (ekki miðalyklar verkefnis).",
+      "tasks": [
+        "Búðu til nefndan lykil og afritaðu hann strax.",
+        "Afturkallaðu lykla sem þú notar ekki lengur."
+      ]
+    },
+    "chartsVelocity": {
+      "title": "Hraðagraf",
+      "intro": "Sögupunktar lokið á hverja sprett — hjálpar við spá fyrir um framtíðarsprettir.",
+      "tasks": [
+        "Aðeins loknar sprettir birtast.",
+        "Gakktu úr skugga um að spil hafi sögupunkta til að súlur séu merkingarbærar."
+      ]
+    },
+    "chartsThroughput": {
+      "title": "Flæði",
+      "intro": "Fjöldi lokaðra spila á hverja sprett eða viku (Kanban).",
+      "tasks": [
+        "Fyrir Kanban veldu 4–26 vikur í fellilistanum.",
+        "Fyrir Scrum er flæði flokkað eftir lokinni sprett."
+      ]
+    },
+    "chartsBurndown": {
+      "title": "Niðurbrennsla",
+      "intro": "Eftirstandandi sögupunktar í valinni sprett með tímanum.",
+      "tasks": [
+        "Veldu virka eða liðna sprett í fellilistanum.",
+        "Hin fullkomna lína gerir ráð fyrir jöfnu niðurbrennslu; raunlínan fylgir loknum spilum."
+      ]
+    },
+    "chartsBurnup": {
+      "title": "Uppbrennsla",
+      "intro": "Uppsafnað lokið verk í sprett miðað við heildarumfang.",
+      "tasks": [
+        "Breytingar á umfangi (spil bætt við í miðri sprett) birtast sem stig í heildarlínunni.",
+        "Veldu sprett til að greina."
+      ]
+    },
+    "chartsCfd": {
+      "title": "Uppsafnað flæði",
+      "intro": "Staflað svæði sem sýna fjölda spila á dálk með tímanum.",
+      "tasks": [
+        "Vaxandi bönd í einum dálki geta bent til flöskuháls.",
+        "Í boði fyrir bæði Kanban og Scrum verkefni."
+      ]
+    },
+    "chartsSprintReport": {
+      "title": "Sprettiskýrsla",
+      "intro": "Yfirlit yfir lokaða sprett: skuldbundin vs. lokið verk.",
+      "tasks": [
+        "Veldu sprett til að sjá spil sem fluttust áfram og lokið verk.",
+        "Notaðu eftir sprettiyfirferðarfundi."
+      ]
+    },
+    "chartsEpicBurndown": {
+      "title": "Epic niðurbrennsla",
+      "intro": "Eftirstandandi sögupunktar fyrir eitt epic með tímanum.",
+      "tasks": [
+        "Veldu epic í fellilistanum.",
+        "Tengdu spil við epic úr upplýsingum spils fyrir nákvæmar heildir."
+      ]
+    },
+    "chartsReleaseBurndown": {
+      "title": "Release niðurbrennsla",
+      "intro": "Framvinda að release markmiði yfir epic og sprettir.",
+      "tasks": [
+        "Stilltu release umfang með epic og sprettskipulagningu.",
+        "Notaðu fyrir eftirfylgni með fastri dagsetningu."
+      ]
+    },
+    "chartsCycleTime": {
+      "title": "Hringtími",
+      "intro": "Hversu lengi spil eru í vinnslu (upphaf til lokið).",
+      "tasks": [
+        "Settu upphafsdagsetningar á spil fyrir nákvæma mælingu.",
+        "Dreifingarit sýnir hringtíma á hvert spil."
+      ]
+    },
+    "chartsLeadTime": {
+      "title": "Leiðtími",
+      "intro": "Tími frá stofnun spils til lokunar.",
+      "tasks": [
+        "Gagnlegt fyrir Kanban flæðismælingar og SLA-kennda eftirfylgni á töflum.",
+        "Hver punktur er eitt lokið spil."
+      ]
+    }
+  }
+}

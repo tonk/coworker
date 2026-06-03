@@ -32,8 +32,11 @@ export default defineConfig({
             return 'chunk-stores'
           if (id.includes('/src/api/') || id.includes('/src/composables/useWebSocket'))
             return 'chunk-app-net'
-          if (id.includes('/src/i18n/'))
+          if (id.includes('/src/i18n/')) {
+            const localeMatch = id.match(/\/src\/i18n\/([a-z]{2})\.json$/)
+            if (localeMatch) return `chunk-i18n-${localeMatch[1]}`
             return 'chunk-app-i18n'
+          }
           if (
             id.includes('/src/components/layout/') ||
             id.includes('/src/components/common/ToastContainer.vue') ||

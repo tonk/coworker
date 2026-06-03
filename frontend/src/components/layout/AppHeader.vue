@@ -95,6 +95,18 @@
           </div>
         </div>
       </div>
+      <button
+        type="button"
+        class="btn-icon"
+        @click="showHelp = true"
+        :aria-label="$t('help.button')"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </button>
       <div class="user-menu" v-if="auth.user" ref="menuRef">
         <button
           class="avatar-btn"
@@ -129,6 +141,7 @@
     </div>
   </header>
   <AboutModal v-if="showAbout" @close="showAbout = false" />
+  <HelpPanelModal v-if="showHelp" @close="showHelp = false" />
 </template>
 
 <script setup>
@@ -142,6 +155,7 @@ import { useNotificationsStore } from '@/stores/notifications'
 import { avatarUrl } from '@/composables/useAvatar'
 import GlobalSearch from '@/components/common/GlobalSearch.vue'
 import AboutModal from '@/components/common/AboutModal.vue'
+import HelpPanelModal from '@/components/common/HelpPanelModal.vue'
 
 const props = defineProps({ presenceCount: { type: Number, default: 0 } })
 const emit = defineEmits(['open-shortcuts'])
@@ -155,6 +169,7 @@ const notificationsStore = useNotificationsStore()
 const menuOpen = ref(false)
 const themeOpen = ref(false)
 const showAbout = ref(false)
+const showHelp = ref(false)
 const menuRef = ref(null)
 const themeRef = ref(null)
 const avatarErr = ref(false)
@@ -172,10 +187,9 @@ const initials = computed(() => {
   return name.slice(0, 2).toUpperCase()
 })
 
-function onLocaleChange(e) {
+async function onLocaleChange(e) {
   const lang = e.target.value
-  setLocale(lang)
-  document.documentElement.lang = lang
+  await setLocale(lang)
   if (auth.isLoggedIn) auth.updateProfile({ locale: lang })
 }
 

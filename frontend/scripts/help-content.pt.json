@@ -1,0 +1,542 @@
+{
+  "button": "Ajuda",
+  "title": "Ajuda",
+  "tasks_heading": "Tarefas comuns",
+  "shortcuts_heading": "Atalhos de teclado",
+  "pages": {
+    "default": {
+      "title": "WarmDesk",
+      "intro": "Ajuda contextual para a página em que se encontra. Abra este painel a qualquer momento pelo botão de ajuda no cabeçalho.",
+      "tasks": [
+        "Use a barra lateral para alternar entre projetos, clientes e conversas.",
+        "Prima Ctrl+K (⌘K no Mac) para pesquisar cartões, tickets e pessoas.",
+        "Abra Definições no menu do utilizador para alterar idioma, tema e notificações."
+      ]
+    },
+    "dashboard": {
+      "title": "Painel",
+      "intro": "A sua página inicial: projetos fixados, atividade recente e acesso rápido a clientes favoritos.",
+      "tasks": [
+        "Marque projetos e clientes como favoritos na barra lateral para os fixar aqui.",
+        "Crie um novo projeto com o botão nesta página.",
+        "Defina «Painel mostra» em Definições para abrir Tickets em vez de Quadros ao iniciar sessão."
+      ]
+    },
+    "board": {
+      "title": "Quadro Kanban",
+      "intro": "Gerencie o trabalho como cartões que se movem entre colunas. Arraste cartões para atualizar o estado.",
+      "tasks": [
+        "Arraste um cartão para outra coluna para alterar o seu estado.",
+        "Clique num cartão para editar detalhes, comentários, listas de verificação e anexos.",
+        "Abra o painel de chat para discutir o trabalho com a equipa do projeto.",
+        "Defina um limite WIP no cabeçalho de uma coluna para limitar o trabalho em curso."
+      ],
+      "shortcuts": [
+        "Esc — fechar o painel de detalhes do cartão aberto"
+      ]
+    },
+    "backlog": {
+      "title": "Backlog",
+      "intro": "Backlog Scrum: priorize cartões que ainda não estão num sprint ativo.",
+      "tasks": [
+        "Arraste cartões para reordenar a prioridade.",
+        "Mova cartões para o sprint ativo a partir do painel de sprint.",
+        "Crie novos cartões diretamente no backlog."
+      ]
+    },
+    "sprintBoard": {
+      "title": "Quadro de sprint",
+      "intro": "O sprint ativo apresentado como quadro Kanban com um âmbito fixo.",
+      "tasks": [
+        "Mova cartões entre colunas à medida que o trabalho avança.",
+        "Conclua o sprint no menu de sprint quando todo o trabalho estiver feito ou transferido.",
+        "Abra Gráficos para ver o burndown deste sprint."
+      ]
+    },
+    "epics": {
+      "title": "Épicos",
+      "intro": "Agrupe cartões relacionados em épicos para planeamento Scrum e acompanhamento de burndown.",
+      "tasks": [
+        "Crie um épico e atribua uma cor.",
+        "Associe cartões a um épico a partir do painel de detalhes do cartão.",
+        "Abra um épico para ver os seus cartões e gráfico de burndown."
+      ]
+    },
+    "gantt": {
+      "title": "Diagrama de Gantt",
+      "intro": "Vista cronológica de cartões com datas de início e de conclusão.",
+      "tasks": [
+        "Defina datas de início e de conclusão nos cartões para os ver na linha temporal.",
+        "Arraste barras para ajustar datas quando tiver acesso de edição.",
+        "Deslize horizontalmente para percorrer o tempo."
+      ]
+    },
+    "charts": {
+      "title": "Gráficos",
+      "intro": "Análise Scrum: burndown, velocidade e progresso de épicos para este projeto.",
+      "tasks": [
+        "Selecione um sprint para ver o seu gráfico de burndown.",
+        "Alterne entre separadores para comparar a velocidade entre sprints.",
+        "Selecione um épico para ver o trabalho restante ao longo do tempo."
+      ]
+    },
+    "topics": {
+      "title": "Tópicos",
+      "intro": "Discussões estruturadas separadas do chat do quadro — úteis para decisões e conversas longas.",
+      "tasks": [
+        "Crie um tópico com título e descrição opcional.",
+        "Responda em threads para manter a conversa organizada.",
+        "Feche um tópico quando a discussão estiver resolvida."
+      ]
+    },
+    "projectSettings": {
+      "title": "Definições do projeto",
+      "intro": "Configure membros, integrações e opções específicas do projeto.",
+      "tasks": [
+        "Convide membros e defina a sua função no projeto (visualizador, membro, proprietário).",
+        "Configure webhooks do GitHub ou GitLab para automação.",
+        "Gerencie chaves de API do projeto para criação de tickets em CI/CD."
+      ]
+    },
+    "settings": {
+      "title": "Definições do utilizador",
+      "intro": "O seu perfil pessoal, segurança, aparência e preferências de notificação.",
+      "tasks": [
+        "Atualize nome de exibição, e-mail, avatar e formato de data/hora.",
+        "Ative MFA ou registe uma chave de acesso para um início de sessão mais seguro.",
+        "Escolha se o painel abre em Quadros ou Tickets.",
+        "Defina horário de trabalho usado como predefinição no registo de tempo."
+      ]
+    },
+    "chats": {
+      "title": "Conversas",
+      "intro": "Mensagens diretas e conversas em grupo com chamadas de voz e vídeo.",
+      "tasks": [
+        "Inicie uma conversa a partir da lista Pessoas na barra lateral.",
+        "Use @menções no chat do projeto ou em MD para notificar alguém.",
+        "Inicie uma chamada de voz ou vídeo a partir do cabeçalho da conversa.",
+        "Reaja a mensagens com ações de emoji ao passar o rato."
+      ],
+      "shortcuts": [
+        "Enter — enviar mensagem",
+        "Esc — cancelar edição de mensagem",
+        "@ — mencionar um utilizador",
+        ":nome: — inserir emoji por código curto"
+      ]
+    },
+    "news": {
+      "title": "Notícias",
+      "intro": "Anúncios da sua organização apresentados no painel e nesta página.",
+      "tasks": [
+        "Leia anúncios fixados pelos administradores.",
+        "Dispense itens no painel; eles permanecem listados aqui."
+      ]
+    },
+    "customers": {
+      "title": "Clientes",
+      "intro": "Registos de clientes usados para contratos, registo de tempo e tickets de helpdesk.",
+      "tasks": [
+        "Abra um cliente para ver contratos e membros.",
+        "Marque clientes como favoritos para os fixar na barra lateral.",
+        "Aceda aos tickets de um cliente quando o helpdesk estiver ativado."
+      ]
+    },
+    "customerDetail": {
+      "title": "Detalhe do cliente",
+      "intro": "Contratos, membros atribuídos e ligações a tickets de um cliente.",
+      "tasks": [
+        "Revise taxas contratuais e regras de tempo não faturável.",
+        "Veja quais agentes têm acesso aos tickets deste cliente.",
+        "Abra a lista de tickets deste cliente a partir das ações do cabeçalho."
+      ]
+    },
+    "tickets": {
+      "title": "Tickets",
+      "intro": "Lista de tickets de helpdesk de um cliente — filtre, ordene e crie novos tickets.",
+      "tasks": [
+        "Use filtros para estado, prioridade, responsável e etiquetas.",
+        "Alterne entre vista de tabela e de cartões.",
+        "Crie um ticket manualmente ou aguarde e-mail recebido (quando o IMAP estiver configurado)."
+      ]
+    },
+    "inbox": {
+      "title": "Caixa de entrada",
+      "intro": "Tickets recebidos por e-mail que ainda não estão associados a um cliente.",
+      "tasks": [
+        "Revise novos tickets de e-mail e atribua-os a um cliente.",
+        "Marque como spam para ocultar correio indesejado da lista predefinida.",
+        "Abra um ticket para responder ou fundi-lo num caso existente."
+      ]
+    },
+    "ticketDetail": {
+      "title": "Detalhe do ticket",
+      "intro": "Veja e atualize um ticket, responda ao solicitante e aplique macros ou listas de verificação.",
+      "tasks": [
+        "Altere estado, prioridade, tipo, responsável e etiquetas a partir do cabeçalho.",
+        "Adicione uma resposta pública (enviada por e-mail ao solicitante) ou uma nota interna privada.",
+        "Aplique uma macro para executar ações predefinidas com um clique.",
+        "Defina uma data de lembrete em tickets pendentes ou uma data de fecho em fecho pendente."
+      ]
+    },
+    "timeTracking": {
+      "title": "Registo de tempo",
+      "intro": "Registe horas, execute relatórios pessoais e exporte relatórios de tempo do quadro.",
+      "tasks": [
+        "Alterne entre separadores para Registar tempo, Relatório ou Relatório do quadro.",
+        "Navegue entre semanas com as setas ou clique no rótulo da semana.",
+        "Gestores podem ver folhas de outros utilizadores quando autorizado."
+      ]
+    },
+    "timeTrackingSheet": {
+      "title": "Registar tempo",
+      "intro": "Grelha semanal: introduza horas por cliente, projeto e atividade.",
+      "tasks": [
+        "Introduza horas numa célula — use o formato decimal ou hh:mm preferido nas definições.",
+        "Clique no ícone do relógio para definir horas de início/fim numa entrada.",
+        "Copie a semana anterior ou use turno de prontidão para taxas noturnas contratuais.",
+        "Arraste os identificadores de linha para reordenar linhas."
+      ],
+      "shortcuts": [
+        "Teclas de seta — mover entre células",
+        "Shift + setas — expandir seleção",
+        "Ctrl+C / Ctrl+V — copiar e colar células",
+        "Ctrl+Z — desfazer última edição",
+        "Del — limpar células selecionadas",
+        "Esc — limpar seleção"
+      ]
+    },
+    "timeTrackingReport": {
+      "title": "Relatório de tempo",
+      "intro": "Relatório pessoal de tempo com agrupamento, filtros e exportação PDF/XLSX.",
+      "tasks": [
+        "Defina o intervalo de datas e agrupe por cliente, projeto ou atividade.",
+        "Expanda grupos para ver entradas individuais.",
+        "Exporte PDF ou Excel para faturação ou arquivo."
+      ]
+    },
+    "timeTrackingBoardReport": {
+      "title": "Relatório de tempo do quadro",
+      "intro": "Tempo do quadro de projeto agregado para relatórios — requer permissão de visualizador de relatórios.",
+      "tasks": [
+        "Filtre por projeto, cliente, responsável e intervalo de datas.",
+        "Revise totais faturáveis vs. não faturáveis quando configurado.",
+        "Descarregue PDF ou XLSX a partir dos botões de exportação."
+      ]
+    },
+    "admin": {
+      "title": "Administração",
+      "intro": "Gerencie utilizadores, projetos, definições do sistema, configuração de helpdesk e cópias de segurança.",
+      "tasks": [
+        "Use os separadores para alternar entre Utilizadores, Definições, SLA, Macros e mais.",
+        "Alterações a SMTP, IMAP e definições de segurança aplicam-se sem reiniciar o servidor.",
+        "Abra este painel de ajuda em cada separador para orientação específica."
+      ]
+    },
+    "adminUsers": {
+      "title": "Utilizadores",
+      "intro": "Crie e gerencie contas de utilizador, funções e flags de funcionalidades.",
+      "tasks": [
+        "Defina função global: administrador, membro, visualizador ou cliente (apenas tickets).",
+        "Ative helpdesk, registo de tempo ou acesso a relatórios por utilizador.",
+        "Atribua clientes a utilizadores com função cliente para visibilidade de tickets."
+      ]
+    },
+    "adminGroups": {
+      "title": "Grupos",
+      "intro": "Organize utilizadores e conceda acesso a clientes a equipas inteiras de uma vez.",
+      "tasks": [
+        "Crie um grupo e adicione membros.",
+        "Atribua acesso a clientes com uma função — a função mais elevada prevalece quando combinada com acesso direto."
+      ]
+    },
+    "adminCustomers": {
+      "title": "Clientes (admin)",
+      "intro": "Crie clientes, contratos e regras de acesso.",
+      "tasks": [
+        "Adicione contratos com taxas usadas em relatórios de tempo.",
+        "Atribua agentes a clientes para acesso a tickets e listas de responsáveis.",
+        "Configure minutos não faturáveis em projetos apenas de registo de tempo."
+      ]
+    },
+    "adminProjects": {
+      "title": "Projetos (admin)",
+      "intro": "Visão geral de todos os projetos, tipo de quadro e arquivo.",
+      "tasks": [
+        "Crie projetos Kanban ou Scrum — o tipo de quadro é fixo após a criação.",
+        "Arquive projetos para os ocultar sem eliminar o histórico.",
+        "Restaure projetos arquivados quando necessário."
+      ]
+    },
+    "adminSettings": {
+      "title": "Definições do sistema",
+      "intro": "SMTP, IMAP, identidade visual, segurança e predefinições para novos utilizadores e projetos.",
+      "tasks": [
+        "Configure correio de saída antes de redefinição de palavra-passe e notificações funcionarem.",
+        "Configure polling IMAP para criar tickets a partir de e-mail recebido.",
+        "Restrinja acesso à API com intervalos de IP permitidos — teste cuidadosamente antes de guardar.",
+        "Carregue um logótipo da empresa apresentado em relatórios e opcionalmente na página de início de sessão."
+      ]
+    },
+    "adminNews": {
+      "title": "Notícias (admin)",
+      "intro": "Publique anúncios apresentados no painel e na página Notícias.",
+      "tasks": [
+        "Escreva conteúdo em markdown com título e data de expiração opcional.",
+        "Fixe itens importantes para que permaneçam visíveis.",
+        "Deixe a data vazia para mostrar imediatamente sem data de fim."
+      ]
+    },
+    "adminTimeTracking": {
+      "title": "Registo de tempo (admin)",
+      "intro": "Gerencie projetos e clientes apenas de registo de tempo usados nas folhas de horas.",
+      "tasks": [
+        "Crie projetos RT com minutos não faturáveis opcionais por entrada.",
+        "Associe clientes RT a entidades de faturação nos relatórios.",
+        "Defina taxas horárias nos contratos de clientes para colunas de custo nas exportações."
+      ]
+    },
+    "adminSla": {
+      "title": "Políticas SLA",
+      "intro": "Defina metas de resposta e resolução por prioridade de ticket.",
+      "tasks": [
+        "Crie uma política correspondente a uma prioridade ou use uma catch-all.",
+        "Defina metas em horas; indicadores de violação atualizam quando os tickets são visualizados.",
+        "Desative uma política em vez de eliminar se precisar dela novamente."
+      ]
+    },
+    "adminMacros": {
+      "title": "Macros",
+      "intro": "Sequências de ações reutilizáveis que os agentes aplicam a tickets com um clique.",
+      "tasks": [
+        "Combine ações de definir estado, definir prioridade, adicionar etiqueta e adicionar mensagem.",
+        "Use placeholders como {agent}, {subject} e {ticket_id} nas mensagens.",
+        "Arraste placeholders da lista para o texto da ação de mensagem."
+      ]
+    },
+    "adminTicketChecklists": {
+      "title": "Listas de verificação de tickets",
+      "intro": "Modelos aplicados a tickets — os itens devem ser concluídos antes de fechar.",
+      "tasks": [
+        "Defina itens de lista de verificação num modelo.",
+        "Agentes aplicam um modelo a partir da vista de detalhe do ticket.",
+        "O fecho é bloqueado até que todos os itens estejam marcados."
+      ]
+    },
+    "adminBackup": {
+      "title": "Cópia de segurança",
+      "intro": "Descarregue e restaure cópias de segurança da base de dados.",
+      "tasks": [
+        "Crie uma cópia de segurança antes de atualizações ou migrações importantes.",
+        "Descarregue o ficheiro e guarde-o fora do servidor.",
+        "A restauração substitui a base de dados em produção — agende uma paragem planificada primeiro."
+      ]
+    },
+    "cardDetail": {
+      "title": "Detalhe do cartão",
+      "intro": "Edite todos os campos de um cartão: descrição, datas, responsáveis, listas de verificação, anexos e ligações.",
+      "tasks": [
+        "Use o menu ⋮ para mostrar ou ocultar secções (lista de verificação, subcartões, ligações git, etc.).",
+        "Adicione subcartões para tarefas menores — aparecem apenas aqui, não no quadro.",
+        "Associe cartões ou tickets relacionados na secção de cartões associados.",
+        "Copie ou transfira o cartão para outro projeto a partir das ações no rodapé.",
+        "Prima Esc para fechar este painel."
+      ],
+      "shortcuts": [
+        "Esc — fechar detalhe do cartão"
+      ]
+    },
+    "projectSettingsGeneral": {
+      "title": "Projeto — Geral",
+      "intro": "Nome, aparência, ligação a cliente e contrato deste projeto.",
+      "tasks": [
+        "Atribua um cliente e contrato para registo de tempo e relatórios.",
+        "Carregue um avatar do projeto apresentado na barra lateral e na barra de ferramentas do quadro.",
+        "O tipo de quadro (Kanban ou Scrum) foi definido na criação e não pode ser alterado."
+      ]
+    },
+    "projectSettingsMembers": {
+      "title": "Projeto — Membros",
+      "intro": "Quem pode aceder a este projeto e com que função.",
+      "tasks": [
+        "Convide utilizadores por nome de utilizador com função visualizador, membro ou proprietário.",
+        "Adicione um grupo inteiro para conceder acesso a todos os membros de uma vez.",
+        "Proprietários podem alterar definições; visualizadores veem o quadro só de leitura."
+      ]
+    },
+    "projectSettingsLabels": {
+      "title": "Projeto — Etiquetas",
+      "intro": "Etiquetas coloridas aplicadas a cartões para filtrar e agrupar visualmente.",
+      "tasks": [
+        "Crie etiquetas com nome e cor.",
+        "Elimine etiquetas não usadas — são removidas de todos os cartões."
+      ]
+    },
+    "projectSettingsApiKeys": {
+      "title": "Projeto — Chaves API",
+      "intro": "Chaves para a API de tickets e automação (CI/CD a criar cartões).",
+      "tasks": [
+        "Crie uma chave com um nome descritivo.",
+        "Copie a chave quando for apresentada — não pode ser recuperada depois.",
+        "Revogue chaves que já não sejam necessárias."
+      ]
+    },
+    "projectSettingsWebhooks": {
+      "title": "Projeto — Webhooks",
+      "intro": "Webhooks do GitHub e GitLab que criam ou atualizam cartões a partir de commits e MR.",
+      "tasks": [
+        "Copie o URL do webhook e o token para as definições do repositório.",
+        "Regenere o token se tiver sido comprometido.",
+        "Cada plataforma tem o seu próprio caminho URL — use o separador correspondente."
+      ]
+    },
+    "projectSettingsDeletedCards": {
+      "title": "Projeto — Cartões eliminados",
+      "intro": "Cartões eliminados de forma reversível que podem ser restaurados ou removidos permanentemente.",
+      "tasks": [
+        "Abra um cartão eliminado para rever o conteúdo antes de restaurar.",
+        "Restaurar devolve o cartão à coluna original.",
+        "A eliminação permanente não pode ser anulada."
+      ]
+    },
+    "settingsProfile": {
+      "title": "Perfil e preferências",
+      "intro": "O seu nome, locale, tema, notificações e predefinições do painel.",
+      "tasks": [
+        "Defina idioma, fuso horário e formato de data/hora para toda a interface.",
+        "Ative notificações por e-mail para menções, mensagens diretas e atribuições de cartões.",
+        "Escolha Quadros ou Tickets como vista predefinida após iniciar sessão.",
+        "Ative ou desative o registo de tempo pessoal se a sua organização usa folhas de horas."
+      ]
+    },
+    "settingsWorkingHours": {
+      "title": "Horário de trabalho",
+      "intro": "Hora de início predefinida por dia útil — usada como sugestão na grelha de registo de tempo.",
+      "tasks": [
+        "Deixe um dia em branco se não trabalhar nesse dia.",
+        "As horas usam a notação escolhida (decimal ou hh:mm).",
+        "Guarde o perfil após editar — o horário de trabalho faz parte do perfil."
+      ]
+    },
+    "settingsPassword": {
+      "title": "Alterar palavra-passe",
+      "intro": "Atualize a palavra-passe de início de sessão. As regras da política são definidas pelo administrador.",
+      "tasks": [
+        "Introduza a palavra-passe atual e depois uma nova que cumpra os requisitos indicados.",
+        "Pode ser obrigado a alterar uma palavra-passe expirada antes de continuar."
+      ]
+    },
+    "settingsMfa": {
+      "title": "Autenticação de dois fatores",
+      "intro": "Adicione uma app TOTP (Google Authenticator, etc.) para maior segurança no início de sessão.",
+      "tasks": [
+        "Leia o código QR ou introduza o segredo manualmente na app de autenticação.",
+        "Introduza um código de 6 dígitos para confirmar a configuração.",
+        "Guarde o acesso de recuperação em segurança — precisa do código da app em cada início de sessão quando ativado."
+      ]
+    },
+    "settingsPasskey": {
+      "title": "Chaves de acesso",
+      "intro": "Inicie sessão com biometria do dispositivo ou uma chave de segurança em vez de palavra-passe.",
+      "tasks": [
+        "Registe uma chave de acesso a partir do dispositivo que usa para iniciar sessão.",
+        "Pode registar várias chaves de acesso e remover as antigas.",
+        "As chaves de acesso funcionam juntamente com palavra-passe e MFA consoante a política do servidor."
+      ]
+    },
+    "settingsApiKeys": {
+      "title": "Chaves API pessoais",
+      "intro": "As suas chaves API para scripts e integrações (não chaves de tickets do projeto).",
+      "tasks": [
+        "Crie uma chave com nome e copie-a imediatamente.",
+        "Revogue chaves que já não use."
+      ]
+    },
+    "chartsVelocity": {
+      "title": "Gráfico de velocidade",
+      "intro": "Story points concluídos por sprint — ajuda a prever sprints futuros.",
+      "tasks": [
+        "Só aparecem sprints concluídos.",
+        "Garanta que os cartões têm story points definidos para barras significativas."
+      ]
+    },
+    "chartsThroughput": {
+      "title": "Throughput",
+      "intro": "Número de cartões fechados por sprint ou por semana (Kanban).",
+      "tasks": [
+        "Em Kanban, escolha 4–26 semanas no menu pendente.",
+        "Em Scrum, o throughput é agrupado por sprint concluído."
+      ]
+    },
+    "chartsBurndown": {
+      "title": "Burndown",
+      "intro": "Story points restantes no sprint selecionado ao longo do tempo.",
+      "tasks": [
+        "Selecione o sprint ativo ou um passado no menu pendente.",
+        "A linha ideal assume consumo uniforme; a linha real segue os cartões concluídos."
+      ]
+    },
+    "chartsBurnup": {
+      "title": "Burn-up",
+      "intro": "Trabalho acumulado concluído num sprint face ao âmbito total.",
+      "tasks": [
+        "Alterações de âmbito (cartões adicionados a meio do sprint) aparecem como degraus na linha total.",
+        "Selecione o sprint a analisar."
+      ]
+    },
+    "chartsCfd": {
+      "title": "Fluxo cumulativo",
+      "intro": "Áreas empilhadas que mostram a contagem de cartões por coluna ao longo do tempo.",
+      "tasks": [
+        "Faixas crescentes numa coluna podem indicar um estrangulamento.",
+        "Disponível para projetos Kanban e Scrum."
+      ]
+    },
+    "chartsSprintReport": {
+      "title": "Relatório de sprint",
+      "intro": "Resumo de um sprint concluído: trabalho comprometido vs. concluído.",
+      "tasks": [
+        "Selecione um sprint para ver cartões transferidos e concluídos.",
+        "Use após reuniões de revisão de sprint."
+      ]
+    },
+    "chartsEpicBurndown": {
+      "title": "Burndown de épico",
+      "intro": "Story points restantes de um épico ao longo do tempo.",
+      "tasks": [
+        "Selecione um épico no menu pendente.",
+        "Associe cartões ao épico a partir do detalhe do cartão para totais precisos."
+      ]
+    },
+    "chartsReleaseBurndown": {
+      "title": "Burndown de release",
+      "intro": "Progresso em direção a um objetivo de release através de épicos e sprints.",
+      "tasks": [
+        "Configure o âmbito da release via épicos e planeamento de sprint.",
+        "Use para acompanhamento de releases com data fixa."
+      ]
+    },
+    "chartsCycleTime": {
+      "title": "Tempo de ciclo",
+      "intro": "Quanto tempo os cartões passam em progresso (de início a conclusão).",
+      "tasks": [
+        "Defina datas de início nos cartões para medição precisa.",
+        "O gráfico de dispersão mostra o tempo de ciclo por cartão."
+      ]
+    },
+    "chartsLeadTime": {
+      "title": "Lead time",
+      "intro": "Tempo desde a criação do cartão até à conclusão.",
+      "tasks": [
+        "Útil para métricas de fluxo Kanban e acompanhamento tipo SLA em quadros.",
+        "Cada ponto é um cartão concluído."
+      ]
+    }
+  },
+  "field_button": "Mais informações",
+  "fields": {
+    "ticket_reminder": "Define uma data de acompanhamento para tickets pendentes. Tickets com lembrete vencido são ordenados no topo da lista.",
+    "ticket_close_date": "Quando o estado é Fecho pendente, o ticket é fechado automaticamente nesta data.",
+    "ticket_macros": "Executa uma sequência predefinida de ações (alterar estado, adicionar resposta, etiquetas, etc.) definida por um administrador.",
+    "ticket_checklist": "Todos os itens da lista de verificação devem ser concluídos antes de fechar o ticket quando um modelo é aplicado."
+  }
+}

@@ -339,64 +339,65 @@
 
             <div class="form-group" style="max-width:400px">
               <label class="toggle-row">
-                <span>{{ $t('admin.registration_enabled') }}</span>
+                <span>{{ $t('admin.registration_enabled') }}<HelpIcon i18n-key="admin.registration_hint" :label="$t('admin.registration_enabled')" /></span>
                 <input type="checkbox" v-model="systemSettings.registration_enabled" @change="saveGeneralSettings" />
               </label>
-              <p class="form-hint">{{ $t('admin.registration_hint') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
               <label class="toggle-row">
-                <span>{{ $t('mfa.enforce_label') }}</span>
+                <span>{{ $t('mfa.enforce_label') }}<HelpIcon i18n-key="mfa.enforce_hint" :label="$t('mfa.enforce_label')" /></span>
                 <input type="checkbox" v-model="systemSettings.mfa_required" @change="saveMFASettings" />
               </label>
-              <p class="form-hint">{{ $t('mfa.enforce_hint') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-allowed-ips">{{ $t('admin.allowed_ips_label') }}</label>
+              <label class="form-label" for="sys-allowed-ips">
+                {{ $t('admin.allowed_ips_label') }}
+                <HelpIcon i18n-key="admin.allowed_ips_hint" :label="$t('admin.allowed_ips_label')" />
+              </label>
               <input id="sys-allowed-ips" class="form-input" v-model="systemSettings.allowed_ips"
                 :placeholder="$t('admin.allowed_ips_placeholder')"
                 spellcheck="false" autocorrect="off" autocapitalize="off"
                 @change="saveSecuritySettings" />
-              <p class="form-hint">{{ $t('admin.allowed_ips_hint') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
               <label class="toggle-row">
-                <span>{{ $t('admin.scrum_storypoints_enabled') }}</span>
+                <span>{{ $t('admin.scrum_storypoints_enabled') }}<HelpIcon i18n-key="admin.scrum_storypoints_hint" :label="$t('admin.scrum_storypoints_enabled')" /></span>
                 <input type="checkbox" v-model="systemSettings.scrum_storypoints_enabled" @change="saveGeneralSettings" />
               </label>
-              <p class="form-hint">{{ $t('admin.scrum_storypoints_hint') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
               <label class="toggle-row">
-                <span>{{ $t('admin.gravatar_enabled') }}</span>
+                <span>{{ $t('admin.gravatar_enabled') }}<HelpIcon i18n-key="admin.gravatar_hint" :label="$t('admin.gravatar_enabled')" /></span>
                 <input type="checkbox" v-model="systemSettings.gravatar_enabled" @change="saveGeneralSettings" />
               </label>
-              <p class="form-hint">{{ $t('admin.gravatar_hint') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
               <label class="toggle-row">
-                <span>{{ $t('admin.external_image_proxy_enabled') }}</span>
+                <span>{{ $t('admin.external_image_proxy_enabled') }}<HelpIcon i18n-key="admin.external_image_proxy_hint" :label="$t('admin.external_image_proxy_enabled')" /></span>
                 <input type="checkbox" v-model="systemSettings.external_image_proxy_enabled" @change="saveGeneralSettings" />
               </label>
-              <p class="form-hint">{{ $t('admin.external_image_proxy_hint') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-session-timeout">{{ $t('admin.session_timeout') }}</label>
+              <label class="form-label" for="sys-session-timeout">
+                {{ $t('admin.session_timeout') }}
+                <HelpIcon i18n-key="admin.session_timeout_hint" :label="$t('admin.session_timeout')" />
+              </label>
               <div class="form-row" style="align-items:center;gap:8px">
                 <input id="sys-session-timeout" class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:120px" />
                 <span class="form-hint" style="margin:0">{{ $t('admin.session_timeout_unit') }}</span>
               </div>
-              <p class="form-hint">{{ $t('admin.session_timeout_hint') }}</p>
             </div>
 
-            <h3 class="settings-subsection">{{ $t('admin.global_defaults_title') }}</h3>
-            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.global_defaults_hint') }}</p>
+            <h3 class="settings-subsection">
+              {{ $t('admin.global_defaults_title') }}
+              <HelpIcon i18n-key="admin.global_defaults_hint" :label="$t('admin.global_defaults_title')" />
+            </h3>
 
             <div class="form-group" style="max-width:400px">
               <label class="form-label" for="sys-datetime-format">{{ $t('settings.date_time_format') }}</label>
@@ -467,13 +468,17 @@
               </select>
             </div>
 
-            <h3 class="settings-subsection">{{ $t('admin.project_defaults_title') }}</h3>
-            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.default_columns_hint') }}</p>
+            <h3 class="settings-subsection">
+              {{ $t('admin.project_defaults_title') }}
+              <HelpIcon i18n-key="admin.default_columns_hint" :label="$t('admin.project_defaults_title')" />
+            </h3>
 
             <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-default-columns">{{ $t('admin.default_columns') }}</label>
+              <label class="form-label" for="sys-default-columns">
+                {{ $t('admin.default_columns') }}
+                <HelpIcon i18n-key="admin.default_columns_each_line" :label="$t('admin.default_columns')" />
+              </label>
               <textarea id="sys-default-columns" class="form-input" v-model="systemSettings.default_columns" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Backlog\nIn Progress\nDone'"></textarea>
-              <p class="form-hint">{{ $t('admin.default_columns_each_line') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
@@ -486,8 +491,10 @@
               <button class="btn btn-primary btn-sm" @click="saveGeneralSettings">{{ $t('common.save') }}</button>
             </div>
 
-            <h3 class="settings-subsection">{{ $t('admin.smtp_title') }}</h3>
-            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.smtp_hint') }}</p>
+            <h3 class="settings-subsection">
+              {{ $t('admin.smtp_title') }}
+              <HelpIcon i18n-key="admin.smtp_hint" :label="$t('admin.smtp_title')" />
+            </h3>
 
             <div class="form-row" style="max-width:500px">
               <div class="form-group" style="flex:3">
@@ -530,8 +537,10 @@
               </div>
             </div>
 
-            <h3 class="settings-subsection">{{ $t('admin.imap_title') }}</h3>
-            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.imap_hint') }}</p>
+            <h3 class="settings-subsection">
+              {{ $t('admin.imap_title') }}
+              <HelpIcon i18n-key="admin.imap_hint" :label="$t('admin.imap_title')" />
+            </h3>
 
             <div class="form-group">
               <label class="toggle-row">
@@ -617,15 +626,16 @@
               <button class="btn btn-secondary btn-sm" @click="pollImap" :disabled="imapPolling">{{ imapPolling ? $t('common.loading') : $t('admin.imap_poll') }}</button>
             </div>
 
-            <h3 class="settings-subsection">{{ $t('admin.branding_title') }}</h3>
-            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.branding_hint') }}</p>
+            <h3 class="settings-subsection">
+              {{ $t('admin.branding_title') }}
+              <HelpIcon i18n-key="admin.branding_hint" :label="$t('admin.branding_title')" />
+            </h3>
 
             <div class="form-group">
               <label class="toggle-row">
-                <span>{{ $t('admin.login_branding_enabled') }}</span>
+                <span>{{ $t('admin.login_branding_enabled') }}<HelpIcon i18n-key="admin.login_branding_hint" :label="$t('admin.login_branding_enabled')" /></span>
                 <input type="checkbox" v-model="systemSettings.login_branding_enabled" />
               </label>
-              <p class="form-hint">{{ $t('admin.login_branding_hint') }}</p>
             </div>
 
             <div class="form-group" style="max-width:400px">
@@ -671,8 +681,10 @@
               <button class="btn btn-primary" @click="saveBrandingSettings">{{ $t('common.save') }}</button>
             </div>
 
-            <h3 class="settings-subsection">{{ $t('admin.password_policy_title') }}</h3>
-            <p class="form-hint" style="margin-bottom:16px">{{ $t('admin.password_policy_hint') }}</p>
+            <h3 class="settings-subsection">
+              {{ $t('admin.password_policy_title') }}
+              <HelpIcon i18n-key="admin.password_policy_hint" :label="$t('admin.password_policy_title')" />
+            </h3>
 
             <div class="form-group" style="max-width:240px">
               <label class="form-label" for="sys-pwd-min-len">{{ $t('admin.password_min_length') }}</label>
@@ -1573,7 +1585,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
@@ -1596,6 +1608,7 @@ import { useDateFormat } from '@/composables/useDateFormat'
 import SlaPoliciesTab from '@/components/admin/SlaPoliciesTab.vue'
 import MacrosTab from '@/components/admin/MacrosTab.vue'
 import TicketChecklistTemplatesTab from '@/components/admin/TicketChecklistTemplatesTab.vue'
+import HelpIcon from '@/components/common/HelpIcon.vue'
 
 const { t } = useI18n()
 const ui = useUIStore()
@@ -1604,6 +1617,14 @@ const systemStore = useSystemStore()
 const auth = useAuthStore()
 const { formatDateTime } = useDateFormat()
 const tab = ref('users')
+
+watch(tab, (activeTab) => {
+  ui.setHelpContext(`admin.${activeTab}`)
+}, { immediate: true })
+
+onBeforeUnmount(() => {
+  ui.setHelpContext(null)
+})
 
 function renderMarkdown(text) {
   return DOMPurify.sanitize(marked.parse(text || ''))

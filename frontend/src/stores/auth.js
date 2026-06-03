@@ -106,7 +106,7 @@ export const useAuthStore = defineStore('auth', () => {
     const { data } = await authApi.me()
     user.value = data
     if (isTauri) sessionStorage.setItem('user', JSON.stringify(data))
-    if (data.locale) setLocale(data.locale)
+    if (data.locale) await setLocale(data.locale)
   }
 
   function logout() {
@@ -130,7 +130,7 @@ export const useAuthStore = defineStore('auth', () => {
     const { data: updated } = await authApi.updateMe(data)
     user.value = updated
     if (isTauri) sessionStorage.setItem('user', JSON.stringify(updated))
-    if (data.locale) setLocale(data.locale)
+    if (data.locale) await setLocale(data.locale)
   }
 
   return {

@@ -34,7 +34,7 @@ export const useSystemStore = defineStore('system', () => {
       if (data.default_locale) {
         defaults.value.locale = data.default_locale
         // Apply only when the user has no stored preference
-        if (!localStorage.getItem('locale')) setLocale(data.default_locale)
+        if (!localStorage.getItem('locale')) await setLocale(data.default_locale)
       }
     } catch {}
   }

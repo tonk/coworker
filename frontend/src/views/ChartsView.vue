@@ -331,6 +331,10 @@ const tabs = computed(() => {
 
 const activeTab = ref('velocity')
 
+watch(activeTab, (tab) => {
+  ui.setHelpContext(`charts.${tab}`)
+}, { immediate: true })
+
 // ── Shared data ──────────────────────────────────────────────────────────────
 const velocityLoading = ref(false)
 const velocitySprints = ref([])
@@ -879,7 +883,10 @@ async function init() {
 }
 
 onMounted(init)
-onBeforeUnmount(() => Object.values(charts).forEach(c => c?.destroy()))
+onBeforeUnmount(() => {
+  Object.values(charts).forEach(c => c?.destroy())
+  ui.setHelpContext(null)
+})
 </script>
 
 <style scoped>

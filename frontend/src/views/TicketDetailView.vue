@@ -26,10 +26,11 @@
               <option value="high">{{ $t('ticket.priority_high') }}</option>
               <option value="critical">{{ $t('ticket.priority_critical') }}</option>
             </select>
-            <select v-if="macros.length" class="form-input form-input-sm" :value="''" :disabled="applyingMacro" @change="applyMacro($event.target.value); $event.target.value = ''">
+            <select v-if="macros.length" class="form-input form-input-sm" :value="''" :disabled="applyingMacro" @change="applyMacro($event.target.value); $event.target.value = ''" :aria-label="$t('macro.apply_macro')">
               <option value="" disabled>{{ $t('macro.apply_macro') }}</option>
               <option v-for="m in macros" :key="m.id" :value="m.id">{{ m.name }}</option>
             </select>
+            <HelpIcon v-if="macros.length" i18n-key="help.fields.ticket_macros" :label="$t('macro.apply_macro')" />
             <select v-if="checklistTemplates.length && !ticket.checklist_template_id" class="form-input form-input-sm" :value="''" :disabled="applyingChecklist" @change="applyChecklist($event.target.value); $event.target.value = ''">
               <option value="" disabled>{{ $t('ticketChecklist.apply') }}</option>
               <option v-for="t in checklistTemplates" :key="t.id" :value="t.id">{{ t.name }}</option>
@@ -67,11 +68,17 @@
       </header>
 
       <div v-if="ticket.status === 'pending'" class="reminder-row">
-        <span class="reminder-label">{{ $t('ticket.reminder_date') }}</span>
+        <span class="reminder-label">
+          {{ $t('ticket.reminder_date') }}
+          <HelpIcon i18n-key="help.fields.ticket_reminder" :label="$t('ticket.reminder_date')" />
+        </span>
         <DatePicker :model-value="reminderDateValue" @update:model-value="updateReminderDate" />
       </div>
       <div v-if="ticket.status === 'pending_close'" class="reminder-row">
-        <span class="reminder-label">{{ $t('ticket.close_date') }}</span>
+        <span class="reminder-label">
+          {{ $t('ticket.close_date') }}
+          <HelpIcon i18n-key="help.fields.ticket_close_date" :label="$t('ticket.close_date')" />
+        </span>
         <DatePicker :model-value="closeDateValue" @update:model-value="updateCloseDate" />
       </div>
 
@@ -101,7 +108,10 @@
 
       <div v-if="checklist.length || ticket.checklist_template_id" class="checklist-section">
         <div class="checklist-header">
-          <h4>{{ $t('checklist.title') }}</h4>
+          <h4>
+            {{ $t('checklist.title') }}
+            <HelpIcon i18n-key="help.fields.ticket_checklist" :label="$t('checklist.title')" />
+          </h4>
           <span v-if="checklist.length" class="checklist-progress">
             {{ checklist.filter(i => i.is_completed).length }}/{{ checklist.length }}
           </span>
@@ -299,6 +309,7 @@
             <label v-if="auth.user?.global_role !== 'customer'" class="private-checkbox-label">
               <input type="checkbox" v-model="newMsgPrivate" />
               {{ $t('ticket.private') }}
+              <HelpIcon i18n-key="ticket.private_hint" :label="$t('ticket.private')" />
             </label>
             <button v-if="newMessage.trim() || pendingFiles.length" type="button" class="btn btn-secondary btn-sm" @click="newMessage = ''; pendingFiles = []; newMsgPrivate = false; msgEditorTab = 'edit'">{{ $t('common.cancel') }}</button>
             <button type="submit" class="btn btn-primary btn-sm" :disabled="(!newMessage.trim() && !pendingFiles.length) || sending">{{ $t('ticket.send') }}<span v-if="pendingFiles.length" class="pending-badge">· {{ pendingFiles.length }}</span></button>
@@ -381,6 +392,7 @@ import AttachmentList from '@/components/common/AttachmentList.vue'
 import FileUploadButton from '@/components/common/FileUploadButton.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import BaseModal from '@/components/common/BaseModal.vue'
+import HelpIcon from '@/components/common/HelpIcon.vue'
 import { avatarUrl } from '@/composables/useAvatar'
 
 const { formatDateTime, formatDate } = useDateFormat()

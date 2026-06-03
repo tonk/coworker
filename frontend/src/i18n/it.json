@@ -1177,5 +1177,547 @@
     "expand": "Show cards",
     "collapse": "Hide cards",
     "no_cards": "No cards in this epic yet."
+  },
+  "help": {
+    "button": "Aiuto",
+    "title": "Aiuto",
+    "tasks_heading": "Attività comuni",
+    "shortcuts_heading": "Scorciatoie da tastiera",
+    "pages": {
+      "default": {
+        "title": "WarmDesk",
+        "intro": "Aiuto contestuale per la pagina in cui ti trovi. Apri questo pannello in qualsiasi momento dal pulsante Aiuto nell'intestazione.",
+        "tasks": [
+          "Usa la barra laterale per passare tra progetti, clienti e chat.",
+          "Premi Ctrl+K (⌘K su Mac) per cercare schede, ticket e persone.",
+          "Apri Impostazioni dal menu utente per cambiare lingua, tema e notifiche."
+        ]
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "intro": "La tua vista iniziale: progetti fissati, attività recente e accesso rapido ai clienti preferiti.",
+        "tasks": [
+          "Aggiungi ai preferiti progetti e clienti nella barra laterale per fissarli qui.",
+          "Crea un nuovo progetto con il pulsante in questa pagina.",
+          "Imposta « Dashboard mostra » in Impostazioni per aprire i Ticket invece delle Board all'accesso."
+        ]
+      },
+      "board": {
+        "title": "Board Kanban",
+        "intro": "Gestisci il lavoro come schede che si spostano tra le colonne. Trascina le schede per aggiornare lo stato.",
+        "tasks": [
+          "Trascina una scheda in un'altra colonna per cambiarne lo stato.",
+          "Fai clic su una scheda per modificare dettagli, commenti, checklist e allegati.",
+          "Apri il pannello chat per discutere il lavoro con il team del progetto.",
+          "Imposta un limite WIP sull'intestazione di una colonna per limitare il lavoro in corso."
+        ],
+        "shortcuts": [
+          "Esc — chiudi il pannello di dettaglio della scheda aperta"
+        ]
+      },
+      "backlog": {
+        "title": "Backlog",
+        "intro": "Backlog Scrum: dai priorità alle schede non ancora in uno sprint attivo.",
+        "tasks": [
+          "Trascina le schede per riordinare le priorità.",
+          "Sposta le schede nello sprint attivo dal pannello sprint.",
+          "Crea nuove schede direttamente nel backlog."
+        ]
+      },
+      "sprintBoard": {
+        "title": "Board sprint",
+        "intro": "Lo sprint attivo mostrato come board Kanban con ambito fisso.",
+        "tasks": [
+          "Sposta le schede tra le colonne man mano che il lavoro avanza.",
+          "Completa lo sprint dal menu sprint quando tutto il lavoro è finito o riportato.",
+          "Apri Grafici per visualizzare il burndown di questo sprint."
+        ]
+      },
+      "epics": {
+        "title": "Epic",
+        "intro": "Raggruppa schede correlate sotto epic per la pianificazione Scrum e il monitoraggio del burndown.",
+        "tasks": [
+          "Crea un epic e assegna un colore.",
+          "Collega schede a un epic dal pannello di dettaglio della scheda.",
+          "Apri un epic per vedere le sue schede e il grafico burndown."
+        ]
+      },
+      "gantt": {
+        "title": "Diagramma di Gantt",
+        "intro": "Vista temporale delle schede con date di inizio e scadenza.",
+        "tasks": [
+          "Imposta date di inizio e scadenza sulle schede per vederle sulla timeline.",
+          "Trascina le barre per regolare le date se hai accesso in modifica.",
+          "Scorri orizzontalmente per spostarti nel tempo."
+        ]
+      },
+      "charts": {
+        "title": "Grafici",
+        "intro": "Analisi Scrum: burndown, velocity e progresso degli epic per questo progetto.",
+        "tasks": [
+          "Seleziona uno sprint per visualizzare il suo grafico burndown.",
+          "Cambia scheda per confrontare la velocity tra gli sprint.",
+          "Seleziona un epic per vedere il lavoro rimanente nel tempo."
+        ]
+      },
+      "topics": {
+        "title": "Argomenti",
+        "intro": "Discussioni strutturate separate dalla chat della board — utili per decisioni e thread lunghi.",
+        "tasks": [
+          "Crea un argomento con titolo e descrizione opzionale.",
+          "Rispondi nei thread per mantenere la conversazione organizzata.",
+          "Chiudi un argomento quando la discussione è risolta."
+        ]
+      },
+      "projectSettings": {
+        "title": "Impostazioni progetto",
+        "intro": "Configura membri, integrazioni e opzioni specifiche del progetto.",
+        "tasks": [
+          "Invita membri e imposta il loro ruolo nel progetto (visualizzatore, membro, proprietario).",
+          "Configura webhook GitHub o GitLab per l'automazione.",
+          "Gestisci le chiavi API del progetto per la creazione di ticket in CI/CD."
+        ]
+      },
+      "settings": {
+        "title": "Impostazioni utente",
+        "intro": "Il tuo profilo personale, sicurezza, aspetto e preferenze di notifica.",
+        "tasks": [
+          "Aggiorna nome visualizzato, e-mail, avatar e formato data/ora.",
+          "Abilita MFA o registra una passkey per un accesso più sicuro.",
+          "Scegli se la dashboard si apre su Board o Ticket.",
+          "Imposta le ore lavorative usate come predefinite nel time tracking."
+        ]
+      },
+      "chats": {
+        "title": "Chat",
+        "intro": "Messaggi diretti e conversazioni di gruppo con chiamate vocali e video.",
+        "tasks": [
+          "Avvia una chat dall'elenco Persone nella barra laterale.",
+          "Usa le @menzioni nella chat del progetto o nei messaggi diretti per notificare qualcuno.",
+          "Avvia una chiamata vocale o video dall'intestazione della conversazione.",
+          "Reagisci ai messaggi con le azioni emoji al passaggio del mouse."
+        ],
+        "shortcuts": [
+          "Invio — invia messaggio",
+          "Esc — annulla modifica messaggio",
+          "@ — menziona un utente",
+          ":nome: — inserisci emoji tramite codice breve"
+        ]
+      },
+      "news": {
+        "title": "Notizie",
+        "intro": "Annunci della tua organizzazione mostrati nella dashboard e in questa pagina.",
+        "tasks": [
+          "Leggi gli annunci fissati dagli amministratori.",
+          "Nascondi elementi dalla dashboard; restano elencati qui."
+        ]
+      },
+      "customers": {
+        "title": "Clienti",
+        "intro": "Anagrafiche clienti usate per contratti, time tracking e ticket helpdesk.",
+        "tasks": [
+          "Apri un cliente per visualizzare contratti e membri.",
+          "Aggiungi clienti ai preferiti per fissarli nella barra laterale.",
+          "Vai ai ticket di un cliente quando l'helpdesk è attivo."
+        ]
+      },
+      "customerDetail": {
+        "title": "Dettaglio cliente",
+        "intro": "Contratti, membri assegnati e collegamenti ai ticket per un cliente.",
+        "tasks": [
+          "Rivedi tariffe contrattuali e regole per il tempo non dichiarabile.",
+          "Vedi quali agenti hanno accesso ai ticket di questo cliente.",
+          "Apri l'elenco ticket di questo cliente dalle azioni nell'intestazione."
+        ]
+      },
+      "tickets": {
+        "title": "Ticket",
+        "intro": "Elenco ticket helpdesk per un cliente — filtra, ordina e crea nuovi ticket.",
+        "tasks": [
+          "Usa filtri per stato, priorità, assegnatario e tag.",
+          "Passa tra vista tabella e vista schede.",
+          "Crea un ticket manualmente o attendi e-mail in arrivo (quando IMAP è configurato)."
+        ]
+      },
+      "inbox": {
+        "title": "Posta in arrivo",
+        "intro": "Ticket arrivati via e-mail e non ancora collegati a un cliente.",
+        "tasks": [
+          "Esamina i nuovi ticket e-mail e assegnali a un cliente.",
+          "Segna come spam per nascondere posta indesiderata dall'elenco predefinito.",
+          "Apri un ticket per rispondere o unirlo a un caso esistente."
+        ]
+      },
+      "ticketDetail": {
+        "title": "Dettaglio ticket",
+        "intro": "Visualizza e aggiorna un ticket, rispondi al richiedente e applica macro o checklist.",
+        "tasks": [
+          "Modifica stato, priorità, tipo, assegnatario e tag dall'intestazione.",
+          "Aggiungi una risposta pubblica (inviata via e-mail al richiedente) o una nota interna privata.",
+          "Applica una macro per eseguire azioni preimpostate con un clic.",
+          "Imposta una data promemoria sui ticket in attesa o una data di chiusura su quelli in attesa di chiusura."
+        ]
+      },
+      "timeTracking": {
+        "title": "Time tracking",
+        "intro": "Registra ore, genera report personali ed esporta report di tempo della board.",
+        "tasks": [
+          "Cambia scheda tra Registra tempo, Report o Report board.",
+          "Naviga tra le settimane con le frecce o fai clic sull'etichetta della settimana.",
+          "I responsabili possono visualizzare i fogli di altri utenti se autorizzati."
+        ]
+      },
+      "timeTrackingSheet": {
+        "title": "Registra tempo",
+        "intro": "Griglia settimanale: inserisci ore per cliente, progetto e attività.",
+        "tasks": [
+          "Digita le ore in una cella — usa il formato decimale o hh:mm dalle impostazioni.",
+          "Fai clic sull'icona orologio per impostare ora di inizio e fine su una voce.",
+          "Copia la settimana precedente o usa turno di reperibilità per tariffe notturne contrattuali.",
+          "Trascina le maniglie di riga per riordinare le righe."
+        ],
+        "shortcuts": [
+          "Tasti freccia — spostarsi tra le celle",
+          "Maiusc + frecce — estendere la selezione",
+          "Ctrl+C / Ctrl+V — copiare e incollare celle",
+          "Ctrl+Z — annulla ultima modifica",
+          "Canc — cancella celle selezionate",
+          "Esc — cancella selezione"
+        ]
+      },
+      "timeTrackingReport": {
+        "title": "Report tempo",
+        "intro": "Report tempo personale con raggruppamento, filtri ed esportazione PDF/XLSX.",
+        "tasks": [
+          "Imposta l'intervallo di date e raggruppa per cliente, progetto o attività.",
+          "Espandi i gruppi per vedere le singole voci.",
+          "Esporta PDF o Excel per fatturazione o archiviazione."
+        ]
+      },
+      "timeTrackingBoardReport": {
+        "title": "Report tempo board",
+        "intro": "Tempo della board di progetto aggregato per i report — richiede permesso di visualizzazione report.",
+        "tasks": [
+          "Filtra per progetto, cliente, assegnatario e intervallo di date.",
+          "Rivedi totali dichiarabili e non dichiarabili quando configurati.",
+          "Scarica PDF o XLSX dai pulsanti di esportazione."
+        ]
+      },
+      "admin": {
+        "title": "Amministrazione",
+        "intro": "Gestisci utenti, progetti, impostazioni di sistema, configurazione helpdesk e backup.",
+        "tasks": [
+          "Usa le schede per passare tra Utenti, Impostazioni, SLA, Macro e altro.",
+          "Le modifiche a SMTP, IMAP e sicurezza si applicano senza riavviare il server.",
+          "Apri questo pannello di aiuto in ogni scheda per indicazioni specifiche."
+        ]
+      },
+      "adminUsers": {
+        "title": "Utenti",
+        "intro": "Crea e gestisci account utente, ruoli e flag delle funzionalità.",
+        "tasks": [
+          "Imposta il ruolo globale: admin, membro, visualizzatore o cliente (solo ticket).",
+          "Abilita helpdesk, time tracking o accesso ai report per utente.",
+          "Assegna clienti agli utenti con ruolo cliente per la visibilità dei ticket."
+        ]
+      },
+      "adminGroups": {
+        "title": "Gruppi",
+        "intro": "Organizza utenti e concedi accesso ai clienti a interi team in una volta.",
+        "tasks": [
+          "Crea un gruppo e aggiungi membri.",
+          "Assegna accesso ai clienti con un ruolo — il ruolo più alto prevale se combinato con accesso diretto."
+        ]
+      },
+      "adminCustomers": {
+        "title": "Clienti (admin)",
+        "intro": "Crea clienti, contratti e regole di accesso.",
+        "tasks": [
+          "Aggiungi contratti con tariffe usate nei report di tempo.",
+          "Assegna agenti ai clienti per accesso ai ticket ed elenchi assegnatari.",
+          "Configura minuti non dichiarabili sui progetti solo time tracking."
+        ]
+      },
+      "adminProjects": {
+        "title": "Progetti (admin)",
+        "intro": "Panoramica di tutti i progetti, tipo di board e archiviazione.",
+        "tasks": [
+          "Crea progetti Kanban o Scrum — il tipo di board è fisso dopo la creazione.",
+          "Archivia progetti per nasconderli senza eliminare la cronologia.",
+          "Ripristina progetti archiviati quando necessario."
+        ]
+      },
+      "adminSettings": {
+        "title": "Impostazioni di sistema",
+        "intro": "SMTP, IMAP, branding, sicurezza e valori predefiniti per nuovi utenti e progetti.",
+        "tasks": [
+          "Configura la posta in uscita prima che funzionino reset password e notifiche.",
+          "Configura il polling IMAP per creare ticket dalle e-mail in arrivo.",
+          "Limita l'accesso API con intervalli IP consentiti — verifica attentamente prima di salvare.",
+          "Carica un logo aziendale mostrato nei report e opzionalmente nella pagina di accesso."
+        ]
+      },
+      "adminNews": {
+        "title": "Notizie (admin)",
+        "intro": "Pubblica annunci mostrati nella dashboard e nella pagina Notizie.",
+        "tasks": [
+          "Scrivi contenuto markdown con titolo e data di scadenza opzionale.",
+          "Fissa elementi importanti per mantenerli visibili.",
+          "Lascia la data vuota per mostrare subito senza data di fine."
+        ]
+      },
+      "adminTimeTracking": {
+        "title": "Time tracking (admin)",
+        "intro": "Gestisci progetti e clienti solo time tracking usati nei fogli presenze.",
+        "tasks": [
+          "Crea progetti TT con minuti non dichiarabili opzionali per voce.",
+          "Collega clienti TT alle entità di fatturazione nei report.",
+          "Imposta tariffe orarie sui contratti clienti per colonne costo nelle esportazioni."
+        ]
+      },
+      "adminSla": {
+        "title": "Policy SLA",
+        "intro": "Definisci obiettivi di risposta e risoluzione per priorità ticket.",
+        "tasks": [
+          "Crea una policy corrispondente a una priorità o usa una policy generale.",
+          "Imposta obiettivi in ore; i flag di violazione si aggiornano alla visualizzazione dei ticket.",
+          "Disattiva una policy invece di eliminarla se potresti riutilizzarla."
+        ]
+      },
+      "adminMacros": {
+        "title": "Macro",
+        "intro": "Sequenze di azioni riutilizzabili che gli agenti applicano ai ticket con un clic.",
+        "tasks": [
+          "Combina azioni imposta stato, imposta priorità, aggiungi tag e aggiungi messaggio.",
+          "Usa segnaposto come {agent}, {subject} e {ticket_id} nei messaggi.",
+          "Trascina i segnaposto dall'elenco nel testo dell'azione messaggio."
+        ]
+      },
+      "adminTicketChecklists": {
+        "title": "Checklist ticket",
+        "intro": "Modelli applicati ai ticket — gli elementi devono essere completati prima della chiusura.",
+        "tasks": [
+          "Definisci elementi checklist in un modello.",
+          "Gli agenti applicano un modello dalla vista dettaglio ticket.",
+          "La chiusura è bloccata finché ogni elemento non è spuntato."
+        ]
+      },
+      "adminBackup": {
+        "title": "Backup",
+        "intro": "Scarica e ripristina backup del database.",
+        "tasks": [
+          "Crea un backup prima di aggiornamenti importanti o migrazioni.",
+          "Scarica il file e conservalo fuori dal server.",
+          "Il ripristino sostituisce il database attivo — pianifica prima un downtime."
+        ]
+      },
+      "cardDetail": {
+        "title": "Dettaglio scheda",
+        "intro": "Modifica tutti i campi di una scheda: descrizione, date, assegnatari, checklist, allegati e collegamenti.",
+        "tasks": [
+          "Usa il menu ⋮ per mostrare o nascondere sezioni (checklist, sotto-schede, link git, ecc.).",
+          "Aggiungi sotto-schede per attività più piccole — compaiono solo qui, non sulla board.",
+          "Collega schede o ticket correlati nella sezione schede collegate.",
+          "Copia o trasferisci la scheda in un altro progetto dalle azioni in fondo.",
+          "Premi Esc per chiudere questo pannello."
+        ],
+        "shortcuts": [
+          "Esc — chiudi dettaglio scheda"
+        ]
+      },
+      "projectSettingsGeneral": {
+        "title": "Progetto — Generale",
+        "intro": "Nome, aspetto, collegamento cliente e contratto per questo progetto.",
+        "tasks": [
+          "Assegna un cliente e un contratto per time tracking e report.",
+          "Carica un avatar del progetto mostrato nella barra laterale e nella toolbar della board.",
+          "Il tipo di board (Kanban o Scrum) è stato impostato alla creazione e non può essere modificato."
+        ]
+      },
+      "projectSettingsMembers": {
+        "title": "Progetto — Membri",
+        "intro": "Chi può accedere a questo progetto e con quale ruolo.",
+        "tasks": [
+          "Invita utenti per nome utente con ruolo visualizzatore, membro o proprietario.",
+          "Aggiungi un intero gruppo per concedere l'accesso a tutti i membri in una volta.",
+          "I proprietari possono modificare le impostazioni; i visualizzatori vedono la board in sola lettura."
+        ]
+      },
+      "projectSettingsLabels": {
+        "title": "Progetto — Etichette",
+        "intro": "Tag colorati applicati alle schede per filtrare e raggruppare visivamente.",
+        "tasks": [
+          "Crea etichette con nome e colore.",
+          "Elimina etichette inutilizzate — vengono rimosse da tutte le schede."
+        ]
+      },
+      "projectSettingsApiKeys": {
+        "title": "Progetto — Chiavi API",
+        "intro": "Chiavi per l'API Ticket e l'automazione (CI/CD che crea schede).",
+        "tasks": [
+          "Crea una chiave con un nome descrittivo.",
+          "Copia la chiave quando viene mostrata — non può essere recuperata in seguito.",
+          "Revoca le chiavi non più necessarie."
+        ]
+      },
+      "projectSettingsWebhooks": {
+        "title": "Progetto — Webhook",
+        "intro": "Webhook GitHub e GitLab che creano o aggiornano schede da commit e MR.",
+        "tasks": [
+          "Copia l'URL del webhook e il token nelle impostazioni del repository.",
+          "Rigenera il token se è stato compromesso.",
+          "Ogni piattaforma ha il proprio percorso URL — usa la scheda corrispondente."
+        ]
+      },
+      "projectSettingsDeletedCards": {
+        "title": "Progetto — Schede eliminate",
+        "intro": "Schede eliminate in modo reversibile che possono essere ripristinate o rimosse definitivamente.",
+        "tasks": [
+          "Apri una scheda eliminata per rivederne il contenuto prima del ripristino.",
+          "Il ripristino riporta la scheda nella colonna originale.",
+          "L'eliminazione definitiva non può essere annullata."
+        ]
+      },
+      "settingsProfile": {
+        "title": "Profilo e preferenze",
+        "intro": "Il tuo nome, locale, tema, notifiche e impostazioni predefinite della dashboard.",
+        "tasks": [
+          "Imposta lingua, fuso orario e formato data/ora per tutta l'interfaccia.",
+          "Abilita notifiche e-mail per menzioni, messaggi diretti e assegnazioni di schede.",
+          "Scegli Board o Ticket come vista predefinita dopo l'accesso.",
+          "Attiva o disattiva il time tracking personale se la tua organizzazione usa fogli presenze."
+        ]
+      },
+      "settingsWorkingHours": {
+        "title": "Ore lavorative",
+        "intro": "Ora di inizio predefinita per giorno feriale — usata come suggerimento nella griglia del time tracking.",
+        "tasks": [
+          "Lascia un giorno vuoto se non lavori quel giorno.",
+          "Gli orari usano la notazione scelta (decimale o hh:mm).",
+          "Salva il profilo dopo la modifica — le ore lavorative fanno parte del profilo."
+        ]
+      },
+      "settingsPassword": {
+        "title": "Cambia password",
+        "intro": "Aggiorna la password di accesso. Le regole della policy sono impostate dall'amministratore.",
+        "tasks": [
+          "Inserisci la password attuale, poi una nuova che soddisfi i requisiti indicati.",
+          "Potrebbe essere necessario cambiare una password scaduta prima di continuare."
+        ]
+      },
+      "settingsMfa": {
+        "title": "Autenticazione a due fattori",
+        "intro": "Aggiungi un'app TOTP (Google Authenticator, ecc.) per maggiore sicurezza all'accesso.",
+        "tasks": [
+          "Scansiona il codice QR o inserisci il segreto manualmente nell'app di autenticazione.",
+          "Inserisci un codice a 6 cifre per confermare la configurazione.",
+          "Conserva l'accesso di recupero in modo sicuro — serve il codice dell'app a ogni accesso quando è attivo."
+        ]
+      },
+      "settingsPasskey": {
+        "title": "Passkey",
+        "intro": "Accedi con biometria del dispositivo o una chiave di sicurezza invece della password.",
+        "tasks": [
+          "Registra una passkey dal dispositivo che usi per accedere.",
+          "Puoi registrare più passkey e rimuovere quelle vecchie.",
+          "Le passkey funzionano insieme a password e MFA in base alla policy del server."
+        ]
+      },
+      "settingsApiKeys": {
+        "title": "Chiavi API personali",
+        "intro": "Le tue chiavi API per script e integrazioni (non chiavi ticket di progetto).",
+        "tasks": [
+          "Crea una chiave con nome e copiala subito.",
+          "Revoca le chiavi che non usi più."
+        ]
+      },
+      "chartsVelocity": {
+        "title": "Grafico velocity",
+        "intro": "Story point completati per sprint — aiuta a prevedere sprint futuri.",
+        "tasks": [
+          "Compaiono solo sprint completati.",
+          "Assicurati che le schede abbiano story point impostati per barre significative."
+        ]
+      },
+      "chartsThroughput": {
+        "title": "Throughput",
+        "intro": "Numero di schede chiuse per sprint o per settimana (Kanban).",
+        "tasks": [
+          "Per Kanban, scegli 4–26 settimane nel menu a tendina.",
+          "Per Scrum, il throughput è raggruppato per sprint completato."
+        ]
+      },
+      "chartsBurndown": {
+        "title": "Burndown",
+        "intro": "Story point rimanenti nello sprint selezionato nel tempo.",
+        "tasks": [
+          "Seleziona lo sprint attivo o uno passato dal menu a tendina.",
+          "La linea ideale assume un consumo uniforme; la linea reale segue le schede completate."
+        ]
+      },
+      "chartsBurnup": {
+        "title": "Burn-up",
+        "intro": "Lavoro cumulativo completato in uno sprint rispetto all'ambito totale.",
+        "tasks": [
+          "Le modifiche di ambito (schede aggiunte a metà sprint) appaiono come gradini nella linea totale.",
+          "Seleziona lo sprint da analizzare."
+        ]
+      },
+      "chartsCfd": {
+        "title": "Flusso cumulativo",
+        "intro": "Aree impilate che mostrano il numero di schede per colonna nel tempo.",
+        "tasks": [
+          "Bande in crescita in una colonna possono indicare un collo di bottiglia.",
+          "Disponibile sia per progetti Kanban che Scrum."
+        ]
+      },
+      "chartsSprintReport": {
+        "title": "Report sprint",
+        "intro": "Riepilogo di uno sprint completato: lavoro impegnato rispetto a completato.",
+        "tasks": [
+          "Seleziona uno sprint per vedere schede riportate e completate.",
+          "Usalo dopo le riunioni di sprint review."
+        ]
+      },
+      "chartsEpicBurndown": {
+        "title": "Burndown epic",
+        "intro": "Story point rimanenti di un epic nel tempo.",
+        "tasks": [
+          "Seleziona un epic dal menu a tendina.",
+          "Collega schede all'epic dal dettaglio scheda per totali accurati."
+        ]
+      },
+      "chartsReleaseBurndown": {
+        "title": "Burndown release",
+        "intro": "Progresso verso un obiettivo di release attraverso epic e sprint.",
+        "tasks": [
+          "Configura l'ambito della release tramite epic e pianificazione sprint.",
+          "Usalo per il monitoraggio di release con data fissa."
+        ]
+      },
+      "chartsCycleTime": {
+        "title": "Tempo di ciclo",
+        "intro": "Quanto tempo le schede restano in corso (da inizio a completamento).",
+        "tasks": [
+          "Imposta date di inizio sulle schede per una misurazione accurata.",
+          "Il grafico a dispersione mostra il tempo di ciclo per scheda."
+        ]
+      },
+      "chartsLeadTime": {
+        "title": "Lead time",
+        "intro": "Tempo dalla creazione della scheda al completamento.",
+        "tasks": [
+          "Utile per metriche di flusso Kanban e monitoraggio in stile SLA sulle board.",
+          "Ogni punto è una scheda completata."
+        ]
+      }
+    },
+    "field_button": "Maggiori informazioni",
+    "fields": {
+      "ticket_reminder": "Imposta una data di follow-up per i ticket in attesa. I ticket con promemoria scaduto vengono ordinati in cima all'elenco.",
+      "ticket_close_date": "Quando lo stato è In attesa di chiusura, il ticket viene chiuso automaticamente in questa data.",
+      "ticket_macros": "Esegue una sequenza preimpostata di azioni (cambia stato, aggiungi risposta, tag, ecc.) definita da un amministratore.",
+      "ticket_checklist": "Tutti gli elementi della checklist devono essere completati prima di poter chiudere il ticket quando è applicato un modello."
+    }
   }
 }

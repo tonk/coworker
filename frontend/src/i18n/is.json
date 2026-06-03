@@ -1177,5 +1177,547 @@
     "expand": "Show cards",
     "collapse": "Hide cards",
     "no_cards": "No cards in this epic yet."
+  },
+  "help": {
+    "button": "Hjálp",
+    "title": "Hjálp",
+    "tasks_heading": "Algeng verkefni",
+    "shortcuts_heading": "Flýtilyklar",
+    "pages": {
+      "default": {
+        "title": "WarmDesk",
+        "intro": "Samhengisviðkvæm hjálp fyrir síðuna sem þú ert á. Opnaðu þennan glugga hvenær sem er með hjálparhnappnum í hausnum.",
+        "tasks": [
+          "Notaðu hliðarstikuna til að skipta um verkefni, viðskiptavini og spjall.",
+          "Ýttu á Ctrl+K (⌘K á Mac) til að leita að spilum, miðum og fólki.",
+          "Opnaðu Stillingar úr notendavalmyndinni til að breyta tungumáli, þema og tilkynningum."
+        ]
+      },
+      "dashboard": {
+        "title": "Mælaborð",
+        "intro": "Heimssýnin þín: fest verkefni, nýleg virkni og fljótur aðgangur að stjörnumerktum viðskiptavinum.",
+        "tasks": [
+          "Merktu verkefni og viðskiptavini með stjörnu í hliðarstikunni til að festa þau hér.",
+          "Búðu til nýtt verkefni með hnappnum á þessari síðu.",
+          "Stilltu Mælaborð sýnir í Stillingum til að opna Miða í stað Taflna við innskráningu."
+        ]
+      },
+      "board": {
+        "title": "Kanban tafla",
+        "intro": "Stjórnaðu vinnu sem spil sem færast milli dálka. Dragðu spil til að uppfæra stöðu.",
+        "tasks": [
+          "Dragðu spil í annan dálk til að breyta stöðu þess.",
+          "Smelltu á spil til að breyta upplýsingum, athugasemdum, gátlistum og viðhengjum.",
+          "Opnaðu spjallgluggann til að ræða vinnu með verkefnishópnum.",
+          "Settu WIP takmörk á dálkhaus til að takmarka vinnu í gangi."
+        ],
+        "shortcuts": [
+          "Esc — loka opnu spilsglugganum"
+        ]
+      },
+      "backlog": {
+        "title": "Biðlisti",
+        "intro": "Scrum biðlisti: forgangsraðaðu spilum sem eru ekki enn í virkri spretti.",
+        "tasks": [
+          "Dragðu spil til að endurraða forgangsröð.",
+          "Færðu spil inn í virku sprettina úr sprettiglugganum.",
+          "Búðu til ný spil beint í biðlistanum."
+        ]
+      },
+      "sprintBoard": {
+        "title": "Sprettitafla",
+        "intro": "Virk sprett sýnd sem Kanban tafla með fastu umfangi.",
+        "tasks": [
+          "Færðu spil milli dálka eftir því sem vinna þróast.",
+          "Ljúktu sprettinni úr sprettivalmyndinni þegar öll vinna er lokið eða flutt áfram.",
+          "Opnaðu Gröf til að skoða niðurbrennslu fyrir þessa sprett."
+        ]
+      },
+      "epics": {
+        "title": "Epic",
+        "intro": "Flokkaðu tengd spil undir epic fyrir Scrum skipulagningu og niðurbrennslurekstur.",
+        "tasks": [
+          "Búðu til epic og úthlutaðu lit.",
+          "Tengdu spil við epic úr spilsglugganum.",
+          "Opnaðu epic til að sjá spil þess og niðurbrennslugraf."
+        ]
+      },
+      "gantt": {
+        "title": "Gantt graf",
+        "intro": "Tímalínu sýn á spilum með upphafs- og lokadagsetningum.",
+        "tasks": [
+          "Settu upphafs- og lokadagsetningar á spil til að sjá þau á tímalínunni.",
+          "Dragðu stikur til að breyta dagsetningum þegar þú hefur breytingaréttindi.",
+          "Skrunaðu lárétt til að færa þig í gegnum tímann."
+        ]
+      },
+      "charts": {
+        "title": "Gröf",
+        "intro": "Scrum greining: niðurbrennsla, hraði og epic framvinda fyrir þetta verkefni.",
+        "tasks": [
+          "Veldu sprett til að skoða niðurbrennslugraf hennar.",
+          "Skiptu um flipa til að bera saman hraða milli spretta.",
+          "Veldu epic til að sjá eftirstandandi vinnu yfir tíma."
+        ]
+      },
+      "topics": {
+        "title": "Umræðuefni",
+        "intro": "Skipulagðar umræður aðskildar frá spjalli á töflunni — gagnlegar fyrir ákvarðanir og langar þræði.",
+        "tasks": [
+          "Búðu til umræðuefni með titli og valfrjálsri lýsingu.",
+          "Svaraðu í þráðum til að halda samtali skipulögðu.",
+          "Lokaðu umræðuefni þegar umræðunni er lokið."
+        ]
+      },
+      "projectSettings": {
+        "title": "Verkefnastillingar",
+        "intro": "Stilltu meðlimi, samþættingar og verkefnissértæk valkosti.",
+        "tasks": [
+          "Bjóddu meðlimum og stilltu verkefnishlutverk þeirra (áhorfandi, meðlimur, eigandi).",
+          "Stilltu GitHub eða GitLab webhook fyrir sjálfvirkni.",
+          "Stjórnaðu API lyklum verkefnis fyrir miðaútbúna í CI/CD."
+        ]
+      },
+      "settings": {
+        "title": "Notendastillingar",
+        "intro": "Persónulegur prófíll, öryggi, útlit og tilkynningastillingar.",
+        "tasks": [
+          "Uppfærðu birtingarnafn, netfang, auðkennismynd og dagsetningar-/tímasnið.",
+          "Virkjaðu MFA eða skráðu lykilorðslykil fyrir öruggari innskráningu.",
+          "Veldu hvort mælaborðið opnist á Töflum eða Miðum.",
+          "Stilltu vinnutíma sem sjálfgefnar stillingar í tímaskráningu."
+        ]
+      },
+      "chats": {
+        "title": "Spjall",
+        "intro": "Bein skilaboð og hópsamtöl með rödd- og myndsímtölum.",
+        "tasks": [
+          "Byrjaðu spjall úr Fólki listanum í hliðarstikunni.",
+          "Notaðu @tilvísanir í verkefnisspjalli eða beinum skilaboðum til að tilkynna einhverjum.",
+          "Byrjaðu rödd- eða myndsímtal úr hausi samtalsins.",
+          "Brást við skilaboðum með emoji aðgerðum við yfirsvif."
+        ],
+        "shortcuts": [
+          "Enter — senda skilaboð",
+          "Esc — hætta við breytingu á skilaboðum",
+          "@ — nefna notanda",
+          ":nafn: — setja inn emoji með stuttlykli"
+        ]
+      },
+      "news": {
+        "title": "Fréttir",
+        "intro": "Tilkynningar frá fyrirtækinu þínu sem birtast á mælaborðinu og þessari síðu.",
+        "tasks": [
+          "Lestu festar tilkynningar frá stjórnendum.",
+          "Hafnaðu atriðum af mælaborðinu; þau eru áfram skráð hér."
+        ]
+      },
+      "customers": {
+        "title": "Viðskiptavinir",
+        "intro": "Viðskiptavinaskrár notaðar fyrir samninga, tímaskráningu og þjónustumiða.",
+        "tasks": [
+          "Opnaðu viðskiptavin til að skoða samninga og meðlimi.",
+          "Merktu viðskiptavini með stjörnu til að festa þá í hliðarstikunni.",
+          "Fara í miða viðskiptavinar þegar þjónustuborð er virkt."
+        ]
+      },
+      "customerDetail": {
+        "title": "Upplýsingar viðskiptavinar",
+        "intro": "Samningar, úthlutaðir meðlimir og tenglar á miða fyrir einn viðskiptavin.",
+        "tasks": [
+          "Skoðaðu verð í samningum og reglur um ótilkynntan tíma.",
+          "Sjáðu hvaða fulltrúar hafa aðgang að miðum þessa viðskiptavinar.",
+          "Opnaðu miðalista fyrir þennan viðskiptavin úr aðgerðum í hausnum."
+        ]
+      },
+      "tickets": {
+        "title": "Miðar",
+        "intro": "Miðalisti þjónustuborðs fyrir einn viðskiptavin — sía, raða og búa til nýja miða.",
+        "tasks": [
+          "Notaðu síur fyrir stöðu, forgang, úthlutun og merki.",
+          "Skiptu á milli töflu- og spilssýnar.",
+          "Búðu til miða handvirkt eða bíddu eftir innkomnum tölvupósti (þegar IMAP er stillt)."
+        ]
+      },
+      "inbox": {
+        "title": "Innhólf",
+        "intro": "Miðar sem komu með tölvupósti og eru ekki enn tengdir viðskiptavini.",
+        "tasks": [
+          "Skoðaðu nýja tölvupóstmiða og úthlutaðu þeim viðskiptavini.",
+          "Merktu sem ruslpóst til að fela óæskilegan póst af sjálfgefnu lista.",
+          "Opnaðu miða til að svara eða sameina hann við fyrirliggjandi mál."
+        ]
+      },
+      "ticketDetail": {
+        "title": "Upplýsingar miða",
+        "intro": "Skoðaðu og uppfærðu miða, svaraðu beiðanda og notaðu stóra eða gátlista.",
+        "tasks": [
+          "Breyttu stöðu, forgangi, tegund, úthlutun og merkjum úr hausnum.",
+          "Bættu við opinni svörun (send með tölvupósti til beiðanda) eða einkanótu innan húss.",
+          "Notaðu stóra til að keyra fyrirfram stilltar aðgerðir með einum smelli.",
+          "Settu áminningardagsetningu á biðmiða eða lokadagsetningu á biðlokun."
+        ]
+      },
+      "timeTracking": {
+        "title": "Tímaskráning",
+        "intro": "Skráðu klukkustundir, keyrðu persónulegar skýrslur og flyttu út tímaskýrslur frá töflum.",
+        "tasks": [
+          "Skiptu um flipa fyrir Skrá tíma, Skýrsla eða Töfluskýrsla.",
+          "Faraðu á milli vikna með örvunum eða smelltu á vikumerkið.",
+          "Stjórnendur geta skoðað blað annarra notenda þegar leyfi er veitt."
+        ]
+      },
+      "timeTrackingSheet": {
+        "title": "Skrá tíma",
+        "intro": "Vikulegt hnitanet: sláðu inn klukkustundir eftir viðskiptavini, verkefni og athöfn.",
+        "tasks": [
+          "Sláðu inn klukkustundir í reit — notaðu valið tugabrot eða hh:mm snið úr stillingum.",
+          "Smelltu á klukku tákn til að setja upphafs- og lokatíma á færslu.",
+          "Afritaðu fyrri viku eða notaðu vaktavakt fyrir næturverð í samningi.",
+          "Dragðu handföng raða til að endurraða línum."
+        ],
+        "shortcuts": [
+          "Örvalyklar — færa sig á milli reita",
+          "Shift + örvalyklar — stækka val",
+          "Ctrl+C / Ctrl+V — afrita og líma reiti",
+          "Ctrl+Z — afturkalla síðustu breytingu",
+          "Del — hreinsa valda reiti",
+          "Esc — hreinsa val"
+        ]
+      },
+      "timeTrackingReport": {
+        "title": "Tímaskýrsla",
+        "intro": "Persónuleg tímaskýrsla með flokkun, síum og PDF/XLSX útflutningi.",
+        "tasks": [
+          "Stilltu tímabil og flokkaðu eftir viðskiptavini, verkefni eða athöfn.",
+          "Stækkaðu hópa til að sjá einstakar færslur.",
+          "Flyttu út PDF eða Excel fyrir innheimtu eða geymslu."
+        ]
+      },
+      "timeTrackingBoardReport": {
+        "title": "Tímaskýrsla töflu",
+        "intro": "Tími verkefnisstjórnunar safnaður saman fyrir skýrslugerð — krefst heimildar til að skoða skýrslur.",
+        "tasks": [
+          "Síaðu eftir verkefni, viðskiptavini, úthlutun og tímabili.",
+          "Skoðaðu tilkynntan vs. ótilkynntan tíma þegar stillt er.",
+          "Sæktu PDF eða XLSX með útflutningshnöppunum."
+        ]
+      },
+      "admin": {
+        "title": "Stjórnun",
+        "intro": "Stjórnaðu notendum, verkefnum, kerfisstillingum, þjónustuborðsstillingum og öryggisafritum.",
+        "tasks": [
+          "Notaðu flipana til að skipta á milli Notenda, Stillinga, SLA, Stóra og fleira.",
+          "Breytingar á SMTP, IMAP og öryggisstillingum taka gildi án endurræsingar þjóns.",
+          "Opnaðu þennan hjálparglugga á hverjum flipa fyrir sértæka leiðbeiningu."
+        ]
+      },
+      "adminUsers": {
+        "title": "Notendur",
+        "intro": "Búðu til og stjórnaðu notendareikningum, hlutverkum og eiginleikamerkjum.",
+        "tasks": [
+          "Stilltu almennt hlutverk: stjórnandi, meðlimur, áhorfandi eða viðskiptavinur (aðeins miðar).",
+          "Virkjaðu þjónustuborð, tímaskráningu eða aðgang að skýrslum fyrir hvern notanda.",
+          "Úthlutaðu viðskiptavinum til notenda með viðskiptavinshlutverki fyrir sýnileika miða."
+        ]
+      },
+      "adminGroups": {
+        "title": "Hópar",
+        "intro": "Skipuleggðu notendur og veittu viðskiptavinaaðgang heilum teymum í einu.",
+        "tasks": [
+          "Búðu til hóp og bættu við meðlimum.",
+          "Úthlutaðu viðskiptavinaaðgangi með hlutverki — hæsta hlutverk vinnur þegar sameinað er við beinan aðgang."
+        ]
+      },
+      "adminCustomers": {
+        "title": "Viðskiptavinir (stjórnun)",
+        "intro": "Búðu til viðskiptavini, samninga og aðgangsreglur.",
+        "tasks": [
+          "Bættu við samningum með verðum sem notuð eru í tímaskýrslum.",
+          "Úthlutaðu fulltrúum til viðskiptavina fyrir miðaaðgang og úthlutunarval.",
+          "Stilltu ótilkynndar mínútur í verkefnum eingöngu fyrir tímaskráningu."
+        ]
+      },
+      "adminProjects": {
+        "title": "Verkefni (stjórnun)",
+        "intro": "Yfirlit yfir öll verkefni, taflutegund og geymslu.",
+        "tasks": [
+          "Búðu til Kanban eða Scrum verkefni — taflutegund er fast eftir stofnun.",
+          "Settu verkefni í geymslu til að fela þau án þess að eyða sögu.",
+          "Endurheimtu verkefni úr geymslu þegar þörf krefur."
+        ]
+      },
+      "adminSettings": {
+        "title": "Kerfisstillingar",
+        "intro": "SMTP, IMAP, vörumerki, öryggi og sjálfgefnar stillingar fyrir nýja notendur og verkefni.",
+        "tasks": [
+          "Stilltu útsendan póst áður en endurstilling lykilorðs og tilkynningar virka.",
+          "Settu upp IMAP könnun til að búa til miða úr innkomnum tölvupósti.",
+          "Takmarkaðu API aðgang með leyfilegum IP svæðum — prófaðu vandlega áður en vistað er.",
+          "Hladdu upp lógó fyrirtækis sem birtist á skýrslum og valfrjálst á innskráningarsíðu."
+        ]
+      },
+      "adminNews": {
+        "title": "Fréttir (stjórnun)",
+        "intro": "Birtu tilkynningar sem birtast á mælaborðinu og Fréttasíðunni.",
+        "tasks": [
+          "Skrifaðu markdown efni með titli og valfrjálsri lokadagsetningu.",
+          "Festu mikilvæg atriði svo þau haldist sýnileg.",
+          "Skildu dagsetningu eftir tóma til að birta strax án lokadagsetningar."
+        ]
+      },
+      "adminTimeTracking": {
+        "title": "Tímaskráning (stjórnun)",
+        "intro": "Stjórnaðu verkefnum og viðskiptavinum eingöngu fyrir tímaskráningu sem notaðir eru á tímaeyðublöðum.",
+        "tasks": [
+          "Búðu til TS verkefni með valfrjálsum ótilkynndum mínútum á færslu.",
+          "Tengdu TS viðskiptavini við reikningseiningar í skýrslum.",
+          "Stilltu klukkustundarverð í samningum viðskiptavina fyrir kostnaðardálka í útflutningi."
+        ]
+      },
+      "adminSla": {
+        "title": "SLA stefnur",
+        "intro": "Skilgreindu svörunar- og lausnamarkmið eftir forgangi miða.",
+        "tasks": [
+          "Búðu til stefnu sem passar við forgang eða notaðu almenna stefnu.",
+          "Stilltu markmið í klukkustundum; brotamerki uppfærast þegar miðar eru skoðaðir.",
+          "Gerðu stefnu óvirka í stað þess að eyða henni ef þú gætir þurft hana aftur."
+        ]
+      },
+      "adminMacros": {
+        "title": "Stórar",
+        "intro": "Endurnýtanlegar aðgerðaraðir sem fulltrúar nota á miða með einum smelli.",
+        "tasks": [
+          "Sameinaðu stilla stöðu, stilla forgang, bæta við merki og bæta við skilaboðum aðgerðir.",
+          "Notaðu staðsetningarmerki eins og {agent}, {subject} og {ticket_id} í skilaboðum.",
+          "Dragðu staðsetningarmerki af listanum inn í texta skilaboðaaðgerðar."
+        ]
+      },
+      "adminTicketChecklists": {
+        "title": "Gátlistar miða",
+        "intro": "Sniðmát notuð á miðum — atriði verða að vera lokið áður en lokað er.",
+        "tasks": [
+          "Skilgreindu atriði gátlista í sniðmáti.",
+          "Fulltrúar nota sniðmát úr miðaglugganum.",
+          "Lokun er læst þar til öllum atriðum hefur verið hakað við."
+        ]
+      },
+      "adminBackup": {
+        "title": "Öryggisafrit",
+        "intro": "Sæktu og endurheimtu öryggisafrit gagnagrunns.",
+        "tasks": [
+          "Búðu til öryggisafrit áður en stórar uppfærslur eða flutningar fara fram.",
+          "Sæktu skrána og geymdu hana utan þjóns.",
+          "Endurheimt kemur í stað lifandi gagnagrunns — skipuleggðu niðurtíma fyrst."
+        ]
+      },
+      "cardDetail": {
+        "title": "Upplýsingar spils",
+        "intro": "Breyttu öllum reitum á spili: lýsing, dagsetningar, úthlutanir, gátlistar, viðhengi og tenglar.",
+        "tasks": [
+          "Notaðu ⋮ valmyndina til að sýna eða fela hluta (gátlisti, undirspil, git tenglar o.s.frv.).",
+          "Bættu við undirspilum fyrir minni verkefni — þau birtast aðeins hér, ekki á töflunni.",
+          "Tengdu tengd spil eða miða í hlutanum fyrir tengd spil.",
+          "Afritaðu eða færðu spilið yfir í annað verkefni úr aðgerðum í fæti.",
+          "Ýttu á Esc til að loka þessum glugga."
+        ],
+        "shortcuts": [
+          "Esc — loka upplýsingum spils"
+        ]
+      },
+      "projectSettingsGeneral": {
+        "title": "Verkefni — Almennt",
+        "intro": "Nafn, útlit, tenging við viðskiptavin og samningur fyrir þetta verkefni.",
+        "tasks": [
+          "Úthlutaðu viðskiptavini og samningi fyrir tímaskráningu og skýrslugerð.",
+          "Hladdu upp auðkennismynd verkefnis sem birtist í hliðarstiku og verkfæraslá töflu.",
+          "Taflutegund (Kanban eða Scrum) var stillt við stofnun og er ekki hægt að breyta."
+        ]
+      },
+      "projectSettingsMembers": {
+        "title": "Verkefni — Meðlimir",
+        "intro": "Hver hefur aðgang að þessu verkefni og með hvaða hlutverki.",
+        "tasks": [
+          "Bjóddu notendum með notandanafni og hlutverki áhorfanda, meðlims eða eiganda.",
+          "Bættu við heilum hóp til að veita öllum meðlimum hans aðgang í einu.",
+          "Eigendur geta breytt stillingum; áhorfendur sjá töfluna aðeins til lestrar."
+        ]
+      },
+      "projectSettingsLabels": {
+        "title": "Verkefni — Merki",
+        "intro": "Litað merki á spilum til síu og sjónrænnar flokkunar.",
+        "tasks": [
+          "Búðu til merki með nafni og lit.",
+          "Eyða ónotuðum merkjum — þau eru fjarlægð af öllum spilum."
+        ]
+      },
+      "projectSettingsApiKeys": {
+        "title": "Verkefni — API lyklar",
+        "intro": "Lyklar fyrir miða-API og sjálfvirkni (CI/CD sem býr til spil).",
+        "tasks": [
+          "Búðu til lykil með lýsandi nafni.",
+          "Afritaðu lykilinn þegar hann birtist — ekki er hægt að ná í hann síðar.",
+          "Afturkallaðu lykla sem ekki eru lengur nauðsynlegir."
+        ]
+      },
+      "projectSettingsWebhooks": {
+        "title": "Verkefni — Webhook",
+        "intro": "GitHub og GitLab webhook sem búa til eða uppfæra spil úr commitum og MR.",
+        "tasks": [
+          "Afritaðu webhook slóð og lykil inn í stillingar gagnahlasins.",
+          "Endurgerðu lykilinn ef hann hefur verið í hættu.",
+          "Hver vettvangur hefur sína eigin URL slóð — notaðu viðeigandi flipa."
+        ]
+      },
+      "projectSettingsDeletedCards": {
+        "title": "Verkefni — Eydd spil",
+        "intro": "Mjúk eydd spil sem hægt er að endurheimta eða fjarlægja varanlega.",
+        "tasks": [
+          "Opnaðu eytt spil til að skoða innihald þess áður en endurheimt er.",
+          "Endurheimt skilar spilinu í upprunalegan dálk.",
+          "Varanleg eyðing er óafturkræf."
+        ]
+      },
+      "settingsProfile": {
+        "title": "Prófíll og kjörstillingar",
+        "intro": "Nafn þitt, tungumál, þema, tilkynningar og sjálfgefnar stillingar mælaborðs.",
+        "tasks": [
+          "Stilltu tungumál, tímabelti og dagsetningar-/tímasnið fyrir allt viðmót.",
+          "Virkjaðu tölvupósttilkynningar fyrir tilvísanir, bein skilaboð og úthlutun spila.",
+          "Veldu Töflur eða Miða sem sjálfgefna sýn eftir innskráningu.",
+          "Kveiktu eða slökktu á persónulegri tímaskráningu ef fyrirtækið þitt notar tímaeyðublöð."
+        ]
+      },
+      "settingsWorkingHours": {
+        "title": "Vinnutími",
+        "intro": "Sjálfgefin upphafstími á hverjum vinnudegi — notað sem vísbending í hnitaneti tímaskráningar.",
+        "tasks": [
+          "Skildu dag eftir tóman ef þú vinnur ekki þann dag.",
+          "Tímar nota valið tímamerki (tugabrot eða hh:mm).",
+          "Vistaðu prófíl eftir breytingu — vinnutími er hluti af prófílnum þínum."
+        ]
+      },
+      "settingsPassword": {
+        "title": "Breyta lykilorði",
+        "intro": "Uppfærðu innskráningarlykilorðið þitt. Reglur stefnu eru settar af stjórnanda.",
+        "tasks": [
+          "Sláðu inn núverandi lykilorð og síðan nýtt sem uppfyllir skráðar kröfur.",
+          "Þú gætir verið neyddur til að breyta útrunnum lykilorði áður en hægt er að halda áfram."
+        ]
+      },
+      "settingsMfa": {
+        "title": "Tveggja þátta auðkenning",
+        "intro": "Bættu við TOTP forriti (Google Authenticator o.s.frv.) fyrir aukið öryggi við innskráningu.",
+        "tasks": [
+          "Skannaðu QR kóðann eða sláðu leynilykilinn handvirkt inn í auðkenningarforritið þitt.",
+          "Sláðu inn 6 stafa kóða til að staðfesta uppsetningu.",
+          "Geymdu endurheimtaraðgang örugglega — þú þarft forritskóðann við hverja innskráningu þegar MFA er virkt."
+        ]
+      },
+      "settingsPasskey": {
+        "title": "Lykilorðslyklar",
+        "intro": "Skráðu þig inn með lífkennum tækis eða öryggislykli í stað lykilorðs.",
+        "tasks": [
+          "Skráðu lykilorðslykil af tækinu sem þú notar til innskráningar.",
+          "Þú getur skráð marga lykilorðslykla og fjarlægt gamla.",
+          "Lykilorðslyklar virka ásamt lykilorði og MFA eftir stefnu þjóns."
+        ]
+      },
+      "settingsApiKeys": {
+        "title": "Persónulegir API lyklar",
+        "intro": "Þínir eigin API lyklar fyrir forrit og samþættingar (ekki miðalyklar verkefnis).",
+        "tasks": [
+          "Búðu til nefndan lykil og afritaðu hann strax.",
+          "Afturkallaðu lykla sem þú notar ekki lengur."
+        ]
+      },
+      "chartsVelocity": {
+        "title": "Hraðagraf",
+        "intro": "Sögupunktar lokið á hverja sprett — hjálpar við spá fyrir um framtíðarsprettir.",
+        "tasks": [
+          "Aðeins loknar sprettir birtast.",
+          "Gakktu úr skugga um að spil hafi sögupunkta til að súlur séu merkingarbærar."
+        ]
+      },
+      "chartsThroughput": {
+        "title": "Flæði",
+        "intro": "Fjöldi lokaðra spila á hverja sprett eða viku (Kanban).",
+        "tasks": [
+          "Fyrir Kanban veldu 4–26 vikur í fellilistanum.",
+          "Fyrir Scrum er flæði flokkað eftir lokinni sprett."
+        ]
+      },
+      "chartsBurndown": {
+        "title": "Niðurbrennsla",
+        "intro": "Eftirstandandi sögupunktar í valinni sprett með tímanum.",
+        "tasks": [
+          "Veldu virka eða liðna sprett í fellilistanum.",
+          "Hin fullkomna lína gerir ráð fyrir jöfnu niðurbrennslu; raunlínan fylgir loknum spilum."
+        ]
+      },
+      "chartsBurnup": {
+        "title": "Uppbrennsla",
+        "intro": "Uppsafnað lokið verk í sprett miðað við heildarumfang.",
+        "tasks": [
+          "Breytingar á umfangi (spil bætt við í miðri sprett) birtast sem stig í heildarlínunni.",
+          "Veldu sprett til að greina."
+        ]
+      },
+      "chartsCfd": {
+        "title": "Uppsafnað flæði",
+        "intro": "Staflað svæði sem sýna fjölda spila á dálk með tímanum.",
+        "tasks": [
+          "Vaxandi bönd í einum dálki geta bent til flöskuháls.",
+          "Í boði fyrir bæði Kanban og Scrum verkefni."
+        ]
+      },
+      "chartsSprintReport": {
+        "title": "Sprettiskýrsla",
+        "intro": "Yfirlit yfir lokaða sprett: skuldbundin vs. lokið verk.",
+        "tasks": [
+          "Veldu sprett til að sjá spil sem fluttust áfram og lokið verk.",
+          "Notaðu eftir sprettiyfirferðarfundi."
+        ]
+      },
+      "chartsEpicBurndown": {
+        "title": "Epic niðurbrennsla",
+        "intro": "Eftirstandandi sögupunktar fyrir eitt epic með tímanum.",
+        "tasks": [
+          "Veldu epic í fellilistanum.",
+          "Tengdu spil við epic úr upplýsingum spils fyrir nákvæmar heildir."
+        ]
+      },
+      "chartsReleaseBurndown": {
+        "title": "Release niðurbrennsla",
+        "intro": "Framvinda að release markmiði yfir epic og sprettir.",
+        "tasks": [
+          "Stilltu release umfang með epic og sprettskipulagningu.",
+          "Notaðu fyrir eftirfylgni með fastri dagsetningu."
+        ]
+      },
+      "chartsCycleTime": {
+        "title": "Hringtími",
+        "intro": "Hversu lengi spil eru í vinnslu (upphaf til lokið).",
+        "tasks": [
+          "Settu upphafsdagsetningar á spil fyrir nákvæma mælingu.",
+          "Dreifingarit sýnir hringtíma á hvert spil."
+        ]
+      },
+      "chartsLeadTime": {
+        "title": "Leiðtími",
+        "intro": "Tími frá stofnun spils til lokunar.",
+        "tasks": [
+          "Gagnlegt fyrir Kanban flæðismælingar og SLA-kennda eftirfylgni á töflum.",
+          "Hver punktur er eitt lokið spil."
+        ]
+      }
+    },
+    "field_button": "Nánari upplýsingar",
+    "fields": {
+      "ticket_reminder": "Setur eftirfylgnidagsetningu fyrir biðmiða. Miðar með skilinn áminningu eru raðaðir efst á listanum.",
+      "ticket_close_date": "Þegar staða er Biðlokun lokar miðinn sjálfkrafa á þessari dagsetningu.",
+      "ticket_macros": "Keyrir fyrirfram skilgreinda röð aðgerða (breyta stöðu, bæta við svari, merki o.s.frv.) sem stjórnandi hefur skilgreint.",
+      "ticket_checklist": "Öllum atriðum gátlista verður að ljúka áður en hægt er að loka miða þegar sniðmát er notað."
+    }
   }
 }

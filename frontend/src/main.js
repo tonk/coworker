@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import { i18n } from './i18n'
+import { i18n, initLocale } from './i18n'
 import { useSystemStore } from '@/stores/system'
 import { useAuthStore } from '@/stores/auth'
 import { setRuntimeServerUrl } from '@/api/serverConfig'
@@ -45,6 +45,8 @@ async function init() {
       if (runtimeServerUrl) setRuntimeServerUrl(String(runtimeServerUrl))
     } catch {}
   }
+
+  await initLocale()
 
   const app = createApp(App)
   const pinia = createPinia()

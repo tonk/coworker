@@ -1,0 +1,200 @@
+{
+  "cardDetail": {
+    "title": "Card detail",
+    "intro": "Edit all fields on a card: description, dates, assignees, checklists, attachments, and links.",
+    "tasks": [
+      "Use the ⋮ menu to show or hide sections (checklist, sub-cards, git links, etc.).",
+      "Add sub-cards for smaller tasks — they only appear here, not on the board.",
+      "Link related cards or tickets with the linked cards section.",
+      "Copy or transfer the card to another project from the footer actions.",
+      "Press Esc to close this panel."
+    ],
+    "shortcuts": ["Esc — close card detail"]
+  },
+  "projectSettingsGeneral": {
+    "title": "Project — General",
+    "intro": "Name, appearance, customer link, and contract for this project.",
+    "tasks": [
+      "Assign a customer and contract for time tracking and reporting.",
+      "Upload a project avatar shown in the sidebar and board toolbar.",
+      "Board type (Kanban or Scrum) was set at creation and cannot be changed."
+    ]
+  },
+  "projectSettingsMembers": {
+    "title": "Project — Members",
+    "intro": "Who can access this project and with what role.",
+    "tasks": [
+      "Invite users by username with viewer, member, or owner role.",
+      "Add a whole group to grant access to every member at once.",
+      "Owners can change settings; viewers see the board read-only."
+    ]
+  },
+  "projectSettingsLabels": {
+    "title": "Project — Labels",
+    "intro": "Colour tags applied to cards for filtering and visual grouping.",
+    "tasks": [
+      "Create labels with a name and colour.",
+      "Delete unused labels — they are removed from all cards."
+    ]
+  },
+  "projectSettingsApiKeys": {
+    "title": "Project — API keys",
+    "intro": "Keys for the Ticket API and automation (CI/CD creating cards).",
+    "tasks": [
+      "Create a key with a descriptive name.",
+      "Copy the key when shown — it cannot be retrieved later.",
+      "Revoke keys that are no longer needed."
+    ]
+  },
+  "projectSettingsWebhooks": {
+    "title": "Project — Webhooks",
+    "intro": "GitHub and GitLab webhooks that create or update cards from commits and MRs.",
+    "tasks": [
+      "Copy the webhook URL and token into your repository settings.",
+      "Regenerate the token if it is compromised.",
+      "Each platform has its own URL path — use the matching tab."
+    ]
+  },
+  "projectSettingsDeletedCards": {
+    "title": "Project — Deleted cards",
+    "intro": "Soft-deleted cards that can be restored or permanently removed.",
+    "tasks": [
+      "Open a deleted card to review its contents before restoring.",
+      "Restore returns the card to its original column.",
+      "Permanent delete cannot be undone."
+    ]
+  },
+  "settingsProfile": {
+    "title": "Profile & preferences",
+    "intro": "Your name, locale, theme, notifications, and dashboard defaults.",
+    "tasks": [
+      "Set language, timezone, and date/time format for the whole UI.",
+      "Enable email notifications for mentions, DMs, and card assignments.",
+      "Choose Boards or Tickets as the default view after login.",
+      "Toggle personal time tracking if your organisation uses timesheets."
+    ]
+  },
+  "settingsWorkingHours": {
+    "title": "Working hours",
+    "intro": "Default start time per weekday — used as hints on the time-tracking grid.",
+    "tasks": [
+      "Leave a day blank if you do not work that day.",
+      "Times use your chosen time notation (decimal or hh:mm).",
+      "Save profile after editing — working hours are part of your profile."
+    ]
+  },
+  "settingsPassword": {
+    "title": "Change password",
+    "intro": "Update your login password. Policy rules are set by your administrator.",
+    "tasks": [
+      "Enter your current password, then a new one meeting the listed requirements.",
+      "You may be forced to change an expired password before continuing."
+    ]
+  },
+  "settingsMfa": {
+    "title": "Two-factor authentication",
+    "intro": "Add a TOTP app (Google Authenticator, etc.) for extra sign-in security.",
+    "tasks": [
+      "Scan the QR code or enter the secret manually in your authenticator app.",
+      "Enter a 6-digit code to confirm setup.",
+      "Store recovery access safely — you need the app code on every login when enabled."
+    ]
+  },
+  "settingsPasskey": {
+    "title": "Passkeys",
+    "intro": "Sign in with device biometrics or a security key instead of a password.",
+    "tasks": [
+      "Register a passkey from the device you use to sign in.",
+      "You can register multiple passkeys and remove old ones.",
+      "Passkeys work alongside password and MFA depending on server policy."
+    ]
+  },
+  "settingsApiKeys": {
+    "title": "Personal API keys",
+    "intro": "Your own API keys for scripts and integrations (not project ticket keys).",
+    "tasks": [
+      "Create a named key and copy it immediately.",
+      "Revoke keys you no longer use."
+    ]
+  },
+  "chartsVelocity": {
+    "title": "Velocity chart",
+    "intro": "Story points completed per sprint — helps forecast future sprints.",
+    "tasks": [
+      "Only completed sprints appear.",
+      "Ensure cards have story points set for meaningful bars."
+    ]
+  },
+  "chartsThroughput": {
+    "title": "Throughput",
+    "intro": "Number of cards closed per sprint or per week (Kanban).",
+    "tasks": [
+      "For Kanban, pick 4–26 weeks in the dropdown.",
+      "For Scrum, throughput is grouped by completed sprint."
+    ]
+  },
+  "chartsBurndown": {
+    "title": "Burndown",
+    "intro": "Remaining story points in the selected sprint over time.",
+    "tasks": [
+      "Select the active or a past sprint from the dropdown.",
+      "Ideal line assumes even burn; actual line follows card completions."
+    ]
+  },
+  "chartsBurnup": {
+    "title": "Burn-up",
+    "intro": "Cumulative work completed in a sprint versus total scope.",
+    "tasks": [
+      "Scope changes (cards added mid-sprint) show as steps in the total line.",
+      "Select the sprint to analyse."
+    ]
+  },
+  "chartsCfd": {
+    "title": "Cumulative flow",
+    "intro": "Stacked areas showing card count per column over time.",
+    "tasks": [
+      "Growing bands in one column may indicate a bottleneck.",
+      "Available for both Kanban and Scrum projects."
+    ]
+  },
+  "chartsSprintReport": {
+    "title": "Sprint report",
+    "intro": "Summary of a completed sprint: committed vs completed work.",
+    "tasks": [
+      "Select a sprint to see carried-over and completed cards.",
+      "Use after sprint review meetings."
+    ]
+  },
+  "chartsEpicBurndown": {
+    "title": "Epic burndown",
+    "intro": "Remaining story points for one epic over time.",
+    "tasks": [
+      "Select an epic from the dropdown.",
+      "Link cards to the epic from card detail for accurate totals."
+    ]
+  },
+  "chartsReleaseBurndown": {
+    "title": "Release burndown",
+    "intro": "Progress toward a release target across epics and sprints.",
+    "tasks": [
+      "Configure release scope via epics and sprint planning.",
+      "Use for fixed-date release tracking."
+    ]
+  },
+  "chartsCycleTime": {
+    "title": "Cycle time",
+    "intro": "How long cards spend in progress (start to done).",
+    "tasks": [
+      "Set start dates on cards for accurate measurement.",
+      "Scatter plot shows per-card cycle time."
+    ]
+  },
+  "chartsLeadTime": {
+    "title": "Lead time",
+    "intro": "Time from card creation to completion.",
+    "tasks": [
+      "Useful for Kanban flow metrics and SLA-style tracking on boards.",
+      "Each dot is one completed card."
+    ]
+  }
+}

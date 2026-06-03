@@ -1,0 +1,211 @@
+{
+  "field_button": "Lisätietoja",
+  "fields": {
+    "ticket_reminder": "Asettaa seurantapäivän odottaville tiketeille. Erääntyneen muistutuksen tiketit järjestetään listan kärkeen.",
+    "ticket_close_date": "Kun tila on Odottaa sulkemista, tiketti suljetaan automaattisesti tänä päivänä.",
+    "ticket_macros": "Suorittaa ennalta määritetyn toimintosarjan (tilan muutos, vastaus, tunnisteet jne.), jonka ylläpitäjä on määrittänyt.",
+    "ticket_checklist": "Kaikki tarkistuslistan kohdat on suoritettava ennen tiketin sulkemista, kun malli on käytössä."
+  },
+  "pages": {
+    "cardDetail": {
+      "title": "Kortin tiedot",
+      "intro": "Muokkaa kaikkia kortin kenttiä: kuvaus, päivämäärät, vastuuhenkilöt, tarkistuslistat, liitteet ja linkit.",
+      "tasks": [
+        "Käytä ⋮-valikkoa näyttääksesi tai piilottaaksesi osioita (tarkistuslista, alikortit, git-linkit jne.).",
+        "Lisää alikortteja pienempiin tehtäviin — ne näkyvät vain täällä, eivät taululla.",
+        "Linkitä liittyvät kortit tai tiketit linkitettyjen korttien osiossa.",
+        "Kopioi tai siirrä kortti toiseen projektiin alatunnisteen toiminnoista.",
+        "Paina Esc sulkeaksesi tämän paneelin."
+      ],
+      "shortcuts": [
+        "Esc — sulje kortin tiedot"
+      ]
+    },
+    "projectSettingsGeneral": {
+      "title": "Projekti — Yleiset",
+      "intro": "Nimi, ulkoasu, asiakaslinkki ja sopimus tälle projektille.",
+      "tasks": [
+        "Määritä asiakas ja sopimus työajan seurantaa ja raportointia varten.",
+        "Lataa projektin avatar, joka näkyy sivupalkissa ja taulun työkalupalkissa.",
+        "Taulutyyppi (Kanban tai Scrum) määritettiin luonnin yhteydessä eikä sitä voi muuttaa."
+      ]
+    },
+    "projectSettingsMembers": {
+      "title": "Projekti — Jäsenet",
+      "intro": "Kuka voi käyttää tätä projektia ja millä roolilla.",
+      "tasks": [
+        "Kutsu käyttäjiä käyttäjänimellä katsoja-, jäsen- tai omistajaroolilla.",
+        "Lisää koko ryhmä myöntääksesi pääsyn kaikille sen jäsenille kerralla.",
+        "Omistajat voivat muuttaa asetuksia; katsojat näkevät taulun vain luku-tilassa."
+      ]
+    },
+    "projectSettingsLabels": {
+      "title": "Projekti — Tunnisteet",
+      "intro": "Väritunnisteet korteissa suodatusta ja visuaalista ryhmittelyä varten.",
+      "tasks": [
+        "Luo tunnisteita nimellä ja värillä.",
+        "Poista käyttämättömät tunnisteet — ne poistetaan kaikista korteista."
+      ]
+    },
+    "projectSettingsApiKeys": {
+      "title": "Projekti — API-avaimet",
+      "intro": "Avaimet tiketti-API:lle ja automaatiolle (CI/CD, joka luo kortteja).",
+      "tasks": [
+        "Luo avain kuvaavalla nimellä.",
+        "Kopioi avain heti kun se näytetään — sitä ei voi hakea myöhemmin.",
+        "Peru avaimet, joita ei enää tarvita."
+      ]
+    },
+    "projectSettingsWebhooks": {
+      "title": "Projekti — Webhookit",
+      "intro": "GitHub- ja GitLab-webhookit, jotka luovat tai päivittävät kortteja commiteista ja MR:istä.",
+      "tasks": [
+        "Kopioi webhook-URL ja token repositorion asetuksiin.",
+        "Luo token uudelleen, jos se on vaarantunut.",
+        "Jokaisella alustalla on oma URL-polku — käytä oikeaa välilehteä."
+      ]
+    },
+    "projectSettingsDeletedCards": {
+      "title": "Projekti — Poistetut kortit",
+      "intro": "Pehmeästi poistetut kortit, jotka voidaan palauttaa tai poistaa pysyvästi.",
+      "tasks": [
+        "Avaa poistettu kortti tarkistaaksesi sen sisällön ennen palautusta.",
+        "Palautus palauttaa kortin alkuperäiseen sarakkeeseen.",
+        "Pysyvää poistoa ei voi perua."
+      ]
+    },
+    "settingsProfile": {
+      "title": "Profiili ja asetukset",
+      "intro": "Nimesi, kieli, teema, ilmoitukset ja kojelaudan oletusarvot.",
+      "tasks": [
+        "Aseta kieli, aikavyöhyke ja päivämäärä-/aikamuoto koko käyttöliittymälle.",
+        "Ota sähköposti-ilmoitukset käyttöön maininnoille, yksityisviesteille ja korttimäärityksille.",
+        "Valitse Taulut tai Tiketit oletusnäkymäksi kirjautumisen jälkeen.",
+        "Ota henkilökohtainen työajan seuranta käyttöön tai pois, jos organisaatiosi käyttää tuntikirjauksia."
+      ]
+    },
+    "settingsWorkingHours": {
+      "title": "Työajat",
+      "intro": "Oletusaloitusaika arkipäivittäin — käytetään vihjeinä työajan seurannan ruudukossa.",
+      "tasks": [
+        "Jätä päivä tyhjäksi, jos et työskentele sinä päivänä.",
+        "Ajat käyttävät valitsemaasi merkintätapaa (desimaali tai hh:mm).",
+        "Tallenna profiili muokkauksen jälkeen — työajat ovat osa profiiliasi."
+      ]
+    },
+    "settingsPassword": {
+      "title": "Vaihda salasana",
+      "intro": "Päivitä kirjautumissalasanasi. Käytännön säännöt määrittää ylläpitäjäsi.",
+      "tasks": [
+        "Syötä nykyinen salasanasi ja sitten uusi, joka täyttää listatut vaatimukset.",
+        "Sinua saatetaan vaatia vaihtamaan vanhentunut salasana ennen jatkamista."
+      ]
+    },
+    "settingsMfa": {
+      "title": "Kaksivaiheinen tunnistautuminen",
+      "intro": "Lisää TOTP-sovellus (Google Authenticator jne.) lisäturvallisuutta varten kirjautumiseen.",
+      "tasks": [
+        "Skannaa QR-koodi tai syötä salaisuus manuaalisesti tunnistussovellukseesi.",
+        "Syötä 6-numeroinen koodi vahvistaaksesi asennuksen.",
+        "Säilytä palautuspääsy turvallisesti — tarvitset sovelluskoodin jokaisella kirjautumisella, kun MFA on käytössä."
+      ]
+    },
+    "settingsPasskey": {
+      "title": "Passkeyt",
+      "intro": "Kirjaudu laitteen biometrialla tai turva-avaimella salasanan sijaan.",
+      "tasks": [
+        "Rekisteröi passkey laitteella, jolla kirjaudut sisään.",
+        "Voit rekisteröidä useita passkeyjä ja poistaa vanhoja.",
+        "Passkeyt toimivat salasanan ja MFA:n rinnalla palvelimen käytännön mukaan."
+      ]
+    },
+    "settingsApiKeys": {
+      "title": "Henkilökohtaiset API-avaimet",
+      "intro": "Omat API-avaimesi skripteille ja integraatioille (ei projektin tikettiavaimia).",
+      "tasks": [
+        "Luo nimetty avain ja kopioi se heti.",
+        "Peru avaimet, joita et enää käytä."
+      ]
+    },
+    "chartsVelocity": {
+      "title": "Velocity-kaavio",
+      "intro": "Sprinttiä kohti suoritetut story pointit — auttaa ennustamaan tulevia sprinttejä.",
+      "tasks": [
+        "Vain valmiit sprintit näkyvät.",
+        "Varmista, että korteilla on story pointit, jotta palkit ovat merkityksellisiä."
+      ]
+    },
+    "chartsThroughput": {
+      "title": "Läpimeno",
+      "intro": "Suljettujen korttien määrä sprinttiä tai viikkoa kohti (Kanban).",
+      "tasks": [
+        "Kanbanissa valitse 4–26 viikkoa pudotusvalikosta.",
+        "Scrumissa läpimeno ryhmitellään valmiiden sprinttien mukaan."
+      ]
+    },
+    "chartsBurndown": {
+      "title": "Burndown",
+      "intro": "Jäljellä olevat story pointit valitussa sprintissä ajan myötä.",
+      "tasks": [
+        "Valitse aktiivinen tai aiempi sprintti pudotusvalikosta.",
+        "Ideaalisuora olettaa tasaisen kulutuksen; todellinen suora seuraa valmiita kortteja."
+      ]
+    },
+    "chartsBurnup": {
+      "title": "Burn-up",
+      "intro": "Kumulatiivisesti valmistunut työ sprintissä verrattuna kokonaislaajuuteen.",
+      "tasks": [
+        "Laajuuden muutokset (sprintin aikana lisätyt kortit) näkyvät askelina kokonaissuorassa.",
+        "Valitse analysoitava sprintti."
+      ]
+    },
+    "chartsCfd": {
+      "title": "Kumulatiivinen virtaus",
+      "intro": "Pinotut alueet, jotka näyttävät korttien määrän sarakkeittain ajan myötä.",
+      "tasks": [
+        "Kasvavat kaistat yhdessä sarakkeessa voivat viitata pullonkaulaan.",
+        "Saatavilla sekä Kanban- että Scrum-projekteissa."
+      ]
+    },
+    "chartsSprintReport": {
+      "title": "Sprinttiraportti",
+      "intro": "Yhteenveto valmiista sprintistä: sitoutunut vs. valmistunut työ.",
+      "tasks": [
+        "Valitse sprintti nähdäksesi siirretyt ja valmistuneet kortit.",
+        "Käytä sprintin katselmoinnin jälkeen."
+      ]
+    },
+    "chartsEpicBurndown": {
+      "title": "Epic-burndown",
+      "intro": "Yhden epicin jäljellä olevat story pointit ajan myötä.",
+      "tasks": [
+        "Valitse epic pudotusvalikosta.",
+        "Linkitä kortit epiciin kortin tiedoista tarkkoja summia varten."
+      ]
+    },
+    "chartsReleaseBurndown": {
+      "title": "Release-burndown",
+      "intro": "Edistyminen release-tavoitteeseen epiccien ja sprinttien yli.",
+      "tasks": [
+        "Määritä release-laajuus epiccien ja sprinttisuunnittelun kautta.",
+        "Käytä kiinteän päivämäärän release-seurantaan."
+      ]
+    },
+    "chartsCycleTime": {
+      "title": "Cycle time",
+      "intro": "Kuinka kauan kortit ovat työn alla (aloituksesta valmiiksi).",
+      "tasks": [
+        "Aseta aloituspäivät korteille tarkkaa mittausta varten.",
+        "Hajontakaavio näyttää cycle timen korttia kohti."
+      ]
+    },
+    "chartsLeadTime": {
+      "title": "Lead time",
+      "intro": "Aika kortin luomisesta valmistumiseen.",
+      "tasks": [
+        "Hyödyllinen Kanban-virtausmittareihin ja SLA-tyyliseen seurantaan tauluilla.",
+        "Jokainen piste on yksi valmis kortti."
+      ]
+    }
+  }
+}

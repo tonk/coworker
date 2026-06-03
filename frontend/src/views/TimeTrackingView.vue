@@ -895,6 +895,10 @@ const _initialMode = (() => {
 })()
 const mode = ref(_initialMode)
 
+watch(mode, (activeMode) => {
+  ui.setHelpContext(`timeTracking.${activeMode}`)
+}, { immediate: true })
+
 // ── Week navigation ───────────────────────────────────────────────────────
 const anchor = ref(new Date())
 
@@ -3012,6 +3016,7 @@ onUnmounted(() => {
   document.removeEventListener('mousedown', onHolidaysDocClick)
   document.removeEventListener('mousedown', onWkPickerDocClick)
   document.removeEventListener('mousedown', onTimePopupDocClick)
+  ui.setHelpContext(null)
 })
 
 // ── Init ──────────────────────────────────────────────────────────────────

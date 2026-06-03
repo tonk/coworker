@@ -39,5 +39,16 @@ export const useUIStore = defineStore('ui', () => {
     confirmState.value = null
   }
 
-  return { toasts, toast, success, error, info, mention, confirmState, confirm, _confirmResolve }
+  /** Optional tab/section id for contextual help, e.g. "admin.settings". */
+  const helpContext = ref(null)
+
+  function setHelpContext(context) {
+    helpContext.value = context || null
+  }
+
+  return {
+    toasts, toast, success, error, info, mention,
+    confirmState, confirm, _confirmResolve,
+    helpContext, setHelpContext,
+  }
 })

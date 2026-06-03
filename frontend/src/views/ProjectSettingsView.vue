@@ -436,7 +436,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import BaseModal from '@/components/common/BaseModal.vue'
 import CardDetail from '@/components/board/CardDetail.vue'
@@ -461,6 +461,15 @@ const ui = useUIStore()
 const auth = useAuthStore()
 
 const tab = ref('general')
+
+watch(tab, (activeTab) => {
+  ui.setHelpContext(`projectSettings.${activeTab}`)
+}, { immediate: true })
+
+onBeforeUnmount(() => {
+  ui.setHelpContext(null)
+})
+
 const project = ref(null)
 const members = ref([])
 const projectGroups = ref([])

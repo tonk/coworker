@@ -1177,5 +1177,547 @@
     "expand": "Show cards",
     "collapse": "Hide cards",
     "no_cards": "No cards in this epic yet."
+  },
+  "help": {
+    "button": "Hjälp",
+    "title": "Hjälp",
+    "tasks_heading": "Vanliga uppgifter",
+    "shortcuts_heading": "Kortkommandon",
+    "pages": {
+      "default": {
+        "title": "WarmDesk",
+        "intro": "Kontextkänslig hjälp för sidan du befinner dig på. Öppna denna panel när som helst via hjälpknappen i sidhuvudet.",
+        "tasks": [
+          "Använd sidopanelen för att växla mellan projekt, kunder och chattar.",
+          "Tryck Ctrl+K (⌘K på Mac) för att söka efter kort, ärenden och personer.",
+          "Öppna Inställningar från användarmenyn för att ändra språk, tema och aviseringar."
+        ]
+      },
+      "dashboard": {
+        "title": "Instrumentpanel",
+        "intro": "Din startsida: fästa projekt, senaste aktivitet och snabb åtkomst till stjärnmärkta kunder.",
+        "tasks": [
+          "Stjärnmärk projekt och kunder i sidopanelen för att fästa dem här.",
+          "Skapa ett nytt projekt med knappen på denna sida.",
+          "Ställ in Instrumentpanel visar i Inställningar för att öppna Ärenden i stället för Tavlor vid inloggning."
+        ]
+      },
+      "board": {
+        "title": "Kanban-tavla",
+        "intro": "Hantera arbete som kort som flyttas mellan kolumner. Dra kort för att uppdatera status.",
+        "tasks": [
+          "Dra ett kort till en annan kolumn för att ändra dess status.",
+          "Klicka på ett kort för att redigera detaljer, kommentarer, checklistor och bilagor.",
+          "Öppna chattpanelen för att diskutera arbetet med projektteamet.",
+          "Sätt en WIP-gräns på en kolumnrubrik för att begränsa pågående arbete."
+        ],
+        "shortcuts": [
+          "Esc — stäng den öppna kortdetaljpanelen"
+        ]
+      },
+      "backlog": {
+        "title": "Backlog",
+        "intro": "Scrum-backlog: prioritera kort som ännu inte ingår i en aktiv sprint.",
+        "tasks": [
+          "Dra kort för att omordna prioritet.",
+          "Flytta kort till den aktiva sprinten från sprintpanelen.",
+          "Skapa nya kort direkt i backloggen."
+        ]
+      },
+      "sprintBoard": {
+        "title": "Sprinttavla",
+        "intro": "Den aktiva sprinten visas som en Kanban-tavla med fast omfattning.",
+        "tasks": [
+          "Flytta kort mellan kolumner allteftersom arbetet fortskrider.",
+          "Avsluta sprinten från sprintmenyn när allt arbete är klart eller överfört.",
+          "Öppna Diagram för att se burndown för denna sprint."
+        ]
+      },
+      "epics": {
+        "title": "Epics",
+        "intro": "Gruppera relaterade kort under epics för Scrum-planering och burndown-uppföljning.",
+        "tasks": [
+          "Skapa en epic och tilldela en färg.",
+          "Koppla kort till en epic från kortdetaljpanelen.",
+          "Öppna en epic för att se dess kort och burndown-diagram."
+        ]
+      },
+      "gantt": {
+        "title": "Gantt-diagram",
+        "intro": "Tidslinjevy av kort med start- och förfallodatum.",
+        "tasks": [
+          "Ange start- och förfallodatum på kort för att se dem på tidslinjen.",
+          "Dra staplar för att justera datum när du har redigeringsbehörighet.",
+          "Scrolla horisontellt för att röra dig genom tiden."
+        ]
+      },
+      "charts": {
+        "title": "Diagram",
+        "intro": "Scrum-analys: burndown, velocity och epic-framsteg för detta projekt.",
+        "tasks": [
+          "Välj en sprint för att se dess burndown-diagram.",
+          "Byt flikar för att jämföra velocity mellan sprints.",
+          "Välj en epic för att se återstående arbete över tid."
+        ]
+      },
+      "topics": {
+        "title": "Ämnen",
+        "intro": "Strukturerade diskussioner separata från tavlans chatt — användbara för beslut och långa trådar.",
+        "tasks": [
+          "Skapa ett ämne med titel och valfri beskrivning.",
+          "Svara i trådar för att hålla konversationen organiserad.",
+          "Stäng ett ämne när diskussionen är löst."
+        ]
+      },
+      "projectSettings": {
+        "title": "Projektinställningar",
+        "intro": "Konfigurera medlemmar, integrationer och projektspecifika alternativ.",
+        "tasks": [
+          "Bjud in medlemmar och ange deras projektroll (läsare, medlem, ägare).",
+          "Konfigurera GitHub- eller GitLab-webhooks för automatisering.",
+          "Hantera projekt-API-nycklar för CI/CD-ärendeskapande."
+        ]
+      },
+      "settings": {
+        "title": "Användarinställningar",
+        "intro": "Din personliga profil, säkerhet, utseende och aviseringsinställningar.",
+        "tasks": [
+          "Uppdatera visningsnamn, e-post, avatar och datum/tidsformat.",
+          "Aktivera MFA eller registrera en passnyckel för starkare inloggning.",
+          "Välj om instrumentpanelen öppnar Tavlor eller Ärenden.",
+          "Ange arbetstider som används som standard i tidrapportering."
+        ]
+      },
+      "chats": {
+        "title": "Chattar",
+        "intro": "Direktmeddelanden och gruppchattar med röst- och videosamtal.",
+        "tasks": [
+          "Starta en chatt från listan Personer i sidopanelen.",
+          "Använd @omnämnanden i projektchatt eller DM för att meddela någon.",
+          "Starta ett röst- eller videosamtal från konversationshuvudet.",
+          "Reagera på meddelanden med emoji-hoveråtgärder."
+        ],
+        "shortcuts": [
+          "Enter — skicka meddelande",
+          "Esc — avbryt meddelanderedigering",
+          "@ — omnämn en användare",
+          ":namn: — infoga emoji via kortkod"
+        ]
+      },
+      "news": {
+        "title": "Nyheter",
+        "intro": "Meddelanden från din organisation som visas på instrumentpanelen och denna sida.",
+        "tasks": [
+          "Läs fästa meddelanden från administratörer.",
+          "Avfärda objekt från instrumentpanelen; de finns kvar listade här."
+        ]
+      },
+      "customers": {
+        "title": "Kunder",
+        "intro": "Kundposter som används för avtal, tidrapportering och helpdeskärenden.",
+        "tasks": [
+          "Öppna en kund för att se avtal och medlemmar.",
+          "Stjärnmärk kunder för att fästa dem i sidopanelen.",
+          "Gå till ärenden för en kund när helpdesk är aktiverat."
+        ]
+      },
+      "customerDetail": {
+        "title": "Kunddetaljer",
+        "intro": "Avtal, tilldelade medlemmar och länkar till ärenden för en kund.",
+        "tasks": [
+          "Granska avtalssatser och regler för icke-deklarerbar tid.",
+          "Se vilka agenter som har åtkomst till denna kunds ärenden.",
+          "Öppna ärendelistan för denna kund från åtgärderna i sidhuvudet."
+        ]
+      },
+      "tickets": {
+        "title": "Ärenden",
+        "intro": "Helpdeskärendelista för en kund — filtrera, sortera och skapa nya ärenden.",
+        "tasks": [
+          "Använd filter för status, prioritet, ansvarig och taggar.",
+          "Växla mellan tabell- och kortvy.",
+          "Skapa ett ärende manuellt eller vänta på inkommande e-post (när IMAP är konfigurerat)."
+        ]
+      },
+      "inbox": {
+        "title": "Inkorg",
+        "intro": "Ärenden som kommit via e-post och ännu inte är kopplade till en kund.",
+        "tasks": [
+          "Granska nya e-postärenden och tilldela dem till en kund.",
+          "Markera som skräppost för att dölja oönskad e-post från standardlistan.",
+          "Öppna ett ärende för att svara eller slå ihop det med ett befintligt ärende."
+        ]
+      },
+      "ticketDetail": {
+        "title": "Ärendedetaljer",
+        "intro": "Visa och uppdatera ett ärende, svara beställaren och tillämpa makron eller checklistor.",
+        "tasks": [
+          "Ändra status, prioritet, typ, ansvarig och taggar från sidhuvudet.",
+          "Lägg till ett offentligt svar (e-postat till beställaren) eller en privat intern anteckning.",
+          "Tillämpa ett makro för att köra förinställda åtgärder med ett klick.",
+          "Ange ett påminnelsedatum på väntande ärenden eller ett stängningsdatum på väntande stängning."
+        ]
+      },
+      "timeTracking": {
+        "title": "Tidrapportering",
+        "intro": "Logga timmar, kör personliga rapporter och exportera tavlans tidsrapporter.",
+        "tasks": [
+          "Byt flikar för Logga tid, Rapport eller Tavlerapport.",
+          "Navigera mellan veckor med pilarna eller klicka på veckoetiketten.",
+          "Chefer kan visa andra användares ark när det är tillåtet."
+        ]
+      },
+      "timeTrackingSheet": {
+        "title": "Logga tid",
+        "intro": "Veckogrid: ange timmar per kund, projekt och aktivitet.",
+        "tasks": [
+          "Ange timmar i en cell — använd ditt föredragna decimal- eller tt:mm-format från inställningar.",
+          "Klicka på klockikonen för att ange start/slut-tider på en post.",
+          "Kopiera föregående vecka eller använd beredskapsskift för avtalade nattpriser.",
+          "Dra radhandtag för att omordna rader."
+        ],
+        "shortcuts": [
+          "Piltangenter — flytta mellan celler",
+          "Shift + piltangenter — utöka markering",
+          "Ctrl+C / Ctrl+V — kopiera och klistra in celler",
+          "Ctrl+Z — ångra senaste redigering",
+          "Del — rensa valda celler",
+          "Esc — rensa markering"
+        ]
+      },
+      "timeTrackingReport": {
+        "title": "Tidsrapport",
+        "intro": "Personlig tidsrapport med gruppering, filter och PDF/XLSX-export.",
+        "tasks": [
+          "Ange datumintervall och gruppera efter kund, projekt eller aktivitet.",
+          "Expandera grupper för att se enskilda poster.",
+          "Exportera PDF eller Excel för fakturering eller arkivering."
+        ]
+      },
+      "timeTrackingBoardReport": {
+        "title": "Tavlans tidsrapport",
+        "intro": "Projekttavlans tid aggregerad för rapportering — kräver behörighet som rapportvisare.",
+        "tasks": [
+          "Filtrera efter projekt, kund, ansvarig och datumintervall.",
+          "Granska deklarerbara vs. icke-deklarerbara totaler när det är konfigurerat.",
+          "Ladda ner PDF eller XLSX från exportknapparna."
+        ]
+      },
+      "admin": {
+        "title": "Administration",
+        "intro": "Hantera användare, projekt, systeminställningar, helpdesk-konfiguration och säkerhetskopior.",
+        "tasks": [
+          "Använd flikarna för att växla mellan Användare, Inställningar, SLA, Makron med mera.",
+          "Ändringar av SMTP, IMAP och säkerhetsinställningar träder i kraft utan omstart av servern.",
+          "Öppna denna hjälppanel på varje flik för specifik vägledning."
+        ]
+      },
+      "adminUsers": {
+        "title": "Användare",
+        "intro": "Skapa och hantera användarkonton, roller och funktionsflaggor.",
+        "tasks": [
+          "Ange global roll: admin, medlem, läsare eller kund (endast ärenden).",
+          "Aktivera helpdesk, tidrapportering eller rapportåtkomst per användare.",
+          "Tilldela kunder till kundanvändare för ärendesynlighet."
+        ]
+      },
+      "adminGroups": {
+        "title": "Grupper",
+        "intro": "Organisera användare och ge kundåtkomst till hela team på en gång.",
+        "tasks": [
+          "Skapa en grupp och lägg till medlemmar.",
+          "Tilldela kundåtkomst med en roll — högsta rollen vinner när den kombineras med direkt åtkomst."
+        ]
+      },
+      "adminCustomers": {
+        "title": "Kunder (admin)",
+        "intro": "Skapa kunder, avtal och åtkomstregler.",
+        "tasks": [
+          "Lägg till avtal med satser som används i tidsrapporter.",
+          "Tilldela agenter till kunder för ärendeåtkomst och ansvariga-dropdowns.",
+          "Konfigurera icke-deklarerbara minuter på endast-tidrapporteringsprojekt."
+        ]
+      },
+      "adminProjects": {
+        "title": "Projekt (admin)",
+        "intro": "Översikt över alla projekt, tavlatyp och arkivering.",
+        "tasks": [
+          "Skapa Kanban- eller Scrum-projekt — tavlatyp är låst efter skapande.",
+          "Arkivera projekt för att dölja dem utan att radera historik.",
+          "Återställ arkiverade projekt vid behov."
+        ]
+      },
+      "adminSettings": {
+        "title": "Systeminställningar",
+        "intro": "SMTP, IMAP, varumärke, säkerhet och standardvärden för nya användare och projekt.",
+        "tasks": [
+          "Konfigurera utgående e-post innan lösenordsåterställning och aviseringar fungerar.",
+          "Konfigurera IMAP-polling för att skapa ärenden från inkommande e-post.",
+          "Begränsa API-åtkomst med tillåtna IP-intervall — testa noggrant innan du sparar.",
+          "Ladda upp en företagslogotyp som visas på rapporter och valfritt på inloggningssidan."
+        ]
+      },
+      "adminNews": {
+        "title": "Nyheter (admin)",
+        "intro": "Publicera meddelanden som visas på instrumentpanelen och Nyheter-sidan.",
+        "tasks": [
+          "Skriv markdown-innehåll med titel och valfritt utgångsdatum.",
+          "Fäst viktiga objekt så att de förblir synliga.",
+          "Lämna datum tomt för att visa omedelbart utan slutdatum."
+        ]
+      },
+      "adminTimeTracking": {
+        "title": "Tidrapportering (admin)",
+        "intro": "Hantera endast-tidrapporteringsprojekt och kunder som används på tidrapporter.",
+        "tasks": [
+          "Skapa TR-projekt med valfria icke-deklarerbara minuter per post.",
+          "Koppla TR-kunder till faktureringsenheter i rapporter.",
+          "Ange timpriser på kundavtal för kostnadskolumner i exporter."
+        ]
+      },
+      "adminSla": {
+        "title": "SLA-policyer",
+        "intro": "Definiera svar- och lösningsmål efter ärendeprioritet.",
+        "tasks": [
+          "Skapa en policy som matchar en prioritet eller använd en catch-all.",
+          "Ange mål i timmar; brottflaggor uppdateras när ärenden visas.",
+          "Inaktivera en policy i stället för att radera om du kan behöva den igen."
+        ]
+      },
+      "adminMacros": {
+        "title": "Makron",
+        "intro": "Återanvändbara åtgärdssekvenser som agenter tillämpar på ärenden med ett klick.",
+        "tasks": [
+          "Kombinera åtgärder för ange status, ange prioritet, lägg till tagg och lägg till meddelande.",
+          "Använd platshållare som {agent}, {subject} och {ticket_id} i meddelanden.",
+          "Dra platshållare från listan till meddelandeåtgärdstexten."
+        ]
+      },
+      "adminTicketChecklists": {
+        "title": "Ärendechecklistor",
+        "intro": "Mallar som tillämpas på ärenden — objekt måste slutföras innan stängning.",
+        "tasks": [
+          "Definiera checklistobjekt i en mall.",
+          "Agenter tillämpar en mall från ärendedetaljvyn.",
+          "Stängning blockeras tills alla objekt är ikryssade."
+        ]
+      },
+      "adminBackup": {
+        "title": "Säkerhetskopiering",
+        "intro": "Ladda ner och återställ databassäkerhetskopior.",
+        "tasks": [
+          "Skapa en säkerhetskopia före större uppgraderingar eller migreringar.",
+          "Ladda ner filen och förvara den utanför servern.",
+          "Återställning ersätter den aktiva databasen — planera driftstopp först."
+        ]
+      },
+      "cardDetail": {
+        "title": "Kortdetaljer",
+        "intro": "Redigera alla fält på ett kort: beskrivning, datum, ansvariga, checklistor, bilagor och länkar.",
+        "tasks": [
+          "Använd ⋮-menyn för att visa eller dölja sektioner (checklista, delkort, git-länkar m.m.).",
+          "Lägg till delkort för mindre uppgifter — de visas bara här, inte på tavlan.",
+          "Koppla relaterade kort eller ärenden via sektionen för länkade kort.",
+          "Kopiera eller överför kortet till ett annat projekt från sidfotsåtgärderna.",
+          "Tryck Esc för att stänga denna panel."
+        ],
+        "shortcuts": [
+          "Esc — stäng kortdetaljer"
+        ]
+      },
+      "projectSettingsGeneral": {
+        "title": "Projekt — Allmänt",
+        "intro": "Namn, utseende, kundkoppling och avtal för detta projekt.",
+        "tasks": [
+          "Tilldela en kund och ett avtal för tidrapportering och rapportering.",
+          "Ladda upp en projektavatar som visas i sidopanelen och tavlans verktygsfält.",
+          "Tavlatyp (Kanban eller Scrum) sattes vid skapande och kan inte ändras."
+        ]
+      },
+      "projectSettingsMembers": {
+        "title": "Projekt — Medlemmar",
+        "intro": "Vem som har åtkomst till detta projekt och med vilken roll.",
+        "tasks": [
+          "Bjud in användare via användarnamn med rollen läsare, medlem eller ägare.",
+          "Lägg till en hel grupp för att ge åtkomst till alla medlemmar på en gång.",
+          "Ägare kan ändra inställningar; läsare ser tavlan skrivskyddad."
+        ]
+      },
+      "projectSettingsLabels": {
+        "title": "Projekt — Etiketter",
+        "intro": "Färgmärkta taggar på kort för filtrering och visuell gruppering.",
+        "tasks": [
+          "Skapa etiketter med namn och färg.",
+          "Radera oanvända etiketter — de tas bort från alla kort."
+        ]
+      },
+      "projectSettingsApiKeys": {
+        "title": "Projekt — API-nycklar",
+        "intro": "Nycklar för Ticket API och automatisering (CI/CD som skapar kort).",
+        "tasks": [
+          "Skapa en nyckel med ett beskrivande namn.",
+          "Kopiera nyckeln när den visas — den kan inte hämtas senare.",
+          "Återkalla nycklar som inte längre behövs."
+        ]
+      },
+      "projectSettingsWebhooks": {
+        "title": "Projekt — Webhooks",
+        "intro": "GitHub- och GitLab-webhooks som skapar eller uppdaterar kort från commits och MR:er.",
+        "tasks": [
+          "Kopiera webhook-URL och token till dina repository-inställningar.",
+          "Generera om token om den har komprometterats.",
+          "Varje plattform har sin egen URL-sökväg — använd matchande flik."
+        ]
+      },
+      "projectSettingsDeletedCards": {
+        "title": "Projekt — Raderade kort",
+        "intro": "Mjukraderade kort som kan återställas eller tas bort permanent.",
+        "tasks": [
+          "Öppna ett raderat kort för att granska innehållet före återställning.",
+          "Återställning returnerar kortet till dess ursprungliga kolumn.",
+          "Permanent radering kan inte ångras."
+        ]
+      },
+      "settingsProfile": {
+        "title": "Profil och inställningar",
+        "intro": "Ditt namn, språk, tema, aviseringar och standardvärden för instrumentpanelen.",
+        "tasks": [
+          "Ange språk, tidszon och datum/tidsformat för hela gränssnittet.",
+          "Aktivera e-postaviseringar för omnämnanden, DM och korttilldelningar.",
+          "Välj Tavlor eller Ärenden som standardvy efter inloggning.",
+          "Slå på/av personlig tidrapportering om din organisation använder tidrapporter."
+        ]
+      },
+      "settingsWorkingHours": {
+        "title": "Arbetstider",
+        "intro": "Standard starttid per veckodag — används som tips i tidrapporteringsrutnätet.",
+        "tasks": [
+          "Lämna en dag tom om du inte arbetar den dagen.",
+          "Tider använder ditt valda tidsformat (decimal eller tt:mm).",
+          "Spara profilen efter redigering — arbetstider är en del av din profil."
+        ]
+      },
+      "settingsPassword": {
+        "title": "Byt lösenord",
+        "intro": "Uppdatera ditt inloggningslösenord. Policyregler sätts av din administratör.",
+        "tasks": [
+          "Ange ditt nuvarande lösenord och sedan ett nytt som uppfyller de angivna kraven.",
+          "Du kan tvingas byta ett utgånget lösenord innan du kan fortsätta."
+        ]
+      },
+      "settingsMfa": {
+        "title": "Tvåfaktorsautentisering",
+        "intro": "Lägg till en TOTP-app (Google Authenticator m.m.) för extra inloggningssäkerhet.",
+        "tasks": [
+          "Skanna QR-koden eller ange hemligheten manuellt i din autentiseringsapp.",
+          "Ange en 6-siffrig kod för att bekräfta konfigurationen.",
+          "Förvara återställningsåtkomst säkert — du behöver appkoden vid varje inloggning när det är aktiverat."
+        ]
+      },
+      "settingsPasskey": {
+        "title": "Passnycklar",
+        "intro": "Logga in med enhetens biometri eller en säkerhetsnyckel i stället för lösenord.",
+        "tasks": [
+          "Registrera en passnyckel från enheten du använder för inloggning.",
+          "Du kan registrera flera passnycklar och ta bort gamla.",
+          "Passnycklar fungerar tillsammans med lösenord och MFA beroende på serverpolicy."
+        ]
+      },
+      "settingsApiKeys": {
+        "title": "Personliga API-nycklar",
+        "intro": "Dina egna API-nycklar för skript och integrationer (inte projektärendenycklar).",
+        "tasks": [
+          "Skapa en namngiven nyckel och kopiera den omedelbart.",
+          "Återkalla nycklar du inte längre använder."
+        ]
+      },
+      "chartsVelocity": {
+        "title": "Velocity-diagram",
+        "intro": "Story points slutförda per sprint — hjälper att förutsäga framtida sprints.",
+        "tasks": [
+          "Endast avslutade sprints visas.",
+          "Se till att kort har story points satta för meningsfulla staplar."
+        ]
+      },
+      "chartsThroughput": {
+        "title": "Throughput",
+        "intro": "Antal kort stängda per sprint eller per vecka (Kanban).",
+        "tasks": [
+          "För Kanban, välj 4–26 veckor i rullgardinsmenyn.",
+          "För Scrum grupperas throughput efter avslutad sprint."
+        ]
+      },
+      "chartsBurndown": {
+        "title": "Burndown",
+        "intro": "Återstående story points i vald sprint över tid.",
+        "tasks": [
+          "Välj aktiv eller tidigare sprint i rullgardinsmenyn.",
+          "Ideallinjen antar jämn förbränning; faktisk linje följer kortslutföranden."
+        ]
+      },
+      "chartsBurnup": {
+        "title": "Burn-up",
+        "intro": "Ackumulerat arbete slutfört i en sprint jämfört med total omfattning.",
+        "tasks": [
+          "Omfattningsändringar (kort tillagda mitt i sprint) visas som steg i totallinjen.",
+          "Välj sprinten som ska analyseras."
+        ]
+      },
+      "chartsCfd": {
+        "title": "Kumulativt flöde",
+        "intro": "Staplade ytor som visar kortantal per kolumn över tid.",
+        "tasks": [
+          "Växande band i en kolumn kan indikera en flaskhals.",
+          "Tillgängligt för både Kanban- och Scrum-projekt."
+        ]
+      },
+      "chartsSprintReport": {
+        "title": "Sprintrapport",
+        "intro": "Sammanfattning av en avslutad sprint: åtaget vs. slutfört arbete.",
+        "tasks": [
+          "Välj en sprint för att se överförda och slutförda kort.",
+          "Använd efter sprint review-möten."
+        ]
+      },
+      "chartsEpicBurndown": {
+        "title": "Epic burndown",
+        "intro": "Återstående story points för en epic över tid.",
+        "tasks": [
+          "Välj en epic i rullgardinsmenyn.",
+          "Koppla kort till epicens från kortdetaljer för korrekta totaler."
+        ]
+      },
+      "chartsReleaseBurndown": {
+        "title": "Release burndown",
+        "intro": "Framsteg mot ett releasemål över epics och sprints.",
+        "tasks": [
+          "Konfigurera releaseomfattning via epics och sprintplanering.",
+          "Använd för fast-datum releaseuppföljning."
+        ]
+      },
+      "chartsCycleTime": {
+        "title": "Cycle time",
+        "intro": "Hur länge kort är pågående (start till klart).",
+        "tasks": [
+          "Ange startdatum på kort för korrekt mätning.",
+          "Punktdiagram visar cycle time per kort."
+        ]
+      },
+      "chartsLeadTime": {
+        "title": "Lead time",
+        "intro": "Tid från kortskapande till slutförande.",
+        "tasks": [
+          "Användbart för Kanban-flödesmått och SLA-liknande uppföljning på tavlor.",
+          "Varje punkt är ett slutfört kort."
+        ]
+      }
+    },
+    "field_button": "Mer information",
+    "fields": {
+      "ticket_reminder": "Anger ett uppföljningsdatum för väntande ärenden. Ärenden med förfallen påminnelse sorteras överst i listan.",
+      "ticket_close_date": "När status är Väntande stängning stängs ärendet automatiskt detta datum.",
+      "ticket_macros": "Kör en förinställd sekvens av åtgärder (ändra status, lägg till svar, taggar m.m.) definierad av en administratör.",
+      "ticket_checklist": "Alla checklistobjekt måste slutföras innan ärendet kan stängas när en mall tillämpas."
+    }
   }
 }

@@ -1,0 +1,211 @@
+{
+  "field_button": "Plus d'informations",
+  "fields": {
+    "ticket_reminder": "Définit une date de suivi pour les tickets en attente. Les tickets avec un rappel échu sont triés en haut de la liste.",
+    "ticket_close_date": "Lorsque le statut est En attente de clôture, le ticket est automatiquement fermé à cette date.",
+    "ticket_macros": "Exécute une séquence prédéfinie d'actions (changer le statut, ajouter une réponse, tags, etc.) définie par un administrateur.",
+    "ticket_checklist": "Tous les éléments de la liste de contrôle doivent être complétés avant de pouvoir fermer le ticket lorsqu'un modèle est appliqué."
+  },
+  "pages": {
+    "cardDetail": {
+      "title": "Détail de la carte",
+      "intro": "Modifiez tous les champs d'une carte : description, dates, assignés, listes de contrôle, pièces jointes et liens.",
+      "tasks": [
+        "Utilisez le menu ⋮ pour afficher ou masquer des sections (liste de contrôle, sous-cartes, liens git, etc.).",
+        "Ajoutez des sous-cartes pour des tâches plus petites — elles n'apparaissent qu'ici, pas sur le tableau.",
+        "Liez des cartes ou tickets associés dans la section cartes liées.",
+        "Copiez ou transférez la carte vers un autre projet depuis les actions du pied de page.",
+        "Appuyez sur Échap pour fermer ce panneau."
+      ],
+      "shortcuts": [
+        "Échap — fermer le détail de la carte"
+      ]
+    },
+    "projectSettingsGeneral": {
+      "title": "Projet — Général",
+      "intro": "Nom, apparence, lien client et contrat pour ce projet.",
+      "tasks": [
+        "Assignez un client et un contrat pour le suivi du temps et les rapports.",
+        "Téléversez un avatar de projet affiché dans la barre latérale et la barre d'outils du tableau.",
+        "Le type de tableau (Kanban ou Scrum) a été défini à la création et ne peut pas être modifié."
+      ]
+    },
+    "projectSettingsMembers": {
+      "title": "Projet — Membres",
+      "intro": "Qui peut accéder à ce projet et avec quel rôle.",
+      "tasks": [
+        "Invitez des utilisateurs par nom d'utilisateur avec le rôle lecteur, membre ou propriétaire.",
+        "Ajoutez un groupe entier pour accorder l'accès à tous ses membres en une fois.",
+        "Les propriétaires peuvent modifier les paramètres ; les lecteurs voient le tableau en lecture seule."
+      ]
+    },
+    "projectSettingsLabels": {
+      "title": "Projet — Étiquettes",
+      "intro": "Tags colorés appliqués aux cartes pour filtrer et regrouper visuellement.",
+      "tasks": [
+        "Créez des étiquettes avec un nom et une couleur.",
+        "Supprimez les étiquettes inutilisées — elles sont retirées de toutes les cartes."
+      ]
+    },
+    "projectSettingsApiKeys": {
+      "title": "Projet — Clés API",
+      "intro": "Clés pour l'API Tickets et l'automatisation (CI/CD créant des cartes).",
+      "tasks": [
+        "Créez une clé avec un nom descriptif.",
+        "Copiez la clé lorsqu'elle est affichée — elle ne peut pas être récupérée ensuite.",
+        "Révoquez les clés qui ne sont plus nécessaires."
+      ]
+    },
+    "projectSettingsWebhooks": {
+      "title": "Projet — Webhooks",
+      "intro": "Webhooks GitHub et GitLab qui créent ou mettent à jour des cartes à partir de commits et de MR.",
+      "tasks": [
+        "Copiez l'URL du webhook et le token dans les paramètres de votre dépôt.",
+        "Régénérez le token s'il est compromis.",
+        "Chaque plateforme a son propre chemin d'URL — utilisez l'onglet correspondant."
+      ]
+    },
+    "projectSettingsDeletedCards": {
+      "title": "Projet — Cartes supprimées",
+      "intro": "Cartes supprimées de façon réversible, pouvant être restaurées ou supprimées définitivement.",
+      "tasks": [
+        "Ouvrez une carte supprimée pour en examiner le contenu avant restauration.",
+        "Restaurer renvoie la carte dans sa colonne d'origine.",
+        "La suppression définitive est irréversible."
+      ]
+    },
+    "settingsProfile": {
+      "title": "Profil et préférences",
+      "intro": "Votre nom, langue, thème, notifications et valeurs par défaut du tableau de bord.",
+      "tasks": [
+        "Définissez la langue, le fuseau horaire et le format date/heure pour toute l'interface.",
+        "Activez les notifications par e-mail pour les mentions, messages directs et assignations de cartes.",
+        "Choisissez Tableaux ou Tickets comme vue par défaut après connexion.",
+        "Activez ou désactivez le suivi du temps personnel si votre organisation utilise des feuilles de temps."
+      ]
+    },
+    "settingsWorkingHours": {
+      "title": "Heures de travail",
+      "intro": "Heure de début par défaut pour chaque jour ouvré — utilisée comme repère sur la grille de suivi du temps.",
+      "tasks": [
+        "Laissez un jour vide si vous ne travaillez pas ce jour-là.",
+        "Les heures utilisent votre notation choisie (décimal ou hh:mm).",
+        "Enregistrez le profil après modification — les heures de travail font partie de votre profil."
+      ]
+    },
+    "settingsPassword": {
+      "title": "Changer le mot de passe",
+      "intro": "Mettez à jour votre mot de passe de connexion. Les règles de politique sont définies par votre administrateur.",
+      "tasks": [
+        "Saisissez votre mot de passe actuel, puis un nouveau respectant les exigences indiquées.",
+        "Vous pourriez devoir changer un mot de passe expiré avant de continuer."
+      ]
+    },
+    "settingsMfa": {
+      "title": "Authentification à deux facteurs",
+      "intro": "Ajoutez une application TOTP (Google Authenticator, etc.) pour renforcer la sécurité à la connexion.",
+      "tasks": [
+        "Scannez le code QR ou saisissez le secret manuellement dans votre application d'authentification.",
+        "Saisissez un code à 6 chiffres pour confirmer la configuration.",
+        "Conservez l'accès de récupération en lieu sûr — vous aurez besoin du code de l'application à chaque connexion lorsque c'est activé."
+      ]
+    },
+    "settingsPasskey": {
+      "title": "Clés d'accès",
+      "intro": "Connectez-vous avec la biométrie de l'appareil ou une clé de sécurité au lieu d'un mot de passe.",
+      "tasks": [
+        "Enregistrez une clé d'accès depuis l'appareil que vous utilisez pour vous connecter.",
+        "Vous pouvez enregistrer plusieurs clés d'accès et supprimer les anciennes.",
+        "Les clés d'accès fonctionnent avec le mot de passe et la MFA selon la politique du serveur."
+      ]
+    },
+    "settingsApiKeys": {
+      "title": "Clés API personnelles",
+      "intro": "Vos propres clés API pour scripts et intégrations (pas les clés tickets du projet).",
+      "tasks": [
+        "Créez une clé nommée et copiez-la immédiatement.",
+        "Révoquez les clés que vous n'utilisez plus."
+      ]
+    },
+    "chartsVelocity": {
+      "title": "Graphique de vélocité",
+      "intro": "Points d'histoire complétés par sprint — aide à prévoir les sprints futurs.",
+      "tasks": [
+        "Seuls les sprints terminés apparaissent.",
+        "Assurez-vous que les cartes ont des points d'histoire pour des barres significatives."
+      ]
+    },
+    "chartsThroughput": {
+      "title": "Débit",
+      "intro": "Nombre de cartes fermées par sprint ou par semaine (Kanban).",
+      "tasks": [
+        "Pour Kanban, choisissez 4 à 26 semaines dans le menu déroulant.",
+        "Pour Scrum, le débit est regroupé par sprint terminé."
+      ]
+    },
+    "chartsBurndown": {
+      "title": "Burndown",
+      "intro": "Points d'histoire restants dans le sprint sélectionné au fil du temps.",
+      "tasks": [
+        "Sélectionnez le sprint actif ou un sprint passé dans le menu déroulant.",
+        "La ligne idéale suppose une consommation régulière ; la ligne réelle suit les cartes terminées."
+      ]
+    },
+    "chartsBurnup": {
+      "title": "Burn-up",
+      "intro": "Travail cumulé terminé dans un sprint par rapport au périmètre total.",
+      "tasks": [
+        "Les changements de périmètre (cartes ajoutées en cours de sprint) apparaissent comme des paliers sur la ligne totale.",
+        "Sélectionnez le sprint à analyser."
+      ]
+    },
+    "chartsCfd": {
+      "title": "Flux cumulé",
+      "intro": "Aires empilées montrant le nombre de cartes par colonne au fil du temps.",
+      "tasks": [
+        "Des bandes qui s'élargissent dans une colonne peuvent indiquer un goulot d'étranglement.",
+        "Disponible pour les projets Kanban et Scrum."
+      ]
+    },
+    "chartsSprintReport": {
+      "title": "Rapport de sprint",
+      "intro": "Résumé d'un sprint terminé : travail engagé vs travail terminé.",
+      "tasks": [
+        "Sélectionnez un sprint pour voir les cartes reportées et terminées.",
+        "Utilisez-le après les réunions de revue de sprint."
+      ]
+    },
+    "chartsEpicBurndown": {
+      "title": "Burndown d'epic",
+      "intro": "Points d'histoire restants pour un epic au fil du temps.",
+      "tasks": [
+        "Sélectionnez un epic dans le menu déroulant.",
+        "Liez des cartes à l'epic depuis le détail de la carte pour des totaux précis."
+      ]
+    },
+    "chartsReleaseBurndown": {
+      "title": "Burndown de release",
+      "intro": "Progression vers un objectif de release à travers epics et sprints.",
+      "tasks": [
+        "Configurez le périmètre de release via les epics et la planification de sprint.",
+        "Utilisez-le pour le suivi de releases à date fixe."
+      ]
+    },
+    "chartsCycleTime": {
+      "title": "Temps de cycle",
+      "intro": "Durée pendant laquelle les cartes sont en cours (début à terminé).",
+      "tasks": [
+        "Définissez des dates de début sur les cartes pour une mesure précise.",
+        "Le nuage de points montre le temps de cycle par carte."
+      ]
+    },
+    "chartsLeadTime": {
+      "title": "Délai de livraison",
+      "intro": "Temps entre la création de la carte et son achèvement.",
+      "tasks": [
+        "Utile pour les métriques de flux Kanban et le suivi de type SLA sur les tableaux.",
+        "Chaque point représente une carte terminée."
+      ]
+    }
+  }
+}

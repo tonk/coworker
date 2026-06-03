@@ -1,0 +1,542 @@
+{
+  "button": "Hjælp",
+  "title": "Hjælp",
+  "tasks_heading": "Almindelige opgaver",
+  "shortcuts_heading": "Tastaturgenveje",
+  "pages": {
+    "default": {
+      "title": "WarmDesk",
+      "intro": "Kontekstafhængig hjælp til den side, du er på. Åbn dette panel når som helst via hjælpeknappen i headeren.",
+      "tasks": [
+        "Brug sidepanelet til at skifte mellem projekter, kunder og chats.",
+        "Tryk Ctrl+K (⌘K på Mac) for at søge efter kort, tickets og personer.",
+        "Åbn Indstillinger fra brugermenuen for at ændre sprog, tema og notifikationer."
+      ]
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "intro": "Din startside: fastgjorte projekter, seneste aktivitet og hurtig adgang til stjernemarkerede kunder.",
+      "tasks": [
+        "Stjernemarkér projekter og kunder i sidepanelet for at fastgøre dem her.",
+        "Opret et nyt projekt med knappen på denne side.",
+        "Indstil Dashboard viser i Indstillinger til at åbne Tickets i stedet for Boards ved login."
+      ]
+    },
+    "board": {
+      "title": "Kanban-tavle",
+      "intro": "Administrer arbejde som kort, der flyttes gennem kolonner. Træk kort for at opdatere status.",
+      "tasks": [
+        "Træk et kort til en anden kolonne for at ændre dets status.",
+        "Klik på et kort for at redigere detaljer, kommentarer, tjeklister og vedhæftninger.",
+        "Åbn chatpanelet for at diskutere arbejdet med projektteamet.",
+        "Sæt en WIP-grænse på en kolonneheader for at begrænse igangværende arbejde."
+      ],
+      "shortcuts": [
+        "Esc — luk det åbne kortdetaljepanel"
+      ]
+    },
+    "backlog": {
+      "title": "Backlog",
+      "intro": "Scrum-backlog: prioriter kort, der endnu ikke er i et aktivt sprint.",
+      "tasks": [
+        "Træk kort for at omarrangere prioritet.",
+        "Flyt kort ind i det aktive sprint fra sprintpanelet.",
+        "Opret nye kort direkte i backloggen."
+      ]
+    },
+    "sprintBoard": {
+      "title": "Sprint-tavle",
+      "intro": "Det aktive sprint vist som en Kanban-tavle med fast omfang.",
+      "tasks": [
+        "Flyt kort mellem kolonner, efterhånden som arbejdet skrider frem.",
+        "Afslut sprintet fra sprintmenuen, når alt arbejde er færdigt eller overført.",
+        "Åbn Diagrammer for at se burndown for dette sprint."
+      ]
+    },
+    "epics": {
+      "title": "Epics",
+      "intro": "Gruppér relaterede kort under epics til Scrum-planlægning og burndown-sporing.",
+      "tasks": [
+        "Opret en epic og tildel en farve.",
+        "Knyt kort til en epic fra kortdetaljepanelet.",
+        "Åbn en epic for at se dens kort og burndown-diagram."
+      ]
+    },
+    "gantt": {
+      "title": "Gantt-diagram",
+      "intro": "Tidslinjevisning af kort med start- og forfaldsdatoer.",
+      "tasks": [
+        "Sæt start- og forfaldsdatoer på kort for at se dem på tidslinjen.",
+        "Træk bjælker for at justere datoer, når du har redigeringsadgang.",
+        "Rul vandret for at bevæge dig gennem tiden."
+      ]
+    },
+    "charts": {
+      "title": "Diagrammer",
+      "intro": "Scrum-analyse: burndown, velocity og epic-fremgang for dette projekt.",
+      "tasks": [
+        "Vælg et sprint for at se dets burndown-diagram.",
+        "Skift faner for at sammenligne velocity på tværs af sprints.",
+        "Vælg en epic for at se resterende arbejde over tid."
+      ]
+    },
+    "topics": {
+      "title": "Emner",
+      "intro": "Strukturerede diskussioner adskilt fra tavlechatten — nyttige til beslutninger og lange tråde.",
+      "tasks": [
+        "Opret et emne med titel og valgfri beskrivelse.",
+        "Svar i tråde for at holde samtalen organiseret.",
+        "Luk et emne, når diskussionen er afsluttet."
+      ]
+    },
+    "projectSettings": {
+      "title": "Projektindstillinger",
+      "intro": "Konfigurer medlemmer, integrationer og projektspecifikke indstillinger.",
+      "tasks": [
+        "Inviter medlemmer og angiv deres projektrolle (læser, medlem, ejer).",
+        "Konfigurer GitHub- eller GitLab-webhooks til automatisering.",
+        "Administrer projekt-API-nøgler til CI/CD-ticketoprettelse."
+      ]
+    },
+    "settings": {
+      "title": "Brugerindstillinger",
+      "intro": "Din personlige profil, sikkerhed, udseende og notifikationspræferencer.",
+      "tasks": [
+        "Opdater visningsnavn, e-mail, avatar og dato/tidsformat.",
+        "Aktivér MFA eller registrér en adgangsnøgle for stærkere login.",
+        "Vælg om dashboardet åbner på Boards eller Tickets.",
+        "Angiv arbejdstimer, der bruges som standard i tidsregistrering."
+      ]
+    },
+    "chats": {
+      "title": "Chats",
+      "intro": "Direkte beskeder og gruppechats med stemme- og videoopkald.",
+      "tasks": [
+        "Start en chat fra Personer-listen i sidepanelet.",
+        "Brug @omtaler i projektchat eller DM'er for at give nogen besked.",
+        "Start et stemme- eller videoopkald fra samtaleheaderen.",
+        "Reagér på beskeder med emoji-hoverhandlinger."
+      ],
+      "shortcuts": [
+        "Enter — send besked",
+        "Esc — annullér beskedredigering",
+        "@ — omtal en bruger",
+        ":navn: — indsæt emoji via kortkode"
+      ]
+    },
+    "news": {
+      "title": "Nyheder",
+      "intro": "Meddelelser fra din organisation vist på dashboardet og denne side.",
+      "tasks": [
+        "Læs fastgjorte meddelelser fra administratorer.",
+        "Afvis elementer fra dashboardet; de forbliver listet her."
+      ]
+    },
+    "customers": {
+      "title": "Kunder",
+      "intro": "Kunderegistreringer brugt til kontrakter, tidsregistrering og helpdesk-tickets.",
+      "tasks": [
+        "Åbn en kunde for at se kontrakter og medlemmer.",
+        "Stjernemarkér kunder for at fastgøre dem i sidepanelet.",
+        "Gå til tickets for en kunde, når helpdesk er aktiveret."
+      ]
+    },
+    "customerDetail": {
+      "title": "Kundedetaljer",
+      "intro": "Kontrakter, tildelte medlemmer og links til tickets for én kunde.",
+      "tasks": [
+        "Gennemgå kontraktsatser og regler for ikke-fakturerbar tid.",
+        "Se hvilke agenter der har adgang til denne kundes tickets.",
+        "Åbn ticketlisten for denne kunde fra headerhandlingerne."
+      ]
+    },
+    "tickets": {
+      "title": "Tickets",
+      "intro": "Helpdesk-ticketliste for én kunde — filtrér, sorter og opret nye tickets.",
+      "tasks": [
+        "Brug filtre for status, prioritet, ansvarlig og tags.",
+        "Skift mellem tabel- og kortvisning.",
+        "Opret en ticket manuelt, eller vent på indgående e-mail (når IMAP er konfigureret)."
+      ]
+    },
+    "inbox": {
+      "title": "Indbakke",
+      "intro": "Tickets modtaget via e-mail, der endnu ikke er knyttet til en kunde.",
+      "tasks": [
+        "Gennemgå nye e-mail-tickets og tildel dem til en kunde.",
+        "Markér spam for at skjule uønsket mail fra standardlisten.",
+        "Åbn en ticket for at svare eller flette den med en eksisterende sag."
+      ]
+    },
+    "ticketDetail": {
+      "title": "Ticketdetaljer",
+      "intro": "Se og opdater en ticket, svar anmoderen og anvend makroer eller tjeklister.",
+      "tasks": [
+        "Skift status, prioritet, type, ansvarlig og tags fra headeren.",
+        "Tilføj et offentligt svar (e-mailet til anmoderen) eller en privat intern note.",
+        "Anvend en makro for at køre forudindstillede handlinger med ét klik.",
+        "Sæt en påmindelsesdato på afventende tickets eller en lukkedato på afventende lukning."
+      ]
+    },
+    "timeTracking": {
+      "title": "Tidsregistrering",
+      "intro": "Registrér timer, kør personlige rapporter og eksporter tavletidsrapporter.",
+      "tasks": [
+        "Skift faner for Registrér tid, Rapport eller Tavlerapport.",
+        "Navigér mellem uger med pilene eller klik på ugeetiketten.",
+        "Ledere kan se andre brugeres ark, når det er tilladt."
+      ]
+    },
+    "timeTrackingSheet": {
+      "title": "Registrér tid",
+      "intro": "Ugentligt gitter: indtast timer pr. kunde, projekt og aktivitet.",
+      "tasks": [
+        "Indtast timer i en celle — brug dit foretrukne decimal- eller tt:mm-format fra indstillinger.",
+        "Klik på urikonet for at angive start/slut-tider på en post.",
+        "Kopiér forrige uge, eller brug beredskabsskift til kontraktlige natpriser.",
+        "Træk rækkehåndtag for at omarrangere linjer."
+      ],
+      "shortcuts": [
+        "Piltaster — flyt mellem celler",
+        "Shift + piltaster — udvid markering",
+        "Ctrl+C / Ctrl+V — kopier og indsæt celler",
+        "Ctrl+Z — fortryd sidste redigering",
+        "Del — ryd valgte celler",
+        "Esc — ryd markering"
+      ]
+    },
+    "timeTrackingReport": {
+      "title": "Tidsrapport",
+      "intro": "Personlig tidsrapport med gruppering, filtre og PDF/XLSX-eksport.",
+      "tasks": [
+        "Angiv datointerval og gruppér efter kunde, projekt eller aktivitet.",
+        "Udvid grupper for at se individuelle poster.",
+        "Eksporter PDF eller Excel til fakturering eller arkivering."
+      ]
+    },
+    "timeTrackingBoardReport": {
+      "title": "Tavletidsrapport",
+      "intro": "Projekttavletid aggregeret til rapportering — kræver rapportviser-tilladelse.",
+      "tasks": [
+        "Filtrér efter projekt, kunde, ansvarlig og datointerval.",
+        "Gennemgå fakturerbare vs. ikke-fakturerbare totaler, når det er konfigureret.",
+        "Download PDF eller XLSX fra eksportknapperne."
+      ]
+    },
+    "admin": {
+      "title": "Administration",
+      "intro": "Administrer brugere, projekter, systemindstillinger, helpdesk-konfiguration og backups.",
+      "tasks": [
+        "Brug fanerne til at skifte mellem Brugere, Indstillinger, SLA, Makroer og mere.",
+        "Ændringer af SMTP, IMAP og sikkerhedsindstillinger træder i kraft uden servergenstart.",
+        "Åbn dette hjælpepanel på hver fane for specifik vejledning."
+      ]
+    },
+    "adminUsers": {
+      "title": "Brugere",
+      "intro": "Opret og administrer brugerkonti, roller og funktionsflag.",
+      "tasks": [
+        "Angiv global rolle: admin, medlem, læser eller kunde (kun tickets).",
+        "Aktivér helpdesk, tidsregistrering eller rapportadgang pr. bruger.",
+        "Tildel kunder til kundebrugere for ticket-synlighed."
+      ]
+    },
+    "adminGroups": {
+      "title": "Grupper",
+      "intro": "Organisér brugere og giv kundeadgang til hele teams på én gang.",
+      "tasks": [
+        "Opret en gruppe og tilføj medlemmer.",
+        "Tildel kundeadgang med en rolle — højeste rolle vinder, når det kombineres med direkte adgang."
+      ]
+    },
+    "adminCustomers": {
+      "title": "Kunder (admin)",
+      "intro": "Opret kunder, kontrakter og adgangsregler.",
+      "tasks": [
+        "Tilføj kontrakter med satser brugt i tidsrapporter.",
+        "Tildel agenter til kunder for ticketadgang og ansvarlig-dropdowns.",
+        "Konfigurer ikke-fakturerbare minutter på kun-tidsregistreringsprojekter."
+      ]
+    },
+    "adminProjects": {
+      "title": "Projekter (admin)",
+      "intro": "Oversigt over alle projekter, tavletype og arkivering.",
+      "tasks": [
+        "Opret Kanban- eller Scrum-projekter — tavletype er fast efter oprettelse.",
+        "Arkivér projekter for at skjule dem uden at slette historik.",
+        "Gendan arkiverede projekter, når det er nødvendigt."
+      ]
+    },
+    "adminSettings": {
+      "title": "Systemindstillinger",
+      "intro": "SMTP, IMAP, branding, sikkerhed og standarder for nye brugere og projekter.",
+      "tasks": [
+        "Konfigurer udgående mail, før nulstilling af adgangskode og notifikationer virker.",
+        "Opsæt IMAP-polling for at oprette tickets fra indgående e-mail.",
+        "Begræns API-adgang med tilladte IP-intervaller — test omhyggeligt før gem.",
+        "Upload et firmalogo vist på rapporter og valgfrit på login-siden."
+      ]
+    },
+    "adminNews": {
+      "title": "Nyheder (admin)",
+      "intro": "Publicér meddelelser vist på dashboardet og Nyheder-siden.",
+      "tasks": [
+        "Skriv markdown-indhold med titel og valgfri udløbsdato.",
+        "Fastgør vigtige elementer, så de forbliver synlige.",
+        "Efterlad dato tom for at vise med det samme uden slutdato."
+      ]
+    },
+    "adminTimeTracking": {
+      "title": "Tidsregistrering (admin)",
+      "intro": "Administrer kun-tidsregistreringsprojekter og kunder brugt på timesedler.",
+      "tasks": [
+        "Opret TR-projekter med valgfrie ikke-fakturerbare minutter pr. post.",
+        "Knyt TR-kunder til faktureringsenheder i rapporter.",
+        "Angiv timetakster på kundekontrakter til omkostningskolonner i eksporter."
+      ]
+    },
+    "adminSla": {
+      "title": "SLA-politikker",
+      "intro": "Definér svar- og løsningsmål efter ticket-prioritet.",
+      "tasks": [
+        "Opret en politik, der matcher en prioritet, eller brug en catch-all.",
+        "Angiv mål i timer; brudflag opdateres, når tickets vises.",
+        "Deaktivér en politik i stedet for at slette, hvis du kan få brug for den igen."
+      ]
+    },
+    "adminMacros": {
+      "title": "Makroer",
+      "intro": "Genanvendelige handlingssekvenser, som agenter anvender på tickets med ét klik.",
+      "tasks": [
+        "Kombinér handlinger for angiv status, angiv prioritet, tilføj tag og tilføj besked.",
+        "Brug pladsholdere som {agent}, {subject} og {ticket_id} i beskeder.",
+        "Træk pladsholdere fra listen ind i beskedhandlingstekst."
+      ]
+    },
+    "adminTicketChecklists": {
+      "title": "Ticket-tjeklister",
+      "intro": "Skabeloner anvendt på tickets — elementer skal udfyldes før lukning.",
+      "tasks": [
+        "Definér tjeklisteelementer i en skabelon.",
+        "Agenter anvender en skabelon fra ticketdetaljevisningen.",
+        "Lukning er blokeret, indtil alle elementer er afkrydset."
+      ]
+    },
+    "adminBackup": {
+      "title": "Backup",
+      "intro": "Download og gendan databasebackups.",
+      "tasks": [
+        "Opret en backup før større opgraderinger eller migrationer.",
+        "Download filen og gem den uden for serveren.",
+        "Gendannelse erstatter den live database — planlæg nedetid først."
+      ]
+    },
+    "cardDetail": {
+      "title": "Kortdetaljer",
+      "intro": "Rediger alle felter på et kort: beskrivelse, datoer, ansvarlige, tjeklister, vedhæftninger og links.",
+      "tasks": [
+        "Brug ⋮-menuen til at vise eller skjule sektioner (tjekliste, underkort, git-links osv.).",
+        "Tilføj underkort til mindre opgaver — de vises kun her, ikke på tavlen.",
+        "Knyt relaterede kort eller tickets via sektionen for linkede kort.",
+        "Kopiér eller overfør kortet til et andet projekt fra footer-handlingerne.",
+        "Tryk Esc for at lukke dette panel."
+      ],
+      "shortcuts": [
+        "Esc — luk kortdetaljer"
+      ]
+    },
+    "projectSettingsGeneral": {
+      "title": "Projekt — Generelt",
+      "intro": "Navn, udseende, kundekobling og kontrakt for dette projekt.",
+      "tasks": [
+        "Tildel en kunde og kontrakt til tidsregistrering og rapportering.",
+        "Upload et projektavatar vist i sidepanelet og tavleværktøjslinjen.",
+        "Tavletype (Kanban eller Scrum) blev sat ved oprettelse og kan ikke ændres."
+      ]
+    },
+    "projectSettingsMembers": {
+      "title": "Projekt — Medlemmer",
+      "intro": "Hvem der har adgang til dette projekt og med hvilken rolle.",
+      "tasks": [
+        "Inviter brugere via brugernavn med rollen læser, medlem eller ejer.",
+        "Tilføj en hel gruppe for at give adgang til alle medlemmer på én gang.",
+        "Ejere kan ændre indstillinger; læsere ser tavlen skrivebeskyttet."
+      ]
+    },
+    "projectSettingsLabels": {
+      "title": "Projekt — Etiketter",
+      "intro": "Farvemærkede tags på kort til filtrering og visuel gruppering.",
+      "tasks": [
+        "Opret etiketter med navn og farve.",
+        "Slet ubrugte etiketter — de fjernes fra alle kort."
+      ]
+    },
+    "projectSettingsApiKeys": {
+      "title": "Projekt — API-nøgler",
+      "intro": "Nøgler til Ticket API og automatisering (CI/CD der opretter kort).",
+      "tasks": [
+        "Opret en nøgle med et beskrivende navn.",
+        "Kopiér nøglen, når den vises — den kan ikke hentes senere.",
+        "Tilbagekald nøgler, der ikke længere er nødvendige."
+      ]
+    },
+    "projectSettingsWebhooks": {
+      "title": "Projekt — Webhooks",
+      "intro": "GitHub- og GitLab-webhooks, der opretter eller opdaterer kort fra commits og MR'er.",
+      "tasks": [
+        "Kopiér webhook-URL og token ind i dine repository-indstillinger.",
+        "Generér tokenet igen, hvis det er kompromitteret.",
+        "Hver platform har sin egen URL-sti — brug den matchende fane."
+      ]
+    },
+    "projectSettingsDeletedCards": {
+      "title": "Projekt — Slettede kort",
+      "intro": "Blødt slettede kort, der kan gendannes eller slettes permanent.",
+      "tasks": [
+        "Åbn et slettet kort for at gennemgå indholdet før gendannelse.",
+        "Gendannelse returnerer kortet til dets oprindelige kolonne.",
+        "Permanent sletning kan ikke fortrydes."
+      ]
+    },
+    "settingsProfile": {
+      "title": "Profil og præferencer",
+      "intro": "Dit navn, sprog, tema, notifikationer og dashboard-standarder.",
+      "tasks": [
+        "Angiv sprog, tidszone og dato/tidsformat for hele brugerfladen.",
+        "Aktivér e-mailnotifikationer for omtaler, DM'er og korttildelinger.",
+        "Vælg Boards eller Tickets som standardvisning efter login.",
+        "Slå personlig tidsregistrering til/fra, hvis din organisation bruger timesedler."
+      ]
+    },
+    "settingsWorkingHours": {
+      "title": "Arbejdstimer",
+      "intro": "Standard starttid pr. ugedag — bruges som hints i tidsregistreringsgitteret.",
+      "tasks": [
+        "Efterlad en dag tom, hvis du ikke arbejder den dag.",
+        "Tider bruger dit valgte tidsformat (decimal eller tt:mm).",
+        "Gem profilen efter redigering — arbejdstimer er en del af din profil."
+      ]
+    },
+    "settingsPassword": {
+      "title": "Skift adgangskode",
+      "intro": "Opdater din login-adgangskode. Politikregler fastsættes af din administrator.",
+      "tasks": [
+        "Indtast din nuværende adgangskode og derefter en ny, der opfylder de angivne krav.",
+        "Du kan blive tvunget til at ændre en udløbet adgangskode, før du kan fortsætte."
+      ]
+    },
+    "settingsMfa": {
+      "title": "To-faktor-godkendelse",
+      "intro": "Tilføj en TOTP-app (Google Authenticator osv.) for ekstra login-sikkerhed.",
+      "tasks": [
+        "Scan QR-koden eller indtast hemmeligheden manuelt i din authenticator-app.",
+        "Indtast en 6-cifret kode for at bekræfte opsætningen.",
+        "Opbevar gendannelsestilgang sikkert — du skal bruge app-koden ved hvert login, når det er aktiveret."
+      ]
+    },
+    "settingsPasskey": {
+      "title": "Adgangsnøgler",
+      "intro": "Log ind med enhedsbiometri eller en sikkerhedsnøgle i stedet for adgangskode.",
+      "tasks": [
+        "Registrér en adgangsnøgle fra den enhed, du bruger til login.",
+        "Du kan registrere flere adgangsnøgler og fjerne gamle.",
+        "Adgangsnøgler fungerer sammen med adgangskode og MFA afhængigt af serverpolitik."
+      ]
+    },
+    "settingsApiKeys": {
+      "title": "Personlige API-nøgler",
+      "intro": "Dine egne API-nøgler til scripts og integrationer (ikke projekt-ticket-nøgler).",
+      "tasks": [
+        "Opret en navngiven nøgle og kopiér den med det samme.",
+        "Tilbagekald nøgler, du ikke længere bruger."
+      ]
+    },
+    "chartsVelocity": {
+      "title": "Velocity-diagram",
+      "intro": "Story points fuldført pr. sprint — hjælper med at forudsige fremtidige sprints.",
+      "tasks": [
+        "Kun afsluttede sprints vises.",
+        "Sørg for, at kort har story points sat for meningsfulde søjler."
+      ]
+    },
+    "chartsThroughput": {
+      "title": "Throughput",
+      "intro": "Antal kort lukket pr. sprint eller pr. uge (Kanban).",
+      "tasks": [
+        "For Kanban, vælg 4–26 uger i dropdown.",
+        "For Scrum grupperes throughput efter afsluttet sprint."
+      ]
+    },
+    "chartsBurndown": {
+      "title": "Burndown",
+      "intro": "Resterende story points i det valgte sprint over tid.",
+      "tasks": [
+        "Vælg det aktive eller et tidligere sprint i dropdown.",
+        "Ideal-linjen antager jævn forbrænding; faktisk linje følger kortfuldførelser."
+      ]
+    },
+    "chartsBurnup": {
+      "title": "Burn-up",
+      "intro": "Akkumuleret arbejde fuldført i et sprint versus samlet omfang.",
+      "tasks": [
+        "Omfangsændringer (kort tilføjet midt i sprint) vises som trin i total-linjen.",
+        "Vælg sprintet, der skal analyseres."
+      ]
+    },
+    "chartsCfd": {
+      "title": "Kumulativt flow",
+      "intro": "Stablede områder, der viser kortantal pr. kolonne over tid.",
+      "tasks": [
+        "Voksende bånd i én kolonne kan indikere en flaskehals.",
+        "Tilgængelig for både Kanban- og Scrum-projekter."
+      ]
+    },
+    "chartsSprintReport": {
+      "title": "Sprint-rapport",
+      "intro": "Resumé af et afsluttet sprint: forpligtet vs. fuldført arbejde.",
+      "tasks": [
+        "Vælg et sprint for at se overførte og fuldførte kort.",
+        "Brug efter sprint review-møder."
+      ]
+    },
+    "chartsEpicBurndown": {
+      "title": "Epic burndown",
+      "intro": "Resterende story points for én epic over tid.",
+      "tasks": [
+        "Vælg en epic i dropdown.",
+        "Knyt kort til epicens fra kortdetaljer for præcise totaler."
+      ]
+    },
+    "chartsReleaseBurndown": {
+      "title": "Release burndown",
+      "intro": "Fremskridt mod et release-mål på tværs af epics og sprints.",
+      "tasks": [
+        "Konfigurer release-omfang via epics og sprintplanlægning.",
+        "Brug til fast-dato release-sporing."
+      ]
+    },
+    "chartsCycleTime": {
+      "title": "Cycle time",
+      "intro": "Hvor længe kort er i gang (start til færdig).",
+      "tasks": [
+        "Sæt startdatoer på kort for præcis måling.",
+        "Punktdiagram viser cycle time pr. kort."
+      ]
+    },
+    "chartsLeadTime": {
+      "title": "Lead time",
+      "intro": "Tid fra kortoprettelse til fuldførelse.",
+      "tasks": [
+        "Nyttigt til Kanban-flowmålinger og SLA-lignende sporing på tavler.",
+        "Hvert punkt er ét fuldført kort."
+      ]
+    }
+  },
+  "field_button": "Mere information",
+  "fields": {
+    "ticket_reminder": "Angiver en opfølgningsdato for afventende tickets. Tickets med en forfalds påmindelse sorteres øverst på listen.",
+    "ticket_close_date": "Når status er Afventende lukning, lukkes ticketten automatisk på denne dato.",
+    "ticket_macros": "Kører en forudindstillet sekvens af handlinger (ændre status, tilføj svar, tags osv.) defineret af en administrator.",
+    "ticket_checklist": "Alle tjeklisteelementer skal udfyldes, før ticketten kan lukkes, når en skabelon er anvendt."
+  }
+}

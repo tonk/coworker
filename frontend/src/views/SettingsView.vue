@@ -1,9 +1,9 @@
 <template>
   <main class="settings-main">
-      <div class="settings-container">
+      <div class="settings-container" ref="settingsRootRef">
         <h1>{{ $t('settings.title') }}</h1>
 
-        <div class="settings-card">
+        <div class="settings-card" data-help-context="settings.profile">
           <h2>{{ $t('settings.profile') }}</h2>
           <form @submit.prevent="saveProfile">
             <div class="form-row">
@@ -190,7 +190,7 @@
           </form>
         </div>
 
-        <div v-if="form.time_tracking_enabled" class="settings-card">
+        <div v-if="form.time_tracking_enabled" class="settings-card" data-help-context="settings.workingHours">
           <h2>{{ $t('settings.working_hours') }}</h2>
           <p class="settings-hint">{{ $t('settings.working_hours_hint') }}</p>
           <form @submit.prevent="saveProfile">
@@ -221,7 +221,7 @@
           {{ $t('auth.password_expired') }}
         </div>
 
-        <div ref="pwCardRef" class="settings-card">
+        <div ref="pwCardRef" class="settings-card" data-help-context="settings.password">
           <h2>{{ $t('auth.change_password') }}</h2>
           <form @submit.prevent="savePassword">
             <div class="form-group">
@@ -247,8 +247,7 @@
           </form>
         </div>
 
-        <!-- MFA card -->
-        <div class="settings-card">
+        <div class="settings-card" data-help-context="settings.mfa">
           <h2>{{ $t('mfa.title') }}</h2>
           <p class="form-hint" style="margin-bottom:16px">{{ $t('mfa.description') }}</p>
 
@@ -311,7 +310,7 @@
         </div>
 
         <!-- Passkeys card -->
-        <div class="settings-card">
+        <div class="settings-card" data-help-context="settings.passkey">
           <h2>{{ $t('passkey.title') }}</h2>
           <p class="form-hint" style="margin-bottom:16px">{{ $t('passkey.description') }}</p>
 
@@ -353,7 +352,7 @@
           </div>
         </div>
 
-        <div class="settings-card">
+        <div class="settings-card" data-help-context="settings.apiKeys">
           <h2>{{ $t('apikeys.personal_title') }}</h2>
           <p class="form-hint" style="margin-bottom:16px">{{ $t('apikeys.personal_description') }}</p>
           <div class="form-group" style="max-width:400px">
@@ -416,6 +415,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { useTheme } from '@/composables/useTheme'
+import { useHelpSectionObserver } from '@/composables/useHelpSectionObserver'
 import { authApi } from '@/api/auth'
 import { systemApi } from '@/api/system'
 import {
@@ -433,6 +433,8 @@ const auth = useAuthStore()
 const ui = useUIStore()
 const passwordExpired = ref(false)
 const pwCardRef = ref(null)
+const settingsRootRef = ref(null)
+useHelpSectionObserver(settingsRootRef)
 const { setTheme, setAccentColor } = useTheme()
 
 const accentColors = [
