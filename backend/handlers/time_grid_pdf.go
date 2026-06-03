@@ -663,11 +663,33 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			} else {
 				setFill(pdf, normalFill)
 			}
-			txt := gridFmt(c.minutes)
-			if c.holiday && c.minutes == 0 {
-				txt = "•"
+			// When the row has undeclarable time, draw the border only; the time
+			// value is placed in the upper portion via absolute positioning below.
+			txt := ""
+			if !hasUndecl {
+				txt = gridFmt(c.minutes)
+				if c.holiday && c.minutes == 0 {
+					txt = "•"
+				}
 			}
 			pdf.CellFormat(wDay, rowH, txt, "LRB", 0, "C", true, 0, "")
+		}
+
+		// For rows with undeclarable: place main time values in the upper baseRowH
+		// portion so they align with times in normal (non-tall) rows.
+		if hasUndecl {
+			pdf.SetFont(ff, "", 8)
+			setTxt(pdf, gClrText)
+			for ci, c := range r.cells {
+				txt := gridFmt(c.minutes)
+				if c.holiday && c.minutes == 0 {
+					txt = "•"
+				}
+				if txt != "" {
+					pdf.SetXY(weekCellLeft(ci, wLabel, wDay), rowY)
+					pdf.CellFormat(wDay, baseRowH, txt, "", 0, "C", false, 0, "")
+				}
+			}
 		}
 
 		// Time labels and connector lines use absolute coordinates so the table
@@ -713,11 +735,20 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			}
 		}
 
+		// Row total cell: border with full rowH; value in upper baseRowH when
+		// there is undeclarable so it aligns with the day-cell time values.
 		setTxt(pdf, gClrText)
-		pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
 		pdf.SetFont(ff, "B", 8)
 		setFill(pdf, gClrTotFill)
-		pdf.CellFormat(wTotal, rowH, gridFmt(rowDeclarable), "LRB", 1, "C", true, 0, "")
+		if hasUndecl {
+			pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
+			pdf.CellFormat(wTotal, rowH, "", "LRB", 1, "C", true, 0, "")
+			pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
+			pdf.CellFormat(wTotal, baseRowH, gridFmt(rowDeclarable), "", 0, "C", false, 0, "")
+		} else {
+			pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
+			pdf.CellFormat(wTotal, rowH, gridFmt(rowDeclarable), "LRB", 1, "C", true, 0, "")
+		}
 	}
 
 	// Totals row.
@@ -743,7 +774,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		setTxt(pdf, gClrDanger)
 		pdf.SetFont(ff, "", 7)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, baseRowH*0.8, "  "+tr.Undeclarable, "LRB", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, baseRowH*0.8, tr.Undeclarable, "LRB", 0, "L", true, 0, "")
 		for _, u := range colUndecl {
 			txt := ""
 			if u > 0 {
@@ -962,7 +993,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		setTxt(pdf, gClrDanger)
 		pdf.SetFont(ff, "", cellFS-0.5)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, undeclRowH, "  "+tr.Undeclarable, "LRB", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, undeclRowH, tr.Undeclarable, "LRB", 0, "L", true, 0, "")
 		for d := 0; d < daysInMonth; d++ {
 			u := colUndecl[d]
 			txt := ""
@@ -1280,7 +1311,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		setTxt(pdf, gClrDanger)
 		pdf.SetFont(ff, "", 6.5)
 		pdf.SetX(gMargin)
-		pdf.CellFormat(wLabel, undeclRowH, "  "+tr.Undeclarable, "LRB", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, undeclRowH, tr.Undeclarable, "LRB", 0, "L", true, 0, "")
 		for ci, c := range cols {
 			u := colUndecl[ci]
 			txt := ""
