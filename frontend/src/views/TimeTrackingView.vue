@@ -254,6 +254,9 @@
                     <button v-if="getEntry(row, d.iso)?.start_time" class="tp-btn tp-clear" @mousedown.prevent="clearTimePopup(row, d.iso)">{{ $t('common.clear') }}</button>
                   </div>
                 </div>
+                <div v-if="cellUndeclMins(row, d.iso) > 0" class="cell-undecl" aria-hidden="true">
+                  −{{ fmtTime(cellUndeclMins(row, d.iso)) }}
+                </div>
               </td>
               <td class="c-total c-rowtotal">
                 <span>{{ rowTotal(row) }}</span>
@@ -315,25 +318,13 @@
             <tr class="tt-foot">
               <td colspan="4" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
               <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '', dayOverLimit(d.iso) ? 'c-day-over' : '', d.isToday ? 'c-day-today' : '']" :title="dayExpectedLabel(d.iso)">
-                {{ dayTotal(d.iso) }}
+                <span>{{ dayDeclTotal(d.iso) }}</span>
+                <span v-if="dayUndeclMins(d.iso) > 0" class="foot-undecl-inline">−{{ dayUndecl(d.iso) }}</span>
               </td>
-              <td class="c-total grand-total">{{ grandTotal }}</td>
-              <td class="c-act"></td>
-            </tr>
-            <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-undecl">
-              <td colspan="4" class="foot-lbl foot-undecl-lbl">{{ $t('timeTracking.undeclarable') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-undecl', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
-                {{ dayUndecl(d.iso) || '' }}
+              <td class="c-total grand-total">
+                <span>{{ fmtTime(grandDeclarable) }}</span>
+                <span v-if="grandUndeclTotal > 0" class="foot-undecl-inline">−{{ fmtTime(grandUndeclTotal) }}</span>
               </td>
-              <td class="c-total foot-undecl">{{ fmtTime(grandUndeclTotal) }}</td>
-              <td class="c-act"></td>
-            </tr>
-            <tr v-if="grandUndeclTotal > 0" class="tt-foot tt-foot-decl">
-              <td colspan="4" class="foot-lbl foot-decl-lbl">{{ $t('timeTracking.declarable') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', 'foot-decl', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
-                {{ dayDeclarable(d.iso) || '' }}
-              </td>
-              <td class="c-total grand-total foot-decl">{{ fmtTime(grandDeclarable) }}</td>
               <td class="c-act"></td>
             </tr>
           </tfoot>
@@ -1375,11 +1366,6 @@ function dayExpectedLabel(dateISO) {
   return t('timeTracking.allotted') + ' ' + fmtTime(m)
 }
 
-const grandTotal = computed(() => {
-  const m = rawEntries.value.reduce((s, e) => s + e.minutes, 0)
-  return fmtTime(m)
-})
-
 // ── Undeclarable helpers — derived from the project's undeclarable_minutes ─
 // For each entry: undecl = min(entry.minutes, project.undeclarable_minutes)
 function reportEntryDeclarable(entry) {
@@ -1400,23 +1386,29 @@ function rowUndecl(row) {
   }, 0)
 }
 
-function dayUndecl(dateISO) {
-  const m = allRows.value.reduce((s, row) => {
+function cellUndeclMins(row, dateISO) {
+  const e = getEntry(row, dateISO)
+  return e ? entryUndecl(e) : 0
+}
+
+function dayUndeclMins(dateISO) {
+  return allRows.value.reduce((s, row) => {
     const e = getEntry(row, dateISO)
     return s + (e ? entryUndecl(e) : 0)
   }, 0)
+}
+
+function dayUndecl(dateISO) {
+  const m = dayUndeclMins(dateISO)
   return m > 0 ? fmtTime(m) : ''
 }
 
-function dayDeclarable(dateISO) {
-  const total = allRows.value.reduce((s, row) => s + (getEntry(row, dateISO)?.minutes || 0), 0)
-  const undecl = allRows.value.reduce((s, row) => {
-    const e = getEntry(row, dateISO)
-    return s + (e ? entryUndecl(e) : 0)
-  }, 0)
-  const m = Math.max(0, total - undecl)
-  return m > 0 ? fmtTime(m) : ''
+function dayDeclTotal(dateISO) {
+  const raw = dayRawMinutes(dateISO)
+  if (raw === 0) return fmtTime(0)
+  return fmtTime(Math.max(0, raw - dayUndeclMins(dateISO)))
 }
+
 
 const grandUndeclTotal = computed(() =>
   rawEntries.value.reduce((s, e) => s + entryUndecl(e), 0)
@@ -3520,6 +3512,26 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   line-height: 1.2;
 }
 
+/* Undeclarable amount shown below a day cell's time value */
+.cell-undecl {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-danger, #e53e3e);
+  text-align: right;
+  line-height: 1.2;
+  padding-top: 1px;
+}
+
+/* Undeclarable amount shown inline below footer day totals */
+.foot-undecl-inline {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-danger, #e53e3e);
+  opacity: .85;
+  line-height: 1.2;
+}
+
 /* Footer */
 .tt-foot td {
   background: var(--color-surface);
@@ -3533,13 +3545,6 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .c-dttotal.c-day-over { color: var(--color-danger, #e53e3e); font-weight: 600; }
 .grand-total { color: var(--color-primary); font-size: 14px; }
 
-/* Undeclarable & declarable footer rows */
-.tt-foot-undecl td { border-top: 1px solid var(--color-border); }
-.tt-foot-decl td { border-top: 1px dashed var(--color-border); }
-.foot-undecl-lbl { text-align: right; font-size: 12px; font-weight: 500; color: var(--color-danger, #e53e3e); opacity: .85; }
-.foot-undecl { color: var(--color-danger, #e53e3e); font-size: 12px; font-weight: 500; opacity: .85; }
-.foot-decl-lbl { text-align: right; font-size: 12px; font-weight: 600; color: var(--color-success, #38a169); }
-.foot-decl { color: var(--color-success, #38a169); font-size: 12px; font-weight: 600; }
 
 /* Add-row bar */
 .tt-add-bar {

@@ -33,6 +33,7 @@ var (
 	gClrWeekend    = rgb{232, 233, 240} // light lavender-gray — weekend data cells
 	gClrWeekendHdr = rgb{218, 220, 232} // slightly darker — weekend column headers
 	gClrTimeRange  = rgb{79, 70, 229}   // indigo — start/end times in week grid cells
+	gClrDanger     = rgb{229, 62, 62}   // red — undeclarable time
 )
 
 // ── Landscape A4 page geometry (mm) ──────────────────────────────────────────
@@ -50,11 +51,13 @@ type gridEntry struct {
 	label    string
 	cells    []int  // minutes per column (len == numCols)
 	holidays []bool // true if column contains at least one is_holiday entry
+	undecl   []int  // undeclarable minutes per column
 }
 
 // weekGridCell holds per-day data for the week PDF including optional time ranges.
 type weekGridCell struct {
 	minutes      int
+	undeclMins   int
 	holiday      bool
 	singleRange  string // same-day start–end (e.g. "09:00–17:00")
 	eveningStart string // overnight shift begins (e.g. "19:00", ends 23:59)
@@ -79,6 +82,17 @@ func gridFmt(minutes int) string {
 		return ""
 	}
 	return fmtDecimalH(minutes)
+}
+
+// entryUndeclMins returns the undeclarable portion of an entry's minutes.
+func entryUndeclMins(e models.TimeEntry) int {
+	if e.Project == nil || e.Project.UndeclarableMinutes <= 0 {
+		return 0
+	}
+	if e.Minutes < e.Project.UndeclarableMinutes {
+		return e.Minutes
+	}
+	return e.Project.UndeclarableMinutes
 }
 
 // ── Data fetching helper ──────────────────────────────────────────────────────
@@ -129,10 +143,12 @@ func buildGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) int,
 				label:    label,
 				cells:    make([]int, numCols),
 				holidays: make([]bool, numCols),
+				undecl:   make([]int, numCols),
 			}
 			order = append(order, label)
 		}
 		rows[label].cells[col] += e.Minutes
+		rows[label].undecl[col] += entryUndeclMins(e)
 		if e.IsHoliday {
 			rows[label].holidays[col] = true
 		}
@@ -210,6 +226,7 @@ func buildWeekGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) 
 		}
 		cell := &rows[k].cells[col]
 		cell.minutes += e.Minutes
+		cell.undeclMins += entryUndeclMins(e)
 		if e.IsHoliday {
 			cell.holiday = true
 		}
@@ -494,6 +511,15 @@ func weekRowHasTimes(r weekGridRow) bool {
 	return false
 }
 
+func weekRowHasUndecl(r weekGridRow) bool {
+	for _, c := range r.cells {
+		if c.undeclMins > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 func drawWeekGridTimeAt(pdf *gofpdf.Fpdf, ff, txt string, x, y float64) {
 	if txt == "" {
 		return
@@ -548,6 +574,20 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		}
 	}
 
+	// Undeclarable totals.
+	colUndecl := make([]int, 7)
+	grandUndecl := 0
+	for _, r := range rows {
+		for ci, c := range r.cells {
+			colUndecl[ci] += c.undeclMins
+			grandUndecl += c.undeclMins
+		}
+	}
+	grandDecl := grandTotal - grandUndecl
+	if grandDecl < 0 {
+		grandDecl = 0
+	}
+
 	pdf := newLandscapePDF(ff)
 	setGridFooter(pdf, ff, companyName, periodLabel, tr)
 
@@ -578,8 +618,12 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 
 	// Data rows.
 	for i, r := range rows {
+		hasTimes := weekRowHasTimes(r)
+		hasUndecl := weekRowHasUndecl(r)
 		rowH := baseRowH
-		if weekRowHasTimes(r) {
+		if hasTimes && hasUndecl {
+			rowH = 13.0
+		} else if hasTimes || hasUndecl {
 			rowH = tallRowH
 		}
 		if pdf.GetY() > gPageH-gMargin-rowH*3 {
@@ -587,6 +631,19 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			tableY = drawHeader()
 			pdf.SetY(tableY)
 		}
+
+		// Pre-compute row totals before drawing.
+		rowTotal := 0
+		rowUndecl := 0
+		for _, c := range r.cells {
+			rowTotal += c.minutes
+			rowUndecl += c.undeclMins
+		}
+		rowDeclarable := rowTotal - rowUndecl
+		if rowDeclarable < 0 {
+			rowDeclarable = 0
+		}
+
 		rowY := pdf.GetY()
 		alt := i%2 == 1
 		normalFill := gClrWhite
@@ -600,9 +657,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
 		pdf.CellFormat(wLabel, rowH, truncate(r.label, 36), "LRB", 0, "L", true, 0, "")
-		rowTotal := 0
 		for _, c := range r.cells {
-			rowTotal += c.minutes
 			if c.holiday {
 				setFill(pdf, gClrHoliday)
 			} else {
@@ -639,11 +694,30 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			pdf.Line(x1, lineY, x2, lineY)
 		}
 
+		// Per-cell undeclarable labels (absolute positioning, below main time value).
+		if hasUndecl {
+			undeclY := rowY + baseRowH + 0.8
+			undeclH := 3.5
+			pdf.SetFont(ff, "", 6.5)
+			setTxt(pdf, gClrDanger)
+			for ci, c := range r.cells {
+				if c.undeclMins > 0 {
+					cellX := weekCellLeft(ci, wLabel, wDay)
+					pdf.SetXY(cellX, undeclY)
+					pdf.CellFormat(wDay, undeclH, "−"+gridFmt(c.undeclMins), "", 0, "C", false, 0, "")
+				}
+			}
+			if rowUndecl > 0 {
+				pdf.SetXY(gMargin+wLabel+7*wDay, undeclY)
+				pdf.CellFormat(wTotal, undeclH, "−"+gridFmt(rowUndecl), "", 0, "C", false, 0, "")
+			}
+		}
+
 		setTxt(pdf, gClrText)
 		pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
 		pdf.SetFont(ff, "B", 8)
 		setFill(pdf, gClrTotFill)
-		pdf.CellFormat(wTotal, rowH, gridFmt(rowTotal), "LRB", 1, "C", true, 0, "")
+		pdf.CellFormat(wTotal, rowH, gridFmt(rowDeclarable), "LRB", 1, "C", true, 0, "")
 	}
 
 	// Totals row.
@@ -652,12 +726,35 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	pdf.SetFont(ff, "B", 8)
 	pdf.SetX(gMargin)
 	pdf.CellFormat(wLabel, baseRowH, tr.Total, "1", 0, "L", true, 0, "")
-	for _, m := range colTotals {
-		pdf.CellFormat(wDay, baseRowH, gridFmt(m), "1", 0, "C", true, 0, "")
+	for i, m := range colTotals {
+		decl := m - colUndecl[i]
+		if decl < 0 {
+			decl = 0
+		}
+		pdf.CellFormat(wDay, baseRowH, gridFmt(decl), "1", 0, "C", true, 0, "")
 	}
 	setFill(pdf, gClrPrimary)
 	setTxt(pdf, gClrWhite)
-	pdf.CellFormat(wTotal, baseRowH, gridFmt(grandTotal), "1", 1, "C", true, 0, "")
+	pdf.CellFormat(wTotal, baseRowH, gridFmt(grandDecl), "1", 1, "C", true, 0, "")
+
+	// Undeclarable row below totals (when present).
+	if grandUndecl > 0 {
+		setFill(pdf, gClrTotFill)
+		setTxt(pdf, gClrDanger)
+		pdf.SetFont(ff, "", 7)
+		pdf.SetX(gMargin)
+		pdf.CellFormat(wLabel, baseRowH*0.8, "  "+tr.Undeclarable, "B", 0, "L", true, 0, "")
+		for _, u := range colUndecl {
+			txt := ""
+			if u > 0 {
+				txt = "−" + gridFmt(u)
+			}
+			pdf.CellFormat(wDay, baseRowH*0.8, txt, "B", 0, "C", true, 0, "")
+		}
+		setFill(pdf, gClrPrimary)
+		pdf.CellFormat(wTotal, baseRowH*0.8, "−"+gridFmt(grandUndecl), "B", 1, "C", true, 0, "")
+		setTxt(pdf, gClrText)
+	}
 
 	var buf bytes.Buffer
 	if err := pdf.Output(&buf); err != nil {
@@ -746,6 +843,20 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		}
 	}
 
+	// Undeclarable totals.
+	colUndecl := make([]int, daysInMonth)
+	grandUndecl := 0
+	for _, r := range rows {
+		for i, u := range r.undecl {
+			colUndecl[i] += u
+			grandUndecl += u
+		}
+	}
+	grandDecl := grandTotal - grandUndecl
+	if grandDecl < 0 {
+		grandDecl = 0
+	}
+
 	pdf := newLandscapePDF(ff)
 	setGridFooter(pdf, ff, companyName, periodLabel, tr)
 
@@ -775,15 +886,32 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		if alt {
 			normalFill = gClrAlt
 		}
+		// Pre-compute row totals before drawing.
+		rowTotal := 0
+		rowUndecl := 0
+		for _, m := range r.cells {
+			rowTotal += m
+		}
+		for _, u := range r.undecl {
+			rowUndecl += u
+		}
+		rowDeclarable := rowTotal - rowUndecl
+		if rowDeclarable < 0 {
+			rowDeclarable = 0
+		}
+
 		setTxt(pdf, gClrText)
 		pdf.SetFont(ff, "", cellFS)
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
 		pdf.CellFormat(wLabel, rowH, truncate(r.label, labelMaxChars), "LRB", 0, "L", true, 0, "")
-		rowTotal := 0
 		for d := 0; d < daysInMonth; d++ {
 			m := r.cells[d]
-			rowTotal += m
+			u := r.undecl[d]
+			decl := m - u
+			if decl < 0 {
+				decl = 0
+			}
 			isHol := d < len(r.holidays) && r.holidays[d]
 			isWkd := isWeekendDay(year, month, d+1)
 			switch {
@@ -794,7 +922,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 			default:
 				setFill(pdf, normalFill)
 			}
-			txt := gridFmt(m)
+			txt := gridFmt(decl)
 			if isHol && m == 0 {
 				txt = "•"
 			}
@@ -802,7 +930,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		}
 		pdf.SetFont(ff, "B", cellFS)
 		setFill(pdf, gClrTotFill)
-		pdf.CellFormat(wTotal, rowH, gridFmt(rowTotal), "LRB", 1, "C", true, 0, "")
+		pdf.CellFormat(wTotal, rowH, gridFmt(rowDeclarable), "LRB", 1, "C", true, 0, "")
 	}
 
 	// Totals row.
@@ -812,16 +940,46 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 	setFill(pdf, gClrTotFill)
 	pdf.CellFormat(wLabel, rowH, tr.Total, "1", 0, "L", true, 0, "")
 	for d := 0; d < daysInMonth; d++ {
+		decl := colTotals[d] - colUndecl[d]
+		if decl < 0 {
+			decl = 0
+		}
 		if isWeekendDay(year, month, d+1) {
 			setFill(pdf, gClrWeekend)
 		} else {
 			setFill(pdf, gClrTotFill)
 		}
-		pdf.CellFormat(wDay, rowH, gridFmt(colTotals[d]), "1", 0, "C", true, 0, "")
+		pdf.CellFormat(wDay, rowH, gridFmt(decl), "1", 0, "C", true, 0, "")
 	}
 	setFill(pdf, gClrPrimary)
 	setTxt(pdf, gClrWhite)
-	pdf.CellFormat(wTotal, rowH, gridFmt(grandTotal), "1", 1, "C", true, 0, "")
+	pdf.CellFormat(wTotal, rowH, gridFmt(grandDecl), "1", 1, "C", true, 0, "")
+
+	// Undeclarable row.
+	if grandUndecl > 0 {
+		undeclRowH := rowH * 0.8
+		setFill(pdf, gClrTotFill)
+		setTxt(pdf, gClrDanger)
+		pdf.SetFont(ff, "", cellFS-0.5)
+		pdf.SetX(gMargin)
+		pdf.CellFormat(wLabel, undeclRowH, "  "+tr.Undeclarable, "B", 0, "L", true, 0, "")
+		for d := 0; d < daysInMonth; d++ {
+			u := colUndecl[d]
+			txt := ""
+			if u > 0 {
+				txt = "−" + gridFmt(u)
+			}
+			if isWeekendDay(year, month, d+1) {
+				setFill(pdf, gClrWeekend)
+			} else {
+				setFill(pdf, gClrTotFill)
+			}
+			pdf.CellFormat(wDay, undeclRowH, txt, "B", 0, "C", true, 0, "")
+		}
+		setFill(pdf, gClrPrimary)
+		pdf.CellFormat(wTotal, undeclRowH, "−"+gridFmt(grandUndecl), "B", 1, "C", true, 0, "")
+		setTxt(pdf, gClrText)
+	}
 
 	var buf bytes.Buffer
 	if err := pdf.Output(&buf); err != nil {
@@ -943,16 +1101,41 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		return out
 	}
 
+	// toFullUndecl converts 12 monthly undeclarable values to the full column set.
+	toFullUndecl := func(monthUndecl []int) []int {
+		out := make([]int, len(cols))
+		for i, c := range cols {
+			if c.monthOr >= 0 && c.monthOr < 12 {
+				out[i] = monthUndecl[c.monthOr]
+			}
+		}
+		// Quarter totals.
+		qtrMonths := [4][3]int{{0, 1, 2}, {4, 5, 6}, {8, 9, 10}, {12, 13, 14}}
+		qtrCols := []int{3, 7, 11, 15}
+		for qi, qc := range qtrCols {
+			for _, mc := range qtrMonths[qi] {
+				out[qc] += out[mc]
+			}
+		}
+		// Year total.
+		for m := 0; m < 12; m++ {
+			out[len(cols)-1] += monthUndecl[m]
+		}
+		return out
+	}
+
 	// Build full rows.
 	type fullRow struct {
-		label string
-		cells []int
+		label  string
+		cells  []int
+		undecl []int
 	}
 	var fullRows []fullRow
 	for _, r := range monthRows {
 		fullRows = append(fullRows, fullRow{
-			label: r.label,
-			cells: toFullRow(r.cells),
+			label:  r.label,
+			cells:  toFullRow(r.cells),
+			undecl: toFullUndecl(r.undecl),
 		})
 	}
 
@@ -978,6 +1161,15 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			colTotals[len(cols)-1] += colTotals[i]
 		}
 	}
+
+	// Undeclarable column totals.
+	colUndecl := make([]int, len(cols))
+	for _, r := range fullRows {
+		for i, u := range r.undecl {
+			colUndecl[i] += u
+		}
+	}
+	grandUndecl := colUndecl[len(cols)-1] // year total column
 
 	periodLabel := fmt.Sprintf("%s %d", tr.YearPrefix, year)
 	printDate := time.Now().Format("02-01-2006")
@@ -1020,7 +1212,12 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		pdf.CellFormat(wLabel, rowH, truncate(r.label, 42), "LRB", 0, "L", alt, 0, "")
 		for ci, c := range cols {
 			val := r.cells[ci]
-			txt := gridFmt(val)
+			u := r.undecl[ci]
+			decl := val - u
+			if decl < 0 {
+				decl = 0
+			}
+			txt := gridFmt(decl)
 			if c.isQtr {
 				setFill(pdf, gClrQtrFill)
 				pdf.SetFont(ff, "B", 7)
@@ -1055,7 +1252,12 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	pdf.CellFormat(wLabel, rowH, tr.Total, "1", 0, "L", true, 0, "")
 	for ci, c := range cols {
 		val := colTotals[ci]
-		txt := gridFmt(val)
+		u := colUndecl[ci]
+		decl := val - u
+		if decl < 0 {
+			decl = 0
+		}
+		txt := gridFmt(decl)
 		if c.isQtr {
 			setFill(pdf, gClrQtrFill)
 		} else if c.isTot {
@@ -1069,6 +1271,36 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			nl = 1
 		}
 		pdf.CellFormat(c.width, rowH, txt, "1", nl, "C", true, 0, "")
+	}
+
+	// Undeclarable row below totals (when present).
+	if grandUndecl > 0 {
+		undeclRowH := rowH * 0.8
+		setFill(pdf, gClrTotFill)
+		setTxt(pdf, gClrDanger)
+		pdf.SetFont(ff, "", 6.5)
+		pdf.SetX(gMargin)
+		pdf.CellFormat(wLabel, undeclRowH, "  "+tr.Undeclarable, "B", 0, "L", true, 0, "")
+		for ci, c := range cols {
+			u := colUndecl[ci]
+			txt := ""
+			if u > 0 {
+				txt = "−" + gridFmt(u)
+			}
+			if c.isQtr {
+				setFill(pdf, gClrQtrFill)
+			} else if c.isTot {
+				setFill(pdf, gClrPrimary)
+			} else {
+				setFill(pdf, gClrTotFill)
+			}
+			nl := 0
+			if c.isTot {
+				nl = 1
+			}
+			pdf.CellFormat(c.width, undeclRowH, txt, "B", nl, "C", true, 0, "")
+		}
+		setTxt(pdf, gClrText)
 	}
 
 	var buf bytes.Buffer
