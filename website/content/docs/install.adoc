@@ -234,6 +234,9 @@ sudo nginx -t && sudo systemctl reload nginx
 
 The template uses a *dedicated location block* for `/api/v1/ws` with hardcoded `Upgrade: websocket` headers and 24-hour read/send timeouts, which keeps board updates, chat, and video-call signalling stable through the proxy.
 A separate `location /` block handles regular HTTP traffic without forwarding upgrade headers (prevents h2c smuggling).
+It also sets `client_max_body_size 25m` to match WarmDesk's default upload limit (`max_upload_mb`).
+
+When the proxy runs on the same host as WarmDesk, set `trusted_proxies: "127.0.0.1"` in `warmdesk.yaml` so auth logs and rate limiting use the real client IP from `X-Forwarded-For`.
 
 == Reverse proxy (Apache)
 
@@ -247,8 +250,8 @@ sudo a2ensite warmdesk
 sudo systemctl reload apache2
 ----
 
-A dedicated `<Location "/api/v1/ws">` block with `ProxyPass ws://…` and `ProxyTimeout 86400` handles WebSocket connections.
-It must appear *before* the catch-all `ProxyPass /` so Apache routes WebSocket traffic correctly.
+Vhost-level `ProxyPass /api/v1/ws ws://…` (before the catch-all `ProxyPass /`) with `ProxyTimeout 86400` handles WebSocket connections.
+The template forwards `X-Forwarded-For`, `X-Real-IP`, and `X-Forwarded-Proto`; set `trusted_proxies: "127.0.0.1"` in `warmdesk.yaml` when Apache runs on the same host as WarmDesk.
 
 == Desktop apps
 
@@ -322,6 +325,7 @@ The seeder prints the credentials of the created demo accounts to stdout.
 * [ ] `allowed_origins` lists only your actual domain(s)
 * [ ] `db_tls_mode: verify-full` is set for remote databases
 * [ ] TLS is terminated at the reverse proxy (nginx / Apache / Caddy)
+* [ ] `trusted_proxies` includes the reverse-proxy address when WarmDesk runs behind nginx or Apache on the same host (typically `127.0.0.1`)
 * [ ] Firewall blocks direct access to port 8080 from the internet
 * [ ] `upload_dir` is outside the web root
 * [ ] Backups are scheduled and tested

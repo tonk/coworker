@@ -195,7 +195,16 @@ sudo systemctl status warmdesk
 ## 8. Reverse Proxy
 
 A ready-to-use configuration for each web server is provided in the `deploy/` directory.
-Both configurations handle HTTP→HTTPS redirect, SSL termination, and WebSocket proxying.
+Both configurations handle HTTP→HTTPS redirect, SSL termination, WebSocket proxying, and
+forwarding of the client IP via `X-Forwarded-For`.
+
+When the proxy runs on the same host as WarmDesk, also set in `warmdesk.yaml`:
+
+```yaml
+trusted_proxies: "127.0.0.1"
+```
+
+Without this, auth logs and rate limiting see every request as coming from `127.0.0.1`.
 
 ### Nginx (`deploy/nginx.conf`)
 
@@ -205,6 +214,9 @@ sudo cp deploy/nginx.conf /etc/nginx/sites-available/warmdesk
 sudo ln -s /etc/nginx/sites-available/warmdesk /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+The template sets `client_max_body_size 25m` to match WarmDesk's default upload limit.
+Raise it if you increase `max_upload_mb` in `warmdesk.yaml`.
 
 Obtain a free SSL certificate (if needed):
 ```bash

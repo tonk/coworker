@@ -226,23 +226,24 @@ sudo journalctl -u warmdesk -f   # follow logs
 Always run WarmDesk behind a reverse proxy in production. Ready-made configs
 are in `deploy/`.
 
+When the proxy runs on the same host as WarmDesk, set in `warmdesk.yaml`:
+
+```yaml
+trusted_proxies: "127.0.0.1"
+```
+
+Both templates forward `X-Forwarded-For`; without `trusted_proxies`, auth logs and
+rate limiting record every client as `127.0.0.1`.
+
 ### Nginx (`deploy/nginx.conf`)
 
-Key configuration points:
+The template in `deploy/nginx.conf` includes:
 
-```nginx
-# Increase timeouts for WebSocket connections
-proxy_read_timeout 3600s;
-proxy_send_timeout 3600s;
-
-# WebSocket upgrade
-proxy_http_version 1.1;
-proxy_set_header Upgrade $http_upgrade;
-proxy_set_header Connection "upgrade";
-
-# Forward real IP
-proxy_set_header X-Real-IP $remote_addr;
-```
+- A dedicated `location ~ ^/api/v1/ws` block with hardcoded `Upgrade: websocket`
+  headers and 24-hour read/send timeouts (board updates, chat, video-call signalling)
+- A separate `location /` block that does not forward upgrade headers (prevents h2c smuggling)
+- `client_max_body_size 25m` to match WarmDesk's default `max_upload_mb`
+- `X-Forwarded-For` and `X-Forwarded-Proto` on every proxied request
 
 ```bash
 sudo cp deploy/nginx.conf /etc/nginx/sites-available/warmdesk
@@ -261,7 +262,9 @@ sudo a2ensite warmdesk
 sudo systemctl reload apache2
 ```
 
-The template uses a dedicated `<Location "/api/v1/ws">` block with `ProxyPass ws://…` and `ProxyTimeout 86400` to keep WebSocket connections (board updates, chat, video-call signalling) alive for up to 24 hours without a forced reconnect. All other traffic is handled by the catch-all `ProxyPass / http://…` below it.
+The template uses vhost-level `ProxyPass /api/v1/ws ws://…` (before the catch-all
+`ProxyPass /`) with `ProxyTimeout 86400` so WebSocket connections stay alive for up
+to 24 hours. It forwards `X-Forwarded-For`, `X-Real-IP`, and `X-Forwarded-Proto`.
 
 ### Server TLS
 
