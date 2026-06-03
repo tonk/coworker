@@ -537,7 +537,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		wDay      = 25.0
 		wTotal    = 28.0
 		baseRowH  = 6.5
-		tallRowH  = 10.0
+		tallRowH  = 9.5
 		timeBaseY = 1.8 // mm above cell bottom for time labels / connector
 	)
 
@@ -717,12 +717,12 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		}
 
 		// Per-cell undeclarable labels for day columns (absolute positioning).
-		// These are drawn before the row-total fill so they land on top of the
-		// day-cell backgrounds (which were already drawn in the cell loop above).
+		// Placed immediately below the main value area (no gap) and sized to
+		// fit within the cell with a small bottom margin.
 		if hasUndecl {
-			undeclY := rowY + baseRowH + 0.8
-			undeclH := 3.5
-			pdf.SetFont(ff, "", 6.5)
+			undeclY := rowY + baseRowH
+			undeclH := 2.5
+			pdf.SetFont(ff, "", 5.5)
 			setTxt(pdf, gClrDanger)
 			for ci, c := range r.cells {
 				if c.undeclMins > 0 {
@@ -741,18 +741,18 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		pdf.SetFont(ff, "B", 8)
 		setFill(pdf, gClrTotFill)
 		if hasUndecl {
-			undeclY := rowY + baseRowH + 0.8
-			undeclH := 3.5
+			undeclY := rowY + baseRowH
+			undeclH := 2.5
 			// Fill + border, ln=1 → Y advances to rowY+rowH.
 			pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
 			pdf.CellFormat(wTotal, rowH, "", "LRB", 1, "C", true, 0, "")
 			// Overlay declarable value in upper portion.
 			pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
 			pdf.CellFormat(wTotal, baseRowH, gridFmt(rowDeclarable), "", 0, "C", false, 0, "")
-			// Overlay undeclarable label in lower portion (on top of the fill).
+			// Overlay undeclarable label immediately below (on top of the fill).
 			if rowUndecl > 0 {
 				setTxt(pdf, gClrDanger)
-				pdf.SetFont(ff, "", 6.5)
+				pdf.SetFont(ff, "", 5.5)
 				pdf.SetXY(gMargin+wLabel+7*wDay, undeclY)
 				pdf.CellFormat(wTotal, undeclH, "−"+gridFmt(rowUndecl), "", 0, "C", false, 0, "")
 			}
