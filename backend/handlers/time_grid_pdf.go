@@ -33,7 +33,8 @@ var (
 	gClrWeekend    = rgb{232, 233, 240} // light lavender-gray — weekend data cells
 	gClrWeekendHdr = rgb{218, 220, 232} // slightly darker — weekend column headers
 	gClrTimeRange  = rgb{79, 70, 229}   // indigo — start/end times in week grid cells
-	gClrDanger     = rgb{229, 62, 62}   // red — undeclarable time
+	gClrDanger       = rgb{229, 62, 62}   // red — undeclarable time on light backgrounds
+	gClrDangerBright = rgb{255, 180, 180} // light red — undeclarable on dark/primary backgrounds
 )
 
 // ── Landscape A4 page geometry (mm) ──────────────────────────────────────────
@@ -796,6 +797,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			pdf.CellFormat(wDay, baseRowH*0.8, txt, "LRB", 0, "C", true, 0, "")
 		}
 		setFill(pdf, gClrPrimary)
+		setTxt(pdf, gClrDangerBright)
 		pdf.CellFormat(wTotal, baseRowH*0.8, "−"+gridFmt(grandUndecl), "LRB", 1, "C", true, 0, "")
 		setTxt(pdf, gClrText)
 	}
@@ -1021,6 +1023,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 			pdf.CellFormat(wDay, undeclRowH, txt, "LRB", 0, "C", true, 0, "")
 		}
 		setFill(pdf, gClrPrimary)
+		setTxt(pdf, gClrDangerBright)
 		pdf.CellFormat(wTotal, undeclRowH, "−"+gridFmt(grandUndecl), "LRB", 1, "C", true, 0, "")
 		setTxt(pdf, gClrText)
 	}
@@ -1335,6 +1338,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 				setFill(pdf, gClrQtrFill)
 			} else if c.isTot {
 				setFill(pdf, gClrPrimary)
+				setTxt(pdf, gClrDangerBright)
 			} else {
 				setFill(pdf, gClrTotFill)
 			}
@@ -1343,6 +1347,9 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 				nl = 1
 			}
 			pdf.CellFormat(c.width, undeclRowH, txt, "LRB", nl, "C", true, 0, "")
+			if c.isTot {
+				setTxt(pdf, gClrText)
+			}
 		}
 		setTxt(pdf, gClrText)
 	}
