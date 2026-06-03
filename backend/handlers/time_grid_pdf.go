@@ -716,7 +716,9 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			pdf.Line(x1, lineY, x2, lineY)
 		}
 
-		// Per-cell undeclarable labels (absolute positioning, below main time value).
+		// Per-cell undeclarable labels for day columns (absolute positioning).
+		// These are drawn before the row-total fill so they land on top of the
+		// day-cell backgrounds (which were already drawn in the cell loop above).
 		if hasUndecl {
 			undeclY := rowY + baseRowH + 0.8
 			undeclH := 3.5
@@ -729,22 +731,33 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 					pdf.CellFormat(wDay, undeclH, "−"+gridFmt(c.undeclMins), "", 0, "C", false, 0, "")
 				}
 			}
-			if rowUndecl > 0 {
-				pdf.SetXY(gMargin+wLabel+7*wDay, undeclY)
-				pdf.CellFormat(wTotal, undeclH, "−"+gridFmt(rowUndecl), "", 0, "C", false, 0, "")
-			}
 		}
 
-		// Row total cell: border with full rowH; value in upper baseRowH when
-		// there is undeclarable so it aligns with the day-cell time values.
+		// Row total cell.
+		// For hasUndecl rows: draw fill first (ln=1 advances Y correctly), then
+		// overlay the declarable value and undeclarable label via absolute positioning,
+		// then restore Y. This ensures the fill never covers the text overlays.
 		setTxt(pdf, gClrText)
 		pdf.SetFont(ff, "B", 8)
 		setFill(pdf, gClrTotFill)
 		if hasUndecl {
+			undeclY := rowY + baseRowH + 0.8
+			undeclH := 3.5
+			// Fill + border, ln=1 → Y advances to rowY+rowH.
 			pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
 			pdf.CellFormat(wTotal, rowH, "", "LRB", 1, "C", true, 0, "")
+			// Overlay declarable value in upper portion.
 			pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
 			pdf.CellFormat(wTotal, baseRowH, gridFmt(rowDeclarable), "", 0, "C", false, 0, "")
+			// Overlay undeclarable label in lower portion (on top of the fill).
+			if rowUndecl > 0 {
+				setTxt(pdf, gClrDanger)
+				pdf.SetFont(ff, "", 6.5)
+				pdf.SetXY(gMargin+wLabel+7*wDay, undeclY)
+				pdf.CellFormat(wTotal, undeclH, "−"+gridFmt(rowUndecl), "", 0, "C", false, 0, "")
+			}
+			// Restore Y so the next row starts at the right position.
+			pdf.SetY(rowY + rowH)
 		} else {
 			pdf.SetXY(gMargin+wLabel+7*wDay, rowY)
 			pdf.CellFormat(wTotal, rowH, gridFmt(rowDeclarable), "LRB", 1, "C", true, 0, "")
