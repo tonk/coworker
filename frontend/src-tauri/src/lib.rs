@@ -210,6 +210,65 @@ pub fn run() {
         std::process::exit(0);
     }
 
+    if let Some(name) = parse_flag_value(&args, "--create-profile") {
+        if let Err(e) = validate_profile_name(&name) {
+            eprintln!("error: {}", e);
+            std::process::exit(1);
+        }
+        let label = parse_flag_value(&args, "--label").unwrap_or_else(|| name.clone());
+        let mut cfg = load_profiles();
+        if cfg.profiles.iter().any(|p| p.name == name) {
+            eprintln!("error: profile '{}' already exists", name);
+            std::process::exit(1);
+        }
+        cfg.profiles.push(Profile { name: name.clone(), label: label.clone() });
+        if let Err(e) = save_profiles(&cfg) {
+            eprintln!("error: could not save profiles: {}", e);
+            std::process::exit(1);
+        }
+        println!("Created profile '{}' ({})", name, label);
+        std::process::exit(0);
+    }
+
+    if let Some(name) = parse_flag_value(&args, "--set-default") {
+        let mut cfg = load_profiles();
+        if !cfg.profiles.iter().any(|p| p.name == name) {
+            eprintln!("error: profile '{}' not found", name);
+            std::process::exit(1);
+        }
+        cfg.default = name.clone();
+        if let Err(e) = save_profiles(&cfg) {
+            eprintln!("error: could not save profiles: {}", e);
+            std::process::exit(1);
+        }
+        println!("Default profile set to '{}'", name);
+        std::process::exit(0);
+    }
+
+    if let Some(name) = parse_flag_value(&args, "--delete-profile") {
+        let mut cfg = load_profiles();
+        if cfg.profiles.len() <= 1 {
+            eprintln!("error: cannot delete the last remaining profile");
+            std::process::exit(1);
+        }
+        if cfg.default == name {
+            eprintln!("error: cannot delete the default profile; use --set-default <name> first");
+            std::process::exit(1);
+        }
+        if !cfg.profiles.iter().any(|p| p.name == name) {
+            eprintln!("error: profile '{}' not found", name);
+            std::process::exit(1);
+        }
+        cfg.profiles.retain(|p| p.name != name);
+        if let Err(e) = save_profiles(&cfg) {
+            eprintln!("error: could not save profiles: {}", e);
+            std::process::exit(1);
+        }
+        println!("Deleted profile '{}'", name);
+        println!("Note: profile data directory was not removed; clean it up manually if desired.");
+        std::process::exit(0);
+    }
+
     let maximized = args.iter().any(|a| a == "--maximized");
     let runtime_server_url_override = parse_server_url_override(&args);
     let runtime_server_url_for_page_load = runtime_server_url_override.clone();
@@ -796,6 +855,10 @@ fn print_help() {
     println!("      --profile <NAME>         Launch with the named profile");
     println!("      --profile=<NAME>         Same as above");
     println!("      --list-profiles          List available profiles and exit");
+    println!("      --create-profile <NAME>  Create a new profile and exit");
+    println!("        --label <LABEL>        Human-readable label for --create-profile");
+    println!("      --set-default <NAME>     Set the default profile and exit");
+    println!("      --delete-profile <NAME>  Remove a profile and exit");
     println!();
     println!("Profiles:");
     println!("  Each profile has its own isolated localStorage, login session, and");
