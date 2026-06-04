@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Improved in-app contextual help** — page-level help entries for Project Settings, System Settings (admin), and Customers & Contracts have been rewritten with full task coverage across all tabs and sub-sections. Eleven new inline field hints (ⓘ) added to the most complex fields: IMAP poll interval, IMAP auth method, IMAP OAuth2 provider, backup schedule, password minimum length, webhook type, webhook secret, and all four contract time-slot fields (factor, rate, end-day offset, applies-on day). The `undeclarable_time` hint now explains why you would log non-billable time. All changes are available in all 12 supported languages.
+
 ## v0.10.41 — 2026-06-04
 
 ### Added
