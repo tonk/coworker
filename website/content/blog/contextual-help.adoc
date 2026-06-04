@@ -1,0 +1,72 @@
+---
+title: "Contextual Help: Answers Where You Need Them"
+date: "2026-06-04"
+author: "Ton Kersten"
+description: "WarmDesk now has a built-in help system. Click the ? button in the header for a page-level guide that follows you as you navigate, or click the ⓘ icons next to specific fields for a quick inline explanation — no documentation tab required."
+draft: false
+---
+:doctype: article
+:icons!:
+
+Finding the right part of the documentation while you are in the middle of a task is friction nobody needs.
+WarmDesk now ships a help system that brings the relevant information directly into the app.
+
+== The ? button
+
+A *?* button sits in the top-right corner of the header, next to the theme toggle.
+Click it on any supported page and a panel slides in with:
+
+* An *introduction* explaining what the current page is for.
+* A *tasks* section — the most common things people do here, written as short step-by-step descriptions.
+* A *shortcuts* section where applicable.
+
+The panel is context-aware.
+On the *Charts* view it shows help for the chart type you are currently looking at — switch from Velocity to Cycle Time and the panel updates without you doing anything.
+On *Project Settings* it tracks which tab is open (General, Members, Labels, API Keys, Webhooks, Deleted Cards) and shows the right content for each one.
+
+== Inline field hints
+
+Some fields have a small *ⓘ* icon next to their label.
+Click it to see a short explanation of what that field does and how it affects the rest of the app — without leaving the page or losing your place.
+
+Field hints are currently available for:
+
+* *Undeclarable time* in the time-tracking report — explains the difference between logged, undeclarable, and declarable minutes and how the subtraction works.
+* *Group by* in the time-tracking report — describes what each grouping option produces in the report and in the PDF export.
+* *Export* in the time-tracking report — covers the PDF font and language options and the per-customer page-break checkbox.
+* Several fields in the *Admin panel* — registration, MFA enforcement, IP allowlist, session timeout, story points, Gravatar, and others.
+* *Ticket* fields — macros, reminder date, pending-close date, checklists, and the private message toggle.
+
+== Where help is available
+
+The ? panel is wired up on every major view:
+
+[options="header",cols="1,3"]
+|===
+| Page | What the help covers
+| Kanban board | Columns, cards, filtering, drag-and-drop
+| Scrum backlog | Sprint planning, story points, prioritisation
+| Sprint board | Active sprint, card lifecycle
+| Epics | Epic tracking and burndown
+| Gantt | Timeline navigation, dependencies
+| Charts | Per-chart — velocity, burndown, burnup, CFD, sprint report, epic burndown, release burndown, cycle time, lead time
+| Topics | Threaded discussions and subscriptions
+| Helpdesk inbox | Ticket triage and assignment workflow
+| Ticket detail | Macros, reminders, close date, checklists, private messages
+| Time tracking | Sheet, personal report, board report
+| Project settings | All six tabs
+| User settings | Profile, working hours, password, MFA, passkey, API keys
+| Admin panel | All admin tabs
+| Customers | Customer list and detail
+| Card detail | Card fields and checklists
+|===
+
+== All 12 languages
+
+Help content is fully translated.
+Every page guide and every field hint is available in English, Dutch, German, French, Spanish, Danish, Swedish, Norwegian, Finnish, Icelandic, Portuguese, and Italian.
+The language follows your UI language setting automatically.
+
+== Loading
+
+Help content is loaded lazily — the locale bundles are only fetched the first time you open the panel, so there is no impact on initial page load.
