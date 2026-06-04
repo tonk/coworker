@@ -17,7 +17,7 @@
     <div
       v-if="open"
       :id="popoverId"
-      class="help-icon-popover"
+      :class="['help-icon-popover', align !== 'center' && `help-icon-popover--${align}`]"
       role="dialog"
       :aria-label="buttonLabel"
       @keydown.esc.prevent="close"
@@ -36,6 +36,8 @@ const props = defineProps({
   i18nKey: { type: String, required: true },
   /** Optional override for the icon aria-label */
   label: { type: String, default: '' },
+  /** Popover alignment relative to the icon: 'center' (default), 'start' (extends right), 'end' (extends left) */
+  align: { type: String, default: 'center' },
 })
 
 const { t } = useI18n()
@@ -120,5 +122,27 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
   border-left: 1px solid var(--color-border);
   border-top: 1px solid var(--color-border);
   transform: translateX(-50%) rotate(45deg);
+}
+
+/* Popover extends to the left — right edge anchors to the icon */
+.help-icon-popover--end {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+.help-icon-popover--end::before {
+  left: auto;
+  right: 7px;
+  transform: rotate(45deg);
+}
+
+/* Popover extends to the right — left edge anchors to the icon */
+.help-icon-popover--start {
+  left: 0;
+  transform: none;
+}
+.help-icon-popover--start::before {
+  left: 7px;
+  transform: rotate(45deg);
 }
 </style>
