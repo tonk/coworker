@@ -3,6 +3,7 @@
     <button
       type="button"
       class="help-icon-btn"
+      ref="btnRef"
       :aria-label="buttonLabel"
       :aria-expanded="open"
       aria-haspopup="dialog"
@@ -14,21 +15,26 @@
         <line x1="12" y1="17" x2="12.01" y2="17"/>
       </svg>
     </button>
-    <div
-      v-if="open"
-      :id="popoverId"
-      :class="['help-icon-popover', align !== 'center' && `help-icon-popover--${align}`]"
-      role="dialog"
-      :aria-label="buttonLabel"
-      @keydown.esc.prevent="close"
-    >
-      {{ $t(i18nKey) }}
-    </div>
+    <Teleport to="body">
+      <div
+        v-if="open"
+        :id="popoverId"
+        class="help-icon-popover"
+        :style="popoverStyle"
+        role="dialog"
+        :aria-label="buttonLabel"
+        @click.stop
+        @keydown.esc.prevent="close"
+      >
+        {{ $t(i18nKey) }}
+        <span class="help-icon-popover-arrow" :style="arrowStyle"></span>
+      </div>
+    </Teleport>
   </span>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
@@ -43,9 +49,48 @@ const props = defineProps({
 const { t } = useI18n()
 const open = ref(false)
 const wrapRef = ref(null)
+const btnRef = ref(null)
 const popoverId = `help-icon-${Math.random().toString(36).slice(2, 9)}`
+const popoverStyle = ref({})
+const arrowStyle = ref({})
 
 const buttonLabel = computed(() => props.label || t('help.field_button'))
+
+const POPOVER_WIDTH = 320
+const MARGIN = 8
+
+function computePosition() {
+  if (!btnRef.value) return
+  const rect = btnRef.value.getBoundingClientRect()
+  const vw = window.innerWidth
+  const maxW = Math.min(POPOVER_WIDTH, vw * 0.7)
+
+  // Ideal left position based on align prop
+  let idealLeft
+  if (props.align === 'end') {
+    idealLeft = rect.right - maxW
+  } else if (props.align === 'start') {
+    idealLeft = rect.left
+  } else {
+    idealLeft = rect.left + rect.width / 2 - maxW / 2
+  }
+
+  // Clamp so the popover stays within the viewport
+  const clampedLeft = Math.max(MARGIN, Math.min(idealLeft, vw - maxW - MARGIN))
+
+  // Arrow points at the center of the button
+  const btnCenterX = rect.left + rect.width / 2
+  const arrowLeft = Math.max(8, Math.min(btnCenterX - clampedLeft - 4, maxW - 16))
+
+  popoverStyle.value = {
+    position: 'fixed',
+    top: `${rect.bottom + 6}px`,
+    left: `${clampedLeft}px`,
+    width: `${maxW}px`,
+    zIndex: 9999,
+  }
+  arrowStyle.value = { left: `${arrowLeft}px` }
+}
 
 function toggle() {
   open.value = !open.value
@@ -60,6 +105,10 @@ function onDocClick(e) {
     close()
   }
 }
+
+watch(open, (val) => {
+  if (val) nextTick(computePosition)
+})
 
 onMounted(() => document.addEventListener('click', onDocClick))
 onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
@@ -92,15 +141,11 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
   background: var(--color-bg);
   color: var(--color-primary);
 }
+</style>
 
+<style>
+/* Global (not scoped) so Teleport'd element inherits the styles */
 .help-icon-popover {
-  position: absolute;
-  z-index: 200;
-  top: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: min(320px, 70vw);
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius, 6px);
@@ -111,38 +156,14 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
   box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.12));
 }
 
-.help-icon-popover::before {
-  content: '';
+.help-icon-popover-arrow {
   position: absolute;
   top: -5px;
-  left: 50%;
   width: 8px;
   height: 8px;
   background: var(--color-surface);
   border-left: 1px solid var(--color-border);
   border-top: 1px solid var(--color-border);
-  transform: translateX(-50%) rotate(45deg);
-}
-
-/* Popover extends to the left — right edge anchors to the icon */
-.help-icon-popover--end {
-  left: auto;
-  right: 0;
-  transform: none;
-}
-.help-icon-popover--end::before {
-  left: auto;
-  right: 7px;
-  transform: rotate(45deg);
-}
-
-/* Popover extends to the right — left edge anchors to the icon */
-.help-icon-popover--start {
-  left: 0;
-  transform: none;
-}
-.help-icon-popover--start::before {
-  left: 7px;
   transform: rotate(45deg);
 }
 </style>

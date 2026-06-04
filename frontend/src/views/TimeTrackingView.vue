@@ -261,7 +261,7 @@
               <td class="c-total c-rowtotal">
                 <span>{{ rowTotal(row) }}</span>
                 <span v-if="rowUndecl(row) > 0" class="row-undecl-badge" :title="$t('timeTracking.undeclarable') + ': ' + fmtTime(rowUndecl(row))">↓{{ fmtTime(rowUndecl(row)) }}</span>
-                <HelpIcon v-if="rowUndecl(row) > 0" i18n-key="help.fields.undeclarable_time" :label="$t('timeTracking.undeclarable')" align="end" />
+                <HelpIcon v-if="rowUndecl(row) > 0" i18n-key="help.fields.undeclarable_time" :label="$t('timeTracking.undeclarable')" />
               </td>
 
               <!-- Actions -->
