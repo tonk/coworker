@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.10.41 — 2026-06-04
 
 ### Added
 - **Desktop app profiles** — the Tauri desktop app now supports multiple named profiles, each with its own isolated localStorage, login session, and preferences. Useful when connecting to several WarmDesk servers (e.g. one per customer). Profiles are managed entirely from the command line:

@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.40)
+## Latest release (v0.10.41)
 
-- **Undeclarable time inline** — the weekly timesheet grid shows the undeclarable portion of each cell in red below the logged time; totals show net declarable time with undeclarable deducted.
-- **Grid PDFs show declarable vs. undeclarable** — week, month, and year PDF exports now display declarable time as the primary value with a red undeclarable row below the totals.
+- **Desktop app profiles** — run separate instances for different servers/customers, each with its own isolated login session and settings; manage profiles with `--create-profile`, `--list-profiles`, `--set-default`, and `--profile` CLI flags.
+- **Extended contextual help** — the "?" button now covers the Kanban board, inbox, all project settings tabs, and all chart types; time tracking gains inline field hints for undeclarable time, group-by, and export.
 
 ## Experiment
 
@@ -378,7 +378,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
 - **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast
 - **App zoom** — `Ctrl +` / `Ctrl -` to zoom in/out; `Ctrl 0` to reset; level persisted across sessions
-- **Desktop app** — native Tauri app for Linux (AppImage, .deb, .rpm), macOS (DMG), and Windows (installer); server URL configurable from the login page at any time; supports `--help`, `--version`, `--maximized`, and runtime-only `--url=<http(s)://...>` CLI flags
+- **Desktop app** — native Tauri app for Linux (AppImage, .deb, .rpm), macOS (DMG), and Windows (installer); server URL configurable from the login page at any time; supports `--help`, `--version`, `--maximized`, and runtime-only `--url=<http(s)://...>` CLI flags; **multi-profile** support (`--profile`, `--create-profile`, `--list-profiles`, `--set-default`, `--delete-profile`) for running separate isolated sessions against different servers
 - **Project migration** — `warmdesk-export` and `warmdesk-import` standalone tools to migrate projects to/from Jira, Trello, OpenProject, or Ryver; column mapping via config file
 
 
