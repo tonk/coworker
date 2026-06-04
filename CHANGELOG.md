@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **Desktop app profiles** — the Tauri desktop app now supports multiple named profiles, each with its own isolated localStorage, login session, and preferences. Useful when connecting to several WarmDesk servers (e.g. one per customer). Profiles are managed entirely from the command line:
+  - `--list-profiles` — list all profiles; the default is marked with `*`
+  - `--create-profile <name> [--label <label>]` — create a new profile
+  - `--set-default <name>` — change the default profile
+  - `--delete-profile <name>` — remove a profile entry
+  - `--profile <name>` — launch with the named profile
+  - The window title shows **"WarmDesk — \<label\>"** for non-default profiles so multiple instances can be told apart at a glance.
+  - Profile configuration is stored in `profiles.json` in the platform config directory; profile data lives under `<data dir>/profiles/<name>/`.
+
 ## v0.10.40 — 2026-06-03
 
 ### Added

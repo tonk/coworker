@@ -3,6 +3,7 @@
 ## Contents
 
 1. [Getting Started](#1-getting-started)
+   - [Desktop app & profiles](#desktop-app)
 2. [The Interface](#2-the-interface)
 3. [Projects](#3-projects)
 4. [Kanban Board](#4-kanban-board)
@@ -54,6 +55,56 @@ by your administrator.
 By default the session expires after **60 minutes of inactivity**. Any
 interaction with the page (navigation, clicks, API calls) resets the timer. The
 administrator can change this timeout or disable it entirely.
+
+### Desktop app
+
+WarmDesk is available as a native desktop app (Linux AppImage, macOS DMG,
+Windows installer). Download the release for your platform and launch it — the
+app opens a server URL prompt on first run.
+
+#### Profiles
+
+If you connect to **multiple WarmDesk servers** (for example, one per customer),
+you can keep each server's login session, settings, and preferences completely
+separate using profiles. Each profile has its own isolated storage — switching
+profiles is equivalent to using a different browser profile.
+
+**Manage profiles from the command line:**
+
+```bash
+# List all profiles (* marks the default)
+warmdesk --list-profiles
+
+# Create a new profile
+warmdesk --create-profile customer-a --label "Customer A"
+
+# Set a different default
+warmdesk --set-default customer-a
+
+# Delete a profile (data directory is kept; remove it manually if desired)
+warmdesk --delete-profile old-profile
+```
+
+**Launch with a specific profile:**
+
+```bash
+warmdesk --profile customer-a
+```
+
+Without `--profile`, the default profile is used. The window title bar shows
+**"WarmDesk — Customer A"** (the profile label) so you can tell instances apart
+at a glance.
+
+Profiles are stored in a `profiles.json` file in the platform config directory:
+
+| Platform | Path |
+|---|---|
+| Linux | `~/.config/com.warmdesk.desktop/profiles.json` |
+| macOS | `~/Library/Application Support/com.warmdesk.desktop/profiles.json` |
+| Windows | `%APPDATA%\com.warmdesk.desktop\profiles.json` |
+
+Profile data (localStorage, login session) is stored under
+`<data dir>/profiles/<name>/` alongside the config directory.
 
 ---
 
