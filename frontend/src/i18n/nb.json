@@ -1717,7 +1717,10 @@
       "ticket_reminder": "Angir en oppfølgingsdato for ventende saker. Saker med forfalt påminnelse sorteres øverst i listen.",
       "ticket_close_date": "Når status er Ventende lukking, lukkes saken automatisk på denne datoen.",
       "ticket_macros": "Kjører en forhåndsinnstilt sekvens av handlinger (endre status, legg til svar, tagger osv.) definert av en administrator.",
-      "ticket_checklist": "Alle sjekklisteelementer må fullføres før saken kan lukkes når en mal er brukt."
+      "ticket_checklist": "Alle sjekklisteelementer må fullføres før saken kan lukkes når en mal er brukt.",
+      "undeclarable_time": "Ikke-fakturerbar tid er den delen av en tidsregistrering som ikke kan faktureres. Den trekkes fra totalen slik at bare den fakturerbare tiden vises i rapporter.",
+      "report_group_by": "Styrer hvordan tidsregistreringer grupperes i rapporten. Velg etter periode (dag/uke/måned), kunde, prosjekt eller en kombinasjon av kunde og prosjekt.",
+      "report_export": "Last ned rapporten som PDF eller Excel-fil. Bruk PDF-innstillingsknappen til å velge skrifttype, språk og visningsalternativer før eksport."
     }
   }
 }

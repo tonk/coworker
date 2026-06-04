@@ -229,7 +229,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ticketsApi } from '@/api/tickets'
 import { useTicketsStore } from '@/stores/tickets'
@@ -399,7 +399,11 @@ async function loadInbox() {
   }
 }
 
-onMounted(loadInbox)
+onMounted(() => {
+  ui.setHelpContext('inbox')
+  loadInbox()
+})
+onUnmounted(() => ui.setHelpContext(null))
 watch(() => ticketsStore.inboxRefreshKey, loadInbox)
 </script>
 

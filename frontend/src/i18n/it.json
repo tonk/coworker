@@ -1717,7 +1717,10 @@
       "ticket_reminder": "Imposta una data di follow-up per i ticket in attesa. I ticket con promemoria scaduto vengono ordinati in cima all'elenco.",
       "ticket_close_date": "Quando lo stato è In attesa di chiusura, il ticket viene chiuso automaticamente in questa data.",
       "ticket_macros": "Esegue una sequenza preimpostata di azioni (cambia stato, aggiungi risposta, tag, ecc.) definita da un amministratore.",
-      "ticket_checklist": "Tutti gli elementi della checklist devono essere completati prima di poter chiudere il ticket quando è applicato un modello."
+      "ticket_checklist": "Tutti gli elementi della checklist devono essere completati prima di poter chiudere il ticket quando è applicato un modello.",
+      "undeclarable_time": "Il tempo non dichiarabile è la parte di una registrazione oraria che non può essere fatturata. Viene sottratto dal totale in modo che nei report venga mostrato solo il tempo dichiarabile (fatturabile).",
+      "report_group_by": "Controlla come le registrazioni orarie vengono raggruppate nel report. Scegli per periodo (giorno/settimana/mese), cliente, progetto o una combinazione di cliente e progetto.",
+      "report_export": "Scarica il report come PDF o file Excel. Usa il pulsante opzioni PDF per scegliere font, lingua e opzioni di visualizzazione prima di esportare."
     }
   }
 }

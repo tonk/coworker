@@ -261,6 +261,7 @@
               <td class="c-total c-rowtotal">
                 <span>{{ rowTotal(row) }}</span>
                 <span v-if="rowUndecl(row) > 0" class="row-undecl-badge" :title="$t('timeTracking.undeclarable') + ': ' + fmtTime(rowUndecl(row))">↓{{ fmtTime(rowUndecl(row)) }}</span>
+                <HelpIcon v-if="rowUndecl(row) > 0" i18n-key="help.fields.undeclarable_time" :label="$t('timeTracking.undeclarable')" />
               </td>
 
               <!-- Actions -->
@@ -495,7 +496,7 @@
           </option>
         </select>
         <div class="rpt-filter-group">
-          <label class="filter-label" for="rpt-group-by">{{ $t('timeTracking.group_by') }}</label>
+          <label class="filter-label" for="rpt-group-by">{{ $t('timeTracking.group_by') }}<HelpIcon i18n-key="help.fields.report_group_by" :label="$t('timeTracking.group_by')" /></label>
           <select id="rpt-group-by" class="form-input fi-sm" v-model="rpt.group_by" @change="loadReport">
             <option value="period">{{ $t('timeTracking.group_by_period') }}</option>
             <option value="customer">{{ $t('timeTracking.group_by_customer') }}</option>
@@ -570,6 +571,7 @@
           </div>
           <button class="btn btn-secondary" @click="exportReportXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
           <button class="btn btn-secondary" @click="exportReportPDF">{{ $t('timeTracking.export_pdf') }}</button>
+          <HelpIcon i18n-key="help.fields.report_export" :label="$t('timeTracking.export_pdf')" />
         </div>
       </div>
 
@@ -790,6 +792,7 @@ import { projectsApi } from '@/api/projects'
 import client, { triggerDownload } from '@/api/client'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
+import HelpIcon from '@/components/common/HelpIcon.vue'
 const BoardReportPanel = defineAsyncComponent(() => import('@/components/reports/BoardReportPanel.vue'))
 import { useDateFormat } from '@/composables/useDateFormat'
 import {

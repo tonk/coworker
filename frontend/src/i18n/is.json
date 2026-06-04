@@ -1717,7 +1717,10 @@
       "ticket_reminder": "Setur eftirfylgnidagsetningu fyrir biðmiða. Miðar með skilinn áminningu eru raðaðir efst á listanum.",
       "ticket_close_date": "Þegar staða er Biðlokun lokar miðinn sjálfkrafa á þessari dagsetningu.",
       "ticket_macros": "Keyrir fyrirfram skilgreinda röð aðgerða (breyta stöðu, bæta við svari, merki o.s.frv.) sem stjórnandi hefur skilgreint.",
-      "ticket_checklist": "Öllum atriðum gátlista verður að ljúka áður en hægt er að loka miða þegar sniðmát er notað."
+      "ticket_checklist": "Öllum atriðum gátlista verður að ljúka áður en hægt er að loka miða þegar sniðmát er notað.",
+      "undeclarable_time": "Óreikningshæfur tími er sá hluti tímafærslu sem ekki er hægt að rukka. Hann er dreginn frá heildarfjölda þannig að aðeins reikningshæfur (gjaldfæranlegur) tími birtist í skýrslum.",
+      "report_group_by": "Stjórnar hvernig tímafærslur eru flokkaðar í skýrslunni. Veldu eftir tímabili (dag/viku/mánuð), viðskiptavini, verkefni eða samsetningu viðskiptavinar og verkefnis.",
+      "report_export": "Sæktu skýrsluna sem PDF eða Excel-skrá. Notaðu PDF-valkostahnappin til að velja leturgerð, tungumál og skjávalkosti fyrir útflutning."
     }
   }
 }

@@ -1786,7 +1786,10 @@
       "ticket_reminder": "Sets a follow-up date for pending tickets. Tickets with a due reminder are sorted to the top of the list.",
       "ticket_close_date": "When status is Pending close, the ticket is automatically closed on this date.",
       "ticket_macros": "Runs a preset sequence of actions (change status, add reply, tags, etc.) defined by an administrator.",
-      "ticket_checklist": "Checklist items must all be completed before the ticket can be closed when a template is applied."
+      "ticket_checklist": "Checklist items must all be completed before the ticket can be closed when a template is applied.",
+      "undeclarable_time": "Undeclarable time is the portion of a time entry that cannot be billed. It is deducted from the total so only the declarable (billable) time is shown in reports.",
+      "report_group_by": "Controls how time entries are grouped in the report. Choose by period (day/week/month), customer, project, or a combination of customer and project.",
+      "report_export": "Download the report as a PDF or Excel file. Use the PDF options button to choose font, language, and display options before exporting."
     }
   }
 }

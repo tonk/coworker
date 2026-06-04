@@ -1,6 +1,6 @@
 <template>
   <main class="settings-main">
-      <div class="settings-container">
+      <div class="settings-container" ref="settingsRootRef">
         <div class="settings-header">
           <RouterLink :to="`/projects/${slug}`" class="btn btn-ghost btn-sm">← Back</RouterLink>
           <h1>{{ $t('project.settings') }}: {{ project?.name }}</h1>
@@ -16,7 +16,7 @@
         </div>
 
         <!-- General Tab -->
-        <div v-show="tab === 'general'" class="tab-content" role="tabpanel" id="tab-panel-general" aria-labelledby="tab-btn-general">
+        <div v-show="tab === 'general'" class="tab-content" role="tabpanel" id="tab-panel-general" aria-labelledby="tab-btn-general" data-help-context="projectSettings.general">
           <div class="form-group">
             <label class="form-label" for="field-project-name">{{ $t('project.project_name') }}</label>
             <input id="field-project-name" class="form-input" v-model="form.name" style="max-width:400px" />
@@ -70,7 +70,7 @@
         </div>
 
         <!-- Members Tab -->
-        <div v-show="tab === 'members'" class="tab-content" role="tabpanel" id="tab-panel-members" aria-labelledby="tab-btn-members">
+        <div v-show="tab === 'members'" class="tab-content" role="tabpanel" id="tab-panel-members" aria-labelledby="tab-btn-members" data-help-context="projectSettings.members">
           <div class="section-action">
             <button class="btn btn-primary btn-sm" @click="showInvite = true; invite.userIds = []; inviteSearch = ''">+ {{ $t('project.invite_member') }}</button>
           </div>
@@ -158,7 +158,7 @@
         </div>
 
         <!-- API Keys Tab -->
-        <div v-show="tab === 'apikeys'" class="tab-content" role="tabpanel" id="tab-panel-apikeys" aria-labelledby="tab-btn-apikeys">
+        <div v-show="tab === 'apikeys'" class="tab-content" role="tabpanel" id="tab-panel-apikeys" aria-labelledby="tab-btn-apikeys" data-help-context="projectSettings.apiKeys">
           <p class="tab-description">{{ $t('apikeys.project_description') }}</p>
           <div class="form-group" style="max-width:400px">
             <label class="form-label">{{ $t('apikeys.key_name') }}</label>
@@ -219,7 +219,7 @@
         </div>
 
         <!-- Webhooks Tab -->
-        <div v-show="tab === 'webhooks'" class="tab-content" role="tabpanel" id="tab-panel-webhooks" aria-labelledby="tab-btn-webhooks">
+        <div v-show="tab === 'webhooks'" class="tab-content" role="tabpanel" id="tab-panel-webhooks" aria-labelledby="tab-btn-webhooks" data-help-context="projectSettings.webhooks">
           <div class="form-group" style="max-width:420px">
             <label class="form-label">Webhook name</label>
             <input class="form-input" v-model="newWebhookName" placeholder="e.g. CI Bot" />
@@ -317,7 +317,7 @@
         </div>
 
         <!-- Deleted Cards Tab -->
-        <div v-show="tab === 'deletedcards'" class="tab-content" role="tabpanel" id="tab-panel-deletedcards" aria-labelledby="tab-btn-deletedcards">
+        <div v-show="tab === 'deletedcards'" class="tab-content" role="tabpanel" id="tab-panel-deletedcards" aria-labelledby="tab-btn-deletedcards" data-help-context="projectSettings.deletedCards">
           <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:16px">
             Permanently delete cards that were previously soft-deleted from the board.
           </p>
@@ -352,7 +352,7 @@
         </div>
 
         <!-- Labels Tab -->
-        <div v-show="tab === 'labels'" class="tab-content" role="tabpanel" id="tab-panel-labels" aria-labelledby="tab-btn-labels">
+        <div v-show="tab === 'labels'" class="tab-content" role="tabpanel" id="tab-panel-labels" aria-labelledby="tab-btn-labels" data-help-context="projectSettings.labels">
           <div class="section-action">
             <button class="btn btn-primary btn-sm" @click="showAddLabel = true">+ Add Label</button>
           </div>
@@ -447,6 +447,7 @@ import { projectsApi } from '@/api/projects'
 import { groupsApi } from '@/api/groups'
 import { authApi } from '@/api/auth'
 import { useDateFormat } from '@/composables/useDateFormat'
+import { useHelpSectionObserver } from '@/composables/useHelpSectionObserver'
 import client from '@/api/client'
 import { getServerUrl, resolveAssetUrl } from '@/api/serverConfig'
 import { customersApi } from '@/api/customers'
@@ -469,6 +470,9 @@ watch(tab, (activeTab) => {
 onBeforeUnmount(() => {
   ui.setHelpContext(null)
 })
+
+const settingsRootRef = ref(null)
+useHelpSectionObserver(settingsRootRef)
 
 const project = ref(null)
 const members = ref([])

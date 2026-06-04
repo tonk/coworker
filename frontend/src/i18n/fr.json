@@ -1717,7 +1717,10 @@
       "ticket_reminder": "Définit une date de suivi pour les tickets en attente. Les tickets avec un rappel échu sont triés en haut de la liste.",
       "ticket_close_date": "Lorsque le statut est En attente de clôture, le ticket est automatiquement fermé à cette date.",
       "ticket_macros": "Exécute une séquence prédéfinie d'actions (changer le statut, ajouter une réponse, tags, etc.) définie par un administrateur.",
-      "ticket_checklist": "Tous les éléments de la liste de contrôle doivent être complétés avant de pouvoir fermer le ticket lorsqu'un modèle est appliqué."
+      "ticket_checklist": "Tous les éléments de la liste de contrôle doivent être complétés avant de pouvoir fermer le ticket lorsqu'un modèle est appliqué.",
+      "undeclarable_time": "Le temps non déclarable est la part d'une saisie de temps qui ne peut pas être facturée. Il est déduit du total afin que seul le temps déclarable (facturable) apparaisse dans les rapports.",
+      "report_group_by": "Contrôle la façon dont les saisies de temps sont regroupées dans le rapport. Choisissez par période (jour/semaine/mois), client, projet ou une combinaison de client et de projet.",
+      "report_export": "Téléchargez le rapport au format PDF ou Excel. Utilisez le bouton Options PDF pour choisir la police, la langue et les options d'affichage avant l'export."
     }
   }
 }

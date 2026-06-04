@@ -1717,7 +1717,10 @@
       "ticket_reminder": "Asettaa seurantapäivän odottaville tiketeille. Erääntyneen muistutuksen tiketit järjestetään listan kärkeen.",
       "ticket_close_date": "Kun tila on Odottaa sulkemista, tiketti suljetaan automaattisesti tänä päivänä.",
       "ticket_macros": "Suorittaa ennalta määritetyn toimintosarjan (tilan muutos, vastaus, tunnisteet jne.), jonka ylläpitäjä on määrittänyt.",
-      "ticket_checklist": "Kaikki tarkistuslistan kohdat on suoritettava ennen tiketin sulkemista, kun malli on käytössä."
+      "ticket_checklist": "Kaikki tarkistuslistan kohdat on suoritettava ennen tiketin sulkemista, kun malli on käytössä.",
+      "undeclarable_time": "Ei-laskutettava aika on osa aikakirjauksesta, jota ei voi laskuttaa. Se vähennetään kokonaismäärästä, jotta raporteissa näkyy vain laskutettava aika.",
+      "report_group_by": "Määrittää, miten aikakirjaukset ryhmitellään raportissa. Valitse jakso (päivä/viikko/kuukausi), asiakas, projekti tai asiakkaan ja projektin yhdistelmä.",
+      "report_export": "Lataa raportti PDF- tai Excel-tiedostona. Valitse fontti, kieli ja näyttöasetukset PDF-asetuksista ennen vientiä."
     }
   }
 }

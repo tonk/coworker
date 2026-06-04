@@ -1717,7 +1717,10 @@
       "ticket_reminder": "Legt ein Follow-up-Datum für pending-Tickets fest. Tickets mit fälliger Erinnerung werden oben in der Liste sortiert.",
       "ticket_close_date": "Bei Status „Pending close“ wird das Ticket an diesem Datum automatisch geschlossen.",
       "ticket_macros": "Führt eine vordefinierte Aktionsfolge aus (Status ändern, Antwort hinzufügen, Tags usw.), die von einem Administrator definiert wurde.",
-      "ticket_checklist": "Alle Checklistenelemente müssen abgeschlossen sein, bevor das Ticket geschlossen werden kann, wenn eine Vorlage angewendet wurde."
+      "ticket_checklist": "Alle Checklistenelemente müssen abgeschlossen sein, bevor das Ticket geschlossen werden kann, wenn eine Vorlage angewendet wurde.",
+      "undeclarable_time": "Nicht abrechenbare Zeit ist der Teil eines Zeiteintrags, der nicht in Rechnung gestellt werden kann. Er wird vom Gesamtbetrag abgezogen, sodass im Bericht nur die abrechenbare Zeit erscheint.",
+      "report_group_by": "Legt fest, wie Zeiteinträge im Bericht gruppiert werden. Wählen Sie nach Zeitraum (Tag/Woche/Monat), Kunde, Projekt oder einer Kombination aus Kunde und Projekt.",
+      "report_export": "Laden Sie den Bericht als PDF- oder Excel-Datei herunter. Verwenden Sie die PDF-Optionen, um Schriftart, Sprache und Anzeigeoptionen vor dem Export festzulegen."
     }
   }
 }

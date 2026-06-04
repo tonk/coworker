@@ -1717,7 +1717,10 @@
       "ticket_reminder": "Establece una fecha de seguimiento para tickets pendientes. Los tickets con un recordatorio vencido se ordenan al inicio de la lista.",
       "ticket_close_date": "Cuando el estado es Pendiente de cierre, el ticket se cierra automáticamente en esta fecha.",
       "ticket_macros": "Ejecuta una secuencia predefinida de acciones (cambiar estado, añadir respuesta, etiquetas, etc.) definida por un administrador.",
-      "ticket_checklist": "Todos los elementos de la lista de verificación deben completarse antes de poder cerrar el ticket cuando se aplica una plantilla."
+      "ticket_checklist": "Todos los elementos de la lista de verificación deben completarse antes de poder cerrar el ticket cuando se aplica una plantilla.",
+      "undeclarable_time": "El tiempo no declarable es la parte de un registro de tiempo que no se puede facturar. Se deduce del total para que solo aparezca el tiempo declarable (facturable) en los informes.",
+      "report_group_by": "Controla cómo se agrupan las entradas de tiempo en el informe. Elija por período (día/semana/mes), cliente, proyecto o una combinación de cliente y proyecto.",
+      "report_export": "Descargue el informe como PDF o archivo Excel. Use el botón de opciones de PDF para elegir fuente, idioma y opciones de visualización antes de exportar."
     }
   }
 }

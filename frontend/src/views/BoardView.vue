@@ -194,7 +194,10 @@ async function openCardById(cardId) {
   } catch {}
 }
 
-onMounted(() => loadBoard(slug.value))
+onMounted(() => {
+  ui.setHelpContext('board')
+  loadBoard(slug.value)
+})
 
 watch(slug, async (newSlug) => {
   disconnect()
@@ -208,6 +211,7 @@ onUnmounted(() => {
   disconnect()
   boardStore.reset()
   columnSortable?.destroy()
+  ui.setHelpContext(null)
 })
 
 async function loadMembers() {

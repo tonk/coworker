@@ -1717,7 +1717,10 @@
       "ticket_reminder": "Stelt een follow-updatum in voor pending-tickets. Tickets met een vervallen herinnering worden bovenaan de lijst gesorteerd.",
       "ticket_close_date": "Wanneer de status Pending close is, wordt het ticket automatisch gesloten op deze datum.",
       "ticket_macros": "Voert een vooraf ingestelde reeks acties uit (status wijzigen, antwoord toevoegen, tags, enz.) gedefinieerd door een beheerder.",
-      "ticket_checklist": "Alle checklistitems moeten zijn afgevinkt voordat het ticket kan worden gesloten wanneer een sjabloon is toegepast."
+      "ticket_checklist": "Alle checklistitems moeten zijn afgevinkt voordat het ticket kan worden gesloten wanneer een sjabloon is toegepast.",
+      "undeclarable_time": "Niet-declarabele tijd is het deel van een tijdregistratie dat niet gefactureerd kan worden. Dit wordt afgetrokken van het totaal zodat alleen de declarabele (factureerbare) tijd in rapporten verschijnt.",
+      "report_group_by": "Bepaalt hoe tijdregistraties worden gegroepeerd in het rapport. Kies op periode (dag/week/maand), klant, project of een combinatie van klant en project.",
+      "report_export": "Download het rapport als PDF of Excel-bestand. Gebruik de PDF-opties om lettertype, taal en weergave-opties in te stellen voor het exporteren."
     }
   }
 }
