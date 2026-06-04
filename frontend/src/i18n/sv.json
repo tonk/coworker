@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Projektinställningar",
-        "intro": "Konfigurera medlemmar, integrationer och projektspecifika alternativ.",
+        "intro": "Konfigurera varje aspekt av ett projekt: medlemskap, integrationer, API-åtkomst och korthistorik.",
         "tasks": [
-          "Bjud in medlemmar och ange deras projektroll (läsare, medlem, ägare).",
-          "Konfigurera GitHub- eller GitLab-webhooks för automatisering.",
-          "Hantera projekt-API-nycklar för CI/CD-ärendeskapande."
+          "Allmänt — byt namn på projektet, ändra dess nyckelprefix eller byt standardtavlavy.",
+          "Medlemmar — bjud in användare och ange deras roll (läsare, medlem, ägare); ägare kan hantera kolumner och inställningar.",
+          "Etiketter — skapa färgkodade etiketter som visas på kort för visuell filtrering.",
+          "API-nycklar — skapa projektbundna nycklar för CI/CD-pipelines; nycklar är låsta till detta projekt.",
+          "Webhooks — anslut GitHub, GitLab, Gitea eller Forgejo så att commits och pull requests publiceras i projektchatt och automatiskt länkas till kort när en kortreferens (t.ex. PRJ-42) förekommer i meddelandet.",
+          "Raderade kort — bläddra och återställ kort som raderats; permanent radering sker inte automatiskt."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Kunder (admin)",
-        "intro": "Skapa kunder, avtal och åtkomstregler.",
+        "title": "Kunder och avtal",
+        "intro": "Hantera kunder, koppla dem till avtal och projekt och konfigurera kundspecifika faktureringssatser.",
         "tasks": [
-          "Lägg till avtal med satser som används i tidsrapporter.",
-          "Tilldela agenter till kunder för ärendeåtkomst och ansvariga-dropdowns.",
-          "Konfigurera icke-deklarerbara minuter på endast-tidrapporteringsprojekt."
+          "Skapa en kund och stjärnmärk den för att fästa den i sidopanelen för snabb åtkomst.",
+          "Lägg till avtal med en bastimtaxa; koppla ett eller flera projekt till varje avtal för kostnadsberäkningar i tidsrapporter.",
+          "Lägg till tidsluckor i ett avtal för tarifffnivåer — till exempel en 1,5×-multiplikator för helgtimmar eller en annan fast taxa för nattliga beredskapspass (t.ex. fredag 19:00 → lördag 07:00).",
+          "Tilldela agenter till kunder så att de visas i rullgardinsmenyn för ansvarig för ärenden och får åtkomst till den kundens helpdeskärenden.",
+          "Ange icke-deklarerbara minuter på tidrapporteringsprojekt (t.ex. 30 min per post för obligatoriska pauser); beloppet dras automatiskt av från fakturerbara totaler i rapporter."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Systeminställningar",
-        "intro": "SMTP, IMAP, varumärke, säkerhet och standardvärden för nya användare och projekt.",
+        "intro": "Serveromfattande konfiguration för e-post, säkerhet, varumärke, säkerhetskopior och standardvärden för alla användare.",
         "tasks": [
-          "Konfigurera utgående e-post innan lösenordsåterställning och aviseringar fungerar.",
-          "Konfigurera IMAP-polling för att skapa ärenden från inkommande e-post.",
-          "Begränsa API-åtkomst med tillåtna IP-intervall — testa noggrant innan du sparar.",
-          "Ladda upp en företagslogotyp som visas på rapporter och valfritt på inloggningssidan."
+          "Utgående e-post (SMTP) — konfigurera innan lösenordsåterställning och e-postaviseringar för ärenden fungerar. Användarnamn och lösenord är valfria för reläservrar.",
+          "Inkommande e-post (IMAP) — aktivera ärendeskapande från e-post. Välj PLAIN-autentisering för grundläggande inloggningsuppgifter eller OAuth2 för Gmail/Office 365 för att undvika att lagra lösenord.",
+          "Säkerhet — ange en lösenordspolicy (minimilängd, teckenkrav), begränsa API-åtkomst efter IP/CIDR-intervall och konfigurera timeout för inaktiva sessioner.",
+          "Säkerhetskopior — schemalägg automatiska säkerhetskopior (var 6:e, 8:e, 12:e eller 24:e timme) och ange kvarhållningstid; aktivera e-postavisering för att varna vid framgång eller fel. Övervaka diskanvändning i backups/.",
+          "Varumärke — ladda upp ett företagsnamn och separata logotyper för ljust/mörkt läge som visas på inloggningsskärmen och i alla PDF-rapporter.",
+          "Standardvärden — ange standardtema, språk, datumformat, tidszon och typsnitt som tillämpas på varje nytt användarkonto."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "När status är Väntande stängning stängs ärendet automatiskt detta datum.",
       "ticket_macros": "Kör en förinställd sekvens av åtgärder (ändra status, lägg till svar, taggar m.m.) definierad av en administratör.",
       "ticket_checklist": "Alla checklistobjekt måste slutföras innan ärendet kan stängas när en mall tillämpas.",
-      "undeclarable_time": "Icke-fakturerbar tid är den del av en tidsregistrering som inte kan faktureras. Den dras av från totalen så att bara den fakturerbara (deklarbara) tiden visas i rapporter.",
+      "undeclarable_time": "Tid som inte kan faktureras kunden — till exempel lunchraster, intern utbildning eller restid. Den registreras i tidraporten men dras automatiskt av från fakturerbara totaler i rapporter, PDF-filer och XLSX-exporter. Det icke-deklarerbara beloppet anges per projekt, inte per post.",
       "report_group_by": "Styr hur tidsregistreringar grupperas i rapporten. Välj per period (dag/vecka/månad), kund, projekt eller en kombination av kund och projekt.",
-      "report_export": "Ladda ned rapporten som PDF eller Excel-fil. Använd PDF-inställningsknappen för att välja typsnitt, språk och visningsalternativ innan export."
+      "report_export": "Ladda ned rapporten som PDF eller Excel-fil. Använd PDF-inställningsknappen för att välja typsnitt, språk och visningsalternativ innan export.",
+      "imap_poll_interval": "Hur ofta WarmDesk kontrollerar inkorgen efter nya e-postmeddelanden (i sekunder). Lägre värden skapar ärenden snabbare men ökar serverbelastningen. 60–300 sekunder är ett rimligt intervall för de flesta konfigurationer.",
+      "imap_auth_mechanism": "PLAIN skickar ditt användarnamn och lösenord direkt (lämpligt för egenvärdade e-postservrar med TLS). OAuth2 använder en kortlivad åtkomsttoken istället för ett lösenord — rekommenderas för Gmail och Office 365 och krävs om leverantören blockerar grundläggande autentisering.",
+      "imap_oauth2_provider": "Välj din leverantör så att WarmDesk använder rätt OAuth2-slutpunkter. Klicka på Auktorisera efter sparande för att öppna leverantörens samtyckessida och bevilja läsåtkomst till inkorgen. Åtkomsttoken förnyas automatiskt innan den går ut.",
+      "backup_schedule": "Hur ofta en automatisk säkerhetskopia skapas. Tätare säkerhetskopior minskar risken för dataförlust men förbrukar mer diskutrymme i katalogen backups/. Övervaka diskanvändningen efter aktivering; varje säkerhetskopia är en fullständig kopia av databasen.",
+      "password_min_length": "En längd på 12 eller fler tecken är mer effektiv än korta lösenord med komplexa teckenkrav. Överväg att ange ett långt minimum med lätta övriga krav — komplexitetskrav leder ofta till förutsägbara mönster som 'Lösenord1!'.",
+      "webhook_type": "Välj den plattform som skickar webhooks. GitHub-, GitLab-, Gitea- och Forgejo-nyttolaster analyseras automatiskt: commits och pull requests publiceras i projektchatt och kortreferenser (t.ex. PRJ-42) i commit-meddelanden länkas automatiskt till matchande kort. Generisk skickar bara ett enkelt JSON-meddelande.",
+      "webhook_secret": "En token som ingår i varje begäran från ditt repository för att verifiera att den kom från en legitim källa. Kopiera den nu — den visas inte igen. Klistra in den i ditt repositorys webhookinställningar som hemlighet.",
+      "slot_factor": "Multiplicerar avtalets bastimtaxa för tid registrerad under denna lucka. Till exempel innebär 1,5 att 1,5 × bastaxan används. Lämna på 1 för att bara använda luckornas taxafält utan multiplikation.",
+      "slot_rate": "Fast timtaxa för tid registrerad under denna lucka, som åsidosätter avtalets bastimtaxa. Om både en taxa och en multiplikator är inställda multipliceras taxan. Lämna tomt för att bara använda multiplikatorn mot avtalets bastimtaxa.",
+      "slot_end_day": "Välj för nattiga luckor när sluttiden infaller. 'Samma dag' slutar före midnatt. 'Nästa dag' slutar följande morgon (t.ex. start fredag 19:00, slut lördag 07:00). 'Två dagar senare' täcker ett pass som sträcker sig över en hel natt och dag.",
+      "slot_day_type": "Begränsar denna taxalucka till specifika dagar. 'Alla dagar' gäller varje dag; 'Vardagar' täcker måndag–fredag; 'Helger' täcker lördag–söndag; individuella dagsalternativ gäller bara på exakt den veckodagen."
     }
   }
 }

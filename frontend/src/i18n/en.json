@@ -1339,12 +1339,15 @@
         ]
       },
       "projectSettings": {
-        "title": "Project settings",
-        "intro": "Configure members, integrations, and project-specific options.",
+        "title": "Project Settings",
+        "intro": "Configure every aspect of a project: membership, integrations, API access, and card history.",
         "tasks": [
-          "Invite members and set their project role (viewer, member, owner).",
-          "Configure GitHub or GitLab webhooks for automation.",
-          "Manage project API keys for CI/CD ticket creation."
+          "General — rename the project, change its key prefix, or switch the default board view.",
+          "Members — invite users and set their role (viewer, member, owner); owners can manage columns and settings.",
+          "Labels — create and colour-code labels that appear on cards for visual filtering.",
+          "API Keys — create project-scoped keys for CI/CD pipelines; keys are locked to this project only.",
+          "Webhooks — connect GitHub, GitLab, Gitea, or Forgejo so commits and pull requests post to the project chat and auto-link to cards when a card reference (e.g. PRJ-42) appears in the message.",
+          "Deleted Cards — browse and restore cards that were deleted; permanent deletion is not automatic."
         ]
       },
       "settings": {
@@ -1499,12 +1502,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Customers (admin)",
-        "intro": "Create customers, contracts, and access rules.",
+        "title": "Customers & Contracts",
+        "intro": "Manage customers, link them to contracts and projects, and configure per-customer billing rates.",
         "tasks": [
-          "Add contracts with rates used in time reports.",
-          "Assign agents to customers for ticket access and assignee dropdowns.",
-          "Configure undeclarable minutes on time-tracking-only projects."
+          "Create a customer and star it to pin it to the sidebar for quick access.",
+          "Add contracts with a base hourly rate; link one or more projects to each contract for time-report cost calculations.",
+          "Add time slots to a contract for rate tiers — for example a 1.5× multiplier for weekend hours or a different flat rate for overnight standby shifts (e.g. Friday 19:00 → Saturday 07:00).",
+          "Assign agents to customers so they appear in the ticket assignee dropdown and gain access to that customer's helpdesk tickets.",
+          "Set undeclarable minutes on time-tracking projects (e.g. 30 min per entry for mandatory breaks); the amount is automatically subtracted from billable totals in reports."
         ]
       },
       "adminProjects": {
@@ -1517,13 +1522,15 @@
         ]
       },
       "adminSettings": {
-        "title": "System settings",
-        "intro": "SMTP, IMAP, branding, security, and defaults for new users and projects.",
+        "title": "System Settings",
+        "intro": "Server-wide configuration for email, security, branding, backups, and defaults for all users.",
         "tasks": [
-          "Configure outgoing mail before password reset and notifications work.",
-          "Set up IMAP polling to create tickets from incoming email.",
-          "Restrict API access with allowed IP ranges — test carefully before saving.",
-          "Upload a company logo shown on reports and optionally on the login page."
+          "Outgoing mail (SMTP) — configure before password reset and ticket email notifications work. Username and password are optional for relay servers.",
+          "Incoming mail (IMAP) — enable ticket creation from email. Choose PLAIN auth for basic credentials or OAuth2 for Gmail / Office 365 to avoid storing passwords.",
+          "Security — set a password policy (minimum length, character requirements), restrict API access by IP/CIDR range, and configure the idle session timeout.",
+          "Backups — schedule automatic backups (every 6, 8, 12, or 24 hours) and set retention; enable email notification to alert on success or failure. Monitor disk usage in backups/.",
+          "Branding — upload a company name and separate light/dark logos shown on the login screen and all PDF reports.",
+          "Defaults — set the default theme, locale, date format, timezone, and font applied to every new user account."
         ]
       },
       "adminNews": {
@@ -1787,9 +1794,20 @@
       "ticket_close_date": "When status is Pending close, the ticket is automatically closed on this date.",
       "ticket_macros": "Runs a preset sequence of actions (change status, add reply, tags, etc.) defined by an administrator.",
       "ticket_checklist": "Checklist items must all be completed before the ticket can be closed when a template is applied.",
-      "undeclarable_time": "Undeclarable time is the portion of a time entry that cannot be billed. It is deducted from the total so only the declarable (billable) time is shown in reports.",
+      "undeclarable_time": "Time that cannot be billed to the client — for example lunch breaks, internal training, or travel. It is tracked in the timesheet but automatically deducted from billable totals in reports, PDFs, and XLSX exports. The undeclarable amount is set per project, not per entry.",
       "report_group_by": "Controls how time entries are grouped in the report. Choose by period (day/week/month), customer, project, or a combination of customer and project.",
-      "report_export": "Download the report as a PDF or Excel file. Use the PDF options button to choose font, language, and display options before exporting."
+      "report_export": "Download the report as a PDF or Excel file. Use the PDF options button to choose font, language, and display options before exporting.",
+      "imap_poll_interval": "How often WarmDesk checks the inbox for new emails (in seconds). Lower values create tickets faster but increase server load. 60–300 seconds is a reasonable range for most setups.",
+      "imap_auth_mechanism": "PLAIN sends your username and password directly (suitable for self-hosted mail servers with TLS). OAuth2 uses a short-lived access token instead of a password — recommended for Gmail and Office 365 accounts, and required if the provider blocks basic auth.",
+      "imap_oauth2_provider": "Select your provider so WarmDesk uses the correct OAuth2 endpoints. After saving, click Authorize to open the provider's consent screen and grant read access to the inbox. The access token is refreshed automatically before it expires.",
+      "backup_schedule": "How often an automatic backup is created. More frequent backups reduce data loss risk but consume more disk space in the backups/ directory. Monitor disk usage after enabling; each backup is a full copy of the database.",
+      "password_min_length": "A length of 12 or more characters is more effective than short passwords with complex character rules. Consider setting a long minimum and keeping other requirements light — complexity requirements often lead to predictable patterns like 'Password1!'.",
+      "webhook_type": "Select the platform sending webhooks. GitHub, GitLab, Gitea, and Forgejo payloads are parsed automatically: commits and pull requests post to the project chat, and card references (e.g. PRJ-42) in commit messages auto-link to the matching card. Generic sends a plain JSON notification only.",
+      "webhook_secret": "A token included in every request from your repository to verify it came from a legitimate source. Copy it now — it will not be shown again. Paste it into your repository's webhook settings as the secret.",
+      "slot_factor": "Multiplies the contract's base hourly rate for time logged during this slot. For example, 1.5 means 1.5 × the base rate. Leave at 1 to use the slot rate field alone without multiplying.",
+      "slot_rate": "Flat hourly rate for time logged during this slot, overriding the contract's base rate. If both a rate and a multiplier are set, the rate is multiplied. Leave empty to use only the multiplier against the contract base rate.",
+      "slot_end_day": "For overnight slots, select when the end time falls. 'Same day' ends before midnight. 'Next day' ends the following morning (e.g. start Friday 19:00, end Saturday 07:00). 'Two days later' covers a shift spanning a full night and day.",
+      "slot_day_type": "Limits this rate slot to specific days. 'All days' applies every day; 'Weekdays' covers Monday–Friday; 'Weekends' covers Saturday–Sunday; individual day options apply only on that exact day of the week."
     }
   }
 }

@@ -573,14 +573,14 @@
 
             <div class="form-row" style="max-width:500px">
               <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-imap-auth">{{ $t('admin.imap_auth_mechanism') }}</label>
+                <label class="form-label" for="sys-imap-auth">{{ $t('admin.imap_auth_mechanism') }}<HelpIcon i18n-key="help.fields.imap_auth_mechanism" :label="$t('admin.imap_auth_mechanism')" /></label>
                 <select id="sys-imap-auth" class="form-input" v-model="systemSettings.imap_auth_mechanism">
                   <option value="plain">{{ $t('admin.imap_auth_plain') }}</option>
                   <option value="oauth2">{{ $t('admin.imap_auth_oauth2') }}</option>
                 </select>
               </div>
               <div class="form-group" style="flex:1" v-if="systemSettings.imap_auth_mechanism === 'oauth2'">
-                <label class="form-label" for="sys-imap-oauth2-provider">{{ $t('admin.imap_oauth2_provider') }}</label>
+                <label class="form-label" for="sys-imap-oauth2-provider">{{ $t('admin.imap_oauth2_provider') }}<HelpIcon i18n-key="help.fields.imap_oauth2_provider" :label="$t('admin.imap_oauth2_provider')" /></label>
                 <select id="sys-imap-oauth2-provider" class="form-input" v-model="systemSettings.imap_oauth2_provider">
                   <option value="">{{ $t('common.select') }}</option>
                   <option value="google">{{ $t('admin.imap_oauth2_google') }}</option>
@@ -607,7 +607,7 @@
                 <input id="sys-imap-mailbox" class="form-input" v-model="systemSettings.imap_mailbox" placeholder="INBOX" />
               </div>
               <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-imap-poll">{{ $t('admin.imap_poll_interval') }}</label>
+                <label class="form-label" for="sys-imap-poll">{{ $t('admin.imap_poll_interval') }}<HelpIcon i18n-key="help.fields.imap_poll_interval" :label="$t('admin.imap_poll_interval')" /></label>
                 <input id="sys-imap-poll" class="form-input" v-model="systemSettings.imap_poll_interval" type="number" placeholder="60" />
               </div>
             </div>
@@ -687,7 +687,7 @@
             </h3>
 
             <div class="form-group" style="max-width:240px">
-              <label class="form-label" for="sys-pwd-min-len">{{ $t('admin.password_min_length') }}</label>
+              <label class="form-label" for="sys-pwd-min-len">{{ $t('admin.password_min_length') }}<HelpIcon i18n-key="help.fields.password_min_length" :label="$t('admin.password_min_length')" /></label>
               <input id="sys-pwd-min-len" class="form-input" type="number" min="8" max="128" v-model.number="systemSettings.password_min_length" style="width:100px" />
             </div>
 
@@ -918,7 +918,7 @@
             <h3 class="form-section-title">{{ $t('admin.backup_schedule_title') }}</h3>
             <div class="form-row" style="align-items:end;flex-wrap:wrap;gap:12px;margin-top:8px">
               <div class="form-group" style="margin-bottom:0;flex:0 0 160px">
-                <label class="form-label" for="sys-backup-schedule">{{ $t('admin.backup_schedule_label') }}</label>
+                <label class="form-label" for="sys-backup-schedule">{{ $t('admin.backup_schedule_label') }}<HelpIcon i18n-key="help.fields.backup_schedule" :label="$t('admin.backup_schedule_label')" /></label>
                 <select id="sys-backup-schedule" class="form-input" v-model="systemSettings.backup_schedule">
                   <option value="disabled">{{ $t('admin.backup_schedule_disabled') }}</option>
                   <option value="6h">{{ $t('admin.backup_schedule_6h') }}</option>

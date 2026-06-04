@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Projectinstellingen",
-        "intro": "Configureer leden, integraties en projectspecifieke opties.",
+        "intro": "Configureer elk aspect van een project: leden, integraties, API-toegang en kaartgeschiedenis.",
         "tasks": [
-          "Nodig leden uit en stel hun projectrol in (viewer, member, owner).",
-          "Configureer GitHub- of GitLab-webhooks voor automatisering.",
-          "Beheer project-API-sleutels voor CI/CD-ticketcreatie."
+          "Algemeen — hernoem het project, wijzig de sleutelprefiks of schakel de standaard bordweergave om.",
+          "Leden — nodig gebruikers uit en stel hun rol in (viewer, member, owner); owners kunnen kolommen en instellingen beheren.",
+          "Labels — maak labels aan met kleur die op kaarten verschijnen voor visueel filteren.",
+          "API-sleutels — maak projectgebonden sleutels aan voor CI/CD-pijplijnen; sleutels zijn gebonden aan dit project.",
+          "Webhooks — verbind GitHub, GitLab, Gitea of Forgejo zodat commits en pull requests naar de projectchat worden gepost en automatisch worden gekoppeld aan kaarten als een kaartreferentie (bijv. PRJ-42) in het bericht staat.",
+          "Verwijderde kaarten — blader en herstel kaarten die zijn verwijderd; definitief verwijderen is niet automatisch."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Klanten (beheer)",
-        "intro": "Maak klanten, contracten en toegangsregels aan.",
+        "title": "Klanten en contracten",
+        "intro": "Beheer klanten, koppel ze aan contracten en projecten en configureer klantspecifieke facturatietarieven.",
         "tasks": [
-          "Voeg contracten toe met tarieven voor tijdrapporten.",
-          "Wijs agents toe aan klanten voor tickettoegang en toegewezen-personenlijsten.",
-          "Configureer niet-declareerbare minuten op alleen-tijdregistratieprojecten."
+          "Maak een klant aan en markeer als favoriet om snel toegang te krijgen via de zijbalk.",
+          "Voeg contracten toe met een basisuurtarief; koppel één of meer projecten aan elk contract voor kostenberekeningen in tijdrapporten.",
+          "Voeg tijdslots toe aan een contract voor tariefniveaus — bijvoorbeeld een 1,5× multiplier voor weekenduren of een ander vast tarief voor nachtelijke stand-by diensten (bijv. vrijdag 19:00 → zaterdag 07:00).",
+          "Wijs agents toe aan klanten zodat ze verschijnen in het keuzemenu voor toegewezen persoon en toegang krijgen tot de helpdesk-tickets van die klant.",
+          "Stel niet-declareerbare minuten in op tijdregistratieprojecten (bijv. 30 min per regel voor verplichte pauzes); het bedrag wordt automatisch afgetrokken van factureerbare totalen in rapporten."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Systeeminstellingen",
-        "intro": "SMTP, IMAP, branding, beveiliging en standaardwaarden voor nieuwe gebruikers en projecten.",
+        "intro": "Serverwijde configuratie voor e-mail, beveiliging, branding, back-ups en standaardwaarden voor alle gebruikers.",
         "tasks": [
-          "Configureer uitgaande mail voordat wachtwoordreset en meldingen werken.",
-          "Stel IMAP-polling in om tickets te maken van binnenkomende e-mail.",
-          "Beperk API-toegang met toegestane IP-bereiken — test zorgvuldig vóór opslaan.",
-          "Upload een bedrijfslogo voor rapporten en optioneel op de inlogpagina."
+          "Uitgaande mail (SMTP) — configureer voordat wachtwoordreset en e-mailmeldingen voor tickets werken. Gebruikersnaam en wachtwoord zijn optioneel voor relay-servers.",
+          "Inkomende mail (IMAP) — schakel het aanmaken van tickets uit e-mail in. Kies PLAIN-authenticatie voor basisinloggegevens of OAuth2 voor Gmail/Office 365 om wachtwoorden niet op te slaan.",
+          "Beveiliging — stel een wachtwoordbeleid in (minimale lengte, tekenvereisten), beperk API-toegang per IP/CIDR-bereik en configureer de time-out voor inactieve sessies.",
+          "Back-ups — plan automatische back-ups (elke 6, 8, 12 of 24 uur) en stel retentie in; schakel e-mailmeldingen in om te waarschuwen bij succes of mislukking. Houd schijfgebruik in backups/ in de gaten.",
+          "Branding — upload een bedrijfsnaam en afzonderlijke logo's voor licht/donker die worden weergegeven op het inlogscherm en in alle PDF-rapporten.",
+          "Standaarden — stel het standaard thema, de taal, het datumformaat, de tijdzone en het lettertype in dat op elk nieuw gebruikersaccount wordt toegepast."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "Wanneer de status Pending close is, wordt het ticket automatisch gesloten op deze datum.",
       "ticket_macros": "Voert een vooraf ingestelde reeks acties uit (status wijzigen, antwoord toevoegen, tags, enz.) gedefinieerd door een beheerder.",
       "ticket_checklist": "Alle checklistitems moeten zijn afgevinkt voordat het ticket kan worden gesloten wanneer een sjabloon is toegepast.",
-      "undeclarable_time": "Niet-declarabele tijd is het deel van een tijdregistratie dat niet gefactureerd kan worden. Dit wordt afgetrokken van het totaal zodat alleen de declarabele (factureerbare) tijd in rapporten verschijnt.",
+      "undeclarable_time": "Tijd die niet aan de klant gefactureerd kan worden — zoals lunchpauzes, interne trainingen of reistijd. Deze wordt bijgehouden in de urenregistratie maar automatisch afgetrokken van factureerbare totalen in rapporten, PDF's en XLSX-exports. Het niet-declareerbare bedrag wordt per project ingesteld, niet per regel.",
       "report_group_by": "Bepaalt hoe tijdregistraties worden gegroepeerd in het rapport. Kies op periode (dag/week/maand), klant, project of een combinatie van klant en project.",
-      "report_export": "Download het rapport als PDF of Excel-bestand. Gebruik de PDF-opties om lettertype, taal en weergave-opties in te stellen voor het exporteren."
+      "report_export": "Download het rapport als PDF of Excel-bestand. Gebruik de PDF-opties om lettertype, taal en weergave-opties in te stellen voor het exporteren.",
+      "imap_poll_interval": "Hoe vaak WarmDesk de inbox controleert op nieuwe e-mails (in seconden). Lagere waarden maken tickets sneller aan maar verhogen de serverbelasting. 60–300 seconden is een redelijk bereik voor de meeste instellingen.",
+      "imap_auth_mechanism": "PLAIN stuurt uw gebruikersnaam en wachtwoord direct door (geschikt voor zelf-gehoste mailservers met TLS). OAuth2 gebruikt een kortdurend toegangstoken in plaats van een wachtwoord — aanbevolen voor Gmail- en Office 365-accounts, en vereist als de provider basisauthenticatie blokkeert.",
+      "imap_oauth2_provider": "Selecteer uw provider zodat WarmDesk de juiste OAuth2-eindpunten gebruikt. Klik na het opslaan op Autoriseren om het toestemmingsscherm van de provider te openen en leestoegang tot de inbox te verlenen. Het toegangstoken wordt automatisch vernieuwd voor het verloopt.",
+      "backup_schedule": "Hoe vaak een automatische back-up wordt gemaakt. Frequentere back-ups verminderen het risico op gegevensverlies maar nemen meer schijfruimte in beslag in de map backups/. Houd het schijfgebruik in de gaten na het inschakelen; elke back-up is een volledige kopie van de database.",
+      "password_min_length": "Een lengte van 12 of meer tekens is effectiever dan korte wachtwoorden met complexe tekenvereisten. Overweeg een lange minimumlengte in te stellen met lichte overige vereisten — complexiteitsvereisten leiden vaak tot voorspelbare patronen zoals 'Wachtwoord1!'.",
+      "webhook_type": "Selecteer het platform dat webhooks verstuurt. GitHub-, GitLab-, Gitea- en Forgejo-payloads worden automatisch verwerkt: commits en pull requests worden naar de projectchat gepost, en kaartreferenties (bijv. PRJ-42) in commit-berichten worden automatisch gekoppeld aan de bijbehorende kaart. Generiek stuurt alleen een gewone JSON-melding.",
+      "webhook_secret": "Een token dat in elk verzoek van uw repository wordt opgenomen om te verifiëren dat het van een legitieme bron afkomstig is. Kopieer het nu — het wordt niet opnieuw getoond. Plak het in de webhook-instellingen van uw repository als geheim.",
+      "slot_factor": "Vermenigvuldigt het basistariefperuur van het contract voor tijd geregistreerd tijdens dit slot. Bijvoorbeeld: 1,5 betekent 1,5 × het basisuurtarief. Laat op 1 staan om alleen het slottarief te gebruiken zonder vermenigvuldiging.",
+      "slot_rate": "Vast uurtarief voor tijd geregistreerd tijdens dit slot, dat het basisuurtarief van het contract overschrijft. Als zowel een tarief als een vermenigvuldiger zijn ingesteld, wordt het tarief vermenigvuldigd. Laat leeg om alleen de vermenigvuldiger toe te passen op het contractbasisuurtarief.",
+      "slot_end_day": "Selecteer voor nachtelijke slots wanneer de eindtijd valt. 'Zelfde dag' eindigt voor middernacht. 'Volgende dag' eindigt de volgende ochtend (bijv. start vrijdag 19:00, einde zaterdag 07:00). 'Twee dagen later' beslaat een dienst die een volledige nacht en dag overbrugt.",
+      "slot_day_type": "Beperkt dit tariefslot tot specifieke dagen. 'Alle dagen' geldt elke dag; 'Weekdagen' omvat maandag–vrijdag; 'Weekenden' omvat zaterdag–zondag; individuele dag-opties gelden alleen op die exacte dag van de week."
     }
   }
 }

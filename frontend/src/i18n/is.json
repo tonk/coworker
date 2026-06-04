@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Verkefnastillingar",
-        "intro": "Stilltu meðlimi, samþættingar og verkefnissértæk valkosti.",
+        "intro": "Stilltu alla þætti verkefnis: meðlimskap, samþættingar, API-aðgang og sögu spila.",
         "tasks": [
-          "Bjóddu meðlimum og stilltu verkefnishlutverk þeirra (áhorfandi, meðlimur, eigandi).",
-          "Stilltu GitHub eða GitLab webhook fyrir sjálfvirkni.",
-          "Stjórnaðu API lyklum verkefnis fyrir miðaútbúna í CI/CD."
+          "Almennt — endurnefndu verkefnið, breyttu lyklaforskeytinu eða skiptu um sjálfgefna borðsýn.",
+          "Meðlimir — bjóddu notendum og stilltu hlutverk þeirra (áhorfandi, meðlimur, eigandi); eigendur geta stjórnað dálkum og stillingum.",
+          "Merki — búðu til litakóðuð merki sem birtast á spilum fyrir sjónræna síun.",
+          "API-lyklar — búðu til verkefnisbundna lykla fyrir CI/CD-leiðslur; lyklar eru læstir við þetta verkefni.",
+          "Webhook — tengdu GitHub, GitLab, Gitea eða Forgejo svo commitum og pull requestum sé birt í verkefnaspjallinu og þau tengist sjálfkrafa spilum þegar spilstilvísun (t.d. PRJ-42) birtist í skilaboðunum.",
+          "Eydd spil — flettu í gegnum og endurheimt eydd spil; varanleg eyðing er ekki sjálfvirk."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Viðskiptavinir (stjórnun)",
-        "intro": "Búðu til viðskiptavini, samninga og aðgangsreglur.",
+        "title": "Viðskiptavinir og samningar",
+        "intro": "Stjórnaðu viðskiptavinum, tengdu þá við samninga og verkefni og stilltu reikningsfærsluverð á hvern viðskiptavin.",
         "tasks": [
-          "Bættu við samningum með verðum sem notuð eru í tímaskýrslum.",
-          "Úthlutaðu fulltrúum til viðskiptavina fyrir miðaaðgang og úthlutunarval.",
-          "Stilltu ótilkynndar mínútur í verkefnum eingöngu fyrir tímaskráningu."
+          "Búðu til viðskiptavin og merktu hann með stjörnu til að festa hann í hliðarstikunni fyrir skjótan aðgang.",
+          "Bættu við samningum með grunntímaverði; tengdu eitt eða fleiri verkefni við hvern samning fyrir kostnaðarútreikninga í tímaskýrslum.",
+          "Bættu við tímaraufum í samning fyrir verðlag — til dæmis 1,5× margföldun fyrir helgartíma eða annað fast verð fyrir næturbereðskaptartíma (t.d. föstudagur 19:00 → laugardagur 07:00).",
+          "Úthlutaðu fulltrúum til viðskiptavina svo þeir birtist í fellilistanum fyrir úthlutun miða og fái aðgang að þjónustumiðum þessa viðskiptavinar.",
+          "Stilltu ótilkynndar mínútur á tímaskráningarverkefnum (t.d. 30 mín á færslu fyrir skylduhlé); upphæðin er sjálfkrafa dregin frá reikningshæfum heildartölum í skýrslum."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Kerfisstillingar",
-        "intro": "SMTP, IMAP, vörumerki, öryggi og sjálfgefnar stillingar fyrir nýja notendur og verkefni.",
+        "intro": "Kerfisvíðar stillingar fyrir tölvupóst, öryggi, vörumerki, öryggisafrit og sjálfgefin gildi fyrir alla notendur.",
         "tasks": [
-          "Stilltu útsendan póst áður en endurstilling lykilorðs og tilkynningar virka.",
-          "Settu upp IMAP könnun til að búa til miða úr innkomnum tölvupósti.",
-          "Takmarkaðu API aðgang með leyfilegum IP svæðum — prófaðu vandlega áður en vistað er.",
-          "Hladdu upp lógó fyrirtækis sem birtist á skýrslum og valfrjálst á innskráningarsíðu."
+          "Sendur tölvupóstur (SMTP) — stilltu áður en endurstilling lykilorðs og tilkynningar um miða með tölvupósti virka. Notandanafn og lykilorð eru valfrjáls fyrir miðlunarsþjóna.",
+          "Berðst tölvupóstur (IMAP) — virkjaðu stofnun miða úr tölvupósti. Veldu PLAIN-auðkenningu fyrir grunnleg innskráningarupplýsingar eða OAuth2 fyrir Gmail/Office 365 til að forðast geymslu lykilorða.",
+          "Öryggi — settu upp lykilorðastefnu (lágmarkslengd, tegnkröfur), takmarkaðu API-aðgang eftir IP/CIDR-sviðum og stilltu tímaout fyrir óvirkar lotur.",
+          "Öryggisafrit — tímasettu sjálfvirk öryggisafrit (á 6., 8., 12. eða 24. tíma fresti) og stilltu geymslu; virkjaðu tölvupóststilkynningu til að gefa viðvörun við árangri eða bilun. Fylgstu með disknotkun í backups/.",
+          "Vörumerki — hladdu upp heiti fyrirtækis og aðskildum lógóum fyrir ljóst/dökkt sem birtist á innskráningarskjánum og í öllum PDF-skýrslum.",
+          "Sjálfgefin gildi — stilltu sjálfgefið þema, tungumál, dagsetningarsnið, tímabelti og leturgerð sem er beitt á hvern nýjan notendareikninginn."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "Þegar staða er Biðlokun lokar miðinn sjálfkrafa á þessari dagsetningu.",
       "ticket_macros": "Keyrir fyrirfram skilgreinda röð aðgerða (breyta stöðu, bæta við svari, merki o.s.frv.) sem stjórnandi hefur skilgreint.",
       "ticket_checklist": "Öllum atriðum gátlista verður að ljúka áður en hægt er að loka miða þegar sniðmát er notað.",
-      "undeclarable_time": "Óreikningshæfur tími er sá hluti tímafærslu sem ekki er hægt að rukka. Hann er dreginn frá heildarfjölda þannig að aðeins reikningshæfur (gjaldfæranlegur) tími birtist í skýrslum.",
+      "undeclarable_time": "Tími sem ekki er hægt að rukka viðskiptavininn fyrir — til dæmis hádegishlé, innra þjálfun eða ferðatíma. Hann er skráður í tímaeyðublaðið en dreginn sjálfkrafa frá reikningshæfum heildartölum í skýrslum, PDF-skjölum og XLSX-útflutningum. Óreikningshæft magn er stillt á verkefni, ekki á færslu.",
       "report_group_by": "Stjórnar hvernig tímafærslur eru flokkaðar í skýrslunni. Veldu eftir tímabili (dag/viku/mánuð), viðskiptavini, verkefni eða samsetningu viðskiptavinar og verkefnis.",
-      "report_export": "Sæktu skýrsluna sem PDF eða Excel-skrá. Notaðu PDF-valkostahnappin til að velja leturgerð, tungumál og skjávalkosti fyrir útflutning."
+      "report_export": "Sæktu skýrsluna sem PDF eða Excel-skrá. Notaðu PDF-valkostahnappin til að velja leturgerð, tungumál og skjávalkosti fyrir útflutning.",
+      "imap_poll_interval": "Hversu oft WarmDesk athugar innhólfið fyrir nýjum tölvupóstum (í sekúndum). Lægri gildi búa til miða hraðar en auka álag á þjón. 60–300 sekúndur er sanngjarnt svið fyrir flestar uppsetningar.",
+      "imap_auth_mechanism": "PLAIN sendir notandanafn og lykilorð þitt beint (hentar sjálfhýstum póstþjónum með TLS). OAuth2 notar skammtíma aðgangslykil í stað lykilorðs — mælt með fyrir Gmail og Office 365 og krafist ef veitandinn lokar á grunnauðkenningu.",
+      "imap_oauth2_provider": "Veldu veitanda þinn svo WarmDesk noti réttar OAuth2-endapunktar. Eftir vistun, smelltu á Heimila til að opna samþykktarskjá veitandans og veita lesunarrétt á innhólfið. Aðgangslykillinn er endurnýjaður sjálfkrafa áður en hann rennur út.",
+      "backup_schedule": "Hversu oft sjálfvirkt öryggisafrit er búið til. Tíðari öryggisafrit minnka hættu á gagnatapi en neyta meira diskpláss í möppunni backups/. Fylgstu með disknotkun eftir virkjun; hvert öryggisafrit er fullkomið afrit af gagnagrunninum.",
+      "password_min_length": "Lengd upp á 12 eða fleiri stafi er áhrifaríkari en stutt lykilorð með flóknum tegnreglum. Íhugaðu að stilla langan lágmark með léttar aðrar kröfur — flókleikakröfur leiða oft til fyrirsjáanlegra mynstra eins og 'Lykilord1!'.",
+      "webhook_type": "Veldu þá vettvang sem sendir webhook. GitHub-, GitLab-, Gitea- og Forgejo-hleðslur eru þáttaðar sjálfkrafa: commitum og pull requestum er birt í verkefnaspjallinu og spilstilvísanir (t.d. PRJ-42) í commit-skilaboðum tengjast sjálfkrafa við samsvarandi spil. Almenn sendir aðeins einfalda JSON-tilkynningu.",
+      "webhook_secret": "Lykill sem er innifalinn í hverri beiðni frá geymslu þinni til að staðfesta að hún komi frá lögmætum uppruna. Afritaðu hann núna — hann verður ekki sýndur aftur. Límdu hann inn í webhook-stillingar geymslu þinnar sem leyndarmál.",
+      "slot_factor": "Margfaldar grunntímaverð samningsins fyrir tíma skráðan á þessum rauf. Til dæmis þýðir 1,5 að 1,5 × grunntímaverðið er notað. Skildu eftir á 1 til að nota aðeins verðreitinn á rafinni án margföldunar.",
+      "slot_rate": "Fast tímaverð fyrir tíma skráðan á þessari rauf, sem hnekkir grunntímaverði samningsins. Ef bæði verð og margfaldari eru stillt er verðið margfaldað. Skildu eftir tómt til að nota aðeins margfaldarann á grunntímaverð samningsins.",
+      "slot_end_day": "Fyrir næturraufar skaltu velja hvenær lokatíminn fellur. 'Sama dag' lýkur fyrir miðnætti. 'Næsti dagur' lýkur næsta morgun (t.d. byrjun föstudagur 19:00, lok laugardagur 07:00). 'Tveimur dögum síðar' nær yfir vakt sem spannar heila nótt og dag.",
+      "slot_day_type": "Takmarkar þessa verðrauf við tilteknar daga. 'Allir dagar' gildir á hverjum degi; 'Virkir dagar' nær yfir mánudag–föstudag; 'Helgar' nær yfir laugardag–sunnudag; einstakar dagsvalkostir gilda aðeins á þeim nákvæma vikudegi."
     }
   }
 }

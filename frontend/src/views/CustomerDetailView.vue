@@ -307,7 +307,7 @@
                   @blur="onSlotTimeBlur(slot, 'end_time', $event)" />
               </div>
               <div class="slot-field slot-field-days">
-                <label class="slot-field-label">{{ $t('contract.slot_days') }}</label>
+                <label class="slot-field-label">{{ $t('contract.slot_days') }} <HelpIcon i18n-key="help.fields.slot_day_type" align="start" /></label>
                 <select class="form-input" v-model="slot.day_type" :aria-label="$t('contract.slot_days')">
                   <option value="all">{{ $t('contract.slot_days_all') }}</option>
                   <option value="weekdays">{{ $t('contract.slot_days_weekdays') }}</option>
@@ -322,17 +322,17 @@
                 </select>
               </div>
               <div v-if="isOvernightSlot(slot)" class="slot-field slot-field-days">
-                <label class="slot-field-label">{{ $t('contract.slot_end_day_offset') }}</label>
+                <label class="slot-field-label">{{ $t('contract.slot_end_day_offset') }} <HelpIcon i18n-key="help.fields.slot_end_day" align="start" /></label>
                 <select class="form-input" v-model.number="slot.end_day_offset" :aria-label="$t('contract.slot_end_day_offset')">
                   <option v-for="n in 6" :key="n" :value="n">{{ $t('contract.slot_end_day_offset_' + n) }}</option>
                 </select>
               </div>
               <div class="slot-field">
-                <label class="slot-field-label">{{ $t('contract.slot_factor') }}</label>
+                <label class="slot-field-label">{{ $t('contract.slot_factor') }} <HelpIcon i18n-key="help.fields.slot_factor" align="start" /></label>
                 <input class="form-input" type="number" min="0" step="0.01" v-model="slot.multiplication_factor" :aria-label="$t('contract.slot_factor')" :placeholder="'×'" />
               </div>
               <div class="slot-field">
-                <label class="slot-field-label">{{ $t('contract.slot_rate') }}</label>
+                <label class="slot-field-label">{{ $t('contract.slot_rate') }} <HelpIcon i18n-key="help.fields.slot_rate" align="start" /></label>
                 <input class="form-input" type="number" min="0" step="0.01" v-model="slot.hourly_rate" :aria-label="$t('contract.slot_rate')" :placeholder="contractForm.currency + '/h'" />
               </div>
             </div>
@@ -410,6 +410,7 @@ import { groupsApi } from '@/api/groups'
 import { attachmentsApi } from '@/api/attachments'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
+import HelpIcon from '@/components/common/HelpIcon.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
 import client from '@/api/client'
 import { buildSlotPreviewDays, slotPreviewReady as slotPreviewReadyFn } from '@/utils/contractSlotPreview'

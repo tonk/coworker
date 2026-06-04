@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Projekteinstellungen",
-        "intro": "Konfigurieren Sie Mitglieder, Integrationen und projektspezifische Optionen.",
+        "intro": "Konfigurieren Sie jeden Aspekt eines Projekts: Mitgliedschaft, Integrationen, API-Zugriff und Kartenverlauf.",
         "tasks": [
-          "Laden Sie Mitglieder ein und legen Sie ihre Projektrolle fest (viewer, member, owner).",
-          "Konfigurieren Sie GitHub- oder GitLab-Webhooks für Automatisierung.",
-          "Verwalten Sie Projekt-API-Schlüssel für CI/CD-Ticket-Erstellung."
+          "Allgemein — Projekt umbenennen, Schlüsselpräfix ändern oder Standard-Board-Ansicht umschalten.",
+          "Mitglieder — Benutzer einladen und Rolle festlegen (viewer, member, owner); Owner können Spalten und Einstellungen verwalten.",
+          "Labels — Farbige Labels erstellen, die auf Karten für visuelles Filtern erscheinen.",
+          "API-Schlüssel — Projektbezogene Schlüssel für CI/CD-Pipelines erstellen; Schlüssel sind auf dieses Projekt beschränkt.",
+          "Webhooks — GitHub, GitLab, Gitea oder Forgejo verbinden, damit Commits und Pull Requests im Projekt-Chat erscheinen und Karten automatisch verknüpft werden, wenn eine Kartenreferenz (z. B. PRJ-42) in der Nachricht steht.",
+          "Gelöschte Karten — Gelöschte Karten durchsuchen und wiederherstellen; endgültiges Löschen erfolgt nicht automatisch."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Kunden (Admin)",
-        "intro": "Kunden, Verträge und Zugriffsregeln erstellen.",
+        "title": "Kunden & Verträge",
+        "intro": "Kunden verwalten, mit Verträgen und Projekten verknüpfen und kundenspezifische Abrechnungssätze konfigurieren.",
         "tasks": [
-          "Fügen Sie Verträge mit Sätzen für Zeitberichte hinzu.",
-          "Weisen Sie Agents Kunden zu für Ticketzugriff und Zuständigkeits-Dropdowns.",
-          "Konfigurieren Sie nicht abrechenbare Minuten auf reinen Zeiterfassungsprojekten."
+          "Kunden erstellen und als Favorit markieren, um sie für schnellen Zugriff in der Seitenleiste anzuheften.",
+          "Verträge mit einem Basisstundensatz hinzufügen; einem Vertrag ein oder mehrere Projekte zuordnen für Kostenberechnungen in Zeitberichten.",
+          "Zeitslots zu einem Vertrag für Tarifstufen hinzufügen — zum Beispiel einen 1,5×-Multiplikator für Wochendstunden oder einen anderen Festsatz für nächtliche Bereitschaftsdienste (z. B. Freitag 19:00 → Samstag 07:00).",
+          "Agents Kunden zuweisen, damit sie im Ticket-Zuständigkeits-Dropdown erscheinen und Zugriff auf die Helpdesk-Tickets dieses Kunden erhalten.",
+          "Nicht abrechenbare Minuten auf Zeiterfassungsprojekten festlegen (z. B. 30 Min. pro Eintrag für Pflichtpausen); der Betrag wird automatisch von abrechenbaren Gesamtbeträgen in Berichten abgezogen."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Systemeinstellungen",
-        "intro": "SMTP, IMAP, Branding, Sicherheit und Standardwerte für neue Benutzer und Projekte.",
+        "intro": "Serverweite Konfiguration für E-Mail, Sicherheit, Branding, Backups und Standardwerte für alle Benutzer.",
         "tasks": [
-          "Konfigurieren Sie ausgehende E-Mail, bevor Passwort-Reset und Benachrichtigungen funktionieren.",
-          "Richten Sie IMAP-Abfrage ein, um Tickets aus eingehender E-Mail zu erstellen.",
-          "Beschränken Sie API-Zugriff mit erlaubten IP-Bereichen — testen Sie sorgfältig vor dem Speichern.",
-          "Laden Sie ein Firmenlogo hoch, das in Berichten und optional auf der Anmeldeseite angezeigt wird."
+          "Ausgehende E-Mail (SMTP) — konfigurieren, bevor Passwort-Reset und Ticket-E-Mail-Benachrichtigungen funktionieren. Benutzername und Passwort sind für Relay-Server optional.",
+          "Eingehende E-Mail (IMAP) — Ticket-Erstellung aus E-Mails aktivieren. PLAIN-Authentifizierung für einfache Zugangsdaten oder OAuth2 für Gmail/Office 365 wählen, um Passwörter nicht zu speichern.",
+          "Sicherheit — Passwortrichtlinie festlegen (Mindestlänge, Zeichenanforderungen), API-Zugriff nach IP/CIDR-Bereich einschränken und Timeout für inaktive Sitzungen konfigurieren.",
+          "Backups — automatische Backups planen (alle 6, 8, 12 oder 24 Stunden) und Aufbewahrungsdauer festlegen; E-Mail-Benachrichtigung aktivieren, um bei Erfolg oder Fehler zu warnen. Festplattennutzung in backups/ überwachen.",
+          "Branding — Firmenname und separate Logos für Hell/Dunkel hochladen, die auf dem Anmeldebildschirm und in allen PDF-Berichten angezeigt werden.",
+          "Standardwerte — Standarddesign, Sprache, Datumsformat, Zeitzone und Schriftart festlegen, die auf jeden neuen Benutzeraccount angewendet werden."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "Bei Status „Pending close“ wird das Ticket an diesem Datum automatisch geschlossen.",
       "ticket_macros": "Führt eine vordefinierte Aktionsfolge aus (Status ändern, Antwort hinzufügen, Tags usw.), die von einem Administrator definiert wurde.",
       "ticket_checklist": "Alle Checklistenelemente müssen abgeschlossen sein, bevor das Ticket geschlossen werden kann, wenn eine Vorlage angewendet wurde.",
-      "undeclarable_time": "Nicht abrechenbare Zeit ist der Teil eines Zeiteintrags, der nicht in Rechnung gestellt werden kann. Er wird vom Gesamtbetrag abgezogen, sodass im Bericht nur die abrechenbare Zeit erscheint.",
+      "undeclarable_time": "Zeit, die dem Kunden nicht in Rechnung gestellt werden kann — z. B. Mittagspausen, interne Schulungen oder Reisezeit. Sie wird im Stundenzettel erfasst, aber automatisch von den abrechenbaren Gesamtbeträgen in Berichten, PDFs und XLSX-Exporten abgezogen. Der nicht abrechenbare Betrag wird pro Projekt festgelegt, nicht pro Eintrag.",
       "report_group_by": "Legt fest, wie Zeiteinträge im Bericht gruppiert werden. Wählen Sie nach Zeitraum (Tag/Woche/Monat), Kunde, Projekt oder einer Kombination aus Kunde und Projekt.",
-      "report_export": "Laden Sie den Bericht als PDF- oder Excel-Datei herunter. Verwenden Sie die PDF-Optionen, um Schriftart, Sprache und Anzeigeoptionen vor dem Export festzulegen."
+      "report_export": "Laden Sie den Bericht als PDF- oder Excel-Datei herunter. Verwenden Sie die PDF-Optionen, um Schriftart, Sprache und Anzeigeoptionen vor dem Export festzulegen.",
+      "imap_poll_interval": "Wie oft WarmDesk das Postfach auf neue E-Mails prüft (in Sekunden). Niedrigere Werte erstellen Tickets schneller, erhöhen aber die Serverlast. 60–300 Sekunden ist ein sinnvoller Bereich für die meisten Setups.",
+      "imap_auth_mechanism": "PLAIN sendet Benutzername und Passwort direkt (geeignet für selbst gehostete Mailserver mit TLS). OAuth2 verwendet stattdessen ein kurzlebiges Zugriffstoken — empfohlen für Gmail- und Office 365-Konten und erforderlich, wenn der Anbieter die Basisauthentifizierung blockiert.",
+      "imap_oauth2_provider": "Wählen Sie Ihren Anbieter, damit WarmDesk die richtigen OAuth2-Endpunkte verwendet. Klicken Sie nach dem Speichern auf Autorisieren, um den Zustimmungsbildschirm des Anbieters zu öffnen und Lesezugriff auf das Postfach zu gewähren. Das Zugriffstoken wird automatisch vor dem Ablauf erneuert.",
+      "backup_schedule": "Wie oft ein automatisches Backup erstellt wird. Häufigere Backups reduzieren das Datenverlustrisiko, verbrauchen aber mehr Speicherplatz im Verzeichnis backups/. Überwachen Sie die Festplattennutzung nach der Aktivierung; jedes Backup ist eine vollständige Kopie der Datenbank.",
+      "password_min_length": "Eine Länge von 12 oder mehr Zeichen ist wirksamer als kurze Passwörter mit komplexen Zeichenanforderungen. Erwägen Sie, eine lange Mindestlänge mit leichten sonstigen Anforderungen festzulegen — Komplexitätsanforderungen führen häufig zu vorhersehbaren Mustern wie 'Passwort1!'.",
+      "webhook_type": "Wählen Sie die Plattform, die Webhooks sendet. GitHub-, GitLab-, Gitea- und Forgejo-Payloads werden automatisch verarbeitet: Commits und Pull Requests werden im Projekt-Chat veröffentlicht, und Kartenreferenzen (z. B. PRJ-42) in Commit-Nachrichten werden automatisch mit der entsprechenden Karte verknüpft. Generisch sendet nur eine einfache JSON-Benachrichtigung.",
+      "webhook_secret": "Ein Token, das in jede Anfrage Ihres Repositorys aufgenommen wird, um zu verifizieren, dass sie von einer legitimen Quelle stammt. Kopieren Sie es jetzt — es wird nicht wieder angezeigt. Fügen Sie es in den Webhook-Einstellungen Ihres Repositorys als Geheimnis ein.",
+      "slot_factor": "Multipliziert den Basisstundensatz des Vertrags für während dieses Slots erfasste Zeit. Zum Beispiel bedeutet 1,5 den 1,5-fachen Basisstundensatz. Bei 1 belassen, um nur das Slot-Preisfeld ohne Multiplikation zu verwenden.",
+      "slot_rate": "Pauschaler Stundensatz für während dieses Slots erfasste Zeit, der den Basisstundensatz des Vertrags überschreibt. Wenn sowohl ein Satz als auch ein Multiplikator festgelegt sind, wird der Satz multipliziert. Leer lassen, um nur den Multiplikator auf den Vertrags-Basissatz anzuwenden.",
+      "slot_end_day": "Wählen Sie für nächtliche Slots, wann die Endzeit fällt. 'Gleicher Tag' endet vor Mitternacht. 'Nächster Tag' endet am folgenden Morgen (z. B. Start Freitag 19:00, Ende Samstag 07:00). 'Übernächster Tag' umfasst eine Schicht über eine ganze Nacht und einen Tag.",
+      "slot_day_type": "Begrenzt diesen Tarifslot auf bestimmte Tage. 'Alle Tage' gilt jeden Tag; 'Werktage' umfasst Montag–Freitag; 'Wochenenden' umfasst Samstag–Sonntag; einzelne Tagesoptionen gelten nur an diesem genauen Wochentag."
     }
   }
 }

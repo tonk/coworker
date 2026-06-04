@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Projektindstillinger",
-        "intro": "Konfigurer medlemmer, integrationer og projektspecifikke indstillinger.",
+        "intro": "Konfigurer alle aspekter af et projekt: medlemskab, integrationer, API-adgang og korthistorik.",
         "tasks": [
-          "Inviter medlemmer og angiv deres projektrolle (læser, medlem, ejer).",
-          "Konfigurer GitHub- eller GitLab-webhooks til automatisering.",
-          "Administrer projekt-API-nøgler til CI/CD-ticketoprettelse."
+          "Generelt — omdøb projektet, skift dets nøglepræfiks, eller skift standardtavlevisning.",
+          "Medlemmer — inviter brugere og angiv deres rolle (læser, medlem, ejer); ejere kan administrere kolonner og indstillinger.",
+          "Etiketter — opret farvekodede etiketter, der vises på kort til visuel filtrering.",
+          "API-nøgler — opret projektbundne nøgler til CI/CD-pipelines; nøgler er låst til dette projekt.",
+          "Webhooks — forbind GitHub, GitLab, Gitea eller Forgejo, så commits og pull requests sendes til projektchatten og automatisk knyttes til kort, når en kortreference (f.eks. PRJ-42) optræder i beskeden.",
+          "Slettede kort — gennemse og gendan slettede kort; permanent sletning sker ikke automatisk."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Kunder (admin)",
-        "intro": "Opret kunder, kontrakter og adgangsregler.",
+        "title": "Kunder og kontrakter",
+        "intro": "Administrer kunder, knyt dem til kontrakter og projekter, og konfigurer kundespecifikke faktureringssatser.",
         "tasks": [
-          "Tilføj kontrakter med satser brugt i tidsrapporter.",
-          "Tildel agenter til kunder for ticketadgang og ansvarlig-dropdowns.",
-          "Konfigurer ikke-fakturerbare minutter på kun-tidsregistreringsprojekter."
+          "Opret en kunde og stjernemarkér den for at fæstne den i sidepanelet for hurtig adgang.",
+          "Tilføj kontrakter med en basistimepris; knyt et eller flere projekter til hver kontrakt for omkostningsberegninger i tidsrapporter.",
+          "Tilføj tidsslots til en kontrakt for pristrin — f.eks. en 1,5× multiplikator for weekendtimer eller en anden fast pris for natlige beredskabsvagter (f.eks. fredag 19:00 → lørdag 07:00).",
+          "Tildel agenter til kunder, så de vises i dropdown for ansvarlig for tickets og får adgang til denne kundes helpdesk-tickets.",
+          "Angiv ikke-fakturerbare minutter på tidsregistreringsprojekter (f.eks. 30 min pr. post for obligatoriske pauser); beløbet fratrækkes automatisk de fakturerbare totaler i rapporter."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Systemindstillinger",
-        "intro": "SMTP, IMAP, branding, sikkerhed og standarder for nye brugere og projekter.",
+        "intro": "Serveromfattende konfiguration for e-mail, sikkerhed, branding, backups og standarder for alle brugere.",
         "tasks": [
-          "Konfigurer udgående mail, før nulstilling af adgangskode og notifikationer virker.",
-          "Opsæt IMAP-polling for at oprette tickets fra indgående e-mail.",
-          "Begræns API-adgang med tilladte IP-intervaller — test omhyggeligt før gem.",
-          "Upload et firmalogo vist på rapporter og valgfrit på login-siden."
+          "Udgående mail (SMTP) — konfigurer, før nulstilling af adgangskode og ticket-e-mailnotifikationer virker. Brugernavn og adgangskode er valgfrie for relay-servere.",
+          "Indgående mail (IMAP) — aktiver oprettelse af tickets fra e-mail. Vælg PLAIN-godkendelse for grundlæggende legitimationsoplysninger eller OAuth2 for Gmail/Office 365 for at undgå at gemme adgangskoder.",
+          "Sikkerhed — angiv en adgangskodepolitik (minimumslængde, tegnkrav), begræns API-adgang efter IP/CIDR-interval og konfigurer timeout for inaktive sessioner.",
+          "Backups — planlæg automatiske backups (hver 6., 8., 12. eller 24. time) og angiv opbevaringstid; aktiver e-mailnotifikation for at advisere om succes eller fejl. Overvåg diskforbrug i backups/.",
+          "Branding — upload et firmanavn og separate logo'er for lys/mørk tilstand, der vises på loginskærmen og i alle PDF-rapporter.",
+          "Standarder — angiv standardtema, sprog, datoformat, tidszone og skrifttype, der anvendes på hver ny brugerkonto."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "Når status er Afventende lukning, lukkes ticketten automatisk på denne dato.",
       "ticket_macros": "Kører en forudindstillet sekvens af handlinger (ændre status, tilføj svar, tags osv.) defineret af en administrator.",
       "ticket_checklist": "Alle tjeklisteelementer skal udfyldes, før ticketten kan lukkes, når en skabelon er anvendt.",
-      "undeclarable_time": "Ikke-fakturerbar tid er den del af en tidsregistrering, der ikke kan faktureres. Den trækkes fra totalen, så kun den fakturerbare tid vises i rapporter.",
+      "undeclarable_time": "Tid, der ikke kan faktureres kunden — f.eks. frokostpauser, intern uddannelse eller rejsetid. Den registreres i timesedlen men fratrækkes automatisk de fakturerbare totaler i rapporter, PDF'er og XLSX-eksporter. Det ikke-fakturerbare beløb angives pr. projekt, ikke pr. post.",
       "report_group_by": "Styrer, hvordan tidsregistreringer grupperes i rapporten. Vælg efter periode (dag/uge/måned), kunde, projekt eller en kombination af kunde og projekt.",
-      "report_export": "Download rapporten som PDF eller Excel-fil. Brug PDF-indstillingsknappen til at vælge skrifttype, sprog og visningsindstillinger før eksport."
+      "report_export": "Download rapporten som PDF eller Excel-fil. Brug PDF-indstillingsknappen til at vælge skrifttype, sprog og visningsindstillinger før eksport.",
+      "imap_poll_interval": "Hvor ofte WarmDesk tjekker indbakken for nye e-mails (i sekunder). Lavere værdier opretter tickets hurtigere, men øger serverbelastningen. 60–300 sekunder er et rimeligt interval for de fleste opsætninger.",
+      "imap_auth_mechanism": "PLAIN sender dit brugernavn og adgangskode direkte (egnet til selvhostede mailservere med TLS). OAuth2 bruger et kortvarigt adgangstoken i stedet for en adgangskode — anbefales til Gmail- og Office 365-konti og kræves, hvis udbyderen blokerer grundlæggende godkendelse.",
+      "imap_oauth2_provider": "Vælg din udbyder, så WarmDesk bruger de korrekte OAuth2-endepunkter. Klik på Godkend efter gem for at åbne udbyderens samtykkeskærm og give læseadgang til indbakken. Adgangstokenet fornyes automatisk, før det udløber.",
+      "backup_schedule": "Hvor ofte der oprettes en automatisk backup. Hyppigere backups reducerer risikoen for datatab, men bruger mere diskplads i mappen backups/. Overvåg diskforbruget efter aktivering; hver backup er en fuld kopi af databasen.",
+      "password_min_length": "En længde på 12 eller flere tegn er mere effektiv end korte adgangskoder med komplekse tegnkrav. Overvej at angive et langt minimum med lette øvrige krav — kompleksitetskrav fører ofte til forudsigelige mønstre som 'Adgangskode1!'.",
+      "webhook_type": "Vælg den platform, der sender webhooks. GitHub-, GitLab-, Gitea- og Forgejo-payloads analyseres automatisk: commits og pull requests sendes til projektchatten, og kortreferencer (f.eks. PRJ-42) i commit-beskeder knyttes automatisk til det matchende kort. Generisk sender kun en simpel JSON-notifikation.",
+      "webhook_secret": "Et token, der medtages i hver anmodning fra dit repository for at bekræfte, at den kommer fra en legitim kilde. Kopiér det nu — det vises ikke igen. Indsæt det i dit repositorys webhook-indstillinger som hemmelighed.",
+      "slot_factor": "Ganger kontraktens basistimepris for tid registreret i dette slot. F.eks. betyder 1,5 det 1,5-dobbelte af basisprisen. Lad stå på 1 for kun at bruge slottets prisfeltet uden multiplikation.",
+      "slot_rate": "Fast timepris for tid registreret i dette slot, der tilsidesætter kontraktens basispris. Hvis der er angivet både en pris og en multiplikator, ganges prisen. Lad stå tomt for kun at anvende multiplikatoren på kontraktens basispris.",
+      "slot_end_day": "For natlige slots skal du vælge, hvornår sluttiden falder. 'Samme dag' slutter før midnat. 'Næste dag' slutter næste morgen (f.eks. start fredag 19:00, slut lørdag 07:00). 'To dage senere' dækker en vagt, der strækker sig over en hel nat og dag.",
+      "slot_day_type": "Begrænser dette prissslot til bestemte dage. 'Alle dage' gælder hver dag; 'Hverdage' dækker mandag–fredag; 'Weekender' dækker lørdag–søndag; individuelle dagsindstillinger gælder kun på præcis den ugedag."
     }
   }
 }

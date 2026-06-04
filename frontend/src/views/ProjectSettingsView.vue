@@ -225,7 +225,7 @@
             <input class="form-input" v-model="newWebhookName" placeholder="e.g. CI Bot" />
           </div>
           <div class="form-group" style="max-width:420px">
-            <label class="form-label">Type</label>
+            <label class="form-label">Type <HelpIcon i18n-key="help.fields.webhook_type" align="start" /></label>
             <select class="form-input" v-model="newWebhookType">
               <option value="generic">Generic (plain JSON)</option>
               <option value="gitea">Gitea / Forgejo</option>
@@ -452,6 +452,7 @@ import client from '@/api/client'
 import { getServerUrl, resolveAssetUrl } from '@/api/serverConfig'
 import { customersApi } from '@/api/customers'
 import { attachmentsApi } from '@/api/attachments'
+import HelpIcon from '@/components/common/HelpIcon.vue'
 
 const route = useRoute()
 const { formatDateTime } = useDateFormat()

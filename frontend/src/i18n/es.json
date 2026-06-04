@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Ajustes del proyecto",
-        "intro": "Configura miembros, integraciones y opciones específicas del proyecto.",
+        "intro": "Configura cada aspecto de un proyecto: miembros, integraciones, acceso a la API e historial de tarjetas.",
         "tasks": [
-          "Invita miembros y establece su rol en el proyecto (lector, miembro, propietario).",
-          "Configura webhooks de GitHub o GitLab para automatización.",
-          "Gestiona claves API del proyecto para la creación de tickets en CI/CD."
+          "General — renombra el proyecto, cambia su prefijo de clave o cambia la vista predeterminada del tablero.",
+          "Miembros — invita usuarios y establece su rol (lector, miembro, propietario); los propietarios pueden gestionar columnas y ajustes.",
+          "Etiquetas — crea etiquetas con código de color que aparecen en las tarjetas para filtrado visual.",
+          "Claves API — crea claves de ámbito de proyecto para pipelines de CI/CD; las claves están bloqueadas a este proyecto.",
+          "Webhooks — conecta GitHub, GitLab, Gitea o Forgejo para que los commits y pull requests se publiquen en el chat del proyecto y se vinculen automáticamente a tarjetas cuando aparece una referencia de tarjeta (p. ej. PRJ-42) en el mensaje.",
+          "Tarjetas eliminadas — navega y restaura tarjetas que fueron eliminadas; la eliminación permanente no es automática."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Clientes (admin)",
-        "intro": "Crea clientes, contratos y reglas de acceso.",
+        "title": "Clientes y contratos",
+        "intro": "Gestiona clientes, vincúlalos a contratos y proyectos, y configura tarifas de facturación por cliente.",
         "tasks": [
-          "Añade contratos con tarifas usadas en informes de tiempo.",
-          "Asigna agentes a clientes para acceso a tickets y listas de asignados.",
-          "Configura minutos no declarables en proyectos solo de registro de tiempo."
+          "Crea un cliente y márcalo como favorito para anclarlo en la barra lateral para acceso rápido.",
+          "Añade contratos con una tarifa horaria base; vincula uno o más proyectos a cada contrato para cálculos de costes en informes de tiempo.",
+          "Añade franjas horarias a un contrato para niveles de tarifa — por ejemplo un multiplicador de 1,5× para horas de fin de semana o una tarifa fija diferente para guardias nocturnas (p. ej. viernes 19:00 → sábado 07:00).",
+          "Asigna agentes a clientes para que aparezcan en la lista desplegable de asignados y accedan a los tickets de helpdesk de ese cliente.",
+          "Establece minutos no declarables en proyectos de registro de tiempo (p. ej. 30 min por entrada para descansos obligatorios); el importe se resta automáticamente de los totales facturables en informes."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Ajustes del sistema",
-        "intro": "SMTP, IMAP, marca, seguridad y valores predeterminados para nuevos usuarios y proyectos.",
+        "intro": "Configuración a nivel de servidor para correo, seguridad, marca, copias de seguridad y valores predeterminados para todos los usuarios.",
         "tasks": [
-          "Configura el correo saliente antes de que funcionen el restablecimiento de contraseña y las notificaciones.",
-          "Configura la recopilación IMAP para crear tickets desde correo entrante.",
-          "Restringe el acceso API con rangos de IP permitidos — prueba con cuidado antes de guardar.",
-          "Sube un logotipo de empresa mostrado en informes y opcionalmente en la página de inicio de sesión."
+          "Correo saliente (SMTP) — configura antes de que funcionen el restablecimiento de contraseña y las notificaciones de tickets por correo. El nombre de usuario y contraseña son opcionales para servidores de retransmisión.",
+          "Correo entrante (IMAP) — activa la creación de tickets desde correo. Elige autenticación PLAIN para credenciales básicas u OAuth2 para Gmail/Office 365 para evitar almacenar contraseñas.",
+          "Seguridad — establece una política de contraseñas (longitud mínima, requisitos de caracteres), restringe el acceso a la API por rango IP/CIDR y configura el tiempo de espera de sesión inactiva.",
+          "Copias de seguridad — programa copias automáticas (cada 6, 8, 12 o 24 horas) y establece la retención; activa la notificación por correo para alertar en caso de éxito o error. Supervisa el uso del disco en backups/.",
+          "Marca — sube un nombre de empresa y logos separados para claro/oscuro que aparecen en la pantalla de inicio de sesión y en todos los informes PDF.",
+          "Valores predeterminados — establece el tema, idioma, formato de fecha, zona horaria y fuente predeterminados que se aplican a cada nueva cuenta de usuario."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "Cuando el estado es Pendiente de cierre, el ticket se cierra automáticamente en esta fecha.",
       "ticket_macros": "Ejecuta una secuencia predefinida de acciones (cambiar estado, añadir respuesta, etiquetas, etc.) definida por un administrador.",
       "ticket_checklist": "Todos los elementos de la lista de verificación deben completarse antes de poder cerrar el ticket cuando se aplica una plantilla.",
-      "undeclarable_time": "El tiempo no declarable es la parte de un registro de tiempo que no se puede facturar. Se deduce del total para que solo aparezca el tiempo declarable (facturable) en los informes.",
+      "undeclarable_time": "Tiempo que no se puede facturar al cliente — por ejemplo descansos para comer, formaciones internas o desplazamientos. Se registra en la hoja de tiempo pero se resta automáticamente de los totales facturables en informes, PDF y exportaciones XLSX. El importe no declarable se establece por proyecto, no por entrada.",
       "report_group_by": "Controla cómo se agrupan las entradas de tiempo en el informe. Elija por período (día/semana/mes), cliente, proyecto o una combinación de cliente y proyecto.",
-      "report_export": "Descargue el informe como PDF o archivo Excel. Use el botón de opciones de PDF para elegir fuente, idioma y opciones de visualización antes de exportar."
+      "report_export": "Descargue el informe como PDF o archivo Excel. Use el botón de opciones de PDF para elegir fuente, idioma y opciones de visualización antes de exportar.",
+      "imap_poll_interval": "Con qué frecuencia WarmDesk comprueba la bandeja de entrada en busca de nuevos correos (en segundos). Valores más bajos crean tickets más rápido pero aumentan la carga del servidor. 60–300 segundos es un rango razonable para la mayoría de configuraciones.",
+      "imap_auth_mechanism": "PLAIN envía tu nombre de usuario y contraseña directamente (adecuado para servidores de correo autoalojados con TLS). OAuth2 usa un token de acceso de corta duración en lugar de una contraseña — recomendado para cuentas de Gmail y Office 365, y obligatorio si el proveedor bloquea la autenticación básica.",
+      "imap_oauth2_provider": "Selecciona tu proveedor para que WarmDesk use los puntos de conexión OAuth2 correctos. Tras guardar, haz clic en Autorizar para abrir la pantalla de consentimiento del proveedor y conceder acceso de lectura a la bandeja de entrada. El token de acceso se renueva automáticamente antes de que expire.",
+      "backup_schedule": "Con qué frecuencia se crea una copia de seguridad automática. Copias más frecuentes reducen el riesgo de pérdida de datos pero consumen más espacio en disco en el directorio backups/. Supervisa el uso del disco después de activarlo; cada copia es una copia completa de la base de datos.",
+      "password_min_length": "Una longitud de 12 o más caracteres es más efectiva que contraseñas cortas con reglas de caracteres complejas. Considera establecer un mínimo largo con requisitos ligeros — los requisitos de complejidad suelen llevar a patrones predecibles como 'Contraseña1!'.",
+      "webhook_type": "Selecciona la plataforma que envía webhooks. Las cargas útiles de GitHub, GitLab, Gitea y Forgejo se analizan automáticamente: los commits y pull requests se publican en el chat del proyecto, y las referencias de tarjetas (p. ej. PRJ-42) en los mensajes de commit se vinculan automáticamente a la tarjeta correspondiente. Genérico envía solo una notificación JSON simple.",
+      "webhook_secret": "Un token incluido en cada solicitud de tu repositorio para verificar que proviene de una fuente legítima. Cópialo ahora — no se volverá a mostrar. Pégalo en los ajustes de webhook de tu repositorio como secreto.",
+      "slot_factor": "Multiplica la tarifa horaria base del contrato para el tiempo registrado durante esta franja. Por ejemplo, 1,5 significa 1,5 × la tarifa base. Deja en 1 para usar solo el campo de tarifa de franja sin multiplicar.",
+      "slot_rate": "Tarifa horaria fija para el tiempo registrado durante esta franja, que reemplaza la tarifa base del contrato. Si se establecen tanto una tarifa como un multiplicador, la tarifa se multiplica. Deja vacío para usar solo el multiplicador sobre la tarifa base del contrato.",
+      "slot_end_day": "Para franjas nocturnas, selecciona cuándo cae la hora de fin. 'Mismo día' termina antes de medianoche. 'Día siguiente' termina a la mañana siguiente (p. ej. inicio viernes 19:00, fin sábado 07:00). 'Dos días después' cubre un turno que abarca una noche completa y un día.",
+      "slot_day_type": "Limita esta franja de tarifa a días específicos. 'Todos los días' se aplica cada día; 'Días laborables' cubre lunes–viernes; 'Fines de semana' cubre sábado–domingo; las opciones de días individuales se aplican solo en ese día exacto de la semana."
     }
   }
 }

@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Projektin asetukset",
-        "intro": "Määritä jäsenet, integraatiot ja projektikohtaiset vaihtoehdot.",
+        "intro": "Määritä jokainen projektin osa-alue: jäsenyys, integraatiot, API-pääsy ja korttien historia.",
         "tasks": [
-          "Kutsu jäseniä ja määritä heidän projektiroolinsa (katsoja, jäsen, omistaja).",
-          "Määritä GitHub- tai GitLab-webhookit automaatiota varten.",
-          "Hallitse projektin API-avaimia CI/CD-tikettien luontia varten."
+          "Yleiset — nimeä projekti uudelleen, muuta avainprefiks tai vaihda oletustaulunäkymä.",
+          "Jäsenet — kutsu käyttäjiä ja määritä heidän roolinsa (katsoja, jäsen, omistaja); omistajat voivat hallita sarakkeita ja asetuksia.",
+          "Tunnisteet — luo värikoodattuja tunnisteita, jotka näkyvät korteissa visuaalista suodatusta varten.",
+          "API-avaimet — luo projektiin sidottuja avaimia CI/CD-putkistoille; avaimet on lukittu tähän projektiin.",
+          "Webhookit — yhdistä GitHub, GitLab, Gitea tai Forgejo, jotta commitit ja pull requestit julkaistaan projektin chatissa ja linkitetään automaattisesti kortteihin, kun viestissä näkyy korttireferenssi (esim. PRJ-42).",
+          "Poistetut kortit — selaa ja palauta poistettuja kortteja; pysyvää poistoa ei tapahdu automaattisesti."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Asiakkaat (hallinta)",
-        "intro": "Luo asiakkaita, sopimuksia ja pääsösääntöjä.",
+        "title": "Asiakkaat ja sopimukset",
+        "intro": "Hallitse asiakkaita, linkitä ne sopimuksiin ja projekteihin sekä määritä asiakaskohtaiset laskutushinnat.",
         "tasks": [
-          "Lisää sopimuksia hinnoilla, joita käytetään aikaraporteissa.",
-          "Määritä agentteja asiakkaille tikettien pääsyä ja vastuuhenkilövalikkoa varten.",
-          "Määritä ilmoittamattomat minuutit vain työajan seurantaan tarkoitetuissa projekteissa."
+          "Luo asiakas ja merkitse se tähdellä kiinnittääksesi sen sivupalkkiin nopeaa pääsyä varten.",
+          "Lisää sopimuksia perustuntihinnalla; linkitä yksi tai useampi projekti kuhunkin sopimukseen aikaraporttien kustannuslaskelmia varten.",
+          "Lisää aikavälejä sopimukseen hintatasoja varten — esimerkiksi 1,5×-kerroin viikonlopputunneille tai eri kiinteä hinta yöllisille päivystysvuoroille (esim. perjantai 19:00 → lauantai 07:00).",
+          "Määritä agentit asiakkaille, jotta he näkyvät tikettien vastuuhenkilövalikossa ja saavat pääsyn kyseisen asiakkaan helpdesk-tiketteihin.",
+          "Aseta ilmoittamattomat minuutit työajan seurantaprojekteissa (esim. 30 min per merkintä pakollisille tauoille); summa vähennetään automaattisesti laskutettavista kokonaismääristä raporteissa."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Järjestelmäasetukset",
-        "intro": "SMTP, IMAP, brändäys, turvallisuus ja oletukset uusille käyttäjille ja projekteille.",
+        "intro": "Palvelinlaajuinen konfiguraatio sähköpostille, turvallisuudelle, brändäykselle, varmuuskopioille ja oletuksille kaikille käyttäjille.",
         "tasks": [
-          "Määritä lähtevä posti ennen kuin salasanan nollaus ja ilmoitukset toimivat.",
-          "Ota IMAP-pollaus käyttöön luodaksesi tikettejä saapuvasta sähköpostista.",
-          "Rajoita API-pääsyä sallituilla IP-alueilla — testaa huolellisesti ennen tallennusta.",
-          "Lataa yrityksen logo, joka näkyy raporteissa ja valinnaisesti kirjautumissivulla."
+          "Lähtevä posti (SMTP) — määritä ennen kuin salasanan nollaus ja tikettien sähköposti-ilmoitukset toimivat. Käyttäjätunnus ja salasana ovat valinnaisia välityspalvelimille.",
+          "Saapuva posti (IMAP) — ota tikettien luonti sähköpostista käyttöön. Valitse PLAIN-todennus peruskirjautumistiedoille tai OAuth2 Gmailille/Office 365:lle salasanojen tallennuksen välttämiseksi.",
+          "Turvallisuus — aseta salasanakäytäntö (vähimmäispituus, merkkivaatimukset), rajoita API-pääsy IP/CIDR-alueen mukaan ja määritä inaktiivisten istuntojen aikakatkaisu.",
+          "Varmuuskopiot — ajoita automaattiset varmuuskopiot (joka 6., 8., 12. tai 24. tunti) ja aseta säilytysaika; ota sähköposti-ilmoitukset käyttöön onnistumisesta tai epäonnistumisesta varoittamiseksi. Seuraa levytilankäyttöä hakemistossa backups/.",
+          "Brändäys — lataa yrityksen nimi ja erilliset logot vaalealle/tummalle tilalle, jotka näkyvät kirjautumisnäytöllä ja kaikissa PDF-raporteissa.",
+          "Oletukset — aseta oletusarvoinen teema, kieli, päivämäärämuoto, aikavyöhyke ja fontti, jota käytetään jokaiseen uuteen käyttäjätiliin."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "Kun tila on Odottaa sulkemista, tiketti suljetaan automaattisesti tänä päivänä.",
       "ticket_macros": "Suorittaa ennalta määritetyn toimintosarjan (tilan muutos, vastaus, tunnisteet jne.), jonka ylläpitäjä on määrittänyt.",
       "ticket_checklist": "Kaikki tarkistuslistan kohdat on suoritettava ennen tiketin sulkemista, kun malli on käytössä.",
-      "undeclarable_time": "Ei-laskutettava aika on osa aikakirjauksesta, jota ei voi laskuttaa. Se vähennetään kokonaismäärästä, jotta raporteissa näkyy vain laskutettava aika.",
+      "undeclarable_time": "Aika, jota ei voi laskuttaa asiakkaalta — esimerkiksi lounastauot, sisäinen koulutus tai matka-aika. Se kirjataan tuntilomakkeeseen, mutta vähennetään automaattisesti laskutettavista kokonaismääristä raporteissa, PDF-tiedostoissa ja XLSX-vienneissä. Ilmoittamaton määrä asetetaan projektikohtaisesti, ei merkintäkohtaisesti.",
       "report_group_by": "Määrittää, miten aikakirjaukset ryhmitellään raportissa. Valitse jakso (päivä/viikko/kuukausi), asiakas, projekti tai asiakkaan ja projektin yhdistelmä.",
-      "report_export": "Lataa raportti PDF- tai Excel-tiedostona. Valitse fontti, kieli ja näyttöasetukset PDF-asetuksista ennen vientiä."
+      "report_export": "Lataa raportti PDF- tai Excel-tiedostona. Valitse fontti, kieli ja näyttöasetukset PDF-asetuksista ennen vientiä.",
+      "imap_poll_interval": "Kuinka usein WarmDesk tarkistaa postilaatikon uusien sähköpostien varalta (sekunteina). Matalammat arvot luovat tiketit nopeammin mutta lisäävät palvelimen kuormitusta. 60–300 sekuntia on järkevä alue useimmille konfiguraatioille.",
+      "imap_auth_mechanism": "PLAIN lähettää käyttäjätunnuksesi ja salasanasi suoraan (sopii itse isännöidyille postipalvelimille TLS:llä). OAuth2 käyttää lyhytikäistä käyttöoikeustokenia salasanan sijaan — suositellaan Gmail- ja Office 365 -tileille ja pakollinen, jos palveluntarjoaja estää perustodennuksen.",
+      "imap_oauth2_provider": "Valitse palveluntarjoajasi, jotta WarmDesk käyttää oikeita OAuth2-päätepisteitä. Napsauta Valtuuta tallennuksen jälkeen avataksesi palveluntarjoajan suostumusnäytön ja myöntääksesi lukupääsyn postilaatikkoon. Käyttöoikeustoken uusitaan automaattisesti ennen vanhentumistaan.",
+      "backup_schedule": "Kuinka usein automaattinen varmuuskopio luodaan. Useammat varmuuskopiot vähentävät tietojen menetyksen riskiä, mutta käyttävät enemmän levytilaa hakemistossa backups/. Seuraa levytilankäyttöä käyttöönoton jälkeen; jokainen varmuuskopio on täydellinen kopio tietokannasta.",
+      "password_min_length": "12 tai useamman merkin pituus on tehokkaampaa kuin lyhyet salasanat monimutkaisilla merkkisäännöillä. Harkitse pitkän vähimmäispituuden asettamista kevyillä muilla vaatimuksilla — monimutkaisuusvaatimukset johtavat usein ennustettaviin kaavoihin kuten 'Salasana1!'.",
+      "webhook_type": "Valitse webhookeja lähettävä alusta. GitHub-, GitLab-, Gitea- ja Forgejo-kuormat analysoidaan automaattisesti: commitit ja pull requestit julkaistaan projektin chatissa ja korttireferenssit (esim. PRJ-42) commit-viesteissä linkitetään automaattisesti vastaavaan korttiin. Yleinen lähettää vain yksinkertaisen JSON-ilmoituksen.",
+      "webhook_secret": "Tunniste, joka sisältyy jokaiseen repositoriostasi tulevaan pyyntöön sen varmistamiseksi, että se tuli laillisesta lähteestä. Kopioi se nyt — sitä ei näytetä uudelleen. Liitä se repositoriosi webhook-asetuksiin salaisuutena.",
+      "slot_factor": "Kertoo sopimuksen perustuntihinnan aikavälin aikana kirjatulle ajalle. Esimerkiksi 1,5 tarkoittaa 1,5 × perushintaa. Jätä 1:ksi käyttääksesi vain aikavälin hintakenttää ilman kertomista.",
+      "slot_rate": "Kiinteä tuntihinta aikavälin aikana kirjatulle ajalle, joka korvaa sopimuksen perustuntihinnan. Jos sekä hinta että kerroin on asetettu, hinta kerrotaan. Jätä tyhjäksi käyttääksesi vain kerrointa sopimuksen perushintaan.",
+      "slot_end_day": "Yöllisille aikaväleille valitse milloin loppuaika on. 'Sama päivä' päättyy ennen puoltayötä. 'Seuraava päivä' päättyy seuraavana aamuna (esim. alku perjantai 19:00, loppu lauantai 07:00). 'Kaksi päivää myöhemmin' kattaa vuoron, joka kestää koko yön ja päivän.",
+      "slot_day_type": "Rajoittaa tämän hinta-aikavälin tiettyihin päiviin. 'Kaikki päivät' koskee joka päivää; 'Arkipäivät' kattaa maanantai–perjantai; 'Viikonloput' kattaa lauantai–sunnuntai; yksittäiset päivävaihtoehdot koskevat vain kyseistä viikonpäivää."
     }
   }
 }

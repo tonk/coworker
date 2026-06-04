@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Paramètres du projet",
-        "intro": "Configurez les membres, les intégrations et les options spécifiques au projet.",
+        "intro": "Configurez chaque aspect d'un projet : membres, intégrations, accès API et historique des cartes.",
         "tasks": [
-          "Invitez des membres et définissez leur rôle dans le projet (lecteur, membre, propriétaire).",
-          "Configurez les webhooks GitHub ou GitLab pour l'automatisation.",
-          "Gérez les clés API du projet pour la création de tickets via CI/CD."
+          "Général — renommez le projet, modifiez son préfixe de clé ou changez la vue de tableau par défaut.",
+          "Membres — invitez des utilisateurs et définissez leur rôle (lecteur, membre, propriétaire) ; les propriétaires peuvent gérer les colonnes et les paramètres.",
+          "Étiquettes — créez des étiquettes colorées qui apparaissent sur les cartes pour le filtrage visuel.",
+          "Clés API — créez des clés limitées à ce projet pour les pipelines CI/CD.",
+          "Webhooks — connectez GitHub, GitLab, Gitea ou Forgejo pour que les commits et les pull requests soient publiés dans le chat du projet et liés automatiquement aux cartes lorsqu'une référence (ex. PRJ-42) apparaît dans le message.",
+          "Cartes supprimées — parcourez et restaurez les cartes supprimées ; la suppression définitive n'est pas automatique."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Clients (admin)",
-        "intro": "Créez des clients, des contrats et des règles d'accès.",
+        "title": "Clients & Contrats",
+        "intro": "Gérez les clients, liez-les à des contrats et des projets, et configurez les tarifs de facturation par client.",
         "tasks": [
-          "Ajoutez des contrats avec les tarifs utilisés dans les rapports de temps.",
-          "Assignez des agents aux clients pour l'accès aux tickets et les listes d'assignés.",
-          "Configurez les minutes non déclarables sur les projets réservés au suivi du temps."
+          "Créez un client et marquez-le en favori pour l'épingler dans la barre latérale pour un accès rapide.",
+          "Ajoutez des contrats avec un taux horaire de base ; associez un ou plusieurs projets à chaque contrat pour les calculs de coûts dans les rapports de temps.",
+          "Ajoutez des créneaux horaires à un contrat pour des niveaux tarifaires — par exemple un multiplicateur de 1,5× pour les heures de week-end ou un taux fixe différent pour les gardes de nuit (ex. vendredi 19h00 → samedi 07h00).",
+          "Assignez des agents aux clients pour qu'ils apparaissent dans la liste des assignés des tickets et accèdent aux tickets helpdesk de ce client.",
+          "Définissez des minutes non déclarables sur les projets de suivi du temps (ex. 30 min par entrée pour les pauses obligatoires) ; le montant est automatiquement déduit des totaux facturables dans les rapports."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Paramètres système",
-        "intro": "SMTP, IMAP, image de marque, sécurité et valeurs par défaut pour les nouveaux utilisateurs et projets.",
+        "intro": "Configuration à l'échelle du serveur pour le courrier, la sécurité, l'image de marque, les sauvegardes et les valeurs par défaut pour tous les utilisateurs.",
         "tasks": [
-          "Configurez le courrier sortant avant que la réinitialisation de mot de passe et les notifications fonctionnent.",
-          "Configurez la collecte IMAP pour créer des tickets à partir des e-mails entrants.",
-          "Restreignez l'accès API avec des plages d'adresses IP autorisées — testez soigneusement avant d'enregistrer.",
-          "Téléversez un logo d'entreprise affiché sur les rapports et éventuellement sur la page de connexion."
+          "Courrier sortant (SMTP) — configurer avant que la réinitialisation de mot de passe et les notifications de tickets par e-mail fonctionnent. Nom d'utilisateur et mot de passe sont optionnels pour les serveurs relais.",
+          "Courrier entrant (IMAP) — activer la création de tickets depuis les e-mails. Choisir l'authentification PLAIN pour les identifiants de base ou OAuth2 pour Gmail/Office 365 pour éviter de stocker des mots de passe.",
+          "Sécurité — définir une politique de mot de passe (longueur minimale, exigences de caractères), restreindre l'accès API par plage IP/CIDR et configurer le délai d'expiration de session inactive.",
+          "Sauvegardes — planifier des sauvegardes automatiques (toutes les 6, 8, 12 ou 24 heures) et définir la rétention ; activer la notification par e-mail pour alerter en cas de succès ou d'échec. Surveiller l'utilisation du disque dans backups/.",
+          "Image de marque — téléverser un nom d'entreprise et des logos distincts pour clair/sombre affichés sur l'écran de connexion et dans tous les rapports PDF.",
+          "Valeurs par défaut — définir le thème, la langue, le format de date, le fuseau horaire et la police appliqués à chaque nouveau compte utilisateur."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "Lorsque le statut est En attente de clôture, le ticket est automatiquement fermé à cette date.",
       "ticket_macros": "Exécute une séquence prédéfinie d'actions (changer le statut, ajouter une réponse, tags, etc.) définie par un administrateur.",
       "ticket_checklist": "Tous les éléments de la liste de contrôle doivent être complétés avant de pouvoir fermer le ticket lorsqu'un modèle est appliqué.",
-      "undeclarable_time": "Le temps non déclarable est la part d'une saisie de temps qui ne peut pas être facturée. Il est déduit du total afin que seul le temps déclarable (facturable) apparaisse dans les rapports.",
+      "undeclarable_time": "Temps qui ne peut pas être facturé au client — par exemple les pauses déjeuner, les formations internes ou les déplacements. Il est saisi dans la feuille de temps mais automatiquement déduit des totaux facturables dans les rapports, les PDF et les exports XLSX. Le montant non déclarable est défini par projet, pas par entrée.",
       "report_group_by": "Contrôle la façon dont les saisies de temps sont regroupées dans le rapport. Choisissez par période (jour/semaine/mois), client, projet ou une combinaison de client et de projet.",
-      "report_export": "Téléchargez le rapport au format PDF ou Excel. Utilisez le bouton Options PDF pour choisir la police, la langue et les options d'affichage avant l'export."
+      "report_export": "Téléchargez le rapport au format PDF ou Excel. Utilisez le bouton Options PDF pour choisir la police, la langue et les options d'affichage avant l'export.",
+      "imap_poll_interval": "Fréquence à laquelle WarmDesk vérifie la boîte de réception pour les nouveaux e-mails (en secondes). Des valeurs plus basses créent des tickets plus rapidement mais augmentent la charge serveur. 60 à 300 secondes est une plage raisonnable pour la plupart des configurations.",
+      "imap_auth_mechanism": "PLAIN envoie votre nom d'utilisateur et mot de passe directement (adapté aux serveurs de messagerie auto-hébergés avec TLS). OAuth2 utilise un jeton d'accès de courte durée à la place d'un mot de passe — recommandé pour Gmail et Office 365, et obligatoire si le fournisseur bloque l'authentification de base.",
+      "imap_oauth2_provider": "Sélectionnez votre fournisseur pour que WarmDesk utilise les bons points de terminaison OAuth2. Après l'enregistrement, cliquez sur Autoriser pour ouvrir l'écran de consentement du fournisseur et accorder l'accès en lecture à la boîte de réception. Le jeton d'accès est renouvelé automatiquement avant son expiration.",
+      "backup_schedule": "Fréquence à laquelle une sauvegarde automatique est créée. Des sauvegardes plus fréquentes réduisent le risque de perte de données mais consomment plus d'espace disque dans le répertoire backups/. Surveillez l'utilisation du disque après activation ; chaque sauvegarde est une copie complète de la base de données.",
+      "password_min_length": "Une longueur de 12 caractères ou plus est plus efficace que des mots de passe courts avec des règles de caractères complexes. Envisagez de définir un long minimum avec des exigences légères — les exigences de complexité mènent souvent à des motifs prévisibles comme 'MotDePasse1!'.",
+      "webhook_type": "Sélectionnez la plateforme qui envoie des webhooks. Les charges utiles GitHub, GitLab, Gitea et Forgejo sont analysées automatiquement : les commits et pull requests sont publiés dans le chat du projet, et les références de cartes (ex. PRJ-42) dans les messages de commit sont automatiquement liées à la carte correspondante. Générique envoie uniquement une notification JSON simple.",
+      "webhook_secret": "Un jeton inclus dans chaque requête de votre dépôt pour vérifier qu'elle provient d'une source légitime. Copiez-le maintenant — il ne sera plus affiché. Collez-le dans les paramètres webhook de votre dépôt comme secret.",
+      "slot_factor": "Multiplie le taux horaire de base du contrat pour le temps enregistré pendant ce créneau. Par exemple, 1,5 signifie 1,5 × le taux de base. Laissez à 1 pour utiliser uniquement le champ de taux du créneau sans multiplication.",
+      "slot_rate": "Taux horaire fixe pour le temps enregistré pendant ce créneau, remplaçant le taux de base du contrat. Si un taux et un multiplicateur sont tous deux définis, le taux est multiplié. Laissez vide pour utiliser uniquement le multiplicateur sur le taux de base du contrat.",
+      "slot_end_day": "Pour les créneaux de nuit, sélectionnez quand tombe l'heure de fin. 'Même jour' se termine avant minuit. 'Jour suivant' se termine le lendemain matin (ex. début vendredi 19h00, fin samedi 07h00). 'Deux jours plus tard' couvre une équipe sur une nuit entière et un jour.",
+      "slot_day_type": "Limite ce créneau tarifaire à des jours spécifiques. 'Tous les jours' s'applique chaque jour ; 'Jours ouvrables' couvre lundi–vendredi ; 'Week-ends' couvre samedi–dimanche ; les options de jours individuels s'appliquent uniquement à ce jour exact de la semaine."
     }
   }
 }

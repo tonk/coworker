@@ -1271,11 +1271,14 @@
       },
       "projectSettings": {
         "title": "Impostazioni progetto",
-        "intro": "Configura membri, integrazioni e opzioni specifiche del progetto.",
+        "intro": "Configura ogni aspetto di un progetto: appartenenza, integrazioni, accesso API e cronologia schede.",
         "tasks": [
-          "Invita membri e imposta il loro ruolo nel progetto (visualizzatore, membro, proprietario).",
-          "Configura webhook GitHub o GitLab per l'automazione.",
-          "Gestisci le chiavi API del progetto per la creazione di ticket in CI/CD."
+          "Generale — rinomina il progetto, cambia il prefisso chiave o modifica la vista board predefinita.",
+          "Membri — invita utenti e imposta il loro ruolo (visualizzatore, membro, proprietario); i proprietari possono gestire colonne e impostazioni.",
+          "Etichette — crea etichette con codice colore che compaiono sulle schede per il filtraggio visivo.",
+          "Chiavi API — crea chiavi limitate a questo progetto per le pipeline CI/CD.",
+          "Webhook — connetti GitHub, GitLab, Gitea o Forgejo in modo che commit e pull request vengano pubblicati nella chat del progetto e collegati automaticamente alle schede quando una riferimento scheda (es. PRJ-42) compare nel messaggio.",
+          "Schede eliminate — sfoglia e ripristina schede eliminate; l'eliminazione definitiva non è automatica."
         ]
       },
       "settings": {
@@ -1430,12 +1433,14 @@
         ]
       },
       "adminCustomers": {
-        "title": "Clienti (admin)",
-        "intro": "Crea clienti, contratti e regole di accesso.",
+        "title": "Clienti e Contratti",
+        "intro": "Gestisci clienti, collegali a contratti e progetti e configura le tariffe di fatturazione per cliente.",
         "tasks": [
-          "Aggiungi contratti con tariffe usate nei report di tempo.",
-          "Assegna agenti ai clienti per accesso ai ticket ed elenchi assegnatari.",
-          "Configura minuti non dichiarabili sui progetti solo time tracking."
+          "Crea un cliente e aggiungilo ai preferiti per fissarlo nella barra laterale per un accesso rapido.",
+          "Aggiungi contratti con una tariffa oraria base; collega uno o più progetti a ciascun contratto per i calcoli dei costi nei report di tempo.",
+          "Aggiungi fasce orarie a un contratto per livelli tariffari — ad esempio un moltiplicatore 1,5× per le ore del fine settimana o una tariffa fissa diversa per i turni notturni di reperibilità (es. venerdì 19:00 → sabato 07:00).",
+          "Assegna agenti ai clienti in modo che compaiano nel menu a discesa degli assegnatari dei ticket e accedano ai ticket helpdesk di quel cliente.",
+          "Imposta minuti non dichiarabili sui progetti di time tracking (es. 30 min per voce per pause obbligatorie); il valore viene sottratto automaticamente dai totali fatturabili nei report."
         ]
       },
       "adminProjects": {
@@ -1449,12 +1454,14 @@
       },
       "adminSettings": {
         "title": "Impostazioni di sistema",
-        "intro": "SMTP, IMAP, branding, sicurezza e valori predefiniti per nuovi utenti e progetti.",
+        "intro": "Configurazione a livello di server per e-mail, sicurezza, branding, backup e impostazioni predefinite per tutti gli utenti.",
         "tasks": [
-          "Configura la posta in uscita prima che funzionino reset password e notifiche.",
-          "Configura il polling IMAP per creare ticket dalle e-mail in arrivo.",
-          "Limita l'accesso API con intervalli IP consentiti — verifica attentamente prima di salvare.",
-          "Carica un logo aziendale mostrato nei report e opzionalmente nella pagina di accesso."
+          "Posta in uscita (SMTP) — configura prima che funzionino reset password e notifiche ticket via e-mail. Nome utente e password sono facoltativi per i server di inoltro.",
+          "Posta in entrata (IMAP) — abilita la creazione di ticket dalle e-mail. Scegli autenticazione PLAIN per credenziali di base o OAuth2 per Gmail/Office 365 per evitare di salvare le password.",
+          "Sicurezza — imposta una policy per le password (lunghezza minima, requisiti caratteri), limita l'accesso API per intervallo IP/CIDR e configura il timeout delle sessioni inattive.",
+          "Backup — pianifica backup automatici (ogni 6, 8, 12 o 24 ore) e imposta la conservazione; abilita la notifica via e-mail per avvisare in caso di successo o errore. Monitora l'utilizzo del disco in backups/.",
+          "Branding — carica il nome dell'azienda e loghi separati per chiaro/scuro mostrati nella schermata di accesso e in tutti i report PDF.",
+          "Impostazioni predefinite — imposta tema, lingua, formato data, fuso orario e carattere predefiniti applicati a ogni nuovo account utente."
         ]
       },
       "adminNews": {
@@ -1718,9 +1725,20 @@
       "ticket_close_date": "Quando lo stato è In attesa di chiusura, il ticket viene chiuso automaticamente in questa data.",
       "ticket_macros": "Esegue una sequenza preimpostata di azioni (cambia stato, aggiungi risposta, tag, ecc.) definita da un amministratore.",
       "ticket_checklist": "Tutti gli elementi della checklist devono essere completati prima di poter chiudere il ticket quando è applicato un modello.",
-      "undeclarable_time": "Il tempo non dichiarabile è la parte di una registrazione oraria che non può essere fatturata. Viene sottratto dal totale in modo che nei report venga mostrato solo il tempo dichiarabile (fatturabile).",
+      "undeclarable_time": "Tempo che non può essere fatturato al cliente — ad esempio pause pranzo, formazione interna o trasferte. Viene registrato nel foglio presenze ma dedotto automaticamente dai totali fatturabili in report, PDF ed esportazioni XLSX. Il valore non dichiarabile è impostato per progetto, non per voce.",
       "report_group_by": "Controlla come le registrazioni orarie vengono raggruppate nel report. Scegli per periodo (giorno/settimana/mese), cliente, progetto o una combinazione di cliente e progetto.",
-      "report_export": "Scarica il report come PDF o file Excel. Usa il pulsante opzioni PDF per scegliere font, lingua e opzioni di visualizzazione prima di esportare."
+      "report_export": "Scarica il report come PDF o file Excel. Usa il pulsante opzioni PDF per scegliere font, lingua e opzioni di visualizzazione prima di esportare.",
+      "imap_poll_interval": "Con quale frequenza WarmDesk controlla la posta in arrivo per nuove e-mail (in secondi). Valori più bassi creano ticket più velocemente ma aumentano il carico del server. 60–300 secondi è un intervallo ragionevole per la maggior parte delle configurazioni.",
+      "imap_auth_mechanism": "PLAIN invia nome utente e password direttamente (adatto per server di posta auto-ospitati con TLS). OAuth2 usa un token di accesso di breve durata al posto di una password — raccomandato per account Gmail e Office 365, e obbligatorio se il provider blocca l'autenticazione di base.",
+      "imap_oauth2_provider": "Seleziona il tuo provider affinché WarmDesk usi gli endpoint OAuth2 corretti. Dopo aver salvato, clicca su Autorizza per aprire la schermata di consenso del provider e concedere l'accesso in lettura alla posta in arrivo. Il token di accesso viene rinnovato automaticamente prima della scadenza.",
+      "backup_schedule": "Con quale frequenza viene creato un backup automatico. Backup più frequenti riducono il rischio di perdita dati ma consumano più spazio disco nella directory backups/. Monitora l'utilizzo del disco dopo l'attivazione; ogni backup è una copia completa del database.",
+      "password_min_length": "Una lunghezza di 12 o più caratteri è più efficace delle password corte con regole di caratteri complesse. Considera di impostare un minimo lungo con altri requisiti leggeri — i requisiti di complessità portano spesso a pattern prevedibili come 'Password1!'.",
+      "webhook_type": "Seleziona la piattaforma che invia webhook. I payload GitHub, GitLab, Gitea e Forgejo vengono analizzati automaticamente: commit e pull request vengono pubblicati nella chat del progetto, e i riferimenti a schede (es. PRJ-42) nei messaggi di commit vengono collegati automaticamente alla scheda corrispondente. Generico invia solo una semplice notifica JSON.",
+      "webhook_secret": "Un token incluso in ogni richiesta del repository per verificare che provenga da una fonte legittima. Copialo ora — non verrà mostrato di nuovo. Incollalo nelle impostazioni webhook del repository come segreto.",
+      "slot_factor": "Moltiplica la tariffa oraria base del contratto per il tempo registrato durante questa fascia. Ad esempio, 1,5 significa 1,5 × la tariffa base. Lascia a 1 per usare solo il campo tariffa della fascia senza moltiplicare.",
+      "slot_rate": "Tariffa oraria fissa per il tempo registrato durante questa fascia, che sostituisce la tariffa oraria base del contratto. Se sono impostati sia una tariffa che un moltiplicatore, la tariffa viene moltiplicata. Lascia vuoto per usare solo il moltiplicatore sulla tariffa base del contratto.",
+      "slot_end_day": "Per le fasce notturne, seleziona quando cade l'orario di fine. 'Stesso giorno' termina prima di mezzanotte. 'Giorno seguente' termina la mattina successiva (es. inizio venerdì 19:00, fine sabato 07:00). 'Due giorni dopo' copre un turno che si estende per una notte intera e un giorno.",
+      "slot_day_type": "Limita questa fascia tariffaria a giorni specifici. 'Tutti i giorni' si applica ogni giorno; 'Giorni feriali' copre lunedì–venerdì; 'Fine settimana' copre sabato–domenica; le opzioni per giorni singoli si applicano solo in quel preciso giorno della settimana."
     }
   }
 }
