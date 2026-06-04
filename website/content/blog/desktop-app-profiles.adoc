@@ -1,0 +1,86 @@
+---
+title: "Desktop App Profiles: One App, Many Servers"
+date: "2026-06-04"
+author: "Ton Kersten"
+description: "The WarmDesk desktop app now supports named profiles. Each profile has its own isolated login session, localStorage, and settings — so you can run separate instances for every customer without ever logging in and out."
+draft: false
+---
+:doctype: article
+:icons!:
+
+If you use WarmDesk across multiple customers or self-hosted instances, today's release removes the friction.
+The desktop app now supports *profiles* — named slots that each carry their own completely isolated login session, preferences, and stored settings.
+
+== The problem profiles solve
+
+Before today, switching between WarmDesk instances meant manually changing the server URL, logging out, and logging back in.
+Worse, every switch wiped out your local preferences (theme, locale, sidebar layout) for the previous server.
+
+With profiles you simply launch a second window for a different customer:
+
+[source,bash]
+----
+warmdesk --profile customer-a
+----
+
+Each profile is backed by its own WebView data directory.
+Nothing is shared — not the auth token, not the server URL, not the theme, not the sidebar order.
+The two windows are as independent as two different browsers.
+
+== Managing profiles
+
+Profiles live in a `profiles.json` file in your platform config directory.
+You never need to edit the file by hand — the CLI handles it.
+
+[source,bash]
+----
+# See what profiles exist
+warmdesk --list-profiles
+
+# Create a new profile with a readable label
+warmdesk --create-profile acme --label "Acme Corp"
+warmdesk --create-profile internal --label "Internal"
+
+# Change the default (used when no --profile flag is given)
+warmdesk --set-default internal
+
+# Remove a profile you no longer need
+warmdesk --delete-profile old-client
+----
+
+A `--list-profiles` run looks like this:
+
+----
+WarmDesk profiles  (~/.config/com.warmdesk.desktop/profiles.json)
+
+  * internal                 Internal
+    acme                     Acme Corp
+    customer-b               Customer B
+
+  * = default  |  use --profile <name> to select
+----
+
+== Telling windows apart
+
+Non-default profiles show the label in the window title bar — *WarmDesk — Acme Corp* — so you always know which instance you are looking at.
+Running two or three profiles side by side is practical on a wide monitor.
+
+== Where data is stored
+
+Profile data sits under your platform data directory, one subdirectory per profile:
+
+[options="header",cols="1,3"]
+|===
+| Platform | Path
+| Linux | `~/.local/share/com.warmdesk.desktop/profiles/<name>/`
+| macOS | `~/Library/Application Support/com.warmdesk.desktop/profiles/<name>/`
+| Windows | `%APPDATA%\com.warmdesk.desktop\profiles\<name>\`
+|===
+
+Deleting a profile with `--delete-profile` removes it from `profiles.json` but leaves the data directory on disk, so nothing is lost by accident.
+Remove the directory manually if you want to reclaim the space.
+
+== Browser users
+
+Profiles are a desktop-app feature.
+If you use WarmDesk in a browser you can achieve the same isolation with browser profiles or separate private windows, since the server URL and auth cookies are already scoped to the browser session.
