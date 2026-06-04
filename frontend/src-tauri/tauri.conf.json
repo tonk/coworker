@@ -1,6 +1,6 @@
 {
   "productName": "WarmDesk",
-  "version": "0.10.38",
+  "version": "0.10.40-2-g8e28d7e",
   "identifier": "com.warmdesk.desktop",
   "build": {
     "frontendDist": "../dist",
@@ -10,15 +10,7 @@
   },
   "app": {
     "withGlobalTauri": false,
-    "windows": [
-      {
-        "title": "WarmDesk",
-        "width": 1280,
-        "height": 800,
-        "minWidth": 900,
-        "minHeight": 600
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": null
     }

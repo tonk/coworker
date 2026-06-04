@@ -1,3 +1,190 @@
+use std::path::PathBuf;
+
+use serde::{Deserialize, Serialize};
+
+// ---------------------------------------------------------------------------
+// Profile types
+// ---------------------------------------------------------------------------
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct Profile {
+    name: String,
+    label: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ProfilesConfig {
+    default: String,
+    profiles: Vec<Profile>,
+}
+
+#[derive(Serialize, Clone)]
+struct ProfileInfo {
+    name: String,
+    label: String,
+    is_default: bool,
+}
+
+// ---------------------------------------------------------------------------
+// Platform config / data directories
+// (computed before the Tauri app handle is available, e.g. for --list-profiles)
+// ---------------------------------------------------------------------------
+
+const APP_ID: &str = "com.warmdesk.desktop";
+
+fn platform_home() -> PathBuf {
+    std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("/"))
+}
+
+fn warmdesk_config_dir() -> PathBuf {
+    #[cfg(target_os = "linux")]
+    {
+        let base = std::env::var("XDG_CONFIG_HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| platform_home().join(".config"));
+        base.join(APP_ID)
+    }
+    #[cfg(target_os = "macos")]
+    {
+        platform_home().join("Library/Application Support").join(APP_ID)
+    }
+    #[cfg(target_os = "windows")]
+    {
+        PathBuf::from(std::env::var("APPDATA").unwrap_or_else(|_| ".".to_string())).join(APP_ID)
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
+    PathBuf::from(".").join(APP_ID)
+}
+
+fn warmdesk_data_dir() -> PathBuf {
+    #[cfg(target_os = "linux")]
+    {
+        let base = std::env::var("XDG_DATA_HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| platform_home().join(".local/share"));
+        base.join(APP_ID)
+    }
+    #[cfg(target_os = "macos")]
+    {
+        platform_home().join("Library/Application Support").join(APP_ID)
+    }
+    #[cfg(target_os = "windows")]
+    {
+        PathBuf::from(std::env::var("APPDATA").unwrap_or_else(|_| ".".to_string())).join(APP_ID)
+    }
+    #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
+    PathBuf::from(".").join(APP_ID)
+}
+
+// ---------------------------------------------------------------------------
+// Profile file I/O
+// ---------------------------------------------------------------------------
+
+fn profiles_path() -> PathBuf {
+    warmdesk_config_dir().join("profiles.json")
+}
+
+fn load_profiles() -> ProfilesConfig {
+    if let Ok(data) = std::fs::read_to_string(profiles_path()) {
+        if let Ok(p) = serde_json::from_str::<ProfilesConfig>(&data) {
+            if !p.profiles.is_empty() {
+                return p;
+            }
+        }
+    }
+    // First run: synthesise a single "default" profile.
+    ProfilesConfig {
+        default: "default".to_string(),
+        profiles: vec![Profile {
+            name: "default".to_string(),
+            label: "Default".to_string(),
+        }],
+    }
+}
+
+fn save_profiles(cfg: &ProfilesConfig) -> std::io::Result<()> {
+    std::fs::create_dir_all(warmdesk_config_dir())?;
+    let data = serde_json::to_string_pretty(cfg)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    std::fs::write(profiles_path(), data)
+}
+
+fn validate_profile_name(name: &str) -> Result<(), String> {
+    if name.is_empty() {
+        return Err("Profile name cannot be empty".to_string());
+    }
+    if !name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
+        return Err(
+            "Profile name may only contain letters, digits, hyphens, and underscores".to_string(),
+        );
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Argument helpers
+// ---------------------------------------------------------------------------
+
+/// Parse `--flag value` or `--flag=value` from args.
+fn parse_flag_value(args: &[String], flag: &str) -> Option<String> {
+    let prefix = format!("{}=", flag);
+    let mut iter = args.iter();
+    while let Some(arg) = iter.next() {
+        if let Some(val) = arg.strip_prefix(&prefix) {
+            return Some(val.to_string());
+        }
+        if arg == flag {
+            return iter.next().cloned();
+        }
+    }
+    None
+}
+
+// ---------------------------------------------------------------------------
+// JS injection helpers
+// ---------------------------------------------------------------------------
+
+fn profile_window_title(profile: &Profile) -> String {
+    if profile.name == "default" {
+        "WarmDesk".to_string()
+    } else {
+        format!("WarmDesk \u{2014} {}", profile.label)
+    }
+}
+
+fn build_init_js(server_url: Option<&str>, profile: &Profile) -> String {
+    let mut parts: Vec<String> = Vec::new();
+    if let Some(url) = server_url {
+        if let Ok(js) = serde_json::to_string(url) {
+            parts.push(format!(
+                "window.__WARMDESK_RUNTIME_SERVER_URL__={0};\
+                 sessionStorage.setItem('warmdesk_runtime_server_url',{0});",
+                js
+            ));
+        }
+    }
+    if let (Ok(name), Ok(label)) = (
+        serde_json::to_string(&profile.name),
+        serde_json::to_string(&profile.label),
+    ) {
+        parts.push(format!(
+            "window.__WARMDESK_PROFILE_NAME__={};window.__WARMDESK_PROFILE_LABEL__={};",
+            name, label
+        ));
+    }
+    parts.join("")
+}
+
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let args: Vec<String> = std::env::args().collect();
@@ -12,10 +199,61 @@ pub fn run() {
         std::process::exit(0);
     }
 
+    if args.iter().any(|a| a == "--list-profiles") {
+        let cfg = load_profiles();
+        println!("WarmDesk profiles  ({})\n", profiles_path().display());
+        for p in &cfg.profiles {
+            let marker = if p.name == cfg.default { '*' } else { ' ' };
+            println!("  {} {:<24} {}", marker, p.name, p.label);
+        }
+        println!("\n  * = default  |  use --profile <name> to select");
+        std::process::exit(0);
+    }
+
     let maximized = args.iter().any(|a| a == "--maximized");
     let runtime_server_url_override = parse_server_url_override(&args);
     let runtime_server_url_for_page_load = runtime_server_url_override.clone();
 
+    // ------------------------------------------------------------------
+    // Resolve active profile
+    // ------------------------------------------------------------------
+    let profiles_cfg = load_profiles();
+    let requested_name = parse_flag_value(&args, "--profile")
+        .unwrap_or_else(|| profiles_cfg.default.clone());
+    let active_profile = match profiles_cfg
+        .profiles
+        .iter()
+        .find(|p| p.name == requested_name)
+    {
+        Some(p) => p.clone(),
+        None => {
+            eprintln!(
+                "error: profile '{}' not found.\n\
+                 Run with --list-profiles to see available profiles.",
+                requested_name
+            );
+            std::process::exit(1);
+        }
+    };
+
+    let profile_data_dir = warmdesk_data_dir()
+        .join("profiles")
+        .join(&active_profile.name);
+    if let Err(e) = std::fs::create_dir_all(&profile_data_dir) {
+        eprintln!(
+            "warning: could not create profile data directory {}: {}",
+            profile_data_dir.display(),
+            e
+        );
+    }
+
+    let active_profile_for_page_load = active_profile.clone();
+    let active_profile_for_setup = active_profile.clone();
+    let profile_data_dir_for_setup = profile_data_dir;
+
+    // ------------------------------------------------------------------
+    // Linux environment tweaks (unchanged from original)
+    // ------------------------------------------------------------------
     // On Linux, WebKitGTK's DMA-BUF renderer silently fails on many GPU
     // configurations (integrated GPUs, NVIDIA, VMs, some Wayland compositors),
     // producing a completely blank window.  Disabling it forces the fallback
@@ -55,17 +293,23 @@ pub fn run() {
                 // Only activate when plugins are actually present; an empty
                 // directory still passes exists() and would set GST_PLUGIN_PATH
                 // to an empty path, causing GStreamer to find nothing.
-                let has_plugins = plugin_dir.read_dir()
-                    .map(|mut d| d.any(|e| e.map(|e| {
-                        e.file_name().to_string_lossy().ends_with(".so")
-                    }).unwrap_or(false)))
+                let has_plugins = plugin_dir
+                    .read_dir()
+                    .map(|mut d| {
+                        d.any(|e| {
+                            e.map(|e| e.file_name().to_string_lossy().ends_with(".so"))
+                                .unwrap_or(false)
+                        })
+                    })
                     .unwrap_or(false);
                 if has_plugins {
                     unsafe { std::env::set_var("GST_PLUGIN_PATH", &plugin_dir) };
                     // Override the compiled-in Ubuntu system plugin path so GStreamer
                     // does not fall back to the (nonexistent on Fedora) Ubuntu path.
                     if std::env::var("GST_PLUGIN_SYSTEM_PATH_1_0").is_err() {
-                        unsafe { std::env::set_var("GST_PLUGIN_SYSTEM_PATH_1_0", &plugin_dir) };
+                        unsafe {
+                            std::env::set_var("GST_PLUGIN_SYSTEM_PATH_1_0", &plugin_dir)
+                        };
                     }
                     let scanner = plugin_dir.join("gstreamer-1.0/gst-plugin-scanner");
                     if scanner.exists() && std::env::var("GST_PLUGIN_SCANNER").is_err() {
@@ -76,14 +320,21 @@ pub fn run() {
                     // Ubuntu 1.24 plugins.  The file is shared across AppImage runs
                     // so GStreamer only rescans when plugins actually change.
                     if std::env::var("GST_REGISTRY").is_err() {
-                        unsafe { std::env::set_var("GST_REGISTRY",
-                            "/tmp/warmdesk-gst-registry.bin") };
+                        unsafe {
+                            std::env::set_var(
+                                "GST_REGISTRY",
+                                "/tmp/warmdesk-gst-registry.bin",
+                            )
+                        };
                     }
                 }
             }
         }
     }
 
+    // ------------------------------------------------------------------
+    // Build and run Tauri
+    // ------------------------------------------------------------------
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -92,98 +343,207 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .manage(RuntimeSettings {
             runtime_server_url: runtime_server_url_override.clone(),
+            profile_name: active_profile.name.clone(),
+            profile_label: active_profile.label.clone(),
         })
-        .invoke_handler(tauri::generate_handler![runtime_server_url, installation_method, fetch_binary_b64])
+        .invoke_handler(tauri::generate_handler![
+            runtime_server_url,
+            installation_method,
+            fetch_binary_b64,
+            current_profile,
+            list_profiles,
+            create_profile,
+            rename_profile,
+            set_default_profile,
+            delete_profile,
+        ])
         .on_page_load(move |window, _payload| {
-            if let Some(url) = &runtime_server_url_for_page_load {
-                // Ensure the override is present in every page context.
-                if let Ok(js_url) = serde_json::to_string(url) {
-                    let _ = window.eval(&format!(
-                        "window.__WARMDESK_RUNTIME_SERVER_URL__ = {}; sessionStorage.setItem('warmdesk_runtime_server_url', {});",
-                        js_url, js_url
-                    ));
-                }
+            let js = build_init_js(
+                runtime_server_url_for_page_load.as_deref(),
+                &active_profile_for_page_load,
+            );
+            if !js.is_empty() {
+                let _ = window.eval(&js);
             }
         })
         .setup(move |app| {
-            if let Some(win) = tauri::Manager::get_webview_window(app, "main") {
-                if let Some(url) = &runtime_server_url_override {
-                    // Inject the runtime-only URL override before the frontend
-                    // performs its first route guard/API base resolution.
-                    if let Ok(js_url) = serde_json::to_string(url) {
-                        let _ = win.eval(&format!(
-                            "window.__WARMDESK_RUNTIME_SERVER_URL__ = {}; sessionStorage.setItem('warmdesk_runtime_server_url', {});",
-                            js_url, js_url
-                        ));
-                    }
-                }
+            let title = profile_window_title(&active_profile_for_setup);
+            let win = tauri::WebviewWindowBuilder::new(
+                app,
+                "main",
+                tauri::WebviewUrl::App("index.html".into()),
+            )
+            .title(&title)
+            .inner_size(1280.0, 800.0)
+            .min_inner_size(900.0, 600.0)
+            .data_directory(profile_data_dir_for_setup)
+            .build()?;
 
-                if maximized {
-                    win.maximize()?;
-                }
-
-                // Disable WebKit hardware acceleration on Linux to work around
-                // a COLRv1 font rendering crash in webkit2gtk/Skia (Fedora 43,
-                // webkit2gtk 2.50.x). Forces software compositing.
-                #[cfg(target_os = "linux")]
-                win.with_webview(|webview| {
-                    use webkit2gtk::{
-                        HardwareAccelerationPolicy, PermissionRequestExt, SettingsExt, WebViewExt,
-                    };
-                    if let Some(settings) = WebViewExt::settings(&webview.inner()) {
-                        settings.set_hardware_acceleration_policy(
-                            HardwareAccelerationPolicy::Never,
-                        );
-                        // webkit2gtk disables getUserMedia by default (false).
-                        // Must be enabled explicitly or navigator.mediaDevices
-                        // returns no devices at all.
-                        settings.set_enable_media_stream(true);
-                    }
-                    // webkit2gtk denies all getUserMedia requests by default.
-                    // Allow them so the device-selection dropdown and call
-                    // previews can access the microphone and camera.
-                    webview.inner().connect_permission_request(|_view, request| {
-                        request.allow();
-                        true
-                    });
-                })?;
-
-                // On Windows, WebView2's autofill/credential service sends a
-                // synchronous IPC message to its browser process on every
-                // keystroke in any field it classifies as a password field.
-                // ICoreWebView2Settings4 (WebView2 SDK 1.0.992+) exposes
-                // IsPasswordAutosaveEnabled and IsGeneralAutofillEnabled —
-                // disabling both eliminates that round-trip and removes the
-                // typing lag on the login screen.
-                #[cfg(target_os = "windows")]
-                win.with_webview(|wv| {
-                    use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings4;
-                    use windows::core::Interface;
-                    unsafe {
-                        let Ok(core) = wv.controller().CoreWebView2() else { return };
-                        let Ok(settings) = core.Settings() else { return };
-                        if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
-                            let _ = s4.SetIsGeneralAutofillEnabled(false);
-                            let _ = s4.SetIsPasswordAutosaveEnabled(false);
-                        }
-                    }
-                })?;
+            // Inject before the first on_page_load fires (best-effort).
+            let js = build_init_js(
+                runtime_server_url_override.as_deref(),
+                &active_profile_for_setup,
+            );
+            if !js.is_empty() {
+                let _ = win.eval(&js);
             }
+
+            if maximized {
+                win.maximize()?;
+            }
+
+            // Disable WebKit hardware acceleration on Linux to work around
+            // a COLRv1 font rendering crash in webkit2gtk/Skia (Fedora 43,
+            // webkit2gtk 2.50.x). Forces software compositing.
+            #[cfg(target_os = "linux")]
+            win.with_webview(|webview| {
+                use webkit2gtk::{
+                    HardwareAccelerationPolicy, PermissionRequestExt, SettingsExt, WebViewExt,
+                };
+                if let Some(settings) = WebViewExt::settings(&webview.inner()) {
+                    settings.set_hardware_acceleration_policy(
+                        HardwareAccelerationPolicy::Never,
+                    );
+                    // webkit2gtk disables getUserMedia by default (false).
+                    // Must be enabled explicitly or navigator.mediaDevices
+                    // returns no devices at all.
+                    settings.set_enable_media_stream(true);
+                }
+                // webkit2gtk denies all getUserMedia requests by default.
+                // Allow them so the device-selection dropdown and call
+                // previews can access the microphone and camera.
+                webview.inner().connect_permission_request(|_view, request| {
+                    request.allow();
+                    true
+                });
+            })?;
+
+            // On Windows, WebView2's autofill/credential service sends a
+            // synchronous IPC message to its browser process on every
+            // keystroke in any field it classifies as a password field.
+            // ICoreWebView2Settings4 (WebView2 SDK 1.0.992+) exposes
+            // IsPasswordAutosaveEnabled and IsGeneralAutofillEnabled —
+            // disabling both eliminates that round-trip and removes the
+            // typing lag on the login screen.
+            #[cfg(target_os = "windows")]
+            win.with_webview(|wv| {
+                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings4;
+                use windows::core::Interface;
+                unsafe {
+                    let Ok(core) = wv.controller().CoreWebView2() else { return };
+                    let Ok(settings) = core.Settings() else { return };
+                    if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
+                        let _ = s4.SetIsGeneralAutofillEnabled(false);
+                        let _ = s4.SetIsPasswordAutosaveEnabled(false);
+                    }
+                }
+            })?;
+
             Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running WarmDesk");
 }
 
+// ---------------------------------------------------------------------------
+// Tauri state
+// ---------------------------------------------------------------------------
+
 #[derive(Clone)]
 struct RuntimeSettings {
     runtime_server_url: Option<String>,
+    profile_name: String,
+    profile_label: String,
 }
+
+// ---------------------------------------------------------------------------
+// Tauri commands
+// ---------------------------------------------------------------------------
 
 #[tauri::command]
 fn runtime_server_url(state: tauri::State<'_, RuntimeSettings>) -> Option<String> {
     state.runtime_server_url.clone()
 }
+
+#[tauri::command]
+fn current_profile(state: tauri::State<'_, RuntimeSettings>) -> ProfileInfo {
+    let cfg = load_profiles();
+    ProfileInfo {
+        name: state.profile_name.clone(),
+        label: state.profile_label.clone(),
+        is_default: state.profile_name == cfg.default,
+    }
+}
+
+#[tauri::command]
+fn list_profiles() -> Vec<ProfileInfo> {
+    let cfg = load_profiles();
+    cfg.profiles
+        .iter()
+        .map(|p| ProfileInfo {
+            name: p.name.clone(),
+            label: p.label.clone(),
+            is_default: p.name == cfg.default,
+        })
+        .collect()
+}
+
+#[tauri::command]
+fn create_profile(name: String, label: String) -> Result<(), String> {
+    validate_profile_name(&name)?;
+    let mut cfg = load_profiles();
+    if cfg.profiles.iter().any(|p| p.name == name) {
+        return Err(format!("Profile '{}' already exists", name));
+    }
+    cfg.profiles.push(Profile { name, label });
+    save_profiles(&cfg).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn rename_profile(name: String, new_label: String) -> Result<(), String> {
+    let mut cfg = load_profiles();
+    let p = cfg
+        .profiles
+        .iter_mut()
+        .find(|p| p.name == name)
+        .ok_or_else(|| format!("Profile '{}' not found", name))?;
+    p.label = new_label;
+    save_profiles(&cfg).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn set_default_profile(name: String) -> Result<(), String> {
+    let mut cfg = load_profiles();
+    if !cfg.profiles.iter().any(|p| p.name == name) {
+        return Err(format!("Profile '{}' not found", name));
+    }
+    cfg.default = name;
+    save_profiles(&cfg).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_profile(name: String) -> Result<(), String> {
+    let mut cfg = load_profiles();
+    if cfg.profiles.len() <= 1 {
+        return Err("Cannot delete the last remaining profile".to_string());
+    }
+    if cfg.default == name {
+        return Err(
+            "Cannot delete the default profile; set another profile as default first".to_string(),
+        );
+    }
+    if !cfg.profiles.iter().any(|p| p.name == name) {
+        return Err(format!("Profile '{}' not found", name));
+    }
+    cfg.profiles.retain(|p| p.name != name);
+    // The profile's data directory is intentionally left on disk to avoid
+    // accidental data loss; the user can clean it up manually if desired.
+    save_profiles(&cfg).map_err(|e| e.to_string())
+}
+
+// ---------------------------------------------------------------------------
+// Installation detection
+// ---------------------------------------------------------------------------
 
 /// Returns how the desktop client was installed.
 /// - `"appimage"`  — running as an AppImage
@@ -216,7 +576,11 @@ fn installation_method() -> String {
                     .output()
                     .map(|o| o.status.success())
                     .unwrap_or(false);
-                if owned { "deb".to_string() } else { "portable".to_string() }
+                if owned {
+                    "deb".to_string()
+                } else {
+                    "portable".to_string()
+                }
             }
             "redhat" => {
                 // rpm -qf <path>: exit 0 when the path is owned by a package.
@@ -225,7 +589,11 @@ fn installation_method() -> String {
                     .output()
                     .map(|o| o.status.success())
                     .unwrap_or(false);
-                if owned { "rpm".to_string() } else { "portable".to_string() }
+                if owned {
+                    "rpm".to_string()
+                } else {
+                    "portable".to_string()
+                }
             }
             _ => "portable".to_string(),
         }
@@ -267,17 +635,46 @@ fn linux_os_family() -> String {
 
     // RedHat family: RHEL, Fedora, and all known rebuilds/derivatives.
     const REDHAT_IDS: &[&str] = &[
-        "rhel", "fedora", "centos", "scientific", "slc", "ascendos",
-        "cloudlinux", "psbm", "ol", "ovs", "amzn", "virtuozzo",
-        "xenenterprise", "alinux", "euleros", "hce", "openeuler",
-        "almalinux", "rocky", "tencentos", "eurolinux", "kylin",
+        "rhel",
+        "fedora",
+        "centos",
+        "scientific",
+        "slc",
+        "ascendos",
+        "cloudlinux",
+        "psbm",
+        "ol",
+        "ovs",
+        "amzn",
+        "virtuozzo",
+        "xenenterprise",
+        "alinux",
+        "euleros",
+        "hce",
+        "openeuler",
+        "almalinux",
+        "rocky",
+        "tencentos",
+        "eurolinux",
+        "kylin",
         "miraclelinux",
     ];
     // Debian family: Debian, Ubuntu, and all known derivatives.
     const DEBIAN_IDS: &[&str] = &[
-        "debian", "ubuntu", "raspbian", "neon", "linuxmint", "devuan",
-        "kali", "parrot", "pop", "pardus", "deepin", "osmc",
-        "univention", "cumulus-linux",
+        "debian",
+        "ubuntu",
+        "raspbian",
+        "neon",
+        "linuxmint",
+        "devuan",
+        "kali",
+        "parrot",
+        "pop",
+        "pardus",
+        "deepin",
+        "osmc",
+        "univention",
+        "cumulus-linux",
     ];
 
     if REDHAT_IDS.contains(&id.as_str()) {
@@ -299,6 +696,10 @@ fn linux_os_family() -> String {
         "unknown".to_string()
     }
 }
+
+// ---------------------------------------------------------------------------
+// URL / arg helpers
+// ---------------------------------------------------------------------------
 
 fn parse_server_url_override(args: &[String]) -> Option<String> {
     // Supported forms:
@@ -330,9 +731,10 @@ fn normalize_server_url(raw: &str) -> Option<String> {
     }
 }
 
-// Download a binary resource from `url` using reqwest (bypasses WebKit's
-// broken Response.arrayBuffer() / ReadableStream handling on Linux GTK WebKit2)
-// and return the bytes as a standard base64 string.
+// ---------------------------------------------------------------------------
+// Binary download (bypasses WebKit's broken Response.arrayBuffer() on Linux)
+// ---------------------------------------------------------------------------
+
 #[tauri::command]
 async fn fetch_binary_b64(url: String, headers: Vec<(String, String)>) -> Result<String, String> {
     let mut req = reqwest::Client::new().get(&url);
@@ -360,15 +762,64 @@ fn b64_encode(data: &[u8]) -> String {
             | if n > 2 { c[2] as u32 } else { 0 };
         s.push(A[((v >> 18) & 63) as usize] as char);
         s.push(A[((v >> 12) & 63) as usize] as char);
-        s.push(if n > 1 { A[((v >> 6) & 63) as usize] as char } else { '=' });
-        s.push(if n > 2 { A[(v & 63) as usize] as char } else { '=' });
+        s.push(if n > 1 {
+            A[((v >> 6) & 63) as usize] as char
+        } else {
+            '='
+        });
+        s.push(if n > 2 {
+            A[(v & 63) as usize] as char
+        } else {
+            '='
+        });
     }
     s
 }
 
+// ---------------------------------------------------------------------------
+// Help text
+// ---------------------------------------------------------------------------
+
 fn print_help() {
-    println!(
-        "WarmDesk {}\n\nUsage:\n  warmdesk [OPTIONS]\n\nOptions:\n  -h, --help                   Show this help and exit\n  -V, --version                Show version and exit\n      --maximized              Start with the main window maximized\n      --url <URL>              Override server URL for this launch only\n      --url=<URL>              Same as above\n\nNotes:\n  - URL override is runtime-only and is not saved to settings.\n  - URL must start with http:// or https://",
-        env!("CARGO_PKG_VERSION")
-    );
+    let ver = env!("CARGO_PKG_VERSION");
+    println!("WarmDesk {ver}");
+    println!();
+    println!("Usage:");
+    println!("  warmdesk [OPTIONS]");
+    println!();
+    println!("Options:");
+    println!("  -h, --help                   Show this help and exit");
+    println!("  -V, --version                Show version and exit");
+    println!("      --maximized              Start with the main window maximized");
+    println!("      --url <URL>              Override server URL for this launch only");
+    println!("      --url=<URL>              Same as above");
+    println!("      --profile <NAME>         Launch with the named profile");
+    println!("      --profile=<NAME>         Same as above");
+    println!("      --list-profiles          List available profiles and exit");
+    println!();
+    println!("Profiles:");
+    println!("  Each profile has its own isolated localStorage, login session, and");
+    println!("  settings.  Profiles are defined in:");
+    println!("    Linux:   ~/.config/com.warmdesk.desktop/profiles.json");
+    println!("    macOS:   ~/Library/Application Support/com.warmdesk.desktop/profiles.json");
+    println!("    Windows: %APPDATA%\\com.warmdesk.desktop\\profiles.json");
+    println!();
+    println!("  Profile data is stored under:");
+    println!("    Linux:   ~/.local/share/com.warmdesk.desktop/profiles/<name>/");
+    println!("    macOS:   ~/Library/Application Support/com.warmdesk.desktop/profiles/<name>/");
+    println!("    Windows: %APPDATA%\\com.warmdesk.desktop\\profiles\\<name>\\");
+    println!();
+    println!("  profiles.json format:");
+    println!("    {{");
+    println!("      \"default\": \"work\",");
+    println!("      \"profiles\": [");
+    println!("        {{ \"name\": \"work\",       \"label\": \"Work\" }},");
+    println!("        {{ \"name\": \"customer-a\", \"label\": \"Customer A\" }}");
+    println!("      ]");
+    println!("    }}");
+    println!();
+    println!("Notes:");
+    println!("  - URL override is runtime-only and is not saved to settings.");
+    println!("  - URL must start with http:// or https://");
+    println!("  - Profile names may only contain letters, digits, hyphens, and underscores.");
 }
