@@ -11,6 +11,7 @@
   - `--profile <name>` — launch with the named profile
   - The window title shows **"WarmDesk — \<label\>"** for non-default profiles so multiple instances can be told apart at a glance.
   - Profile configuration is stored in `profiles.json` in the platform config directory; profile data lives under `<data dir>/profiles/<name>/`.
+- **Extended in-app contextual help** — the header "?" button now provides page-level help on the Kanban board, inbox, and all six project settings tabs (general, members, labels, API keys, webhooks, deleted cards). Charts view switches help context per chart type (velocity, burndown, CFD, sprint report, epic burndown, release burndown, cycle time, lead time). Time tracking gains three inline field hints: undeclarable time, report group-by, and the export button. All new help content is available in all 12 supported languages.
 
 ## v0.10.40 — 2026-06-03
 
