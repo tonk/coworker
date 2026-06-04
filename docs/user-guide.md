@@ -135,10 +135,41 @@ The header has three zones:
 |------|----------|
 | **Left** | WarmDesk logo — click it to go to the dashboard |
 | **Center** | Global search bar |
-| **Right** | Theme toggle (☀️ light / 🌙 dark / 🖥 system), language selector, user avatar |
+| **Right** | **?** help button, theme toggle (☀️ light / 🌙 dark / 🖥 system), language selector, user avatar |
 
 Click the **avatar** to open a dropdown menu with links to the dashboard,
 settings, admin panel (admins only), chats, time reports, and **Logout**.
+
+#### Contextual help (**?**)
+
+Click the **?** button in the header to open a help panel for the current page.
+The panel shows an introduction, common tasks, and keyboard shortcuts relevant
+to where you are in the app. On pages with multiple tabs or sections (such as
+Project Settings and Charts) the help content updates automatically as you
+switch between them.
+
+Help is available on the following pages:
+
+| Page | Coverage |
+|---|---|
+| Kanban board | Columns, cards, filtering, drag-and-drop |
+| Scrum backlog | Sprint planning, story points, prioritisation |
+| Sprint board | Active sprint, card lifecycle |
+| Epics | Epic tracking and burndown |
+| Gantt | Timeline navigation, dependencies |
+| Charts | Per-chart explanation — velocity, burndown, burnup, CFD, sprint report, epic burndown, release burndown, cycle time, lead time |
+| Topics | Discussion topics and subscriptions |
+| Helpdesk inbox | Ticket triage and assignment workflow |
+| Ticket detail | Macros, reminders, close date, checklists, private messages |
+| Time tracking | Sheet, personal report, board report; inline hints for undeclarable time, group-by, and export |
+| Project settings | General, members, labels, API keys, webhooks, deleted cards |
+| User settings | Profile, working hours, password, MFA, passkey, API keys |
+| Admin panel | All admin tabs |
+| Customers | Customer list and detail |
+| Card detail | Card fields and checklists |
+
+Inline **ⓘ** icons appear next to specific fields throughout the app — click one
+for a short explanation of that field without leaving the page.
 
 ### Footer
 
