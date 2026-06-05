@@ -4,21 +4,23 @@ global:
 
 scrape_configs:
   - job_name: warmdesk
-    # The metrics endpoint requires HTTP Basic Auth with a user that has the
-    # "metrics" or "admin" global role (e.g. the demo.metrics seed account).
-    # Use an API key instead of a password if you prefer:
-    #   params:
-    #     api_key: ["<your-api-key>"]
-    basic_auth:
-      username: demo.metrics
-      password: demo1234
+    # The metrics endpoint requires a user with the "metrics" or "admin" global
+    # role. Create a dedicated user in Admin → Users, set the role to "metrics",
+    # then generate an API key via Admin → Users → (click user) → API Keys.
+    #
+    # WarmDesk accepts the key via Authorization: ApiKey <key>.
+    # Do NOT use bearer_token or basic_auth — those target the JWT / password
+    # auth paths and will return 401.
+    authorization:
+      type: ApiKey
+      credentials: <your-api-key>
 
-    # Replace with your WarmDesk base URL. For HTTPS deployments change the
-    # scheme to "https" and adjust tls_config if you use a self-signed cert.
-    scheme: http
+    # Replace with your WarmDesk base URL. For HTTP deployments change the
+    # scheme to "http".
+    scheme: https
     static_configs:
       - targets:
-          - localhost:8080
+          - warmdesk.example.com
 
     metrics_path: /api/v1/metrics
 

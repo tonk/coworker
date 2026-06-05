@@ -370,7 +370,7 @@ admin users only).
 | `backup` | Can only call `POST /api/v1/backup`; no access to any other endpoint |
 | `customer` | Customer-portal access: can view and comment on tickets for assigned customers only; blocked from boards, chat, and time tracking |
 
-The `metrics` role is intended for Prometheus scraper accounts. Create a dedicated user, set their role to `metrics`, generate an API key in User Settings, and configure Prometheus to send `Authorization: Bearer <token>` (or `?api_key=<key>`) with each scrape request.
+The `metrics` role is intended for Prometheus scraper accounts. Create a dedicated user with role `metrics`, then generate an API key for that user in **Admin → Users → (click user) → API Keys**. Configure Prometheus to send `Authorization: ApiKey <key>` with each scrape request (see [Prometheus metrics](#prometheus-metrics) below).
 
 The `backup` role is intended for automated backup scripts and cron jobs. See [section 15](#15-backup-and-recovery) for setup instructions.
 
@@ -443,13 +443,16 @@ A ready-made Prometheus scrape config is in **`docs/prometheus.yml`**. Minimal e
 scrape_configs:
   - job_name: warmdesk
     static_configs:
-      - targets: ['warmdesk.example.com']
+      - targets:
+          - warmdesk.example.com
     metrics_path: /api/v1/metrics
     scheme: https
-    basic_auth:
-      username: metrics-user
-      password: <password>
+    authorization:
+      type: ApiKey
+      credentials: <your-api-key>
 ```
+
+> **Note:** `bearer_token` / `Authorization: Bearer` is reserved for JWT tokens and will not work here. Use `authorization.type: ApiKey` as shown above.
 
 Metrics exposed:
 
