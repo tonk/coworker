@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.10.41)
+## Latest release (v0.11.0)
 
-- **Desktop app profiles** — run separate instances for different servers/customers, each with its own isolated login session and settings; manage profiles with `--create-profile`, `--list-profiles`, `--set-default`, and `--profile` CLI flags.
-- **Extended contextual help** — the "?" button now covers the Kanban board, inbox, all project settings tabs, and all chart types; time tracking gains inline field hints for undeclarable time, group-by, and export.
+- **Prometheus metrics** — dedicated `metrics` role for scraper accounts; `Authorization: ApiKey` header accepted natively so Prometheus `scrape_configs` work without a proxy; scrape history exposed as gauges.
+- **Admin API key management** — create and revoke API keys for any user from the admin panel, making service-account setup self-contained.
+- **Soft-delete and restore users** — deleted users are recoverable from the admin panel; permanent purge preserves content records while removing personal data.
 
 ## Experiment
 

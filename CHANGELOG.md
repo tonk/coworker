@@ -1,9 +1,15 @@
 # Changelog
 
-## Unreleased
+## v0.11.0 — 2026-06-05
 
 ### Added
-- **Improved in-app contextual help** — page-level help entries for Project Settings, System Settings (admin), and Customers & Contracts have been rewritten with full task coverage across all tabs and sub-sections. Eleven new inline field hints (ⓘ) added to the most complex fields: IMAP poll interval, IMAP auth method, IMAP OAuth2 provider, backup schedule, password minimum length, webhook type, webhook secret, and all four contract time-slot fields (factor, rate, end-day offset, applies-on day). The `undeclarable_time` hint now explains why you would log non-billable time. All changes are available in all 12 supported languages.
+- **Prometheus metrics integration** — a new `metrics` global role allows dedicated read-only scraper accounts that can only access `GET /api/v1/metrics`. The `Authorization: ApiKey <key>` header is now accepted so Prometheus `scrape_configs` work natively with `authorization: {type: ApiKey, credentials: …}` without needing arbitrary header support. The metrics endpoint records each scrape's timestamp and outcome, exposed as `warmdesk_metrics_last_access_timestamp_seconds` and `warmdesk_metrics_last_access_success` gauges. The last-access timestamp in the admin panel now respects the user's date/time format setting.
+- **Admin API key management** — admins can create, list, and revoke API keys on behalf of any user directly from the edit-user modal, making it straightforward to issue keys for service accounts.
+- **Soft-delete and restore users** — deleted users are soft-deleted and can be restored from the admin panel ("Show deleted" toggle). Permanent purge nullifies FK references on content records (tickets, cards, messages) while removing personal and membership rows.
+- **Improved in-app contextual help** — page-level help entries for Project Settings, System Settings (admin), and Customers & Contracts have been rewritten with full task coverage across all tabs and sub-sections. Eleven new inline field hints (ⓘ) added to the most complex fields: IMAP poll interval, IMAP auth method, IMAP OAuth2 provider, backup schedule, password minimum length, webhook type, webhook secret, and all four contract time-slot fields. All changes available in all 12 supported languages.
+
+### Fixed
+- **HelpIcon popover clipping** — help popovers are now teleported to `<body>` to prevent clipping by sidebar overflow; an `align` prop controls left/right alignment so popovers near screen edges stay fully visible.
 
 ## v0.10.41 — 2026-06-04
 
