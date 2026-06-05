@@ -71,9 +71,10 @@ It contains:
 
 * Create new user accounts (for when self-registration is disabled)
 * Edit name, email, and global role
-* Deactivate or reactivate accounts
+* Deactivate or reactivate accounts; soft-deleted users can be restored or permanently purged
 * Reset a user's MFA (TOTP)
 * View last login time and last password change
+* Create and revoke API keys on behalf of any user (useful for `metrics` and `backup` service accounts)
 
 === Groups tab
 
@@ -307,13 +308,38 @@ It is idempotent — it exits early if demo data is already present (detected by
 `GET /api/v1/metrics` exposes a standard Prometheus scrape endpoint.
 Accessible to users with the `metrics` or `admin` global role.
 
+=== Setup
+
+. In the admin panel *Users* tab, create a user with global role `metrics` (e.g. username `prometheus`).
+. Open the edit modal for that user, scroll to *API Keys*, and click *Generate* to create a key.
+  Copy the key — it is only shown once.
+
+=== Prometheus scrape config
+
+WarmDesk accepts the API key via an `Authorization: ApiKey <key>` header.
+Use Prometheus' built-in `authorization` block (no proxy required):
+
 [source,yaml]
 ----
-# prometheus.yml snippet
 scrape_configs:
   - job_name: warmdesk
-    bearer_token: your-metrics-api-key
+    scheme: https                    # or http for plain HTTP
     static_configs:
       - targets: ['warmdesk.example.com:443']
-    scheme: https
+    metrics_path: /api/v1/metrics
+    authorization:
+      type: ApiKey
+      credentials: your-metrics-api-key
 ----
+
+NOTE: `bearer_token` / `Authorization: Bearer` is *not* supported for API key authentication — it is reserved for JWT tokens.
+Use `authorization.type: ApiKey` as shown above.
+
+=== Exposed metrics
+
+The endpoint also exposes two self-monitoring gauges:
+
+* `warmdesk_metrics_last_access_timestamp_seconds` — Unix timestamp of the previous successful scrape (0 if never).
+* `warmdesk_metrics_last_access_success` — result of the previous scrape: `1` = success, `0` = failed (auth error), `-1` = never scraped.
+
+These are visible in *Admin → Settings → Metrics access log*.
