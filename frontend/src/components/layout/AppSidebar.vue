@@ -377,8 +377,13 @@ function isOnline(userId) {
   return onlineIds.value.has(userId)
 }
 
+const SERVICE_ROLES = new Set(['metrics', 'backup', 'customer'])
+const humanUsers = computed(() =>
+  sidebarStore.allUsers.filter(u => !SERVICE_ROLES.has(u.global_role))
+)
+
 const onlineCount = computed(() => {
-  return sidebarStore.allUsers.filter(u => u.id !== auth.user?.id && isOnline(u.id)).length
+  return humanUsers.value.filter(u => u.id !== auth.user?.id && isOnline(u.id)).length
 })
 
 // ── Section drag-to-reorder (pointer events — works on WebKitGTK/Linux) ───────
@@ -510,14 +515,14 @@ const sortedProjects = computed(() => {
 // Favorites section — only favorited users, enriched with online status
 const favoritedUsers = computed(() => {
   const favIds = new Set(sidebarStore.favoriteUsers.map(u => u.id))
-  return sidebarStore.allUsers
+  return humanUsers.value
     .filter(u => favIds.has(u.id))
     .map(u => ({ ...u, online: isOnline(u.id) }))
 })
 
-// All users: online first, then offline; exclude self
+// All users: online first, then offline; exclude self and service accounts
 const sortedUsers = computed(() => {
-  const others = sidebarStore.allUsers.filter(u => u.id !== auth.user?.id)
+  const others = humanUsers.value.filter(u => u.id !== auth.user?.id)
   const online = others.filter(u => isOnline(u.id)).map(u => ({ ...u, online: true }))
   const offline = others.filter(u => !isOnline(u.id)).map(u => ({ ...u, online: false }))
   return [...online, ...offline]

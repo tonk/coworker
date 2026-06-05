@@ -260,8 +260,10 @@
               </td>
               <td class="c-total c-rowtotal">
                 <span>{{ rowTotal(row) }}</span>
-                <span v-if="rowUndecl(row) > 0" class="row-undecl-badge" :title="$t('timeTracking.undeclarable') + ': ' + fmtTime(rowUndecl(row))">↓{{ fmtTime(rowUndecl(row)) }}</span>
-                <HelpIcon v-if="rowUndecl(row) > 0" i18n-key="help.fields.undeclarable_time" :label="$t('timeTracking.undeclarable')" />
+                <span v-if="rowUndecl(row) > 0" class="row-undecl-row">
+                  <span class="row-undecl-badge" :title="$t('timeTracking.undeclarable') + ': ' + fmtTime(rowUndecl(row))">↓{{ fmtTime(rowUndecl(row)) }}</span>
+                  <HelpIcon i18n-key="help.fields.undeclarable_time" :label="$t('timeTracking.undeclarable')" />
+                </span>
               </td>
 
               <!-- Actions -->
@@ -3511,8 +3513,13 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .c-rowtotal { color: var(--color-text); }
 
 /* Undeclarable row-total badge */
+.row-undecl-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
 .row-undecl-badge {
-  display: block;
   font-size: 10px;
   font-weight: 500;
   color: var(--color-danger, #e53e3e);
