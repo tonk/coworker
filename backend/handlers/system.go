@@ -73,6 +73,8 @@ const (
 	settingIMAPAccessToken           = "imap_access_token"
 	settingIMAPRefreshToken          = "imap_refresh_token"
 	settingIMAPTokenExpiry           = "imap_token_expiry"
+	settingMetricsLastAccess         = "metrics_last_access"
+	settingMetricsLastSuccess        = "metrics_last_access_success"
 )
 
 func init() {
@@ -172,6 +174,8 @@ var systemSettingDefaults = map[string]string{
 	settingIMAPAccessToken:           "",
 	settingIMAPRefreshToken:          "",
 	settingIMAPTokenExpiry:           "",
+	settingMetricsLastAccess:         "",
+	settingMetricsLastSuccess:        "",
 }
 
 // InitSystemDefaults seeds the in-memory defaults from the config file so that

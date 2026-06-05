@@ -3,8 +3,10 @@ package middleware
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/services"
 )
 
@@ -53,6 +55,16 @@ func Auth(authSvc *services.AuthService) gin.HandlerFunc {
 			return
 		}
 
+		// 4. Authorization: ApiKey <key> — for scrapers/tools that set the
+		// Authorization header but cannot send arbitrary headers (e.g. Prometheus).
+		if strings.HasPrefix(header, "ApiKey ") {
+			raw := strings.TrimPrefix(header, "ApiKey ")
+			if AuthenticateAPIKey(c, raw) {
+				c.Next()
+			}
+			return
+		}
+
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 	}
 }
@@ -73,6 +85,8 @@ func MetricsAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, _ := c.Get(ContextGlobalRole)
 		if role != "admin" && role != "metrics" {
+			database.SaveSetting("metrics_last_access", time.Now().UTC().Format(time.RFC3339))
+			database.SaveSetting("metrics_last_access_success", "false")
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 			return
 		}

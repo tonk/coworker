@@ -1,7 +1,9 @@
 import client, { fetchBinary } from './client'
 
 export const adminApi = {
-  listUsers: () => client.get('/admin/users'),
+  listUsers: (deleted = false) => client.get('/admin/users', { params: deleted ? { deleted: 'true' } : {} }),
+  restoreUser: (id) => client.post(`/admin/users/${id}/restore`),
+  purgeUser: (id) => client.delete(`/admin/users/${id}/purge`),
   getUser: (id) => client.get(`/admin/users/${id}`),
   updateUser: (id, data) => client.put(`/admin/users/${id}`, data),
   deleteUser: (id) => client.delete(`/admin/users/${id}`),
@@ -28,5 +30,9 @@ export const adminApi = {
   restoreBackup: (filename) => client.post('/admin/system/backups/restore', { filename }),
   downloadBackup: (filename) => fetchBinary(`/admin/system/backups/${encodeURIComponent(filename)}`),
   deleteBackup: (filename) => client.delete(`/admin/system/backups/${encodeURIComponent(filename)}`),
-  disableUserMFA: (id) => client.post(`/admin/users/${id}/mfa/disable`)
+  disableUserMFA: (id) => client.post(`/admin/users/${id}/mfa/disable`),
+
+  listUserApiKeys: (id) => client.get(`/admin/users/${id}/api-keys`),
+  createUserApiKey: (id, name) => client.post(`/admin/users/${id}/api-keys`, { name }),
+  deleteUserApiKey: (userId, keyId) => client.delete(`/admin/users/${userId}/api-keys/${keyId}`),
 }

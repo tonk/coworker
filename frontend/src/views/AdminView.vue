@@ -49,7 +49,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="user in sortedUsers" :key="user.id">
+              <tr v-for="user in sortedUsers" :key="user.id" :style="user.deleted_at ? 'opacity:0.5' : ''">
                 <td>
                   <div class="member-avatar-wrap">
                     <img v-if="getUserAvatar(user)" :src="getUserAvatar(user)" class="member-avatar" alt="" />
@@ -89,12 +89,18 @@
                 </td>
                 <td>
                   <div class="actions-cell">
-                    <button class="btn btn-ghost btn-sm" @click="openEditUser(user)">{{ $t('common.edit') }}</button>
-                    <template v-if="user.id !== auth.user?.id">
-                      <button class="btn btn-ghost btn-sm" @click="toggleActive(user)">
-                        {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
-                      </button>
-                      <button class="btn btn-ghost btn-sm btn-danger" @click="deleteUser(user)">{{ $t('common.delete') }}</button>
+                    <template v-if="user.deleted_at">
+                      <button class="btn btn-ghost btn-sm" @click="restoreUser(user)">{{ $t('admin.restore') }}</button>
+                      <button class="btn btn-ghost btn-sm btn-danger" @click="purgeUser(user)">{{ $t('admin.purge') }}</button>
+                    </template>
+                    <template v-else>
+                      <button class="btn btn-ghost btn-sm" @click="openEditUser(user)">{{ $t('common.edit') }}</button>
+                      <template v-if="user.id !== auth.user?.id">
+                        <button class="btn btn-ghost btn-sm" @click="toggleActive(user)">
+                          {{ user.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
+                        </button>
+                        <button class="btn btn-ghost btn-sm btn-danger" @click="deleteUser(user)">{{ $t('common.delete') }}</button>
+                      </template>
                     </template>
                   </div>
                 </td>
@@ -129,24 +135,29 @@
                   <td style="text-align:center;">
                     <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
                     <template v-else-if="user.global_role === 'customer'"><span class="feat-check feat-off">—</span></template>
+                    <span v-else-if="user.global_role === 'metrics' || user.global_role === 'backup'" class="feat-check feat-off">—</span>
                     <input v-else type="checkbox" class="feat-toggle" :checked="user.board_enabled !== false" @change="toggleFeature(user, 'board_enabled', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
                     <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
                     <template v-else-if="user.global_role === 'customer'"><span class="feat-check feat-off">—</span></template>
+                    <span v-else-if="user.global_role === 'metrics' || user.global_role === 'backup'" class="feat-check feat-off">—</span>
                     <input v-else type="checkbox" class="feat-toggle" :checked="user.chat_enabled !== false" @change="toggleFeature(user, 'chat_enabled', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
                     <template v-if="user.global_role === 'customer'"><span class="feat-check feat-off">—</span></template>
+                    <span v-else-if="user.global_role === 'metrics' || user.global_role === 'backup'" class="feat-check feat-off">—</span>
                     <input v-else type="checkbox" class="feat-toggle" :checked="!!user.time_tracking_enabled" @change="toggleFeature(user, 'time_tracking_enabled', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
                     <template v-if="user.global_role === 'customer'"><span class="feat-check feat-off">—</span></template>
+                    <span v-else-if="user.global_role === 'metrics' || user.global_role === 'backup'" class="feat-check feat-off">—</span>
                     <input v-else type="checkbox" class="feat-toggle" :checked="!!user.time_tracking_viewer" @change="toggleFeature(user, 'time_tracking_viewer', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
                     <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
                     <template v-else-if="user.global_role === 'customer'"><span class="feat-check feat-always">✓</span></template>
+                    <span v-else-if="user.global_role === 'metrics' || user.global_role === 'backup'" class="feat-check feat-off">—</span>
                     <input v-else type="checkbox" class="feat-toggle" :checked="!!user.helpdesk_enabled" @change="toggleFeature(user, 'helpdesk_enabled', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
@@ -730,6 +741,16 @@
             </div>
           </div>
 
+          <!-- Metrics access log -->
+          <div style="margin-top:32px">
+            <h3 class="form-section-title">{{ $t('admin.metrics_access_title') }}</h3>
+            <div v-if="systemSettings.metrics_last_access" style="font-size:13px;color:var(--color-text-muted);display:flex;flex-direction:column;gap:4px">
+              <span>{{ $t('admin.metrics_last_access') }}: <strong>{{ formatDateTime(systemSettings.metrics_last_access) }}</strong></span>
+              <span>{{ $t('admin.metrics_last_access_result') }}: <strong :style="{ color: systemSettings.metrics_last_access_success === 'true' ? 'var(--color-success)' : 'var(--color-danger)' }">{{ systemSettings.metrics_last_access_success === 'true' ? $t('admin.metrics_access_success') : $t('admin.metrics_access_failed') }}</strong></span>
+            </div>
+            <span v-else style="font-size:13px;color:var(--color-text-muted)">{{ $t('admin.metrics_never_accessed') }}</span>
+          </div>
+
         </div>
 
         <!-- News tab -->
@@ -1104,6 +1125,15 @@
         </div>
       </div>
       <div class="form-group">
+        <label class="form-label" for="edit-user-role">{{ $t('admin.global_role') }}</label>
+        <select id="edit-user-role" class="form-input" v-model="editUser.global_role">
+          <option value="user">{{ $t('admin.role_user') }}</option>
+          <option value="admin">{{ $t('admin.role_admin') }}</option>
+          <option value="metrics">{{ $t('admin.role_metrics') }}</option>
+          <option value="backup">{{ $t('admin.role_backup') }}</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label class="form-label" for="edit-user-display">{{ $t('settings.display_name') }}</label>
         <input id="edit-user-display" class="form-input" v-model="editUser.display_name" />
       </div>
@@ -1136,34 +1166,36 @@
         <label class="form-label" for="edit-user-password">{{ $t('auth.password') }} <span class="form-label-hint">(leave blank to keep current)</span></label>
         <input id="edit-user-password" class="form-input" v-model="editUser._newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="New password…" />
       </div>
-      <div class="form-group">
-        <label class="form-label">{{ $t('admin.timetracking_viewer') }}</label>
-        <label class="checkbox-label">
-          <input type="checkbox" v-model="editUser.time_tracking_viewer" />
-          {{ $t('admin.timetracking_viewer_hint') }}
-        </label>
-      </div>
-      <div class="form-group">
-        <label class="form-label">{{ $t('feature.features') }}</label>
-        <div style="display:flex;flex-direction:column;gap:6px">
+      <template v-if="editUser.global_role !== 'metrics' && editUser.global_role !== 'backup'">
+        <div class="form-group">
+          <label class="form-label">{{ $t('admin.timetracking_viewer') }}</label>
           <label class="checkbox-label">
-            <input type="checkbox" v-model="editUser.time_tracking_enabled" />
-            {{ $t('feature.time_tracking') }}
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="editUser.board_enabled" />
-            {{ $t('feature.board') }}
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="editUser.chat_enabled" />
-            {{ $t('feature.chat') }}
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="editUser.helpdesk_enabled" />
-            {{ $t('feature.helpdesk') }}
+            <input type="checkbox" v-model="editUser.time_tracking_viewer" />
+            {{ $t('admin.timetracking_viewer_hint') }}
           </label>
         </div>
-      </div>
+        <div class="form-group">
+          <label class="form-label">{{ $t('feature.features') }}</label>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="editUser.time_tracking_enabled" />
+              {{ $t('feature.time_tracking') }}
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="editUser.board_enabled" />
+              {{ $t('feature.board') }}
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="editUser.chat_enabled" />
+              {{ $t('feature.chat') }}
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="editUser.helpdesk_enabled" />
+              {{ $t('feature.helpdesk') }}
+            </label>
+          </div>
+        </div>
+      </template>
       <div class="form-group">
         <label class="form-label">{{ $t('mfa.title') }}</label>
         <div v-if="editUser.totp_enabled" style="display:flex;align-items:center;gap:12px">
@@ -1172,57 +1204,100 @@
         </div>
         <span v-else class="badge badge-inactive">{{ $t('mfa.disabled') }}</span>
       </div>
-      <div class="form-group">
-        <label class="form-label">{{ $t('groups.title') }}</label>
-        <div class="labels-picker">
-          <span
-            v-for="g in groups"
-            :key="g.id"
-            class="label-chip"
-            :class="{ active: userGroupIds.includes(g.id) }"
-            :style="{ borderColor: '#8b5cf6', color: userGroupIds.includes(g.id) ? '#fff' : '#8b5cf6', background: userGroupIds.includes(g.id) ? '#8b5cf6' : 'transparent' }"
-            @click="userGroupIds.includes(g.id) ? userGroupIds.splice(userGroupIds.indexOf(g.id), 1) : userGroupIds.push(g.id)"
-          >{{ g.name }}</span>
-          <span v-if="!groups.length" class="form-hint">{{ $t('groups.no_groups') }}</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">{{ $t('admin.assign_projects') }}</label>
-        <div class="labels-picker">
-          <span
-            v-for="p in projects"
-            :key="p.id"
-            class="label-chip project-chip"
-            :class="{ active: userProjectIds.includes(p.id) }"
-            :style="{ borderColor: p.color || '#6366f1', color: userProjectIds.includes(p.id) ? '#fff' : (p.color || '#6366f1'), background: userProjectIds.includes(p.id) ? (p.color || '#6366f1') : 'transparent' }"
-            @click="toggleUserProject(p.id)"
-          >{{ p.name }}</span>
-          <span v-if="!projects.length" class="form-hint">No projects yet</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">{{ $t('admin.assign_customers') }} <span class="form-label-hint">({{ $t('admin.assign_customers_hint') }})</span></label>
-        <div class="labels-picker">
-          <span
-            v-for="cu in allCustomers"
-            :key="cu.id"
-            class="label-chip customer-chip-wrap"
-            :class="{ active: userCustomerIds.includes(cu.id) }"
-            :style="{ borderColor: '#0ea5e9', color: userCustomerIds.includes(cu.id) ? '#fff' : '#0ea5e9', background: userCustomerIds.includes(cu.id) ? '#0ea5e9' : 'transparent' }"
-            @click="toggleUserCustomer(cu.id)"
-          >
-            {{ cu.name }}
+      <template v-if="editUser.global_role !== 'metrics' && editUser.global_role !== 'backup'">
+        <div class="form-group">
+          <label class="form-label">{{ $t('groups.title') }}</label>
+          <div class="labels-picker">
             <span
-              v-if="userCustomerIds.includes(cu.id)"
-              class="admin-toggle"
-              :class="{ 'is-admin': userCustomerAdminIds.includes(cu.id) }"
-              :title="userCustomerAdminIds.includes(cu.id) ? $t('admin.role_admin') : $t('admin.role_user')"
-              @click.stop="toggleCustomerAdmin(cu.id, $event)"
-            >{{ userCustomerAdminIds.includes(cu.id) ? 'A' : 'M' }}</span>
-          </span>
-          <span v-if="!allCustomers.length" class="form-hint">No customers yet</span>
+              v-for="g in groups"
+              :key="g.id"
+              class="label-chip"
+              :class="{ active: userGroupIds.includes(g.id) }"
+              :style="{ borderColor: '#8b5cf6', color: userGroupIds.includes(g.id) ? '#fff' : '#8b5cf6', background: userGroupIds.includes(g.id) ? '#8b5cf6' : 'transparent' }"
+              @click="userGroupIds.includes(g.id) ? userGroupIds.splice(userGroupIds.indexOf(g.id), 1) : userGroupIds.push(g.id)"
+            >{{ g.name }}</span>
+            <span v-if="!groups.length" class="form-hint">{{ $t('groups.no_groups') }}</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ $t('admin.assign_projects') }}</label>
+          <div class="labels-picker">
+            <span
+              v-for="p in projects"
+              :key="p.id"
+              class="label-chip project-chip"
+              :class="{ active: userProjectIds.includes(p.id) }"
+              :style="{ borderColor: p.color || '#6366f1', color: userProjectIds.includes(p.id) ? '#fff' : (p.color || '#6366f1'), background: userProjectIds.includes(p.id) ? (p.color || '#6366f1') : 'transparent' }"
+              @click="toggleUserProject(p.id)"
+            >{{ p.name }}</span>
+            <span v-if="!projects.length" class="form-hint">No projects yet</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">{{ $t('admin.assign_customers') }} <span class="form-label-hint">({{ $t('admin.assign_customers_hint') }})</span></label>
+          <div class="labels-picker">
+            <span
+              v-for="cu in allCustomers"
+              :key="cu.id"
+              class="label-chip customer-chip-wrap"
+              :class="{ active: userCustomerIds.includes(cu.id) }"
+              :style="{ borderColor: '#0ea5e9', color: userCustomerIds.includes(cu.id) ? '#fff' : '#0ea5e9', background: userCustomerIds.includes(cu.id) ? '#0ea5e9' : 'transparent' }"
+              @click="toggleUserCustomer(cu.id)"
+            >
+              {{ cu.name }}
+              <span
+                v-if="userCustomerIds.includes(cu.id)"
+                class="admin-toggle"
+                :class="{ 'is-admin': userCustomerAdminIds.includes(cu.id) }"
+                :title="userCustomerAdminIds.includes(cu.id) ? $t('admin.role_admin') : $t('admin.role_user')"
+                @click.stop="toggleCustomerAdmin(cu.id, $event)"
+              >{{ userCustomerAdminIds.includes(cu.id) ? 'A' : 'M' }}</span>
+            </span>
+            <span v-if="!allCustomers.length" class="form-hint">No customers yet</span>
+          </div>
+        </div>
+      </template>
+      <!-- API Keys — shown only for metrics-role users -->
+      <div v-if="editUser.global_role === 'metrics'" class="form-group">
+        <label class="form-label">{{ $t('admin.api_keys') }}</label>
+
+        <!-- Shown-once key result -->
+        <div v-if="newApiKeyResult" style="background:var(--color-surface-raised);border:1px solid var(--color-border);border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:13px">
+          <p style="margin:0 0 6px;color:var(--color-text-muted)">{{ $t('admin.api_key_shown_once') }}</p>
+          <div style="display:flex;align-items:center;gap:8px">
+            <code style="flex:1;word-break:break-all;background:var(--color-surface);padding:4px 8px;border-radius:4px;font-size:12px">{{ newApiKeyResult.key }}</code>
+            <button type="button" class="btn btn-secondary btn-sm" @click="copyApiKey(newApiKeyResult.key)" aria-label="{{ $t('admin.api_key_copy') }}">{{ $t('admin.api_key_copy') }}</button>
+          </div>
+        </div>
+
+        <!-- Existing keys -->
+        <table v-if="editUserApiKeys.length" class="data-table" style="margin-bottom:10px">
+          <thead>
+            <tr>
+              <th>{{ $t('common.name') }}</th>
+              <th>{{ $t('admin.api_key_prefix') }}</th>
+              <th>{{ $t('admin.api_key_last_used') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="k in editUserApiKeys" :key="k.id">
+              <td>{{ k.name }}</td>
+              <td><code>{{ k.key_prefix }}…</code></td>
+              <td>{{ k.last_used_at ? k.last_used_at : $t('admin.api_key_never_used') }}</td>
+              <td><button type="button" class="btn btn-danger btn-sm" @click="deleteUserApiKey(k.id)">{{ $t('admin.api_key_revoke') }}</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <p v-else-if="!newApiKeyResult" class="form-hint">{{ $t('admin.api_key_none') }}</p>
+
+        <!-- Create new key -->
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="form-input" v-model="newApiKeyName" :placeholder="$t('admin.api_key_name_placeholder')" style="flex:1" @keyup.enter="createUserApiKey" />
+          <button type="button" class="btn btn-secondary btn-sm" @click="createUserApiKey" :disabled="!newApiKeyName.trim()">{{ $t('admin.api_key_generate') }}</button>
         </div>
       </div>
+
       <template #footer>
         <button class="btn btn-secondary" @click="editUser = null">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="saveEditUser">{{ $t('common.save') }}</button>
@@ -1716,8 +1791,12 @@ const groupSearch = ref('')
 const customerSearch = ref('')
 
 const editUser = ref(null)
+const editUserApiKeys = ref([])
+const newApiKeyName = ref('')
+const newApiKeyResult = ref(null) // { key, name } shown once after creation
 const editProject = ref(null)
 const showCreateUser = ref(false)
+const showDeletedUsers = ref(false)
 const showCreateProject = ref(false)
 const newProject = ref({ name: '', description: '', color: '#6366f1', avatar: '', key_prefix: '', board_type: 'kanban' })
 const prefixTouched = ref(false)
@@ -2102,6 +2181,8 @@ const systemSettings = ref({
   backup_last_run: '',
   backup_email_enabled: false,
   backup_email_address: '',
+  metrics_last_access: '',
+  metrics_last_access_success: '',
 })
 // True when the server has a password saved (so we show a placeholder instead of the value)
 const smtpPasswordSet = ref(false)
@@ -2127,14 +2208,17 @@ const timezones = [
   'Australia/Sydney', 'Pacific/Auckland'
 ]
 
-onMounted(async () => {
+async function loadUsers() {
+  loading.value = true
   try {
-    const { data } = await adminApi.listUsers()
+    const { data } = await adminApi.listUsers(showDeletedUsers.value)
     users.value = data
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(loadUsers)
 
 async function loadProjects() {
   loadingProjects.value = true
@@ -2226,9 +2310,11 @@ async function loadSettings() {
     systemSettings.value.backup_start_time         = data.backup_start_time || ''
     systemSettings.value.backup_keep               = parseInt(data.backup_keep) || 10
     systemSettings.value.backup_last_run           = data.backup_last_run || ''
-    systemSettings.value.backup_email_enabled      = data.backup_email_enabled === 'true'
-    systemSettings.value.backup_email_address      = data.backup_email_address || ''
-    systemSettings.value.allowed_ips               = data.allowed_ips || ''
+    systemSettings.value.backup_email_enabled       = data.backup_email_enabled === 'true'
+    systemSettings.value.backup_email_address       = data.backup_email_address || ''
+    systemSettings.value.allowed_ips                = data.allowed_ips || ''
+    systemSettings.value.metrics_last_access        = data.metrics_last_access || ''
+    systemSettings.value.metrics_last_access_success = data.metrics_last_access_success || ''
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to load settings')
   } finally {
@@ -2728,6 +2814,27 @@ async function deleteUser(user) {
   }
 }
 
+async function restoreUser(user) {
+  try {
+    await adminApi.restoreUser(user.id)
+    users.value = users.value.filter(u => u.id !== user.id)
+    ui.success(`User ${user.username} restored`)
+  } catch {
+    ui.error('Failed to restore user')
+  }
+}
+
+async function purgeUser(user) {
+  if (!await ui.confirm(t('admin.purge_user_confirm', { name: user.username }))) return
+  try {
+    await adminApi.purgeUser(user.id)
+    users.value = users.value.filter(u => u.id !== user.id)
+    ui.success(`User ${user.username} permanently deleted`)
+  } catch {
+    ui.error('Failed to permanently delete user')
+  }
+}
+
 async function adminResetMFA(user) {
   if (!await ui.confirm(`Disable MFA for ${user.display_name || user.username}?`)) return
   try {
@@ -2744,6 +2851,9 @@ async function adminResetMFA(user) {
 
 async function openEditUser(user) {
   editUser.value = { ...user, _newPassword: '' }
+  editUserApiKeys.value = []
+  newApiKeyName.value = ''
+  newApiKeyResult.value = null
   userProjectIds.value = []
   userCustomerIds.value = []
   userCustomerAdminIds.value = []
@@ -2751,12 +2861,16 @@ async function openEditUser(user) {
   loadProjects()
   loadAllCustomers()
   loadGroups()
+  const calls = [
+    adminApi.getUserProjects(user.id),
+    adminApi.getUserCustomers(user.id),
+    adminApi.getUserGroups(user.id),
+  ]
+  if (user.global_role === 'metrics') {
+    calls.push(adminApi.listUserApiKeys(user.id))
+  }
   try {
-    const [projRes, custRes, grpRes] = await Promise.all([
-      adminApi.getUserProjects(user.id),
-      adminApi.getUserCustomers(user.id),
-      adminApi.getUserGroups(user.id),
-    ])
+    const [projRes, custRes, grpRes, keysRes] = await Promise.all(calls)
     userProjectIds.value = projRes.data.project_ids || []
     userCustomerIds.value = custRes.data.customer_ids || []
     const roles = custRes.data.customer_roles || {}
@@ -2764,23 +2878,54 @@ async function openEditUser(user) {
       .filter(([, role]) => role === 'admin')
       .map(([id]) => Number(id))
     userGroupIds.value = grpRes.data.group_ids || []
+    if (keysRes) editUserApiKeys.value = keysRes.data || []
   } catch {}
+}
+
+async function createUserApiKey() {
+  if (!newApiKeyName.value.trim()) return
+  try {
+    const { data } = await adminApi.createUserApiKey(editUser.value.id, newApiKeyName.value.trim())
+    newApiKeyResult.value = { key: data.key, name: data.name, id: data.id, key_prefix: data.key_prefix }
+    editUserApiKeys.value.push({ id: data.id, name: data.name, key_prefix: data.key_prefix, created_at: data.created_at })
+    newApiKeyName.value = ''
+  } catch {
+    ui.error('Failed to create API key')
+  }
+}
+
+async function deleteUserApiKey(keyId) {
+  if (!await ui.confirm(t('admin.api_key_revoke_confirm'))) return
+  try {
+    await adminApi.deleteUserApiKey(editUser.value.id, keyId)
+    editUserApiKeys.value = editUserApiKeys.value.filter(k => k.id !== keyId)
+    if (newApiKeyResult.value?.id === keyId) newApiKeyResult.value = null
+  } catch {
+    ui.error('Failed to revoke API key')
+  }
+}
+
+function copyApiKey(key) {
+  navigator.clipboard.writeText(key)
+  ui.success(t('admin.api_key_copied'))
 }
 
 async function saveEditUser() {
   try {
+    const isServiceAccount = editUser.value.global_role === 'metrics' || editUser.value.global_role === 'backup'
     const payload = {
+      global_role: editUser.value.global_role,
       first_name: editUser.value.first_name,
       last_name: editUser.value.last_name,
       display_name: editUser.value.display_name,
       email: editUser.value.email,
       avatar_url: editUser.value.avatar_url,
       locale: editUser.value.locale,
-      time_tracking_viewer: editUser.value.time_tracking_viewer ?? false,
-      time_tracking_enabled: editUser.value.time_tracking_enabled ?? false,
-      board_enabled: editUser.value.board_enabled ?? true,
-      chat_enabled: editUser.value.chat_enabled ?? true,
-      helpdesk_enabled: editUser.value.helpdesk_enabled ?? false
+      time_tracking_viewer: isServiceAccount ? false : (editUser.value.time_tracking_viewer ?? false),
+      time_tracking_enabled: isServiceAccount ? false : (editUser.value.time_tracking_enabled ?? false),
+      board_enabled: isServiceAccount ? false : (editUser.value.board_enabled ?? true),
+      chat_enabled: isServiceAccount ? false : (editUser.value.chat_enabled ?? true),
+      helpdesk_enabled: isServiceAccount ? false : (editUser.value.helpdesk_enabled ?? false)
     }
     if (editUser.value._newPassword) {
       payload.password = editUser.value._newPassword

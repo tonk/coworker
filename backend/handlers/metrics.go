@@ -15,6 +15,8 @@ import (
 // GetMetrics GET /api/v1/metrics — Prometheus-format metrics.
 // Requires admin or metrics global role (enforced by MetricsAuth middleware).
 func GetMetrics(c *gin.Context) {
+	all := loadAllSettings()
+
 	var projects []models.Project
 	database.DB.Where("is_archived = ? AND deleted_at IS NULL", false).Find(&projects)
 
@@ -115,8 +117,6 @@ func GetMetrics(c *gin.Context) {
 	fmt.Fprintf(&buf, "warmdesk_ticket_messages_total{visibility=\"private\"} %d\n", privateMsgs)
 
 	// warmdesk_backup_* metrics
-	all := loadAllSettings()
-
 	var lastRunTS float64
 	if lr := all[settingBackupLastRun]; lr != "" {
 		if t, err := time.Parse(time.RFC3339, lr); err == nil {
@@ -151,6 +151,32 @@ func GetMetrics(c *gin.Context) {
 	fmt.Fprintf(&buf, "# TYPE warmdesk_backup_files_total gauge\n")
 	fmt.Fprintf(&buf, "warmdesk_backup_files_total %d\n", backupFileCount)
 
+	// warmdesk_metrics_last_access_* — reflects the previous scrape (updated below)
+	var lastAccessTS float64
+	if la := all[settingMetricsLastAccess]; la != "" {
+		if t, err := time.Parse(time.RFC3339, la); err == nil {
+			lastAccessTS = float64(t.Unix())
+		}
+	}
+	lastAccessSuccess := -1.0 // -1 = never accessed
+	if s := all[settingMetricsLastSuccess]; s == "true" {
+		lastAccessSuccess = 1
+	} else if s == "false" {
+		lastAccessSuccess = 0
+	}
+
+	fmt.Fprintf(&buf, "\n# HELP warmdesk_metrics_last_access_timestamp_seconds Unix timestamp of the previous metrics scrape (0 if never)\n")
+	fmt.Fprintf(&buf, "# TYPE warmdesk_metrics_last_access_timestamp_seconds gauge\n")
+	fmt.Fprintf(&buf, "warmdesk_metrics_last_access_timestamp_seconds %g\n", lastAccessTS)
+
+	fmt.Fprintf(&buf, "\n# HELP warmdesk_metrics_last_access_success Result of the previous metrics scrape: 1=success 0=failed -1=never\n")
+	fmt.Fprintf(&buf, "# TYPE warmdesk_metrics_last_access_success gauge\n")
+	fmt.Fprintf(&buf, "warmdesk_metrics_last_access_success %g\n", lastAccessSuccess)
+
 	c.Header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
 	c.String(http.StatusOK, buf.String())
+
+	// Record this successful scrape (next scrape will see it in the metrics above)
+	saveSetting(settingMetricsLastAccess, time.Now().UTC().Format(time.RFC3339))
+	saveSetting(settingMetricsLastSuccess, "true")
 }

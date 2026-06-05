@@ -429,7 +429,10 @@ func autoMigrate(db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	return migrateGroupConversations(db)
+	if err := migrateGroupConversations(db); err != nil {
+		return err
+	}
+	return clearServiceAccountFeatures(db)
 }
 
 // migrateGroupConversations creates a linked Conversation for any UserGroup
@@ -460,4 +463,27 @@ func migrateGroupConversations(db *gorm.DB) error {
 		db.Model(&g).Update("conversation_id", conv.ID)
 	}
 	return nil
+}
+
+// clearServiceAccountFeatures ensures metrics and backup users never have feature
+// flags set — runs at startup to fix any rows created before this policy existed.
+func clearServiceAccountFeatures(db *gorm.DB) error {
+	return db.Model(&models.User{}).
+		Where("global_role IN ('metrics','backup')").
+		Updates(map[string]interface{}{
+			"board_enabled":         false,
+			"chat_enabled":          false,
+			"time_tracking_enabled": false,
+			"time_tracking_viewer":  false,
+			"helpdesk_enabled":      false,
+		}).Error
+}
+
+// SaveSetting upserts a system_setting row. Available to both handlers and
+// middleware packages to avoid circular imports.
+func SaveSetting(key, value string) {
+	result := DB.Model(&models.SystemSetting{}).Where("key = ?", key).Update("value", value)
+	if result.RowsAffected == 0 {
+		DB.Create(&models.SystemSetting{Key: key, Value: value})
+	}
 }

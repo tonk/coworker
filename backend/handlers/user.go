@@ -15,8 +15,82 @@ import (
 
 func AdminListUsers(c *gin.Context) {
 	var users []models.User
-	database.DB.Find(&users)
+	if c.Query("deleted") == "true" {
+		database.DB.Unscoped().Where("deleted_at IS NOT NULL").Find(&users)
+	} else {
+		database.DB.Find(&users)
+	}
 	c.JSON(http.StatusOK, users)
+}
+
+// AdminRestoreUser un-deletes a soft-deleted user.
+func AdminRestoreUser(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	result := database.DB.Unscoped().Model(&models.User{}).Where("id = ? AND deleted_at IS NOT NULL", id).Update("deleted_at", nil)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "deleted user not found"})
+		return
+	}
+	var user models.User
+	database.DB.First(&user, id)
+	c.JSON(http.StatusOK, user)
+}
+
+// AdminPurgeUser permanently removes a soft-deleted user and cleans up FK references.
+// Records that have value beyond the user (tickets, cards, messages) are preserved with
+// their user FK nullified. Membership and personal records are deleted outright.
+func AdminPurgeUser(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	uid := uint(id)
+
+	// Nullify FKs on records that should survive (content / audit trail)
+	database.DB.Unscoped().Model(&models.Ticket{}).Where("assigned_to_id = ?", uid).Update("assigned_to_id", nil)
+	database.DB.Unscoped().Model(&models.Ticket{}).Where("owner_id = ?", uid).Update("owner_id", nil)
+	database.DB.Unscoped().Model(&models.Ticket{}).Where("created_by_id = ?", uid).Update("created_by_id", nil)
+	database.DB.Unscoped().Model(&models.TicketMessage{}).Where("user_id = ?", uid).Update("user_id", nil)
+	database.DB.Unscoped().Model(&models.TicketHistory{}).Where("user_id = ?", uid).Update("user_id", nil)
+	database.DB.Unscoped().Model(&models.CardComment{}).Where("user_id = ?", uid).Update("user_id", nil)
+	database.DB.Unscoped().Model(&models.CardHistory{}).Where("user_id = ?", uid).Update("user_id", nil)
+	database.DB.Unscoped().Model(&models.Card{}).Where("assignee_id = ?", uid).Update("assignee_id", nil)
+	database.DB.Unscoped().Model(&models.Card{}).Where("created_by_id = ?", uid).Update("created_by_id", nil)
+	database.DB.Unscoped().Model(&models.TimeEntry{}).Where("user_id = ?", uid).Update("user_id", nil)
+	database.DB.Unscoped().Model(&models.Topic{}).Where("user_id = ?", uid).Update("user_id", nil)
+	database.DB.Unscoped().Model(&models.TopicReply{}).Where("user_id = ?", uid).Update("user_id", nil)
+	database.DB.Unscoped().Model(&models.ChatMessage{}).Where("user_id = ?", uid).Update("user_id", nil)
+	database.DB.Unscoped().Model(&models.ConversationMessage{}).Where("sender_id = ?", uid).Update("sender_id", nil)
+	database.DB.Unscoped().Model(&models.DirectMessage{}).Where("sender_id = ?", uid).Update("sender_id", nil)
+	database.DB.Unscoped().Model(&models.DirectMessage{}).Where("receiver_id = ?", uid).Update("receiver_id", nil)
+	database.DB.Unscoped().Model(&models.Attachment{}).Where("uploader_id = ?", uid).Update("uploader_id", nil)
+	database.DB.Unscoped().Model(&models.TicketCardLink{}).Where("created_by_id = ?", uid).Update("created_by_id", nil)
+	database.DB.Unscoped().Model(&models.ProjectWebhook{}).Where("created_by_id = ?", uid).Update("created_by_id", nil)
+	database.DB.Unscoped().Model(&models.Customer{}).Where("created_by_id = ?", uid).Update("created_by_id", nil)
+
+	// Delete personal / membership records
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.APIKey{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.StarredProject{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.CustomerFavorite{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.CustomerAccess{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.GroupMember{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.ProjectMember{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.PasskeyCredential{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.TimeEntryRowOrder{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.FavoriteUser{})
+	database.DB.Unscoped().Where("favorite_user_id = ?", uid).Delete(&models.FavoriteUser{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.CardAssignee{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.ConversationMember{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.MessageReaction{})
+
+	// Hard-delete the user row itself
+	database.DB.Unscoped().Delete(&models.User{}, uid)
+	c.JSON(http.StatusOK, gin.H{"message": "purged"})
 }
 
 func AdminGetUser(c *gin.Context) {
@@ -175,6 +249,22 @@ func AdminUpdateUser(c *gin.Context) {
 		updates["password_changed_at"] = time.Now()
 	}
 
+	// Service-account roles must not have feature access — enforce regardless of
+	// what the request sent for the feature flags.
+	finalRole, _ := updates["global_role"].(string)
+	if finalRole == "" {
+		var existing models.User
+		database.DB.Select("global_role").First(&existing, id)
+		finalRole = existing.GlobalRole
+	}
+	if finalRole == "metrics" || finalRole == "backup" {
+		updates["time_tracking_enabled"] = false
+		updates["time_tracking_viewer"] = false
+		updates["board_enabled"] = false
+		updates["chat_enabled"] = false
+		updates["helpdesk_enabled"] = false
+	}
+
 	if len(updates) > 0 {
 		updates["settings_updated_at"] = time.Now()
 	}
@@ -251,7 +341,9 @@ func AdminCreateUser(c *gin.Context) {
 		displayName = req.Username
 	}
 	role := req.GlobalRole
-	if role != "admin" && role != "user" {
+	switch role {
+	case "admin", "user", "metrics", "backup":
+	default:
 		role = "user"
 	}
 

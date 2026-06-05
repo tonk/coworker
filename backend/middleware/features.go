@@ -18,6 +18,10 @@ func RequireFeature(feature string) gin.HandlerFunc {
 			c.Next()
 			return
 		}
+		if role == "metrics" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "feature not available"})
+			return
+		}
 		var user models.User
 		if err := database.DB.Select(feature).First(&user, userID).Error; err != nil {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "feature not available"})

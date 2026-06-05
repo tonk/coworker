@@ -185,6 +185,82 @@ func CreateProjectAPIKey(c *gin.Context) {
 	})
 }
 
+// AdminListUserAPIKeys lists all personal API keys for a specific user.
+func AdminListUserAPIKeys(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	var keys []models.APIKey
+	database.DB.Where("user_id = ? AND project_id IS NULL", uint(id)).Find(&keys)
+	c.JSON(http.StatusOK, keys)
+}
+
+// AdminCreateUserAPIKey creates a personal API key on behalf of a specific user.
+func AdminCreateUserAPIKey(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	var req struct {
+		Name string `json:"name" binding:"required,max=100"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+	var user models.User
+	if err := database.DB.First(&user, uint(id)).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+	plain, hash, prefix, err := generateAPIKey()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	key := models.APIKey{
+		UserID:    uint(id),
+		Name:      req.Name,
+		KeyHash:   hash,
+		KeyPrefix: prefix,
+	}
+	if err := database.DB.Create(&key).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"id":         key.ID,
+		"name":       key.Name,
+		"key_prefix": key.KeyPrefix,
+		"key":        plain, // shown once
+		"created_at": key.CreatedAt,
+	})
+}
+
+// AdminDeleteUserAPIKey deletes a personal API key for a specific user.
+func AdminDeleteUserAPIKey(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	keyId, err := strconv.ParseUint(c.Param("keyId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid key id"})
+		return
+	}
+	var key models.APIKey
+	if err := database.DB.Where("id = ? AND user_id = ? AND project_id IS NULL", keyId, uint(id)).First(&key).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+	database.DB.Delete(&key)
+	c.JSON(http.StatusOK, gin.H{"message": "revoked"})
+}
+
 func DeleteProjectAPIKey(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	project, err := services.GetProjectBySlug(c.Param("projectSlug"))
