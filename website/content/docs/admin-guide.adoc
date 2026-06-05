@@ -323,10 +323,11 @@ Use Prometheus' built-in `authorization` block (no proxy required):
 ----
 scrape_configs:
   - job_name: warmdesk
-    scheme: https                    # or http for plain HTTP
     static_configs:
-      - targets: ['warmdesk.example.com:443']
+      - targets:
+          - warmdesk.example.com      # no port needed for standard HTTPS/HTTP
     metrics_path: /api/v1/metrics
+    scheme: https                     # or http
     authorization:
       type: ApiKey
       credentials: your-metrics-api-key
