@@ -17,6 +17,8 @@ enableEmoji = true
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
   warmdesk_version = "v0.12.1"
   release_date     = "2026-06-06"
+  # Blog post slug for the current release (linked from the homepage "What's new" strip)
+  release_blog     = "blog/release-0.12.1/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
     "**Undeclarable timesheet UX** — aligned deductions, declarable row totals, and improved accessibility on the weekly grid.",

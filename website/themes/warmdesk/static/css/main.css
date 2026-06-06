@@ -405,6 +405,13 @@ tr:nth-child(even) td { background: var(--color-bg-alt); }
   align-items: center;
   gap: 16px;
   margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.whats-new-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
 }
 .whats-new-badge {
   font-size: 12px;

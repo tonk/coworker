@@ -31,7 +31,12 @@
   <div class="container">
     <div class="whats-new-header">
       <span class="whats-new-badge">What's new in {{ site.Params.warmdesk_version }}</span>
-      <a href="{{ site.Params.github }}/releases/tag/{{ site.Params.warmdesk_version }}" class="whats-new-link" target="_blank" rel="noopener">Full changelog ↗</a>
+      <div class="whats-new-links">
+        {{- if site.Params.release_blog }}
+        <a href="{{ site.Params.release_blog | absURL }}" class="whats-new-link">Release blog post →</a>
+        {{- end }}
+        <a href="{{ site.Params.github }}/releases/tag/{{ site.Params.warmdesk_version }}" class="whats-new-link" target="_blank" rel="noopener">Full changelog ↗</a>
+      </div>
     </div>
     <ul class="whats-new-list">
       {{- range site.Params.release_highlights }}
