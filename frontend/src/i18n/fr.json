@@ -940,7 +940,10 @@
     "standby_success": "Garde enregistrée",
     "standby_error": "Échec de l'enregistrement de la garde",
     "standby_invalid_range": "Saisissez une date/heure de début et de fin valides",
-    "export_grid": "PDF grille"
+    "export_grid": "PDF grille",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Appel entrant",
@@ -988,7 +991,8 @@
     "your_screen": "Votre écran",
     "peer_screen": "Écran de {name}",
     "invite_sent": "Invitation envoyée",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Raccourcis clavier",

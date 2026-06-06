@@ -940,7 +940,10 @@
     "standby_success": "Bereitschaftsdienst erfasst",
     "standby_error": "Bereitschaftsdienst konnte nicht erfasst werden",
     "standby_invalid_range": "Gültiges Start- und Enddatum/-zeit eingeben",
-    "export_grid": "Raster PDF"
+    "export_grid": "Raster PDF",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Eingehender Anruf",
@@ -988,7 +991,8 @@
     "your_screen": "Ihr Bildschirm",
     "peer_screen": "Bildschirm von {name}",
     "invite_sent": "Einladung gesendet",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Tastenkürzel",

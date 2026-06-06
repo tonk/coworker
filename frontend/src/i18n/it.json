@@ -940,7 +940,10 @@
     "standby_success": "Turno di reperibilità registrato",
     "standby_error": "Impossibile registrare il turno di reperibilità",
     "standby_invalid_range": "Inserire data/ora di inizio e fine valide",
-    "export_grid": "PDF griglia"
+    "export_grid": "PDF griglia",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Chiamata in arrivo",
@@ -988,7 +991,8 @@
     "your_screen": "Il tuo schermo",
     "peer_screen": "Schermo di {name}",
     "invite_sent": "Invito inviato",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Scorciatoie da tastiera",

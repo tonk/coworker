@@ -940,7 +940,10 @@
     "standby_success": "Standbyvagt logget",
     "standby_error": "Kunne ikke logge standbyvagt",
     "standby_invalid_range": "Angiv gyldig start- og slutdato/tid",
-    "export_grid": "Gitter PDF"
+    "export_grid": "Gitter PDF",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Indgående opkald",
@@ -988,7 +991,8 @@
     "your_screen": "Din skærm",
     "peer_screen": "{name}s skærm",
     "invite_sent": "Invitation sendt",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Tastaturgenveje",

@@ -10,11 +10,13 @@ type TimeEntryRowOrder struct {
 }
 
 // TimeEntryWeekRowOrder persists row-key order for a specific ISO week, including empty rows.
+// Comments is a JSON object mapping rowKey → comment text.
 type TimeEntryWeekRowOrder struct {
 	UserID      uint   `gorm:"primaryKey" json:"user_id"`
 	Year        int    `gorm:"primaryKey" json:"year"`
 	Week        int    `gorm:"primaryKey" json:"week"`
 	OrderedKeys string `gorm:"type:text" json:"ordered_keys"`
+	Comments    string `gorm:"type:text" json:"comments"`
 }
 
 type TimeEntry struct {

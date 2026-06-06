@@ -940,7 +940,10 @@
     "standby_success": "Standbypass loggat",
     "standby_error": "Kunde inte logga standbypass",
     "standby_invalid_range": "Ange giltigt start- och slutdatum/tid",
-    "export_grid": "Rutnät PDF"
+    "export_grid": "Rutnät PDF",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Inkommande samtal",
@@ -988,7 +991,8 @@
     "your_screen": "Din skärm",
     "peer_screen": "{name}s skärm",
     "invite_sent": "Inbjudan skickad",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Tangentbordsgenvägar",

@@ -634,8 +634,8 @@ func setDeclarable(groups []timeEntryGroup) []timeEntryGroup {
 // Optional query params year + week return the ISO-week-specific layout (includes empty rows).
 func GetTimeEntryRowOrder(c *gin.Context) {
 	userID := middleware.GetUserID(c)
-	keys := loadTimeEntryRowOrderKeys(userID, c.Query("year"), c.Query("week"))
-	c.JSON(http.StatusOK, gin.H{"keys": keys})
+	keys, comments := loadTimeEntryRowOrderKeys(userID, c.Query("year"), c.Query("week"))
+	c.JSON(http.StatusOK, gin.H{"keys": keys, "comments": comments})
 }
 
 // UpdateTimeEntryRowOrder saves the row-key order for the current user.
@@ -643,30 +643,42 @@ func GetTimeEntryRowOrder(c *gin.Context) {
 func UpdateTimeEntryRowOrder(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	var body struct {
-		Keys []string `json:"keys"`
+		Keys     []string          `json:"keys"`
+		Comments map[string]string `json:"comments,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
 		return
 	}
-	if err := saveTimeEntryRowOrderKeys(userID, c.Query("year"), c.Query("week"), body.Keys); err != nil {
+	if body.Comments == nil {
+		body.Comments = map[string]string{}
+	}
+	if err := saveTimeEntryRowOrderKeys(userID, c.Query("year"), c.Query("week"), body.Keys, body.Comments); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save order"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
-func loadTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string) []string {
+func loadTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string) ([]string, map[string]string) {
 	if yearStr != "" && weekStr != "" {
 		year, yErr := strconv.Atoi(yearStr)
 		week, wErr := strconv.Atoi(weekStr)
 		if yErr == nil && wErr == nil && week >= 1 && week <= 53 {
 			var weekOrder models.TimeEntryWeekRowOrder
-			if err := database.DB.Where("user_id = ? AND year = ? AND week = ?", userID, year, week).First(&weekOrder).Error; err == nil && weekOrder.OrderedKeys != "" {
+			if err := database.DB.Where("user_id = ? AND year = ? AND week = ?", userID, year, week).First(&weekOrder).Error; err == nil {
 				var keys []string
-				if json.Unmarshal([]byte(weekOrder.OrderedKeys), &keys) == nil && keys != nil {
-					return keys
+				comments := map[string]string{}
+				if weekOrder.OrderedKeys != "" {
+					json.Unmarshal([]byte(weekOrder.OrderedKeys), &keys)
 				}
+				if weekOrder.Comments != "" {
+					json.Unmarshal([]byte(weekOrder.Comments), &comments)
+				}
+				if keys == nil {
+					keys = []string{}
+				}
+				return keys, comments
 			}
 		}
 	}
@@ -682,20 +694,22 @@ func loadTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string) []string {
 	if keys == nil {
 		keys = []string{}
 	}
-	return keys
+	return keys, nil
 }
 
-func saveTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string, keys []string) error {
+func saveTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string, keys []string, comments map[string]string) error {
 	raw, _ := json.Marshal(keys)
 	if yearStr != "" && weekStr != "" {
 		year, yErr := strconv.Atoi(yearStr)
 		week, wErr := strconv.Atoi(weekStr)
 		if yErr == nil && wErr == nil && week >= 1 && week <= 53 {
+			commentsRaw, _ := json.Marshal(comments)
 			weekOrder := models.TimeEntryWeekRowOrder{
 				UserID:      userID,
 				Year:        year,
 				Week:        week,
 				OrderedKeys: string(raw),
+				Comments:    string(commentsRaw),
 			}
 			return database.DB.Save(&weekOrder).Error
 		}

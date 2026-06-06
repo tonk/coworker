@@ -940,7 +940,10 @@
     "standby_success": "Valmiusvuoro kirjattu",
     "standby_error": "Valmiusvuoron kirjaus epäonnistui",
     "standby_invalid_range": "Anna kelvollinen alku- ja loppupäivä/aika",
-    "export_grid": "Ruudukko PDF"
+    "export_grid": "Ruudukko PDF",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Saapuva puhelu",
@@ -988,7 +991,8 @@
     "your_screen": "Näyttösi",
     "peer_screen": "Henkilön {name} näyttö",
     "invite_sent": "Kutsu lähetetty",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Pikanäppäimet",

@@ -182,7 +182,8 @@
 - ~~In the chat, the response popup should only be shown when you click on
   the message~~ **Done**
 
-- Make sure you can't call someone who isn't online
+- ~~Make sure you can't call someone who isn't online~~ **Done in v0.12.2**
+- ~~Add row-level comments to the time tracking grid (with PDF display)~~ **Done in v0.12.2**
 
 ---
 

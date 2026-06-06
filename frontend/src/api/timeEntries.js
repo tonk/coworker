@@ -12,5 +12,5 @@ export const timeEntriesApi = {
   gridPDF: (params) => fetchBinary('/time-entries/grid/pdf', params),
   addHolidays: (data) => client.post('/time-entries/holidays', data),
   getRowOrder: (params) => client.get('/time-entries/row-order', { params }),
-  setRowOrder: (keys, params) => client.put('/time-entries/row-order', { keys }, { params }),
+  setRowOrder: (keys, comments, params) => client.put('/time-entries/row-order', { keys, comments }, { params }),
 }

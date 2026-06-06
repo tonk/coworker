@@ -940,7 +940,10 @@
     "standby_success": "Standby-dienst gelogd",
     "standby_error": "Standby-dienst loggen mislukt",
     "standby_invalid_range": "Voer een geldige start- en einddatum/tijd in",
-    "export_grid": "Raster PDF"
+    "export_grid": "Raster PDF",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Inkomende oproep",
@@ -988,7 +991,8 @@
     "your_screen": "Jouw scherm",
     "peer_screen": "Scherm van {name}",
     "invite_sent": "Uitnodiging verzonden",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Sneltoetsen",

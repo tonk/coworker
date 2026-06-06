@@ -1076,7 +1076,10 @@
     "standby_success": "Standby shift logged",
     "standby_error": "Failed to log standby shift",
     "standby_invalid_range": "Enter a valid start and end date/time",
-    "export_grid": "Grid PDF"
+    "export_grid": "Grid PDF",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Incoming call",
@@ -1124,7 +1127,8 @@
     "your_screen": "Your screen",
     "peer_screen": "{name}'s screen",
     "invite_sent": "Invite sent",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Keyboard Shortcuts",

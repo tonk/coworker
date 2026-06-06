@@ -66,8 +66,9 @@ type weekGridCell struct {
 }
 
 type weekGridRow struct {
-	label string
-	cells []weekGridCell
+	label   string
+	comment string
+	cells   []weekGridCell
 }
 
 // weekCellSpan marks a multi-day time range rendered as start/end labels with a connector line.
@@ -225,23 +226,27 @@ func timeEntryRowLabel(e models.TimeEntry) string {
 	return "—"
 }
 
-func loadWeekGridRowOrder(userID uint, weekStart time.Time) []string {
+func loadWeekGridRowOrder(userID uint, weekStart time.Time) ([]string, map[string]string) {
 	if userID == 0 {
-		return nil
+		return nil, nil
 	}
 	year, week := weekStart.ISOWeek()
 	var weekOrder models.TimeEntryWeekRowOrder
 	if err := database.DB.Where("user_id = ? AND year = ? AND week = ?", userID, year, week).First(&weekOrder).Error; err != nil {
-		return nil
+		return nil, nil
 	}
 	var keys []string
 	if weekOrder.OrderedKeys == "" || json.Unmarshal([]byte(weekOrder.OrderedKeys), &keys) != nil || keys == nil {
-		return nil
+		return nil, nil
 	}
-	return keys
+	comments := map[string]string{}
+	if weekOrder.Comments != "" {
+		json.Unmarshal([]byte(weekOrder.Comments), &comments)
+	}
+	return keys, comments
 }
 
-func buildWeekGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) int, savedOrder []string) []weekGridRow {
+func buildWeekGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) int, savedOrder []string, comments map[string]string) []weekGridRow {
 	type key = string
 	order := []key{}
 	rows := map[key]*weekGridRow{}
@@ -253,9 +258,14 @@ func buildWeekGridRows(entries []models.TimeEntry, dayFn func(models.TimeEntry) 
 		}
 		k := timeEntryRowKey(e)
 		if _, exists := rows[k]; !exists {
+			cmt := ""
+			if comments != nil {
+				cmt = comments[k]
+			}
 			rows[k] = &weekGridRow{
-				label: timeEntryRowLabel(e),
-				cells: make([]weekGridCell, 7),
+				label:   timeEntryRowLabel(e),
+				comment: cmt,
+				cells:   make([]weekGridCell, 7),
 			}
 			order = append(order, k)
 		}
@@ -601,8 +611,8 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		}
 		return diff
 	}
-	savedOrder := loadWeekGridRowOrder(targetUserID, weekStart)
-	rows := buildWeekGridRows(entries, dayFn, savedOrder)
+	savedOrder, rowComments := loadWeekGridRowOrder(targetUserID, weekStart)
+	rows := buildWeekGridRows(entries, dayFn, savedOrder, rowComments)
 
 	// Column totals.
 	colTotals := make([]int, 7)
@@ -660,11 +670,15 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	for i, r := range rows {
 		hasTimes := weekRowHasTimes(r)
 		hasUndecl := weekRowHasUndecl(r)
+		hasComment := r.comment != ""
 		rowH := baseRowH
 		if hasTimes && hasUndecl {
 			rowH = 13.0
 		} else if hasTimes || hasUndecl {
 			rowH = tallRowH
+		}
+		if hasComment && rowH < baseRowH+3 {
+			rowH = baseRowH + 3
 		}
 		if pdf.GetY() > gPageH-gMargin-rowH*3 {
 			pdf.AddPage()
@@ -696,7 +710,23 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		pdf.SetFont(ff, "", 8)
 		pdf.SetX(gMargin)
 		setFill(pdf, normalFill)
-		pdf.CellFormat(wLabel, rowH, truncate(r.label, 36), "LRB", 0, "L", true, 0, "")
+		pdf.CellFormat(wLabel, rowH, "", "LRB", 0, "L", true, 0, "")
+		// Draw label at top of cell.
+		pdf.SetFont(ff, "", 8)
+		setTxt(pdf, gClrText)
+		pdf.SetXY(gMargin+0.5, rowY+0.3)
+		pdf.CellFormat(wLabel-1, baseRowH, truncate(r.label, 36), "", 0, "L", false, 0, "")
+		// Draw comment below label.
+		if hasComment {
+			pdf.SetFont(ff, "", 6)
+			setTxt(pdf, gClrMuted)
+			pdf.SetXY(gMargin+0.5, rowY+baseRowH+0.3)
+			pdf.CellFormat(wLabel-1, 2.5, r.comment, "", 0, "L", false, 0, "")
+		}
+		// Reset position to the label column's right edge at row top; the
+		// overlays above advanced X via CellFormat and changed Y via SetXY,
+		// which would throw off column alignment for the day cells.
+		pdf.SetXY(gMargin+wLabel, rowY)
 		for _, c := range r.cells {
 			if c.holiday {
 				setFill(pdf, gClrHoliday)

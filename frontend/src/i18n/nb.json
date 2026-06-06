@@ -940,7 +940,10 @@
     "standby_success": "Standbyvakt logget",
     "standby_error": "Kunne ikke logge standbyvakt",
     "standby_invalid_range": "Angi gyldig start- og sluttdato/tid",
-    "export_grid": "Rutenett PDF"
+    "export_grid": "Rutenett PDF",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Innkommende anrop",
@@ -988,7 +991,8 @@
     "your_screen": "Din skjerm",
     "peer_screen": "{name} sin skjerm",
     "invite_sent": "Invitasjon sendt",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Tastatursnarveier",

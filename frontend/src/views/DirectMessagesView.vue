@@ -245,7 +245,7 @@
           </div>
           <!-- Call button — 1-on-1 only -->
           <div v-if="!activeConv.is_group" class="call-btn-group" ref="callBtnGroupRef">
-            <button class="add-member-btn call-btn-header" :aria-label="$t('call.start_call')" :title="$t('call.start_call')" @click="initiateCall">
+            <button class="add-member-btn call-btn-header" :disabled="!otherUserOnline" :aria-label="otherUserOnline ? $t('call.start_call') : $t('call.user_offline')" :title="otherUserOnline ? $t('call.start_call') : $t('call.user_offline')" @click="initiateCall">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7"/>
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
@@ -546,6 +546,11 @@ const notificationsStore = useNotificationsStore()
 function isOnline(userId) {
   return sidebarStore.chatUsers.some(u => u.id === userId)
 }
+const otherUserOnline = computed(() => {
+  if (!activeConv.value || activeConv.value.is_group) return false
+  const other = otherMember(activeConv.value)
+  return other ? isOnline(other.id) : false
+})
 const { formatTime, formatDate } = useDateFormat()
 const { layout, setLayout } = useChatLayout()
 const { notifyEnabled, toggleNotify, desktopNotify, shouldNotifyNow } = useChatNotify()
@@ -590,6 +595,10 @@ function initiateCall() {
   if (!activeConv.value || activeConv.value.is_group) return
   const other = otherMember(activeConv.value)
   if (!other) return
+  if (!isOnline(other.id)) {
+    ui.error(t('call.user_offline'))
+    return
+  }
   _startCall(
     other.id,
     other.display_name || other.username,
@@ -1767,6 +1776,8 @@ function dayLabel(dateStr) {
 }
 .add-member-btn:hover { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 .call-btn-header:hover { background: #22c55e !important; border-color: #22c55e !important; }
+.call-btn-header:disabled { opacity: .35; cursor: default; pointer-events: auto; }
+.call-btn-header:disabled:hover { background: transparent !important; border-color: var(--color-border) !important; }
 .call-btn-group { display: flex; align-items: center; gap: 1px; }
 .call-settings-chevron { width: 18px !important; padding: 0 !important; border-left: none !important; border-radius: 0 6px 6px 0 !important; }
 .call-btn-group .call-btn-header { border-radius: 6px 0 0 6px !important; }

@@ -169,6 +169,24 @@
                 <td class="c-info">
                   <div class="rc-cust">{{ row.customer_name || '—' }}</div>
                   <div class="rc-proj">{{ row.project_name || '—' }}</div>
+                  <span class="rc-comment-wrap">
+                  <button v-if="!viewingOther" class="rc-comment-btn"
+                    :class="{ 'has-comment': !!rowComments[row.key] }"
+                    :aria-label="rowComments[row.key] ? $t('timeTracking.edit_comment') : $t('timeTracking.add_comment')"
+                    :title="rowComments[row.key] ? $t('timeTracking.edit_comment') : $t('timeTracking.add_comment')"
+                    @click.stop="openRowComment(row)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                  <Teleport to="body">
+                    <div v-if="commentRowKey === row.key" class="rc-comment-popup" :style="commentPopupStyle" data-no-drag="true">
+                      <textarea ref="commentTextareaRef" class="rc-comment-textarea" v-model="commentDraft" :placeholder="$t('timeTracking.comment_placeholder')" rows="2" @keydown.escape="closeRowComment" @keydown.enter.meta="saveRowComment(row)" @keydown.enter.ctrl="saveRowComment(row)"></textarea>
+                      <div class="rc-comment-actions">
+                        <button class="tp-btn tp-apply" @mousedown.prevent="saveRowComment(row)">{{ $t('common.save') }}</button>
+                        <button class="tp-btn tp-clear" @mousedown.prevent="closeRowComment">{{ $t('common.cancel') }}</button>
+                      </div>
+                    </div>
+                  </Teleport>
+                </span>
                 </td>
                 <td class="c-desc">{{ row.description || '—' }}</td>
               </template>
@@ -1119,6 +1137,7 @@ async function addHolidays(loc) {
 // ── Entry state ───────────────────────────────────────────────────────────
 const rawEntries = ref([])  // TimeEntry[] from API for this week
 const localRows  = ref([])  // rows added locally but with no entries yet
+const rowComments = ref({}) // { [rowKey]: string } row-level comments
 const loading    = ref(false)
 const savingCell = ref('')  // "rowKey+dateISO" while a save is in flight
 
@@ -1246,7 +1265,11 @@ let _saveOrderTimer = null
 function _scheduleSaveOrder(keys) {
   clearTimeout(_saveOrderTimer)
   _saveOrderTimer = setTimeout(() => {
-    timeEntriesApi.setRowOrder(keys, weekOrderParams()).catch(() => {})
+    const comments = { ...rowComments.value }
+    for (const k of Object.keys(comments)) {
+      if (!comments[k]) delete comments[k]
+    }
+    timeEntriesApi.setRowOrder(keys, comments, weekOrderParams()).catch(() => {})
   }, 600)
 }
 
@@ -1440,6 +1463,7 @@ async function loadWeek() {
       timeEntriesApi.getRowOrder(weekOrderParams()).catch(() => ({ data: { keys: [] } })),
     ])
     rawEntries.value = data
+    rowComments.value = orderRes.data?.comments || {}
     const keys = orderRes.data?.keys
     if (keys?.length) {
       _serverOrder.value = keys
@@ -1813,6 +1837,71 @@ async function confirmDeleteRow(row) {
   } finally {
     deletingRow.value = null
   }
+}
+
+// ── Row comments ───────────────────────────────────────────────────────────
+const commentRowKey = ref(null)
+const commentDraft  = ref('')
+const commentTextareaRef = ref(null)
+const commentPopupStyle = ref({})
+
+let _commentCloseHandler = null
+
+function openRowComment(row) {
+  cancelEditRow()
+  const btn = document.activeElement
+  if (btn) {
+    const r = btn.getBoundingClientRect()
+    commentPopupStyle.value = {
+      position: 'fixed',
+      left: `${r.left}px`,
+      top: `${r.bottom + 4}px`,
+      zIndex: 10000,
+    }
+  } else {
+    commentPopupStyle.value = {
+      position: 'fixed',
+      left: '100px',
+      top: '200px',
+      zIndex: 10000,
+    }
+  }
+  commentRowKey.value = row.key
+  commentDraft.value  = rowComments.value[row.key] || ''
+  _commentCloseHandler = (e) => {
+    if (commentRowKey.value && !e.target.closest('.rc-comment-popup') && !e.target.closest('.rc-comment-btn')) {
+      closeRowComment()
+    }
+  }
+  document.addEventListener('mousedown', _commentCloseHandler, true)
+  nextTick(() => {
+    const el = commentTextareaRef.value
+    if (el) {
+      if (Array.isArray(el)) el[0]?.focus()
+      else el.focus()
+    }
+  })
+}
+
+function closeRowComment() {
+  commentRowKey.value = null
+  commentDraft.value  = ''
+  commentPopupStyle.value = {}
+  if (_commentCloseHandler) {
+    document.removeEventListener('mousedown', _commentCloseHandler, true)
+    _commentCloseHandler = null
+  }
+}
+
+function saveRowComment(row) {
+  const text = commentDraft.value?.trim() || ''
+  if (text) {
+    rowComments.value[row.key] = text
+  } else {
+    delete rowComments.value[row.key]
+  }
+  closeRowComment()
+  _scheduleSaveOrder(_keyOrder.value || [])
 }
 
 // ── Per-cell holiday toggle ───────────────────────────────────────────────
@@ -2536,6 +2625,7 @@ async function copyPrevWeek() {
     ])
 
     const savedOrder = orderRes.data?.keys || []
+    const prevComments = orderRes.data?.comments || {}
     const rowMap = new Map()
     for (const e of data) {
       const k = rowKey(e.customer_id, e.project_id, e.description)
@@ -2584,6 +2674,9 @@ async function copyPrevWeek() {
 
     for (const row of toAdd) {
       localRows.value.push(row)
+      if (prevComments[row.key]) {
+        rowComments.value[row.key] = prevComments[row.key]
+      }
     }
     const newKeys = toAdd.map(r => r.key)
     _keyOrder.value = [...(_keyOrder.value || []), ...newKeys]
@@ -3405,7 +3498,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 
 /* Column widths */
 .c-nr   { width: 40px; }
-.c-info { width: 210px; }
+.c-info { width: 210px; overflow: visible; }
 .c-desc { width: 180px; }
 .c-day  { width: 82px; }
 .c-total { width: 70px; }
@@ -3481,6 +3574,31 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 
 .rc-cust { font-weight: 600; font-size: 12px; line-height: 1.3; color: var(--color-text); }
 .rc-proj { font-size: 11px; color: var(--color-text-muted); line-height: 1.3; }
+.rc-comment-wrap { position: relative; display: inline-block; }
+.rc-comment-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-top: 3px; padding: 1px 3px; border: 1px solid var(--color-border);
+  border-radius: 4px; background: transparent; cursor: pointer;
+  color: var(--color-text-muted); line-height: 1;
+  opacity: .5; transition: opacity .15s;
+}
+.rc-comment-btn:hover { opacity: 1; background: var(--color-bg); border-color: var(--color-primary); color: var(--color-primary); }
+.rc-comment-btn.has-comment { opacity: 1; color: var(--color-primary); border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
+.rc-comment-popup {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 8px; padding: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  min-width: 240px;
+}
+.rc-comment-textarea {
+  width: 100%; resize: vertical; min-height: 40px;
+  border: 1px solid var(--color-border); border-radius: 4px;
+  padding: 4px 6px; font-size: 12px; line-height: 1.4;
+  background: var(--color-bg); color: var(--color-text);
+  font-family: inherit;
+}
+.rc-comment-textarea:focus { outline: none; border-color: var(--color-primary); }
+.rc-comment-actions { display: flex; gap: 4px; margin-top: 4px; justify-content: flex-end; }
+.rc-comment-actions .tp-btn { font-size: 11px; padding: 2px 8px; }
 .c-desc  { font-size: 12px; color: var(--color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Hour input cells */

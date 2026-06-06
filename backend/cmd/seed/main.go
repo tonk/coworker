@@ -13,9 +13,12 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -3506,6 +3509,119 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d TT-only customers, %d TT-only projects, %d personal time entries for tonk\n",
 		len(ttCustomers), len(ttProjectSpecs), len(ttEntries))
+
+	// ── 10c. Week row orders with comments ──────────────────────────────────
+	fmt.Println("→ Creating week row orders…")
+
+	type uwKey struct {
+		UserID uint
+		Year   int
+		Week   int
+	}
+
+	trackingUserKeys := []string{"tonk", "admin", "sarah", "marc", "lisa"}
+	trackingUserIDs := make([]uint, 0, len(trackingUserKeys))
+	for _, k := range trackingUserKeys {
+		if u, ok := users[k]; ok {
+			trackingUserIDs = append(trackingUserIDs, u.ID)
+		}
+	}
+	userIDToKey := map[uint]string{}
+	for _, k := range trackingUserKeys {
+		if u, ok := users[k]; ok {
+			userIDToKey[u.ID] = k
+		}
+	}
+
+	var allEntries []models.TimeEntry
+	db.Where("user_id IN ?", trackingUserIDs).Find(&allEntries)
+
+	type weekData struct {
+		keySet   map[string]bool
+		keys     []string
+		comments map[string]string
+	}
+	rowsByWeek := map[uwKey]*weekData{}
+
+	commentRules := map[string][]struct {
+		substr  string
+		comment string
+	}{
+		"tonk": {
+			{"Travel to customer", "Brought forward from last week"},
+			{"Travel to Amsterdam", "Including parking"},
+			{"Sprint planning", "Sprint grooming prep"},
+		},
+		"admin": {
+			{"Client status update", "Weekly sync"},
+			{"Contract review", "Quarterly review with Globex"},
+		},
+	}
+
+	for _, e := range allEntries {
+		year, week := e.Date.ISOWeek()
+		id := uwKey{UserID: e.UserID, Year: year, Week: week}
+		if rowsByWeek[id] == nil {
+			rowsByWeek[id] = &weekData{
+				keySet:   map[string]bool{},
+				comments: map[string]string{},
+			}
+		}
+		custID := ""
+		if e.CustomerID != nil {
+			custID = strconv.FormatUint(uint64(*e.CustomerID), 10)
+		}
+		projID := ""
+		if e.ProjectID != nil {
+			projID = strconv.FormatUint(uint64(*e.ProjectID), 10)
+		}
+		key := custID + "|" + projID + "|" + e.Description
+		if !rowsByWeek[id].keySet[key] {
+			rowsByWeek[id].keySet[key] = true
+			rowsByWeek[id].keys = append(rowsByWeek[id].keys, key)
+		}
+		if rules, ok := commentRules[userIDToKey[e.UserID]]; ok {
+			for _, r := range rules {
+				if strings.Contains(e.Description, r.substr) {
+					rowsByWeek[id].comments[key] = r.comment
+				}
+			}
+		}
+	}
+
+	cyear, cweek := time.Now().UTC().ISOWeek()
+	rowOrderCount := 0
+
+	for id, wd := range rowsByWeek {
+		if id.Year < cyear || (id.Year == cyear && id.Week < cweek-2) {
+			continue
+		}
+		sort.Strings(wd.keys)
+
+		filteredCmts := map[string]string{}
+		for _, k := range wd.keys {
+			if c, ok := wd.comments[k]; ok {
+				filteredCmts[k] = c
+			}
+		}
+
+		orderedKeysJSON, _ := json.Marshal(wd.keys)
+		commentsJSON, _ := json.Marshal(filteredCmts)
+		if string(commentsJSON) == "null" {
+			commentsJSON = []byte("{}")
+		}
+
+		wo := models.TimeEntryWeekRowOrder{
+			UserID:      id.UserID,
+			Year:        id.Year,
+			Week:        id.Week,
+			OrderedKeys: string(orderedKeysJSON),
+			Comments:    string(commentsJSON),
+		}
+		must(db.Save(&wo).Error)
+		rowOrderCount++
+	}
+	fmt.Printf("   Created %d week row orders with comments\n", rowOrderCount)
 
 	// ── 11. News items ────────────────────────────────────────────────────────
 	fmt.Println("→ Creating news items…")

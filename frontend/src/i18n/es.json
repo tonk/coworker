@@ -940,7 +940,10 @@
     "standby_success": "Guardia registrada",
     "standby_error": "Error al registrar la guardia",
     "standby_invalid_range": "Introduzca una fecha/hora de inicio y fin válidas",
-    "export_grid": "PDF cuadrícula"
+    "export_grid": "PDF cuadrícula",
+    "add_comment": "Add comment",
+    "edit_comment": "Edit comment",
+    "comment_placeholder": "Enter a comment for this row…"
   },
   "call": {
     "incoming": "Llamada entrante",
@@ -988,7 +991,8 @@
     "your_screen": "Tu pantalla",
     "peer_screen": "Pantalla de {name}",
     "invite_sent": "Invitación enviada",
-    "nobody_online": "No other members are currently online"
+    "nobody_online": "No other members are currently online",
+    "user_offline": "User is offline"
   },
   "shortcuts": {
     "title": "Atajos de teclado",
