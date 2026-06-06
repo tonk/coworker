@@ -309,6 +309,33 @@
           </div>
         </div>
 
+        <!-- Trusted devices card (only relevant when MFA is enabled) -->
+        <div v-if="auth.user?.totp_enabled" class="settings-card" data-help-context="settings.trusted_devices">
+          <h2>{{ $t('mfa.trusted_devices_title') }}</h2>
+          <p class="form-hint" style="margin-bottom:16px">{{ $t('mfa.trusted_devices_hint') }}</p>
+
+          <div v-if="trustedDevices.length > 0" style="margin-bottom:16px">
+            <div v-for="d in trustedDevices" :key="d.id" class="passkey-row">
+              <div class="passkey-info">
+                <span class="passkey-name">{{ d.device_name }}</span>
+                <span class="passkey-date">{{ $t('mfa.trusted_last_used') }}: {{ formatDateTime(d.last_used_at) }}</span>
+                <span class="passkey-date">{{ $t('mfa.trusted_expires') }}: {{ formatDateTime(d.expires_at) }}</span>
+              </div>
+              <button class="btn btn-danger btn-sm" @click="revokeTrustedDevice(d)"
+                :disabled="trustedDevicesLoading"
+                :aria-label="$t('mfa.revoke_device_aria', { name: d.device_name })">
+                {{ $t('common.delete') }}
+              </button>
+            </div>
+          </div>
+          <p v-else class="form-hint" style="margin-bottom:16px">{{ $t('mfa.trusted_devices_empty') }}</p>
+
+          <button v-if="trustedDevices.length > 0" class="btn btn-danger btn-sm"
+            :disabled="trustedDevicesLoading" @click="revokeAllTrustedDevices">
+            {{ $t('mfa.revoke_all_devices') }}
+          </button>
+        </div>
+
         <!-- Passkeys card -->
         <div class="settings-card" data-help-context="settings.passkey">
           <h2>{{ $t('passkey.title') }}</h2>
@@ -568,6 +595,7 @@ const passkeyLoading = ref(false)
 onMounted(async () => {
   loadPersonalKeys()
   loadPasskeys()
+  loadTrustedDevices()
   try {
     const { data } = await systemApi.getSettings()
     if (data.password_policy) passwordPolicy.value = data.password_policy
@@ -795,6 +823,42 @@ async function disableMFA() {
     ui.error(e.response?.data?.error || 'Failed to disable MFA')
   } finally {
     mfaLoading.value = false
+  }
+}
+
+// Trusted devices
+const trustedDevices = ref([])
+const trustedDevicesLoading = ref(false)
+
+async function loadTrustedDevices() {
+  try {
+    const { data } = await authApi.listTrustedDevices()
+    trustedDevices.value = data || []
+  } catch {}
+}
+
+async function revokeTrustedDevice(device) {
+  trustedDevicesLoading.value = true
+  try {
+    await authApi.revokeTrustedDevice(device.id)
+    trustedDevices.value = trustedDevices.value.filter(d => d.id !== device.id)
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to revoke device')
+  } finally {
+    trustedDevicesLoading.value = false
+  }
+}
+
+async function revokeAllTrustedDevices() {
+  if (!confirm($t('mfa.revoke_all_confirm'))) return
+  trustedDevicesLoading.value = true
+  try {
+    await authApi.revokeAllTrustedDevices()
+    trustedDevices.value = []
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to revoke all devices')
+  } finally {
+    trustedDevicesLoading.value = false
   }
 }
 </script>

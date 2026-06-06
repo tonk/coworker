@@ -543,7 +543,19 @@
     "setup_success": "MFA activé avec succès.",
     "disable_success": "Le MFA a été désactivé.",
     "enforce_label": "Exiger le MFA pour tous les utilisateurs",
-    "enforce_hint": "Lorsqu'il est activé, les utilisateurs sont invités à configurer le MFA lors de leur prochaine connexion."
+    "enforce_hint": "Lorsqu'il est activé, les utilisateurs sont invités à configurer le MFA lors de leur prochaine connexion.",
+    "remember_device": "Se souvenir de cet appareil",
+    "remember_never": "Ne pas mémoriser",
+    "remember_week": "Pendant 1 semaine",
+    "remember_month": "Pendant 1 mois",
+    "trusted_devices_title": "Appareils de confiance",
+    "trusted_devices_hint": "Appareils autorisés à ignorer l'invite MFA pendant une durée limitée.",
+    "trusted_devices_empty": "Aucun appareil de confiance.",
+    "trusted_last_used": "Dernière utilisation",
+    "trusted_expires": "Approuvé jusqu'au",
+    "revoke_device_aria": "Révoquer la confiance pour {name}",
+    "revoke_all_devices": "Révoquer tous les appareils de confiance",
+    "revoke_all_confirm": "Révoquer tous les appareils de confiance ? Vous devrez effectuer le MFA sur chaque appareil à la prochaine connexion."
   },
   "settings": {
     "title": "Paramètres du compte",

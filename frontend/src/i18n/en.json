@@ -621,7 +621,19 @@
     "setup_success": "MFA enabled successfully.",
     "disable_success": "MFA has been disabled.",
     "enforce_label": "Require MFA for all users",
-    "enforce_hint": "When enabled, users are prompted to configure MFA after their next login."
+    "enforce_hint": "When enabled, users are prompted to configure MFA after their next login.",
+    "remember_device": "Remember this device",
+    "remember_never": "Don't remember",
+    "remember_week": "For 1 week",
+    "remember_month": "For 1 month",
+    "trusted_devices_title": "Trusted Devices",
+    "trusted_devices_hint": "Devices that have been trusted to skip the MFA prompt for a limited time.",
+    "trusted_devices_empty": "No trusted devices.",
+    "trusted_last_used": "Last used",
+    "trusted_expires": "Trusted until",
+    "revoke_device_aria": "Revoke trust for {name}",
+    "revoke_all_devices": "Revoke all trusted devices",
+    "revoke_all_confirm": "Revoke all trusted devices? You will need to complete MFA on every device at next login."
   },
   "ticket": {
     "tickets": "Tickets",

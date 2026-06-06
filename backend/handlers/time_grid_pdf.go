@@ -76,13 +76,47 @@ type weekCellSpan struct {
 	startTime, endTime string
 }
 
+// jsDateOnlyToGoLayout converts the date portion of a JS-style datetime format
+// (e.g. "DD/MM/YYYY HH:mm") to a Go time.Format layout (e.g. "02/01/2006").
+// Only date tokens (YYYY, MM, DD) are converted; time tokens are dropped.
+func jsDateOnlyToGoLayout(jsFormat string) string {
+	datePart := jsFormat
+	if idx := strings.Index(jsFormat, " "); idx >= 0 {
+		datePart = jsFormat[:idx]
+	}
+	r := strings.NewReplacer(
+		"YYYY", "2006",
+		"MM", "01",
+		"DD", "02",
+	)
+	layout := r.Replace(datePart)
+	if layout == "" || layout == datePart {
+		return "2006-01-02" // fallback to ISO
+	}
+	return layout
+}
+
 // ── gridFmt formats minutes as decimal hours, or blank for zero ──────────────
+// Build functions shadow this with a notation-aware local closure.
 
 func gridFmt(minutes int) string {
 	if minutes == 0 {
 		return ""
 	}
 	return fmtDecimalH(minutes)
+}
+
+// makeGridFmt returns a gridFmt function that respects the user's time notation.
+func makeGridFmt(notation string) func(int) string {
+	return func(minutes int) string {
+		if minutes == 0 {
+			return ""
+		}
+		if notation == "hhmm" {
+			return fmtMinutes(minutes)
+		}
+		return fmtDecimalH(minutes)
+	}
 }
 
 // entryUndeclMins returns the undeclarable portion of an entry's minutes.
@@ -355,6 +389,10 @@ func GetTimeSheetGridPDF(c *gin.Context) {
 		companyName = "WarmDesk"
 	}
 
+	// Date layout and time notation derived from the requesting user's settings.
+	dateLayout := jsDateOnlyToGoLayout(requestingUser.DateTimeFormat)
+	notation := requestingUser.TimeNotation
+
 	// Dispatch to the correct grid.
 	gridType := c.DefaultQuery("grid", "week")
 
@@ -365,13 +403,13 @@ func GetTimeSheetGridPDF(c *gin.Context) {
 	switch gridType {
 	case "month":
 		year, month := resolveYearMonth(c)
-		buf, filename, genErr = buildMonthGridPDF(fontFamily, tr, companyName, companyLogo, employeeName, year, month, targetUserID)
+		buf, filename, genErr = buildMonthGridPDF(fontFamily, tr, companyName, companyLogo, employeeName, year, month, targetUserID, notation)
 	case "year":
 		year := resolveYear(c)
-		buf, filename, genErr = buildYearGridPDF(fontFamily, tr, companyName, companyLogo, employeeName, year, targetUserID)
+		buf, filename, genErr = buildYearGridPDF(fontFamily, tr, companyName, companyLogo, employeeName, year, targetUserID, dateLayout, notation)
 	default: // "week"
 		start := resolveWeekStart(c)
-		buf, filename, genErr = buildWeekGridPDF(fontFamily, tr, companyName, companyLogo, employeeName, start, targetUserID)
+		buf, filename, genErr = buildWeekGridPDF(fontFamily, tr, companyName, companyLogo, employeeName, start, targetUserID, dateLayout, notation)
 	}
 
 	if genErr != nil {
@@ -531,7 +569,8 @@ func drawWeekGridTimeAt(pdf *gofpdf.Fpdf, ff, txt string, x, y float64) {
 	pdf.Text(x-tw/2, y, txt)
 }
 
-func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, weekStart time.Time, targetUserID uint) (bytes.Buffer, string, error) {
+func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, weekStart time.Time, targetUserID uint, dateLayout, notation string) (bytes.Buffer, string, error) {
+	gridFmt := makeGridFmt(notation)
 	// Column widths: 74 label + 7×25 days + 28 total = 277mm (full body width).
 	const (
 		wLabel    = 74.0
@@ -546,11 +585,11 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	_, isoWeek := weekStart.ISOWeek()
 	year := weekStart.Year()
 	weekEnd := weekStart.AddDate(0, 0, 6)
-	periodLabel := fmt.Sprintf("%s %d  •  %s %d  (%02d-%02d – %02d-%02d)",
+	periodLabel := fmt.Sprintf("%s %d  •  %s %d  (%s – %s)",
 		tr.YearPrefix, year,
 		tr.WeekLabel, isoWeek,
-		weekStart.Day(), int(weekStart.Month()),
-		weekEnd.Day(), int(weekEnd.Month()),
+		weekStart.Format(dateLayout),
+		weekEnd.Format(dateLayout),
 	)
 
 	// Fetch data.
@@ -848,7 +887,8 @@ func drawWeekColHeader(pdf *gofpdf.Fpdf, ff string, tr pdfI18n, dayHeaders []str
 
 // ── Month grid ────────────────────────────────────────────────────────────────
 
-func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, year, month int, targetUserID uint) (bytes.Buffer, string, error) {
+func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, year, month int, targetUserID uint, notation string) (bytes.Buffer, string, error) {
+	gridFmt := makeGridFmt(notation)
 	const (
 		wDay   = 7.0
 		wTotal = 14.0
@@ -1073,7 +1113,8 @@ type yearColDef struct {
 	monthOr int // 0-based month index, or -1 for non-month cols
 }
 
-func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, year int, targetUserID uint) (bytes.Buffer, string, error) {
+func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeName string, year int, targetUserID uint, dateLayout, notation string) (bytes.Buffer, string, error) {
+	gridFmt := makeGridFmt(notation)
 	// Column layout: 74 label + months+quarters + 15 total = 277mm (full body width).
 	// Jan(12) Feb(12) Mar(12) Q1(11) Apr(12) May(12) Jun(12) Q2(11)
 	// Jul(12) Aug(12) Sep(12) Q3(11) Oct(12) Nov(12) Dec(12) Q4(11) Total(15)
@@ -1219,7 +1260,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 	grandUndecl := colUndecl[len(cols)-1] // year total column
 
 	periodLabel := fmt.Sprintf("%s %d", tr.YearPrefix, year)
-	printDate := time.Now().Format("02-01-2006")
+	printDate := time.Now().Format(dateLayout)
 
 	line1Left := fmt.Sprintf("Time registration year overview  %d", year)
 	line2 := fmt.Sprintf("Print date: %s", printDate)

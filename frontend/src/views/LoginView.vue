@@ -81,6 +81,14 @@
                 inputmode="numeric" autocomplete="one-time-code" maxlength="6"
                 required autofocus placeholder="000000" />
             </div>
+            <div class="form-group">
+              <label class="form-label" for="mfa-remember-branded">{{ $t('mfa.remember_device') }}</label>
+              <select id="mfa-remember-branded" class="form-input" v-model.number="mfaRememberDays">
+                <option :value="0">{{ $t('mfa.remember_never') }}</option>
+                <option :value="7">{{ $t('mfa.remember_week') }}</option>
+                <option :value="30">{{ $t('mfa.remember_month') }}</option>
+              </select>
+            </div>
             <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
             <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
               <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
@@ -160,6 +168,14 @@
               inputmode="numeric" autocomplete="one-time-code" maxlength="6"
               required autofocus placeholder="000000" />
           </div>
+          <div class="form-group">
+            <label class="form-label" for="mfa-remember-plain">{{ $t('mfa.remember_device') }}</label>
+            <select id="mfa-remember-plain" class="form-input" v-model.number="mfaRememberDays">
+              <option :value="0">{{ $t('mfa.remember_never') }}</option>
+              <option :value="7">{{ $t('mfa.remember_week') }}</option>
+              <option :value="30">{{ $t('mfa.remember_month') }}</option>
+            </select>
+          </div>
           <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
           <button type="submit" class="btn btn-primary" style="width:100%" :disabled="loading">
             <span v-if="loading" class="spinner" style="width:16px;height:16px;border-width:2px"></span>
@@ -224,6 +240,7 @@ const rememberMe = ref(!!localStorage.getItem('remembered_login'))
 const passkeyLoading = ref(false)
 const mfaStep = ref(false)
 const mfaCode = ref('')
+const mfaRememberDays = ref(0)
 const error = ref('')
 const loading = ref(false)
 const registrationEnabled = ref(true)
@@ -356,6 +373,7 @@ async function handleSubmit() {
     if (result.mfa_required) {
       mfaStep.value = true
       mfaCode.value = ''
+      mfaRememberDays.value = 0
       return
     }
     if (result.password_expired) {
@@ -386,7 +404,7 @@ async function handleMFASubmit() {
   error.value = ''
   loading.value = true
   try {
-    await auth.verifyMFA(mfaCode.value)
+    await auth.verifyMFA(mfaCode.value, mfaRememberDays.value)
     router.push('/')
   } catch (e) {
     const serverError = e.response?.data?.error

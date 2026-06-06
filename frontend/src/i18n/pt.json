@@ -578,7 +578,19 @@
     "setup_success": "MFA ativado.",
     "disable_success": "O MFA foi desativado.",
     "enforce_label": "Exigir MFA para todos os utilizadores",
-    "enforce_hint": "Quando ativado, os utilizadores serão solicitados a configurar o MFA após o próximo início de sessão."
+    "enforce_hint": "Quando ativado, os utilizadores serão solicitados a configurar o MFA após o próximo início de sessão.",
+    "remember_device": "Lembrar este dispositivo",
+    "remember_never": "Não lembrar",
+    "remember_week": "Durante 1 semana",
+    "remember_month": "Durante 1 mês",
+    "trusted_devices_title": "Dispositivos confiáveis",
+    "trusted_devices_hint": "Dispositivos autorizados a ignorar a solicitação de MFA por um tempo limitado.",
+    "trusted_devices_empty": "Nenhum dispositivo confiável.",
+    "trusted_last_used": "Último uso",
+    "trusted_expires": "Confiável até",
+    "revoke_device_aria": "Revogar confiança para {name}",
+    "revoke_all_devices": "Revogar todos os dispositivos confiáveis",
+    "revoke_all_confirm": "Revogar todos os dispositivos confiáveis? Terá de concluir o MFA em cada dispositivo no próximo início de sessão."
   },
   "settings": {
     "title": "Configurações da conta",

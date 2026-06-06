@@ -578,7 +578,19 @@
     "setup_success": "MFA virkjað.",
     "disable_success": "MFA hefur verið gert óvirkt.",
     "enforce_label": "Krefjast MFA frá öllum notendum",
-    "enforce_hint": "Þegar virkt, verða notendur beðnir um að setja upp MFA eftir næstu innskráningu."
+    "enforce_hint": "Þegar virkt, verða notendur beðnir um að setja upp MFA eftir næstu innskráningu.",
+    "remember_device": "Muna þetta tæki",
+    "remember_never": "Ekki muna",
+    "remember_week": "Í 1 viku",
+    "remember_month": "Í 1 mánuð",
+    "trusted_devices_title": "Treyst tæki",
+    "trusted_devices_hint": "Tæki sem hafa fengið heimild til að sleppa MFA-kvaðningunni í takmarkaðan tíma.",
+    "trusted_devices_empty": "Engin treyst tæki.",
+    "trusted_last_used": "Síðast notað",
+    "trusted_expires": "Treyst til",
+    "revoke_device_aria": "Afturkalla traust fyrir {name}",
+    "revoke_all_devices": "Afturkalla öll treyst tæki",
+    "revoke_all_confirm": "Afturkalla öll treyst tæki? Þú þarft að ljúka MFA á hverju tæki við næstu innskráningu."
   },
   "settings": {
     "title": "Reikningsstillingar",

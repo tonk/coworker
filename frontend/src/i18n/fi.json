@@ -578,7 +578,19 @@
     "setup_success": "MFA otettu käyttöön.",
     "disable_success": "MFA on poistettu käytöstä.",
     "enforce_label": "Vaadi MFA kaikilta käyttäjiltä",
-    "enforce_hint": "Kun käytössä, käyttäjiä pyydetään määrittämään MFA seuraavan kirjautumisen jälkeen."
+    "enforce_hint": "Kun käytössä, käyttäjiä pyydetään määrittämään MFA seuraavan kirjautumisen jälkeen.",
+    "remember_device": "Muista tämä laite",
+    "remember_never": "Älä muista",
+    "remember_week": "1 viikon ajan",
+    "remember_month": "1 kuukauden ajan",
+    "trusted_devices_title": "Luotetut laitteet",
+    "trusted_devices_hint": "Laitteet, joille on myönnetty oikeus ohittaa MFA-kehote rajoitetun ajan.",
+    "trusted_devices_empty": "Ei luotettuja laitteita.",
+    "trusted_last_used": "Viimeksi käytetty",
+    "trusted_expires": "Luotettu asti",
+    "revoke_device_aria": "Peruuta luottamus laitteelle {name}",
+    "revoke_all_devices": "Peruuta kaikkien luotettujen laitteiden luottamus",
+    "revoke_all_confirm": "Peruutetaanko kaikkien luotettujen laitteiden luottamus? Sinun on suoritettava MFA jokaisella laitteella seuraavalla kirjautumisella."
   },
   "settings": {
     "title": "Tilin asetukset",

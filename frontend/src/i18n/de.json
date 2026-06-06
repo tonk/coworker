@@ -543,7 +543,19 @@
     "setup_success": "MFA erfolgreich aktiviert.",
     "disable_success": "MFA wurde deaktiviert.",
     "enforce_label": "MFA für alle Benutzer vorschreiben",
-    "enforce_hint": "Wenn aktiviert, werden Benutzer aufgefordert, MFA bei ihrer nächsten Anmeldung einzurichten."
+    "enforce_hint": "Wenn aktiviert, werden Benutzer aufgefordert, MFA bei ihrer nächsten Anmeldung einzurichten.",
+    "remember_device": "Dieses Gerät merken",
+    "remember_never": "Nicht merken",
+    "remember_week": "Für 1 Woche",
+    "remember_month": "Für 1 Monat",
+    "trusted_devices_title": "Vertrauenswürdige Geräte",
+    "trusted_devices_hint": "Geräte, denen vertraut wurde, die MFA-Abfrage für eine begrenzte Zeit zu überspringen.",
+    "trusted_devices_empty": "Keine vertrauenswürdigen Geräte.",
+    "trusted_last_used": "Zuletzt verwendet",
+    "trusted_expires": "Vertraut bis",
+    "revoke_device_aria": "Vertrauen für {name} widerrufen",
+    "revoke_all_devices": "Alle vertrauenswürdigen Geräte widerrufen",
+    "revoke_all_confirm": "Alle vertrauenswürdigen Geräte widerrufen? Sie müssen MFA bei der nächsten Anmeldung auf jedem Gerät erneut durchführen."
   },
   "settings": {
     "title": "Kontoeinstellungen",

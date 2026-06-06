@@ -578,7 +578,19 @@
     "setup_success": "MFA aktivert.",
     "disable_success": "MFA er deaktivert.",
     "enforce_label": "Krev MFA for alle brukere",
-    "enforce_hint": "Når aktivert, vil brukere bli bedt om å konfigurere MFA etter neste innlogging."
+    "enforce_hint": "Når aktivert, vil brukere bli bedt om å konfigurere MFA etter neste innlogging.",
+    "remember_device": "Husk denne enheten",
+    "remember_never": "Ikke husk",
+    "remember_week": "I 1 uke",
+    "remember_month": "I 1 måned",
+    "trusted_devices_title": "Klarerte enheter",
+    "trusted_devices_hint": "Enheter som er klarert til å hoppe over MFA-forespørselen i en begrenset periode.",
+    "trusted_devices_empty": "Ingen klarerte enheter.",
+    "trusted_last_used": "Sist brukt",
+    "trusted_expires": "Klarert til",
+    "revoke_device_aria": "Tilbakekall tillit for {name}",
+    "revoke_all_devices": "Tilbakekall alle klarerte enheter",
+    "revoke_all_confirm": "Tilbakekall alle klarerte enheter? Du må fullføre MFA på hver enhet ved neste innlogging."
   },
   "settings": {
     "title": "Kontoinnstillinger",

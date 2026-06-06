@@ -578,7 +578,19 @@
     "setup_success": "MFA abilitato.",
     "disable_success": "MFA è stato disabilitato.",
     "enforce_label": "Richiedi MFA per tutti gli utenti",
-    "enforce_hint": "Quando abilitato, agli utenti verrà chiesto di configurare MFA dopo il prossimo accesso."
+    "enforce_hint": "Quando abilitato, agli utenti verrà chiesto di configurare MFA dopo il prossimo accesso.",
+    "remember_device": "Ricorda questo dispositivo",
+    "remember_never": "Non ricordare",
+    "remember_week": "Per 1 settimana",
+    "remember_month": "Per 1 mese",
+    "trusted_devices_title": "Dispositivi attendibili",
+    "trusted_devices_hint": "Dispositivi autorizzati a saltare la richiesta MFA per un periodo limitato.",
+    "trusted_devices_empty": "Nessun dispositivo attendibile.",
+    "trusted_last_used": "Ultimo utilizzo",
+    "trusted_expires": "Attendibile fino al",
+    "revoke_device_aria": "Revoca attendibilità per {name}",
+    "revoke_all_devices": "Revoca tutti i dispositivi attendibili",
+    "revoke_all_confirm": "Revocare tutti i dispositivi attendibili? Dovrai completare l'MFA su ogni dispositivo al prossimo accesso."
   },
   "settings": {
     "title": "Impostazioni account",

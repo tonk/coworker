@@ -543,7 +543,19 @@
     "setup_success": "MFA succesvol ingeschakeld.",
     "disable_success": "MFA is uitgeschakeld.",
     "enforce_label": "MFA verplichten voor alle gebruikers",
-    "enforce_hint": "Wanneer ingeschakeld, worden gebruikers gevraagd MFA in te stellen bij hun volgende aanmelding."
+    "enforce_hint": "Wanneer ingeschakeld, worden gebruikers gevraagd MFA in te stellen bij hun volgende aanmelding.",
+    "remember_device": "Dit apparaat onthouden",
+    "remember_never": "Niet onthouden",
+    "remember_week": "Voor 1 week",
+    "remember_month": "Voor 1 maand",
+    "trusted_devices_title": "Vertrouwde apparaten",
+    "trusted_devices_hint": "Apparaten die vertrouwd zijn om de MFA-prompt tijdelijk over te slaan.",
+    "trusted_devices_empty": "Geen vertrouwde apparaten.",
+    "trusted_last_used": "Laatst gebruikt",
+    "trusted_expires": "Vertrouwd tot",
+    "revoke_device_aria": "Vertrouwen intrekken voor {name}",
+    "revoke_all_devices": "Alle vertrouwde apparaten intrekken",
+    "revoke_all_confirm": "Alle vertrouwde apparaten intrekken? U moet MFA opnieuw uitvoeren op elk apparaat bij de volgende aanmelding."
   },
   "settings": {
     "title": "Accountinstellingen",

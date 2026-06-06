@@ -578,7 +578,19 @@
     "setup_success": "MFA aktiveret.",
     "disable_success": "MFA er deaktiveret.",
     "enforce_label": "Kræv MFA for alle brugere",
-    "enforce_hint": "Når aktiveret, bliver brugere bedt om at konfigurere MFA efter næste login."
+    "enforce_hint": "Når aktiveret, bliver brugere bedt om at konfigurere MFA efter næste login.",
+    "remember_device": "Husk denne enhed",
+    "remember_never": "Husk ikke",
+    "remember_week": "I 1 uge",
+    "remember_month": "I 1 måned",
+    "trusted_devices_title": "Betroede enheder",
+    "trusted_devices_hint": "Enheder, der er godkendt til at springe MFA-prompten over i en begrænset periode.",
+    "trusted_devices_empty": "Ingen betroede enheder.",
+    "trusted_last_used": "Sidst brugt",
+    "trusted_expires": "Betroet indtil",
+    "revoke_device_aria": "Tilbagekald tillid til {name}",
+    "revoke_all_devices": "Tilbagekald alle betroede enheder",
+    "revoke_all_confirm": "Tilbagekald alle betroede enheder? Du skal gennemføre MFA på hver enhed ved næste login."
   },
   "settings": {
     "title": "Kontoindstillinger",

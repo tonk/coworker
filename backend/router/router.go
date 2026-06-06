@@ -74,6 +74,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.GET("/auth/mfa/setup", authHandler.MFASetup)
 		protected.POST("/auth/mfa/enable", authHandler.MFAEnable)
 		protected.POST("/auth/mfa/disable", authHandler.MFADisable)
+		protected.GET("/auth/trusted-devices", authHandler.ListTrustedDevices)
+		protected.DELETE("/auth/trusted-devices/:id", authHandler.RevokeTrustedDevice)
+		protected.DELETE("/auth/trusted-devices", authHandler.RevokeAllTrustedDevices)
 
 		// Passkey management (registration requires an authenticated session)
 		protected.GET("/auth/passkey/register/begin", passkeyHandler.PasskeyRegisterBegin)

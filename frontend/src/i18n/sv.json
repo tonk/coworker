@@ -578,7 +578,19 @@
     "setup_success": "MFA aktiverat.",
     "disable_success": "MFA har inaktiverats.",
     "enforce_label": "Kräv MFA för alla användare",
-    "enforce_hint": "När aktiverat uppmanas användare att konfigurera MFA efter nästa inloggning."
+    "enforce_hint": "När aktiverat uppmanas användare att konfigurera MFA efter nästa inloggning.",
+    "remember_device": "Kom ihåg den här enheten",
+    "remember_never": "Kom inte ihåg",
+    "remember_week": "I 1 vecka",
+    "remember_month": "I 1 månad",
+    "trusted_devices_title": "Betrodda enheter",
+    "trusted_devices_hint": "Enheter som har godkänts för att hoppa över MFA-prompten under en begränsad tid.",
+    "trusted_devices_empty": "Inga betrodda enheter.",
+    "trusted_last_used": "Senast använd",
+    "trusted_expires": "Betrodd till",
+    "revoke_device_aria": "Återkalla förtroende för {name}",
+    "revoke_all_devices": "Återkalla alla betrodda enheter",
+    "revoke_all_confirm": "Återkalla alla betrodda enheter? Du måste genomföra MFA på varje enhet vid nästa inloggning."
   },
   "settings": {
     "title": "Kontoinställningar",

@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -170,16 +172,21 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	now := time.Now()
 	database.DB.Model(&user).Update("last_login_at", now)
 
-	// If the user has TOTP enabled, issue an MFA challenge token instead of full tokens.
+	// If the user has TOTP enabled, check for a remembered trust cookie first.
 	if user.TOTPEnabled {
-		mfaToken, err := h.authSvc.IssueMFAToken(user.ID, user.Username)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		trustCookie, cookieErr := c.Cookie("mfa_trust")
+		if cookieErr == nil && checkAndRenewMFATrust(user.ID, trustCookie, c) {
+			authLog(c, "login_mfa_trusted_device", user.ID, user.Username, "")
+		} else {
+			mfaToken, err := h.authSvc.IssueMFAToken(user.ID, user.Username)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+				return
+			}
+			authLog(c, "login_mfa_challenge", user.ID, user.Username, "")
+			c.JSON(http.StatusOK, gin.H{"mfa_required": true, "mfa_token": mfaToken})
 			return
 		}
-		authLog(c, "login_mfa_challenge", user.ID, user.Username, "")
-		c.JSON(http.StatusOK, gin.H{"mfa_required": true, "mfa_token": mfaToken})
-		return
 	}
 
 	tokens, err := h.issueTokens(user)
@@ -484,10 +491,13 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 // MFAVerify handles POST /auth/mfa/verify.
 // Accepts the short-lived mfa_token from the login challenge and a TOTP code,
 // and — if valid — returns a full access+refresh token pair.
+// Optional remember_days (7 or 30) stores a trust token so subsequent logins
+// from this device skip the MFA challenge for that many days.
 func (h *AuthHandler) MFAVerify(c *gin.Context) {
 	var req struct {
-		MFAToken string `json:"mfa_token" binding:"required"`
-		Code     string `json:"code" binding:"required"`
+		MFAToken     string `json:"mfa_token" binding:"required"`
+		Code         string `json:"code" binding:"required"`
+		RememberDays int    `json:"remember_days"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -514,6 +524,24 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 		authLog(c, "mfa_verify_failed", user.ID, user.Username, "reason=invalid_code")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "invalid_code"})
 		return
+	}
+
+	if req.RememberDays > 0 {
+		if req.RememberDays > 30 {
+			req.RememberDays = 30
+		}
+		plaintext, hash := generateMFATrustToken()
+		expiry := time.Now().Add(time.Duration(req.RememberDays) * 24 * time.Hour)
+		device := models.MFATrustedDevice{
+			UserID:     user.ID,
+			TokenHash:  hash,
+			DeviceName: deviceNameFromUA(c.GetHeader("User-Agent")),
+			LastUsedAt: time.Now(),
+			ExpiresAt:  expiry,
+		}
+		database.DB.Create(&device)
+		setMFATrustCookie(c, plaintext, req.RememberDays*24*60*60)
+		authLog(c, "mfa_device_trusted", user.ID, user.Username, fmt.Sprintf("days=%d device=%q", req.RememberDays, device.DeviceName))
 	}
 
 	tokens, err := h.issueTokens(user)
@@ -822,8 +850,14 @@ func clearAuthCookies(c *gin.Context) {
 
 // Logout handles POST /auth/logout.
 // Clears the httpOnly auth cookies so browser sessions are terminated cleanly.
+// Also revokes the MFA trust token for this device if one is present.
 func (h *AuthHandler) Logout(c *gin.Context) {
+	if trustCookie, err := c.Cookie("mfa_trust"); err == nil {
+		h2 := sha256.Sum256([]byte(trustCookie))
+		database.DB.Where("token_hash = ?", hex.EncodeToString(h2[:])).Delete(&models.MFATrustedDevice{})
+	}
 	clearAuthCookies(c)
+	clearMFATrustCookie(c)
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
@@ -855,4 +889,125 @@ func (h *AuthHandler) IssueMediaTicket(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ticket": ticket})
+}
+
+// ── MFA trusted-device helpers ────────────────────────────────────────────────
+
+// generateMFATrustToken creates a cryptographically random 32-byte token and
+// returns the hex-encoded plaintext (for the cookie) and its SHA-256 hash (for the DB).
+func generateMFATrustToken() (plaintext, hash string) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		panic("crypto/rand unavailable: " + err.Error())
+	}
+	plaintext = hex.EncodeToString(b)
+	h := sha256.Sum256([]byte(plaintext))
+	hash = hex.EncodeToString(h[:])
+	return
+}
+
+// checkAndRenewMFATrust looks up the trust token hash in the DB, confirms it
+// is not expired, updates last_used_at, and renews the cookie lifetime.
+// Returns true only when a valid, non-expired record is found.
+func checkAndRenewMFATrust(userID uint, token string, c *gin.Context) bool {
+	h := sha256.Sum256([]byte(token))
+	hash := hex.EncodeToString(h[:])
+	var device models.MFATrustedDevice
+	if err := database.DB.
+		Where("user_id = ? AND token_hash = ? AND expires_at > ?", userID, hash, time.Now()).
+		First(&device).Error; err != nil {
+		return false
+	}
+	database.DB.Model(&device).Update("last_used_at", time.Now())
+	remaining := int(time.Until(device.ExpiresAt).Seconds())
+	if remaining > 0 {
+		setMFATrustCookie(c, token, remaining)
+	}
+	return true
+}
+
+// setMFATrustCookie writes the trust token as an httpOnly, SameSite=Strict cookie.
+func setMFATrustCookie(c *gin.Context, token string, maxAgeSec int) {
+	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" || gin.Mode() == gin.ReleaseMode
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("mfa_trust", token, maxAgeSec, "/", "", secure, true)
+}
+
+// clearMFATrustCookie expires the MFA trust cookie immediately.
+func clearMFATrustCookie(c *gin.Context) {
+	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" || gin.Mode() == gin.ReleaseMode
+	c.SetSameSite(http.SameSiteStrictMode)
+	c.SetCookie("mfa_trust", "", -1, "/", "", secure, true)
+}
+
+// deviceNameFromUA derives a human-readable device label from a User-Agent string.
+func deviceNameFromUA(ua string) string {
+	browser := "Unknown browser"
+	switch {
+	case strings.Contains(ua, "Edg/") || strings.Contains(ua, "Edge/"):
+		browser = "Edge"
+	case strings.Contains(ua, "OPR/") || strings.Contains(ua, "Opera/"):
+		browser = "Opera"
+	case strings.Contains(ua, "Firefox/"):
+		browser = "Firefox"
+	case strings.Contains(ua, "Chrome/"):
+		browser = "Chrome"
+	case strings.Contains(ua, "Safari/"):
+		browser = "Safari"
+	}
+	os := ""
+	switch {
+	case strings.Contains(ua, "Android"):
+		os = "Android"
+	case strings.Contains(ua, "iPhone") || strings.Contains(ua, "iPad"):
+		os = "iOS"
+	case strings.Contains(ua, "Windows"):
+		os = "Windows"
+	case strings.Contains(ua, "Mac OS X") || strings.Contains(ua, "macOS"):
+		os = "macOS"
+	case strings.Contains(ua, "Linux"):
+		os = "Linux"
+	}
+	if os != "" {
+		return browser + " on " + os
+	}
+	return browser
+}
+
+// ── MFA trusted-device handlers ──────────────────────────────────────────────
+
+// ListTrustedDevices handles GET /auth/trusted-devices.
+func (h *AuthHandler) ListTrustedDevices(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	var devices []models.MFATrustedDevice
+	database.DB.
+		Where("user_id = ? AND expires_at > ?", userID, time.Now()).
+		Order("last_used_at DESC").
+		Find(&devices)
+	c.JSON(http.StatusOK, devices)
+}
+
+// RevokeTrustedDevice handles DELETE /auth/trusted-devices/:id.
+func (h *AuthHandler) RevokeTrustedDevice(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	result := database.DB.Where("id = ? AND user_id = ?", uint(id), userID).Delete(&models.MFATrustedDevice{})
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// RevokeAllTrustedDevices handles DELETE /auth/trusted-devices.
+// Deletes every trust record for the current user and clears the cookie on this device.
+func (h *AuthHandler) RevokeAllTrustedDevices(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	database.DB.Where("user_id = ?", userID).Delete(&models.MFATrustedDevice{})
+	clearMFATrustCookie(c)
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }

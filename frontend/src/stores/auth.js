@@ -89,8 +89,8 @@ export const useAuthStore = defineStore('auth', () => {
     return {}
   }
 
-  async function verifyMFA(code) {
-    const { data } = await authApi.verifyMFA(pendingMFAToken.value, code)
+  async function verifyMFA(code, rememberDays = 0) {
+    const { data } = await authApi.verifyMFA(pendingMFAToken.value, code, rememberDays)
     pendingMFAToken.value = null
     setTokens(data.access_token, data.refresh_token)
     await fetchMe()
