@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.0)
+## Latest release (v0.12.1)
 
-- **MFA trusted devices** — trust a device for 1 week or 1 month after MFA login; manage and revoke trusted devices from Settings.
-- **Grid PDF formatting fixes** — week/month/year PDF exports now respect the user's date format and time notation (decimal or hh:mm) settings.
+- **Undeclarable timesheet UX** — day-cell deductions align with entered time; row totals show declarable time; screen-reader labels and updated page help.
+- **Auth cookie fix** — login works behind HTTP reverse proxies and in local E2E runs; `Secure` cookies require TLS or `X-Forwarded-Proto: https`.
+- **MFA remember-devices policy** — admins can disable trusted devices or restrict trust duration; passkey and Tauri clients honour the policy.
 
 ## Experiment
 

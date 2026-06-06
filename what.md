@@ -704,3 +704,7 @@ Create an application that has all these features and requirements
 - Add MFA trusted devices: after successful TOTP verification, users can trust their device for 7 or 30 days; subsequent logins skip the MFA challenge; trust tokens are stored as SHA-256 hashes with httpOnly SameSite=Strict cookies; Settings shows all active trusted devices with last-used and expiry dates and supports individual and bulk revoke; logout automatically revokes the trust record for the current device
 - Fix grid PDF exports to respect the user's date/time format setting in the week period label and year print date
 - Fix grid PDF exports to respect the user's time notation setting (decimal or hh:mm) for all cell values, totals, and undeclarable rows
+- Add MFA remember-devices admin policy (disabled / 1 week / 1 week or 1 month) with automatic trust purge when tightened; passkey login and Tauri honour the policy
+- Fix undeclarable timesheet alignment: day-cell deductions right-align with entered time; row totals show declarable time; consistent `-` prefix in UI and PDF exports; screen-reader labels via aria-describedby
+- Fix page help for time-tracking sheet (array i18n keys, modal scroll, declarable vs logged totals); add screenshot 24 for undeclarable grid documentation
+- Fix auth cookies: Secure flag only on direct TLS or X-Forwarded-Proto: https (fixes form login on HTTP and behind reverse proxies); document requirement in deploy templates
