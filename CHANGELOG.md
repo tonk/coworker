@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.12.2 — 2026-06-06
+
+### Added
+- **Row-level comments on time tracking grid** — add a comment to any row in the weekly timesheet via the 💬 button; comments are persisted per ISO week alongside the row order, loaded on week navigation, and rendered below the row label in PDF exports. Demo seed populates comments for Ton Kersten and Alex Admin.
+
+### Fixed
+- **Grid PDF comment row misalignment** — `SetX` → `SetXY` in `buildWeekGridPDF` so overlay `CellFormat` calls no longer push day cells to the wrong Y position, fixing broken grid lines, fills, and cell values.
+- **Call button shown when user is offline** — the 1:1 call button in Direct Messages is now disabled with reduced opacity when the other user is offline, with a "User is offline" tooltip.
+
 ## v0.12.1 — 2026-06-06
 
 ### Added
