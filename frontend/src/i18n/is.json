@@ -579,6 +579,15 @@
     "disable_success": "MFA hefur verið gert óvirkt.",
     "enforce_label": "Krefjast MFA frá öllum notendum",
     "enforce_hint": "Þegar virkt, verða notendur beðnir um að setja upp MFA eftir næstu innskráningu.",
+    "remember_devices_label": "Muna MFA á treystum tækjum",
+    "remember_devices_hint": "Stjórnar því hvort notendur geti sleppt MFA á tæki sem þegar hefur verið staðfest. Óvirkt fjarlægir valkostinn við innskráningu og hunsar núverandi treyst tæki.",
+    "remember_devices_disabled": "Óvirkt",
+    "remember_devices_week": "Leyfa aðeins 1 viku",
+    "remember_devices_week_month": "Leyfa 1 viku eða 1 mánuð",
+    "remember_devices_disable_confirm": "Slökkva á treystum tækjum? Öll vistuð tækjatryggð verður afturkölluð og allir notendur verða að ljúka MFA við hverja innskráningu.",
+    "admin_group_title": "Fjölþátta auðkenning",
+    "admin_group_hint": "Stjórnaðu MFA-kröfum og hvort notendur megi sleppa MFA á tækjum sem þegar hafa verið staðfest.",
+    "trusted_devices_admin_disabled": "Kerfisstjórinn þinn hefur slökkt á því að muna MFA á treystum tækjum.",
     "remember_device": "Muna þetta tæki",
     "remember_never": "Ekki muna",
     "remember_week": "Í 1 viku",
@@ -1389,7 +1398,8 @@
           "Sláðu inn klukkustundir í reit — notaðu valið tugabrot eða hh:mm snið úr stillingum.",
           "Smelltu á klukku tákn til að setja upphafs- og lokatíma á færslu.",
           "Afritaðu fyrri viku eða notaðu vaktavakt fyrir næturverð í samningi.",
-          "Dragðu handföng raða til að endurraða línum."
+          "Dragðu handföng raða til að endurraða línum.",
+          "Rauða - undir reit eða samtölu er óreikningshæfur tími — tími sem ekki er hægt að rukka viðskiptavininn fyrir, til dæmis hádegishlé, innra þjálfun eða ferðatíma. Dagreitir sýna skráðan tíma; línur og fótsamtölur sýna reikningshæfan tíma (skráður mínus óreikningshæfur). Óreikningshæft magn er stillt á verkefni, ekki á færslu."
         ],
         "shortcuts": [
           "Örvalyklar — færa sig á milli reita",

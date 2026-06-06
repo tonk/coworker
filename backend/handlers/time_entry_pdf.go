@@ -492,7 +492,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 				pdf.CellFormat(colCost, rowH, "", "0", 0, "R", true, 0, "")
 			}
 			setTxt(pdf, rgb{180, 80, 80})
-			pdf.CellFormat(colHours, rowH, "−"+fmtDecimalH(grp.UndeclarableMinutes), "0", 1, "R", true, 0, "")
+			pdf.CellFormat(colHours, rowH, "-"+fmtDecimalH(grp.UndeclarableMinutes), "0", 1, "R", true, 0, "")
 		}
 
 		if pageBreakPerCustomer && gi < len(activeGroups)-1 {
@@ -549,7 +549,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 				pdf.CellFormat(colCost, rowH, "", "0", 0, "R", true, 0, "")
 			}
 			setTxt(pdf, rgb{180, 80, 80})
-			pdf.CellFormat(colHours, rowH, "−"+fmtDecimalH(report.UndeclarableMinutes), "0", 1, "R", true, 0, "")
+			pdf.CellFormat(colHours, rowH, "-"+fmtDecimalH(report.UndeclarableMinutes), "0", 1, "R", true, 0, "")
 		}
 	}
 

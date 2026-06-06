@@ -622,6 +622,15 @@
     "disable_success": "MFA has been disabled.",
     "enforce_label": "Require MFA for all users",
     "enforce_hint": "When enabled, users are prompted to configure MFA after their next login.",
+    "remember_devices_label": "Remember MFA on trusted devices",
+    "remember_devices_hint": "Controls whether users can skip MFA on a device they have already verified. Disabled removes the option on login and ignores existing trusted devices.",
+    "remember_devices_disabled": "Disabled",
+    "remember_devices_week": "Allow for 1 week only",
+    "remember_devices_week_month": "Allow for 1 week or 1 month",
+    "remember_devices_disable_confirm": "Disable trusted devices? All saved device trusts will be revoked and every user will need to complete MFA at each login.",
+    "admin_group_title": "Multi-factor authentication",
+    "admin_group_hint": "Control MFA enforcement and whether users may skip MFA on devices they have already verified.",
+    "trusted_devices_admin_disabled": "Your administrator has disabled remembering MFA on trusted devices.",
     "remember_device": "Remember this device",
     "remember_never": "Don't remember",
     "remember_week": "For 1 week",
@@ -1476,7 +1485,8 @@
           "Type hours in a cell — use your preferred decimal or hh:mm format from settings.",
           "Click the clock icon to set start/end times on an entry.",
           "Copy the previous week or use standby shift for contract overnight rates.",
-          "Drag row handles to reorder lines."
+          "Drag row handles to reorder lines.",
+          "The red - below a cell or total is undeclarable time — time that cannot be billed to the client (for example lunch breaks, internal training, or travel). Day cells show the time you entered; row and footer totals show declarable time (logged time minus undeclarable). The undeclarable amount is set per project, not per entry."
         ],
         "shortcuts": [
           "Arrow keys — move between cells",

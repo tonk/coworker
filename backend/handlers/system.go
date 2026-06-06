@@ -40,6 +40,7 @@ const (
 	settingDefaultColumns            = "default_columns"
 	settingDefaultLabels             = "default_labels"
 	settingMFARequired               = "mfa_required"
+	settingMFARememberDevices        = "mfa_remember_devices"
 	settingPasswordMinLength         = "password_min_length"
 	settingPasswordRequireUpper      = "password_require_upper"
 	settingPasswordRequireLower      = "password_require_lower"
@@ -144,6 +145,7 @@ var systemSettingDefaults = map[string]string{
 	settingDefaultColumns:            "Backlog",
 	settingDefaultLabels:             "Bug\nFeature\nDesign\nContent",
 	settingMFARequired:               "false",
+	settingMFARememberDevices:        "week_month",
 	settingPasswordMinLength:         "12",
 	settingPasswordRequireUpper:      "false",
 	settingPasswordRequireLower:      "true",
@@ -350,6 +352,7 @@ func GetSystemSettings(c *gin.Context) {
 		"company_logo_dark":            all[settingCompanyLogoDark],
 		"login_branding_enabled":       all[settingLoginBrandingEnabled] == "true",
 		"mfa_required":                 all[settingMFARequired] == "true",
+		"mfa_remember_devices":         normalizeMFARememberDevicesPolicy(all[settingMFARememberDevices]),
 		"password_policy":              GetPasswordPolicy(),
 		"scrum_storypoints_enabled":    all[settingScrumStorypointsEnabled] == "true",
 		"gravatar_enabled":             all[settingGravatarEnabled] != "false",
@@ -381,6 +384,7 @@ func AdminGetSystemSettings(c *gin.Context) {
 func AdminUpdateSystemSettings(c *gin.Context) {
 	var req struct {
 		MFARequired               *bool       `json:"mfa_required"`
+		MFARememberDevices        *string     `json:"mfa_remember_devices"`
 		RegistrationEnabled       *bool       `json:"registration_enabled"`
 		DefaultDateTimeFormat     string      `json:"default_date_time_format"`
 		DefaultTimezone           string      `json:"default_timezone"`
@@ -461,6 +465,12 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 			val = "true"
 		}
 		saveSetting(settingMFARequired, val)
+	}
+	if req.MFARememberDevices != nil {
+		oldPolicy := GetMFARememberDevicesPolicy()
+		newPolicy := normalizeMFARememberDevicesPolicy(*req.MFARememberDevices)
+		applyMFARememberDevicesPolicyChange(oldPolicy, newPolicy)
+		saveSetting(settingMFARememberDevices, newPolicy)
 	}
 	if req.RegistrationEnabled != nil {
 		val := "true"
@@ -692,6 +702,63 @@ func ValidatePasswordPolicy(password string) string {
 // IsMFARequired returns true when the admin has enabled system-wide MFA enforcement.
 func IsMFARequired() bool {
 	return loadAllSettings()[settingMFARequired] == "true"
+}
+
+// normalizeMFARememberDevicesPolicy returns a valid MFA remember-devices policy.
+// Values: "disabled", "week", "week_month".
+func normalizeMFARememberDevicesPolicy(v string) string {
+	switch v {
+	case "disabled", "week", "week_month":
+		return v
+	default:
+		return "week_month"
+	}
+}
+
+// GetMFARememberDevicesPolicy returns the configured MFA remember-devices policy.
+func GetMFARememberDevicesPolicy() string {
+	return normalizeMFARememberDevicesPolicy(loadAllSettings()[settingMFARememberDevices])
+}
+
+// applyMFARememberDevicesPolicyChange revokes trusted devices that are no longer
+// allowed when an admin tightens the remember-devices policy.
+func applyMFARememberDevicesPolicyChange(oldPolicy, newPolicy string) {
+	oldPolicy = normalizeMFARememberDevicesPolicy(oldPolicy)
+	newPolicy = normalizeMFARememberDevicesPolicy(newPolicy)
+	if oldPolicy == newPolicy {
+		return
+	}
+	switch newPolicy {
+	case "disabled":
+		database.DB.Where("1 = 1").Delete(&models.MFATrustedDevice{})
+	case "week":
+		var devices []models.MFATrustedDevice
+		database.DB.Find(&devices)
+		week := 7 * 24 * time.Hour
+		for _, d := range devices {
+			if d.ExpiresAt.Sub(d.CreatedAt) > week+time.Hour {
+				database.DB.Delete(&d)
+			}
+		}
+	}
+}
+
+// NormalizeMFARememberDays clamps remember_days according to the admin policy.
+func NormalizeMFARememberDays(days int) int {
+	switch GetMFARememberDevicesPolicy() {
+	case "disabled":
+		return 0
+	case "week":
+		if days == 7 {
+			return 7
+		}
+		return 0
+	default: // week_month
+		if days == 7 || days == 30 {
+			return days
+		}
+		return 0
+	}
 }
 
 // GetCompanyName returns the configured company name (used as the TOTP issuer).

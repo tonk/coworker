@@ -579,6 +579,15 @@
     "disable_success": "MFA è stato disabilitato.",
     "enforce_label": "Richiedi MFA per tutti gli utenti",
     "enforce_hint": "Quando abilitato, agli utenti verrà chiesto di configurare MFA dopo il prossimo accesso.",
+    "remember_devices_label": "Ricorda MFA sui dispositivi attendibili",
+    "remember_devices_hint": "Controlla se gli utenti possono saltare MFA su un dispositivo già verificato. Disabilitato rimuove l'opzione al login e ignora i dispositivi attendibili esistenti.",
+    "remember_devices_disabled": "Disabilitato",
+    "remember_devices_week": "Consenti solo 1 settimana",
+    "remember_devices_week_month": "Consenti 1 settimana o 1 mese",
+    "remember_devices_disable_confirm": "Disabilitare i dispositivi attendibili? Tutte le fiducie salvate verranno revocate e ogni utente dovrà completare MFA a ogni accesso.",
+    "admin_group_title": "Autenticazione a più fattori",
+    "admin_group_hint": "Controlla l'applicazione MFA e se gli utenti possono saltare MFA sui dispositivi già verificati.",
+    "trusted_devices_admin_disabled": "L'amministratore ha disabilitato la memorizzazione MFA sui dispositivi attendibili.",
     "remember_device": "Ricorda questo dispositivo",
     "remember_never": "Non ricordare",
     "remember_week": "Per 1 settimana",
@@ -1389,7 +1398,8 @@
           "Digita le ore in una cella — usa il formato decimale o hh:mm dalle impostazioni.",
           "Fai clic sull'icona orologio per impostare ora di inizio e fine su una voce.",
           "Copia la settimana precedente o usa turno di reperibilità per tariffe notturne contrattuali.",
-          "Trascina le maniglie di riga per riordinare le righe."
+          "Trascina le maniglie di riga per riordinare le righe.",
+          "Il - rosso sotto una cella o un totale è tempo non dichiarabile — tempo che non può essere fatturato al cliente, ad esempio pause pranzo, formazione interna o trasferte. Le celle giornaliere mostrano il tempo inserito; i totali di riga e piè di pagina mostrano il tempo dichiarabile (inserito meno non dichiarabile). Il valore non dichiarabile è impostato per progetto, non per voce."
         ],
         "shortcuts": [
           "Tasti freccia — spostarsi tra le celle",

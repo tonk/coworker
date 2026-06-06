@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -14,14 +14,32 @@ function ss(name) {
   return { path: path.join(SS, `${name}.png`), fullPage: true }
 }
 
+/** Cookie-based login — sets httpOnly session cookies on the browser context. */
+async function loginViaApi(context, username = 'demo.admin', password = 'demo1234') {
+  const res = await context.request.post(`${BASE_URL}/api/v1/auth/login`, {
+    data: { login: username, password },
+  })
+  if (!res.ok()) {
+    throw new Error(`API login failed: ${res.status()} ${await res.text()}`)
+  }
+}
+
 async function loginAs(page, username = 'demo.admin', password = 'demo1234') {
   await page.goto(`${BASE_URL}/login`)
+  await page.evaluate(() => localStorage.removeItem('mfa_trust_token'))
   await page.waitForSelector('.form-input')
   const inputs = page.locator('.form-input')
   await inputs.nth(0).fill(username)
   await inputs.nth(1).fill(password)
   await page.locator('button[type="submit"]').click()
-  await page.waitForURL('**/')
+  try {
+    await page.waitForURL(url => !new URL(url).pathname.startsWith('/login'), { timeout: 15000 })
+  } catch {
+    // Fallback: API login (e.g. auth rate limit after repeated runs).
+    await loginViaApi(page.context(), username, password)
+    await page.goto(`${BASE_URL}/`)
+    await page.waitForLoadState('networkidle')
+  }
 }
 
 // Dismiss the welcome/news backdrop that appears on every fresh context
@@ -338,6 +356,27 @@ test.describe('screenshots', () => {
       }
     }
     await page.screenshot(ss('22-ticket-detail'))
+    await context.close()
+  })
+
+  // ── 24: Time tracking — undeclarable alignment ─────────────────────
+  test('24-time-tracking-undeclarable', async ({ browser }) => {
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    await loginAs(page, 'tonk', 'demo1234')
+    await page.goto(`${BASE_URL}/time-tracking`)
+    await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
+    await page.waitForSelector('.tt-table', { timeout: 10000 })
+    await page.waitForSelector('.cell-undecl', { timeout: 10000 })
+    const firstUndecl = page.locator('.cell-undecl').first()
+    const undeclId = await firstUndecl.getAttribute('id')
+    expect(undeclId).toBeTruthy()
+    await expect(page.locator(`[aria-describedby="${undeclId}"]`)).toHaveCount(1)
+    await expect(firstUndecl.locator('.sr-only')).toContainText('Undeclarable')
+    await page.locator('.tt-table').screenshot({
+      path: path.join(SS, '24-time-tracking-undeclarable.png'),
+    })
     await context.close()
   })
 

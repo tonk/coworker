@@ -48,7 +48,7 @@ func CORS(allowedOrigins string) gin.HandlerFunc {
 			return ok
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept-Language"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept-Language", "X-MFA-Trust", "X-WarmDesk-Client"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}

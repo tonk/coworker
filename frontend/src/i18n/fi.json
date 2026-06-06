@@ -579,6 +579,15 @@
     "disable_success": "MFA on poistettu käytöstä.",
     "enforce_label": "Vaadi MFA kaikilta käyttäjiltä",
     "enforce_hint": "Kun käytössä, käyttäjiä pyydetään määrittämään MFA seuraavan kirjautumisen jälkeen.",
+    "remember_devices_label": "Muista MFA luotetuilla laitteilla",
+    "remember_devices_hint": "Määrittää, voivatko käyttäjät ohittaa MFA:n jo vahvistetulla laitteella. Pois käytöstä poistaa valinnan kirjautumisesta ja jättää huomiotta olemassa olevat luotetut laitteet.",
+    "remember_devices_disabled": "Pois käytöstä",
+    "remember_devices_week": "Salli vain 1 viikko",
+    "remember_devices_week_month": "Salli 1 viikko tai 1 kuukausi",
+    "remember_devices_disable_confirm": "Poistetaanko luotetut laitteet käytöstä? Kaikki tallennetut laiteluottamukset peruutetaan ja jokaisen käyttäjän on suoritettava MFA jokaisella kirjautumisella.",
+    "admin_group_title": "Monivaiheinen tunnistautuminen",
+    "admin_group_hint": "Hallitse MFA-vaatimusta ja sitä, voivatko käyttäjät ohittaa MFA:n jo vahvistetuilla laitteilla.",
+    "trusted_devices_admin_disabled": "Järjestelmänvalvoja on poistanut MFA:n muistamisen käytöstä luotetuilla laitteilla.",
     "remember_device": "Muista tämä laite",
     "remember_never": "Älä muista",
     "remember_week": "1 viikon ajan",
@@ -1389,7 +1398,8 @@
           "Kirjoita tunnit soluun — käytä asetuksista valitsemaasi desimaali- tai hh:mm-muotoa.",
           "Napsauta kello-kuvaketta asettaaksesi alku- ja loppuajat merkinnälle.",
           "Kopioi edellinen viikko tai käytä valmiusvuoroa sopimuksen yökorvauksia varten.",
-          "Vedä rivikahvoista järjestääksesi rivit uudelleen."
+          "Vedä rivikahvoista järjestääksesi rivit uudelleen.",
+          "Punainen - solun tai summan alla on ilmoittamaton aika — aikaa, jota ei voi laskuttaa asiakkaalta, esimerkiksi lounastauot, sisäinen koulutus tai matka-aika. Päiväsolut näyttävät syötetyn ajan; rivi- ja alatotalit näyttävät laskutettavan ajan (syötetty miinus ilmoittamaton). Ilmoittamaton määrä asetetaan projektikohtaisesti, ei merkintäkohtaisesti."
         ],
         "shortcuts": [
           "Nuolinäppäimet — siirry solujen välillä",

@@ -579,6 +579,15 @@
     "disable_success": "O MFA foi desativado.",
     "enforce_label": "Exigir MFA para todos os utilizadores",
     "enforce_hint": "Quando ativado, os utilizadores serão solicitados a configurar o MFA após o próximo início de sessão.",
+    "remember_devices_label": "Lembrar MFA em dispositivos de confiança",
+    "remember_devices_hint": "Controla se os utilizadores podem ignorar o MFA num dispositivo já verificado. Desativado remove a opção no início de sessão e ignora dispositivos de confiança existentes.",
+    "remember_devices_disabled": "Desativado",
+    "remember_devices_week": "Permitir apenas 1 semana",
+    "remember_devices_week_month": "Permitir 1 semana ou 1 mês",
+    "remember_devices_disable_confirm": "Desativar dispositivos de confiança? Todas as confianças guardadas serão revogadas e cada utilizador terá de concluir o MFA em cada início de sessão.",
+    "admin_group_title": "Autenticação multifator",
+    "admin_group_hint": "Controle a aplicação do MFA e se os utilizadores podem ignorar o MFA em dispositivos já verificados.",
+    "trusted_devices_admin_disabled": "O seu administrador desativou lembrar o MFA em dispositivos de confiança.",
     "remember_device": "Lembrar este dispositivo",
     "remember_never": "Não lembrar",
     "remember_week": "Durante 1 semana",
@@ -1389,7 +1398,8 @@
           "Introduza horas numa célula — use o formato decimal ou hh:mm preferido nas definições.",
           "Clique no ícone do relógio para definir horas de início/fim numa entrada.",
           "Copie a semana anterior ou use turno de prontidão para taxas noturnas contratuais.",
-          "Arraste os identificadores de linha para reordenar linhas."
+          "Arraste os identificadores de linha para reordenar linhas.",
+          "O - vermelho abaixo de uma célula ou total é tempo não declarável — tempo que não pode ser faturado ao cliente, por exemplo pausas para almoço, formação interna ou deslocações. As células diárias mostram o tempo introduzido; os totais de linha e rodapé mostram tempo declarável (introduzido menos não declarável). O valor não declarável é definido por projeto, não por entrada."
         ],
         "shortcuts": [
           "Teclas de seta — mover entre células",

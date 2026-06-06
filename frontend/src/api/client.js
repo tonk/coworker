@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { getServerUrl } from './serverConfig'
+import { getMfaTrustToken } from './mfaTrust'
 
 const isTauri = !!window.__TAURI_INTERNALS__
 
@@ -53,6 +54,11 @@ client.interceptors.request.use(config => {
     const token = sessionStorage.getItem('access_token')
       || (client.defaults.headers.common.Authorization || '').replace('Bearer ', '')
     if (token) config.headers.Authorization = `Bearer ${token}`
+  }
+  const url = config.url || ''
+  if (url.includes('/auth/login') || url.includes('/auth/passkey/login/finish')) {
+    const mfaTrust = getMfaTrustToken()
+    if (mfaTrust) config.headers['X-MFA-Trust'] = mfaTrust
   }
   return config
 })

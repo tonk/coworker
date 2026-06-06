@@ -4,11 +4,16 @@
 
 ### Added
 - **MFA trusted devices** — after completing an MFA challenge, users can choose to trust their device for 1 week or 1 month. Subsequent logins from that device skip the TOTP prompt. The Settings page (Security → Trusted Devices) lists all active trusted devices with last-used and expiry dates, and provides individual and bulk revoke buttons. Logging out automatically revokes the trust record for that device.
+- **Screenshot 24 — undeclarable grid alignment** — Playwright captures the weekly timesheet grid with undeclarable deductions for documentation; `screenshots.sh` re-seeds with `--reset` so dates stay current.
 
 ### Fixed
 - **Grid PDF date format** — the week-grid period label and year-grid print date now follow the user's date/time format setting instead of always using DD-MM(-YYYY).
 - **Grid PDF time notation** — cell values, totals, and undeclarable rows in week, month, and year grid exports now use the user's time notation setting (decimal or hh:mm) instead of always rendering decimal hours.
 - **Inline help icon positioning** — help icon correctly placed next to the undeclarable badge; service accounts hidden from the sidebar member list.
+- **Undeclarable time alignment** — red undeclarable amounts in day cells right-align with entered time; row totals now show declarable time (matching footer totals); `-` prefix used consistently in the UI and PDF exports.
+- **Timesheet accessibility** — day cells with undeclarable time expose the deduction to screen readers via `aria-describedby`.
+- **Page help** — time-tracking sheet help resolves array-valued i18n keys; modal body scrolls when content overflows; undeclarable-time help explains declarable vs logged totals.
+- **E2E login** — auth cookies no longer force `Secure` on plain HTTP in release mode (browsers were rejecting them, breaking form login); Playwright clears stale MFA-trust storage and falls back to API login on rate limit.
 
 ## v0.11.0 — 2026-06-05
 

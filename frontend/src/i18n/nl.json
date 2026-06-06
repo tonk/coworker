@@ -544,6 +544,15 @@
     "disable_success": "MFA is uitgeschakeld.",
     "enforce_label": "MFA verplichten voor alle gebruikers",
     "enforce_hint": "Wanneer ingeschakeld, worden gebruikers gevraagd MFA in te stellen bij hun volgende aanmelding.",
+    "remember_devices_label": "MFA onthouden op vertrouwde apparaten",
+    "remember_devices_hint": "Bepaalt of gebruikers MFA kunnen overslaan op een apparaat dat al is geverifieerd. Uitgeschakeld verwijdert de optie bij aanmelding en negeert bestaande vertrouwde apparaten.",
+    "remember_devices_disabled": "Uitgeschakeld",
+    "remember_devices_week": "Alleen 1 week toestaan",
+    "remember_devices_week_month": "1 week of 1 maand toestaan",
+    "remember_devices_disable_confirm": "Vertrouwde apparaten uitschakelen? Alle opgeslagen apparaatvertrouwen worden ingetrokken en elke gebruiker moet bij elke aanmelding MFA voltooien.",
+    "admin_group_title": "Multi-factorauthenticatie",
+    "admin_group_hint": "Bepaal MFA-verplichting en of gebruikers MFA mogen overslaan op apparaten die al zijn geverifieerd.",
+    "trusted_devices_admin_disabled": "Uw beheerder heeft het onthouden van MFA op vertrouwde apparaten uitgeschakeld.",
     "remember_device": "Dit apparaat onthouden",
     "remember_never": "Niet onthouden",
     "remember_week": "Voor 1 week",
@@ -1389,7 +1398,8 @@
           "Typ uren in een cel — gebruik uw voorkeursnotatie decimaal of uu:mm uit instellingen.",
           "Klik op het klokpictogram om start-/eindtijden op een regel in te stellen.",
           "Kopieer de vorige week of gebruik standby-dienst voor contractuele nachttarieven.",
-          "Sleep rijhandvatten om regels te herschikken."
+          "Sleep rijhandvatten om regels te herschikken.",
+          "Het rode - onder een cel of totaal is niet-declareerbare tijd — tijd die niet aan de klant gefactureerd kan worden, zoals lunchpauzes, interne trainingen of reistijd. Dagentrees tonen de ingevoerde tijd; rij- en voettekstotalen tonen declareerbare tijd (ingevoerd minus niet-declareerbaar). Het niet-declareerbare bedrag wordt per project ingesteld, niet per regel."
         ],
         "shortcuts": [
           "Pijltjestoetsen — tussen cellen navigeren",

@@ -186,6 +186,7 @@
                   :placeholder="savingCell === row.key + d.iso ? '…' : ''"
                   :value="cellVal(row, d.iso)"
                   :aria-label="timeNotation === 'hhmm' ? 'Hours and minutes for ' + d.abbr + ' ' + d.mmdd : 'Hours for ' + d.abbr + ' ' + d.mmdd"
+                  :aria-describedby="cellUndeclMins(row, d.iso) > 0 ? 'tt-undecl-' + idx + '-' + di : undefined"
                   :disabled="viewingOther || savingCell === row.key + d.iso || editingRow === row.key"
                   @focus="onCellFocus(idx, di)"
                   @mousedown="onCellMouseDown(idx, di, $event)"
@@ -254,16 +255,14 @@
                     <button v-if="getEntry(row, d.iso)?.start_time" class="tp-btn tp-clear" @mousedown.prevent="clearTimePopup(row, d.iso)">{{ $t('common.clear') }}</button>
                   </div>
                 </div>
-                <div v-if="cellUndeclMins(row, d.iso) > 0" class="cell-undecl" aria-hidden="true">
-                  −{{ fmtTime(cellUndeclMins(row, d.iso)) }}
+                <div v-if="cellUndeclMins(row, d.iso) > 0" :id="'tt-undecl-' + idx + '-' + di" class="cell-undecl">
+                  <span aria-hidden="true">-{{ fmtTime(cellUndeclMins(row, d.iso)) }}</span>
+                  <span class="sr-only">{{ $t('timeTracking.undeclarable') }}: {{ fmtTime(cellUndeclMins(row, d.iso)) }}</span>
                 </div>
               </td>
-              <td class="c-total c-rowtotal">
-                <span>{{ rowTotal(row) }}</span>
-                <span v-if="rowUndecl(row) > 0" class="row-undecl-row">
-                  <span class="row-undecl-badge" :title="$t('timeTracking.undeclarable') + ': ' + fmtTime(rowUndecl(row))">↓{{ fmtTime(rowUndecl(row)) }}</span>
-                  <HelpIcon i18n-key="help.fields.undeclarable_time" :label="$t('timeTracking.undeclarable')" />
-                </span>
+              <td class="c-total c-rowtotal" :aria-label="rowUndecl(row) > 0 ? rowDeclTotal(row) + ', ' + $t('timeTracking.undeclarable') + ': -' + fmtTime(rowUndecl(row)) : undefined">
+                <span :aria-hidden="rowUndecl(row) > 0 ? 'true' : undefined">{{ rowDeclTotal(row) }}</span>
+                <span v-if="rowUndecl(row) > 0" class="row-undecl-badge" aria-hidden="true">-{{ fmtTime(rowUndecl(row)) }}</span>
               </td>
 
               <!-- Actions -->
@@ -320,13 +319,13 @@
           <tfoot>
             <tr class="tt-foot">
               <td colspan="4" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
-              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '', dayOverLimit(d.iso) ? 'c-day-over' : '', d.isToday ? 'c-day-today' : '']" :title="dayExpectedLabel(d.iso)">
-                <span>{{ dayDeclTotal(d.iso) }}</span>
-                <span v-if="dayUndeclMins(d.iso) > 0" class="foot-undecl-inline">−{{ dayUndecl(d.iso) }}</span>
+              <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '', dayOverLimit(d.iso) ? 'c-day-over' : '', d.isToday ? 'c-day-today' : '']" :title="dayExpectedLabel(d.iso)" :aria-label="dayUndeclMins(d.iso) > 0 ? dayDeclTotal(d.iso) + ', ' + $t('timeTracking.undeclarable') + ': -' + dayUndecl(d.iso) : undefined">
+                <span :aria-hidden="dayUndeclMins(d.iso) > 0 ? 'true' : undefined">{{ dayDeclTotal(d.iso) }}</span>
+                <span v-if="dayUndeclMins(d.iso) > 0" class="foot-undecl-inline" aria-hidden="true">-{{ dayUndecl(d.iso) }}</span>
               </td>
-              <td class="c-total grand-total">
-                <span>{{ fmtTime(grandDeclarable) }}</span>
-                <span v-if="grandUndeclTotal > 0" class="foot-undecl-inline">−{{ fmtTime(grandUndeclTotal) }}</span>
+              <td class="c-total grand-total" :aria-label="grandUndeclTotal > 0 ? fmtTime(grandDeclarable) + ', ' + $t('timeTracking.undeclarable') + ': -' + fmtTime(grandUndeclTotal) : undefined">
+                <span :aria-hidden="grandUndeclTotal > 0 ? 'true' : undefined">{{ fmtTime(grandDeclarable) }}</span>
+                <span v-if="grandUndeclTotal > 0" class="foot-undecl-inline" aria-hidden="true">-{{ fmtTime(grandUndeclTotal) }}</span>
               </td>
               <td class="c-act"></td>
             </tr>
@@ -627,7 +626,7 @@
           <div v-else class="rpt-grp-empty">{{ $t('timeTracking.no_entries_group') }}</div>
           <div v-if="rpt.group_by === 'customer' && grp.undeclarable_minutes > 0" class="rpt-grp-undecl-line">
             <span>{{ $t('timeTracking.undeclarable') }}</span>
-            <span>−{{ fmtTime(grp.undeclarable_minutes) }}</span>
+            <span>-{{ fmtTime(grp.undeclarable_minutes) }}</span>
           </div>
         </div>
         <div class="rpt-grand-total">
@@ -636,7 +635,7 @@
         </div>
         <div v-if="rpt.group_by === 'customer' && report.undeclarable_minutes > 0" class="rpt-undeclarable">
           <span>{{ $t('timeTracking.undeclarable') }}</span>
-          <span>{{ fmtTime(report.undeclarable_minutes) }}</span>
+          <span>-{{ fmtTime(report.undeclarable_minutes) }}</span>
         </div>
       </template>
     </div>
@@ -704,7 +703,7 @@
               <template v-else>
                 <span class="ttp-dot" :aria-hidden="true" :style="p.color ? { background: p.color } : {}"></span>
                 <span class="ttp-name">{{ p.name }}</span>
-                <span v-if="p.undeclarable_minutes > 0" class="ttp-undecl-badge" :title="$t('timeTracking.undeclarable_per_entry')">↓{{ fmtTime(p.undeclarable_minutes) }}</span>
+                <span v-if="p.undeclarable_minutes > 0" class="ttp-undecl-badge" :title="$t('timeTracking.undeclarable_per_entry')">-{{ fmtTime(p.undeclarable_minutes) }}</span>
                 <span v-if="isGlobalTTProject(p)" class="ttp-badge">{{ $t('timeTracking.tt_project_global') }}</span>
                 <template v-if="canEditTTProject(p)">
                   <button class="act-btn act-edit ttp-act" @click="startEditTTProject(p)" :aria-label="$t('common.edit') + ' ' + p.name">✎</button>
@@ -802,6 +801,7 @@ import {
   weekendStandbyDefaults,
   parseWallClock as parseShiftWallClock,
 } from '@/utils/shiftTimeEntries'
+import { entryUndeclMins, rowDeclarableMins } from '@/utils/timeTrackingUndecl'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -1339,9 +1339,9 @@ function cellVal(row, dateISO) {
   return e && e.minutes ? fmtTime(e.minutes) : ''
 }
 
-function rowTotal(row) {
-  const m = weekDays.value.reduce((s, d) => s + (getEntry(row, d.iso)?.minutes || 0), 0)
-  return fmtTime(m)
+function rowDeclTotal(row) {
+  const entries = weekDays.value.map(d => getEntry(row, d.iso))
+  return fmtTime(rowDeclarableMins(entries))
 }
 
 function dayTotal(dateISO) {
@@ -1383,9 +1383,7 @@ function reportEntryDeclarable(entry) {
 }
 
 function entryUndecl(entry) {
-  const pu = entry.project?.undeclarable_minutes || 0
-  if (pu <= 0) return 0
-  return Math.min(entry.minutes, pu)
+  return entryUndeclMins(entry)
 }
 
 function rowUndecl(row) {
@@ -3486,14 +3484,18 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .c-desc  { font-size: 12px; color: var(--color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Hour input cells */
-.c-day { padding: 2px; }
+.c-day {
+  --h-inp-pad-x: 6px;
+  padding: 2px;
+}
 .h-inp {
   width: 100%;
   border: 1px solid var(--color-border);
   border-radius: 3px;
-  padding: 4px 6px;
+  padding: 4px var(--h-inp-pad-x);
   text-align: right;
   font-size: 13px;
+  font-variant-numeric: tabular-nums;
   background: var(--color-surface);
   color: var(--color-text);
   outline: none;
@@ -3513,18 +3515,14 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .c-rowtotal { color: var(--color-text); }
 
 /* Undeclarable row-total badge */
-.row-undecl-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 3px;
-}
 .row-undecl-badge {
+  display: block;
   font-size: 10px;
   font-weight: 500;
   color: var(--color-danger, #e53e3e);
   opacity: .75;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Undeclarable amount shown below a day cell's time value */
@@ -3534,7 +3532,8 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   color: var(--color-danger, #e53e3e);
   text-align: right;
   line-height: 1.2;
-  padding-top: 1px;
+  padding: 1px calc(var(--h-inp-pad-x) + 1px) 0 var(--h-inp-pad-x);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Undeclarable amount shown inline below footer day totals */
@@ -3545,6 +3544,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   color: var(--color-danger, #e53e3e);
   opacity: .85;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Footer */

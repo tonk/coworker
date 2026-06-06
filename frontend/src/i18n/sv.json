@@ -579,6 +579,15 @@
     "disable_success": "MFA har inaktiverats.",
     "enforce_label": "Kräv MFA för alla användare",
     "enforce_hint": "När aktiverat uppmanas användare att konfigurera MFA efter nästa inloggning.",
+    "remember_devices_label": "Kom ihåg MFA på betrodda enheter",
+    "remember_devices_hint": "Styr om användare kan hoppa över MFA på en enhet som redan har verifierats. Inaktiverat tar bort alternativet vid inloggning och ignorerar befintliga betrodda enheter.",
+    "remember_devices_disabled": "Inaktiverat",
+    "remember_devices_week": "Tillåt endast 1 vecka",
+    "remember_devices_week_month": "Tillåt 1 vecka eller 1 månad",
+    "remember_devices_disable_confirm": "Inaktivera betrodda enheter? Alla sparade enhetsförtroenden återkallas och varje användare måste slutföra MFA vid varje inloggning.",
+    "admin_group_title": "Multifaktorautentisering",
+    "admin_group_hint": "Styr MFA-krav och om användare får hoppa över MFA på enheter som redan har verifierats.",
+    "trusted_devices_admin_disabled": "Din administratör har inaktiverat att komma ihåg MFA på betrodda enheter.",
     "remember_device": "Kom ihåg den här enheten",
     "remember_never": "Kom inte ihåg",
     "remember_week": "I 1 vecka",
@@ -1389,7 +1398,8 @@
           "Ange timmar i en cell — använd ditt föredragna decimal- eller tt:mm-format från inställningar.",
           "Klicka på klockikonen för att ange start/slut-tider på en post.",
           "Kopiera föregående vecka eller använd beredskapsskift för avtalade nattpriser.",
-          "Dra radhandtag för att omordna rader."
+          "Dra radhandtag för att omordna rader.",
+          "Det röda - under en cell eller total är icke-deklarerbar tid — tid som inte kan faktureras kunden, till exempel lunchraster, intern utbildning eller restid. Dagsceller visar inmatad tid; rad- och bunktotaler visar deklarerbar tid (inmatad minus icke-deklarerbar). Det icke-deklarerbara beloppet anges per projekt, inte per post."
         ],
         "shortcuts": [
           "Piltangenter — flytta mellan celler",

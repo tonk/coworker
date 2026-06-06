@@ -73,5 +73,6 @@ func allModels() []interface{} {
 		&models.TimeEntry{},
 		&models.NewsItem{},
 		&models.PasskeyCredential{},
+		&models.MFATrustedDevice{},
 	}
 }

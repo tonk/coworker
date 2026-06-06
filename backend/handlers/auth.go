@@ -172,21 +172,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	now := time.Now()
 	database.DB.Model(&user).Update("last_login_at", now)
 
-	// If the user has TOTP enabled, check for a remembered trust cookie first.
-	if user.TOTPEnabled {
-		trustCookie, cookieErr := c.Cookie("mfa_trust")
-		if cookieErr == nil && checkAndRenewMFATrust(user.ID, trustCookie, c) {
-			authLog(c, "login_mfa_trusted_device", user.ID, user.Username, "")
-		} else {
-			mfaToken, err := h.authSvc.IssueMFAToken(user.ID, user.Username)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
-				return
-			}
-			authLog(c, "login_mfa_challenge", user.ID, user.Username, "")
-			c.JSON(http.StatusOK, gin.H{"mfa_required": true, "mfa_token": mfaToken})
-			return
-		}
+	if !h.issueMFAChallengeOrSkip(c, user) {
+		return
 	}
 
 	tokens, err := h.issueTokens(user)
@@ -491,8 +478,8 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 // MFAVerify handles POST /auth/mfa/verify.
 // Accepts the short-lived mfa_token from the login challenge and a TOTP code,
 // and — if valid — returns a full access+refresh token pair.
-// Optional remember_days (7 or 30) stores a trust token so subsequent logins
-// from this device skip the MFA challenge for that many days.
+// Optional remember_days (7 or 30, subject to the admin mfa_remember_devices policy)
+// stores a trust token so subsequent logins from this device skip the MFA challenge.
 func (h *AuthHandler) MFAVerify(c *gin.Context) {
 	var req struct {
 		MFAToken     string `json:"mfa_token" binding:"required"`
@@ -526,11 +513,11 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 		return
 	}
 
+	req.RememberDays = NormalizeMFARememberDays(req.RememberDays)
+	var trustPlaintext string
 	if req.RememberDays > 0 {
-		if req.RememberDays > 30 {
-			req.RememberDays = 30
-		}
 		plaintext, hash := generateMFATrustToken()
+		trustPlaintext = plaintext
 		expiry := time.Now().Add(time.Duration(req.RememberDays) * 24 * time.Hour)
 		device := models.MFATrustedDevice{
 			UserID:     user.ID,
@@ -551,7 +538,14 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 	}
 	setAuthCookies(c, tokens)
 	authLog(c, "mfa_verify_ok", user.ID, user.Username, "")
-	c.JSON(http.StatusOK, tokens)
+	resp := gin.H{
+		"access_token":  tokens.AccessToken,
+		"refresh_token": tokens.RefreshToken,
+	}
+	if trustPlaintext != "" && isTauriClient(c) {
+		resp["mfa_trust_token"] = trustPlaintext
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // MFASetup handles GET /auth/mfa/setup.
@@ -831,10 +825,16 @@ func (h *AuthHandler) issueTokens(user models.User) (*tokenResponse, error) {
 	return &tokenResponse{AccessToken: access, RefreshToken: refresh}, nil
 }
 
+// cookieSecure is true only on HTTPS connections. Do not force Secure in release
+// mode on plain HTTP — browsers reject Secure cookies without TLS, breaking login.
+func cookieSecure(c *gin.Context) bool {
+	return c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
+}
+
 // setAuthCookies writes access and refresh tokens as httpOnly, SameSite=Strict cookies.
 // Browser clients use these automatically; API/Tauri clients continue to use the JSON body.
 func setAuthCookies(c *gin.Context, tokens *tokenResponse) {
-	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" || gin.Mode() == gin.ReleaseMode
+	secure := cookieSecure(c)
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("access_token", tokens.AccessToken, 15*60, "/", "", secure, true)
 	c.SetCookie("refresh_token", tokens.RefreshToken, 7*24*60*60, "/", "", secure, true)
@@ -842,7 +842,7 @@ func setAuthCookies(c *gin.Context, tokens *tokenResponse) {
 
 // clearAuthCookies expires the auth cookies immediately.
 func clearAuthCookies(c *gin.Context) {
-	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" || gin.Mode() == gin.ReleaseMode
+	secure := cookieSecure(c)
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("access_token", "", -1, "/", "", secure, true)
 	c.SetCookie("refresh_token", "", -1, "/", "", secure, true)
@@ -893,6 +893,42 @@ func (h *AuthHandler) IssueMediaTicket(c *gin.Context) {
 
 // ── MFA trusted-device helpers ────────────────────────────────────────────────
 
+// issueMFAChallengeOrSkip checks whether MFA can be skipped via a trusted device.
+// When MFA is required it writes the challenge response and returns false.
+func (h *AuthHandler) issueMFAChallengeOrSkip(c *gin.Context, user models.User) bool {
+	if !user.TOTPEnabled {
+		return true
+	}
+	if GetMFARememberDevicesPolicy() != "disabled" {
+		if token := getMFATrustToken(c); token != "" && checkAndRenewMFATrust(user.ID, token, c) {
+			authLog(c, "login_mfa_trusted_device", user.ID, user.Username, "")
+			return true
+		}
+	}
+	mfaToken, err := h.authSvc.IssueMFAToken(user.ID, user.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return false
+	}
+	authLog(c, "login_mfa_challenge", user.ID, user.Username, "")
+	c.JSON(http.StatusOK, gin.H{"mfa_required": true, "mfa_token": mfaToken})
+	return false
+}
+
+// getMFATrustToken reads the MFA trust token from the httpOnly cookie (browser)
+// or the X-MFA-Trust header (Tauri desktop).
+func getMFATrustToken(c *gin.Context) string {
+	if token, err := c.Cookie("mfa_trust"); err == nil && token != "" {
+		return token
+	}
+	return c.GetHeader("X-MFA-Trust")
+}
+
+// isTauriClient reports whether the request originates from the desktop app.
+func isTauriClient(c *gin.Context) bool {
+	return strings.HasPrefix(c.GetHeader("X-WarmDesk-Client"), "tauri/")
+}
+
 // generateMFATrustToken creates a cryptographically random 32-byte token and
 // returns the hex-encoded plaintext (for the cookie) and its SHA-256 hash (for the DB).
 func generateMFATrustToken() (plaintext, hash string) {
@@ -928,14 +964,14 @@ func checkAndRenewMFATrust(userID uint, token string, c *gin.Context) bool {
 
 // setMFATrustCookie writes the trust token as an httpOnly, SameSite=Strict cookie.
 func setMFATrustCookie(c *gin.Context, token string, maxAgeSec int) {
-	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" || gin.Mode() == gin.ReleaseMode
+	secure := cookieSecure(c)
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("mfa_trust", token, maxAgeSec, "/", "", secure, true)
 }
 
 // clearMFATrustCookie expires the MFA trust cookie immediately.
 func clearMFATrustCookie(c *gin.Context) {
-	secure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https" || gin.Mode() == gin.ReleaseMode
+	secure := cookieSecure(c)
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("mfa_trust", "", -1, "/", "", secure, true)
 }

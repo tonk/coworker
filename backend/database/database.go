@@ -414,6 +414,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.TimeEntryWeekRowOrder{},
 		&models.NewsItem{},
 		&models.PasskeyCredential{},
+		&models.MFATrustedDevice{},
 		&models.Ticket{},
 		&models.TicketTag{},
 		&models.TicketLink{},

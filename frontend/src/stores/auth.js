@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { authApi } from '@/api/auth'
 import { setLocale } from '@/i18n'
 import client from '@/api/client'
+import { setMfaTrustToken, clearMfaTrustToken } from '@/api/mfaTrust'
 
 // In Tauri (desktop) mode tokens are stored in sessionStorage and sent via the
 // Authorization header. In browser mode the server issues httpOnly cookies and
@@ -93,6 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
     const { data } = await authApi.verifyMFA(pendingMFAToken.value, code, rememberDays)
     pendingMFAToken.value = null
     setTokens(data.access_token, data.refresh_token)
+    if (data.mfa_trust_token) setMfaTrustToken(data.mfa_trust_token)
     await fetchMe()
   }
 
@@ -118,6 +120,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Tell the server to expire the httpOnly cookies. Fire-and-forget so the
     // UI clears immediately even if the network is slow.
     authApi.logout().catch(() => {})
+    clearMfaTrustToken()
     if (isTauri) {
       sessionStorage.removeItem('access_token')
       sessionStorage.removeItem('refresh_token')
@@ -137,7 +140,7 @@ export const useAuthStore = defineStore('auth', () => {
     user, accessToken, isLoggedIn, isAdmin, canViewReports, timeTrackingEnabled,
     boardEnabled, chatEnabled, helpdeskEnabled,
     pendingMFAToken, mfaSetupRequired,
-    login, verifyMFA, register, logout, fetchMe, updateProfile, initSession,
+    login, verifyMFA, register, logout, fetchMe, updateProfile, initSession, setTokens,
     startIdleTimer, resetIdleTimer, stopIdleTimer,
   }
 })

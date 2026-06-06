@@ -81,12 +81,12 @@
                 inputmode="numeric" autocomplete="one-time-code" maxlength="6"
                 required autofocus placeholder="000000" />
             </div>
-            <div class="form-group">
+            <div v-if="showMfaRemember" class="form-group">
               <label class="form-label" for="mfa-remember-branded">{{ $t('mfa.remember_device') }}</label>
               <select id="mfa-remember-branded" class="form-input" v-model.number="mfaRememberDays">
                 <option :value="0">{{ $t('mfa.remember_never') }}</option>
                 <option :value="7">{{ $t('mfa.remember_week') }}</option>
-                <option :value="30">{{ $t('mfa.remember_month') }}</option>
+                <option v-if="mfaRememberAllowsMonth" :value="30">{{ $t('mfa.remember_month') }}</option>
               </select>
             </div>
             <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
@@ -168,12 +168,12 @@
               inputmode="numeric" autocomplete="one-time-code" maxlength="6"
               required autofocus placeholder="000000" />
           </div>
-          <div class="form-group">
+          <div v-if="showMfaRemember" class="form-group">
             <label class="form-label" for="mfa-remember-plain">{{ $t('mfa.remember_device') }}</label>
             <select id="mfa-remember-plain" class="form-input" v-model.number="mfaRememberDays">
               <option :value="0">{{ $t('mfa.remember_never') }}</option>
               <option :value="7">{{ $t('mfa.remember_week') }}</option>
-              <option :value="30">{{ $t('mfa.remember_month') }}</option>
+              <option v-if="mfaRememberAllowsMonth" :value="30">{{ $t('mfa.remember_month') }}</option>
             </select>
           </div>
           <p v-if="error" class="auth-error" role="alert">{{ error }}</p>
@@ -241,6 +241,9 @@ const passkeyLoading = ref(false)
 const mfaStep = ref(false)
 const mfaCode = ref('')
 const mfaRememberDays = ref(0)
+const mfaRememberPolicy = ref('week_month')
+const showMfaRemember = computed(() => mfaRememberPolicy.value !== 'disabled')
+const mfaRememberAllowsMonth = computed(() => mfaRememberPolicy.value === 'week_month')
 const error = ref('')
 const loading = ref(false)
 const registrationEnabled = ref(true)
@@ -317,6 +320,7 @@ onMounted(async () => {
   try {
     const { data } = await systemApi.getSettings()
     registrationEnabled.value = data.registration_enabled
+    mfaRememberPolicy.value = data.mfa_remember_devices || 'week_month'
     setExternalImageProxyEnabled(data.external_image_proxy_enabled !== false)
     const logo = resolveAssetUrl(data.company_logo || '')
     const logoDark = resolveAssetUrl(data.company_logo_dark || '')
@@ -346,6 +350,13 @@ async function handlePasskeyLogin() {
       challenge_token: beginData.challenge_token,
       credential: serializeAuthenticationCredential(credential),
     })
+    if (data.mfa_required) {
+      auth.pendingMFAToken = data.mfa_token
+      mfaStep.value = true
+      mfaCode.value = ''
+      mfaRememberDays.value = 0
+      return
+    }
     auth.setTokens(data.access_token, data.refresh_token)
     await auth.fetchMe()
     router.push('/')
@@ -404,7 +415,10 @@ async function handleMFASubmit() {
   error.value = ''
   loading.value = true
   try {
-    await auth.verifyMFA(mfaCode.value, mfaRememberDays.value)
+    const rememberDays = showMfaRemember.value
+      ? (mfaRememberAllowsMonth.value ? mfaRememberDays.value : (mfaRememberDays.value === 7 ? 7 : 0))
+      : 0
+    await auth.verifyMFA(mfaCode.value, rememberDays)
     router.push('/')
   } catch (e) {
     const serverError = e.response?.data?.error

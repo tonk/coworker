@@ -102,7 +102,8 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 - **JWT refresh token**: 7 day expiry. Auto-refreshes silently on 401.
 - **Browser transport**: tokens are issued as **httpOnly + SameSite=Strict cookies** (`access_token`, `refresh_token`) by `setAuthCookies` in `handlers/auth.go`. JavaScript never sees the token; the browser attaches it to every request automatically. On startup the SPA calls `authStore.initSession()` → `GET /me` to hydrate user state from the cookie.
 - **Tauri transport**: there is no httpOnly cookie jar in the WebView, so tokens are kept in `sessionStorage` and attached as an `Authorization: Bearer …` header by `api/client.js`. This is the security limitation described later in this document.
-- **MFA / TOTP**: optional per-user. When enabled, login returns `{mfa_required: true, mfa_token}` (a 5-minute purpose-restricted JWT from `IssueMFAToken`) and the frontend posts the 6-digit code back to complete login. TOTP secret generation/verification lives in `services/auth_service.go` (`GenerateTOTPSecret`, `VerifyTOTP`).
+- **MFA / TOTP**: optional per-user. When enabled, password and passkey login return `{mfa_required: true, mfa_token}` (a 5-minute purpose-restricted JWT from `IssueMFAToken`) and the frontend posts the 6-digit code back to complete login. TOTP secret generation/verification lives in `services/auth_service.go` (`GenerateTOTPSecret`, `VerifyTOTP`).
+- **MFA trusted devices**: after a successful MFA challenge users may elect to skip MFA for 7 or 30 days (subject to the admin `mfa_remember_devices` policy: `disabled`, `week`, `week_month`). Browser clients store the trust token in an httpOnly `mfa_trust` cookie; Tauri clients receive `mfa_trust_token` in the MFA verify response and persist it in `localStorage`, sending it back via the `X-MFA-Trust` header on login. Tightening the admin policy revokes incompatible trust records in `mfa_trusted_devices`.
 - **WebSocket tickets**: 30-second purpose-`"ws"` JWTs from `IssueWSTicket`, used by Tauri so the long-lived access token never appears in the WebSocket URL. Browser clients rely on the cookie and don't need a ticket.
 - **Media tickets**: 5-minute purpose-`"media"` JWTs from `IssueMediaTicket`, used to grant attachment downloads to `<img>`/`<video>` elements that can't send the `Authorization` header.
 - **API keys**: SHA-256 hash stored in DB. Auth via `X-API-Key` header or `?api_key=` query param. Used for the Ticket API (CI/CD automation).
@@ -431,7 +432,7 @@ Config lives in `frontend/vitest.config.ts`. Component tests use `@vue/test-util
 
 ### E2E screenshots (Playwright)
 
-Playwright-driven screenshot specs live in `frontend/e2e/`. They produce the 20 reference PNGs under `screenshots/` used for documentation/README.
+Playwright-driven screenshot specs live in `frontend/e2e/`. They produce the 24 reference PNGs under `screenshots/` used for documentation/README.
 
 ```bash
 # Full run — seed DB, start servers, capture screenshots, clean up
@@ -444,7 +445,9 @@ cd frontend && npm run screenshots:dev
 
 **Prerequisites:** Go, Node.js, Chrome/Chromium (installed automatically by Playwright). The first full run will install the Playwright browser binary via `npx playwright install chromium`.
 
-The spec (`frontend/e2e/screenshots.spec.js`) logs in as `demo.admin` / `demo1234` and captures each view. Auth state is saved/reused via Playwright `storageState`.
+The spec (`frontend/e2e/screenshots.spec.js`) logs in via the API (cookie session) as `demo.admin` / `demo1234` and captures each view. Auth state is saved/reused via Playwright `storageState`. Screenshot 24 logs in as `tonk` and captures the undeclarable-time grid alignment.
+
+`screenshots.sh` runs `go run ./cmd/seed --reset` so time-entry dates stay relative to the current week.
 
 **Screenshots 11–12 (chat reactions)** require interaction in the embedded chat panel and are not yet automated — capture manually or run with `DEBUG=pw:api` to verify selectors.
 

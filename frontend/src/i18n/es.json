@@ -544,6 +544,15 @@
     "disable_success": "MFA ha sido deshabilitado.",
     "enforce_label": "Requerir MFA para todos los usuarios",
     "enforce_hint": "Cuando está habilitado, los usuarios deberán configurar MFA en su próximo inicio de sesión.",
+    "remember_devices_label": "Recordar MFA en dispositivos de confianza",
+    "remember_devices_hint": "Controla si los usuarios pueden omitir MFA en un dispositivo ya verificado. Deshabilitado elimina la opción en el inicio de sesión e ignora los dispositivos de confianza existentes.",
+    "remember_devices_disabled": "Deshabilitado",
+    "remember_devices_week": "Permitir solo 1 semana",
+    "remember_devices_week_month": "Permitir 1 semana o 1 mes",
+    "remember_devices_disable_confirm": "¿Deshabilitar dispositivos de confianza? Se revocará toda la confianza guardada y cada usuario deberá completar MFA en cada inicio de sesión.",
+    "admin_group_title": "Autenticación multifactor",
+    "admin_group_hint": "Controle la aplicación de MFA y si los usuarios pueden omitir MFA en dispositivos ya verificados.",
+    "trusted_devices_admin_disabled": "Su administrador ha deshabilitado recordar MFA en dispositivos de confianza.",
     "remember_device": "Recordar este dispositivo",
     "remember_never": "No recordar",
     "remember_week": "Durante 1 semana",
@@ -1389,7 +1398,8 @@
           "Escribe horas en una celda — usa el formato decimal o hh:mm de tus ajustes.",
           "Haz clic en el icono del reloj para establecer horas de inicio y fin en una entrada.",
           "Copia la semana anterior o usa turno de guardia para tarifas nocturnas contractuales.",
-          "Arrastra los controles de fila para reordenar líneas."
+          "Arrastra los controles de fila para reordenar líneas.",
+          "El - rojo debajo de una celda o total indica tiempo no declarable — tiempo que no se puede facturar al cliente, por ejemplo descansos para comer, formaciones internas o desplazamientos. Las celdas diarias muestran el tiempo introducido; los totales de fila y pie muestran tiempo declarable (introducido menos no declarable). El importe no declarable se establece por proyecto, no por entrada."
         ],
         "shortcuts": [
           "Teclas de flecha — moverse entre celdas",

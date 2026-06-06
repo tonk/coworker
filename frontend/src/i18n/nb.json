@@ -579,6 +579,15 @@
     "disable_success": "MFA er deaktivert.",
     "enforce_label": "Krev MFA for alle brukere",
     "enforce_hint": "Når aktivert, vil brukere bli bedt om å konfigurere MFA etter neste innlogging.",
+    "remember_devices_label": "Husk MFA på klarerte enheter",
+    "remember_devices_hint": "Styrer om brukere kan hoppe over MFA på en enhet som allerede er verifisert. Deaktivert fjerner valget ved innlogging og ignorerer eksisterende klarerte enheter.",
+    "remember_devices_disabled": "Deaktivert",
+    "remember_devices_week": "Tillat kun 1 uke",
+    "remember_devices_week_month": "Tillat 1 uke eller 1 måned",
+    "remember_devices_disable_confirm": "Deaktiver klarerte enheter? Alle lagrede enhetstillatelser tilbakekalles, og alle brukere må fullføre MFA ved hver innlogging.",
+    "admin_group_title": "Multifaktorautentisering",
+    "admin_group_hint": "Styr MFA-krav og om brukere kan hoppe over MFA på enheter som allerede er verifisert.",
+    "trusted_devices_admin_disabled": "Administratoren din har deaktivert å huske MFA på klarerte enheter.",
     "remember_device": "Husk denne enheten",
     "remember_never": "Ikke husk",
     "remember_week": "I 1 uke",
@@ -1389,7 +1398,8 @@
           "Skriv inn timer i en celle — bruk ditt foretrukne desimal- eller tt:mm-format fra innstillinger.",
           "Klikk på klokkeikonet for å angi start/slut-tider på en post.",
           "Kopier forrige uke, eller bruk beredskapsskift for kontraktsmessige nattpriser.",
-          "Dra radhåndtak for å endre rekkefølge på linjer."
+          "Dra radhåndtak for å endre rekkefølge på linjer.",
+          "Det røde - under en celle eller total er ikke-fakturerbar tid — tid som ikke kan faktureres kunden, for eksempel lunsjpauser, intern opplæring eller reisetid. Dagceller viser registrert tid; rad- og bunntotaler viser fakturerbar tid (registrert minus ikke-fakturerbar). Det ikke-fakturerbare beløpet angis per prosjekt, ikke per post."
         ],
         "shortcuts": [
           "Piltaster — flytt mellom celler",

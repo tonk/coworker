@@ -351,6 +351,10 @@ func (h *PasskeyHandler) PasskeyLoginFinish(c *gin.Context) {
 	database.DB.Model(&authenticatedUser).Update("last_login_at", now)
 
 	ah := &AuthHandler{authSvc: h.authSvc}
+	if !ah.issueMFAChallengeOrSkip(c, authenticatedUser) {
+		return
+	}
+
 	tokens, err := ah.issueTokens(authenticatedUser)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -358,10 +362,14 @@ func (h *PasskeyHandler) PasskeyLoginFinish(c *gin.Context) {
 	}
 	setAuthCookies(c, tokens)
 	authLog(c, "passkey_login_ok", authenticatedUser.ID, authenticatedUser.Username, "")
-	c.JSON(http.StatusOK, gin.H{
+	resp := gin.H{
 		"access_token":  tokens.AccessToken,
 		"refresh_token": tokens.RefreshToken,
-	})
+	}
+	if IsMFARequired() {
+		resp["mfa_setup_required"] = true
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 // PasskeyList handles GET /auth/passkeys (authenticated).

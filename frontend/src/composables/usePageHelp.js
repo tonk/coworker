@@ -72,10 +72,10 @@ const CONTEXT_HELP = {
   'timeTracking.board-report': 'timeTrackingBoardReport',
 }
 
-function messageList(tm, te, key) {
-  if (!te(key)) return []
+function messageList(tm, key) {
   const msgs = tm(key)
-  return Array.isArray(msgs) ? msgs : []
+  // vue-i18n te() returns false for array-valued keys; tm() still resolves them.
+  return Array.isArray(msgs) && msgs.length > 0 ? msgs : []
 }
 
 /**
@@ -106,11 +106,11 @@ export function usePageHelp() {
 
   const title = computed(() => t(`${resolvedBase.value}.title`))
   const intro = computed(() => (te(`${resolvedBase.value}.intro`) ? t(`${resolvedBase.value}.intro`) : ''))
-  const tasks = computed(() => messageList(tm, te, `${resolvedBase.value}.tasks`))
-  const shortcuts = computed(() => messageList(tm, te, `${resolvedBase.value}.shortcuts`))
+  const tasks = computed(() => messageList(tm, `${resolvedBase.value}.tasks`))
+  const shortcuts = computed(() => messageList(tm, `${resolvedBase.value}.shortcuts`))
 
   return { helpKey, title, intro, tasks, shortcuts }
 }
 
 /** Exported for unit tests. */
-export { ROUTE_HELP, CONTEXT_HELP }
+export { ROUTE_HELP, CONTEXT_HELP, messageList }

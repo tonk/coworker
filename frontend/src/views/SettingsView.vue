@@ -309,8 +309,8 @@
           </div>
         </div>
 
-        <!-- Trusted devices card (only relevant when MFA is enabled) -->
-        <div v-if="auth.user?.totp_enabled" class="settings-card" data-help-context="settings.trusted_devices">
+        <!-- Trusted devices card (only when MFA is enabled and admin allows device trust) -->
+        <div v-if="auth.user?.totp_enabled && mfaRememberPolicy !== 'disabled'" class="settings-card" data-help-context="settings.trusted_devices">
           <h2>{{ $t('mfa.trusted_devices_title') }}</h2>
           <p class="form-hint" style="margin-bottom:16px">{{ $t('mfa.trusted_devices_hint') }}</p>
 
@@ -334,6 +334,10 @@
             :disabled="trustedDevicesLoading" @click="revokeAllTrustedDevices">
             {{ $t('mfa.revoke_all_devices') }}
           </button>
+        </div>
+        <div v-else-if="auth.user?.totp_enabled && mfaRememberPolicy === 'disabled'" class="settings-card" data-help-context="settings.trusted_devices">
+          <h2>{{ $t('mfa.trusted_devices_title') }}</h2>
+          <p class="form-hint">{{ $t('mfa.trusted_devices_admin_disabled') }}</p>
         </div>
 
         <!-- Passkeys card -->
@@ -445,6 +449,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useHelpSectionObserver } from '@/composables/useHelpSectionObserver'
 import { authApi } from '@/api/auth'
 import { systemApi } from '@/api/system'
+import { clearMfaTrustToken } from '@/api/mfaTrust'
 import {
   passkeysApi,
   decodeCreationOptions,
@@ -599,6 +604,7 @@ onMounted(async () => {
   try {
     const { data } = await systemApi.getSettings()
     if (data.password_policy) passwordPolicy.value = data.password_policy
+    mfaRememberPolicy.value = data.mfa_remember_devices || 'week_month'
   } catch {}
   if (route.query.expired === '1') {
     passwordExpired.value = true
@@ -827,6 +833,7 @@ async function disableMFA() {
 }
 
 // Trusted devices
+const mfaRememberPolicy = ref('week_month')
 const trustedDevices = ref([])
 const trustedDevicesLoading = ref(false)
 
@@ -842,6 +849,7 @@ async function revokeTrustedDevice(device) {
   try {
     await authApi.revokeTrustedDevice(device.id)
     trustedDevices.value = trustedDevices.value.filter(d => d.id !== device.id)
+    clearMfaTrustToken()
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to revoke device')
   } finally {
@@ -855,6 +863,7 @@ async function revokeAllTrustedDevices() {
   try {
     await authApi.revokeAllTrustedDevices()
     trustedDevices.value = []
+    clearMfaTrustToken()
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to revoke all devices')
   } finally {

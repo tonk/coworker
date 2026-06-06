@@ -20,6 +20,7 @@
         v-if="open"
         :id="popoverId"
         class="help-icon-popover"
+        :class="{ 'help-icon-popover--above': !placementBelow }"
         :style="popoverStyle"
         role="dialog"
         :aria-label="buttonLabel"
@@ -53,19 +54,31 @@ const btnRef = ref(null)
 const popoverId = `help-icon-${Math.random().toString(36).slice(2, 9)}`
 const popoverStyle = ref({})
 const arrowStyle = ref({})
+const placementBelow = ref(true)
 
 const buttonLabel = computed(() => props.label || t('help.field_button'))
 
 const POPOVER_WIDTH = 320
+const GAP = 4
 const MARGIN = 8
 
+function getPageZoom() {
+  const inline = parseFloat(document.documentElement.style.zoom)
+  if (Number.isFinite(inline) && inline > 0) return inline
+  const computedZoom = parseFloat(getComputedStyle(document.documentElement).zoom)
+  if (Number.isFinite(computedZoom) && computedZoom > 0) return computedZoom
+  return 1
+}
+
 function computePosition() {
-  if (!btnRef.value) return
+  if (!btnRef.value || !open.value) return
+
   const rect = btnRef.value.getBoundingClientRect()
+  const zoom = getPageZoom()
   const vw = window.innerWidth
+  const vh = window.innerHeight
   const maxW = Math.min(POPOVER_WIDTH, vw * 0.7)
 
-  // Ideal left position based on align prop
   let idealLeft
   if (props.align === 'end') {
     idealLeft = rect.right - maxW
@@ -75,21 +88,41 @@ function computePosition() {
     idealLeft = rect.left + rect.width / 2 - maxW / 2
   }
 
-  // Clamp so the popover stays within the viewport
   const clampedLeft = Math.max(MARGIN, Math.min(idealLeft, vw - maxW - MARGIN))
 
-  // Arrow points at the center of the button
+  const popEl = document.getElementById(popoverId)
+  const popHeight = popEl?.offsetHeight || 72
+
+  const spaceBelow = vh - rect.bottom - GAP
+  const spaceAbove = rect.top - GAP
+  const showBelow = spaceBelow >= popHeight || spaceBelow >= spaceAbove
+  placementBelow.value = showBelow
+
+  let topViewport = showBelow
+    ? rect.bottom + GAP
+    : rect.top - GAP - popHeight
+  topViewport = Math.max(MARGIN, Math.min(topViewport, vh - popHeight - MARGIN))
+
   const btnCenterX = rect.left + rect.width / 2
   const arrowLeft = Math.max(8, Math.min(btnCenterX - clampedLeft - 4, maxW - 16))
 
   popoverStyle.value = {
     position: 'fixed',
-    top: `${rect.bottom + 6}px`,
-    left: `${clampedLeft}px`,
-    width: `${maxW}px`,
+    top: `${topViewport / zoom}px`,
+    left: `${clampedLeft / zoom}px`,
+    width: `${maxW / zoom}px`,
     zIndex: 9999,
   }
-  arrowStyle.value = { left: `${arrowLeft}px` }
+  arrowStyle.value = { left: `${arrowLeft / zoom}px` }
+}
+
+function schedulePosition() {
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      computePosition()
+      requestAnimationFrame(computePosition)
+    })
+  })
 }
 
 function toggle() {
@@ -102,16 +135,31 @@ function close() {
 
 function onDocClick(e) {
   if (open.value && wrapRef.value && !wrapRef.value.contains(e.target)) {
+    const popEl = document.getElementById(popoverId)
+    if (popEl && popEl.contains(e.target)) return
     close()
   }
 }
 
+function onReposition() {
+  if (open.value) computePosition()
+}
+
 watch(open, (val) => {
-  if (val) nextTick(computePosition)
+  if (val) schedulePosition()
 })
 
-onMounted(() => document.addEventListener('click', onDocClick))
-onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
+onMounted(() => {
+  document.addEventListener('click', onDocClick)
+  window.addEventListener('resize', onReposition)
+  window.addEventListener('scroll', onReposition, true)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocClick)
+  window.removeEventListener('resize', onReposition)
+  window.removeEventListener('scroll', onReposition, true)
+})
 </script>
 
 <style scoped>
@@ -165,5 +213,11 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
   border-left: 1px solid var(--color-border);
   border-top: 1px solid var(--color-border);
   transform: rotate(45deg);
+}
+
+.help-icon-popover--above .help-icon-popover-arrow {
+  top: auto;
+  bottom: -5px;
+  transform: rotate(225deg);
 }
 </style>

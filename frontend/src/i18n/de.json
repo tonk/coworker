@@ -544,6 +544,15 @@
     "disable_success": "MFA wurde deaktiviert.",
     "enforce_label": "MFA für alle Benutzer vorschreiben",
     "enforce_hint": "Wenn aktiviert, werden Benutzer aufgefordert, MFA bei ihrer nächsten Anmeldung einzurichten.",
+    "remember_devices_label": "MFA auf vertrauenswürdigen Geräten merken",
+    "remember_devices_hint": "Legt fest, ob Benutzer MFA auf einem bereits verifizierten Gerät überspringen können. Deaktiviert entfernt die Option bei der Anmeldung und ignoriert bestehende vertrauenswürdige Geräte.",
+    "remember_devices_disabled": "Deaktiviert",
+    "remember_devices_week": "Nur 1 Woche erlauben",
+    "remember_devices_week_month": "1 Woche oder 1 Monat erlauben",
+    "remember_devices_disable_confirm": "Vertrauenswürdige Geräte deaktivieren? Alle gespeicherten Gerätevertrauensstellungen werden widerrufen und jeder Benutzer muss bei jeder Anmeldung MFA abschließen.",
+    "admin_group_title": "Multi-Faktor-Authentifizierung",
+    "admin_group_hint": "Steuern Sie die MFA-Pflicht und ob Benutzer MFA auf bereits verifizierten Geräten überspringen dürfen.",
+    "trusted_devices_admin_disabled": "Ihr Administrator hat das Merken von MFA auf vertrauenswürdigen Geräten deaktiviert.",
     "remember_device": "Dieses Gerät merken",
     "remember_never": "Nicht merken",
     "remember_week": "Für 1 Woche",
@@ -1389,7 +1398,8 @@
           "Geben Sie Stunden in eine Zelle ein — verwenden Sie Ihr bevorzugtes Dezimal- oder hh:mm-Format aus den Einstellungen.",
           "Klicken Sie auf das Uhrsymbol, um Start-/Endzeiten für einen Eintrag festzulegen.",
           "Kopieren Sie die vorherige Woche oder nutzen Sie Bereitschaftsdienst für vertragliche Nachttarife.",
-          "Ziehen Sie Zeilengriffe, um Zeilen neu anzuordnen."
+          "Ziehen Sie Zeilengriffe, um Zeilen neu anzuordnen.",
+          "Das rote - unter einer Zelle oder Summe ist nicht abrechenbare Zeit — Zeit, die dem Kunden nicht in Rechnung gestellt werden kann, z. B. Mittagspausen, interne Schulungen oder Reisezeit. Tageszellen zeigen die eingegebene Zeit; Zeilen- und Fußsummen zeigen abrechenbare Zeit (eingegeben minus nicht abrechenbar). Der nicht abrechenbare Betrag wird pro Projekt festgelegt, nicht pro Eintrag."
         ],
         "shortcuts": [
           "Pfeiltasten — zwischen Zellen wechseln",

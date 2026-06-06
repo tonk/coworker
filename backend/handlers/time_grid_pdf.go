@@ -768,7 +768,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 				if c.undeclMins > 0 {
 					cellX := weekCellLeft(ci, wLabel, wDay)
 					pdf.SetXY(cellX, undeclY)
-					pdf.CellFormat(wDay, undeclH, "−"+gridFmt(c.undeclMins), "", 0, "C", false, 0, "")
+					pdf.CellFormat(wDay, undeclH, "-"+gridFmt(c.undeclMins), "", 0, "C", false, 0, "")
 				}
 			}
 		}
@@ -794,7 +794,7 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 				setTxt(pdf, gClrDanger)
 				pdf.SetFont(ff, "", 5.5)
 				pdf.SetXY(gMargin+wLabel+7*wDay, undeclY)
-				pdf.CellFormat(wTotal, undeclH, "−"+gridFmt(rowUndecl), "", 0, "C", false, 0, "")
+				pdf.CellFormat(wTotal, undeclH, "-"+gridFmt(rowUndecl), "", 0, "C", false, 0, "")
 			}
 			// Restore Y so the next row starts at the right position.
 			pdf.SetY(rowY + rowH)
@@ -831,13 +831,13 @@ func buildWeekGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 		for _, u := range colUndecl {
 			txt := ""
 			if u > 0 {
-				txt = "−" + gridFmt(u)
+				txt = "-" + gridFmt(u)
 			}
 			pdf.CellFormat(wDay, baseRowH*0.8, txt, "LRB", 0, "C", true, 0, "")
 		}
 		setFill(pdf, gClrPrimary)
 		setTxt(pdf, gClrDangerBright)
-		pdf.CellFormat(wTotal, baseRowH*0.8, "−"+gridFmt(grandUndecl), "LRB", 1, "C", true, 0, "")
+		pdf.CellFormat(wTotal, baseRowH*0.8, "-"+gridFmt(grandUndecl), "LRB", 1, "C", true, 0, "")
 		setTxt(pdf, gClrText)
 	}
 
@@ -1053,7 +1053,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 			u := colUndecl[d]
 			txt := ""
 			if u > 0 {
-				txt = "−" + gridFmt(u)
+				txt = "-" + gridFmt(u)
 			}
 			if isWeekendDay(year, month, d+1) {
 				setFill(pdf, gClrWeekend)
@@ -1064,7 +1064,7 @@ func buildMonthGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employee
 		}
 		setFill(pdf, gClrPrimary)
 		setTxt(pdf, gClrDangerBright)
-		pdf.CellFormat(wTotal, undeclRowH, "−"+gridFmt(grandUndecl), "LRB", 1, "C", true, 0, "")
+		pdf.CellFormat(wTotal, undeclRowH, "-"+gridFmt(grandUndecl), "LRB", 1, "C", true, 0, "")
 		setTxt(pdf, gClrText)
 	}
 
@@ -1373,7 +1373,7 @@ func buildYearGridPDF(ff string, tr pdfI18n, companyName, companyLogo, employeeN
 			u := colUndecl[ci]
 			txt := ""
 			if u > 0 {
-				txt = "−" + gridFmt(u)
+				txt = "-" + gridFmt(u)
 			}
 			if c.isQtr {
 				setFill(pdf, gClrQtrFill)

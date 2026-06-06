@@ -579,6 +579,15 @@
     "disable_success": "MFA er deaktiveret.",
     "enforce_label": "Kræv MFA for alle brugere",
     "enforce_hint": "Når aktiveret, bliver brugere bedt om at konfigurere MFA efter næste login.",
+    "remember_devices_label": "Husk MFA på betroede enheder",
+    "remember_devices_hint": "Styrer om brugere kan springe MFA over på en enhed, der allerede er bekræftet. Deaktiveret fjerner valget ved login og ignorerer eksisterende betroede enheder.",
+    "remember_devices_disabled": "Deaktiveret",
+    "remember_devices_week": "Tillad kun 1 uge",
+    "remember_devices_week_month": "Tillad 1 uge eller 1 måned",
+    "remember_devices_disable_confirm": "Deaktiver betroede enheder? Alle gemte enhedstillidelser tilbagekaldes, og alle brugere skal gennemføre MFA ved hvert login.",
+    "admin_group_title": "Multifaktorgodkendelse",
+    "admin_group_hint": "Styr MFA-krav og om brugere må springe MFA over på enheder, de allerede har bekræftet.",
+    "trusted_devices_admin_disabled": "Din administrator har deaktiveret at huske MFA på betroede enheder.",
     "remember_device": "Husk denne enhed",
     "remember_never": "Husk ikke",
     "remember_week": "I 1 uge",
@@ -1389,7 +1398,8 @@
           "Indtast timer i en celle — brug dit foretrukne decimal- eller tt:mm-format fra indstillinger.",
           "Klik på urikonet for at angive start/slut-tider på en post.",
           "Kopiér forrige uge, eller brug beredskabsskift til kontraktlige natpriser.",
-          "Træk rækkehåndtag for at omarrangere linjer."
+          "Træk rækkehåndtag for at omarrangere linjer.",
+          "Det røde - under en celle eller total er ikke-fakturerbar tid — tid, der ikke kan faktureres kunden, f.eks. frokostpauser, intern uddannelse eller rejsetid. Dagsceller viser den indtastede tid; række- og bundtotaler viser fakturerbar tid (indtastet minus ikke-fakturerbar). Det ikke-fakturerbare beløb angives pr. projekt, ikke pr. post."
         ],
         "shortcuts": [
           "Piltaster — flyt mellem celler",

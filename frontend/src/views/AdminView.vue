@@ -355,11 +355,28 @@
               </label>
             </div>
 
-            <div class="form-group" style="max-width:400px">
-              <label class="toggle-row">
-                <span>{{ $t('mfa.enforce_label') }}<HelpIcon i18n-key="mfa.enforce_hint" :label="$t('mfa.enforce_label')" /></span>
-                <input type="checkbox" v-model="systemSettings.mfa_required" @change="saveMFASettings" />
-              </label>
+            <div class="mfa-settings-group">
+              <h3 class="mfa-settings-heading">{{ $t('mfa.admin_group_title') }}</h3>
+              <p class="form-hint mfa-settings-hint">{{ $t('mfa.admin_group_hint') }}</p>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="toggle-row">
+                  <span>{{ $t('mfa.enforce_label') }}<HelpIcon i18n-key="mfa.enforce_hint" :label="$t('mfa.enforce_label')" /></span>
+                  <input type="checkbox" v-model="systemSettings.mfa_required" @change="saveMFASettings" />
+                </label>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-mfa-remember-devices">
+                  {{ $t('mfa.remember_devices_label') }}
+                  <HelpIcon i18n-key="mfa.remember_devices_hint" :label="$t('mfa.remember_devices_label')" />
+                </label>
+                <select id="sys-mfa-remember-devices" class="form-input" v-model="systemSettings.mfa_remember_devices" @change="onMfaRememberDevicesChange">
+                  <option value="disabled">{{ $t('mfa.remember_devices_disabled') }}</option>
+                  <option value="week">{{ $t('mfa.remember_devices_week') }}</option>
+                  <option value="week_month">{{ $t('mfa.remember_devices_week_month') }}</option>
+                </select>
+              </div>
             </div>
 
             <div class="form-group" style="max-width:400px">
@@ -848,7 +865,7 @@
                       <span v-if="isGlobalTTEntity(p)" class="ttp-badge">{{ $t('timeTracking.tt_project_global') }}</span>
                     </td>
                     <td><small>{{ p.created_by?.display_name || p.created_by?.username }}</small></td>
-                    <td><span v-if="p.undeclarable_minutes > 0" class="tt-admin-undecl-badge">↓{{ fmtTTTime(p.undeclarable_minutes) }}</span></td>
+                    <td><span v-if="p.undeclarable_minutes > 0" class="tt-admin-undecl-badge">-{{ fmtTTTime(p.undeclarable_minutes) }}</span></td>
                     <td>
                       <div class="actions-cell">
                         <button class="btn btn-ghost btn-sm" @click="startEditTTProject(p)">{{ $t('common.edit') }}</button>
@@ -2140,6 +2157,7 @@ function toggleCustomerAdmin(id, event) {
 const systemSettings = ref({
   registration_enabled: true,
   mfa_required: false,
+  mfa_remember_devices: 'week_month',
   scrum_storypoints_enabled: false,
   gravatar_enabled: true,
   external_image_proxy_enabled: true,
@@ -2184,6 +2202,7 @@ const systemSettings = ref({
   metrics_last_access: '',
   metrics_last_access_success: '',
 })
+const mfaRememberDevicesPrevious = ref('week_month')
 // True when the server has a password saved (so we show a placeholder instead of the value)
 const smtpPasswordSet = ref(false)
 const smtpPasswordPlaceholder = computed(() => smtpPasswordSet.value ? '••••••••' : '')
@@ -2266,6 +2285,8 @@ async function loadSettings() {
     const { data } = await adminApi.getSystemSettings()
     systemSettings.value.registration_enabled        = data.registration_enabled !== 'false'
     systemSettings.value.mfa_required                = data.mfa_required === 'true' || data.mfa_required === true
+    systemSettings.value.mfa_remember_devices        = data.mfa_remember_devices || 'week_month'
+    mfaRememberDevicesPrevious.value                 = systemSettings.value.mfa_remember_devices
     systemSettings.value.scrum_storypoints_enabled   = data.scrum_storypoints_enabled === 'true' || data.scrum_storypoints_enabled === true
     systemSettings.value.gravatar_enabled             = data.gravatar_enabled !== 'false' && data.gravatar_enabled !== false
     systemSettings.value.external_image_proxy_enabled = data.external_image_proxy_enabled !== 'false' && data.external_image_proxy_enabled !== false
@@ -2574,9 +2595,22 @@ async function saveGeneralSettings() {
   }
 }
 
+async function onMfaRememberDevicesChange() {
+  const newVal = systemSettings.value.mfa_remember_devices
+  if (newVal === 'disabled' && !confirm($t('mfa.remember_devices_disable_confirm'))) {
+    systemSettings.value.mfa_remember_devices = mfaRememberDevicesPrevious.value
+    return
+  }
+  await saveMFASettings()
+  mfaRememberDevicesPrevious.value = systemSettings.value.mfa_remember_devices
+}
+
 async function saveMFASettings() {
   try {
-    await adminApi.updateSystemSettings({ mfa_required: systemSettings.value.mfa_required })
+    await adminApi.updateSystemSettings({
+      mfa_required: systemSettings.value.mfa_required,
+      mfa_remember_devices: systemSettings.value.mfa_remember_devices,
+    })
     ui.success('Settings saved')
   } catch {
     ui.error('Failed to save settings')
@@ -3329,6 +3363,17 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .settings-section { max-width: 560px; }
 .settings-section h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
 .settings-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.mfa-settings-group {
+  max-width: 400px;
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-primary) 8%);
+}
+.mfa-settings-heading { font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+.mfa-settings-hint { margin: 0 0 14px; }
+.mfa-settings-group .form-group:last-child { margin-bottom: 0; }
 .settings-subsection { font-size: 14px; font-weight: 600; margin-top: 28px; margin-bottom: 4px; color: var(--color-text); }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 500; cursor: pointer; }
 .toggle-row input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; }

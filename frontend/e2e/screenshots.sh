@@ -8,7 +8,7 @@
 # Usage:
 #   ./e2e/screenshots.sh                  # full run
 #   JWT_SECRET=xxx ./e2e/screenshots.sh   # with custom secret
-#   SKIP_SEED=1   ./e2e/screenshots.sh    # skip re-seeding (faster)
+#   SKIP_SEED=1   ./e2e/screenshots.sh    # skip re-seeding (faster; dates may drift)
 #   SKIP_SERVERS=1 ./e2e/screenshots.sh   # servers already running
 # ──────────────────────────────────────────────────────────────────────
 set -euo pipefail
@@ -35,7 +35,7 @@ trap cleanup EXIT
 # ── 1. Seed ──────────────────────────────────────────────────────────
 if [ -z "${SKIP_SEED:-}" ]; then
   echo "=== Seeding database ==="
-  (cd "$BACKEND_DIR" && go run ./cmd/seed)
+  (cd "$BACKEND_DIR" && go run ./cmd/seed --reset)
 fi
 
 # ── 2. Start backend ────────────────────────────────────────────────
@@ -54,7 +54,7 @@ else
     echo "=== Backend already running → http://localhost:8080 ==="
   else
     echo "=== Starting backend  → http://localhost:8080 ==="
-    (cd "$BACKEND_DIR" && exec go run .) &
+    (cd "$BACKEND_DIR" && GIN_MODE=debug exec go run .) &
     BACKEND_PID=$!
     echo "Waiting for backend…"
     while ! curl -s http://localhost:8080/api/v1/version > /dev/null 2>&1; do sleep 1; done

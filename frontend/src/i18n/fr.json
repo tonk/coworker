@@ -544,6 +544,15 @@
     "disable_success": "Le MFA a été désactivé.",
     "enforce_label": "Exiger le MFA pour tous les utilisateurs",
     "enforce_hint": "Lorsqu'il est activé, les utilisateurs sont invités à configurer le MFA lors de leur prochaine connexion.",
+    "remember_devices_label": "Mémoriser le MFA sur les appareils de confiance",
+    "remember_devices_hint": "Détermine si les utilisateurs peuvent ignorer le MFA sur un appareil déjà vérifié. Désactivé supprime l'option à la connexion et ignore les appareils de confiance existants.",
+    "remember_devices_disabled": "Désactivé",
+    "remember_devices_week": "Autoriser 1 semaine seulement",
+    "remember_devices_week_month": "Autoriser 1 semaine ou 1 mois",
+    "remember_devices_disable_confirm": "Désactiver les appareils de confiance ? Toutes les confiances enregistrées seront révoquées et chaque utilisateur devra compléter le MFA à chaque connexion.",
+    "admin_group_title": "Authentification multifacteur",
+    "admin_group_hint": "Contrôlez l'application du MFA et si les utilisateurs peuvent ignorer le MFA sur les appareils déjà vérifiés.",
+    "trusted_devices_admin_disabled": "Votre administrateur a désactivé la mémorisation du MFA sur les appareils de confiance.",
     "remember_device": "Se souvenir de cet appareil",
     "remember_never": "Ne pas mémoriser",
     "remember_week": "Pendant 1 semaine",
@@ -1389,7 +1398,8 @@
           "Saisissez les heures dans une cellule — utilisez le format décimal ou hh:mm de vos paramètres.",
           "Cliquez sur l'icône horloge pour définir les heures de début et de fin d'une entrée.",
           "Copiez la semaine précédente ou utilisez la garde pour les tarifs de nuit contractuels.",
-          "Faites glisser les poignées de ligne pour réorganiser les lignes."
+          "Faites glisser les poignées de ligne pour réorganiser les lignes.",
+          "Le - rouge sous une cellule ou un total indique le temps non déclarable — du temps qui ne peut pas être facturé au client, par exemple les pauses déjeuner, les formations internes ou les déplacements. Les cellules journalières affichent le temps saisi ; les totaux de ligne et de pied affichent le temps déclarable (saisi moins non déclarable). Le montant non déclarable est défini par projet, pas par entrée."
         ],
         "shortcuts": [
           "Touches fléchées — se déplacer entre les cellules",
