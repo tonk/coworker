@@ -19,7 +19,7 @@ warmdesk/
 | `deploy/` | Deployment templates — systemd service, nginx/Apache config, `.desktop` entry, `get_warmdesk` update script |
 | `docs/` | User-facing documentation (admin guide, API docs, user guide) |
 | `frontend/` | Vue 3 web app + Tauri desktop wrapper |
-| `screenshots/` | Screenshots used in README.md |
+| `screenshots/` | 24 reference screenshots used in README.md and the Hugo website (`website/Makefile` copies them at build time) |
 
 ## `ansible/`
 

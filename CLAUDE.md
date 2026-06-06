@@ -457,7 +457,7 @@ The spec (`frontend/e2e/screenshots.spec.js`) logs in via the API (cookie sessio
 
 ## Deployment notes
 
-- `deploy/` has ready-made templates for systemd, nginx (with SSL), and Apache.
+- `deploy/` has ready-made templates for systemd, nginx (with SSL), and Apache. The nginx/Apache configs set `X-Forwarded-Proto` so httpOnly auth and MFA-trust cookies get the `Secure` flag when TLS terminates at the proxy.
 - For multi-instance deployments set `redis_url` — this routes WebSocket broadcasts through Redis pub/sub instead of in-process memory.
 - First-run with an empty DB: register the first user normally—they receive `admin` automatically; use a direct DB update only to recover if every admin is lost.
 

@@ -85,6 +85,10 @@ allowed_origins: "http://localhost:5173"
 #   trusted_proxies: "127.0.0.1"                 # local reverse proxy (nginx/Apache on same host)
 #   trusted_proxies: "127.0.0.1, 10.0.0.0/8"    # local proxy + internal network
 # trusted_proxies: ""
+#
+# Reverse-proxy templates in deploy/ set X-Forwarded-Proto on HTTPS vhosts.
+# WarmDesk uses that header (or direct TLS) to mark httpOnly auth and MFA-trust
+# cookies as Secure. Ensure your proxy forwards it when TLS terminates upstream.
 
 # Override path for the frontend files. The web UI is embedded in the binary
 # by default, so this is only needed to serve a custom or updated frontend
