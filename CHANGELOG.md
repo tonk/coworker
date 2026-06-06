@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.12.0 — 2026-06-06
+
+### Added
+- **MFA trusted devices** — after completing an MFA challenge, users can choose to trust their device for 1 week or 1 month. Subsequent logins from that device skip the TOTP prompt. The Settings page (Security → Trusted Devices) lists all active trusted devices with last-used and expiry dates, and provides individual and bulk revoke buttons. Logging out automatically revokes the trust record for that device.
+
+### Fixed
+- **Grid PDF date format** — the week-grid period label and year-grid print date now follow the user's date/time format setting instead of always using DD-MM(-YYYY).
+- **Grid PDF time notation** — cell values, totals, and undeclarable rows in week, month, and year grid exports now use the user's time notation setting (decimal or hh:mm) instead of always rendering decimal hours.
+- **Inline help icon positioning** — help icon correctly placed next to the undeclarable badge; service accounts hidden from the sidebar member list.
+
 ## v0.11.0 — 2026-06-05
 
 ### Added

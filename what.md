@@ -701,3 +701,6 @@ Create an application that has all these features and requirements
 - Add admin API key management: create, list, and revoke API keys for any user from the edit-user modal; service accounts no longer need admin access to get a key
 - Add soft-delete and restore users: deleted users are soft-deleted and recoverable via a "Show deleted" toggle; permanent purge nullifies FK references on content records and removes personal/membership rows
 - Improve in-app contextual help for Project Settings, System Settings, and Customers & Contracts with full tab coverage and eleven new inline field hints; teleport HelpIcon popovers to body to prevent sidebar clipping
+- Add MFA trusted devices: after successful TOTP verification, users can trust their device for 7 or 30 days; subsequent logins skip the MFA challenge; trust tokens are stored as SHA-256 hashes with httpOnly SameSite=Strict cookies; Settings shows all active trusted devices with last-used and expiry dates and supports individual and bulk revoke; logout automatically revokes the trust record for the current device
+- Fix grid PDF exports to respect the user's date/time format setting in the week period label and year print date
+- Fix grid PDF exports to respect the user's time notation setting (decimal or hh:mm) for all cell values, totals, and undeclarable rows

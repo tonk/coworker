@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.11.0)
+## Latest release (v0.12.0)
 
-- **Prometheus metrics** — dedicated `metrics` role for scraper accounts; `Authorization: ApiKey` header accepted natively so Prometheus `scrape_configs` work without a proxy; scrape history exposed as gauges.
-- **Admin API key management** — create and revoke API keys for any user from the admin panel, making service-account setup self-contained.
-- **Soft-delete and restore users** — deleted users are recoverable from the admin panel; permanent purge preserves content records while removing personal data.
+- **MFA trusted devices** — trust a device for 1 week or 1 month after MFA login; manage and revoke trusted devices from Settings.
+- **Grid PDF formatting fixes** — week/month/year PDF exports now respect the user's date format and time notation (decimal or hh:mm) settings.
 
 ## Experiment
 
