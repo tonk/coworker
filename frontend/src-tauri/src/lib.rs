@@ -524,7 +524,6 @@ pub fn run() {
                  --no-first-run \
                  --disable-domain-reliability \
                  --disable-client-side-phishing-detection \
-                 --no-proxy-server \
                  --disable-features=msSmartScreen,Translate,AutofillServerCommunication,\
 MediaRouter,ReportingObserver \
                  --metrics-recording-only",
