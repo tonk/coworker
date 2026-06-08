@@ -81,6 +81,34 @@ fn warmdesk_data_dir() -> PathBuf {
 }
 
 // ---------------------------------------------------------------------------
+// Startup diagnostic log
+//
+// Each run truncates the file first, then appends HH:MM:SS.mmm timestamps.
+// On Windows: %APPDATA%\com.warmdesk.desktop\warmdesk-startup.log
+// Read it after launch to pinpoint where the 33-second startup delay occurs.
+// ---------------------------------------------------------------------------
+
+fn startup_log(msg: &str) {
+    use std::io::Write as _;
+    let dir = warmdesk_data_dir();
+    let _ = std::fs::create_dir_all(&dir);
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(dir.join("warmdesk-startup.log"))
+    {
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default();
+        let h = (now.as_secs() % 86400) / 3600;
+        let m = (now.as_secs() % 3600) / 60;
+        let s = now.as_secs() % 60;
+        let ms = now.subsec_millis();
+        let _ = writeln!(f, "{h:02}:{m:02}:{s:02}.{ms:03} | {msg}");
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Profile file I/O
 // ---------------------------------------------------------------------------
 
@@ -189,6 +217,10 @@ fn build_init_js(server_url: Option<&str>, profile: &Profile) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let args: Vec<String> = std::env::args().collect();
+
+    // Overwrite the previous run's log so only the current run is visible.
+    let _ = std::fs::write(warmdesk_data_dir().join("warmdesk-startup.log"), "");
+    startup_log("run() started — Rust entry point reached");
 
     if args.iter().any(|a| a == "--help" || a == "-h") {
         print_help();
@@ -418,6 +450,7 @@ pub fn run() {
             delete_profile,
         ])
         .on_page_load(move |window, _payload| {
+            startup_log("on_page_load fired — WebView2 has loaded the HTML page");
             let js = build_init_js(
                 runtime_server_url_for_page_load.as_deref(),
                 &active_profile_for_page_load,
@@ -479,7 +512,9 @@ MediaRouter,ReportingObserver \
                  --metrics-recording-only",
             );
 
+            startup_log("WebviewWindowBuilder::build() — calling now");
             let win = win_builder.build()?;
+            startup_log("WebviewWindowBuilder::build() — returned (window visible)");
 
             // Inject before the first on_page_load fires (best-effort).
             let js = build_init_js(
@@ -525,28 +560,35 @@ MediaRouter,ReportingObserver \
             // concerns at the process level; these Settings interfaces act as a
             // second layer in case a future WebView2 runtime ignores a flag.
             #[cfg(target_os = "windows")]
-            win.with_webview(|wv| {
-                use webview2_com::Microsoft::Web::WebView2::Win32::{
-                    ICoreWebView2Settings4,
-                    ICoreWebView2Settings8,
-                };
-                use windows::core::Interface;
-                unsafe {
-                    let Ok(core) = wv.controller().CoreWebView2() else { return };
-                    let Ok(settings) = core.Settings() else { return };
-                    // Autofill / credential IPC — eliminates per-keystroke round-trips
-                    // on password fields (typing lag on the login screen).
-                    if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
-                        let _ = s4.SetIsGeneralAutofillEnabled(false);
-                        let _ = s4.SetIsPasswordAutosaveEnabled(false);
+            {
+                startup_log("with_webview() — calling now (waiting for WebView2 controller)");
+                win.with_webview(|wv| {
+                    startup_log("with_webview() — callback entered (controller ready)");
+                    use webview2_com::Microsoft::Web::WebView2::Win32::{
+                        ICoreWebView2Settings4,
+                        ICoreWebView2Settings8,
+                    };
+                    use windows::core::Interface;
+                    unsafe {
+                        let Ok(core) = wv.controller().CoreWebView2() else { return };
+                        let Ok(settings) = core.Settings() else { return };
+                        // Autofill / credential IPC — eliminates per-keystroke round-trips
+                        // on password fields (typing lag on the login screen).
+                        if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
+                            let _ = s4.SetIsGeneralAutofillEnabled(false);
+                            let _ = s4.SetIsPasswordAutosaveEnabled(false);
+                        }
+                        // SmartScreen URL reputation checks (WebView2 SDK 1.0.1823+).
+                        if let Ok(s8) = settings.cast::<ICoreWebView2Settings8>() {
+                            let _ = s8.SetIsReputationCheckingRequired(false);
+                        }
                     }
-                    // SmartScreen URL reputation checks (WebView2 SDK 1.0.1823+).
-                    if let Ok(s8) = settings.cast::<ICoreWebView2Settings8>() {
-                        let _ = s8.SetIsReputationCheckingRequired(false);
-                    }
-                }
-            })?;
+                    startup_log("with_webview() — callback done");
+                })?;
+                startup_log("with_webview() — returned");
+            }
 
+            startup_log("setup() done — Rust side complete, Tauri event loop starting");
             Ok(())
         })
         .run(tauri::generate_context!())
