@@ -32,6 +32,7 @@ struct ProfileInfo {
 
 const APP_ID: &str = "com.warmdesk.desktop";
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 fn platform_home() -> PathBuf {
     std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
@@ -427,7 +428,7 @@ pub fn run() {
         })
         .setup(move |app| {
             let title = profile_window_title(&active_profile_for_setup);
-            let win = tauri::WebviewWindowBuilder::new(
+            let win_builder = tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
                 tauri::WebviewUrl::App("index.html".into()),
@@ -435,8 +436,50 @@ pub fn run() {
             .title(&title)
             .inner_size(1280.0, 800.0)
             .min_inner_size(900.0, 600.0)
-            .data_directory(profile_data_dir_for_setup)
-            .build()?;
+            .data_directory(profile_data_dir_for_setup);
+
+            // On Windows, WebView2's browser process phones home to Microsoft on every
+            // startup — SmartScreen data, component updates, metrics, telemetry — and
+            // will not load the local page until that background phase completes (~30 s
+            // on networks where those endpoints are slow or unreachable).  WarmDesk is
+            // a self-hosted tool with no use for any of these Microsoft services.
+            //
+            // The flags below disable every known call-home mechanism at the browser-
+            // process level.  They are passed before the process starts, so they take
+            // effect before any background task can be scheduled:
+            //
+            //   --disable-background-networking          SmartScreen/SafeBrowsing syncs,
+            //                                            network-time pings, component
+            //                                            update checks, extension updates
+            //   --disable-component-update               CRLSet, Pepper, and other
+            //                                            on-demand component downloads
+            //   --disable-sync                           Microsoft account / profile sync
+            //   --no-pings                               <a ping> hyperlink beacons
+            //   --no-first-run                           first-run registration flow
+            //   --disable-domain-reliability             domain reliability uploads
+            //   --disable-client-side-phishing-detection ML phishing model fetches
+            //   --disable-features=msSmartScreen         SmartScreen URL reputation
+            //   --disable-features=Translate             translation service
+            //   --disable-features=AutofillServerCommunication  autofill server sync
+            //   --disable-features=MediaRouter           Cast/media routing to external devices
+            //   --disable-features=ReportingObserver     Reporting Observer API uploads
+            //   --metrics-recording-only                 record UMA histograms locally
+            //                                            but never upload them
+            #[cfg(target_os = "windows")]
+            let win_builder = win_builder.additional_browser_args(
+                "--disable-background-networking \
+                 --disable-component-update \
+                 --disable-sync \
+                 --no-pings \
+                 --no-first-run \
+                 --disable-domain-reliability \
+                 --disable-client-side-phishing-detection \
+                 --disable-features=msSmartScreen,Translate,AutofillServerCommunication,\
+MediaRouter,ReportingObserver \
+                 --metrics-recording-only",
+            );
+
+            let win = win_builder.build()?;
 
             // Inject before the first on_page_load fires (best-effort).
             let js = build_init_js(
@@ -477,23 +520,29 @@ pub fn run() {
                 });
             })?;
 
-            // On Windows, WebView2's autofill/credential service sends a
-            // synchronous IPC message to its browser process on every
-            // keystroke in any field it classifies as a password field.
-            // ICoreWebView2Settings4 (WebView2 SDK 1.0.992+) exposes
-            // IsPasswordAutosaveEnabled and IsGeneralAutofillEnabled —
-            // disabling both eliminates that round-trip and removes the
-            // typing lag on the login screen.
+            // Belt-and-suspenders WebView2 settings applied after the controller
+            // is available.  The browser-process flags above handle the same
+            // concerns at the process level; these Settings interfaces act as a
+            // second layer in case a future WebView2 runtime ignores a flag.
             #[cfg(target_os = "windows")]
             win.with_webview(|wv| {
-                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings4;
+                use webview2_com::Microsoft::Web::WebView2::Win32::{
+                    ICoreWebView2Settings4,
+                    ICoreWebView2Settings8,
+                };
                 use windows::core::Interface;
                 unsafe {
                     let Ok(core) = wv.controller().CoreWebView2() else { return };
                     let Ok(settings) = core.Settings() else { return };
+                    // Autofill / credential IPC — eliminates per-keystroke round-trips
+                    // on password fields (typing lag on the login screen).
                     if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
                         let _ = s4.SetIsGeneralAutofillEnabled(false);
                         let _ = s4.SetIsPasswordAutosaveEnabled(false);
+                    }
+                    // SmartScreen URL reputation checks (WebView2 SDK 1.0.1823+).
+                    if let Ok(s8) = settings.cast::<ICoreWebView2Settings8>() {
+                        let _ = s8.SetIsReputationCheckingRequired(false);
                     }
                 }
             })?;
