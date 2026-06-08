@@ -448,6 +448,7 @@ pub fn run() {
             rename_profile,
             set_default_profile,
             delete_profile,
+            js_boot_log,
         ])
         .on_page_load(move |window, _payload| {
             startup_log("on_page_load fired — WebView2 has loaded the HTML page");
@@ -609,6 +610,13 @@ struct RuntimeSettings {
 // ---------------------------------------------------------------------------
 // Tauri commands
 // ---------------------------------------------------------------------------
+
+/// Called from JavaScript at each boot checkpoint so JS timing appears in
+/// warmdesk-startup.log alongside the Rust-side timestamps.
+#[tauri::command]
+fn js_boot_log(msg: String) {
+    startup_log(&format!("JS | {msg}"));
+}
 
 #[tauri::command]
 fn runtime_server_url(state: tauri::State<'_, RuntimeSettings>) -> Option<String> {

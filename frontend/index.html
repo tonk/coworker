@@ -53,18 +53,18 @@
         }
       })()
     </script>
-    <!-- DEBUG: boot timer — shows elapsed time from when the HTML is first
-         parsed by WebView2.  If the timer appears *after* the 33-second blank
-         screen, the delay is in WebView2 loading the page (not in JavaScript).
-         If the timer ticks throughout the blank screen, the delay is in main.js.
+    <!-- DEBUG: boot timer + status — shows elapsed time and current operation.
+         The status label updates from main.js so you can see which step is slow.
          Remove this block once the root cause is identified. -->
-    <style>#wd-bt{position:fixed;top:4px;right:4px;padding:3px 9px;border-radius:3px;background:rgba(0,0,0,.6);color:#e2e8f0;font:11px/1.6 monospace;z-index:99999;pointer-events:none}</style>
+    <style>#wd-bt{position:fixed;top:4px;right:4px;padding:4px 10px;border-radius:4px;background:rgba(0,0,0,.7);color:#e2e8f0;font:11px/1.6 monospace;z-index:99999;pointer-events:none;max-width:480px}</style>
     <div id="wd-bt">⏱ 0.0s</div>
     <script>
       !function(){
         var t=Date.now()
         var e=document.getElementById('wd-bt')
-        var i=setInterval(function(){if(e)e.textContent='⏱ '+((Date.now()-t)/1e3).toFixed(1)+'s'},100)
+        var s='HTML parsed'
+        var i=setInterval(function(){if(e)e.textContent='⏱ '+((Date.now()-t)/1e3).toFixed(1)+'s — '+s},100)
+        window.__wdStatus=function(msg){s=msg}
         window.__wdBootDone=function(){clearInterval(i);if(e)e.remove()}
         console.log('[warmdesk-boot] HTML parsed — t=0ms baseline')
       }()

@@ -31,7 +31,15 @@ import '@fontsource/source-code-pro/600.css'
 async function init() {
   // DEBUG boot timing — remove after diagnosing startup delay
   const _t0 = performance.now()
-  const _lap = msg => console.log(`[warmdesk-boot] ${msg} (+${(performance.now() - _t0).toFixed(0)}ms)`)
+  const _lap = msg => {
+    const full = `${msg} (+${(performance.now() - _t0).toFixed(0)}ms)`
+    console.log(`[warmdesk-boot] ${full}`)
+    if (window.__wdStatus) window.__wdStatus(full)
+    // Fire-and-forget: writes JS timing alongside Rust timestamps in warmdesk-startup.log
+    if (window.__TAURI_INTERNALS__) {
+      window.__TAURI_INTERNALS__.invoke('js_boot_log', { msg: full }).catch(() => {})
+    }
+  }
   _lap('init() started')
 
   if (window.__TAURI_INTERNALS__) {
