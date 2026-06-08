@@ -222,6 +222,22 @@ pub fn run() {
     let _ = std::fs::write(warmdesk_data_dir().join("warmdesk-startup.log"), "");
     startup_log("run() started — Rust entry point reached");
 
+    // Prevent reqwest (used by tauri-plugin-http) from attempting Windows WPAD
+    // proxy auto-detection, which can block the tokio runtime for 30-70 seconds
+    // when the WPAD endpoint is unreachable.  reqwest reads NO_PROXY from the
+    // environment at client-build time, so this must be set before any plugin
+    // or HTTP client is initialised.
+    // SAFETY: single-threaded at this point, before the Tauri runtime starts.
+    #[cfg(target_os = "windows")]
+    {
+        if std::env::var("NO_PROXY").is_err() {
+            unsafe { std::env::set_var("NO_PROXY", "*") };
+        }
+        if std::env::var("no_proxy").is_err() {
+            unsafe { std::env::set_var("no_proxy", "*") };
+        }
+    }
+
     if args.iter().any(|a| a == "--help" || a == "-h") {
         print_help();
         std::process::exit(0);
@@ -508,6 +524,7 @@ pub fn run() {
                  --no-first-run \
                  --disable-domain-reliability \
                  --disable-client-side-phishing-detection \
+                 --no-proxy-server \
                  --disable-features=msSmartScreen,Translate,AutofillServerCommunication,\
 MediaRouter,ReportingObserver \
                  --metrics-recording-only",

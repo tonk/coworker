@@ -43,6 +43,18 @@ async function init() {
   _lap('init() started')
 
   if (window.__TAURI_INTERNALS__) {
+    // TEST: invoke BEFORE importing plugin-http to determine whether the
+    // plugin-http import is what blocks the Rust IPC channel for ~70s.
+    // If this invoke returns quickly and the later one is slow, the import
+    // (or its side-effects in the Rust tokio runtime) is the root cause.
+    _lap('→ invoke runtime_server_url (BEFORE plugin-http import)')
+    let runtimeServerUrl = null
+    try {
+      runtimeServerUrl = await window.__TAURI_INTERNALS__.invoke('runtime_server_url')
+      _lap('← invoke runtime_server_url (BEFORE plugin-http import)')
+    } catch { _lap('← invoke runtime_server_url (BEFORE — threw)') }
+    if (runtimeServerUrl) setRuntimeServerUrl(String(runtimeServerUrl))
+
     _lap('→ import tauri-plugin-http')
     const httpPlugin = await import('@tauri-apps/plugin-http')
     _lap('← import tauri-plugin-http')
@@ -55,12 +67,6 @@ async function init() {
     } else {
       console.error('[WarmDesk] tauri-plugin-http fetch not available', Object.keys(httpPlugin || {}))
     }
-    _lap('→ invoke runtime_server_url')
-    try {
-      const runtimeServerUrl = await window.__TAURI_INTERNALS__.invoke('runtime_server_url')
-      _lap('← invoke runtime_server_url')
-      if (runtimeServerUrl) setRuntimeServerUrl(String(runtimeServerUrl))
-    } catch { _lap('← invoke runtime_server_url (threw)') }
   }
 
   _lap('→ initLocale()')
