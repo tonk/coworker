@@ -109,6 +109,111 @@ fn startup_log(msg: &str) {
 }
 
 // ---------------------------------------------------------------------------
+// Windows proxy configuration — prevents WPAD-triggered tokio hangs
+// ---------------------------------------------------------------------------
+
+/// Set HTTP(S)_PROXY env vars so reqwest never calls WinHTTP WPAD detection.
+///
+/// reqwest checks HTTP_PROXY / HTTPS_PROXY first; only when they are absent
+/// does it call WinHttpGetProxyForUrl with WINHTTP_AUTOPROXY_AUTO_DETECT,
+/// which can block the tokio thread pool for 30-70 s.  By always providing a
+/// value we short-circuit that code path entirely.
+#[cfg(target_os = "windows")]
+fn configure_reqwest_proxy() {
+    // Respect any proxy env vars the operator already set explicitly.
+    let http_already_set = std::env::var_os("HTTP_PROXY").is_some();
+    let https_already_set = std::env::var_os("HTTPS_PROXY").is_some();
+    if http_already_set && https_already_set {
+        startup_log("proxy: HTTP_PROXY+HTTPS_PROXY already set — leaving unchanged");
+        return;
+    }
+
+    // Read the user's manual proxy from the Windows Internet Settings registry
+    // key.  This is a synchronous registry read (<1 ms) with no WPAD involved.
+    let manual_proxy = read_windows_manual_proxy();
+
+    // SAFETY: single-threaded here, before the Tauri runtime starts.
+    unsafe {
+        if let Some(ref url) = manual_proxy {
+            // Forward the manually configured proxy so requests still go through it.
+            if !http_already_set {
+                std::env::set_var("HTTP_PROXY", url);
+            }
+            if !https_already_set {
+                std::env::set_var("HTTPS_PROXY", url);
+            }
+            startup_log(&format!("proxy: manual proxy → HTTP(S)_PROXY={}", url));
+        } else {
+            // No manual proxy (disabled or WPAD).  Point reqwest at an
+            // unreachable dummy so it never calls WinHTTP WPAD detection,
+            // then set NO_PROXY=* so every request bypasses the dummy and
+            // connects directly.
+            if !http_already_set {
+                std::env::set_var("HTTP_PROXY", "http://0.0.0.0:0");
+            }
+            if !https_already_set {
+                std::env::set_var("HTTPS_PROXY", "http://0.0.0.0:0");
+            }
+            if std::env::var_os("NO_PROXY").is_none() {
+                std::env::set_var("NO_PROXY", "*");
+            }
+            if std::env::var_os("no_proxy").is_none() {
+                std::env::set_var("no_proxy", "*");
+            }
+            startup_log("proxy: no manual proxy → dummy HTTP(S)_PROXY + NO_PROXY=* (direct)");
+        }
+    }
+}
+
+/// Return the manually configured Windows proxy as `"http://host:port"`, or
+/// `None` when no manual proxy is active (proxy is disabled or uses WPAD).
+#[cfg(target_os = "windows")]
+fn read_windows_manual_proxy() -> Option<String> {
+    use winreg::{enums::HKEY_CURRENT_USER, RegKey};
+
+    let key = RegKey::predef(HKEY_CURRENT_USER)
+        .open_subkey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings")
+        .ok()?;
+
+    let enabled: u32 = key.get_value("ProxyEnable").unwrap_or(0);
+    if enabled == 0 {
+        return None;
+    }
+
+    let server: String = key.get_value("ProxyServer").unwrap_or_default();
+    if server.is_empty() {
+        return None;
+    }
+
+    // ProxyServer can be a plain "host:port" or a per-protocol string like
+    // "http=host:8080;https=host:8080;ftp=host:8080".
+    if server.contains('=') {
+        for part in server.split(';') {
+            if let Some(addr) = part
+                .strip_prefix("http=")
+                .or_else(|| part.strip_prefix("https="))
+            {
+                if !addr.is_empty() {
+                    return Some(with_http_scheme(addr));
+                }
+            }
+        }
+        None
+    } else {
+        Some(with_http_scheme(&server))
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn with_http_scheme(addr: &str) -> String {
+    if addr.starts_with("http://") || addr.starts_with("https://") {
+        addr.to_string()
+    } else {
+        format!("http://{}", addr)
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Profile file I/O
 // ---------------------------------------------------------------------------
 
@@ -222,21 +327,26 @@ pub fn run() {
     let _ = std::fs::write(warmdesk_data_dir().join("warmdesk-startup.log"), "");
     startup_log("run() started — Rust entry point reached");
 
-    // Prevent reqwest (used by tauri-plugin-http) from attempting Windows WPAD
-    // proxy auto-detection, which can block the tokio runtime for 30-70 seconds
-    // when the WPAD endpoint is unreachable.  reqwest reads NO_PROXY from the
-    // environment at client-build time, so this must be set before any plugin
-    // or HTTP client is initialised.
-    // SAFETY: single-threaded at this point, before the Tauri runtime starts.
+    // Prevent reqwest (used by tauri-plugin-http and fetch_binary_b64) from
+    // blocking the tokio thread pool with WinHTTP WPAD proxy auto-detection.
+    //
+    // Root cause: reqwest::Client::new() on Windows calls WinHttpGetProxyForUrl
+    // with WINHTTP_AUTOPROXY_AUTO_DETECT when no HTTP_PROXY / HTTPS_PROXY env
+    // var is set, triggering a WPAD DNS/HTTP lookup that can time out after
+    // 30-70 s.  While that lookup is in progress, all tokio worker threads are
+    // blocked, so every Tauri invoke() call from JavaScript is queued and the
+    // app appears frozen.
+    //
+    // Fix: set HTTP_PROXY / HTTPS_PROXY *before* any reqwest client is built so
+    // reqwest reads from the env and never falls through to WinHTTP detection.
+    //   • If the user has a manual proxy configured in Windows Internet Settings
+    //     we forward it to HTTP(S)_PROXY → proxy connectivity is preserved.
+    //   • Otherwise we set a dummy unreachable value and NO_PROXY=* so every
+    //     request bypasses the dummy and connects directly — no WPAD, no block.
+    //
+    // SAFETY: single-threaded here, before the Tauri / tokio runtime starts.
     #[cfg(target_os = "windows")]
-    {
-        if std::env::var("NO_PROXY").is_err() {
-            unsafe { std::env::set_var("NO_PROXY", "*") };
-        }
-        if std::env::var("no_proxy").is_err() {
-            unsafe { std::env::set_var("no_proxy", "*") };
-        }
-    }
+    configure_reqwest_proxy();
 
     if args.iter().any(|a| a == "--help" || a == "-h") {
         print_help();

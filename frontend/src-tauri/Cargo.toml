@@ -29,6 +29,8 @@ webkit2gtk = { version = "2.0", features = ["v2_16"] }
 # The crate is already a transitive dep via tauri; pin to the same version.
 webview2-com = "0.38"
 windows = { version = "0.61", features = ["Win32_Foundation"] }
+# Needed to read the Windows Internet Settings registry key for proxy detection.
+winreg = "0.52"
 
 [profile.release]
 codegen-units = 1
