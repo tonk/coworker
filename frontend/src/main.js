@@ -29,35 +29,8 @@ import '@fontsource/source-code-pro/600.css'
 // no such restriction.  index.html installs the window.fetch proxy before the
 // ES module bundle loads so Axios captures it at import time.
 async function init() {
-  // DEBUG boot timing — remove after diagnosing startup delay
-  const _t0 = performance.now()
-  const _lap = msg => {
-    const full = `${msg} (+${(performance.now() - _t0).toFixed(0)}ms)`
-    console.log(`[warmdesk-boot] ${full}`)
-    if (window.__wdStatus) window.__wdStatus(full)
-    // Fire-and-forget: writes JS timing alongside Rust timestamps in warmdesk-startup.log
-    if (window.__TAURI_INTERNALS__) {
-      window.__TAURI_INTERNALS__.invoke('js_boot_log', { msg: full }).catch(() => {})
-    }
-  }
-  _lap('init() started')
-
   if (window.__TAURI_INTERNALS__) {
-    // TEST: invoke BEFORE importing plugin-http to determine whether the
-    // plugin-http import is what blocks the Rust IPC channel for ~70s.
-    // If this invoke returns quickly and the later one is slow, the import
-    // (or its side-effects in the Rust tokio runtime) is the root cause.
-    _lap('→ invoke runtime_server_url (BEFORE plugin-http import)')
-    let runtimeServerUrl = null
-    try {
-      runtimeServerUrl = await window.__TAURI_INTERNALS__.invoke('runtime_server_url')
-      _lap('← invoke runtime_server_url (BEFORE plugin-http import)')
-    } catch { _lap('← invoke runtime_server_url (BEFORE — threw)') }
-    if (runtimeServerUrl) setRuntimeServerUrl(String(runtimeServerUrl))
-
-    _lap('→ import tauri-plugin-http')
     const httpPlugin = await import('@tauri-apps/plugin-http')
-    _lap('← import tauri-plugin-http')
     const tauriFetch =
       httpPlugin.fetch ||
       httpPlugin.default?.fetch ||
@@ -67,11 +40,13 @@ async function init() {
     } else {
       console.error('[WarmDesk] tauri-plugin-http fetch not available', Object.keys(httpPlugin || {}))
     }
+    try {
+      const runtimeServerUrl = await window.__TAURI_INTERNALS__.invoke('runtime_server_url')
+      if (runtimeServerUrl) setRuntimeServerUrl(String(runtimeServerUrl))
+    } catch {}
   }
 
-  _lap('→ initLocale()')
   await initLocale()
-  _lap('← initLocale()')
 
   const app = createApp(App)
   const pinia = createPinia()
@@ -88,16 +63,11 @@ async function init() {
   // false, allowed the /login route, and then initSession() completed and set
   // the user — leaving the login form rendered inside the app shell.
   if (!window.__TAURI_INTERNALS__) {
-    _lap('→ initSession()')
     await useAuthStore().initSession().catch(() => {})
-    _lap('← initSession()')
   }
 
   app.use(router)
-  _lap('→ app.mount()')
   app.mount('#app')
-  _lap('← app.mount() — login screen should now be visible')
-  if (window.__wdBootDone) window.__wdBootDone()
   useSystemStore().fetchSettings()
 }
 

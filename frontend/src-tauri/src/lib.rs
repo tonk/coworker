@@ -32,7 +32,6 @@ struct ProfileInfo {
 
 const APP_ID: &str = "com.warmdesk.desktop";
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
 fn platform_home() -> PathBuf {
     std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
@@ -78,139 +77,6 @@ fn warmdesk_data_dir() -> PathBuf {
     }
     #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
     PathBuf::from(".").join(APP_ID)
-}
-
-// ---------------------------------------------------------------------------
-// Startup diagnostic log
-//
-// Each run truncates the file first, then appends HH:MM:SS.mmm timestamps.
-// On Windows: %APPDATA%\com.warmdesk.desktop\warmdesk-startup.log
-// Read it after launch to pinpoint where the 33-second startup delay occurs.
-// ---------------------------------------------------------------------------
-
-fn startup_log(msg: &str) {
-    use std::io::Write as _;
-    let dir = warmdesk_data_dir();
-    let _ = std::fs::create_dir_all(&dir);
-    if let Ok(mut f) = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(dir.join("warmdesk-startup.log"))
-    {
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default();
-        let h = (now.as_secs() % 86400) / 3600;
-        let m = (now.as_secs() % 3600) / 60;
-        let s = now.as_secs() % 60;
-        let ms = now.subsec_millis();
-        let _ = writeln!(f, "{h:02}:{m:02}:{s:02}.{ms:03} | {msg}");
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Windows proxy configuration — prevents WPAD-triggered tokio hangs
-// ---------------------------------------------------------------------------
-
-/// Set HTTP(S)_PROXY env vars so reqwest never calls WinHTTP WPAD detection.
-///
-/// reqwest checks HTTP_PROXY / HTTPS_PROXY first; only when they are absent
-/// does it call WinHttpGetProxyForUrl with WINHTTP_AUTOPROXY_AUTO_DETECT,
-/// which can block the tokio thread pool for 30-70 s.  By always providing a
-/// value we short-circuit that code path entirely.
-#[cfg(target_os = "windows")]
-fn configure_reqwest_proxy() {
-    // Respect any proxy env vars the operator already set explicitly.
-    let http_already_set = std::env::var_os("HTTP_PROXY").is_some();
-    let https_already_set = std::env::var_os("HTTPS_PROXY").is_some();
-    if http_already_set && https_already_set {
-        startup_log("proxy: HTTP_PROXY+HTTPS_PROXY already set — leaving unchanged");
-        return;
-    }
-
-    // Read the user's manual proxy from the Windows Internet Settings registry
-    // key.  This is a synchronous registry read (<1 ms) with no WPAD involved.
-    let manual_proxy = read_windows_manual_proxy();
-
-    // SAFETY: single-threaded here, before the Tauri runtime starts.
-    unsafe {
-        if let Some(ref url) = manual_proxy {
-            // Forward the manually configured proxy so requests still go through it.
-            if !http_already_set {
-                std::env::set_var("HTTP_PROXY", url);
-            }
-            if !https_already_set {
-                std::env::set_var("HTTPS_PROXY", url);
-            }
-            startup_log(&format!("proxy: manual proxy → HTTP(S)_PROXY={}", url));
-        } else {
-            // No manual proxy (disabled or WPAD).  Point reqwest at an
-            // unreachable dummy so it never calls WinHTTP WPAD detection,
-            // then set NO_PROXY=* so every request bypasses the dummy and
-            // connects directly.
-            if !http_already_set {
-                std::env::set_var("HTTP_PROXY", "http://0.0.0.0:0");
-            }
-            if !https_already_set {
-                std::env::set_var("HTTPS_PROXY", "http://0.0.0.0:0");
-            }
-            if std::env::var_os("NO_PROXY").is_none() {
-                std::env::set_var("NO_PROXY", "*");
-            }
-            if std::env::var_os("no_proxy").is_none() {
-                std::env::set_var("no_proxy", "*");
-            }
-            startup_log("proxy: no manual proxy → dummy HTTP(S)_PROXY + NO_PROXY=* (direct)");
-        }
-    }
-}
-
-/// Return the manually configured Windows proxy as `"http://host:port"`, or
-/// `None` when no manual proxy is active (proxy is disabled or uses WPAD).
-#[cfg(target_os = "windows")]
-fn read_windows_manual_proxy() -> Option<String> {
-    use winreg::{enums::HKEY_CURRENT_USER, RegKey};
-
-    let key = RegKey::predef(HKEY_CURRENT_USER)
-        .open_subkey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings")
-        .ok()?;
-
-    let enabled: u32 = key.get_value("ProxyEnable").unwrap_or(0);
-    if enabled == 0 {
-        return None;
-    }
-
-    let server: String = key.get_value("ProxyServer").unwrap_or_default();
-    if server.is_empty() {
-        return None;
-    }
-
-    // ProxyServer can be a plain "host:port" or a per-protocol string like
-    // "http=host:8080;https=host:8080;ftp=host:8080".
-    if server.contains('=') {
-        for part in server.split(';') {
-            if let Some(addr) = part
-                .strip_prefix("http=")
-                .or_else(|| part.strip_prefix("https="))
-            {
-                if !addr.is_empty() {
-                    return Some(with_http_scheme(addr));
-                }
-            }
-        }
-        None
-    } else {
-        Some(with_http_scheme(&server))
-    }
-}
-
-#[cfg(target_os = "windows")]
-fn with_http_scheme(addr: &str) -> String {
-    if addr.starts_with("http://") || addr.starts_with("https://") {
-        addr.to_string()
-    } else {
-        format!("http://{}", addr)
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -322,31 +188,6 @@ fn build_init_js(server_url: Option<&str>, profile: &Profile) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let args: Vec<String> = std::env::args().collect();
-
-    // Overwrite the previous run's log so only the current run is visible.
-    let _ = std::fs::write(warmdesk_data_dir().join("warmdesk-startup.log"), "");
-    startup_log("run() started — Rust entry point reached");
-
-    // Prevent reqwest (used by tauri-plugin-http and fetch_binary_b64) from
-    // blocking the tokio thread pool with WinHTTP WPAD proxy auto-detection.
-    //
-    // Root cause: reqwest::Client::new() on Windows calls WinHttpGetProxyForUrl
-    // with WINHTTP_AUTOPROXY_AUTO_DETECT when no HTTP_PROXY / HTTPS_PROXY env
-    // var is set, triggering a WPAD DNS/HTTP lookup that can time out after
-    // 30-70 s.  While that lookup is in progress, all tokio worker threads are
-    // blocked, so every Tauri invoke() call from JavaScript is queued and the
-    // app appears frozen.
-    //
-    // Fix: set HTTP_PROXY / HTTPS_PROXY *before* any reqwest client is built so
-    // reqwest reads from the env and never falls through to WinHTTP detection.
-    //   • If the user has a manual proxy configured in Windows Internet Settings
-    //     we forward it to HTTP(S)_PROXY → proxy connectivity is preserved.
-    //   • Otherwise we set a dummy unreachable value and NO_PROXY=* so every
-    //     request bypasses the dummy and connects directly — no WPAD, no block.
-    //
-    // SAFETY: single-threaded here, before the Tauri / tokio runtime starts.
-    #[cfg(target_os = "windows")]
-    configure_reqwest_proxy();
 
     if args.iter().any(|a| a == "--help" || a == "-h") {
         print_help();
@@ -574,10 +415,8 @@ pub fn run() {
             rename_profile,
             set_default_profile,
             delete_profile,
-            js_boot_log,
         ])
         .on_page_load(move |window, _payload| {
-            startup_log("on_page_load fired — WebView2 has loaded the HTML page");
             let js = build_init_js(
                 runtime_server_url_for_page_load.as_deref(),
                 &active_profile_for_page_load,
@@ -588,7 +427,7 @@ pub fn run() {
         })
         .setup(move |app| {
             let title = profile_window_title(&active_profile_for_setup);
-            let win_builder = tauri::WebviewWindowBuilder::new(
+            let win = tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
                 tauri::WebviewUrl::App("index.html".into()),
@@ -596,52 +435,8 @@ pub fn run() {
             .title(&title)
             .inner_size(1280.0, 800.0)
             .min_inner_size(900.0, 600.0)
-            .data_directory(profile_data_dir_for_setup);
-
-            // On Windows, WebView2's browser process phones home to Microsoft on every
-            // startup — SmartScreen data, component updates, metrics, telemetry — and
-            // will not load the local page until that background phase completes (~30 s
-            // on networks where those endpoints are slow or unreachable).  WarmDesk is
-            // a self-hosted tool with no use for any of these Microsoft services.
-            //
-            // The flags below disable every known call-home mechanism at the browser-
-            // process level.  They are passed before the process starts, so they take
-            // effect before any background task can be scheduled:
-            //
-            //   --disable-background-networking          SmartScreen/SafeBrowsing syncs,
-            //                                            network-time pings, component
-            //                                            update checks, extension updates
-            //   --disable-component-update               CRLSet, Pepper, and other
-            //                                            on-demand component downloads
-            //   --disable-sync                           Microsoft account / profile sync
-            //   --no-pings                               <a ping> hyperlink beacons
-            //   --no-first-run                           first-run registration flow
-            //   --disable-domain-reliability             domain reliability uploads
-            //   --disable-client-side-phishing-detection ML phishing model fetches
-            //   --disable-features=msSmartScreen         SmartScreen URL reputation
-            //   --disable-features=Translate             translation service
-            //   --disable-features=AutofillServerCommunication  autofill server sync
-            //   --disable-features=MediaRouter           Cast/media routing to external devices
-            //   --disable-features=ReportingObserver     Reporting Observer API uploads
-            //   --metrics-recording-only                 record UMA histograms locally
-            //                                            but never upload them
-            #[cfg(target_os = "windows")]
-            let win_builder = win_builder.additional_browser_args(
-                "--disable-background-networking \
-                 --disable-component-update \
-                 --disable-sync \
-                 --no-pings \
-                 --no-first-run \
-                 --disable-domain-reliability \
-                 --disable-client-side-phishing-detection \
-                 --disable-features=msSmartScreen,Translate,AutofillServerCommunication,\
-MediaRouter,ReportingObserver \
-                 --metrics-recording-only",
-            );
-
-            startup_log("WebviewWindowBuilder::build() — calling now");
-            let win = win_builder.build()?;
-            startup_log("WebviewWindowBuilder::build() — returned (window visible)");
+            .data_directory(profile_data_dir_for_setup)
+            .build()?;
 
             // Inject before the first on_page_load fires (best-effort).
             let js = build_init_js(
@@ -682,40 +477,27 @@ MediaRouter,ReportingObserver \
                 });
             })?;
 
-            // Belt-and-suspenders WebView2 settings applied after the controller
-            // is available.  The browser-process flags above handle the same
-            // concerns at the process level; these Settings interfaces act as a
-            // second layer in case a future WebView2 runtime ignores a flag.
+            // On Windows, WebView2's autofill/credential service sends a
+            // synchronous IPC message to its browser process on every
+            // keystroke in any field it classifies as a password field.
+            // ICoreWebView2Settings4 (WebView2 SDK 1.0.992+) exposes
+            // IsPasswordAutosaveEnabled and IsGeneralAutofillEnabled —
+            // disabling both eliminates that round-trip and removes the
+            // typing lag on the login screen.
             #[cfg(target_os = "windows")]
-            {
-                startup_log("with_webview() — calling now (waiting for WebView2 controller)");
-                win.with_webview(|wv| {
-                    startup_log("with_webview() — callback entered (controller ready)");
-                    use webview2_com::Microsoft::Web::WebView2::Win32::{
-                        ICoreWebView2Settings4,
-                        ICoreWebView2Settings8,
-                    };
-                    use windows::core::Interface;
-                    unsafe {
-                        let Ok(core) = wv.controller().CoreWebView2() else { return };
-                        let Ok(settings) = core.Settings() else { return };
-                        // Autofill / credential IPC — eliminates per-keystroke round-trips
-                        // on password fields (typing lag on the login screen).
-                        if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
-                            let _ = s4.SetIsGeneralAutofillEnabled(false);
-                            let _ = s4.SetIsPasswordAutosaveEnabled(false);
-                        }
-                        // SmartScreen URL reputation checks (WebView2 SDK 1.0.1823+).
-                        if let Ok(s8) = settings.cast::<ICoreWebView2Settings8>() {
-                            let _ = s8.SetIsReputationCheckingRequired(false);
-                        }
+            win.with_webview(|wv| {
+                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings4;
+                use windows::core::Interface;
+                unsafe {
+                    let Ok(core) = wv.controller().CoreWebView2() else { return };
+                    let Ok(settings) = core.Settings() else { return };
+                    if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
+                        let _ = s4.SetIsGeneralAutofillEnabled(false);
+                        let _ = s4.SetIsPasswordAutosaveEnabled(false);
                     }
-                    startup_log("with_webview() — callback done");
-                })?;
-                startup_log("with_webview() — returned");
-            }
+                }
+            })?;
 
-            startup_log("setup() done — Rust side complete, Tauri event loop starting");
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -736,13 +518,6 @@ struct RuntimeSettings {
 // ---------------------------------------------------------------------------
 // Tauri commands
 // ---------------------------------------------------------------------------
-
-/// Called from JavaScript at each boot checkpoint so JS timing appears in
-/// warmdesk-startup.log alongside the Rust-side timestamps.
-#[tauri::command]
-fn js_boot_log(msg: String) {
-    startup_log(&format!("JS | {msg}"));
-}
 
 #[tauri::command]
 fn runtime_server_url(state: tauri::State<'_, RuntimeSettings>) -> Option<String> {

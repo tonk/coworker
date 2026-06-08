@@ -15,12 +15,6 @@ jobs:
   build:
     name: Build Windows installer
     runs-on: windows-latest
-    # sccache is configured in .cargo/config.toml but is not installed on CI
-    # runners.  Setting RUSTC_WRAPPER="" at the job level overrides the config
-    # for every step — including swatinem/rust-cache's post-job cargo metadata
-    # call, which is what was failing.
-    env:
-      RUSTC_WRAPPER: ""
 
     steps:
       - name: Checkout
@@ -60,6 +54,9 @@ jobs:
           "
 
       - name: Build
+        # RUSTC_WRAPPER="": override .cargo/config.toml's sccache wrapper — not installed on CI runners.
+        env:
+          RUSTC_WRAPPER: ""
         run: cd frontend && npm run tauri:build -- --bundles nsis
 
       - name: Collect artifacts
