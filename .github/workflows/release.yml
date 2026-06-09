@@ -174,7 +174,7 @@ jobs:
             bundle: appimage
 
           - name: macOS
-            os: macos-latest
+            os: macos-14
             bundle: dmg
 
     steps:
