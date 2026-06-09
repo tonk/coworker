@@ -2760,10 +2760,14 @@ function fmtTime(minutes) {
 
 function parseTimeInput(val) {
   if (!val && val !== 0) return 0
-  const s = String(val)
-  if (timeNotation.value === 'hhmm' && s.includes(':')) {
-    const [h, m] = s.split(':')
-    return (parseInt(h) || 0) * 60 + (parseInt(m) || 0)
+  const s = String(val).trim()
+  if (timeNotation.value === 'hhmm') {
+    if (s.includes(':')) {
+      const [h, m] = s.split(':')
+      return (parseInt(h) || 0) * 60 + (parseInt(m) || 0)
+    }
+    // Bare digits in hhmm mode: "8" → 8:00, "20" → 20:00
+    return (parseInt(s) || 0) * 60
   }
   return Math.round((parseFloat(s) || 0) * 60)
 }
