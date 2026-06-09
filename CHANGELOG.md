@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.12.3 — 2026-06-09
+
+### Fixed
+- **Time-tracking time-field input** — typing `:` manually in a start/end time field (popup, standby form, or grid cell) no longer produces a doubled separator (`19::0`); the explicit colon is absorbed cleanly. Entering a bare hour value (e.g. `20`) and pressing Enter is now accepted as `20:00` across all three input surfaces.
+
 ## v0.12.2 — 2026-06-06
 
 ### Added

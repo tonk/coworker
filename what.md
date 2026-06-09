@@ -708,3 +708,5 @@ Create an application that has all these features and requirements
 - Fix undeclarable timesheet alignment: day-cell deductions right-align with entered time; row totals show declarable time; consistent `-` prefix in UI and PDF exports; screen-reader labels via aria-describedby
 - Fix page help for time-tracking sheet (array i18n keys, modal scroll, declarable vs logged totals); add screenshot 24 for undeclarable grid documentation
 - Fix auth cookies: Secure flag only on direct TLS or X-Forwarded-Proto: https (fixes form login on HTTP and behind reverse proxies); document requirement in deploy templates
+
+- Fix time-tracking input fields: absorb a manually typed colon when the auto-colon is already present (prevents 19::0 double-separator); accept bare hour values (e.g. 20) as 20:00 on Enter in the start/end popup, standby form, and grid cell
