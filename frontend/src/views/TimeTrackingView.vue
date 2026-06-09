@@ -2267,26 +2267,42 @@ function openTimePopup(row, dateISO, event) {
   timePopupKey.value   = key
 }
 
-// Parse a wall-clock "H:MM" or "HH:MM" string to minutes-since-midnight.
+// Parse a wall-clock string to minutes-since-midnight.
+// Accepts "H:MM", "HH:MM", "HH:" (→ HH:00), or bare "HH" digits (→ HH:00).
 // Returns -1 when invalid.
 function parseWallClock(s) {
   if (!s) return -1
   const trimmed = s.trim()
-  const m = trimmed.match(/^(\d{1,2}):(\d{2})$/)
-  if (!m) return -1
-  const h = parseInt(m[1]), min = parseInt(m[2])
-  if (h > 23 || min > 59) return -1
-  return h * 60 + min
+  const full = trimmed.match(/^(\d{1,2}):(\d{0,2})$/)
+  if (full) {
+    const h = parseInt(full[1])
+    const min = full[2] ? parseInt(full[2]) : 0
+    if (h > 23 || min > 59) return -1
+    return h * 60 + min
+  }
+  // Bare 1-2 digits: "20" → 20:00, "9" → 09:00
+  const bare = trimmed.match(/^(\d{1,2})$/)
+  if (bare) {
+    const h = parseInt(bare[1])
+    if (h > 23) return -1
+    return h * 60
+  }
+  return -1
 }
 
 // Auto-insert colon while typing (e.g. "09" → "09:" after 2 digits).
 function onTimePopupInput(field, event) {
   let val = event.target.value.replace(/[^\d:]/g, '')
+  // Keep only the first colon; absorb any duplicate the user typed
+  const colon = val.indexOf(':')
+  if (colon >= 0) {
+    val = val.slice(0, colon + 1) + val.slice(colon + 1).replace(/:/g, '')
+  }
   // Auto-insert colon after 2 digits if user hasn't typed one yet
   if (val.length === 2 && !val.includes(':')) {
     val = val + ':'
-    event.target.value = val
   }
+  if (val !== event.target.value) event.target.value = val
   if (field === 'start') timePopupStart.value = val
   else timePopupEnd.value = val
 }
@@ -2455,10 +2471,15 @@ const standbyPreview = computed(() => {
 
 function onStandbyTimeInput(field, event) {
   let val = event.target.value.replace(/[^\d:]/g, '')
+  // Keep only the first colon; absorb any duplicate the user typed
+  const colon = val.indexOf(':')
+  if (colon >= 0) {
+    val = val.slice(0, colon + 1) + val.slice(colon + 1).replace(/:/g, '')
+  }
   if (val.length === 2 && !val.includes(':')) {
     val = val + ':'
-    event.target.value = val
   }
+  if (val !== event.target.value) event.target.value = val
   if (field === 'start') standbyForm.value.start_time = val
   else standbyForm.value.end_time = val
 }
