@@ -326,6 +326,8 @@
     "event_password_reset": "Adgangskode nulstillet",
     "event_mfa_ok": "MFA bekræftet",
     "event_mfa_failed": "MFA mislykket",
+    "event_mfa_challenge": "MFA-udfordring",
+    "event_mfa_trusted_device": "MFA sprunget over (betroet enhed)",
     "last_password_change": "Seneste adgangskodeskift",
     "mfa_enabled": "MFA",
     "owner": "Ejer",

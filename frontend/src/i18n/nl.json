@@ -326,6 +326,8 @@
     "event_password_reset": "Wachtwoord gereset",
     "event_mfa_ok": "MFA geverifieerd",
     "event_mfa_failed": "MFA mislukt",
+    "event_mfa_challenge": "MFA uitdaging",
+    "event_mfa_trusted_device": "MFA overgeslagen (vertrouwd apparaat)",
     "last_password_change": "Laatste wachtwoordwijziging",
     "mfa_enabled": "MFA",
     "owner": "Eigenaar",

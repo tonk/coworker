@@ -326,6 +326,8 @@
     "event_password_reset": "Lösenord återställt",
     "event_mfa_ok": "MFA verifierat",
     "event_mfa_failed": "MFA misslyckades",
+    "event_mfa_challenge": "MFA-utmaning",
+    "event_mfa_trusted_device": "MFA hoppades över (betrodd enhet)",
     "last_password_change": "Senaste lösenordsbyte",
     "mfa_enabled": "MFA",
     "owner": "Ägare",

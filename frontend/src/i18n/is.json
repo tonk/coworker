@@ -326,6 +326,8 @@
     "event_password_reset": "Lykilorð endurstillt",
     "event_mfa_ok": "MFA staðfest",
     "event_mfa_failed": "MFA mistókst",
+    "event_mfa_challenge": "MFA-áskorun",
+    "event_mfa_trusted_device": "MFA sleppt (traust tæki)",
     "last_password_change": "Síðasta lykilorðsbreyting",
     "mfa_enabled": "MFA",
     "owner": "Eigandi",

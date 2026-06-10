@@ -174,7 +174,6 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	now := time.Now()
 	database.DB.Model(&user).Update("last_login_at", now)
-	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "login_ok", "")
 
 	if !h.issueMFAChallengeOrSkip(c, user) {
 		return
@@ -187,6 +186,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 	setAuthCookies(c, tokens)
 	authLog(c, "login_ok", user.ID, user.Username, "")
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "login_ok", "")
 	resp := gin.H{
 		"access_token":  tokens.AccessToken,
 		"refresh_token": tokens.RefreshToken,
@@ -936,6 +936,7 @@ func (h *AuthHandler) issueMFAChallengeOrSkip(c *gin.Context, user models.User) 
 	if GetMFARememberDevicesPolicy() != "disabled" {
 		if token := getMFATrustToken(c); token != "" && checkAndRenewMFATrust(user.ID, token, c) {
 			authLog(c, "login_mfa_trusted_device", user.ID, user.Username, "")
+			recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "mfa_trusted_device", "")
 			return true
 		}
 	}
@@ -945,6 +946,7 @@ func (h *AuthHandler) issueMFAChallengeOrSkip(c *gin.Context, user models.User) 
 		return false
 	}
 	authLog(c, "login_mfa_challenge", user.ID, user.Username, "")
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "mfa_challenge", "")
 	c.JSON(http.StatusOK, gin.H{"mfa_required": true, "mfa_token": mfaToken})
 	return false
 }

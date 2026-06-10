@@ -326,6 +326,8 @@
     "event_password_reset": "Palavra-passe redefinida",
     "event_mfa_ok": "MFA verificado",
     "event_mfa_failed": "MFA falhou",
+    "event_mfa_challenge": "Desafio MFA",
+    "event_mfa_trusted_device": "MFA ignorado (dispositivo de confiança)",
     "last_password_change": "Última alteração de palavra-passe",
     "mfa_enabled": "MFA",
     "owner": "Proprietário",

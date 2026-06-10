@@ -3384,6 +3384,8 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .audit-badge--password_reset { background: #fef9c3; color: #854d0e; }
 .audit-badge--mfa_ok { background: #dbeafe; color: #1e40af; }
 .audit-badge--mfa_failed { background: #fee2e2; color: #991b1b; }
+.audit-badge--mfa_challenge { background: #ede9fe; color: #5b21b6; }
+.audit-badge--mfa_trusted_device { background: #f0fdf4; color: #166534; }
 
 .role-select {
   font-size: 12px;

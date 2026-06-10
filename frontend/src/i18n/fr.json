@@ -326,6 +326,8 @@
     "event_password_reset": "Réinitialisation du mot de passe",
     "event_mfa_ok": "MFA vérifié",
     "event_mfa_failed": "MFA échoué",
+    "event_mfa_challenge": "Défi MFA",
+    "event_mfa_trusted_device": "MFA ignoré (appareil de confiance)",
     "last_password_change": "Dernier changement de mot de passe",
     "mfa_enabled": "MFA",
     "owner": "Propriétaire",

@@ -326,6 +326,8 @@
     "event_password_reset": "Salasana nollattu",
     "event_mfa_ok": "MFA vahvistettu",
     "event_mfa_failed": "MFA epäonnistui",
+    "event_mfa_challenge": "MFA-haaste",
+    "event_mfa_trusted_device": "MFA ohitettu (luotettu laite)",
     "last_password_change": "Viimeisin salasanan vaihto",
     "mfa_enabled": "MFA",
     "owner": "Omistaja",

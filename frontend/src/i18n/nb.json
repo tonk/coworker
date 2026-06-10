@@ -326,6 +326,8 @@
     "event_password_reset": "Passord tilbakestilt",
     "event_mfa_ok": "MFA bekreftet",
     "event_mfa_failed": "MFA mislyktes",
+    "event_mfa_challenge": "MFA-utfordring",
+    "event_mfa_trusted_device": "MFA hoppet over (klarert enhet)",
     "last_password_change": "Siste passordendring",
     "mfa_enabled": "MFA",
     "owner": "Eier",
