@@ -233,6 +233,7 @@ func (h *PasskeyHandler) PasskeyRegisterFinish(c *gin.Context) {
 	}
 
 	authLog(c, "passkey_registered", userID, user.Username, "")
+	recordEvent(c.ClientIP(), clientStr(c), userID, user.Username, "passkey_registered", "")
 	c.JSON(http.StatusCreated, dbCred)
 }
 
@@ -392,5 +393,8 @@ func (h *PasskeyHandler) PasskeyDelete(c *gin.Context) {
 	}
 	database.DB.Delete(&cred)
 	authLog(c, "passkey_deleted", userID, "", "")
+	var user models.User
+	database.DB.Select("id, username").First(&user, userID)
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "passkey_deleted", "")
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }

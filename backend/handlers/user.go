@@ -37,6 +37,7 @@ func AdminRestoreUser(c *gin.Context) {
 	}
 	var user models.User
 	database.DB.First(&user, id)
+	recordAdminEvent(c, user.ID, user.Username, "admin_user_restored", "")
 	c.JSON(http.StatusOK, user)
 }
 
@@ -88,8 +89,11 @@ func AdminPurgeUser(c *gin.Context) {
 	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.ConversationMember{})
 	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.MessageReaction{})
 
-	// Hard-delete the user row itself
+	// Hard-delete the user row itself (load username before it's gone)
+	var purgedUser models.User
+	database.DB.Unscoped().Select("id, username").First(&purgedUser, uid)
 	database.DB.Unscoped().Delete(&models.User{}, uid)
+	recordAdminEvent(c, uid, purgedUser.Username, "admin_user_purged", "")
 	c.JSON(http.StatusOK, gin.H{"message": "purged"})
 }
 
@@ -287,6 +291,24 @@ func AdminUpdateUser(c *gin.Context) {
 
 	var user models.User
 	database.DB.First(&user, id)
+
+	// Build a detail string for security-sensitive fields only.
+	var details []string
+	if _, ok := updates["global_role"]; ok {
+		details = append(details, "role="+user.GlobalRole)
+	}
+	if _, ok := updates["password_hash"]; ok {
+		details = append(details, "password_reset")
+	}
+	if v, ok := updates["is_active"]; ok {
+		if active, _ := v.(bool); active {
+			details = append(details, "activated")
+		} else {
+			details = append(details, "deactivated")
+		}
+	}
+	detail := strings.Join(details, " ")
+	recordAdminEvent(c, user.ID, user.Username, "admin_user_updated", detail)
 	c.JSON(http.StatusOK, user)
 }
 
@@ -307,6 +329,7 @@ func AdminDisableUserMFA(c *gin.Context) {
 		"totp_secret":  "",
 	})
 	database.DB.First(&user, id)
+	recordAdminEvent(c, user.ID, user.Username, "admin_mfa_disabled", "")
 	c.JSON(http.StatusOK, user)
 }
 
@@ -320,8 +343,14 @@ func AdminDeleteUser(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "cannot delete your own account"})
 		return
 	}
+	var targetUser models.User
+	if err := database.DB.Select("id, username").First(&targetUser, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
 	database.DB.Where("user_id = ?", id).Delete(&models.CustomerAccess{})
 	database.DB.Delete(&models.User{}, id)
+	recordAdminEvent(c, targetUser.ID, targetUser.Username, "admin_user_deleted", "")
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
 
@@ -384,5 +413,6 @@ func AdminCreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	recordAdminEvent(c, user.ID, user.Username, "admin_user_created", "role="+user.GlobalRole)
 	c.JSON(http.StatusCreated, user)
 }

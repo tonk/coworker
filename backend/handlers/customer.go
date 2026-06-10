@@ -346,6 +346,12 @@ func ListContracts(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
+	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	if err := requireCustomerAccess(uint(id), userID, role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 	var contracts []models.Contract
 	database.DB.Preload("TimeSlots").Where("customer_id = ?", id).Order("id asc").Find(&contracts)
 	c.JSON(http.StatusOK, contracts)

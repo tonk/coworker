@@ -1333,6 +1333,7 @@
         <tr>
           <th>{{ $t('timeTracking.date') }}</th>
           <th>{{ $t('admin.login_history_event') }}</th>
+          <th>{{ $t('admin.login_history_actor') }}</th>
           <th>{{ $t('admin.login_history_ip') }}</th>
           <th>{{ $t('admin.login_history_client') }}</th>
           <th>{{ $t('admin.login_history_detail') }}</th>
@@ -1346,6 +1347,7 @@
               {{ $t('admin.event_' + entry.event, entry.event) }}
             </span>
           </td>
+          <td style="color:var(--color-text-muted);font-size:12px">{{ entry.actor_id !== entry.user_id ? entry.actor_username : '' }}</td>
           <td><code>{{ entry.ip }}</code></td>
           <td>{{ entry.client }}</td>
           <td style="color:var(--color-text-muted);font-size:12px">{{ entry.detail }}</td>
@@ -3386,6 +3388,18 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .audit-badge--mfa_failed { background: #fee2e2; color: #991b1b; }
 .audit-badge--mfa_challenge { background: #ede9fe; color: #5b21b6; }
 .audit-badge--mfa_trusted_device { background: #f0fdf4; color: #166534; }
+.audit-badge--mfa_disabled { background: #fef9c3; color: #854d0e; }
+.audit-badge--email_changed { background: #fef9c3; color: #854d0e; }
+.audit-badge--passkey_registered { background: #dbeafe; color: #1e40af; }
+.audit-badge--passkey_deleted { background: #fee2e2; color: #991b1b; }
+.audit-badge--api_key_created { background: #dbeafe; color: #1e40af; }
+.audit-badge--api_key_deleted { background: #fee2e2; color: #991b1b; }
+.audit-badge--admin_user_created { background: #dcfce7; color: #166534; }
+.audit-badge--admin_user_updated { background: #fef9c3; color: #854d0e; }
+.audit-badge--admin_user_deleted { background: #fee2e2; color: #991b1b; }
+.audit-badge--admin_user_restored { background: #dbeafe; color: #1e40af; }
+.audit-badge--admin_user_purged { background: #fee2e2; color: #991b1b; }
+.audit-badge--admin_mfa_disabled { background: #fef9c3; color: #854d0e; }
 
 .role-select {
   font-size: 12px;

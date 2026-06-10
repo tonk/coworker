@@ -422,6 +422,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 
 	var user models.User
 	database.DB.First(&user, userID)
+	if req.Email != "" {
+		recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "email_changed", "")
+	}
 	c.JSON(http.StatusOK, user)
 }
 
@@ -648,6 +651,7 @@ func (h *AuthHandler) MFADisable(c *gin.Context) {
 		"totp_secret":  "",
 	})
 	authLog(c, "mfa_disabled", user.ID, user.Username, "")
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "mfa_disabled", "")
 	c.JSON(http.StatusOK, gin.H{"message": "mfa disabled"})
 }
 
@@ -794,15 +798,35 @@ func authLog(c *gin.Context, event string, userID uint, username, detail string)
 	authLogRaw(c.ClientIP(), clientStr(c), event, userID, username, detail)
 }
 
-// recordEvent persists an audit event to the login_history table.
+// recordEvent persists a self-action audit event (actor == subject).
 func recordEvent(ip, client string, userID uint, username, event, detail string) {
 	database.DB.Create(&models.LoginHistory{
-		UserID:   userID,
-		Username: username,
-		Event:    event,
-		Detail:   detail,
-		IP:       ip,
-		Client:   client,
+		UserID:        userID,
+		Username:      username,
+		ActorID:       userID,
+		ActorUsername: username,
+		Event:         event,
+		Detail:        detail,
+		IP:            ip,
+		Client:        client,
+	})
+}
+
+// recordAdminEvent persists an admin-on-behalf audit event.
+// The actor is read from the gin context (the admin performing the action);
+// the subject is the user being acted upon.
+func recordAdminEvent(c *gin.Context, targetUserID uint, targetUsername, event, detail string) {
+	actorID := middleware.GetUserID(c)
+	actorUsername := middleware.GetUsername(c)
+	database.DB.Create(&models.LoginHistory{
+		UserID:        targetUserID,
+		Username:      targetUsername,
+		ActorID:       actorID,
+		ActorUsername: actorUsername,
+		Event:         event,
+		Detail:        detail,
+		IP:            c.ClientIP(),
+		Client:        clientStr(c),
 	})
 }
 

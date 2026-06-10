@@ -914,6 +914,11 @@ func GetInboxTicketViewers(c *gin.Context) {
 // Supports all standard ticket fields plus customer_id to move to a customer.
 func UpdateInboxTicket(c *gin.Context) {
 	userID := middleware.GetUserID(c)
+	role := middleware.GetGlobalRole(c)
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})
@@ -1208,6 +1213,11 @@ func CreateInboxTicket(c *gin.Context) {
 
 // DeleteInboxTicket DELETE /api/v1/tickets/inbox/:ticketId
 func DeleteInboxTicket(c *gin.Context) {
+	role := middleware.GetGlobalRole(c)
+	if err := requireNotCustomerRole(role); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
 	ticketID, err := strconv.ParseUint(c.Param("ticketId"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ticket id"})

@@ -82,6 +82,9 @@ func CreateAPIKey(c *gin.Context) {
 	}
 
 	// Return the plain text key ONLY on creation
+	var user models.User
+	database.DB.Select("id, username").First(&user, userID)
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "api_key_created", "name="+key.Name+" prefix="+key.KeyPrefix)
 	c.JSON(http.StatusCreated, gin.H{
 		"id":         key.ID,
 		"name":       key.Name,
@@ -105,6 +108,9 @@ func DeleteAPIKey(c *gin.Context) {
 		return
 	}
 	database.DB.Delete(&key)
+	var user models.User
+	database.DB.Select("id, username").First(&user, userID)
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "api_key_deleted", "name="+key.Name+" prefix="+key.KeyPrefix)
 	c.JSON(http.StatusOK, gin.H{"message": "revoked"})
 }
 
@@ -149,7 +155,7 @@ func CreateProjectAPIKey(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
 		return
 	}
-	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "member"); err != nil {
+	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "owner"); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 		return
 	}
@@ -176,6 +182,9 @@ func CreateProjectAPIKey(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	var creator models.User
+	database.DB.Select("id, username").First(&creator, userID)
+	recordEvent(c.ClientIP(), clientStr(c), creator.ID, creator.Username, "api_key_created", "project="+project.Slug+" name="+key.Name+" prefix="+key.KeyPrefix)
 	c.JSON(http.StatusCreated, gin.H{
 		"id":         key.ID,
 		"name":       key.Name,
@@ -231,6 +240,7 @@ func AdminCreateUserAPIKey(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
+	recordAdminEvent(c, uint(id), user.Username, "api_key_created", "name="+key.Name+" prefix="+key.KeyPrefix)
 	c.JSON(http.StatusCreated, gin.H{
 		"id":         key.ID,
 		"name":       key.Name,
@@ -257,7 +267,10 @@ func AdminDeleteUserAPIKey(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
+	var targetUser models.User
+	database.DB.Select("id, username").First(&targetUser, uint(id))
 	database.DB.Delete(&key)
+	recordAdminEvent(c, targetUser.ID, targetUser.Username, "api_key_deleted", "name="+key.Name+" prefix="+key.KeyPrefix)
 	c.JSON(http.StatusOK, gin.H{"message": "revoked"})
 }
 
@@ -268,7 +281,7 @@ func DeleteProjectAPIKey(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
 		return
 	}
-	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "member"); err != nil {
+	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "owner"); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 		return
 	}
@@ -283,5 +296,8 @@ func DeleteProjectAPIKey(c *gin.Context) {
 		return
 	}
 	database.DB.Delete(&key)
+	var deleter models.User
+	database.DB.Select("id, username").First(&deleter, userID)
+	recordEvent(c.ClientIP(), clientStr(c), deleter.ID, deleter.Username, "api_key_deleted", "project="+project.Slug+" name="+key.Name+" prefix="+key.KeyPrefix)
 	c.JSON(http.StatusOK, gin.H{"message": "revoked"})
 }
