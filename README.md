@@ -8,11 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.5)
+## Latest release (v0.12.6)
 
-- **Contract Rates Overview** — ₡ button in Customers and Time Tracking opens a modal with all standby time slots across every accessible customer, grouped by customer → contract.
-- **New API endpoint** `GET /api/v1/customers/rates` — returns all contracts with time slots, access-controlled per user.
-- **Doc fixes** — database schema corrected for `contracts`, `customers`, `contract_time_slots`, `customer_favorites`, and `customer_access` tables.
+- **Contract time slot week preview fix** — all slots now show their week preview, not just the first one. Equal start/end times render as 24-hour coverage. Each slot gets a distinct colour so multiple slots are easy to distinguish.
 
 ## Experiment
 

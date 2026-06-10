@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.12.6 — 2026-06-10
+
+### Fixed
+- **Contract time slot week preview** — slots after the first now always show their week preview. Equal start/end times (e.g. `07:00 → 07:00`) are treated as a 24-hour cycle and render correctly. Each slot's preview bar uses a distinct colour (primary → amber → emerald → violet → red → teal) so multiple slots are easy to tell apart.
+
 ## v0.12.5 — 2026-06-10
 
 ### Added

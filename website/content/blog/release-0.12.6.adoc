@@ -1,0 +1,48 @@
+---
+title: "v0.12.6: Contract time slot preview fix"
+date: "2026-06-10"
+author: "Ton Kersten"
+description: "All time slots on a contract now show their week preview, each in a distinct colour. Equal start/end times are treated as 24-hour coverage."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` fixes the week preview on the contract time slot editor so every slot renders correctly.
+
+== What was broken
+
+When a contract had more than one time slot, only the first slot showed the *Week preview* timeline.
+Any slot with equal start and end times (e.g. `07:00 → 07:00`) also had no preview, even when it was the only slot.
+
+== What is fixed
+
+=== All slots show a preview
+
+The guard that hid the preview when start time equals end time has been removed.
+Equal times now mean a *24-hour cycle* — `07:00 → 07:00` covers the full day on every matching weekday, plus overflow days according to the *Ends after* setting.
+
+For example, a slot configured as `07:00 → 07:00`, Days: *Weekends*, Ends after: *3 days later* represents Friday 07:00 through Monday 07:00 and the preview now shows that correctly.
+
+=== Distinct colour per slot
+
+Each slot's preview bar uses a colour from a fixed palette so you can tell them apart at a glance:
+
+[cols="1,2"]
+|===
+|Slot |Colour
+
+|1st |Primary (blue)
+|2nd |Amber
+|3rd |Emerald
+|4th |Violet
+|5th |Red
+|6th |Teal
+|7th+ |Cycles back to primary
+|===
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+No database or configuration changes are required.
