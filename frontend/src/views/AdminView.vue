@@ -1323,7 +1323,7 @@
   </BaseModal>
 
   <!-- Login History Modal -->
-  <BaseModal v-if="loginHistoryUser" :title="$t('admin.login_history') + ' — ' + (loginHistoryUser.display_name || loginHistoryUser.username)" @close="loginHistoryUser = null">
+  <BaseModal v-if="loginHistoryUser" :title="$t('admin.login_history') + ' — ' + (loginHistoryUser.display_name || loginHistoryUser.username)" width="min(95vw, 1080px)" @close="loginHistoryUser = null">
     <div v-if="loginHistoryLoading" style="text-align:center;padding:24px">
       <div class="spinner" style="width:28px;height:28px;border-width:3px;display:inline-block"></div>
     </div>
@@ -1331,11 +1331,11 @@
     <table v-else class="data-table">
       <thead>
         <tr>
-          <th>{{ $t('timeTracking.date') }}</th>
+          <th style="white-space:nowrap">{{ $t('timeTracking.date') }}</th>
           <th>{{ $t('admin.login_history_event') }}</th>
-          <th>{{ $t('admin.login_history_actor') }}</th>
-          <th>{{ $t('admin.login_history_ip') }}</th>
-          <th>{{ $t('admin.login_history_client') }}</th>
+          <th style="min-width:120px">{{ $t('admin.login_history_actor') }}</th>
+          <th style="white-space:nowrap">{{ $t('admin.login_history_ip') }}</th>
+          <th style="min-width:200px">{{ $t('admin.login_history_client') }}</th>
           <th>{{ $t('admin.login_history_detail') }}</th>
         </tr>
       </thead>
@@ -1348,8 +1348,8 @@
             </span>
           </td>
           <td style="color:var(--color-text-muted);font-size:12px">{{ entry.actor_id !== entry.user_id ? entry.actor_username : '' }}</td>
-          <td><code>{{ entry.ip }}</code></td>
-          <td>{{ entry.client }}</td>
+          <td style="white-space:nowrap"><code>{{ entry.ip }}</code></td>
+          <td style="font-size:12px">{{ entry.client }}</td>
           <td style="color:var(--color-text-muted);font-size:12px">{{ entry.detail }}</td>
         </tr>
       </tbody>

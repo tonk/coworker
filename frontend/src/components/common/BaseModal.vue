@@ -5,6 +5,7 @@
         ref="modalEl"
         class="modal"
         :class="{ 'modal-resizable': resizable, 'modal-maximized': maximized }"
+        :style="width ? { '--modal-width': width } : undefined"
         role="dialog"
         aria-modal="true"
         :aria-labelledby="titleId"
@@ -35,7 +36,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
-const props = defineProps({ title: String, resizable: { type: Boolean, default: false } })
+const props = defineProps({ title: String, resizable: { type: Boolean, default: false }, width: { type: String, default: '' } })
 const emit = defineEmits(['close'])
 
 const modalEl = ref(null)
