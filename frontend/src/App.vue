@@ -158,9 +158,10 @@ const routeCrumbs = computed(() => {
   })
 })
 
-watch([() => notificationsStore.hasUnread, projectChatUnread], ([hasUnread, chatUnread]) => {
-  document.title = (hasUnread || chatUnread > 0) ? '● WarmDesk' : 'WarmDesk'
-})
+watch([() => notificationsStore.hasUnread, projectChatUnread, () => systemStore.isTimetrackingMode], ([hasUnread, chatUnread]) => {
+  const base = systemStore.isTimetrackingMode ? 'WarmDesk - Time Tracking' : 'WarmDesk'
+  document.title = (hasUnread || chatUnread > 0) ? `● ${base}` : base
+}, { immediate: true })
 
 const { updateAvailable, latestVersion, releaseUrl, downloadUrl, check: checkForUpdate } = useUpdateCheck()
 let versionTimer = null
