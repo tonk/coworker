@@ -15,15 +15,15 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.12.4"
+  warmdesk_version = "v0.12.5"
   release_date     = "2026-06-10"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.12.4/"
+  release_blog     = "blog/release-0.12.5/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Per-user audit trail** — full login and activity history per user in the admin panel, including IP, client, and actor for every event.",
-    "**RBAC fixes** — customer-role inbox ticket write blocked, ListContracts IDOR fixed, project API keys require owner role.",
-    "**Ansible collection v0.5.0** — new epic, sprint, and ticket_checklist_template modules.",
+    "**Contract Rates Overview** — see all standby time slots across every customer at a glance via the ₡ button in Customers and Time Tracking.",
+    "**New API endpoint** `GET /api/v1/customers/rates` — returns all contracts with time slots, access-controlled per user.",
+    "**Doc fixes** — database schema corrected for contracts, customers, contract_time_slots, customer_favorites, and customer_access tables.",
   ]
 
 [markup]
@@ -42,7 +42,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.12.4"
+      "warmdesk-version" = "v0.12.5"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]

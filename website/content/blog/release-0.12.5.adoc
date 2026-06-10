@@ -1,0 +1,105 @@
+---
+title: "v0.12.5: Contract Rates Overview"
+date: "2026-06-10"
+author: "Ton Kersten"
+description: "See all standby and after-hours rates across every customer at a glance — no more clicking through each contract to find what rate applies."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` adds a Contract Rates Overview so you can see every standby and after-hours rate across all accessible customers in one place, along with a corrected database schema reference.
+
+== Contract Rates Overview
+
+Until now, finding what rate applies during a standby shift meant opening each customer, navigating to the contract, and scrolling to the time slots — one customer at a time.
+
+A new *₡ Contract Rates* button is now available in two places:
+
+* The *Customers* page header (next to *New Customer*)
+* The *Time Tracking* toolbar (next to the ⚙ manage button)
+
+Clicking it opens a modal that groups every contract time slot by customer → contract, showing:
+
+[cols="1,3"]
+|===
+|Column |What it shows
+
+|Label
+|The slot name, e.g. `Standby - week`
+
+|From – To
+|Wall-clock window with an overnight indicator when the end time is on a later day
+
+|Days
+|Which days the slot applies (All days, Weekdays, a specific weekday, etc.)
+
+|Factor
+|Multiplier on the base rate (`×1.5`, `×2.0`, …) — shown as `—` if not set
+
+|Rate
+|Flat hourly rate override — shown as `—` if not set
+|===
+
+Customers and contracts without any time slots are excluded from the list.
+Access control is the same as everywhere else: non-admins only see customers they are assigned to.
+
+=== API endpoint
+
+A new read-only endpoint backs the modal:
+
+[source]
+----
+GET /api/v1/customers/rates
+----
+
+Response shape:
+
+[source,json]
+----
+[
+  {
+    "customer_id": 1,
+    "customer_name": "ACME Corp",
+    "contracts": [
+      {
+        "id": 3,
+        "name": "Main 2024",
+        "price_per_hour": 100,
+        "currency": "€",
+        "time_slots": [
+          {
+            "id": 7,
+            "label": "Standby - week",
+            "start_time": "19:00",
+            "end_time": "07:00",
+            "day_type": "weekdays",
+            "end_day_offset": 1,
+            "multiplication_factor": 1.5
+          }
+        ]
+      }
+    ]
+  }
+]
+----
+
+Only contracts that have at least one time slot are included.
+
+== Documentation corrections
+
+The link:../database-schema[database schema reference] had several stale entries that have now been corrected:
+
+* `contracts` — removed non-existent `budget_hours`, `status`, and `deleted_at` columns; added `price_per_hour` and `currency`
+* `customers` — added `logo_url`, `position`, `time_tracking_only`, and `created_by_id`; removed `slug`, `website`, `color`, and `deleted_at` (never in the model)
+* `contract_time_slots` — new table entry documenting all 8 columns
+* `customer_favorites` and `customer_access` — corrected to composite primary keys (no surrogate `id`); `customer_access` role values fixed to `member` / `admin`
+
+The link:../api[REST API reference] gained a *Customers and contracts* section listing all 10 endpoints.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No database changes are required — the new endpoint reads existing data.

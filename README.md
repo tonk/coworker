@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.4)
+## Latest release (v0.12.5)
 
-- **Per-user audit trail** — admin Edit User panel shows a complete login and activity history: logins (success/fail), logoffs, password changes, MFA events, passkey and API key lifecycle, and admin actions on the account, each with IP, client, and actor.
-- **RBAC fixes** — customer-role users blocked from inbox ticket writes; `ListContracts` IDOR fixed; project API keys now require owner role.
-- **Ansible collection v0.5.0** — new `epic`, `sprint`, and `ticket_checklist_template` modules; `user` module gains `restore` and `purge` states.
+- **Contract Rates Overview** — ₡ button in Customers and Time Tracking opens a modal with all standby time slots across every accessible customer, grouped by customer → contract.
+- **New API endpoint** `GET /api/v1/customers/rates` — returns all contracts with time slots, access-controlled per user.
+- **Doc fixes** — database schema corrected for `contracts`, `customers`, `contract_time_slots`, `customer_favorites`, and `customer_access` tables.
 
 ## Experiment
 

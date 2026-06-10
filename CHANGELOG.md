@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.12.5 — 2026-06-10
+
+### Added
+- **Contract Rates Overview** — a ₡ button in the Customers page header and the Time Tracking toolbar opens a modal listing every contract time slot across all accessible customers, grouped by customer → contract, so standby rates are visible at a glance without navigating into each customer.
+- New API endpoint `GET /api/v1/customers/rates` backing the above; returns customers with contracts that have ≥1 time slot, filtered by the same access control as `GET /customers`.
+
+### Fixed
+- **Database schema documentation** — `contracts` table entry had stale columns (`budget_hours`, `status`, `deleted_at`) and was missing `price_per_hour` and `currency`; `customers` table was missing `logo_url`, `position`, `time_tracking_only`, `created_by_id`; `customer_favorites` and `customer_access` showed a surrogate `id` PK that does not exist; `contract_time_slots` table was absent entirely. All corrected.
+
 ## v0.12.4 — 2026-06-10
 
 ### Added
