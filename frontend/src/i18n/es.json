@@ -324,6 +324,8 @@
     "event_logout": "Cierre de sesión",
     "event_password_changed": "Contraseña cambiada",
     "event_password_reset": "Contraseña restablecida",
+    "event_mfa_ok": "MFA verificado",
+    "event_mfa_failed": "MFA fallido",
     "last_password_change": "Último cambio de contraseña",
     "mfa_enabled": "MFA",
     "owner": "Propietario",

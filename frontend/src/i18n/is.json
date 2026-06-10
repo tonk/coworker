@@ -324,6 +324,8 @@
     "event_logout": "Útskráning",
     "event_password_changed": "Lykilorð breytt",
     "event_password_reset": "Lykilorð endurstillt",
+    "event_mfa_ok": "MFA staðfest",
+    "event_mfa_failed": "MFA mistókst",
     "last_password_change": "Síðasta lykilorðsbreyting",
     "mfa_enabled": "MFA",
     "owner": "Eigandi",

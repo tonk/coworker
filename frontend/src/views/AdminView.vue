@@ -3382,6 +3382,8 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .audit-badge--logout { background: #f1f5f9; color: #64748b; }
 .audit-badge--password_changed { background: #fef9c3; color: #854d0e; }
 .audit-badge--password_reset { background: #fef9c3; color: #854d0e; }
+.audit-badge--mfa_ok { background: #dbeafe; color: #1e40af; }
+.audit-badge--mfa_failed { background: #fee2e2; color: #991b1b; }
 
 .role-select {
   font-size: 12px;

@@ -324,6 +324,8 @@
     "event_logout": "Abmeldung",
     "event_password_changed": "Passwort geändert",
     "event_password_reset": "Passwort zurückgesetzt",
+    "event_mfa_ok": "MFA bestätigt",
+    "event_mfa_failed": "MFA fehlgeschlagen",
     "last_password_change": "Letzte Passwortänderung",
     "mfa_enabled": "MFA",
     "owner": "Eigentümer",

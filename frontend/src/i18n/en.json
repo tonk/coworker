@@ -347,6 +347,8 @@
     "event_logout": "Logout",
     "event_password_changed": "Password changed",
     "event_password_reset": "Password reset",
+    "event_mfa_ok": "MFA verified",
+    "event_mfa_failed": "MFA failed",
     "last_password_change": "Last Password Change",
     "mfa_enabled": "MFA",
     "owner": "Owner",

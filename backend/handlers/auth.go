@@ -501,6 +501,7 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 		// Use 400 so the axios 401 interceptor does not fire and redirect the user.
 		// The frontend shows an "expired session" message and resets to step 1.
 		authLog(c, "mfa_verify_failed", 0, "", "reason=session_expired")
+		recordEvent(c.ClientIP(), clientStr(c), 0, "", "mfa_failed", "session_expired")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "mfa_session_expired"})
 		return
 	}
@@ -508,12 +509,14 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 	var user models.User
 	if err := database.DB.First(&user, claims.UserID).Error; err != nil {
 		authLog(c, "mfa_verify_failed", claims.UserID, claims.Username, "reason=user_not_found")
+		recordEvent(c.ClientIP(), clientStr(c), claims.UserID, claims.Username, "mfa_failed", "user_not_found")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "mfa_session_expired"})
 		return
 	}
 
 	if !user.TOTPEnabled || !h.authSvc.VerifyTOTP(user.TOTPSecret, req.Code) {
 		authLog(c, "mfa_verify_failed", user.ID, user.Username, "reason=invalid_code")
+		recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "mfa_failed", "invalid_code")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "invalid_code"})
 		return
 	}
@@ -543,6 +546,7 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 	}
 	setAuthCookies(c, tokens)
 	authLog(c, "mfa_verify_ok", user.ID, user.Username, "")
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "mfa_ok", "")
 	resp := gin.H{
 		"access_token":  tokens.AccessToken,
 		"refresh_token": tokens.RefreshToken,
