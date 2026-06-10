@@ -333,6 +333,20 @@
                   <option v-for="n in 6" :key="n" :value="n">{{ $t('contract.slot_end_day_offset_' + n) }}</option>
                 </select>
               </div>
+              <div v-if="slotDurationMinutes(slot) !== null" class="slot-field slot-field-duration">
+                <label class="slot-field-label">{{ $t('contract.slot_duration') }}</label>
+                <div class="slot-duration-summary">
+                  <template v-if="getCheckedDayIndices(slot.day_type).length > 1">
+                    <span v-for="i in getCheckedDayIndices(slot.day_type)" :key="i" class="slot-dur-item">
+                      {{ slotDowAbbrevs[i] }}: {{ formatMinutes(slotDurationMinutes(slot)) }}
+                    </span>
+                    <span class="slot-dur-total">= {{ formatMinutes(getCheckedDayIndices(slot.day_type).length * slotDurationMinutes(slot)) }}</span>
+                  </template>
+                  <template v-else>
+                    <span class="slot-dur-single">{{ formatMinutes(slotDurationMinutes(slot)) }}</span>
+                  </template>
+                </div>
+              </div>
               <div class="slot-field">
                 <label class="slot-field-label">{{ $t('contract.slot_factor') }} <HelpIcon i18n-key="help.fields.slot_factor" align="start" /></label>
                 <input class="form-input" type="number" min="0" step="0.01" v-model="slot.multiplication_factor" :aria-label="$t('contract.slot_factor')" :placeholder="'×'" />
@@ -574,6 +588,24 @@ function slotSegColor(idx) {
 
 function slotPreviewReady(slot) {
   return slotPreviewReadyFn(slot)
+}
+
+function slotDurationMinutes(slot) {
+  if (!slot.start_time || !slot.end_time) return null
+  const [sh, sm] = slot.start_time.split(':').map(Number)
+  const [eh, em] = slot.end_time.split(':').map(Number)
+  if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) return null
+  const startMins = sh * 60 + sm
+  const endMins = eh * 60 + em
+  if (endMins > startMins) return endMins - startMins
+  const offset = (slot.end_day_offset > 0 ? slot.end_day_offset : 1)
+  return (24 * 60 - startMins) + endMins + (offset - 1) * 24 * 60
+}
+
+function formatMinutes(mins) {
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return m === 0 ? `${h}h` : `${h}h ${m}m`
 }
 
 function slotPreviewDays(slot) {
@@ -1274,6 +1306,11 @@ async function deleteContract(grp) {
   min-width: 0;
 }
 .slot-field-days { flex: 1; min-width: 110px; }
+.slot-field-duration { flex: 1; min-width: 140px; }
+.slot-duration-summary { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: 12px; padding-top: 2px; }
+.slot-dur-item { color: var(--color-text); }
+.slot-dur-total { color: var(--color-primary); font-weight: 600; white-space: nowrap; }
+.slot-dur-single { color: var(--color-primary); font-weight: 600; }
 .slot-field .form-input { padding: 5px 7px; font-size: 13px; width: 90px; }
 .slot-field-days .form-input { width: 100%; }
 .slot-day-checks { display: flex; gap: 3px; flex-wrap: wrap; }

@@ -122,6 +122,7 @@
     "slot_label": "Etichetta",
     "slot_start": "Da",
     "slot_end": "A",
+    "slot_duration": "Durata",
     "slot_factor": "Fattore",
     "slot_rate": "Tariffa",
     "slot_overnight_hint": "Se l'ora di fine è precedente a quella di inizio, la fascia continua nei giorni successivi. Usa «Termina dopo» per scegliere quando vale l'ora di fine (1 = mattina successiva, 2 = due giorni dopo — es. venerdì 19:00 fino a domenica 07:00).",
@@ -1801,7 +1802,8 @@
       "password_min_length": "Una lunghezza di 12 o più caratteri è più efficace delle password corte con regole di caratteri complesse. Considera di impostare un minimo lungo con altri requisiti leggeri — i requisiti di complessità portano spesso a pattern prevedibili come 'Password1!'.",
       "webhook_type": "Seleziona la piattaforma che invia webhook. I payload GitHub, GitLab, Gitea e Forgejo vengono analizzati automaticamente: commit e pull request vengono pubblicati nella chat del progetto, e i riferimenti a schede (es. PRJ-42) nei messaggi di commit vengono collegati automaticamente alla scheda corrispondente. Generico invia solo una semplice notifica JSON.",
       "webhook_secret": "Un token incluso in ogni richiesta del repository per verificare che provenga da una fonte legittima. Copialo ora — non verrà mostrato di nuovo. Incollalo nelle impostazioni webhook del repository come segreto.",
-      "slot_factor": "Moltiplica la tariffa oraria base del contratto per il tempo registrato durante questa fascia. Ad esempio, 1,5 significa 1,5 × la tariffa base. Lascia a 1 per usare solo il campo tariffa della fascia senza moltiplicare.",
+      "slot_duration": "Durata",
+    "slot_factor": "Moltiplica la tariffa oraria base del contratto per il tempo registrato durante questa fascia. Ad esempio, 1,5 significa 1,5 × la tariffa base. Lascia a 1 per usare solo il campo tariffa della fascia senza moltiplicare.",
       "slot_rate": "Tariffa oraria fissa per il tempo registrato durante questa fascia, che sostituisce la tariffa oraria base del contratto. Se sono impostati sia una tariffa che un moltiplicatore, la tariffa viene moltiplicata. Lascia vuoto per usare solo il moltiplicatore sulla tariffa base del contratto.",
       "slot_end_day": "Per le fasce notturne, seleziona quando cade l'orario di fine. 'Stesso giorno' termina prima di mezzanotte. 'Giorno seguente' termina la mattina successiva (es. inizio venerdì 19:00, fine sabato 07:00). 'Due giorni dopo' copre un turno che si estende per una notte intera e un giorno.",
       "slot_day_type": "Limita questa fascia tariffaria a giorni specifici. 'Tutti i giorni' si applica ogni giorno; 'Giorni feriali' copre lunedì–venerdì; 'Fine settimana' copre sabato–domenica; le opzioni per giorni singoli si applicano solo in quel preciso giorno della settimana."

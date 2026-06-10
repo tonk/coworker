@@ -122,6 +122,7 @@
     "slot_label": "Merki",
     "slot_start": "Frá",
     "slot_end": "Til",
+    "slot_duration": "Lengd",
     "slot_factor": "Margfaldari",
     "slot_rate": "Gjald",
     "slot_overnight_hint": "Ef lokatími er fyrir byrjunartíma heldur slotið áfram á síðari dögum. Veldu undir «Lýkur eftir» hvenær lokatími gildir (1 = næsta morgun, 2 = tvo daga síðar — t.d. föstudagur 19:00 til sunnudags 07:00).",
@@ -1801,7 +1802,8 @@
       "password_min_length": "Lengd upp á 12 eða fleiri stafi er áhrifaríkari en stutt lykilorð með flóknum tegnreglum. Íhugaðu að stilla langan lágmark með léttar aðrar kröfur — flókleikakröfur leiða oft til fyrirsjáanlegra mynstra eins og 'Lykilord1!'.",
       "webhook_type": "Veldu þá vettvang sem sendir webhook. GitHub-, GitLab-, Gitea- og Forgejo-hleðslur eru þáttaðar sjálfkrafa: commitum og pull requestum er birt í verkefnaspjallinu og spilstilvísanir (t.d. PRJ-42) í commit-skilaboðum tengjast sjálfkrafa við samsvarandi spil. Almenn sendir aðeins einfalda JSON-tilkynningu.",
       "webhook_secret": "Lykill sem er innifalinn í hverri beiðni frá geymslu þinni til að staðfesta að hún komi frá lögmætum uppruna. Afritaðu hann núna — hann verður ekki sýndur aftur. Límdu hann inn í webhook-stillingar geymslu þinnar sem leyndarmál.",
-      "slot_factor": "Margfaldar grunntímaverð samningsins fyrir tíma skráðan á þessum rauf. Til dæmis þýðir 1,5 að 1,5 × grunntímaverðið er notað. Skildu eftir á 1 til að nota aðeins verðreitinn á rafinni án margföldunar.",
+      "slot_duration": "Lengd",
+    "slot_factor": "Margfaldar grunntímaverð samningsins fyrir tíma skráðan á þessum rauf. Til dæmis þýðir 1,5 að 1,5 × grunntímaverðið er notað. Skildu eftir á 1 til að nota aðeins verðreitinn á rafinni án margföldunar.",
       "slot_rate": "Fast tímaverð fyrir tíma skráðan á þessari rauf, sem hnekkir grunntímaverði samningsins. Ef bæði verð og margfaldari eru stillt er verðið margfaldað. Skildu eftir tómt til að nota aðeins margfaldarann á grunntímaverð samningsins.",
       "slot_end_day": "Fyrir næturraufar skaltu velja hvenær lokatíminn fellur. 'Sama dag' lýkur fyrir miðnætti. 'Næsti dagur' lýkur næsta morgun (t.d. byrjun föstudagur 19:00, lok laugardagur 07:00). 'Tveimur dögum síðar' nær yfir vakt sem spannar heila nótt og dag.",
       "slot_day_type": "Takmarkar þessa verðrauf við tilteknar daga. 'Allir dagar' gildir á hverjum degi; 'Virkir dagar' nær yfir mánudag–föstudag; 'Helgar' nær yfir laugardag–sunnudag; einstakar dagsvalkostir gilda aðeins á þeim nákvæma vikudegi."

@@ -133,6 +133,7 @@
     "slot_days_friday": "Friday",
     "slot_days_saturday": "Saturday",
     "slot_days_sunday": "Sunday",
+    "slot_duration": "Duration",
     "slot_factor": "Factor",
     "slot_rate": "Rate",
     "slot_end_day_offset": "Ends after",

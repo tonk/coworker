@@ -122,6 +122,7 @@
     "slot_label": "Etiqueta",
     "slot_start": "Desde",
     "slot_end": "Hasta",
+    "slot_duration": "Duración",
     "slot_factor": "Factor",
     "slot_rate": "Tarifa",
     "slot_overnight_hint": "Si la hora de fin es anterior a la de inicio, la franja continúa en días posteriores. Use «Termina después» para elegir cuándo aplica la hora de fin (1 = mañana siguiente, 2 = dos días después — p. ej. viernes 19:00 hasta domingo 07:00).",
@@ -1801,7 +1802,8 @@
       "password_min_length": "Una longitud de 12 o más caracteres es más efectiva que contraseñas cortas con reglas de caracteres complejas. Considera establecer un mínimo largo con requisitos ligeros — los requisitos de complejidad suelen llevar a patrones predecibles como 'Contraseña1!'.",
       "webhook_type": "Selecciona la plataforma que envía webhooks. Las cargas útiles de GitHub, GitLab, Gitea y Forgejo se analizan automáticamente: los commits y pull requests se publican en el chat del proyecto, y las referencias de tarjetas (p. ej. PRJ-42) en los mensajes de commit se vinculan automáticamente a la tarjeta correspondiente. Genérico envía solo una notificación JSON simple.",
       "webhook_secret": "Un token incluido en cada solicitud de tu repositorio para verificar que proviene de una fuente legítima. Cópialo ahora — no se volverá a mostrar. Pégalo en los ajustes de webhook de tu repositorio como secreto.",
-      "slot_factor": "Multiplica la tarifa horaria base del contrato para el tiempo registrado durante esta franja. Por ejemplo, 1,5 significa 1,5 × la tarifa base. Deja en 1 para usar solo el campo de tarifa de franja sin multiplicar.",
+      "slot_duration": "Duración",
+    "slot_factor": "Multiplica la tarifa horaria base del contrato para el tiempo registrado durante esta franja. Por ejemplo, 1,5 significa 1,5 × la tarifa base. Deja en 1 para usar solo el campo de tarifa de franja sin multiplicar.",
       "slot_rate": "Tarifa horaria fija para el tiempo registrado durante esta franja, que reemplaza la tarifa base del contrato. Si se establecen tanto una tarifa como un multiplicador, la tarifa se multiplica. Deja vacío para usar solo el multiplicador sobre la tarifa base del contrato.",
       "slot_end_day": "Para franjas nocturnas, selecciona cuándo cae la hora de fin. 'Mismo día' termina antes de medianoche. 'Día siguiente' termina a la mañana siguiente (p. ej. inicio viernes 19:00, fin sábado 07:00). 'Dos días después' cubre un turno que abarca una noche completa y un día.",
       "slot_day_type": "Limita esta franja de tarifa a días específicos. 'Todos los días' se aplica cada día; 'Días laborables' cubre lunes–viernes; 'Fines de semana' cubre sábado–domingo; las opciones de días individuales se aplican solo en ese día exacto de la semana."
