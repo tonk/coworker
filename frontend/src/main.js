@@ -65,6 +65,7 @@ async function init() {
   if (!window.__TAURI_INTERNALS__) {
     await useAuthStore().initSession().catch(() => {})
   }
+  await useSystemStore().fetchAppMode().catch(() => {})
 
   app.use(router)
   app.mount('#app')

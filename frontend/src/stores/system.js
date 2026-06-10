@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { systemApi } from '@/api/system'
 import { setExternalImageProxyEnabled } from '@/api/serverConfig'
 import { setLocale } from '@/i18n'
@@ -9,6 +9,8 @@ export const useSystemStore = defineStore('system', () => {
   const scrumStorypointsEnabled = ref(false)
   const externalImageProxyEnabled = ref(true)
   const sessionTimeoutMinutes = ref(60)
+  const appMode = ref('')
+  const isTimetrackingMode = computed(() => appMode.value === 'timetracking')
   const defaults = ref({
     date_time_format: 'YYYY-MM-DD HH:mm',
     timezone: 'UTC',
@@ -17,6 +19,13 @@ export const useSystemStore = defineStore('system', () => {
     font_size: '14',
     locale: 'en'
   })
+
+  async function fetchAppMode() {
+    try {
+      const { data } = await systemApi.getVersion()
+      appMode.value = data.app_mode || ''
+    } catch {}
+  }
 
   async function fetchSettings() {
     try {
@@ -39,5 +48,5 @@ export const useSystemStore = defineStore('system', () => {
     } catch {}
   }
 
-  return { registrationEnabled, scrumStorypointsEnabled, externalImageProxyEnabled, sessionTimeoutMinutes, defaults, fetchSettings }
+  return { registrationEnabled, scrumStorypointsEnabled, externalImageProxyEnabled, sessionTimeoutMinutes, appMode, isTimetrackingMode, defaults, fetchAppMode, fetchSettings }
 })

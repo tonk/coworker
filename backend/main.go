@@ -125,6 +125,7 @@ func main() {
 	}
 
 	handlers.SetVersion(version)
+	handlers.SetAppMode(cfg.AppMode)
 	handlers.InitSystemDefaults(cfg)
 	handlers.InitAttachments(cfg)
 	handlers.SetOAuth2Config(&cfg.OAuth2)

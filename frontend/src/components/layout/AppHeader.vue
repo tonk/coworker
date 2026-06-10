@@ -12,7 +12,7 @@
     <nav class="header-nav" aria-label="Main navigation">
       <RouterLink to="/" class="header-nav-link" :class="{ active: route.path === '/' }">{{ $t('nav.dashboard') }}</RouterLink>
       <RouterLink to="/news" class="header-nav-link" :class="{ active: route.path === '/news' }">{{ $t('nav.news') }}</RouterLink>
-      <RouterLink to="/chats" class="header-nav-link" :class="{ active: route.path === '/chats' }">
+      <RouterLink v-if="!systemStore.isTimetrackingMode" to="/chats" class="header-nav-link" :class="{ active: route.path === '/chats' }">
         {{ $t('nav.messages') }}
         <span v-if="notificationsStore.hasUnread" class="nav-unread-dot" aria-hidden="true"></span>
         <span v-if="notificationsStore.hasUnread" class="sr-only">({{ $t('sidebar.unread_messages') }})</span>
@@ -126,7 +126,7 @@
           <div class="dropdown-item" role="menuitem" @click="navigate('/settings')">{{ $t('nav.settings') }}</div>
           <div class="dropdown-item" role="menuitem" v-if="auth.isAdmin" @click="navigate('/admin')">{{ $t('nav.admin') }}</div>
           <div class="dropdown-divider" role="separator"></div>
-          <div class="dropdown-item" role="menuitem" @click="navigate('/chats')">
+          <div v-if="!systemStore.isTimetrackingMode" class="dropdown-item" role="menuitem" @click="navigate('/chats')">
             {{ $t('nav.messages') }}
             <span v-if="notificationsStore.hasUnread" class="msg-unread-dot" aria-hidden="true"></span>
             <span v-if="notificationsStore.hasUnread" class="sr-only">({{ $t('sidebar.unread_messages') }})</span>
@@ -149,6 +149,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { useSystemStore } from '@/stores/system'
 import { setLocale } from '@/i18n'
 import { useTheme } from '@/composables/useTheme'
 import { useNotificationsStore } from '@/stores/notifications'
@@ -161,6 +162,7 @@ const props = defineProps({ presenceCount: { type: Number, default: 0 } })
 const emit = defineEmits(['open-shortcuts'])
 
 const auth = useAuthStore()
+const systemStore = useSystemStore()
 const router = useRouter()
 const route = useRoute()
 const { locale } = useI18n()

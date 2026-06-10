@@ -4,7 +4,7 @@
 
     <div class="sidebar-scroll">
     <!-- Starred Projects -->
-    <section v-if="auth.boardEnabled"
+    <section v-if="auth.boardEnabled && !systemStore.isTimetrackingMode"
       class="sidebar-section"
       :style="sectionStyle('starred')"
       :class="{ 'section-drag-over': sectionDragOver === 'starred' }"
@@ -42,7 +42,7 @@
     </section>
 
     <!-- All Projects -->
-    <section v-if="auth.boardEnabled"
+    <section v-if="auth.boardEnabled && !systemStore.isTimetrackingMode"
       class="sidebar-section"
       :style="sectionStyle('projects')"
       :class="{ 'section-drag-over': sectionDragOver === 'projects' }"
@@ -146,7 +146,7 @@
     </section>
 
     <!-- Favorite People -->
-    <section v-if="auth.chatEnabled"
+    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode"
       class="sidebar-section"
       :style="sectionStyle('favorites')"
       :class="{ 'section-drag-over': sectionDragOver === 'favorites' }"
@@ -180,7 +180,7 @@
     </section>
 
     <!-- Helpdesk (tickets) -->
-    <section v-if="auth.helpdeskEnabled" class="sidebar-section" :style="sectionStyle('helpdesk')" data-section-key="helpdesk">
+    <section v-if="auth.helpdeskEnabled && !systemStore.isTimetrackingMode" class="sidebar-section" :style="sectionStyle('helpdesk')" data-section-key="helpdesk">
       <button class="section-header" @click="toggle('helpdesk')" :aria-expanded="open.helpdesk" aria-controls="section-body-helpdesk">
         <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'helpdesk')">⠿</span>
         <span class="section-title">{{ $t('ticket.tickets') }}</span>
@@ -221,7 +221,7 @@
     </section>
 
     <!-- All People -->
-    <section v-if="auth.chatEnabled"
+    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode"
       class="sidebar-section"
       :style="sectionStyle('people')"
       :class="{ 'section-drag-over': sectionDragOver === 'people' }"
@@ -261,7 +261,7 @@
     </section>
 
     <!-- Chats -->
-    <section v-if="auth.chatEnabled"
+    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode"
       class="sidebar-section"
       :style="sectionStyle('chats')"
       :class="{ 'section-drag-over': sectionDragOver === 'chats' }"
@@ -347,6 +347,7 @@ function stopResize() {
 import { RouterLink } from 'vue-router'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
+import { useSystemStore } from '@/stores/system'
 import { useNotificationsStore } from '@/stores/notifications'
 import { useCustomersStore } from '@/stores/customers'
 import { useTicketsStore } from '@/stores/tickets'
@@ -354,6 +355,7 @@ import { resolveAssetUrl } from '@/api/serverConfig'
 
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
+const systemStore = useSystemStore()
 const notificationsStore = useNotificationsStore()
 const customersStore = useCustomersStore()
 const ticketsStore = useTicketsStore()
@@ -627,23 +629,25 @@ let unreadInterval = null
 let inboxInterval = null
 
 onMounted(() => {
-  sidebarStore.fetchStarred()
-  sidebarStore.fetchAllProjects()
-  sidebarStore.fetchAllUsers()
-  sidebarStore.fetchChatUsers()
-  sidebarStore.fetchFavoriteUsers()
   customersStore.fetchCustomers()
-  notificationsStore.checkUnread()
-  pollInterval = setInterval(() => {
+  if (!systemStore.isTimetrackingMode) {
+    sidebarStore.fetchStarred()
+    sidebarStore.fetchAllProjects()
     sidebarStore.fetchAllUsers()
     sidebarStore.fetchChatUsers()
-  }, ONLINE_POLL_INTERVAL_MS)
-  unreadInterval = setInterval(() => {
+    sidebarStore.fetchFavoriteUsers()
     notificationsStore.checkUnread()
-  }, 5_000)
-  if (auth.helpdeskEnabled) {
-    ticketsStore.fetchInboxCount()
-    inboxInterval = setInterval(() => ticketsStore.fetchInboxCount(), INBOX_POLL_INTERVAL_MS)
+    pollInterval = setInterval(() => {
+      sidebarStore.fetchAllUsers()
+      sidebarStore.fetchChatUsers()
+    }, ONLINE_POLL_INTERVAL_MS)
+    unreadInterval = setInterval(() => {
+      notificationsStore.checkUnread()
+    }, 5_000)
+    if (auth.helpdeskEnabled) {
+      ticketsStore.fetchInboxCount()
+      inboxInterval = setInterval(() => ticketsStore.fetchInboxCount(), INBOX_POLL_INTERVAL_MS)
+    }
   }
 })
 
