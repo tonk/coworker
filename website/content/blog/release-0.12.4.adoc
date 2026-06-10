@@ -75,7 +75,7 @@ Both endpoints now require `owner` role (or global admin) to match the privilege
 
 == Ansible collection v0.5.0
 
-The link:https://galaxy.ansible.com/ui/repo/published/tonk/warmdesk/[WarmDesk Ansible collection] has been updated to v0.5.0 with three new modules and an extended `warmdesk_user` module.
+The link:https://galaxy.ansible.com/ui/repo/published/ansilabnl/warmdesk/[WarmDesk Ansible collection] has been updated to v0.5.0 with three new modules and an extended `warmdesk_user` module.
 
 === New module: `warmdesk_epic`
 
@@ -84,7 +84,7 @@ Manages Scrum epics within a project.
 [source,yaml]
 ----
 - name: Create a Q3 delivery epic
-  tonk.warmdesk.warmdesk_epic:
+  ansilabnl.warmdesk.warmdesk_epic:
     warmdesk_url: "https://desk.example.com"
     warmdesk_token: "{{ api_token }}"
     project: my-project
@@ -104,7 +104,7 @@ Full sprint lifecycle management — create, update, and transition sprints betw
 [source,yaml]
 ----
 - name: Start the current sprint
-  tonk.warmdesk.warmdesk_sprint:
+  ansilabnl.warmdesk.warmdesk_sprint:
     warmdesk_url: "https://desk.example.com"
     warmdesk_token: "{{ api_token }}"
     project: my-project
@@ -122,7 +122,7 @@ Admin CRUD for reusable ticket checklist templates.
 [source,yaml]
 ----
 - name: Ensure onboarding checklist template
-  tonk.warmdesk.warmdesk_ticket_checklist_template:
+  ansilabnl.warmdesk.warmdesk_ticket_checklist_template:
     warmdesk_url: "https://desk.example.com"
     warmdesk_token: "{{ api_token }}"
     name: "New customer onboarding"
@@ -155,14 +155,14 @@ Is a no-op if the user is not found.
 [source,yaml]
 ----
 - name: Restore a previously deleted account
-  tonk.warmdesk.warmdesk_user:
+  ansilabnl.warmdesk.warmdesk_user:
     warmdesk_url: "https://desk.example.com"
     warmdesk_token: "{{ api_token }}"
     username: alice
     state: restore
 
 - name: Permanently remove a test account
-  tonk.warmdesk.warmdesk_user:
+  ansilabnl.warmdesk.warmdesk_user:
     warmdesk_url: "https://desk.example.com"
     warmdesk_token: "{{ api_token }}"
     username: test-user
