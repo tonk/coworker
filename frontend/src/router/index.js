@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useSystemStore } from '@/stores/system'
 import { isServerConfigured } from '@/api/serverConfig'
 import { lazyWithReload } from '@/router/lazyWithReload'
 
@@ -48,7 +49,9 @@ router.beforeEach((to) => {
   }
 
   const auth = useAuthStore()
+  const system = useSystemStore()
   if (!to.meta.public && !auth.isLoggedIn) return '/login'
+  if (system.isTimetrackingMode && to.path === '/') return '/time-tracking'
   if (to.meta.adminOnly && !auth.isAdmin) return '/'
   if (to.meta.reportsOnly && !auth.canViewReports) return '/'
   if (to.meta.timeTrackingOnly && !auth.timeTrackingEnabled && !auth.canViewReports) return '/'

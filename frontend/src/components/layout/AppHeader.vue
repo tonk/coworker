@@ -6,18 +6,18 @@
       </RouterLink>
       <slot name="breadcrumb" />
     </div>
-    <div class="header-center">
+    <div v-if="!systemStore.isTimetrackingMode" class="header-center">
       <GlobalSearch />
     </div>
     <nav class="header-nav" aria-label="Main navigation">
-      <RouterLink to="/" class="header-nav-link" :class="{ active: route.path === '/' }">{{ $t('nav.dashboard') }}</RouterLink>
+      <RouterLink v-if="!systemStore.isTimetrackingMode" to="/" class="header-nav-link" :class="{ active: route.path === '/' }">{{ $t('nav.dashboard') }}</RouterLink>
       <RouterLink to="/news" class="header-nav-link" :class="{ active: route.path === '/news' }">{{ $t('nav.news') }}</RouterLink>
       <RouterLink v-if="!systemStore.isTimetrackingMode" to="/chats" class="header-nav-link" :class="{ active: route.path === '/chats' }">
         {{ $t('nav.messages') }}
         <span v-if="notificationsStore.hasUnread" class="nav-unread-dot" aria-hidden="true"></span>
         <span v-if="notificationsStore.hasUnread" class="sr-only">({{ $t('sidebar.unread_messages') }})</span>
       </RouterLink>
-      <RouterLink v-if="auth.timeTrackingEnabled || auth.canViewReports" to="/time-tracking" class="header-nav-link" :class="{ active: route.path.startsWith('/time-tracking') }">{{ $t('timeTracking.nav') }}</RouterLink>
+      <RouterLink v-if="!systemStore.isTimetrackingMode && (auth.timeTrackingEnabled || auth.canViewReports)" to="/time-tracking" class="header-nav-link" :class="{ active: route.path.startsWith('/time-tracking') }">{{ $t('timeTracking.nav') }}</RouterLink>
     </nav>
     <div class="header-right">
       <span class="presence-count" v-if="presenceCount > 0" :title="`${presenceCount} ${$t('presence.online')}`">
@@ -121,7 +121,7 @@
           </div>
         </button>
         <div class="dropdown" v-if="menuOpen" role="menu">
-          <div class="dropdown-item" role="menuitem" @click="navigate('/')">{{ $t('nav.dashboard') }}</div>
+          <div v-if="!systemStore.isTimetrackingMode" class="dropdown-item" role="menuitem" @click="navigate('/')">{{ $t('nav.dashboard') }}</div>
           <div class="dropdown-item" role="menuitem" @click="navigate('/news')">{{ $t('nav.news') }}</div>
           <div class="dropdown-item" role="menuitem" @click="navigate('/settings')">{{ $t('nav.settings') }}</div>
           <div class="dropdown-item" role="menuitem" v-if="auth.isAdmin" @click="navigate('/admin')">{{ $t('nav.admin') }}</div>

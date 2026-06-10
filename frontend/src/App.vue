@@ -16,7 +16,7 @@
       </template>
     </nav>
     <div class="app-shell-body" :class="sidebarPos === 'right' ? 'sidebar-right' : 'sidebar-left'">
-      <AppSidebar />
+      <AppSidebar v-if="!systemStore.isTimetrackingMode" />
       <main class="app-shell-content" id="main-content" tabindex="-1">
         <RouterView />
         <footer class="app-footer">
