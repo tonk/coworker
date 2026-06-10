@@ -351,7 +351,7 @@
                       v-for="(seg, segIdx) in day.segments"
                       :key="segIdx"
                       class="slot-preview-seg"
-                      :style="{ left: seg.left + '%', width: seg.width + '%' }"
+                      :style="{ left: seg.left + '%', width: seg.width + '%', background: slotSegColor(idx) }"
                     />
                   </div>
                 </div>
@@ -504,6 +504,18 @@ const slotPreviewDowLabels = computed(() => [
   t('contract.slot_preview_dow_sat'),
   t('contract.slot_preview_dow_sun'),
 ])
+
+const SLOT_SEG_COLORS = [
+  null,                        // idx 0 — falls back to CSS default (primary)
+  'rgba(245,158,11,0.65)',      // amber
+  'rgba(16,185,129,0.65)',      // emerald
+  'rgba(168,85,247,0.65)',      // violet
+  'rgba(239,68,68,0.65)',       // red
+  'rgba(20,184,166,0.65)',      // teal
+]
+function slotSegColor(idx) {
+  return SLOT_SEG_COLORS[idx % SLOT_SEG_COLORS.length]
+}
 
 function slotPreviewReady(slot) {
   return slotPreviewReadyFn(slot)

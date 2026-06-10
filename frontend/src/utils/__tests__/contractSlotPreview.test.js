@@ -92,9 +92,12 @@ describe('slotPreviewReady', () => {
     expect(slotPreviewReady({ start_time: '09:00', end_time: '17:00' })).toBe(true)
   })
 
-  it('returns false for invalid or equal times', () => {
+  it('returns true for equal times (24-hour cycle)', () => {
+    expect(slotPreviewReady({ start_time: '09:00', end_time: '09:00' })).toBe(true)
+  })
+
+  it('returns false for invalid times', () => {
     expect(slotPreviewReady({ start_time: '', end_time: '17:00' })).toBe(false)
-    expect(slotPreviewReady({ start_time: '09:00', end_time: '09:00' })).toBe(false)
     expect(slotPreviewReady({ start_time: 'xx:yy', end_time: '17:00' })).toBe(false)
   })
 })

@@ -53,27 +53,30 @@ function slotEndDayOffset(slot) {
 export function slotCoverageOnWeekday(slot, isoWeekday) {
   const startM = parseSlotHHMM(slot.start_time)
   const endM = parseSlotHHMM(slot.end_time)
-  if (startM < 0 || endM < 0 || startM === endM) return []
+  if (startM < 0 || endM < 0) return []
 
   const intervals = []
+  // start === end means a 24-hour cycle (e.g. 07:00 → 07:00 next day).
+  // Treat it the same as an overnight slot (endM < startM) for coverage purposes.
+  const overnight = endM <= startM
   const endOffset = slotEndDayOffset(slot)
 
   if (slotDayTypeMatches(slot.day_type, isoWeekday)) {
-    if (endM > startM) {
+    if (!overnight) {
       intervals.push([startM, endM])
     } else {
       intervals.push([startM, MINUTES_PER_DAY])
     }
   }
 
-  if (endM <= startM) {
+  if (overnight) {
     for (let d = 1; d <= endOffset; d++) {
       const anchor = (isoWeekday - d + 7) % 7
       if (!slotDayTypeMatches(slot.day_type, anchor)) continue
       if (d < endOffset) {
         intervals.push([0, MINUTES_PER_DAY])
       } else {
-        intervals.push([0, endM])
+        intervals.push([0, endM === startM ? MINUTES_PER_DAY : endM])
       }
     }
   }
@@ -83,7 +86,6 @@ export function slotCoverageOnWeekday(slot, isoWeekday) {
 
 export function slotPreviewReady(slot) {
   return parseSlotHHMM(slot.start_time) >= 0 && parseSlotHHMM(slot.end_time) >= 0
-    && parseSlotHHMM(slot.start_time) !== parseSlotHHMM(slot.end_time)
 }
 
 /** Build 7-day preview rows for the contract form timeline. */
