@@ -51,7 +51,8 @@
           <div class="contract-header">
             <div class="contract-title-row">
               <span class="contract-icon">📋</span>
-              <strong>{{ grp.name }}</strong>
+              <button v-if="canManage" class="contract-name-btn" @click="editContract(grp)" :aria-label="$t('contract.edit') + ': ' + grp.name">{{ grp.name }}</button>
+              <strong v-else>{{ grp.name }}</strong>
               <span v-if="grp.start_date || grp.end_date" class="contract-dates">
                 {{ formatDate(grp.start_date) }}{{ grp.end_date ? ' – ' + formatDate(grp.end_date) : '' }}
               </span>
@@ -956,6 +957,25 @@ async function deleteContract(grp) {
 }
 
 .contract-icon { font-size: 16px; }
+
+.contract-name-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--color-text);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s;
+}
+.contract-name-btn:hover,
+.contract-name-btn:focus-visible {
+  text-decoration-color: var(--color-text);
+  outline: none;
+}
 
 .contract-dates {
   font-size: 12px;
