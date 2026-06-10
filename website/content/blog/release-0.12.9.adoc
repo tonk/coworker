@@ -1,0 +1,27 @@
+---
+title: "v0.12.9: Time-tracking mode polish"
+date: "2026-06-10"
+author: "Ton Kersten"
+description: "Small refinements to the --mode=timetracking experience: Board tab removed, browser tab title updated, and a fix for mode detection after server switching in the desktop app."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` contains a set of small refinements to the `--mode=timetracking` experience introduced in v0.12.7.
+
+== Board report tab hidden in timetracking mode
+
+The *Board* tab in the Time Tracking view gives access to the project-board time report.
+In `--mode=timetracking`, project boards are not available, so the tab is now hidden entirely.
+
+== Browser tab title
+
+The browser tab (and desktop window title in the Tauri app) now reads *WarmDesk - Time Tracking* when the server runs in `--mode=timetracking`, making it easy to distinguish the window from a full WarmDesk instance running alongside it.
+The `●` unread notification prefix still works correctly when combined with the new title.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+No database or configuration changes are required.

@@ -8,11 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.8)
+## Latest release (v0.12.9)
 
-- **`--port` CLI flag** — run two instances from the same config file on different ports (e.g. full + `--mode=timetracking`).
-- **SQLite WAL mode** — two instances can now safely share the same SQLite database file without locking errors.
-- **Login mode indicator** — the login screen shows a "Time tracking only" badge when the server runs in timetracking mode.
+- **Timetracking mode polish** — Board report tab hidden, browser tab reads "WarmDesk - Time Tracking", and the login screen shows a "Time tracking only" badge.
 
 ## Experiment
 

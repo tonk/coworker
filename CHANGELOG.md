@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.12.9 — 2026-06-10
+
+### Fixed
+- **Timetracking mode — Board report tab hidden** — the Board tab in the Time Tracking view is no longer shown when the server runs in `--mode=timetracking`, as boards are unavailable in that mode.
+- **Timetracking mode — browser tab title** — the browser tab now reads "WarmDesk - Time Tracking" instead of "WarmDesk" when running in `--mode=timetracking`. The title updates immediately on load and correctly prefixes the `●` unread indicator when notifications are present.
+
 ## v0.12.8 — 2026-06-10
 
 ### Added
