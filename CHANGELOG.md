@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.12.8 — 2026-06-10
+
+### Added
+- **`--port` CLI flag** — override the configured port per instance, allowing two processes to share a single config file (e.g. `./warmdesk --config warmdesk.yaml` + `./warmdesk --config warmdesk.yaml --port 8081 --mode=timetracking`).
+- **SQLite WAL mode** — `PRAGMA journal_mode=WAL` and `PRAGMA busy_timeout=5000` are applied on startup for SQLite databases, allowing two WarmDesk instances to safely share the same database file without "database is locked" errors.
+- **Login screen mode indicator** — when running with `--mode=timetracking` the login page shows a "Time tracking only" pill below the sign-in heading (localised in all 12 supported languages).
+
+### Fixed
+- **Tauri: timetracking mode not detected after server switch** — `app_mode` is now re-fetched in `ConnectView` immediately after a new server URL is saved, and again in `LoginView` on mount, so the correct UI mode is applied even when switching from a full server to a time-tracking-only server in the desktop app.
+
 ## v0.12.7 — 2026-06-10
 
 ### Added

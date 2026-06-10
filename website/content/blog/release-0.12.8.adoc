@@ -1,0 +1,53 @@
+---
+title: "v0.12.8: --port flag, SQLite WAL mode, and multi-instance improvements"
+date: "2026-06-10"
+author: "Ton Kersten"
+description: "Run a full WarmDesk instance and a time-tracking-only instance from a single config file, sharing the same SQLite database safely."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` rounds out the multi-instance story introduced in v0.12.7.
+
+== `--port` CLI flag
+
+A new `--port` flag overrides the port configured in the config file or the `PORT` environment variable.
+This lets you start two instances from the same `warmdesk.yaml` without duplicating configuration:
+
+[source,bash]
+----
+# Full instance on the default port
+./warmdesk --config warmdesk.yaml
+
+# Time-tracking-only instance on a second port
+./warmdesk --config warmdesk.yaml --port 8081 --mode=timetracking
+----
+
+== SQLite WAL mode
+
+When using SQLite, WarmDesk now sets `PRAGMA journal_mode=WAL` and `PRAGMA busy_timeout=5000` on every startup.
+
+Without WAL mode, SQLite serialises readers and writers at the file level — concurrent writes from two processes produce "database is locked" errors immediately.
+WAL mode allows readers and writers to proceed concurrently; only simultaneous writers contend, and the 5-second busy timeout gives the retry enough headroom to resolve the conflict gracefully.
+
+WAL mode is a persistent database-level setting.
+The first instance to start enables it; subsequent starts are a no-op.
+
+The combination of `--port` and WAL mode means a full WarmDesk deployment and a lightweight `--mode=timetracking` sidecar can now share a single SQLite file on the same host with no additional infrastructure.
+
+== Login screen mode indicator
+
+The login page now shows a small *"Time tracking only"* pill below the sign-in heading when the server is running in `--mode=timetracking`.
+The label is localised in all 12 supported languages.
+
+== Fix: Tauri desktop did not detect mode after server switch
+
+When switching to a different server in the Tauri desktop app's Connect screen, the `app_mode` was not re-fetched — so the full UI remained visible even after connecting to a time-tracking-only server.
+The mode is now fetched immediately after saving the new server URL, and again when the login page mounts, so the correct UI state is always applied.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+No database or configuration changes are required for existing deployments.
