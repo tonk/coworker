@@ -44,7 +44,8 @@
     "change_password": "Wachtwoord wijzigen",
     "password_expired": "Uw wachtwoord is verlopen. Wijzig het in uw accountinstellingen.",
     "password_expired_title": "Wachtwoord verlopen",
-    "remember_me": "Onthoud mij"
+    "remember_me": "Onthoud mij",
+    "timetracking_mode": "Alleen tijdregistratie"
   },
   "project": {
     "projects": "Projecten",

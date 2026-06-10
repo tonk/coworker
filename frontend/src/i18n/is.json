@@ -44,7 +44,8 @@
     "change_password": "Breyta lykilorði",
     "password_expired": "Lykilorðið þitt er útrunnið. Breyttu því í stillingunum þínum.",
     "password_expired_title": "Lykilorð útrunnið",
-    "remember_me": "Muna mig"
+    "remember_me": "Muna mig",
+    "timetracking_mode": "Einungis timaskraning"
   },
   "project": {
     "projects": "Verkefni",

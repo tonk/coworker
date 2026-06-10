@@ -44,7 +44,8 @@
     "change_password": "Skift adgangskode",
     "password_expired": "Din adgangskode er udløbet. Skift den i dine kontoindstillinger.",
     "password_expired_title": "Adgangskode udløbet",
-    "remember_me": "Husk mig"
+    "remember_me": "Husk mig",
+    "timetracking_mode": "Kun tidsregistrering"
   },
   "project": {
     "projects": "Projekter",

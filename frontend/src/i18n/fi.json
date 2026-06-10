@@ -44,7 +44,8 @@
     "change_password": "Vaihda salasana",
     "password_expired": "Salasanasi on vanhentunut. Vaihda se tilisi asetuksissa.",
     "password_expired_title": "Salasana vanhentunut",
-    "remember_me": "Muista minut"
+    "remember_me": "Muista minut",
+    "timetracking_mode": "Vain ajanseuranta"
   },
   "project": {
     "projects": "Projektit",

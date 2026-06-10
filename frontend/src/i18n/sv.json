@@ -44,7 +44,8 @@
     "change_password": "Ändra lösenord",
     "password_expired": "Ditt lösenord har gått ut. Byt det i dina kontoinställningar.",
     "password_expired_title": "Lösenord utgånget",
-    "remember_me": "Kom ihåg mig"
+    "remember_me": "Kom ihåg mig",
+    "timetracking_mode": "Endast tidrapportering"
   },
   "project": {
     "projects": "Projekt",

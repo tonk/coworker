@@ -44,7 +44,8 @@
     "change_password": "Passwort ändern",
     "password_expired": "Ihr Passwort ist abgelaufen. Bitte ändern Sie es in Ihren Kontoeinstellungen.",
     "password_expired_title": "Passwort abgelaufen",
-    "remember_me": "Benutzername merken"
+    "remember_me": "Benutzername merken",
+    "timetracking_mode": "Nur Zeiterfassung"
   },
   "project": {
     "projects": "Projekte",

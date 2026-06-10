@@ -44,7 +44,8 @@
     "change_password": "Cambiar contraseña",
     "password_expired": "Su contraseña ha caducado. Cámbiela en la configuración de su cuenta.",
     "password_expired_title": "Contraseña caducada",
-    "remember_me": "Recuérdame"
+    "remember_me": "Recuérdame",
+    "timetracking_mode": "Solo registro de tiempo"
   },
   "project": {
     "projects": "Proyectos",

@@ -81,6 +81,7 @@ func main() {
 	configFile  := flag.String("config", "", "path to config file (overrides CONFIG_FILE env var)")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	appMode     := flag.String("mode", "", "application mode: '' (full) or 'timetracking'")
+	portFlag    := flag.String("port", "", "port to listen on (overrides config file and PORT env var)")
 	flag.Parse()
 
 	if *showVersion {
@@ -93,6 +94,9 @@ func main() {
 	cfg := config.Load(*configFile)
 	if *appMode != "" {
 		cfg.AppMode = *appMode
+	}
+	if *portFlag != "" {
+		cfg.Port = *portFlag
 	}
 	if cfg.AppMode != "" && cfg.AppMode != "timetracking" {
 		log.Fatalf("invalid --mode %q: valid values are '' (full) and 'timetracking'", cfg.AppMode)

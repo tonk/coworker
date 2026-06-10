@@ -38,6 +38,7 @@
     "no_account": "Don't have an account?",
     "have_account": "Already have an account?",
     "login_title": "Sign in to your account",
+    "timetracking_mode": "Time tracking only",
     "register_title": "Create your account",
     "current_password": "Current Password",
     "new_password": "New Password",

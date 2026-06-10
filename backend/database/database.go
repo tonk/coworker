@@ -62,6 +62,11 @@ func Init(cfg *config.Config) error {
 	DB = db
 	log.Printf("Connected to %s database", cfg.DBDriver)
 
+	if cfg.DBDriver == "sqlite" || cfg.DBDriver == "" {
+		db.Exec("PRAGMA journal_mode=WAL")
+		db.Exec("PRAGMA busy_timeout=5000")
+	}
+
 	if err := deduplicateKeyPrefixes(db); err != nil {
 		return err
 	}

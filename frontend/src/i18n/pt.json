@@ -44,7 +44,8 @@
     "change_password": "Alterar palavra-passe",
     "password_expired": "A sua palavra-passe expirou. Por favor, altere-a nas definições da sua conta.",
     "password_expired_title": "Palavra-passe expirada",
-    "remember_me": "Lembrar de mim"
+    "remember_me": "Lembrar de mim",
+    "timetracking_mode": "Apenas registo de tempo"
   },
   "project": {
     "projects": "Projetos",

@@ -44,7 +44,8 @@
     "change_password": "Changer le mot de passe",
     "password_expired": "Votre mot de passe a expiré. Veuillez le changer dans les paramètres de votre compte.",
     "password_expired_title": "Mot de passe expiré",
-    "remember_me": "Se souvenir de moi"
+    "remember_me": "Se souvenir de moi",
+    "timetracking_mode": "Suivi du temps uniquement"
   },
   "project": {
     "projects": "Projets",

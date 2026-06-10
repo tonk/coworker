@@ -44,7 +44,8 @@
     "change_password": "Cambia password",
     "password_expired": "La tua password è scaduta. Cambiala nelle impostazioni del tuo account.",
     "password_expired_title": "Password scaduta",
-    "remember_me": "Ricordami"
+    "remember_me": "Ricordami",
+    "timetracking_mode": "Solo tracciamento del tempo"
   },
   "project": {
     "projects": "Progetti",

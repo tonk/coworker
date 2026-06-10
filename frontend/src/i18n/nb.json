@@ -44,7 +44,8 @@
     "change_password": "Endre passord",
     "password_expired": "Passordet ditt har utløpt. Endre det i kontoinnstillingene dine.",
     "password_expired_title": "Passord utløpt",
-    "remember_me": "Husk meg"
+    "remember_me": "Husk meg",
+    "timetracking_mode": "Kun tidsregistrering"
   },
   "project": {
     "projects": "Prosjekter",

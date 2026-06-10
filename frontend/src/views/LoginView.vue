@@ -23,6 +23,7 @@
         </div>
         <template v-if="!mfaStep">
           <h1 class="auth-title">{{ $t('auth.login_title') }}</h1>
+          <p v-if="systemStore.isTimetrackingMode" class="auth-mode-badge">{{ $t('auth.timetracking_mode') }}</p>
           <form @submit.prevent="handleSubmit">
             <div class="form-group">
               <label class="form-label">{{ $t('auth.email') }} / {{ $t('auth.username') }}</label>
@@ -110,6 +111,7 @@
       </div>
       <template v-if="!mfaStep">
         <h1 class="auth-title">{{ $t('auth.login_title') }}</h1>
+        <p v-if="systemStore.isTimetrackingMode" class="auth-mode-badge">{{ $t('auth.timetracking_mode') }}</p>
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
             <label class="form-label">{{ $t('auth.email') }} / {{ $t('auth.username') }}</label>
@@ -224,6 +226,7 @@ import { useI18n } from 'vue-i18n'
 const appVersion = __APP_VERSION__
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useSystemStore } from '@/stores/system'
 import { systemApi } from '@/api/system'
 import { getServerUrl, resolveAssetUrl, setExternalImageProxyEnabled } from '@/api/serverConfig'
 import {
@@ -234,6 +237,7 @@ import {
 
 const { t: $t } = useI18n()
 const auth = useAuthStore()
+const systemStore = useSystemStore()
 const router = useRouter()
 const form = ref({ login: '', password: '' })
 const rememberMe = ref(!!localStorage.getItem('remembered_login'))
@@ -300,6 +304,7 @@ onUnmounted(() => {
 
 onMounted(async () => {
   osMediaQuery.addEventListener('change', onOSThemeChange)
+  await systemStore.fetchAppMode().catch(() => {})
   const savedLogin = localStorage.getItem('remembered_login')
   if (savedLogin) form.value.login = savedLogin
   if (isTauri) {
@@ -565,6 +570,18 @@ async function handleMFASubmit() {
   text-align: center;
   margin-bottom: 28px;
   color: var(--color-text);
+}
+
+.auth-mode-badge {
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-raised, var(--color-surface));
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 3px 12px;
+  margin-top: -20px;
+  margin-bottom: 20px;
 }
 
 .form-check {

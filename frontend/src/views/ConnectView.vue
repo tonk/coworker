@@ -42,8 +42,10 @@ import { ref, onMounted } from 'vue'
 const appVersion = __APP_VERSION__
 import { useRouter } from 'vue-router'
 import { setServerUrl, getServerUrl } from '@/api/serverConfig'
+import { useSystemStore } from '@/stores/system'
 
 const router = useRouter()
+const systemStore = useSystemStore()
 const serverUrl = ref('')
 const loading = ref(false)
 const error = ref('')
@@ -71,6 +73,7 @@ async function connect() {
     if (res.ok || res.status === 401 || res.status === 403) {
       // Got a real response from a WarmDesk server
       setServerUrl(url)
+      await systemStore.fetchAppMode().catch(() => {})
       router.push('/login')
     } else {
       error.value = `Unexpected response from server (HTTP ${res.status}). Check the URL.`
