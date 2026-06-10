@@ -161,6 +161,26 @@ func (s *AuthService) parseToken(tokenStr string) (*Claims, error) {
 	return claims, nil
 }
 
+// ParseAccessClaimsLenient parses an access token without validating expiry.
+// Used by the Logout handler to identify the user even when the token has just expired.
+func (s *AuthService) ParseAccessClaimsLenient(tokenStr string) (*Claims, error) {
+	parser := jwt.NewParser(jwt.WithoutClaimsValidation())
+	token, err := parser.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, ErrInvalidToken
+		}
+		return s.secret, nil
+	})
+	if err != nil {
+		return nil, ErrInvalidToken
+	}
+	claims, ok := token.Claims.(*Claims)
+	if !ok || claims.Purpose != "" {
+		return nil, ErrInvalidToken
+	}
+	return claims, nil
+}
+
 // ValidateToken validates a normal access token; rejects purpose-limited tickets.
 func (s *AuthService) ValidateToken(tokenStr string) (*Claims, error) {
 	claims, err := s.parseToken(tokenStr)

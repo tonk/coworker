@@ -1332,15 +1332,23 @@
       <thead>
         <tr>
           <th>{{ $t('timeTracking.date') }}</th>
+          <th>{{ $t('admin.login_history_event') }}</th>
           <th>{{ $t('admin.login_history_ip') }}</th>
           <th>{{ $t('admin.login_history_client') }}</th>
+          <th>{{ $t('admin.login_history_detail') }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="entry in loginHistory" :key="entry.id">
-          <td>{{ formatDateTime(entry.created_at) }}</td>
+          <td style="white-space:nowrap">{{ formatDateTime(entry.created_at) }}</td>
+          <td>
+            <span :class="['audit-badge', 'audit-badge--' + entry.event]">
+              {{ $t('admin.event_' + entry.event, entry.event) }}
+            </span>
+          </td>
           <td><code>{{ entry.ip }}</code></td>
           <td>{{ entry.client }}</td>
+          <td style="color:var(--color-text-muted);font-size:12px">{{ entry.detail }}</td>
         </tr>
       </tbody>
     </table>
@@ -3367,6 +3375,13 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 
 .badge-admin { background: #ede9fe; color: #5b21b6; }
 .badge-user { background: #f1f5f9; color: #64748b; }
+
+.audit-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.audit-badge--login_ok { background: #dcfce7; color: #166534; }
+.audit-badge--login_failed { background: #fee2e2; color: #991b1b; }
+.audit-badge--logout { background: #f1f5f9; color: #64748b; }
+.audit-badge--password_changed { background: #fef9c3; color: #854d0e; }
+.audit-badge--password_reset { background: #fef9c3; color: #854d0e; }
 
 .role-select {
   font-size: 12px;

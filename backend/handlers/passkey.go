@@ -337,6 +337,7 @@ func (h *PasskeyHandler) PasskeyLoginFinish(c *gin.Context) {
 	cred, err := wAuth.ValidateDiscoverableLogin(handler, session, parsedResp)
 	if err != nil {
 		authLog(c, "passkey_login_failed", 0, "", "reason=verification_failed")
+		recordEvent(c.ClientIP(), clientStr(c), 0, "", "login_failed", "passkey_verification_failed")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "passkey authentication failed"})
 		return
 	}
@@ -362,6 +363,7 @@ func (h *PasskeyHandler) PasskeyLoginFinish(c *gin.Context) {
 	}
 	setAuthCookies(c, tokens)
 	authLog(c, "passkey_login_ok", authenticatedUser.ID, authenticatedUser.Username, "")
+	recordEvent(c.ClientIP(), clientStr(c), authenticatedUser.ID, authenticatedUser.Username, "login_ok", "passkey")
 	resp := gin.H{
 		"access_token":  tokens.AccessToken,
 		"refresh_token": tokens.RefreshToken,

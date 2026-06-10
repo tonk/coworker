@@ -153,25 +153,28 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	login := strings.ToLower(req.Login)
 	if err := database.DB.Where("email = ? OR username = ?", login, req.Login).First(&user).Error; err != nil {
 		authLog(c, "login_failed", 0, "", "login="+req.Login+" reason=unknown_user")
+		recordEvent(c.ClientIP(), clientStr(c), 0, req.Login, "login_failed", "unknown_user")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
 
 	if !user.IsActive {
 		authLog(c, "login_failed", user.ID, user.Username, "reason=account_deactivated")
+		recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "login_failed", "account_deactivated")
 		c.JSON(http.StatusForbidden, gin.H{"error": "account deactivated"})
 		return
 	}
 
 	if !h.authSvc.CheckPassword(user.PasswordHash, req.Password) {
 		authLog(c, "login_failed", user.ID, user.Username, "reason=wrong_password")
+		recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "login_failed", "wrong_password")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
 
 	now := time.Now()
 	database.DB.Model(&user).Update("last_login_at", now)
-	database.DB.Create(&models.LoginHistory{UserID: user.ID, IP: c.ClientIP(), Client: clientStr(c)})
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "login_ok", "")
 
 	if !h.issueMFAChallengeOrSkip(c, user) {
 		return
@@ -473,6 +476,7 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		"password_changed_at": now,
 	})
 	authLog(c, "password_changed", user.ID, user.Username, "")
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "password_changed", "")
 	c.JSON(http.StatusOK, gin.H{"message": "password updated"})
 }
 
@@ -762,6 +766,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	})
 
 	authLog(c, "password_reset_ok", user.ID, user.Username, "")
+	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "password_reset", "")
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
@@ -783,6 +788,18 @@ func isPasswordExpired(user models.User) bool {
 // userID/username are omitted when they cannot be determined (e.g. unknown user).
 func authLog(c *gin.Context, event string, userID uint, username, detail string) {
 	authLogRaw(c.ClientIP(), clientStr(c), event, userID, username, detail)
+}
+
+// recordEvent persists an audit event to the login_history table.
+func recordEvent(ip, client string, userID uint, username, event, detail string) {
+	database.DB.Create(&models.LoginHistory{
+		UserID:   userID,
+		Username: username,
+		Event:    event,
+		Detail:   detail,
+		IP:       ip,
+		Client:   client,
+	})
 }
 
 // authLogRaw is used when the gin.Context is no longer available (e.g. inside a goroutine).
@@ -856,6 +873,18 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	if trustCookie, err := c.Cookie("mfa_trust"); err == nil {
 		h2 := sha256.Sum256([]byte(trustCookie))
 		database.DB.Where("token_hash = ?", hex.EncodeToString(h2[:])).Delete(&models.MFATrustedDevice{})
+	}
+	// Best-effort: identify the user from the access token (cookie or Bearer header) before clearing it.
+	tokenStr, _ := c.Cookie("access_token")
+	if tokenStr == "" {
+		if auth := c.GetHeader("Authorization"); strings.HasPrefix(auth, "Bearer ") {
+			tokenStr = auth[7:]
+		}
+	}
+	if tokenStr != "" {
+		if claims, err := h.authSvc.ParseAccessClaimsLenient(tokenStr); err == nil {
+			recordEvent(c.ClientIP(), clientStr(c), claims.UserID, claims.Username, "logout", "")
+		}
 	}
 	clearAuthCookies(c)
 	clearMFATrustCookie(c)
