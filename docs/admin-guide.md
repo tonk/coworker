@@ -526,6 +526,25 @@ Admins create and manage customer organisations via **Admin → Customers**.
 
 Customer access (which users or groups can see a customer) is managed separately under **Admin → Users** and **Admin → Groups** — see [Customer access control](#customer-access-control) below.
 
+#### Contracts
+
+Each customer can have one or more contracts (**Customers → (click customer) → Contracts**). A contract defines a billing period, a base hourly rate and currency, and optional time slots for standby or after-hours pricing.
+
+#### Standby time slots
+
+Time slots let you define multiple rate windows on a contract — for example an evening/night rate or a weekend surcharge. Each slot has:
+
+| Field | Description |
+|-------|-------------|
+| **Label** | Free-text name, e.g. `Standby - week` or `Weekend surcharge` |
+| **From / To** | Wall-clock window; overnight ranges are supported (e.g. `19:00` – `07:00`) |
+| **Days** | Which days the slot applies: All days, Weekdays, Weekends, or a specific day of the week |
+| **Ends after** | For overnight slots — how many calendar days later the end time falls. Use *Next day* for Mon–Fri 19:00–07:00; *3 days later* for a Fri 19:00–Mon 07:00 weekend shift |
+| **Factor** | Multiplies the contract base hourly rate (e.g. `1.5` = 150 %). Leave blank to use only the flat Rate |
+| **Rate** | Flat hourly rate for this slot, overriding the contract base rate. If both Factor and Rate are set, the rate is also multiplied |
+
+A contract can have any number of slots. The PDF time report renders a sub-row per slot for each entry that overlaps the window, showing the billable hours broken down by rate.
+
 ### Projects
 
 Admins can create, rename, archive, and delete any project regardless of
@@ -554,6 +573,17 @@ Projects and customers created by an admin are automatically visible to all
 users and labelled **Global (created by admin)** in the management lists.
 Regular users only see their own items plus admin-created ones, and cannot
 edit or delete items they did not create.
+
+#### Standby shift entry
+
+Every project row on the weekly time sheet has a **⏳** (standby shift) button, visible when the row is hovered or focused. Clicking it opens a dialog where you enter:
+
+- **Start date** and **start time** (e.g. Friday `19:00`)
+- **End date** and **end time** (e.g. Monday `07:00`)
+
+WarmDesk splits the date/time range into individual per-calendar-day entries and places them in the correct day columns on the project row. A **Weekend standby** preset button pre-fills Friday 19:00 → Monday 07:00 for the week currently shown in the sheet.
+
+If the contract for that project has [standby time slots](#standby-time-slots) configured, the PDF report will automatically break the generated entries down by slot rate.
 
 ### System settings
 

@@ -118,6 +118,57 @@ This is useful for onboarding an entire team at once.
 
 See the link:#system-settings[System Settings] section below.
 
+=== Customers and contracts
+
+Manage customer organisations under *Admin → Customers*.
+
+Customer contracts are edited from the customer detail page (*Customers → (click customer) → Contracts*).
+Each contract has a base hourly rate and optional *time slots* that define alternative rates for work done outside standard hours — for example evening, overnight, or weekend standby rates.
+
+.Contract time slot fields
+[cols="1,3", options="header"]
+|===
+|Field |Description
+
+|Label
+|Free-text name, e.g. `Standby - week` or `Weekend surcharge`
+
+|From / To
+|Wall-clock window; overnight ranges are supported (e.g. `19:00` – `07:00`)
+
+|Days
+|Which days apply: All days, Weekdays, Weekends, or a specific weekday
+
+|Ends after
+|For overnight slots — how many calendar days later the end time falls.
+Use *Next day* for Mon–Fri 19:00–07:00; *3 days later* for a Fri 19:00–Mon 07:00 weekend shift.
+
+|Factor
+|Multiplies the contract base hourly rate (e.g. `1.5` = 150 %).
+Leave blank to use only the flat Rate field.
+
+|Rate
+|Flat hourly rate for this slot, overriding the contract base rate.
+If both Factor and Rate are set, the rate is also multiplied.
+|===
+
+A contract can carry any number of slots.
+The PDF time report renders a sub-row per slot for each entry that overlaps the window, showing billable hours broken down by rate.
+
+=== Time tracking
+
+Time-tracking projects and customers are managed from *Admin → Time Tracking* or from the ⚙ gear button on the time-tracking page.
+Admin-created items are visible to all users and labelled *Global (created by admin)* in the management lists.
+
+==== Standby shift entry
+
+Every project row on the weekly time sheet has a *⏳ standby shift* button (visible on hover/focus).
+It opens a dialog where you enter a start date + time and an end date + time.
+WarmDesk splits the range into individual per-day entries and places them in the correct day columns automatically.
+A *Weekend standby* preset button fills in Friday 19:00 → Monday 07:00 for the current week.
+
+If the project's contract has time slots configured, the PDF report will break the generated entries down by slot rate automatically.
+
 == System settings
 
 System settings are stored as key/value rows in the database and take effect immediately without a restart.
