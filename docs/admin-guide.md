@@ -357,7 +357,10 @@ admin users only).
 | Disable / enable | Admin → Users → Edit → Enabled toggle |
 | Assign to projects | Admin → Users → (click user) → Projects tab |
 | Assign to customers | Admin → Users → (click user) → Customer Access picker |
-| Delete a user | Admin → Users → Edit → Delete (permanent) |
+| View login / audit history | Admin → Users → (click user) → Login History |
+| Soft-delete a user | Admin → Users → Edit → Delete |
+| Restore a soft-deleted user | Admin → Users → (filter deleted) → (click user) → Restore |
+| Permanently purge a user | Admin → Users → (filter deleted) → (click user) → Purge |
 
 **Global roles**
 
@@ -375,6 +378,33 @@ The `metrics` role is intended for Prometheus scraper accounts. Create a dedicat
 The `backup` role is intended for automated backup scripts and cron jobs. See [section 15](#15-backup-and-recovery) for setup instructions.
 
 The `customer` role is intended for end-customers who need a self-service portal to follow their own tickets. Assign the user to one or more customers via **Admin → Users → (click user) → Customer Access**. They can read all non-private messages and post replies, but cannot create, update, or delete tickets; cannot add tags, links, or apply macros; and cannot see internal (private) notes.
+
+### Login History
+
+Every user has a **Login History** tab in the admin panel (**Admin → Users → (click user) → Login History**). It records every authentication and security-sensitive action for that user, along with the IP address and client (User-Agent) of the request.
+
+| Event | When it is recorded |
+|-------|---------------------|
+| `login_ok` | Successful password or passkey login |
+| `login_fail` | Failed login attempt (wrong password, unknown user) |
+| `logout` | Explicit logout |
+| `token_refresh` | Silent access-token renewal |
+| `password_changed` | User changed their own password |
+| `email_changed` | User changed their email address |
+| `mfa_enabled` | TOTP was enabled |
+| `mfa_disabled` | TOTP was disabled by the user |
+| `passkey_registered` | WebAuthn passkey added |
+| `passkey_deleted` | WebAuthn passkey removed |
+| `api_key_created` | API key generated |
+| `api_key_deleted` | API key revoked |
+| `admin_user_created` | An admin created this account |
+| `admin_user_updated` | An admin edited this user's profile or role |
+| `admin_user_deleted` | An admin soft-deleted this user |
+| `admin_user_restored` | An admin restored this user from soft-delete |
+| `admin_user_purged` | An admin permanently deleted this user |
+| `admin_mfa_disabled` | An admin reset this user's MFA |
+
+The **Performed by** column is blank for self-actions (the event was triggered by the user themselves). For admin-on-behalf actions it shows the admin's username so you can tell apart a user changing their own password from an admin doing it for them.
 
 ### Groups
 

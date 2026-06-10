@@ -75,6 +75,32 @@ It contains:
 * Reset a user's MFA (TOTP)
 * View last login time and last password change
 * Create and revoke API keys on behalf of any user (useful for `metrics` and `backup` service accounts)
+* View the full *Login History* for each user — every authentication and security-sensitive event with IP, client, timestamp, and the actor (blank for self-actions; admin username for admin-on-behalf actions)
+
+.Events recorded in Login History
+[cols="1,2", options="header"]
+|===
+|Event |When it is recorded
+
+|`login_ok` |Successful password or passkey login
+|`login_fail` |Failed login attempt
+|`logout` |Explicit logout
+|`token_refresh` |Silent access-token renewal
+|`password_changed` |User changed their own password
+|`email_changed` |User changed their email address
+|`mfa_enabled` |TOTP was enabled
+|`mfa_disabled` |TOTP was disabled by the user
+|`passkey_registered` |WebAuthn passkey added
+|`passkey_deleted` |WebAuthn passkey removed
+|`api_key_created` |API key generated
+|`api_key_deleted` |API key revoked
+|`admin_user_created` |An admin created this account
+|`admin_user_updated` |An admin edited this user's profile or role
+|`admin_user_deleted` |An admin soft-deleted this user
+|`admin_user_restored` |An admin restored this user from soft-delete
+|`admin_user_purged` |An admin permanently deleted this user
+|`admin_mfa_disabled` |An admin reset this user's MFA
+|===
 
 === Groups tab
 

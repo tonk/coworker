@@ -1,0 +1,185 @@
+---
+title: "v0.12.4: Per-user audit trail, RBAC fixes, and Ansible collection v0.5.0"
+date: "2026-06-10"
+author: "Ton Kersten"
+description: "Full login and activity history per user in the admin panel, three security fixes, new Ansible modules for epics, sprints, and checklist templates, and a flexible modal width API."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` adds a per-user audit trail to the admin panel, closes three security gaps, ships Ansible collection v0.5.0 with three new modules, and makes dialogs resizable to any width.
+
+== Per-user audit trail
+
+Every user in the admin panel now has a *Login History* tab.
+It records every authentication and security-sensitive action for that account, along with the IP address, client (User-Agent), and timestamp of the request.
+
+=== Events tracked
+
+[cols="1,2", options="header"]
+|===
+|Event |When it is recorded
+
+|`login_ok` |Successful password or passkey login
+|`login_fail` |Failed login attempt
+|`logout` |Explicit logout
+|`token_refresh` |Silent access-token renewal
+|`password_changed` |User changed their own password
+|`email_changed` |User changed their email address
+|`mfa_enabled` |TOTP was enabled
+|`mfa_disabled` |TOTP was disabled
+|`passkey_registered` |WebAuthn passkey added
+|`passkey_deleted` |WebAuthn passkey removed
+|`api_key_created` |API key generated
+|`api_key_deleted` |API key revoked
+|`admin_user_created` |Admin created this account
+|`admin_user_updated` |Admin edited this user's profile or role
+|`admin_user_deleted` |Admin soft-deleted this user
+|`admin_user_restored` |Admin restored this user from soft-delete
+|`admin_user_purged` |Admin permanently deleted this user
+|`admin_mfa_disabled` |Admin reset this user's MFA
+|===
+
+=== Performed by column
+
+The *Performed by* column distinguishes self-actions from admin-on-behalf actions.
+For events triggered by the user themselves (password change, logout, etc.) the column is blank.
+For events triggered by an admin acting on the account (user creation, role change, MFA reset, etc.) it shows the admin's username.
+
+This makes it straightforward to answer questions like _"who changed this user's role last Tuesday?"_ or _"did the user delete their own passkey, or did an admin remove it?"_
+
+== RBAC fixes
+
+=== Customer-role users blocked from inbox ticket writes
+
+The helpdesk inbox routes (`PUT` and `DELETE /api/v1/tickets/inbox/:id`) were missing a role check that the customer-scoped ticket routes already had.
+Users with the `customer` global role could call these endpoints to update or delete any inbox ticket.
+
+Both handlers now reject `customer`-role requests with HTTP 403 before reading the ticket.
+
+=== ListContracts IDOR fixed
+
+`GET /api/v1/customers/:id/contracts` was missing a customer-access check.
+Any authenticated user could enumerate contracts for any customer by supplying an arbitrary customer ID — even customers they had no access to.
+
+The handler now calls `requireCustomerAccess` and returns HTTP 403 if the requesting user has neither direct nor group-based access to the customer.
+
+=== Project API keys require owner role
+
+Creating or deleting a project API key previously required only `member` role.
+A project member could generate keys and use them to automate actions with the project owner's effective permissions.
+
+Both endpoints now require `owner` role (or global admin) to match the privilege level the key grants.
+
+== Ansible collection v0.5.0
+
+The link:https://galaxy.ansible.com/ui/repo/published/tonk/warmdesk/[WarmDesk Ansible collection] has been updated to v0.5.0 with three new modules and an extended `warmdesk_user` module.
+
+=== New module: `warmdesk_epic`
+
+Manages Scrum epics within a project.
+
+[source,yaml]
+----
+- name: Create a Q3 delivery epic
+  tonk.warmdesk.warmdesk_epic:
+    warmdesk_url: "https://desk.example.com"
+    warmdesk_token: "{{ api_token }}"
+    project: my-project
+    name: "Q3 Delivery"
+    color: "#4f8ef7"
+    status: open
+    state: present
+----
+
+Idempotency is keyed on project slug + name.
+Set `status: closed` to close an existing epic in the same task.
+
+=== New module: `warmdesk_sprint`
+
+Full sprint lifecycle management — create, update, and transition sprints between `planning`, `active`, and `completed`.
+
+[source,yaml]
+----
+- name: Start the current sprint
+  tonk.warmdesk.warmdesk_sprint:
+    warmdesk_url: "https://desk.example.com"
+    warmdesk_token: "{{ api_token }}"
+    project: my-project
+    name: "Sprint 42"
+    status: active
+    state: present
+----
+
+Status transitions are validated: `planning → active` and `active → completed` are allowed; invalid jumps (e.g. `planning → completed`) fail the task with a clear error.
+
+=== New module: `warmdesk_ticket_checklist_template`
+
+Admin CRUD for reusable ticket checklist templates.
+
+[source,yaml]
+----
+- name: Ensure onboarding checklist template
+  tonk.warmdesk.warmdesk_ticket_checklist_template:
+    warmdesk_url: "https://desk.example.com"
+    warmdesk_token: "{{ api_token }}"
+    name: "New customer onboarding"
+    items:
+      - "Send welcome email"
+      - "Create project board"
+      - "Schedule kick-off call"
+    is_active: true
+    state: present
+----
+
+=== Extended `warmdesk_user`: restore and purge
+
+`warmdesk_user` now accepts two additional `state` values:
+
+[cols="1,3"]
+|===
+|State |Effect
+
+|`restore`
+|Re-activates a soft-deleted user.
+Fails if the user is not found at all; is a no-op if the account is already active.
+
+|`purge`
+|Permanently and irreversibly deletes the user record.
+Searches active users first, then soft-deleted users.
+Is a no-op if the user is not found.
+|===
+
+[source,yaml]
+----
+- name: Restore a previously deleted account
+  tonk.warmdesk.warmdesk_user:
+    warmdesk_url: "https://desk.example.com"
+    warmdesk_token: "{{ api_token }}"
+    username: alice
+    state: restore
+
+- name: Permanently remove a test account
+  tonk.warmdesk.warmdesk_user:
+    warmdesk_url: "https://desk.example.com"
+    warmdesk_token: "{{ api_token }}"
+    username: test-user
+    state: purge
+----
+
+== Flexible modal widths
+
+`BaseModal` now accepts a `width` prop that overrides the default 560 px maximum width.
+Any valid CSS length or `calc()` expression is accepted.
+The Login History modal uses `min(95vw, 1080px)` so the actor, IP, and client columns all fit without horizontal scrolling.
+
+This prop is available to custom integrations and themes that embed WarmDesk modals.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No manual database changes are required.
+New columns and settings are applied automatically on first boot via GORM AutoMigrate.
