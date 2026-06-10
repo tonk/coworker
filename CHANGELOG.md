@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.12.10 — 2026-06-10
+
+### Added
+- **Contract time slot duration summary** — the contract time slot editor now shows the duration each slot occupies directly after the day selector. For slots active on a single day the duration is shown once; for slots spanning multiple days each active day is listed individually (e.g. Mon: 8h Tue: 8h Fri: 8h) followed by the weekly total.
+- **Contract selection in time grid** — the add/edit row dialogs in the time-tracking grid now include a contract dropdown. The selected contract is stored on each time entry and displayed in the row in the primary colour. A ⏱ "Fill from slots" button pre-fills the entire week's hours based on the contract's time slot definitions.
+
 ## v0.12.9 — 2026-06-10
 
 ### Fixed

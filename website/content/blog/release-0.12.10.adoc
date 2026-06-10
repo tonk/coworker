@@ -1,0 +1,39 @@
+---
+title: "v0.12.10: Contract time in the time grid"
+date: "2026-06-10"
+author: "Ton Kersten"
+description: "Select a contract when adding time entries, fill the week automatically from contract slots, and see per-day duration totals right in the contract editor."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` brings two quality-of-life improvements to contract-based time tracking.
+
+== Contract selection in the time grid
+
+When adding or editing a row in the time-tracking grid, a *Contract* dropdown now appears alongside the customer and project fields.
+Selecting a contract stores the association on every time entry in that row, and the contract name is shown beneath the description in the row using the primary colour so it is easy to spot at a glance.
+
+=== Fill from slots
+
+Rows with a contract assigned get a ⏱ button in the row actions column.
+Clicking it calculates the minutes from the contract's time slot definitions for each day of the current week and creates or updates the corresponding entries automatically — no manual hour entry needed for standard contract schedules.
+
+The same button is also available directly in the add-row form so you can create the row and fill the week in one step.
+
+== Slot duration summary
+
+The contract time slot editor now shows a *Duration* field directly after the day selector.
+
+- For a slot active on a single day the duration is displayed once (e.g. *8h*).
+- For slots covering multiple days, each active day is listed individually (Mon: 8h  Tue: 8h  Fri: 8h) followed by the weekly total (= 24h) highlighted in the primary colour.
+
+The summary updates live as you adjust start time, end time, overnight offset, or the day selection.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Run the new version in-place — AutoMigrate adds the `contract_id` column to `time_entries` on first startup.
+No other configuration changes are required.
