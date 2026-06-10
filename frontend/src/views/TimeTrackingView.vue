@@ -87,7 +87,7 @@
           {{ $t('timeTracking.tab_report') }}
         </button>
         <button
-          v-if="auth.canViewReports"
+          v-if="auth.canViewReports && !systemStore.isTimetrackingMode"
           id="tab-board-report"
           class="tt-mode-btn"
           role="tab"
@@ -808,6 +808,7 @@ import { useI18n } from 'vue-i18n'
 import Sortable from 'sortablejs'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import { useSystemStore } from '@/stores/system'
 import { timeEntriesApi } from '@/api/timeEntries'
 import { customersApi } from '@/api/customers'
 import { projectsApi } from '@/api/projects'
@@ -829,6 +830,7 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const auth = useAuthStore()
 const ui = useUIStore()
+const systemStore = useSystemStore()
 const { formatDate, dateOnlyFormat } = useDateFormat()
 
 const showRates = ref(false)
