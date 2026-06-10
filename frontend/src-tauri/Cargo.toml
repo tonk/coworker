@@ -1,6 +1,6 @@
 [package]
 name = "warmdesk"
-version = "0.10.40-2-g8e28d7e"
+version = "0.12.2-11-ga349f7c"
 edition = "2021"
 
 [lib]

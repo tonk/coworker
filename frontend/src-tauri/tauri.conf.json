@@ -1,6 +1,6 @@
 {
   "productName": "WarmDesk",
-  "version": "0.10.40-2-g8e28d7e",
+  "version": "0.12.2-11-ga349f7c",
   "identifier": "com.warmdesk.desktop",
   "build": {
     "frontendDist": "../dist",
