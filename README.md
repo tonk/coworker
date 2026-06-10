@@ -8,9 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.6)
+## Latest release (v0.12.7)
 
-- **Contract time slot week preview fix** — all slots now show their week preview, not just the first one. Equal start/end times render as 24-hour coverage. Each slot gets a distinct colour so multiple slots are easy to distinguish.
+- **Multi-day contract time slot selection** — choose any combination of weekdays per time slot using toggle buttons; schedules like Mon–Thu nights + Fri→Mon are now expressible in two slots.
+- **`--mode=timetracking` flag** — run a stripped instance (time tracking only) that shares a database with a full WarmDesk deployment; boards, chat, and helpdesk are disabled at both API and UI level.
 
 ## Experiment
 

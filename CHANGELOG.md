@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.12.7 — 2026-06-10
+
+### Added
+- **Multi-day contract time slot selection** — the day-type dropdown on contract time slots is replaced by a compact row of seven toggle buttons (Mo Tu We Th Fr Sa Su). Any combination of days can be selected in a single slot; the selection normalises to the `all`, `weekdays`, or `weekends` preset when it matches exactly. This makes schedules like "Mon–Thu 19:00 → 07:00 + Fri 19:00 → Mon 07:00" expressible in two slots instead of five.
+- **`--mode=timetracking` server flag** — start the server with `--mode=timetracking` (or `APP_MODE=timetracking`) to run a stripped-down instance that exposes only time-tracking routes (customers, contracts, time entries, reports). Boards, chat, helpdesk, sprints, and all associated admin configuration are disabled at the API level. The frontend detects the mode from `GET /version` before first render and hides the sidebar, search bar, non-time-tracking nav links, and irrelevant admin tabs. The landing page redirects to `/time-tracking`. Designed for a shared-database setup alongside a full WarmDesk instance.
+
 ## v0.12.6 — 2026-06-10
 
 ### Fixed

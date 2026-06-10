@@ -1,0 +1,71 @@
+---
+title: "v0.12.7: Multi-day time slot selection and time-tracking-only mode"
+date: "2026-06-10"
+author: "Ton Kersten"
+description: "Select multiple weekdays per contract time slot, and run a stripped time-tracking-only server instance that shares a database with full WarmDesk."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` brings two improvements to the contracts and deployment story.
+
+== Multi-day contract time slot selection
+
+The day-type dropdown on contract time slots is replaced by a compact row of seven day-toggle buttons:
+
+image::contract-slot-days.png[Day-toggle buttons Mo Tu We Th Fr Sa Su, role="screenshot"]
+
+You can now select any combination of days in a single slot.
+Previously, a standby schedule like *Mon–Thu 19:00 → next morning 07:00* required four separate identical slots (one per day).
+Now it is one slot with Mon, Tue, Wed, Thu toggled on.
+
+A Friday-to-Monday overnight slot (Fri 19:00 → Mon 07:00, Ends after: 3 days) is a second slot with only Friday selected.
+The full on-call week is covered in **two slots** instead of five.
+
+Selections that match a preset normalise automatically:
+
+* All seven days → `all`
+* Mon–Fri → `weekdays`
+* Sat–Sun → `weekends`
+* Any other combination is stored as a comma-separated list and displayed as abbreviated day names (e.g. *Mo, Tu, We, Th*) in the rates overview.
+
+== `--mode=timetracking` server flag
+
+Start the server with `--mode=timetracking` (or set `APP_MODE=timetracking`) to run a stripped instance that serves only time-tracking functionality:
+
+[source,bash]
+----
+./warmdesk --mode=timetracking
+----
+
+The flag is designed for teams that run a full WarmDesk deployment for boards and chat, and want a separate lightweight instance — pointing at the *same database* — for colleagues who only need to log and report time.
+
+=== What is disabled
+
+At the API level, the following route groups are not registered at all:
+
+* Project boards, columns, cards, sprints, epics, topics, project chat
+* Direct messages and group conversations
+* Helpdesk tickets and inbox
+* Global search, card reference resolver, link preview
+* Webhooks and the CI/CD ticket API
+* Admin project CRUD, SLA policies, macros, ticket checklist templates, IMAP configuration
+
+=== What the UI looks like
+
+The frontend reads `app_mode` from `GET /version` *before the first render*, so there is no flash of unwanted content:
+
+* The *sidebar is hidden* entirely — no project list, no customer list, no chat sections.
+* The *search bar is removed* from the header.
+* Nav links for Dashboard, Messages, and Time Tracking are removed (you are already on the time-tracking page).
+* The landing page *redirects directly to `/time-tracking`*.
+* The admin panel hides the Projects, SLA, Macros, and Ticket Checklists tabs.
+
+All user management, customer and contract management, time entries, and report exports remain fully functional.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+No database or configuration changes are required for existing deployments.
