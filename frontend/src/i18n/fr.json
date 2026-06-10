@@ -977,7 +977,13 @@
     "export_grid": "PDF grille",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Contrat",
+    "no_contract": "Aucun contrat",
+    "fill_from_slots": "Remplir depuis les créneaux",
+    "no_slots_on_contract": "Ce contrat n'a pas de créneaux horaires.",
+    "no_slots_match_week": "Aucun créneau ne correspond à la semaine en cours.",
+    "slots_filled": "Créneaux horaires remplis pour la semaine en cours."
   },
   "call": {
     "incoming": "Appel entrant",

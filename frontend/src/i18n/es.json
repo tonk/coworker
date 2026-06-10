@@ -977,7 +977,13 @@
     "export_grid": "PDF cuadrícula",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Contrato",
+    "no_contract": "Sin contrato",
+    "fill_from_slots": "Rellenar desde franjas",
+    "no_slots_on_contract": "Este contrato no tiene franjas horarias.",
+    "no_slots_match_week": "Ninguna franja horaria corresponde a la semana actual.",
+    "slots_filled": "Franjas horarias rellenadas para la semana actual."
   },
   "call": {
     "incoming": "Llamada entrante",

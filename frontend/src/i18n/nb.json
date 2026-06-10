@@ -977,7 +977,13 @@
     "export_grid": "Rutenett PDF",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Kontrakt",
+    "no_contract": "Ingen kontrakt",
+    "fill_from_slots": "Fyll fra slots",
+    "no_slots_on_contract": "Denne kontrakten har ingen tidsspor.",
+    "no_slots_match_week": "Ingen tidsspor gjelder for den gjeldende uken.",
+    "slots_filled": "Tidsspor fylt for den gjeldende uken."
   },
   "call": {
     "incoming": "Innkommende anrop",

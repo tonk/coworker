@@ -977,7 +977,13 @@
     "export_grid": "Gitter PDF",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Kontrakt",
+    "no_contract": "Ingen kontrakt",
+    "fill_from_slots": "Udfyld fra slots",
+    "no_slots_on_contract": "Denne kontrakt har ingen tidsslots.",
+    "no_slots_match_week": "Ingen tidsslots gælder for den aktuelle uge.",
+    "slots_filled": "Tidsslots udfyldt for den aktuelle uge."
   },
   "call": {
     "incoming": "Indgående opkald",

@@ -30,6 +30,7 @@ func ListTimeEntries(c *gin.Context) {
 	q := database.DB.
 		Preload("Customer").
 		Preload("Project").
+		Preload("Contract").
 		Preload("User").
 		Order("date desc, id desc")
 
@@ -70,9 +71,19 @@ func ListTimeEntries(c *gin.Context) {
 	c.JSON(http.StatusOK, entries)
 }
 
-// checkContractNotExpired verifies that no contract associated with the given
-// customer or project has an end_date before the entry date.
-func checkContractNotExpired(db *gorm.DB, customerID, projectID *uint, entryDate time.Time) error {
+// checkContractNotExpired verifies that the contract (if specified) or any
+// contract associated with the given customer or project has not expired before
+// the entry date.
+func checkContractNotExpired(db *gorm.DB, customerID, projectID, contractID *uint, entryDate time.Time) error {
+	if contractID != nil {
+		var contract models.Contract
+		if err := db.First(&contract, *contractID).Error; err == nil && contract.EndDate != nil {
+			if entryDate.After(*contract.EndDate) {
+				return fmt.Errorf("the selected contract expired on %s", contract.EndDate.Format("2006-01-02"))
+			}
+		}
+		return nil // specific contract checked; skip broader customer check
+	}
 	if projectID != nil {
 		var project models.Project
 		if err := db.First(&project, *projectID).Error; err == nil && project.ContractID != nil {
@@ -101,6 +112,7 @@ func CreateTimeEntry(c *gin.Context) {
 	var req struct {
 		CustomerID  *uint   `json:"customer_id"`
 		ProjectID   *uint   `json:"project_id"`
+		ContractID  *uint   `json:"contract_id"`
 		TicketID    *uint   `json:"ticket_id"`
 		Date        string  `json:"date"`
 		Minutes     int     `json:"minutes"`
@@ -131,7 +143,7 @@ func CreateTimeEntry(c *gin.Context) {
 		}
 	}
 
-	if err := checkContractNotExpired(database.DB, req.CustomerID, req.ProjectID, date); err != nil {
+	if err := checkContractNotExpired(database.DB, req.CustomerID, req.ProjectID, req.ContractID, date); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -140,6 +152,7 @@ func CreateTimeEntry(c *gin.Context) {
 		UserID:      userID,
 		CustomerID:  req.CustomerID,
 		ProjectID:   req.ProjectID,
+		ContractID:  req.ContractID,
 		TicketID:    req.TicketID,
 		Date:        date,
 		Minutes:     req.Minutes,
@@ -152,7 +165,7 @@ func CreateTimeEntry(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	database.DB.Preload("Customer").Preload("Project").Preload("User").First(&entry, entry.ID)
+	database.DB.Preload("Customer").Preload("Project").Preload("Contract").Preload("User").First(&entry, entry.ID)
 	c.JSON(http.StatusCreated, entry)
 }
 
@@ -174,6 +187,7 @@ func UpdateTimeEntry(c *gin.Context) {
 	var req struct {
 		CustomerID  *uint   `json:"customer_id"`
 		ProjectID   *uint   `json:"project_id"`
+		ContractID  *uint   `json:"contract_id"`
 		Date        string  `json:"date"`
 		Minutes     int     `json:"minutes"`
 		Description string  `json:"description"`
@@ -195,13 +209,14 @@ func UpdateTimeEntry(c *gin.Context) {
 		return
 	}
 
-	if err := checkContractNotExpired(database.DB, req.CustomerID, req.ProjectID, date); err != nil {
+	if err := checkContractNotExpired(database.DB, req.CustomerID, req.ProjectID, req.ContractID, date); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	entry.CustomerID = req.CustomerID
 	entry.ProjectID = req.ProjectID
+	entry.ContractID = req.ContractID
 	entry.Date = date
 	entry.Minutes = req.Minutes
 	entry.Description = req.Description
@@ -216,6 +231,9 @@ func UpdateTimeEntry(c *gin.Context) {
 	if req.ProjectID == nil {
 		database.DB.Model(&entry).Update("project_id", nil)
 	}
+	if req.ContractID == nil {
+		database.DB.Model(&entry).Update("contract_id", nil)
+	}
 	if req.StartTime == nil {
 		database.DB.Model(&entry).Update("start_time", nil)
 	}
@@ -226,7 +244,7 @@ func UpdateTimeEntry(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	database.DB.Preload("Customer").Preload("Project").First(&entry, entry.ID)
+	database.DB.Preload("Customer").Preload("Project").Preload("Contract").First(&entry, entry.ID)
 	c.JSON(http.StatusOK, entry)
 }
 

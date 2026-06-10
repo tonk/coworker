@@ -977,7 +977,13 @@
     "export_grid": "Raster PDF",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Contract",
+    "no_contract": "Geen contract",
+    "fill_from_slots": "Invullen vanuit slots",
+    "no_slots_on_contract": "Dit contract heeft geen tijdslots.",
+    "no_slots_match_week": "Geen tijdslots van toepassing op deze week.",
+    "slots_filled": "Tijdslots ingevuld voor de huidige week."
   },
   "call": {
     "incoming": "Inkomende oproep",

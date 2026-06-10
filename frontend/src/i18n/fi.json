@@ -977,7 +977,13 @@
     "export_grid": "Ruudukko PDF",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Sopimus",
+    "no_contract": "Ei sopimusta",
+    "fill_from_slots": "Täytä ajoista",
+    "no_slots_on_contract": "Tällä sopimuksella ei ole aikapaikkoja.",
+    "no_slots_match_week": "Yksikään aikapaikka ei vastaa nykyistä viikkoa.",
+    "slots_filled": "Aikapaikat täytetty nykyiselle viikolle."
   },
   "call": {
     "incoming": "Saapuva puhelu",

@@ -150,6 +150,10 @@
                     <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
                     <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
                   </select>
+                  <select v-if="editRowContracts.length" class="nr-sel" v-model="editForm.contract_id" :aria-label="$t('timeTracking.contract')">
+                    <option :value="null">{{ $t('timeTracking.no_contract') }}</option>
+                    <option v-for="c in editRowContracts" :key="c.id" :value="c.id">{{ c.name }}</option>
+                  </select>
                   <select class="nr-sel" v-model="editForm.project_id" aria-label="Project">
                     <option :value="null">{{ $t('timeTracking.no_project') }}</option>
                     <option v-for="p in editRowProjects" :key="p.id" :value="p.id">{{ p.name }}</option>
@@ -169,7 +173,8 @@
               <template v-else>
                 <td class="c-info">
                   <div class="rc-cust">{{ row.customer_name || '—' }}</div>
-                  <div class="rc-proj">{{ row.project_name || '—' }}</div>
+                  <div v-if="row.contract_name" class="rc-contract">{{ row.contract_name }}</div>
+                  <div v-else class="rc-proj">{{ row.project_name || '—' }}</div>
                   <span class="rc-comment-wrap">
                   <button v-if="!viewingOther" class="rc-comment-btn"
                     :class="{ 'has-comment': !!rowComments[row.key] }"
@@ -298,6 +303,7 @@
                   <template v-else>
                     <button class="act-btn act-edit" @click="startEditRow(row)" :title="$t('common.edit')" aria-label="Edit time entry">✎</button>
                     <button class="act-btn act-duplicate" @click="duplicateRow(row)" :title="$t('common.duplicate')" aria-label="Duplicate time entry">⧉</button>
+                    <button v-if="row.contract_id" class="act-btn act-slots" @click="fillFromSlots(row)" :title="$t('timeTracking.fill_from_slots')" :aria-label="$t('timeTracking.fill_from_slots')">⏱</button>
                     <button class="act-btn act-standby" @click="openStandbyShift(row)" :title="$t('timeTracking.standby_shift')" :aria-label="$t('timeTracking.standby_shift')">⏳</button>
                     <button class="act-btn act-del" @click="startDeleteRow(row)" :title="$t('common.delete')" aria-label="Delete time entry">🗑</button>
                   </template>
@@ -313,6 +319,10 @@
                 <select class="nr-sel" v-model="newRow.customer_id" @change="newRow.project_id = null" aria-label="Customer">
                   <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
                   <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+                <select v-if="newRowContracts.length" class="nr-sel" v-model="newRow.contract_id" :aria-label="$t('timeTracking.contract')">
+                  <option :value="null">{{ $t('timeTracking.no_contract') }}</option>
+                  <option v-for="c in newRowContracts" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
                 <select class="nr-sel" v-model="newRow.project_id" aria-label="Project">
                   <option :value="null">{{ $t('timeTracking.no_project') }}</option>
@@ -331,7 +341,11 @@
                 <input class="h-inp" :type="timeNotation === 'hhmm' ? 'text' : 'number'" value="" disabled />
               </td>
               <td class="c-total"></td>
-              <td class="c-act"></td>
+              <td class="c-act">
+                <button class="act-btn act-ok" @click="confirmNewRow" :title="$t('common.save')" :aria-label="$t('common.save')">✓</button>
+                <button class="act-btn act-no" @click="cancelNewRow" :title="$t('common.cancel')" :aria-label="$t('common.cancel')">✕</button>
+                <button v-if="newRowHasSlots" class="act-btn act-slots" @click="confirmAndFillFromSlots" :title="$t('timeTracking.fill_from_slots')" :aria-label="$t('timeTracking.fill_from_slots')">⏱</button>
+              </td>
             </tr>
           </tbody>
 
@@ -825,6 +839,7 @@ import {
   parseWallClock as parseShiftWallClock,
 } from '@/utils/shiftTimeEntries'
 import { entryUndeclMins, rowDeclarableMins } from '@/utils/timeTrackingUndecl'
+import { slotCoverageOnWeekday } from '@/utils/contractSlotPreview'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -851,6 +866,17 @@ const sortedTTCustomers = computed(() =>
 // Merged lists for dropdowns
 const allCustomers = computed(() => [...customers.value, ...ttCustomers.value])
 const allProjects  = computed(() => [...projects.value, ...ttProjects.value])
+
+// Contracts per customer — lazy-loaded when a customer is selected in add/edit row
+const contractsByCustomer = ref({})
+
+async function loadContractsForCustomer(customerId) {
+  if (!customerId || contractsByCustomer.value[customerId]) return
+  try {
+    const { data } = await customersApi.listContracts(customerId)
+    contractsByCustomer.value = { ...contractsByCustomer.value, [customerId]: data }
+  } catch {}
+}
 
 // ── User switching (admin / time_tracking_viewer only) ────────────────────
 const canViewOtherUsers = computed(() => auth.isAdmin || !!auth.user?.time_tracking_viewer)
@@ -1176,6 +1202,8 @@ function rowFromKey(key) {
     customer_name: cust?.name || '',
     project_id,
     project_name:  proj?.name || '',
+    contract_id:   null,
+    contract_name: '',
     description,
     is_holiday: false,
   }
@@ -1213,6 +1241,8 @@ function ensureLocalRow(row) {
     customer_name: row.customer_name || '',
     project_id:    row.project_id,
     project_name:  row.project_name || '',
+    contract_id:   row.contract_id   || null,
+    contract_name: row.contract_name || '',
     description:   row.description || '',
     is_holiday:    false,
   })
@@ -1230,6 +1260,8 @@ const entryRows = computed(() => {
         customer_name: e.customer?.name || '',
         project_id:    e.project_id,
         project_name:  e.project?.name || '',
+        contract_id:   e.contract_id   || null,
+        contract_name: e.contract?.name || '',
         description:   e.description || '',
         is_holiday:    e.is_holiday || false,
         min_id:        e.id,
@@ -1669,14 +1701,15 @@ async function onCellBlur(row, dateISO, rawVal) {
       if (existing.is_holiday) {
         // Keep holiday markers at 0 minutes rather than deleting them
         const { data } = await timeEntriesApi.update(existing.id, {
-          customer_id: row.customer_id || null,
-          project_id:  row.project_id  || null,
-          date:        dateISO,
-          minutes:     0,
-          description: row.description,
-          is_holiday:  true,
-          start_time:  existing.start_time || null,
-          end_time:    existing.end_time   || null,
+          customer_id:  row.customer_id  || null,
+          project_id:   row.project_id   || null,
+          contract_id:  row.contract_id  || null,
+          date:         dateISO,
+          minutes:      0,
+          description:  row.description,
+          is_holiday:   true,
+          start_time:   existing.start_time || null,
+          end_time:     existing.end_time   || null,
         })
         const idx = rawEntries.value.findIndex(e => e.id === existing.id)
         rawEntries.value[idx] = data
@@ -1689,14 +1722,15 @@ async function onCellBlur(row, dateISO, rawVal) {
       }
     } else if (minutes > 0 && existing) {
       const { data } = await timeEntriesApi.update(existing.id, {
-        customer_id: row.customer_id || null,
-        project_id:  row.project_id  || null,
-        date:        dateISO,
+        customer_id:  row.customer_id  || null,
+        project_id:   row.project_id   || null,
+        contract_id:  row.contract_id  || null,
+        date:         dateISO,
         minutes,
-        description: row.description,
-        is_holiday:  existing.is_holiday,
-        start_time:  existing.start_time || null,
-        end_time:    existing.end_time   || null,
+        description:  row.description,
+        is_holiday:   existing.is_holiday,
+        start_time:   existing.start_time || null,
+        end_time:     existing.end_time   || null,
       })
       const idx = rawEntries.value.findIndex(e => e.id === existing.id)
       rawEntries.value[idx] = data
@@ -1705,6 +1739,7 @@ async function onCellBlur(row, dateISO, rawVal) {
       const { data } = await timeEntriesApi.create({
         customer_id:  row.customer_id  || null,
         project_id:   row.project_id   || null,
+        contract_id:  row.contract_id  || null,
         date:         dateISO,
         minutes,
         description:  row.description,
@@ -1723,8 +1758,14 @@ async function onCellBlur(row, dateISO, rawVal) {
 
 // ── Edit row ──────────────────────────────────────────────────────────────
 const editingRow = ref(null)
-const editForm   = ref({ customer_id: null, project_id: null, description: '' })
+const editForm   = ref({ customer_id: null, project_id: null, contract_id: null, description: '' })
 const deletingRow = ref(null)
+
+const editRowContracts = computed(() => {
+  const id = editForm.value.customer_id
+  if (!id) return []
+  return contractsByCustomer.value[id] || []
+})
 
 const editRowProjects = computed(() => {
   if (!editForm.value.customer_id) return allProjects.value
@@ -1735,7 +1776,8 @@ const editRowProjects = computed(() => {
 
 function startEditRow(row) {
   cancelDeleteRow()
-  editForm.value = { customer_id: row.customer_id, project_id: row.project_id, description: row.description }
+  editForm.value = { customer_id: row.customer_id, project_id: row.project_id, contract_id: row.contract_id || null, description: row.description }
+  loadContractsForCustomer(row.customer_id)
   editingRow.value = row.key
 }
 
@@ -1756,6 +1798,8 @@ function duplicateRow(row) {
     customer_name: row.customer_name,
     project_id:    row.project_id,
     project_name:  row.project_name,
+    contract_id:   row.contract_id   || null,
+    contract_name: row.contract_name || '',
     description:   desc,
     is_holiday:    false,
   })
@@ -1779,6 +1823,8 @@ async function confirmEditRow(row) {
   const r = editForm.value
   const cust = allCustomers.value.find(c => c.id === r.customer_id)
   const proj = allProjects.value.find(p => p.id === r.project_id)
+  const contracts = contractsByCustomer.value[r.customer_id] || []
+  const cont = contracts.find(c => c.id === r.contract_id)
   const newKey = rowKey(r.customer_id, r.project_id, r.description)
 
   const toUpdate = rawEntries.value.filter(
@@ -1787,12 +1833,13 @@ async function confirmEditRow(row) {
   try {
     for (const e of toUpdate) {
       const { data } = await timeEntriesApi.update(e.id, {
-        customer_id: r.customer_id || null,
-        project_id:  r.project_id  || null,
-        date:        e.date.slice(0, 10),
-        minutes:     e.minutes,
-        description: r.description,
-        is_holiday:  e.is_holiday,
+        customer_id:  r.customer_id  || null,
+        project_id:   r.project_id   || null,
+        contract_id:  r.contract_id  || null,
+        date:         e.date.slice(0, 10),
+        minutes:      e.minutes,
+        description:  r.description,
+        is_holiday:   e.is_holiday,
       })
       const idx = rawEntries.value.findIndex(x => x.id === e.id)
       rawEntries.value[idx] = data
@@ -1806,6 +1853,8 @@ async function confirmEditRow(row) {
         customer_name: cust?.name || '',
         project_id:    r.project_id,
         project_name:  proj?.name || '',
+        contract_id:   r.contract_id || null,
+        contract_name: cont?.name || '',
         description:   r.description,
       }
     }
@@ -2585,7 +2634,13 @@ function onTimePopupDocClick(e) {
 // ── Add row ───────────────────────────────────────────────────────────────
 const addingRow   = ref(false)
 const newDescRef  = ref(null)
-const newRow      = ref({ customer_id: null, project_id: null, description: '' })
+const newRow      = ref({ customer_id: null, project_id: null, contract_id: null, description: '' })
+
+const newRowContracts = computed(() => {
+  const id = newRow.value.customer_id
+  if (!id) return []
+  return contractsByCustomer.value[id] || []
+})
 
 const newRowProjects = computed(() => {
   if (!newRow.value.customer_id) return allProjects.value
@@ -2594,8 +2649,25 @@ const newRowProjects = computed(() => {
   return [...projects.value.filter(p => p.customer_id === newRow.value.customer_id), ...ttProjects.value]
 })
 
+const newRowHasSlots = computed(() => {
+  if (!newRow.value.contract_id) return false
+  const contracts = contractsByCustomer.value[newRow.value.customer_id] || []
+  const c = contracts.find(x => x.id === newRow.value.contract_id)
+  return !!(c?.time_slots?.length)
+})
+
+watch(() => newRow.value.customer_id, (id) => {
+  newRow.value.contract_id = null
+  loadContractsForCustomer(id)
+})
+
+watch(() => editForm.value.customer_id, (id) => {
+  editForm.value.contract_id = null
+  loadContractsForCustomer(id)
+})
+
 function startAddRow() {
-  newRow.value = { customer_id: null, project_id: null, description: '' }
+  newRow.value = { customer_id: null, project_id: null, contract_id: null, description: '' }
   addingRow.value = true
   nextTick(() => newDescRef.value?.focus())
 }
@@ -2604,6 +2676,8 @@ function confirmNewRow() {
   const r = newRow.value
   const cust = allCustomers.value.find(c => c.id === r.customer_id)
   const proj = allProjects.value.find(p => p.id === r.project_id)
+  const contracts = contractsByCustomer.value[r.customer_id] || []
+  const cont = contracts.find(c => c.id === r.contract_id)
   const k = rowKey(r.customer_id, r.project_id, r.description)
   if (!allRows.value.find(x => x.key === k)) {
     localRows.value.push({
@@ -2612,11 +2686,71 @@ function confirmNewRow() {
       customer_name: cust?.name || '',
       project_id:    r.project_id,
       project_name:  proj?.name || '',
+      contract_id:   r.contract_id || null,
+      contract_name: cont?.name || '',
       description:   r.description,
       is_holiday:    false,
     })
   }
   addingRow.value = false
+  return k
+}
+
+async function fillFromSlots(row) {
+  if (!row.contract_id) return
+  if (!contractsByCustomer.value[row.customer_id]) {
+    await loadContractsForCustomer(row.customer_id)
+  }
+  const contracts = contractsByCustomer.value[row.customer_id] || []
+  const contract = contracts.find(c => c.id === row.contract_id)
+  if (!contract?.time_slots?.length) {
+    ui.error(t('timeTracking.no_slots_on_contract'))
+    return
+  }
+  const saves = []
+  for (const day of weekDays.value) {
+    const dow = (new Date(day.iso).getDay() + 6) % 7 // 0=Mon…6=Sun
+    let totalMinutes = 0
+    for (const slot of contract.time_slots) {
+      for (const [start, end] of slotCoverageOnWeekday(slot, dow)) {
+        totalMinutes += end - start
+      }
+    }
+    if (totalMinutes <= 0) continue
+    const existing = getEntry(row, day.iso)
+    const payload = {
+      customer_id: row.customer_id || null,
+      project_id:  row.project_id  || null,
+      contract_id: row.contract_id || null,
+      date:        day.iso,
+      minutes:     totalMinutes,
+      description: row.description,
+      is_holiday:  false,
+    }
+    saves.push(existing
+      ? timeEntriesApi.update(existing.id, payload)
+      : timeEntriesApi.create(payload)
+    )
+  }
+  if (!saves.length) {
+    ui.error(t('timeTracking.no_slots_match_week'))
+    return
+  }
+  try {
+    await Promise.all(saves)
+    await loadWeek()
+    ui.success(t('timeTracking.slots_filled'))
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  }
+}
+
+async function confirmAndFillFromSlots() {
+  const rowData = { ...newRow.value }
+  const key = confirmNewRow()
+  await nextTick()
+  const row = allRows.value.find(x => x.key === key)
+  if (row) await fillFromSlots(row)
 }
 
 function cancelNewRow() {
@@ -3607,6 +3741,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 
 .rc-cust { font-weight: 600; font-size: 12px; line-height: 1.3; color: var(--color-text); }
 .rc-proj { font-size: 11px; color: var(--color-text-muted); line-height: 1.3; }
+.rc-contract { font-size: 11px; color: var(--color-primary); line-height: 1.3; }
 .rc-comment-wrap { position: relative; display: inline-block; }
 .rc-comment-btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -3866,6 +4001,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .act-edit:hover { color: var(--color-primary); }
 .act-duplicate:hover { color: var(--color-primary); }
 .act-standby:hover { color: var(--color-primary); }
+.act-slots:hover  { color: var(--color-primary); }
 .act-del:hover  { color: var(--color-danger); }
 .act-ok  { opacity: 1 !important; color: var(--color-success); }
 .act-ok:hover { background: color-mix(in srgb, var(--color-success) 12%, transparent); }

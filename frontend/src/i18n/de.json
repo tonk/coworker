@@ -977,7 +977,13 @@
     "export_grid": "Raster PDF",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Vertrag",
+    "no_contract": "Kein Vertrag",
+    "fill_from_slots": "Aus Slots füllen",
+    "no_slots_on_contract": "Dieser Vertrag hat keine Zeitslots.",
+    "no_slots_match_week": "Keine Zeitslots für die aktuelle Woche.",
+    "slots_filled": "Zeitslots für die aktuelle Woche gefüllt."
   },
   "call": {
     "incoming": "Eingehender Anruf",

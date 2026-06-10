@@ -977,7 +977,13 @@
     "export_grid": "PDF griglia",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Contratto",
+    "no_contract": "Nessun contratto",
+    "fill_from_slots": "Compila da slot",
+    "no_slots_on_contract": "Questo contratto non ha slot orari.",
+    "no_slots_match_week": "Nessuno slot orario si applica alla settimana corrente.",
+    "slots_filled": "Slot orari compilati per la settimana corrente."
   },
   "call": {
     "incoming": "Chiamata in arrivo",

@@ -977,7 +977,13 @@
     "export_grid": "PDF grelha",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Contrato",
+    "no_contract": "Sem contrato",
+    "fill_from_slots": "Preencher a partir de slots",
+    "no_slots_on_contract": "Este contrato não tem intervalos de tempo.",
+    "no_slots_match_week": "Nenhum intervalo de tempo se aplica à semana atual.",
+    "slots_filled": "Intervalos de tempo preenchidos para a semana atual."
   },
   "call": {
     "incoming": "Chamada recebida",

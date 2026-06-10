@@ -977,7 +977,13 @@
     "export_grid": "Rutnät PDF",
     "add_comment": "Add comment",
     "edit_comment": "Edit comment",
-    "comment_placeholder": "Enter a comment for this row…"
+    "comment_placeholder": "Enter a comment for this row…",
+    "contract": "Kontrakt",
+    "no_contract": "Inget kontrakt",
+    "fill_from_slots": "Fyll från slots",
+    "no_slots_on_contract": "Detta kontrakt har inga tidsplatser.",
+    "no_slots_match_week": "Inga tidsplatser gäller för den aktuella veckan.",
+    "slots_filled": "Tidsplatser ifyllda för den aktuella veckan."
   },
   "call": {
     "incoming": "Inkommande samtal",
