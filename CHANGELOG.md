@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.12.4 — 2026-06-10
+
+### Added
+- **Per-user audit trail** — the admin Edit User panel now has a Login History button showing a full audit log: successful and failed login attempts (password, passkey, MFA), logoffs, password changes, MFA events (challenge, verify, trusted-device skip, disable), passkey registration/deletion, API key lifecycle, email changes, and all admin actions on the account. Each event records timestamp, IP address, client string, and — for admin-on-behalf actions — the actor who performed it.
+
+### Fixed
+- **RBAC** — `customer`-role users were able to update and delete inbox tickets; both handlers now enforce `requireNotCustomerRole`. Any authenticated user could read contracts for any customer (`ListContracts` IDOR); the endpoint now requires `requireCustomerAccess`. Project-scoped API keys could be created or deleted by any project member; the required role is now `owner`.
+
+### Changed
+- **Ansible collection v0.5.0** — new `epic`, `sprint`, and `ticket_checklist_template` modules; `user` module gains `state: restore` (un-soft-delete) and `state: purge` (permanent removal with FK cleanup).
+
 ## v0.12.3 — 2026-06-09
 
 ### Fixed

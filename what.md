@@ -710,3 +710,7 @@ Create an application that has all these features and requirements
 - Fix auth cookies: Secure flag only on direct TLS or X-Forwarded-Proto: https (fixes form login on HTTP and behind reverse proxies); document requirement in deploy templates
 
 - Fix time-tracking input fields: absorb a manually typed colon when the auto-colon is already present (prevents 19::0 double-separator); accept bare hour values (e.g. 20) as 20:00 on Enter in the start/end popup, standby form, and grid cell
+
+- Add per-user audit trail: admin Edit User panel shows full login/activity history (login ok/fail, logout, password change/reset, MFA events, passkey and API key lifecycle, email change, admin-on-behalf actions); each entry records timestamp, IP, client, and actor; LoginHistory model gains ActorID/ActorUsername fields
+- Fix RBAC: block customer-role users from UpdateInboxTicket and DeleteInboxTicket; fix ListContracts IDOR (now requires requireCustomerAccess); raise project API key create/delete from member to owner role
+- Ansible collection v0.5.0: add epic, sprint, ticket_checklist_template modules; user module gains state=restore (un-soft-delete) and state=purge (permanent removal with FK cleanup)
