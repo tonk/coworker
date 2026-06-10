@@ -536,6 +536,54 @@ func DeleteContract(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
 }
 
+// CustomerContractRates groups a customer with contracts that have at least one time slot.
+type CustomerContractRates struct {
+	CustomerID   uint              `json:"customer_id"`
+	CustomerName string            `json:"customer_name"`
+	Contracts    []models.Contract `json:"contracts"`
+}
+
+// ListAllContractRates returns all accessible customers with contracts that have time slots.
+func ListAllContractRates(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	isAdmin := middleware.GetGlobalRole(c) == "admin"
+
+	var customers []models.Customer
+	database.DB.Order("position asc, id asc").Find(&customers)
+
+	if !isAdmin {
+		myRoles := getAccessibleCustomerRoles(userID)
+		filtered := customers[:0]
+		for _, cu := range customers {
+			if _, ok := myRoles[cu.ID]; ok {
+				filtered = append(filtered, cu)
+			}
+		}
+		customers = filtered
+	}
+
+	result := make([]CustomerContractRates, 0)
+	for _, cust := range customers {
+		var contracts []models.Contract
+		database.DB.Preload("TimeSlots").Where("customer_id = ?", cust.ID).Order("id asc").Find(&contracts)
+		withSlots := make([]models.Contract, 0)
+		for _, con := range contracts {
+			if len(con.TimeSlots) > 0 {
+				withSlots = append(withSlots, con)
+			}
+		}
+		if len(withSlots) > 0 {
+			result = append(result, CustomerContractRates{
+				CustomerID:   cust.ID,
+				CustomerName: cust.Name,
+				Contracts:    withSlots,
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
 // parseContractDate parses an optional YYYY-MM-DD date string.
 // Returns (nil, nil) for an empty string (clearing the field).
 func parseContractDate(s string) (*time.Time, error) {

@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 dagen later",
     "slot_end_day_offset_4": "4 dagen later",
     "slot_end_day_offset_5": "5 dagen later",
-    "slot_end_day_offset_6": "6 dagen later"
+    "slot_end_day_offset_6": "6 dagen later",
+    "rates_overview": "Contracttarieven",
+    "rates_overview_title": "Overzicht contracttarieven",
+    "rates_overview_empty": "Geen contracten met extra tijdslots gevonden.",
+    "base_rate": "Basistarief",
+    "slot_overnight": "volgende dag"
   },
   "subcard": {
     "sub_cards": "Deeltaken",

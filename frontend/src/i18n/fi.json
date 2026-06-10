@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 päivää myöhemmin",
     "slot_end_day_offset_4": "4 päivää myöhemmin",
     "slot_end_day_offset_5": "5 päivää myöhemmin",
-    "slot_end_day_offset_6": "6 päivää myöhemmin"
+    "slot_end_day_offset_6": "6 päivää myöhemmin",
+    "rates_overview": "Sopimushinnat",
+    "rates_overview_title": "Sopimushintojen yhteenveto",
+    "rates_overview_empty": "Ei löydetty sopimuksia, joilla on ylimääräisiä aikavälejä.",
+    "base_rate": "Perushinta",
+    "slot_overnight": "yöllä"
   },
   "subcard": {
     "sub_cards": "Alakortit",

@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 dögum síðar",
     "slot_end_day_offset_4": "4 dögum síðar",
     "slot_end_day_offset_5": "5 dögum síðar",
-    "slot_end_day_offset_6": "6 dögum síðar"
+    "slot_end_day_offset_6": "6 dögum síðar",
+    "rates_overview": "Samningsverð",
+    "rates_overview_title": "Yfirlit yfir samningsverð",
+    "rates_overview_empty": "Engin samningur með aukabil fundinn.",
+    "base_rate": "Grunnverð",
+    "slot_overnight": "yfir nótt"
   },
   "subcard": {
     "sub_cards": "Undirspjöld",

@@ -14,6 +14,7 @@ export const customersApi = {
   deleteContract: (cid, rid)                => client.delete(`/customers/${cid}/contracts/${rid}`),
   listMembers:    (cid)                      => client.get(`/customers/${cid}/members`),
   setMembers:     (cid, members)             => client.put(`/customers/${cid}/members`, { members }),
+  listAllContractRates: ()                   => client.get('/customers/rates'),
 
   // Time-tracking-only customers (no CRM entry)
   listTimeTracking:   ()           => client.get('/time-tracking-customers'),

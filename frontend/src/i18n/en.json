@@ -151,7 +151,12 @@
     "slot_preview_dow_fri": "Fr",
     "slot_preview_dow_sat": "Sa",
     "slot_preview_dow_sun": "Su",
-    "remove_slot": "Remove slot"
+    "remove_slot": "Remove slot",
+    "rates_overview": "Contract Rates",
+    "rates_overview_title": "Contract Rates Overview",
+    "rates_overview_empty": "No contracts with extra time slots found.",
+    "base_rate": "Base rate",
+    "slot_overnight": "overnight"
   },
   "subcard": {
     "sub_cards": "Sub-cards",

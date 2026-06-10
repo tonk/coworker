@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 dage senere",
     "slot_end_day_offset_4": "4 dage senere",
     "slot_end_day_offset_5": "5 dage senere",
-    "slot_end_day_offset_6": "6 dage senere"
+    "slot_end_day_offset_6": "6 dage senere",
+    "rates_overview": "Kontrakttakster",
+    "rates_overview_title": "Oversigt over kontrakttakster",
+    "rates_overview_empty": "Ingen kontrakter med ekstra tidslots fundet.",
+    "base_rate": "Grundtakst",
+    "slot_overnight": "nat"
   },
   "subcard": {
     "sub_cards": "Underkort",

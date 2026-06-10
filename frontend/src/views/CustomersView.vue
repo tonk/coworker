@@ -3,9 +3,12 @@
     <DashboardNews />
     <div class="page-header">
       <h1>{{ $t('customer.customers') }}</h1>
-      <button v-if="canManage" class="btn btn-primary" @click="showCreate = true">
-        + {{ $t('customer.new_customer') }}
-      </button>
+      <div class="page-header-actions">
+        <button v-if="customers.length" class="btn btn-secondary" @click="showRates = true">₡ {{ $t('contract.rates_overview') }}</button>
+        <button v-if="canManage" class="btn btn-primary" @click="showCreate = true">
+          + {{ $t('customer.new_customer') }}
+        </button>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">{{ $t('common.loading') }}</div>
@@ -38,6 +41,8 @@
         </div>
       </RouterLink>
     </div>
+
+    <ContractRatesModal v-if="showRates" @close="showRates = false" />
 
     <!-- Create dialog -->
     <BaseModal v-if="showCreate" :title="$t('customer.new_customer')" @close="showCreate = false">
@@ -73,6 +78,7 @@ import { customersApi } from '@/api/customers'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import DashboardNews from '@/components/common/DashboardNews.vue'
+import ContractRatesModal from '@/components/common/ContractRatesModal.vue'
 
 const auth = useAuthStore()
 const custStore = useCustomersStore()
@@ -80,6 +86,7 @@ const ui = useUIStore()
 
 const loading = ref(true)
 const showCreate = ref(false)
+const showRates = ref(false)
 const form = ref({ name: '', description: '', logo_url: '' })
 
 const customers = computed(() => custStore.customers)
@@ -125,6 +132,12 @@ async function doCreate() {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
+}
+
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .page-header h1 {

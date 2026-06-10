@@ -99,6 +99,7 @@
           {{ $t('timeTracking.tab_board_report') }}
         </button>
       </div>
+      <button class="tt-mode-btn tt-rates-btn" @click="showRates = true" :title="$t('contract.rates_overview')" :aria-label="$t('contract.rates_overview')">₡</button>
       <button v-if="auth.timeTrackingEnabled" class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
     </div>
 
@@ -494,6 +495,8 @@
       </template>
     </BaseModal>
 
+    <ContractRatesModal v-if="showRates" @close="showRates = false" />
+
     <!-- ── Report ──────────────────────────────────────────────────────────── -->
     <div v-if="mode === 'report'" id="panel-report" role="tabpanel" aria-labelledby="tab-report" class="tt-report-outer">
       <div class="report-filters">
@@ -812,6 +815,7 @@ import client, { triggerDownload } from '@/api/client'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import HelpIcon from '@/components/common/HelpIcon.vue'
+import ContractRatesModal from '@/components/common/ContractRatesModal.vue'
 const BoardReportPanel = defineAsyncComponent(() => import('@/components/reports/BoardReportPanel.vue'))
 import { useDateFormat } from '@/composables/useDateFormat'
 import {
@@ -826,6 +830,8 @@ const route = useRoute()
 const auth = useAuthStore()
 const ui = useUIStore()
 const { formatDate, dateOnlyFormat } = useDateFormat()
+
+const showRates = ref(false)
 
 // ── Shared lookup data ────────────────────────────────────────────────────
 const customers    = ref([])    // regular CRM customers

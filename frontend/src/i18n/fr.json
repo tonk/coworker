@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 jours plus tard",
     "slot_end_day_offset_4": "4 jours plus tard",
     "slot_end_day_offset_5": "5 jours plus tard",
-    "slot_end_day_offset_6": "6 jours plus tard"
+    "slot_end_day_offset_6": "6 jours plus tard",
+    "rates_overview": "Tarifs contractuels",
+    "rates_overview_title": "Aperçu des tarifs contractuels",
+    "rates_overview_empty": "Aucun contrat avec des créneaux horaires supplémentaires trouvé.",
+    "base_rate": "Tarif de base",
+    "slot_overnight": "nuit"
   },
   "subcard": {
     "sub_cards": "Sous-tâches",

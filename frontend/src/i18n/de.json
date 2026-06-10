@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 Tage später",
     "slot_end_day_offset_4": "4 Tage später",
     "slot_end_day_offset_5": "5 Tage später",
-    "slot_end_day_offset_6": "6 Tage später"
+    "slot_end_day_offset_6": "6 Tage später",
+    "rates_overview": "Vertragstarife",
+    "rates_overview_title": "Vertragstarife – Übersicht",
+    "rates_overview_empty": "Keine Verträge mit zusätzlichen Zeitslots gefunden.",
+    "base_rate": "Grundpreis",
+    "slot_overnight": "über Nacht"
   },
   "subcard": {
     "sub_cards": "Teilaufgaben",

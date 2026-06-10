@@ -205,6 +205,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		{
 			customers.GET("", handlers.ListCustomers)
 			customers.POST("", handlers.CreateCustomer)
+			customers.GET("/rates", handlers.ListAllContractRates)
 			customers.GET("/:customerId", handlers.GetCustomer)
 			customers.PUT("/:customerId", handlers.UpdateCustomer)
 			customers.DELETE("/:customerId", handlers.DeleteCustomer)

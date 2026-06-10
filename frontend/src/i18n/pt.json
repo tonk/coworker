@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 dias depois",
     "slot_end_day_offset_4": "4 dias depois",
     "slot_end_day_offset_5": "5 dias depois",
-    "slot_end_day_offset_6": "6 dias depois"
+    "slot_end_day_offset_6": "6 dias depois",
+    "rates_overview": "Tarifas de contrato",
+    "rates_overview_title": "Visão geral das tarifas de contrato",
+    "rates_overview_empty": "Nenhum contrato com faixas horárias adicionais encontrado.",
+    "base_rate": "Tarifa base",
+    "slot_overnight": "noturno"
   },
   "subcard": {
     "sub_cards": "Subcartões",

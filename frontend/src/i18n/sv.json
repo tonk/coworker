@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 dagar senare",
     "slot_end_day_offset_4": "4 dagar senare",
     "slot_end_day_offset_5": "5 dagar senare",
-    "slot_end_day_offset_6": "6 dagar senare"
+    "slot_end_day_offset_6": "6 dagar senare",
+    "rates_overview": "Kontraktstaxor",
+    "rates_overview_title": "Översikt kontraktstaxor",
+    "rates_overview_empty": "Inga kontrakt med extra tidsluckor hittades.",
+    "base_rate": "Grundpris",
+    "slot_overnight": "natt"
   },
   "subcard": {
     "sub_cards": "Delkort",

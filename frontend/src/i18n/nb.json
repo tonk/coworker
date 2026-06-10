@@ -151,7 +151,12 @@
     "slot_end_day_offset_3": "3 dager senere",
     "slot_end_day_offset_4": "4 dager senere",
     "slot_end_day_offset_5": "5 dager senere",
-    "slot_end_day_offset_6": "6 dager senere"
+    "slot_end_day_offset_6": "6 dager senere",
+    "rates_overview": "Kontrakttariffer",
+    "rates_overview_title": "Oversikt over kontrakttariffer",
+    "rates_overview_empty": "Ingen kontrakter med ekstra tidslots funnet.",
+    "base_rate": "Grunnpris",
+    "slot_overnight": "natt"
   },
   "subcard": {
     "sub_cards": "Delkort",
