@@ -171,6 +171,26 @@ DELETE /api/v1/projects/:slug/topics/:id
 POST   /api/v1/projects/:slug/topics/:id/replies
 ----
 
+=== Customers and contracts
+
+[source]
+----
+GET    /api/v1/customers                                  # list accessible customers
+GET    /api/v1/customers/rates                            # all contracts with time slots (read-only overview)
+GET    /api/v1/customers/:id                              # customer detail with contracts and projects
+POST   /api/v1/customers                                  # create customer (admin)
+PUT    /api/v1/customers/:id                              # update customer (admin)
+DELETE /api/v1/customers/:id                              # delete customer (admin)
+
+GET    /api/v1/customers/:id/contracts                    # list contracts for a customer
+POST   /api/v1/customers/:id/contracts                    # create contract (customer admin)
+PUT    /api/v1/customers/:id/contracts/:contractId        # update contract (customer admin)
+DELETE /api/v1/customers/:id/contracts/:contractId        # delete contract (customer admin)
+----
+
+`GET /customers/rates` returns every accessible customer that has at least one contract with time slots, grouped as `[{ customer_id, customer_name, contracts: [{ …, time_slots: […] }] }]`.
+It applies the same access-control filter as `GET /customers` — non-admins only see customers they are assigned to.
+
 === Time and reports
 
 [source]

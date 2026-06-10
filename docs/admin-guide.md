@@ -530,6 +530,8 @@ Customer access (which users or groups can see a customer) is managed separately
 
 Each customer can have one or more contracts (**Customers → (click customer) → Contracts**). A contract defines a billing period, a base hourly rate and currency, and optional time slots for standby or after-hours pricing.
 
+To see a consolidated view of all standby time slots across every customer without clicking through each one, use the **₡ Contract Rates** button in the Customers page header or in the Time Tracking toolbar. The modal groups slots by customer → contract and shows from/to times, applicable days, and the rate or multiplier for each slot.
+
 #### Standby time slots
 
 Time slots let you define multiple rate windows on a contract — for example an evening/night rate or a weekend surcharge. Each slot has:

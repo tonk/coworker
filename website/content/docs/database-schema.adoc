@@ -253,12 +253,12 @@ Audit log for card changes.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`deleted_at` |TIMESTAMP |nullable, index |
-|`name` |VARCHAR |not null |
-|`slug` |VARCHAR |unique, not null |
+|`name` |VARCHAR(200) |not null |
 |`description` |TEXT |nullable |
-|`website` |VARCHAR |nullable |
-|`color` |VARCHAR |nullable |Accent colour
+|`logo_url` |VARCHAR(500) |nullable |Path to uploaded logo
+|`position` |INTEGER |default 0 |Display order in the customer list
+|`time_tracking_only` |BOOLEAN |default false |Hides from helpdesk/board views; visible in time-tracking only
+|`created_by_id` |BIGINT |FK → users, nullable, index |User who created the record (nil = system / seeded)
 |===
 
 === contracts
@@ -270,39 +270,60 @@ Audit log for card changes.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`deleted_at` |TIMESTAMP |nullable, index |
-|`customer_id` |BIGINT |FK → customers |
-|`name` |VARCHAR |not null |
+|`customer_id` |BIGINT |FK → customers, not null, index |
+|`name` |VARCHAR(200) |not null |
 |`description` |TEXT |nullable |
-|`start_date` |DATE |nullable |
-|`end_date` |DATE |nullable |
-|`budget_hours` |REAL |default 0 |Total contracted hours
-|`status` |VARCHAR |default `active` |`active`, `expired`, `cancelled`
+|`start_date` |TIMESTAMP |nullable |
+|`end_date` |TIMESTAMP |nullable |
+|`price_per_hour` |REAL |nullable |Base hourly rate
+|`currency` |VARCHAR(3) |default `€` |Displayed alongside monetary values
+|===
+
+=== contract_time_slots
+
+Defines an alternative rate window on a contract — for example a standby/on-call surcharge outside regular hours.
+When `end_time` < `start_time` the slot crosses midnight; `end_day_offset` says how many calendar days later the end time falls (1 = next morning, 3 = Monday morning for a Friday–Monday weekend slot).
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`contract_id` |BIGINT |FK → contracts, not null, index |
+|`label` |VARCHAR(100) |nullable |Free-text name, e.g. `Standby - week`
+|`start_time` |VARCHAR(5) |not null |Wall-clock `HH:MM`
+|`end_time` |VARCHAR(5) |not null |Wall-clock `HH:MM`; if < `start_time` the slot is overnight
+|`day_type` |VARCHAR(10) |default `all` |`all`, `weekdays`, `weekends`, `monday` … `sunday`
+|`end_day_offset` |INTEGER |default 0 |Calendar days after anchor day when `end_time` applies (overnight slots)
+|`multiplication_factor` |REAL |nullable |Multiplier on `price_per_hour` (e.g. `1.5` = 150 %)
+|`hourly_rate` |REAL |nullable |Flat rate override; multiplied by `multiplication_factor` if both are set
 |===
 
 === customer_favorites
 
+Composite primary key — no surrogate `id` column.
+
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
-|`id` |BIGINT |PK, auto |
-|`user_id` |BIGINT |FK → users |
-|`customer_id` |BIGINT |FK → customers |
+|`user_id` |BIGINT |PK, FK → users |
+|`customer_id` |BIGINT |PK, FK → customers |
 |===
 
 === customer_access
 
-Grants a user access to a specific customer (used when the user is not an admin and has no group access).
+Grants a non-admin user explicit visibility of a customer.
+Non-admin users with no row (direct or via group) cannot see the customer at all.
+Admins always see all customers regardless of this table.
 
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
-|`id` |BIGINT |PK, auto |
-|`user_id` |BIGINT |FK → users |
-|`customer_id` |BIGINT |FK → customers |
-|`role` |VARCHAR |default `member` |`viewer`, `member`, `owner`
+|`user_id` |BIGINT |PK, FK → users |
+|`customer_id` |BIGINT |PK, FK → customers |
+|`role` |VARCHAR |default `member` |`member` = read; `admin` = read + manage contracts and members
 |===
 
 ---
