@@ -124,9 +124,17 @@ options:
   state:
     description:
       - C(present) ensures the account exists with the specified attributes.
-      - C(absent) removes the account if it exists.
+      - C(absent) soft-deletes the account — the user row is retained and can
+        be restored.  Existing sessions are revoked and the account disappears
+        from all lists until restored.
+      - C(restore) un-deletes a soft-deleted account.  If the account is
+        already active this is a no-op.  If the account does not exist the
+        task fails.
+      - C(purge) permanently removes the account and all personal data.  Content
+        the user created (tickets, cards, messages) is preserved with the author
+        field set to null.  This action is irreversible.
     type: str
-    choices: [present, absent]
+    choices: [present, absent, restore, purge]
     default: present
 """
 
@@ -229,14 +237,34 @@ EXAMPLES = r"""
     customer_roles: {}
 
 # ---------------------------------------------------------------------------
-# Delete a user account
+# Soft-delete a user account (retains the row, can be restored)
 # ---------------------------------------------------------------------------
-- name: Remove user bob
+- name: Soft-delete departed employee
   ansilabnl.warmdesk.user:
     warmdesk_url: https://warmdesk.example.com
     warmdesk_api_key: "{{ vault_api_key }}"
     username: bob
     state: absent
+
+# ---------------------------------------------------------------------------
+# Restore a soft-deleted account
+# ---------------------------------------------------------------------------
+- name: Restore alice after accidental deletion
+  ansilabnl.warmdesk.user:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    username: alice
+    state: restore
+
+# ---------------------------------------------------------------------------
+# Permanently remove a user (irreversible — preserves content, not account)
+# ---------------------------------------------------------------------------
+- name: Purge GDPR deletion request for bob
+  ansilabnl.warmdesk.user:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    username: bob
+    state: purge
 """
 
 RETURN = r"""
@@ -317,8 +345,17 @@ from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api im
 # ---------------------------------------------------------------------------
 
 def _find_user(client, username):
-    """Return the user dict whose username matches, or None."""
+    """Return the active user dict whose username matches, or None."""
     users = client.get('/admin/users')
+    for u in users:
+        if u.get('username') == username:
+            return u
+    return None
+
+
+def _find_deleted_user(client, username):
+    """Return the soft-deleted user dict whose username matches, or None."""
+    users = client.get('/admin/users?deleted=true')
     for u in users:
         if u.get('username') == username:
             return u
@@ -455,7 +492,7 @@ def run_module():
         sidebar_position=dict(type='str'),
         mfa_disable=dict(type='bool', default=False),
         customer_roles=dict(type='dict'),
-        state=dict(type='str', default='present', choices=['present', 'absent']),
+        state=dict(type='str', default='present', choices=['present', 'absent', 'restore', 'purge']),
     ))
 
     module = AnsibleModule(
@@ -474,13 +511,42 @@ def run_module():
         existing = _find_user(client, p['username'])
 
         # ------------------------------------------------------------------ #
-        # state=absent                                                         #
+        # state=absent (soft-delete)                                           #
         # ------------------------------------------------------------------ #
         if state == 'absent':
             if existing is None:
                 module.exit_json(changed=False, user=None)
             if not module.check_mode:
                 client.delete('/admin/users/%d' % existing['id'])
+            module.exit_json(changed=True, user=None)
+
+        # ------------------------------------------------------------------ #
+        # state=restore                                                        #
+        # ------------------------------------------------------------------ #
+        if state == 'restore':
+            if existing is not None:
+                # Already active — no-op
+                module.exit_json(changed=False, user=existing)
+            deleted = _find_deleted_user(client, p['username'])
+            if deleted is None:
+                module.fail_json(
+                    msg='User "%s" not found (active or deleted).' % p['username']
+                )
+            if module.check_mode:
+                module.exit_json(changed=True, user=deleted)
+            user = client.post('/admin/users/%d/restore' % deleted['id'])
+            module.exit_json(changed=True, user=user)
+
+        # ------------------------------------------------------------------ #
+        # state=purge (permanent removal)                                      #
+        # ------------------------------------------------------------------ #
+        if state == 'purge':
+            # Purge works on both active and soft-deleted users.
+            target = existing or _find_deleted_user(client, p['username'])
+            if target is None:
+                module.exit_json(changed=False, user=None)
+            if not module.check_mode:
+                client.delete('/admin/users/%d/purge' % target['id'])
             module.exit_json(changed=True, user=None)
 
         # ------------------------------------------------------------------ #
