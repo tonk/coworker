@@ -93,6 +93,17 @@ func AdminPurgeUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "purged"})
 }
 
+func AdminGetUserLoginHistory(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	var history []models.LoginHistory
+	database.DB.Where("user_id = ?", id).Order("created_at DESC").Limit(500).Find(&history)
+	c.JSON(http.StatusOK, history)
+}
+
 func AdminGetUser(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

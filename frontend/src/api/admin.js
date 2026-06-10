@@ -32,6 +32,7 @@ export const adminApi = {
   deleteBackup: (filename) => client.delete(`/admin/system/backups/${encodeURIComponent(filename)}`),
   disableUserMFA: (id) => client.post(`/admin/users/${id}/mfa/disable`),
 
+  getUserLoginHistory: (id) => client.get(`/admin/users/${id}/login-history`),
   listUserApiKeys: (id) => client.get(`/admin/users/${id}/api-keys`),
   createUserApiKey: (id, name) => client.post(`/admin/users/${id}/api-keys`, { name }),
   deleteUserApiKey: (userId, keyId) => client.delete(`/admin/users/${userId}/api-keys/${keyId}`),

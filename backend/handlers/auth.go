@@ -171,6 +171,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	now := time.Now()
 	database.DB.Model(&user).Update("last_login_at", now)
+	database.DB.Create(&models.LoginHistory{UserID: user.ID, IP: c.ClientIP(), Client: clientStr(c)})
 
 	if !h.issueMFAChallengeOrSkip(c, user) {
 		return

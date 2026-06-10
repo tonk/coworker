@@ -1316,9 +1316,37 @@
       </div>
 
       <template #footer>
+        <button class="btn btn-secondary" @click="openLoginHistory(editUser)">{{ $t('admin.login_history') }}</button>
         <button class="btn btn-secondary" @click="editUser = null">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="saveEditUser">{{ $t('common.save') }}</button>
       </template>
+  </BaseModal>
+
+  <!-- Login History Modal -->
+  <BaseModal v-if="loginHistoryUser" :title="$t('admin.login_history') + ' — ' + (loginHistoryUser.display_name || loginHistoryUser.username)" @close="loginHistoryUser = null">
+    <div v-if="loginHistoryLoading" style="text-align:center;padding:24px">
+      <div class="spinner" style="width:28px;height:28px;border-width:3px;display:inline-block"></div>
+    </div>
+    <p v-else-if="!loginHistory.length" style="color:var(--color-text-muted);text-align:center;padding:16px 0">{{ $t('admin.login_history_empty') }}</p>
+    <table v-else class="data-table">
+      <thead>
+        <tr>
+          <th>{{ $t('timeTracking.date') }}</th>
+          <th>{{ $t('admin.login_history_ip') }}</th>
+          <th>{{ $t('admin.login_history_client') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="entry in loginHistory" :key="entry.id">
+          <td>{{ formatDateTime(entry.created_at) }}</td>
+          <td><code>{{ entry.ip }}</code></td>
+          <td>{{ entry.client }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <template #footer>
+      <button class="btn btn-secondary" @click="loginHistoryUser = null">{{ $t('common.close') }}</button>
+    </template>
   </BaseModal>
 
   <!-- Create Project Modal -->
@@ -1809,6 +1837,9 @@ const customerSearch = ref('')
 
 const editUser = ref(null)
 const editUserApiKeys = ref([])
+const loginHistoryUser = ref(null)
+const loginHistory = ref([])
+const loginHistoryLoading = ref(false)
 const newApiKeyName = ref('')
 const newApiKeyResult = ref(null) // { key, name } shown once after creation
 const editProject = ref(null)
@@ -2880,6 +2911,20 @@ async function adminResetMFA(user) {
     ui.success('MFA disabled for ' + (data.display_name || data.username))
   } catch {
     ui.error('Failed to disable MFA')
+  }
+}
+
+async function openLoginHistory(user) {
+  loginHistoryUser.value = user
+  loginHistory.value = []
+  loginHistoryLoading.value = true
+  try {
+    const { data } = await adminApi.getUserLoginHistory(user.id)
+    loginHistory.value = data || []
+  } catch {
+    ui.error(t('common.error'))
+  } finally {
+    loginHistoryLoading.value = false
   }
 }
 

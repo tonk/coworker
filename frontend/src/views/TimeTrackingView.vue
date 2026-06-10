@@ -230,7 +230,7 @@
                   @mousedown.prevent="toggleCellHoliday(row, d.iso)"
                   tabindex="-1"
                 ></button>
-                <button v-if="!viewingOther && (getEntry(row, d.iso) || cellVal(row, d.iso))"
+                <button v-if="!viewingOther"
                   class="cell-time-toggle"
                   :class="{ 'cell-time-on': !!getEntry(row, d.iso)?.start_time }"
                   :aria-label="$t('timeTracking.set_time_range')"

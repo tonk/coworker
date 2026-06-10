@@ -111,6 +111,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.PUT("/users/:id/customers", handlers.AdminSetUserCustomers)
 			admin.GET("/users/:id/groups", handlers.AdminGetUserGroups)
 			admin.PUT("/users/:id/groups", handlers.AdminSetUserGroups)
+			admin.GET("/users/:id/login-history", handlers.AdminGetUserLoginHistory)
 			admin.GET("/users/:id/api-keys", handlers.AdminListUserAPIKeys)
 			admin.POST("/users/:id/api-keys", handlers.AdminCreateUserAPIKey)
 			admin.DELETE("/users/:id/api-keys/:keyId", handlers.AdminDeleteUserAPIKey)
