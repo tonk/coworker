@@ -24,8 +24,9 @@ type Config struct {
 	WebDir         string `yaml:"web_dir"`
 	RedisURL       string `yaml:"redis_url"` // optional — enables horizontal scaling
 	DefaultLocale  string `yaml:"default_locale"`
-	GinMode        string `yaml:"gin_mode"` // debug | release (default: release)
-	DBLog          string `yaml:"db_log"`   // silent | error | warn | info (default: info)
+	GinMode        string `yaml:"gin_mode"`   // debug | release (default: release)
+	DBLog          string `yaml:"db_log"`     // silent | error | warn | info (default: info)
+	AppMode        string `yaml:"app_mode"`   // "" (full) | "timetracking"
 	APILog         bool   `yaml:"api_log"`  // log HTTP requests (default: true)
 	UploadDir      string `yaml:"upload_dir"`    // directory for uploaded files (default: ./uploads)
 	MaxUploadMB    int64  `yaml:"max_upload_mb"` // max upload size in MB (default: 25)
@@ -167,6 +168,9 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv("GIN_MODE"); v != "" {
 		cfg.GinMode = v
+	}
+	if v := os.Getenv("APP_MODE"); v != "" {
+		cfg.AppMode = v
 	}
 	if v := os.Getenv("DB_LOG"); v != "" {
 		cfg.DBLog = v

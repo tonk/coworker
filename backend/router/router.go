@@ -14,7 +14,8 @@ import (
 	"github.com/tonk/warmdesk/services"
 )
 
-func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, apiLog bool, uploadDir string, trustedProxies []string) *gin.Engine {
+func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, apiLog bool, uploadDir string, trustedProxies []string, appMode string) *gin.Engine {
+	ttMode := appMode == "timetracking"
 	r := gin.New()
 	r.SetTrustedProxies(trustedProxies) //nolint
 	r.Use(gin.Recovery())
@@ -105,8 +106,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.POST("/users/:id/restore", handlers.AdminRestoreUser)
 			admin.DELETE("/users/:id/purge", handlers.AdminPurgeUser)
 			admin.POST("/users/:id/mfa/disable", handlers.AdminDisableUserMFA)
-			admin.GET("/users/:id/projects", handlers.AdminGetUserProjects)
-			admin.PUT("/users/:id/projects", handlers.AdminSetUserProjects)
+			if !ttMode {
+				admin.GET("/users/:id/projects", handlers.AdminGetUserProjects)
+				admin.PUT("/users/:id/projects", handlers.AdminSetUserProjects)
+			}
 			admin.GET("/users/:id/customers", handlers.AdminGetUserCustomers)
 			admin.PUT("/users/:id/customers", handlers.AdminSetUserCustomers)
 			admin.GET("/users/:id/groups", handlers.AdminGetUserGroups)
@@ -115,12 +118,14 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.GET("/users/:id/api-keys", handlers.AdminListUserAPIKeys)
 			admin.POST("/users/:id/api-keys", handlers.AdminCreateUserAPIKey)
 			admin.DELETE("/users/:id/api-keys/:keyId", handlers.AdminDeleteUserAPIKey)
-			admin.GET("/projects", handlers.AdminListProjects)
-			admin.POST("/projects", handlers.AdminCreateProject)
-			admin.PUT("/projects/:id", handlers.AdminUpdateProject)
-			admin.DELETE("/projects/:id", handlers.AdminDeleteProject)
-			admin.POST("/projects/:id/restore", handlers.AdminRestoreProject)
-			admin.DELETE("/projects/:id/purge", handlers.AdminPurgeProject)
+			if !ttMode {
+				admin.GET("/projects", handlers.AdminListProjects)
+				admin.POST("/projects", handlers.AdminCreateProject)
+				admin.PUT("/projects/:id", handlers.AdminUpdateProject)
+				admin.DELETE("/projects/:id", handlers.AdminDeleteProject)
+				admin.POST("/projects/:id/restore", handlers.AdminRestoreProject)
+				admin.DELETE("/projects/:id/purge", handlers.AdminPurgeProject)
+			}
 			admin.GET("/system", handlers.AdminGetSystemSettings)
 			admin.PUT("/system", handlers.AdminUpdateSystemSettings)
 			admin.POST("/system/test-email", handlers.AdminSendTestEmail)
@@ -149,56 +154,62 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.PUT("/news/:id", handlers.AdminUpdateNews)
 			admin.DELETE("/news/:id", handlers.AdminDeleteNews)
 
-			// SLA policies (helpdesk)
-			admin.GET("/sla-policies", handlers.AdminListSlaPolicies)
-			admin.POST("/sla-policies", handlers.AdminCreateSlaPolicy)
-			admin.PUT("/sla-policies/:id", handlers.AdminUpdateSlaPolicy)
-			admin.DELETE("/sla-policies/:id", handlers.AdminDeleteSlaPolicy)
+			if !ttMode {
+				// SLA policies (helpdesk)
+				admin.GET("/sla-policies", handlers.AdminListSlaPolicies)
+				admin.POST("/sla-policies", handlers.AdminCreateSlaPolicy)
+				admin.PUT("/sla-policies/:id", handlers.AdminUpdateSlaPolicy)
+				admin.DELETE("/sla-policies/:id", handlers.AdminDeleteSlaPolicy)
 
-			// Macros (helpdesk)
-			admin.GET("/macros", handlers.AdminListMacros)
-			admin.POST("/macros", handlers.AdminCreateMacro)
-			admin.PUT("/macros/:id", handlers.AdminUpdateMacro)
-			admin.DELETE("/macros/:id", handlers.AdminDeleteMacro)
+				// Macros (helpdesk)
+				admin.GET("/macros", handlers.AdminListMacros)
+				admin.POST("/macros", handlers.AdminCreateMacro)
+				admin.PUT("/macros/:id", handlers.AdminUpdateMacro)
+				admin.DELETE("/macros/:id", handlers.AdminDeleteMacro)
 
-			// Ticket checklist templates (helpdesk)
-			admin.GET("/ticket-checklist-templates", handlers.AdminListTicketChecklistTemplates)
-			admin.POST("/ticket-checklist-templates", handlers.AdminCreateTicketChecklistTemplate)
-			admin.PUT("/ticket-checklist-templates/:id", handlers.AdminUpdateTicketChecklistTemplate)
-			admin.DELETE("/ticket-checklist-templates/:id", handlers.AdminDeleteTicketChecklistTemplate)
+				// Ticket checklist templates (helpdesk)
+				admin.GET("/ticket-checklist-templates", handlers.AdminListTicketChecklistTemplates)
+				admin.POST("/ticket-checklist-templates", handlers.AdminCreateTicketChecklistTemplate)
+				admin.PUT("/ticket-checklist-templates/:id", handlers.AdminUpdateTicketChecklistTemplate)
+				admin.DELETE("/ticket-checklist-templates/:id", handlers.AdminDeleteTicketChecklistTemplate)
 
-			// IMAP test & poll
-			admin.POST("/imap/test", handlers.AdminTestIMAP)
-			admin.POST("/imap/poll", handlers.AdminPollIMAP)
-			// IMAP OAuth2 authorization
-			admin.GET("/imap/oauth2/auth-url", handlers.AdminIMAPOAuth2AuthURL)
-			admin.GET("/imap/oauth2/callback", handlers.AdminIMAPOAuth2Callback)
-			admin.GET("/imap/oauth2/status", handlers.AdminIMAPOAuth2Status)
-			admin.POST("/imap/oauth2/disconnect", handlers.AdminIMAPOAuth2Disconnect)
+				// IMAP test & poll
+				admin.POST("/imap/test", handlers.AdminTestIMAP)
+				admin.POST("/imap/poll", handlers.AdminPollIMAP)
+				// IMAP OAuth2 authorization
+				admin.GET("/imap/oauth2/auth-url", handlers.AdminIMAPOAuth2AuthURL)
+				admin.GET("/imap/oauth2/callback", handlers.AdminIMAPOAuth2Callback)
+				admin.GET("/imap/oauth2/status", handlers.AdminIMAPOAuth2Status)
+				admin.POST("/imap/oauth2/disconnect", handlers.AdminIMAPOAuth2Disconnect)
+			}
 		}
 
 		// News (active items visible to all authenticated users)
 		protected.GET("/news", handlers.ListActiveNews)
 
-		// Macros — active list visible to all helpdesk users
-		protected.GET("/macros", handlers.ListMacros)
+		if !ttMode {
+			// Macros — active list visible to all helpdesk users
+			protected.GET("/macros", handlers.ListMacros)
 
-		// Ticket checklist templates — active list visible to all helpdesk users
-		protected.GET("/ticket-checklist-templates", handlers.ListTicketChecklistTemplates)
+			// Ticket checklist templates — active list visible to all helpdesk users
+			protected.GET("/ticket-checklist-templates", handlers.ListTicketChecklistTemplates)
+		}
 
 		// Users (for direct messages / user lookup)
 		protected.GET("/users", handlers.ListAllUsers)
 
-		// Online presence (global)
-		protected.GET("/online-users", handlers.GetOnlineUsers)
+		if !ttMode {
+			// Online presence (global)
+			protected.GET("/online-users", handlers.GetOnlineUsers)
 
-		// Favorite users
-		protected.GET("/favorite-users", handlers.ListFavoriteUsers)
-		protected.POST("/favorite-users/:userId", handlers.AddFavoriteUser)
-		protected.DELETE("/favorite-users/:userId", handlers.RemoveFavoriteUser)
+			// Favorite users
+			protected.GET("/favorite-users", handlers.ListFavoriteUsers)
+			protected.POST("/favorite-users/:userId", handlers.AddFavoriteUser)
+			protected.DELETE("/favorite-users/:userId", handlers.RemoveFavoriteUser)
 
-		// Starred projects
-		protected.GET("/starred-projects", handlers.ListStarredProjects)
+			// Starred projects
+			protected.GET("/starred-projects", handlers.ListStarredProjects)
+		}
 
 		// Customers and contracts
 		customers := protected.Group("/customers")
@@ -222,68 +233,72 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			customers.POST("/:customerId/groups/:groupId/members", handlers.CustomerAddGroupMember)
 			customers.DELETE("/:customerId/groups/:groupId/members/:userId", handlers.CustomerRemoveGroupMember)
 
-			inbox := protected.Group("/tickets")
-			inbox.Use(middleware.RequireFeature("helpdesk_enabled"))
-			{
-				inbox.GET("/inbox", handlers.ListInboxTickets)
-				inbox.POST("/inbox", handlers.CreateInboxTicket)
-				inbox.GET("/inbox/:ticketId", handlers.GetInboxTicket)
-				inbox.GET("/inbox/:ticketId/viewers", handlers.GetInboxTicketViewers)
-				inbox.PUT("/inbox/:ticketId", handlers.UpdateInboxTicket)
-				inbox.POST("/inbox/:ticketId/messages", handlers.CreateInboxTicketMessage)
-				inbox.PATCH("/inbox/:ticketId/messages/:msgId", handlers.UpdateInboxTicketMessage)
-				inbox.DELETE("/inbox/:ticketId", handlers.DeleteInboxTicket)
-				inbox.POST("/inbox/:ticketId/macros/:macroId", handlers.ApplyInboxMacro)
-				inbox.POST("/inbox/:ticketId/checklist/templates/:templateId", handlers.ApplyInboxTicketChecklistTemplate)
-				inbox.PUT("/inbox/:ticketId/checklist/:itemId", handlers.UpdateInboxTicketChecklistItem)
-				inbox.DELETE("/inbox/:ticketId/checklist/:itemId", handlers.DeleteInboxTicketChecklistItem)
-				inbox.PATCH("/inbox/:ticketId/checklist/reorder", handlers.ReorderInboxTicketChecklistItems)
-				inbox.POST("/inbox/:ticketId/spam", handlers.MarkInboxSpam)
-				inbox.DELETE("/inbox/:ticketId/spam", handlers.UnmarkInboxSpam)
-			}
+			if !ttMode {
+				inbox := protected.Group("/tickets")
+				inbox.Use(middleware.RequireFeature("helpdesk_enabled"))
+				{
+					inbox.GET("/inbox", handlers.ListInboxTickets)
+					inbox.POST("/inbox", handlers.CreateInboxTicket)
+					inbox.GET("/inbox/:ticketId", handlers.GetInboxTicket)
+					inbox.GET("/inbox/:ticketId/viewers", handlers.GetInboxTicketViewers)
+					inbox.PUT("/inbox/:ticketId", handlers.UpdateInboxTicket)
+					inbox.POST("/inbox/:ticketId/messages", handlers.CreateInboxTicketMessage)
+					inbox.PATCH("/inbox/:ticketId/messages/:msgId", handlers.UpdateInboxTicketMessage)
+					inbox.DELETE("/inbox/:ticketId", handlers.DeleteInboxTicket)
+					inbox.POST("/inbox/:ticketId/macros/:macroId", handlers.ApplyInboxMacro)
+					inbox.POST("/inbox/:ticketId/checklist/templates/:templateId", handlers.ApplyInboxTicketChecklistTemplate)
+					inbox.PUT("/inbox/:ticketId/checklist/:itemId", handlers.UpdateInboxTicketChecklistItem)
+					inbox.DELETE("/inbox/:ticketId/checklist/:itemId", handlers.DeleteInboxTicketChecklistItem)
+					inbox.PATCH("/inbox/:ticketId/checklist/reorder", handlers.ReorderInboxTicketChecklistItems)
+					inbox.POST("/inbox/:ticketId/spam", handlers.MarkInboxSpam)
+					inbox.DELETE("/inbox/:ticketId/spam", handlers.UnmarkInboxSpam)
+				}
 
-			// Tickets (helpdesk)
-			tickets := customers.Group("/:customerId/tickets")
-			tickets.Use(middleware.RequireFeature("helpdesk_enabled"))
-			{
-				tickets.GET("", handlers.ListTickets)
-				tickets.POST("", handlers.CreateTicket)
-				tickets.GET("/:ticketId", handlers.GetTicket)
-				tickets.PUT("/:ticketId", handlers.UpdateTicket)
-				tickets.PUT("/:ticketId/move", handlers.MoveTicket)
-				tickets.DELETE("/:ticketId", handlers.DeleteTicket)
-				tickets.POST("/:ticketId/messages", handlers.CreateTicketMessage)
-				tickets.PATCH("/:ticketId/messages/:msgId", handlers.UpdateTicketMessage)
-				tickets.POST("/:ticketId/tags", handlers.AddTicketTag)
-				tickets.DELETE("/:ticketId/tags/:tagId", handlers.RemoveTicketTag)
-				tickets.GET("/:ticketId/links", handlers.ListTicketLinks)
-				tickets.POST("/:ticketId/links", handlers.CreateTicketLink)
-				tickets.DELETE("/:ticketId/links/:linkId", handlers.DeleteTicketLink)
-				tickets.GET("/:ticketId/cards", handlers.ListTicketCardLinks)
-				tickets.POST("/:ticketId/cards", handlers.CreateTicketCardLink)
-				tickets.POST("/:ticketId/create-card", handlers.CreateCardFromTicket)
-				tickets.DELETE("/:ticketId/cards/:linkId", handlers.DeleteTicketCardLink)
-				tickets.GET("/:ticketId/viewers", handlers.GetTicketViewers)
-				tickets.GET("/:ticketId/history", handlers.GetTicketHistory)
-				tickets.GET("/:ticketId/raw-email", handlers.GetTicketRawEmail)
-				tickets.POST("/:ticketId/macros/:macroId", handlers.ApplyMacro)
-				tickets.POST("/:ticketId/checklist/templates/:templateId", handlers.ApplyTicketChecklistTemplate)
-				tickets.PUT("/:ticketId/checklist/:itemId", handlers.UpdateTicketChecklistItem)
-				tickets.DELETE("/:ticketId/checklist/:itemId", handlers.DeleteTicketChecklistItem)
-				tickets.PATCH("/:ticketId/checklist/reorder", handlers.ReorderTicketChecklistItems)
-				tickets.POST("/:ticketId/spam", handlers.MarkSpam)
-				tickets.DELETE("/:ticketId/spam", handlers.UnmarkSpam)
+				// Tickets (helpdesk)
+				tickets := customers.Group("/:customerId/tickets")
+				tickets.Use(middleware.RequireFeature("helpdesk_enabled"))
+				{
+					tickets.GET("", handlers.ListTickets)
+					tickets.POST("", handlers.CreateTicket)
+					tickets.GET("/:ticketId", handlers.GetTicket)
+					tickets.PUT("/:ticketId", handlers.UpdateTicket)
+					tickets.PUT("/:ticketId/move", handlers.MoveTicket)
+					tickets.DELETE("/:ticketId", handlers.DeleteTicket)
+					tickets.POST("/:ticketId/messages", handlers.CreateTicketMessage)
+					tickets.PATCH("/:ticketId/messages/:msgId", handlers.UpdateTicketMessage)
+					tickets.POST("/:ticketId/tags", handlers.AddTicketTag)
+					tickets.DELETE("/:ticketId/tags/:tagId", handlers.RemoveTicketTag)
+					tickets.GET("/:ticketId/links", handlers.ListTicketLinks)
+					tickets.POST("/:ticketId/links", handlers.CreateTicketLink)
+					tickets.DELETE("/:ticketId/links/:linkId", handlers.DeleteTicketLink)
+					tickets.GET("/:ticketId/cards", handlers.ListTicketCardLinks)
+					tickets.POST("/:ticketId/cards", handlers.CreateTicketCardLink)
+					tickets.POST("/:ticketId/create-card", handlers.CreateCardFromTicket)
+					tickets.DELETE("/:ticketId/cards/:linkId", handlers.DeleteTicketCardLink)
+					tickets.GET("/:ticketId/viewers", handlers.GetTicketViewers)
+					tickets.GET("/:ticketId/history", handlers.GetTicketHistory)
+					tickets.GET("/:ticketId/raw-email", handlers.GetTicketRawEmail)
+					tickets.POST("/:ticketId/macros/:macroId", handlers.ApplyMacro)
+					tickets.POST("/:ticketId/checklist/templates/:templateId", handlers.ApplyTicketChecklistTemplate)
+					tickets.PUT("/:ticketId/checklist/:itemId", handlers.UpdateTicketChecklistItem)
+					tickets.DELETE("/:ticketId/checklist/:itemId", handlers.DeleteTicketChecklistItem)
+					tickets.PATCH("/:ticketId/checklist/reorder", handlers.ReorderTicketChecklistItems)
+					tickets.POST("/:ticketId/spam", handlers.MarkSpam)
+					tickets.DELETE("/:ticketId/spam", handlers.UnmarkSpam)
+				}
 			}
 		}
 
-		// Direct messages (legacy 1-on-1)
-		dm := protected.Group("/direct-messages")
-		dm.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("chat_enabled"))
-		{
-			dm.GET("/conversations", handlers.ListConversations)
-			dm.GET("/:userId", handlers.ListDirectMessages)
-			dm.POST("/:userId", middleware.MessageRateLimit(), handlers.SendDirectMessage)
-			dm.DELETE("/:userId/:msgId", handlers.DeleteDirectMessage)
+		if !ttMode {
+			// Direct messages (legacy 1-on-1)
+			dm := protected.Group("/direct-messages")
+			dm.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("chat_enabled"))
+			{
+				dm.GET("/conversations", handlers.ListConversations)
+				dm.GET("/:userId", handlers.ListDirectMessages)
+				dm.POST("/:userId", middleware.MessageRateLimit(), handlers.SendDirectMessage)
+				dm.DELETE("/:userId/:msgId", handlers.DeleteDirectMessage)
+			}
 		}
 
 		// Image upload (avatars, logos)
@@ -293,14 +308,16 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.POST("/attachments", handlers.UploadAttachment)
 		protected.DELETE("/attachments/:id", handlers.DeleteAttachment)
 
-		// Global search
-		protected.GET("/search", handlers.GlobalSearch)
+		if !ttMode {
+			// Global search
+			protected.GET("/search", handlers.GlobalSearch)
 
-		// Card reference resolver — resolves "PRJ-42" to project slug + card ID
-		protected.GET("/cards/resolve/:ref", handlers.ResolveCardRef)
+			// Card reference resolver — resolves "PRJ-42" to project slug + card ID
+			protected.GET("/cards/resolve/:ref", handlers.ResolveCardRef)
 
-		// Link preview — fetches OG metadata for a URL
-		protected.GET("/link-preview", handlers.LinkPreview)
+			// Link preview — fetches OG metadata for a URL
+			protected.GET("/link-preview", handlers.LinkPreview)
+		}
 
 		// Reports
 		protected.GET("/reports/time", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeReport)
@@ -339,6 +356,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		// Automated backup trigger (admin or backup role)
 		protected.POST("/backup", middleware.BackupAuth(), handlers.AdminBackupDatabase)
 
+		if !ttMode {
 		// Conversations (1-on-1 and group)
 		convs := protected.Group("/conversations")
 		convs.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("chat_enabled"))
@@ -520,28 +538,33 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			projects.GET("/:projectSlug/charts/sprint-report/:sprintId", handlers.GetSprintReport)
 			projects.GET("/:projectSlug/epics/:epicId/burndown", handlers.GetEpicBurndown)
 		}
+		} // end if !ttMode (conversations + projects)
 	}
 
-	// Public incoming webhook receivers
-	v1.POST("/webhooks/:token", handlers.IncomingWebhook)
-	v1.POST("/gitea-webhook/:token", handlers.IncomingGiteaWebhook)
-	v1.POST("/github-webhook/:token", handlers.IncomingGitHubWebhook)
-	v1.POST("/gitlab-webhook/:token", handlers.IncomingGitLabWebhook)
+	if !ttMode {
+		// Public incoming webhook receivers
+		v1.POST("/webhooks/:token", handlers.IncomingWebhook)
+		v1.POST("/gitea-webhook/:token", handlers.IncomingGiteaWebhook)
+		v1.POST("/github-webhook/:token", handlers.IncomingGitHubWebhook)
+		v1.POST("/gitlab-webhook/:token", handlers.IncomingGitLabWebhook)
+	}
 
 	// Attachment download — self-auth (cookie, Bearer, or media ticket); outside protected group
 	v1.GET("/attachments/:id", handlers.DownloadAttachment)
 
 	// WebSocket — self-auth (cookie, Bearer, or WS ticket); outside protected group
 	v1.GET("/ws/user", wsHandler.HandleUserWS)
-	v1.GET("/ws/:projectSlug", wsHandler.HandleWS)
+	if !ttMode {
+		v1.GET("/ws/:projectSlug", wsHandler.HandleWS)
 
-	// Ticket API — authenticated via X-API-Key header or ?api_key= query param
-	ticket := v1.Group("/ticket")
-	ticket.Use(middleware.APIKeyAuth())
-	{
-		ticket.POST("/:projectSlug/cards", handlers.TicketAdd)
-		ticket.POST("/:projectSlug/cards/:cardId/comments", handlers.TicketComment)
-		ticket.PATCH("/:projectSlug/cards/:cardId/move", handlers.TicketMove)
+		// Ticket API — authenticated via X-API-Key header or ?api_key= query param
+		ticket := v1.Group("/ticket")
+		ticket.Use(middleware.APIKeyAuth())
+		{
+			ticket.POST("/:projectSlug/cards", handlers.TicketAdd)
+			ticket.POST("/:projectSlug/cards/:cardId/comments", handlers.TicketComment)
+			ticket.PATCH("/:projectSlug/cards/:cardId/move", handlers.TicketMove)
+		}
 	}
 
 	// Serve uploaded files
