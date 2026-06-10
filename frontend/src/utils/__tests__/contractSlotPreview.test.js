@@ -6,6 +6,7 @@ import {
   slotPreviewReady,
   buildSlotPreviewDays,
   formatSlotPreviewTime,
+  formatDayType,
 } from '../contractSlotPreview'
 
 describe('parseSlotHHMM', () => {
@@ -52,6 +53,37 @@ describe('slotDayTypeMatches', () => {
 
   it('handles empty string as all', () => {
     expect(slotDayTypeMatches('', 3)).toBe(true)
+  })
+
+  it('matches comma-separated list', () => {
+    const monThuList = 'monday,tuesday,wednesday,thursday'
+    expect(slotDayTypeMatches(monThuList, 0)).toBe(true)   // Monday
+    expect(slotDayTypeMatches(monThuList, 3)).toBe(true)   // Thursday
+    expect(slotDayTypeMatches(monThuList, 4)).toBe(false)  // Friday
+    expect(slotDayTypeMatches(monThuList, 5)).toBe(false)  // Saturday
+  })
+})
+
+describe('formatDayType', () => {
+  const t = key => key.split('.').pop()  // stub: returns last key segment
+
+  it('returns slot_days_all for all/empty', () => {
+    expect(formatDayType('all', t)).toBe('slot_days_all')
+    expect(formatDayType('', t)).toBe('slot_days_all')
+  })
+
+  it('returns preset labels for weekdays/weekends', () => {
+    expect(formatDayType('weekdays', t)).toBe('slot_days_weekdays')
+    expect(formatDayType('weekends', t)).toBe('slot_days_weekends')
+  })
+
+  it('returns single day label for single-day value', () => {
+    expect(formatDayType('friday', t)).toBe('slot_days_friday')
+  })
+
+  it('returns comma-joined abbrevs for multi-day list', () => {
+    const result = formatDayType('monday,tuesday,wednesday,thursday', t)
+    expect(result).toBe('slot_preview_dow_mon, slot_preview_dow_tue, slot_preview_dow_wed, slot_preview_dow_thu')
   })
 })
 

@@ -65,7 +65,7 @@
               <div class="slot-popup" role="tooltip">
                 <div v-for="slot in grp.time_slots" :key="slot.id" class="slot-popup-item">
                   <span class="slot-popup-time">{{ formatSlotTimeRange(slot) }}</span>
-                  <span v-if="slot.day_type && slot.day_type !== 'all'" class="slot-popup-days">{{ $t('contract.slot_days_' + slot.day_type) }}</span>
+                  <span v-if="slot.day_type && slot.day_type !== 'all'" class="slot-popup-days">{{ formatDayType(slot.day_type, $t) }}</span>
                   <span v-if="slot.label" class="slot-popup-label">{{ slot.label }}</span>
                   <span v-if="slot.multiplication_factor != null" class="slot-popup-factor">×{{ slot.multiplication_factor }}</span>
                   <span v-if="slot.hourly_rate != null" class="slot-popup-rate">{{ slot.hourly_rate }} {{ grp.currency }}/h</span>
@@ -309,18 +309,23 @@
               </div>
               <div class="slot-field slot-field-days">
                 <label class="slot-field-label">{{ $t('contract.slot_days') }} <HelpIcon i18n-key="help.fields.slot_day_type" align="start" /></label>
-                <select class="form-input" v-model="slot.day_type" :aria-label="$t('contract.slot_days')">
-                  <option value="all">{{ $t('contract.slot_days_all') }}</option>
-                  <option value="weekdays">{{ $t('contract.slot_days_weekdays') }}</option>
-                  <option value="weekends">{{ $t('contract.slot_days_weekends') }}</option>
-                  <option value="monday">{{ $t('contract.slot_days_monday') }}</option>
-                  <option value="tuesday">{{ $t('contract.slot_days_tuesday') }}</option>
-                  <option value="wednesday">{{ $t('contract.slot_days_wednesday') }}</option>
-                  <option value="thursday">{{ $t('contract.slot_days_thursday') }}</option>
-                  <option value="friday">{{ $t('contract.slot_days_friday') }}</option>
-                  <option value="saturday">{{ $t('contract.slot_days_saturday') }}</option>
-                  <option value="sunday">{{ $t('contract.slot_days_sunday') }}</option>
-                </select>
+                <div class="slot-day-checks" role="group" :aria-label="$t('contract.slot_days')">
+                  <label
+                    v-for="(abbr, idx) in slotDowAbbrevs"
+                    :key="idx"
+                    class="slot-day-check"
+                    :class="{ active: isSlotDayChecked(slot, idx) }"
+                  >
+                    <input
+                      type="checkbox"
+                      class="sr-only"
+                      :checked="isSlotDayChecked(slot, idx)"
+                      @change="toggleSlotDay(slot, idx)"
+                      :aria-label="slotDowFullNames[idx]"
+                    />
+                    {{ abbr }}
+                  </label>
+                </div>
               </div>
               <div v-if="isOvernightSlot(slot)" class="slot-field slot-field-days">
                 <label class="slot-field-label">{{ $t('contract.slot_end_day_offset') }} <HelpIcon i18n-key="help.fields.slot_end_day" align="start" /></label>
@@ -414,7 +419,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import HelpIcon from '@/components/common/HelpIcon.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
 import client from '@/api/client'
-import { buildSlotPreviewDays, slotPreviewReady as slotPreviewReadyFn } from '@/utils/contractSlotPreview'
+import { buildSlotPreviewDays, slotPreviewReady as slotPreviewReadyFn, formatDayType } from '@/utils/contractSlotPreview'
 
 const { t } = useI18n()
 
@@ -506,6 +511,55 @@ const slotPreviewDowLabels = computed(() => [
   t('contract.slot_preview_dow_sun'),
 ])
 
+// Compact abbrevs and full names for the day-of-week checkbox row
+const slotDowAbbrevs = computed(() => slotPreviewDowLabels.value)
+const slotDowFullNames = computed(() => [
+  t('contract.slot_days_monday'),
+  t('contract.slot_days_tuesday'),
+  t('contract.slot_days_wednesday'),
+  t('contract.slot_days_thursday'),
+  t('contract.slot_days_friday'),
+  t('contract.slot_days_saturday'),
+  t('contract.slot_days_sunday'),
+])
+
+const ISO_DOW_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+function getCheckedDayIndices(dayType) {
+  if (!dayType || dayType === 'all') return [0, 1, 2, 3, 4, 5, 6]
+  if (dayType === 'weekdays') return [0, 1, 2, 3, 4]
+  if (dayType === 'weekends') return [5, 6]
+  return dayType.split(',')
+    .map(d => ISO_DOW_KEYS.indexOf(d.trim()))
+    .filter(i => i >= 0)
+}
+
+function isSlotDayChecked(slot, idx) {
+  return getCheckedDayIndices(slot.day_type).includes(idx)
+}
+
+function toggleSlotDay(slot, idx) {
+  const checked = new Set(getCheckedDayIndices(slot.day_type))
+  if (checked.has(idx)) {
+    checked.delete(idx)
+    if (checked.size === 0) checked.add(idx) // keep at least one day
+  } else {
+    checked.add(idx)
+  }
+  const arr = [...checked].sort((a, b) => a - b)
+  if (arr.length === 7) {
+    slot.day_type = 'all'
+  } else if (arr.join(',') === '0,1,2,3,4') {
+    slot.day_type = 'weekdays'
+  } else if (arr.join(',') === '5,6') {
+    slot.day_type = 'weekends'
+  } else if (arr.length === 1) {
+    slot.day_type = ISO_DOW_KEYS[arr[0]]
+  } else {
+    slot.day_type = arr.map(i => ISO_DOW_KEYS[i]).join(',')
+  }
+}
+
 const SLOT_SEG_COLORS = [
   null,                        // idx 0 — falls back to CSS default (primary)
   'rgba(245,158,11,0.65)',      // amber
@@ -528,9 +582,7 @@ function slotPreviewDays(slot) {
 
 function slotPreviewAria(slot) {
   const range = formatSlotTimeRange(slot)
-  const days = slot.day_type && slot.day_type !== 'all'
-    ? t('contract.slot_days_' + slot.day_type)
-    : t('contract.slot_days_all')
+  const days = formatDayType(slot.day_type || 'all', t)
   return t('contract.slot_preview_aria', { range, days })
 }
 const displayContractStartDate = ref('')
@@ -1224,6 +1276,11 @@ async function deleteContract(grp) {
 .slot-field-days { flex: 1; min-width: 110px; }
 .slot-field .form-input { padding: 5px 7px; font-size: 13px; width: 90px; }
 .slot-field-days .form-input { width: 100%; }
+.slot-day-checks { display: flex; gap: 3px; flex-wrap: wrap; }
+.slot-day-check { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--color-border); font-size: 11px; font-weight: 600; cursor: pointer; user-select: none; color: var(--color-text-muted); background: var(--color-surface); transition: background 0.12s, color 0.12s, border-color 0.12s; }
+.slot-day-check.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.slot-day-check:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.slot-day-check.active:hover { color: #fff; }
 .slot-field-label {
   font-size: 10px;
   font-weight: 600;

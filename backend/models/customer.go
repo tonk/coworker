@@ -32,7 +32,7 @@ type Contract struct {
 }
 
 // ContractTimeSlot defines an alternative rate for work performed outside standard office hours.
-// DayType is one of: all, weekdays, weekends, monday–friday, saturday, sunday.
+// DayType is one of: all, weekdays, weekends, or a comma-separated list of day names (monday,tuesday,…,sunday).
 // When EndTime is earlier than StartTime (e.g. 19:00–07:00), the slot runs until EndTime on a later day.
 // EndDayOffset is the number of calendar days after the anchor day when EndTime applies (1 = next morning, 2 = two days later, etc.).
 // Example: day_type=friday, 19:00–07:00, end_day_offset=2 → Friday 19:00 until Sunday 07:00.
@@ -42,7 +42,7 @@ type ContractTimeSlot struct {
 	Label                string   `gorm:"size:100" json:"label"`
 	StartTime            string   `gorm:"size:5;not null" json:"start_time"`
 	EndTime              string   `gorm:"size:5;not null" json:"end_time"`
-	DayType              string   `gorm:"size:10;default:all" json:"day_type"`
+	DayType              string   `gorm:"size:100;default:all" json:"day_type"`
 	EndDayOffset         int      `gorm:"default:0" json:"end_day_offset"`
 	MultiplicationFactor *float64 `json:"multiplication_factor,omitempty"`
 	HourlyRate           *float64 `json:"hourly_rate,omitempty"`

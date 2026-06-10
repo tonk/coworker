@@ -22,8 +22,22 @@ export function slotDayTypeMatches(dayType, isoWeekday) {
     case 'weekends':
       return isoWeekday >= 5
     default:
-      return dayType === key
+      // Support comma-separated list: "monday,tuesday,wednesday,thursday"
+      return dayType.split(',').some(d => d.trim() === key)
   }
+}
+
+/**
+ * Format a day_type value as a human-readable string.
+ * Pass a bound `t` (vue-i18n) function.
+ */
+export function formatDayType(dayType, t) {
+  if (!dayType || dayType === 'all') return t('contract.slot_days_all')
+  if (dayType === 'weekdays') return t('contract.slot_days_weekdays')
+  if (dayType === 'weekends') return t('contract.slot_days_weekends')
+  const parts = dayType.split(',').map(d => d.trim()).filter(d => ISO_WEEKDAYS.includes(d))
+  if (parts.length === 1) return t('contract.slot_days_' + parts[0])
+  return parts.map(d => t('contract.slot_preview_dow_' + d.slice(0, 3))).join(', ')
 }
 
 function mergeMinuteIntervals(intervals) {

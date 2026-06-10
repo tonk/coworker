@@ -57,7 +57,7 @@
                     ({{ slotItem.end_day_offset > 0 ? $t('contract.slot_end_day_offset_' + slotItem.end_day_offset) : $t('contract.slot_overnight') }})
                   </span>
                 </td>
-                <td>{{ $t('contract.slot_days_' + slotItem.day_type) }}</td>
+                <td>{{ formatDayType(slotItem.day_type || 'all', t) }}</td>
                 <td>{{ slotItem.multiplication_factor != null ? '×' + slotItem.multiplication_factor : '—' }}</td>
                 <td>{{ slotItem.hourly_rate != null ? slotItem.hourly_rate + ' ' + contract.currency : '—' }}</td>
               </tr>
@@ -71,11 +71,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { customersApi } from '@/api/customers'
 import BaseModal from '@/components/common/BaseModal.vue'
+import { formatDayType } from '@/utils/contractSlotPreview'
 
 defineEmits(['close'])
 
+const { t } = useI18n()
 const loading = ref(true)
 const items = ref([])
 
