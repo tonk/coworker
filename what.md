@@ -714,3 +714,6 @@ Create an application that has all these features and requirements
 - Add per-user audit trail: admin Edit User panel shows full login/activity history (login ok/fail, logout, password change/reset, MFA events, passkey and API key lifecycle, email change, admin-on-behalf actions); each entry records timestamp, IP, client, and actor; LoginHistory model gains ActorID/ActorUsername fields
 - Fix RBAC: block customer-role users from UpdateInboxTicket and DeleteInboxTicket; fix ListContracts IDOR (now requires requireCustomerAccess); raise project API key create/delete from member to owner role
 - Ansible collection v0.5.0: add epic, sprint, ticket_checklist_template modules; user module gains state=restore (un-soft-delete) and state=purge (permanent removal with FK cleanup)
+- Show contract hourly rate in the weekly time log grid: display the base rate (e.g. "45 €/h") per row with a ✦ badge when time-slot overrides are present; contracts are eagerly loaded on week load
+- Route all backend log output to syslog (LOG_DAEMON, tag "warmdesk") in addition to stderr so auth events and server messages are captured by standard log aggregation tools
+- Change server startup message to "Starting WarmDesk - Time Tracking <version>" when running in --mode=timetracking

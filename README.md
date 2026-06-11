@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.10)
+## Latest release (v0.12.11)
 
-- **Contract selection in time grid** — pick a contract when adding/editing a time entry row; a ⏱ button fills the week from the contract's time slots automatically.
-- **Slot duration summary** — the contract editor shows per-day duration and a weekly total right after the day selector.
+- **Rate column in the weekly time log** — the Log Time grid shows the contract's hourly rate per row; a ✦ badge flags time-slot overrides.
+- **Syslog output** — the backend now writes all log output (including auth events) to the system syslog in addition to stderr.
 
 ## Experiment
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.12.11 — 2026-06-11
+
+### Added
+- **Rate column in the weekly time log** — the Log Time grid now shows the contract's hourly rate (e.g. "45 €/h") for each row. A ✦ badge indicates that the contract has time-slot rate overrides; click the ₡ toolbar button for the full breakdown.
+- **Syslog output** — the backend now writes all log output to the system syslog (`LOG_DAEMON`, tag `warmdesk`) in addition to stderr, making it easy to capture server and auth events (logins, failures, MFA activity) via standard log aggregation tools.
+
+### Changed
+- **Startup message in time-tracking mode** — when started with `--mode=timetracking`, the server now prints `Starting WarmDesk - Time Tracking <version>` instead of the generic startup line.
+
 ## v0.12.10 — 2026-06-10
 
 ### Added
