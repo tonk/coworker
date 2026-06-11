@@ -2550,6 +2550,8 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		},
 	}
 
+	contractIDByName := map[string]uint{}
+
 	var demoCustomerIDs []uint
 	for _, cs := range demoCustomers {
 		cust := &models.Customer{Name: cs.name, Description: cs.desc, LogoURL: cs.logoURL}
@@ -2592,6 +2594,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				con.EndDate = &end
 			}
 			must(db.Create(con).Error)
+			contractIDByName[conSpec.name] = con.ID
 
 			for _, slotSpec := range conSpec.timeSlots {
 				factor := slotSpec.factor
@@ -3403,7 +3406,57 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d time entries for 5 users\n", totalTimeEntries)
 
-	// ── 10b. Personal TT-only projects and customers for tonk ─────────────────
+	// ── 10b. Standby entries for tonk — current week, Acme Phase 1 ────────────
+	// Demonstrates the special-rate time slots: Mon–Fri 19:00→07:00 (12 h, ×1.5),
+	// Sat–Sun full-day overnight continuation (24 h, ×2).
+	fmt.Println("→ Creating standby time entries for tonk (Acme Phase 1, current week)…")
+	{
+		acmeCustID := custIDByName["Acme Corporation"]
+		acmeContractID := contractIDByName["Phase 1 — Marketing Site"]
+		acmeProjID := projects["website-redesign"].project.ID
+		pStr := func(s string) *string { return &s }
+
+		// Monday of the current ISO week
+		today := time.Now().UTC().Truncate(24 * time.Hour)
+		wd := int(today.Weekday())
+		if wd == 0 {
+			wd = 7 // Sunday → 7 so Monday offset is always -(wd-1)
+		}
+		monday := today.AddDate(0, 0, -(wd - 1))
+
+		type standbySpec struct {
+			dayOffset int
+			minutes   int
+			startTime string
+			endTime   string
+		}
+		standbySpecs := []standbySpec{
+			{0, 720, "19:00", "07:00"},  // Monday   — weekday shift
+			{1, 720, "19:00", "07:00"},  // Tuesday
+			{2, 720, "19:00", "07:00"},  // Wednesday
+			{3, 720, "19:00", "07:00"},  // Thursday
+			{4, 720, "19:00", "07:00"},  // Friday
+			{5, 1440, "00:00", "00:00"}, // Saturday — weekend full-day continuation
+			{6, 1440, "00:00", "00:00"}, // Sunday
+		}
+		for _, ss := range standbySpecs {
+			date := monday.AddDate(0, 0, ss.dayOffset)
+			must(db.Create(&models.TimeEntry{
+				UserID:      tonk.ID,
+				CustomerID:  pUint(acmeCustID),
+				ProjectID:   pUint(acmeProjID),
+				ContractID:  pUint(acmeContractID),
+				Date:        date,
+				Minutes:     ss.minutes,
+				StartTime:   pStr(ss.startTime),
+				EndTime:     pStr(ss.endTime),
+				Description: "Standby",
+			}).Error)
+		}
+		fmt.Println("   Created 7 standby entries (Mon–Sun)")
+	}
+
+	// ── 10c. Personal TT-only projects and customers for tonk ─────────────────
 	fmt.Println("→ Creating personal TT-only projects and customers for tonk…")
 
 	// TT-only customers owned by tonk
