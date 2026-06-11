@@ -312,12 +312,19 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		WeekStart            string  `json:"week_start"`
 		DashboardDefault     string  `json:"dashboard_default"`
 		MonWorkStart         string  `json:"mon_work_start"`
+		MonWorkEnd           string  `json:"mon_work_end"`
 		TueWorkStart         string  `json:"tue_work_start"`
+		TueWorkEnd           string  `json:"tue_work_end"`
 		WedWorkStart         string  `json:"wed_work_start"`
+		WedWorkEnd           string  `json:"wed_work_end"`
 		ThuWorkStart         string  `json:"thu_work_start"`
+		ThuWorkEnd           string  `json:"thu_work_end"`
 		FriWorkStart         string  `json:"fri_work_start"`
+		FriWorkEnd           string  `json:"fri_work_end"`
 		SatWorkStart         string  `json:"sat_work_start"`
+		SatWorkEnd           string  `json:"sat_work_end"`
 		SunWorkStart         string  `json:"sun_work_start"`
+		SunWorkEnd           string  `json:"sun_work_end"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -405,12 +412,19 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		updates["dashboard_default"] = req.DashboardDefault
 	}
 	updates["mon_work_start"] = req.MonWorkStart
+	updates["mon_work_end"] = req.MonWorkEnd
 	updates["tue_work_start"] = req.TueWorkStart
+	updates["tue_work_end"] = req.TueWorkEnd
 	updates["wed_work_start"] = req.WedWorkStart
+	updates["wed_work_end"] = req.WedWorkEnd
 	updates["thu_work_start"] = req.ThuWorkStart
+	updates["thu_work_end"] = req.ThuWorkEnd
 	updates["fri_work_start"] = req.FriWorkStart
+	updates["fri_work_end"] = req.FriWorkEnd
 	updates["sat_work_start"] = req.SatWorkStart
+	updates["sat_work_end"] = req.SatWorkEnd
 	updates["sun_work_start"] = req.SunWorkStart
+	updates["sun_work_end"] = req.SunWorkEnd
 
 	now := time.Now()
 	updates["settings_updated_at"] = now

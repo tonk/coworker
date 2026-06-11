@@ -679,10 +679,13 @@
     "req_digit": "En siffra (0–9)",
     "req_special": "Ett specialtecken (!{'@'}#$…)",
     "working_hours": "Arbetstid",
-    "working_hours_hint": "Ange din vanliga starttid för varje veckodag. Lämna tomt för lediga dagar.",
+    "working_hours_hint": "Ange din vanliga start- och sluttid för varje dag. Kolumnen Timmar visar den beräknade varaktigheten. Lämna båda tomma för dagar du inte arbetar.",
     "dashboard_default": "Dashboard shows",
     "dashboard_default_boards": "Boards (projects)",
-    "dashboard_default_tickets": "Tickets (helpdesk)"
+    "dashboard_default_tickets": "Tickets (helpdesk)",
+    "work_start": "Start",
+    "work_end": "Slut",
+    "work_hours": "Timmar"
   },
   "dm": {
     "title": "Chattar",
@@ -1804,7 +1807,7 @@
       "webhook_type": "Välj den plattform som skickar webhooks. GitHub-, GitLab-, Gitea- och Forgejo-nyttolaster analyseras automatiskt: commits och pull requests publiceras i projektchatt och kortreferenser (t.ex. PRJ-42) i commit-meddelanden länkas automatiskt till matchande kort. Generisk skickar bara ett enkelt JSON-meddelande.",
       "webhook_secret": "En token som ingår i varje begäran från ditt repository för att verifiera att den kom från en legitim källa. Kopiera den nu — den visas inte igen. Klistra in den i ditt repositorys webhookinställningar som hemlighet.",
       "slot_duration": "Varaktighet",
-    "slot_factor": "Multiplicerar avtalets bastimtaxa för tid registrerad under denna lucka. Till exempel innebär 1,5 att 1,5 × bastaxan används. Lämna på 1 för att bara använda luckornas taxafält utan multiplikation.",
+      "slot_factor": "Multiplicerar avtalets bastimtaxa för tid registrerad under denna lucka. Till exempel innebär 1,5 att 1,5 × bastaxan används. Lämna på 1 för att bara använda luckornas taxafält utan multiplikation.",
       "slot_rate": "Fast timtaxa för tid registrerad under denna lucka, som åsidosätter avtalets bastimtaxa. Om både en taxa och en multiplikator är inställda multipliceras taxan. Lämna tomt för att bara använda multiplikatorn mot avtalets bastimtaxa.",
       "slot_end_day": "Välj för nattiga luckor när sluttiden infaller. 'Samma dag' slutar före midnatt. 'Nästa dag' slutar följande morgon (t.ex. start fredag 19:00, slut lördag 07:00). 'Två dagar senare' täcker ett pass som sträcker sig över en hel natt och dag.",
       "slot_day_type": "Begränsar denna taxalucka till specifika dagar. 'Alla dagar' gäller varje dag; 'Vardagar' täcker måndag–fredag; 'Helger' täcker lördag–söndag; individuella dagsalternativ gäller bara på exakt den veckodagen."

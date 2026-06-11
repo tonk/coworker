@@ -48,12 +48,19 @@ type User struct {
 	WeekStart           string         `gorm:"size:10;default:'monday'" json:"week_start"`     // "monday" | "sunday"
 	DashboardDefault    string         `gorm:"size:10;default:'boards'" json:"dashboard_default"` // "boards" | "tickets"
 	MonWorkStart        string         `gorm:"size:5;default:'08:00'" json:"mon_work_start"`
+	MonWorkEnd          string         `gorm:"size:5;default:'17:00'" json:"mon_work_end"`
 	TueWorkStart        string         `gorm:"size:5;default:'08:00'" json:"tue_work_start"`
+	TueWorkEnd          string         `gorm:"size:5;default:'17:00'" json:"tue_work_end"`
 	WedWorkStart        string         `gorm:"size:5;default:'08:00'" json:"wed_work_start"`
+	WedWorkEnd          string         `gorm:"size:5;default:'17:00'" json:"wed_work_end"`
 	ThuWorkStart        string         `gorm:"size:5;default:'08:00'" json:"thu_work_start"`
+	ThuWorkEnd          string         `gorm:"size:5;default:'17:00'" json:"thu_work_end"`
 	FriWorkStart        string         `gorm:"size:5;default:'08:00'" json:"fri_work_start"`
+	FriWorkEnd          string         `gorm:"size:5;default:'17:00'" json:"fri_work_end"`
 	SatWorkStart        string         `gorm:"size:5" json:"sat_work_start"`
+	SatWorkEnd          string         `gorm:"size:5" json:"sat_work_end"`
 	SunWorkStart        string         `gorm:"size:5" json:"sun_work_start"`
+	SunWorkEnd          string         `gorm:"size:5" json:"sun_work_end"`
 	TOTPSecret          string         `gorm:"size:64" json:"-"`
 	TOTPEnabled         bool           `gorm:"default:false" json:"totp_enabled"`
 	PasswordResetToken  string         `gorm:"size:64;index" json:"-"`

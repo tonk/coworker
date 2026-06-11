@@ -644,10 +644,13 @@
     "req_digit": "Eine Ziffer (0–9)",
     "req_special": "Ein Sonderzeichen (!{'@'}#$…)",
     "working_hours": "Arbeitszeiten",
-    "working_hours_hint": "Legen Sie Ihre übliche Startzeit für jeden Wochentag fest. Leer lassen für freie Tage.",
+    "working_hours_hint": "Gib deine übliche Start- und Endzeit pro Tag ein. Die Spalte Stunden zeigt die berechnete Dauer. Lass beide frei für Tage, an denen du nicht arbeitest.",
     "dashboard_default": "Dashboard shows",
     "dashboard_default_boards": "Boards (projects)",
-    "dashboard_default_tickets": "Tickets (helpdesk)"
+    "dashboard_default_tickets": "Tickets (helpdesk)",
+    "work_start": "Beginn",
+    "work_end": "Ende",
+    "work_hours": "Stunden"
   },
   "dm": {
     "title": "Chats",
@@ -1804,7 +1807,7 @@
       "webhook_type": "Wählen Sie die Plattform, die Webhooks sendet. GitHub-, GitLab-, Gitea- und Forgejo-Payloads werden automatisch verarbeitet: Commits und Pull Requests werden im Projekt-Chat veröffentlicht, und Kartenreferenzen (z. B. PRJ-42) in Commit-Nachrichten werden automatisch mit der entsprechenden Karte verknüpft. Generisch sendet nur eine einfache JSON-Benachrichtigung.",
       "webhook_secret": "Ein Token, das in jede Anfrage Ihres Repositorys aufgenommen wird, um zu verifizieren, dass sie von einer legitimen Quelle stammt. Kopieren Sie es jetzt — es wird nicht wieder angezeigt. Fügen Sie es in den Webhook-Einstellungen Ihres Repositorys als Geheimnis ein.",
       "slot_duration": "Dauer",
-    "slot_factor": "Multipliziert den Basisstundensatz des Vertrags für während dieses Slots erfasste Zeit. Zum Beispiel bedeutet 1,5 den 1,5-fachen Basisstundensatz. Bei 1 belassen, um nur das Slot-Preisfeld ohne Multiplikation zu verwenden.",
+      "slot_factor": "Multipliziert den Basisstundensatz des Vertrags für während dieses Slots erfasste Zeit. Zum Beispiel bedeutet 1,5 den 1,5-fachen Basisstundensatz. Bei 1 belassen, um nur das Slot-Preisfeld ohne Multiplikation zu verwenden.",
       "slot_rate": "Pauschaler Stundensatz für während dieses Slots erfasste Zeit, der den Basisstundensatz des Vertrags überschreibt. Wenn sowohl ein Satz als auch ein Multiplikator festgelegt sind, wird der Satz multipliziert. Leer lassen, um nur den Multiplikator auf den Vertrags-Basissatz anzuwenden.",
       "slot_end_day": "Wählen Sie für nächtliche Slots, wann die Endzeit fällt. 'Gleicher Tag' endet vor Mitternacht. 'Nächster Tag' endet am folgenden Morgen (z. B. Start Freitag 19:00, Ende Samstag 07:00). 'Übernächster Tag' umfasst eine Schicht über eine ganze Nacht und einen Tag.",
       "slot_day_type": "Begrenzt diesen Tarifslot auf bestimmte Tage. 'Alle Tage' gilt jeden Tag; 'Werktage' umfasst Montag–Freitag; 'Wochenenden' umfasst Samstag–Sonntag; einzelne Tagesoptionen gelten nur an diesem genauen Wochentag."

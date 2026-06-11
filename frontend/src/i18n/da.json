@@ -679,10 +679,13 @@
     "req_digit": "Et ciffer (0–9)",
     "req_special": "Et specialtegn (!{'@'}#$…)",
     "working_hours": "Arbejdstid",
-    "working_hours_hint": "Indstil din sædvanlige starttid for hver ugedag. Lad være tom på fridage.",
+    "working_hours_hint": "Angiv din sædvanlige start- og sluttid for hver dag. Kolonnen Timer viser den beregnede varighed. Lad begge stå tomme for dage, hvor du ikke arbejder.",
     "dashboard_default": "Dashboard shows",
     "dashboard_default_boards": "Boards (projects)",
-    "dashboard_default_tickets": "Tickets (helpdesk)"
+    "dashboard_default_tickets": "Tickets (helpdesk)",
+    "work_start": "Start",
+    "work_end": "Slut",
+    "work_hours": "Timer"
   },
   "dm": {
     "title": "Chats",
@@ -1804,7 +1807,7 @@
       "webhook_type": "Vælg den platform, der sender webhooks. GitHub-, GitLab-, Gitea- og Forgejo-payloads analyseres automatisk: commits og pull requests sendes til projektchatten, og kortreferencer (f.eks. PRJ-42) i commit-beskeder knyttes automatisk til det matchende kort. Generisk sender kun en simpel JSON-notifikation.",
       "webhook_secret": "Et token, der medtages i hver anmodning fra dit repository for at bekræfte, at den kommer fra en legitim kilde. Kopiér det nu — det vises ikke igen. Indsæt det i dit repositorys webhook-indstillinger som hemmelighed.",
       "slot_duration": "Varighed",
-    "slot_factor": "Ganger kontraktens basistimepris for tid registreret i dette slot. F.eks. betyder 1,5 det 1,5-dobbelte af basisprisen. Lad stå på 1 for kun at bruge slottets prisfeltet uden multiplikation.",
+      "slot_factor": "Ganger kontraktens basistimepris for tid registreret i dette slot. F.eks. betyder 1,5 det 1,5-dobbelte af basisprisen. Lad stå på 1 for kun at bruge slottets prisfeltet uden multiplikation.",
       "slot_rate": "Fast timepris for tid registreret i dette slot, der tilsidesætter kontraktens basispris. Hvis der er angivet både en pris og en multiplikator, ganges prisen. Lad stå tomt for kun at anvende multiplikatoren på kontraktens basispris.",
       "slot_end_day": "For natlige slots skal du vælge, hvornår sluttiden falder. 'Samme dag' slutter før midnat. 'Næste dag' slutter næste morgen (f.eks. start fredag 19:00, slut lørdag 07:00). 'To dage senere' dækker en vagt, der strækker sig over en hel nat og dag.",
       "slot_day_type": "Begrænser dette prissslot til bestemte dage. 'Alle dage' gælder hver dag; 'Hverdage' dækker mandag–fredag; 'Weekender' dækker lørdag–søndag; individuelle dagsindstillinger gælder kun på præcis den ugedag."

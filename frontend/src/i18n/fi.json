@@ -679,10 +679,13 @@
     "req_digit": "Numero (0–9)",
     "req_special": "Erikoismerkki (!{'@'}#$…)",
     "working_hours": "Työajat",
-    "working_hours_hint": "Aseta tavanomainen aloitusaika jokaiselle viikonpäivälle. Jätä tyhjäksi vapaapäiville.",
+    "working_hours_hint": "Aseta tavallinen aloitus- ja lopetusaikasi jokaiselle päivälle. Tunnit-sarake näyttää lasketun keston. Jätä molemmat tyhjiksi päiville, joina et työskentele.",
     "dashboard_default": "Dashboard shows",
     "dashboard_default_boards": "Boards (projects)",
-    "dashboard_default_tickets": "Tickets (helpdesk)"
+    "dashboard_default_tickets": "Tickets (helpdesk)",
+    "work_start": "Alku",
+    "work_end": "Loppu",
+    "work_hours": "Tunnit"
   },
   "dm": {
     "title": "Chatit",
@@ -1804,7 +1807,7 @@
       "webhook_type": "Valitse webhookeja lähettävä alusta. GitHub-, GitLab-, Gitea- ja Forgejo-kuormat analysoidaan automaattisesti: commitit ja pull requestit julkaistaan projektin chatissa ja korttireferenssit (esim. PRJ-42) commit-viesteissä linkitetään automaattisesti vastaavaan korttiin. Yleinen lähettää vain yksinkertaisen JSON-ilmoituksen.",
       "webhook_secret": "Tunniste, joka sisältyy jokaiseen repositoriostasi tulevaan pyyntöön sen varmistamiseksi, että se tuli laillisesta lähteestä. Kopioi se nyt — sitä ei näytetä uudelleen. Liitä se repositoriosi webhook-asetuksiin salaisuutena.",
       "slot_duration": "Kesto",
-    "slot_factor": "Kertoo sopimuksen perustuntihinnan aikavälin aikana kirjatulle ajalle. Esimerkiksi 1,5 tarkoittaa 1,5 × perushintaa. Jätä 1:ksi käyttääksesi vain aikavälin hintakenttää ilman kertomista.",
+      "slot_factor": "Kertoo sopimuksen perustuntihinnan aikavälin aikana kirjatulle ajalle. Esimerkiksi 1,5 tarkoittaa 1,5 × perushintaa. Jätä 1:ksi käyttääksesi vain aikavälin hintakenttää ilman kertomista.",
       "slot_rate": "Kiinteä tuntihinta aikavälin aikana kirjatulle ajalle, joka korvaa sopimuksen perustuntihinnan. Jos sekä hinta että kerroin on asetettu, hinta kerrotaan. Jätä tyhjäksi käyttääksesi vain kerrointa sopimuksen perushintaan.",
       "slot_end_day": "Yöllisille aikaväleille valitse milloin loppuaika on. 'Sama päivä' päättyy ennen puoltayötä. 'Seuraava päivä' päättyy seuraavana aamuna (esim. alku perjantai 19:00, loppu lauantai 07:00). 'Kaksi päivää myöhemmin' kattaa vuoron, joka kestää koko yön ja päivän.",
       "slot_day_type": "Rajoittaa tämän hinta-aikavälin tiettyihin päiviin. 'Kaikki päivät' koskee joka päivää; 'Arkipäivät' kattaa maanantai–perjantai; 'Viikonloput' kattaa lauantai–sunnuntai; yksittäiset päivävaihtoehdot koskevat vain kyseistä viikonpäivää."

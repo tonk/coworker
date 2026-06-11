@@ -644,10 +644,13 @@
     "req_digit": "Un chiffre (0–9)",
     "req_special": "Un caractère spécial (!{'@'}#$…)",
     "working_hours": "Heures de travail",
-    "working_hours_hint": "Définissez votre heure de début habituelle pour chaque jour. Laissez vide pour les jours chômés.",
+    "working_hours_hint": "Indiquez vos horaires habituels de début et de fin pour chaque jour. La colonne Heures affiche la durée calculée. Laissez les deux vides pour les jours non travaillés.",
     "dashboard_default": "Dashboard shows",
     "dashboard_default_boards": "Boards (projects)",
-    "dashboard_default_tickets": "Tickets (helpdesk)"
+    "dashboard_default_tickets": "Tickets (helpdesk)",
+    "work_start": "Début",
+    "work_end": "Fin",
+    "work_hours": "Heures"
   },
   "dm": {
     "title": "Chats",
@@ -1804,7 +1807,7 @@
       "webhook_type": "Sélectionnez la plateforme qui envoie des webhooks. Les charges utiles GitHub, GitLab, Gitea et Forgejo sont analysées automatiquement : les commits et pull requests sont publiés dans le chat du projet, et les références de cartes (ex. PRJ-42) dans les messages de commit sont automatiquement liées à la carte correspondante. Générique envoie uniquement une notification JSON simple.",
       "webhook_secret": "Un jeton inclus dans chaque requête de votre dépôt pour vérifier qu'elle provient d'une source légitime. Copiez-le maintenant — il ne sera plus affiché. Collez-le dans les paramètres webhook de votre dépôt comme secret.",
       "slot_duration": "Durée",
-    "slot_factor": "Multiplie le taux horaire de base du contrat pour le temps enregistré pendant ce créneau. Par exemple, 1,5 signifie 1,5 × le taux de base. Laissez à 1 pour utiliser uniquement le champ de taux du créneau sans multiplication.",
+      "slot_factor": "Multiplie le taux horaire de base du contrat pour le temps enregistré pendant ce créneau. Par exemple, 1,5 signifie 1,5 × le taux de base. Laissez à 1 pour utiliser uniquement le champ de taux du créneau sans multiplication.",
       "slot_rate": "Taux horaire fixe pour le temps enregistré pendant ce créneau, remplaçant le taux de base du contrat. Si un taux et un multiplicateur sont tous deux définis, le taux est multiplié. Laissez vide pour utiliser uniquement le multiplicateur sur le taux de base du contrat.",
       "slot_end_day": "Pour les créneaux de nuit, sélectionnez quand tombe l'heure de fin. 'Même jour' se termine avant minuit. 'Jour suivant' se termine le lendemain matin (ex. début vendredi 19h00, fin samedi 07h00). 'Deux jours plus tard' couvre une équipe sur une nuit entière et un jour.",
       "slot_day_type": "Limite ce créneau tarifaire à des jours spécifiques. 'Tous les jours' s'applique chaque jour ; 'Jours ouvrables' couvre lundi–vendredi ; 'Week-ends' couvre samedi–dimanche ; les options de jours individuels s'appliquent uniquement à ce jour exact de la semaine."

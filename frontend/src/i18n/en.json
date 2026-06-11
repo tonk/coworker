@@ -819,7 +819,10 @@
     "req_digit": "A digit (0–9)",
     "req_special": "A special character (!{'@'}#$…)",
     "working_hours": "Working Hours",
-    "working_hours_hint": "Set your usual start time for each day of the week. Leave blank for days you don't work."
+    "working_hours_hint": "Set your usual start and end time for each day. The hours column shows the calculated duration. Leave both blank for days you don't work.",
+    "work_start": "Start",
+    "work_end": "End",
+    "work_hours": "Hours"
   },
   "dm": {
     "title": "Chats",

@@ -679,10 +679,13 @@
     "req_digit": "Um dígito (0–9)",
     "req_special": "Um carácter especial (!{'@'}#$…)",
     "working_hours": "Horário de trabalho",
-    "working_hours_hint": "Defina a hora de início habitual para cada dia. Deixe em branco para dias de folga.",
+    "working_hours_hint": "Defina o seu horário habitual de início e fim para cada dia. A coluna Horas mostra a duração calculada. Deixe ambos em branco para os dias em que não trabalha.",
     "dashboard_default": "Dashboard shows",
     "dashboard_default_boards": "Boards (projects)",
-    "dashboard_default_tickets": "Tickets (helpdesk)"
+    "dashboard_default_tickets": "Tickets (helpdesk)",
+    "work_start": "Início",
+    "work_end": "Fim",
+    "work_hours": "Horas"
   },
   "dm": {
     "title": "Chats",
@@ -1804,7 +1807,7 @@
       "webhook_type": "Selecione a plataforma que envia webhooks. As cargas úteis GitHub, GitLab, Gitea e Forgejo são analisadas automaticamente: commits e pull requests são publicados no chat do projeto, e referências de cartões (ex. PRJ-42) em mensagens de commit são automaticamente ligadas ao cartão correspondente. Genérico envia apenas uma notificação JSON simples.",
       "webhook_secret": "Um token incluído em cada pedido do seu repositório para verificar que veio de uma fonte legítima. Copie-o agora — não será mostrado novamente. Cole-o nas definições de webhook do seu repositório como segredo.",
       "slot_duration": "Duração",
-    "slot_factor": "Multiplica a taxa horária base do contrato para o tempo registado durante este intervalo. Por exemplo, 1,5 significa 1,5 × a taxa base. Deixe em 1 para usar apenas o campo de taxa do intervalo sem multiplicar.",
+      "slot_factor": "Multiplica a taxa horária base do contrato para o tempo registado durante este intervalo. Por exemplo, 1,5 significa 1,5 × a taxa base. Deixe em 1 para usar apenas o campo de taxa do intervalo sem multiplicar.",
       "slot_rate": "Taxa horária fixa para o tempo registado durante este intervalo, que substitui a taxa horária base do contrato. Se tanto uma taxa como um multiplicador estiverem definidos, a taxa é multiplicada. Deixe vazio para usar apenas o multiplicador sobre a taxa base do contrato.",
       "slot_end_day": "Para intervalos noturnos, selecione quando cai o horário de fim. 'Mesmo dia' termina antes da meia-noite. 'Dia seguinte' termina na manhã seguinte (ex. início sexta 19:00, fim sábado 07:00). 'Dois dias depois' cobre um turno que abrange uma noite inteira e um dia.",
       "slot_day_type": "Limita este intervalo de tarifa a dias específicos. 'Todos os dias' aplica-se todos os dias; 'Dias úteis' cobre segunda–sexta; 'Fins de semana' cobre sábado–domingo; as opções de dias individuais aplicam-se apenas nesse dia exato da semana."

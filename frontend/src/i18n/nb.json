@@ -679,10 +679,13 @@
     "req_digit": "Et siffer (0–9)",
     "req_special": "Et spesialtegn (!{'@'}#$…)",
     "working_hours": "Arbeidstid",
-    "working_hours_hint": "Angi din vanlige starttid for hver ukedag. La stå tom for fridager.",
+    "working_hours_hint": "Angi din vanlige start- og sluttid for hver dag. Kolonnen Timer viser den beregnede varigheten. La begge stå tomme for dager du ikke jobber.",
     "dashboard_default": "Dashboard shows",
     "dashboard_default_boards": "Boards (projects)",
-    "dashboard_default_tickets": "Tickets (helpdesk)"
+    "dashboard_default_tickets": "Tickets (helpdesk)",
+    "work_start": "Start",
+    "work_end": "Slutt",
+    "work_hours": "Timer"
   },
   "dm": {
     "title": "Chatter",
@@ -1804,7 +1807,7 @@
       "webhook_type": "Velg plattformen som sender webhooks. GitHub-, GitLab-, Gitea- og Forgejo-nyttelaster analyseres automatisk: commits og pull requests sendes til prosjektchatten, og kortreferanser (f.eks. PRJ-42) i commit-meldinger knyttes automatisk til det matchende kortet. Generisk sender bare en enkel JSON-varsling.",
       "webhook_secret": "Et token som inkluderes i hver forespørsel fra repositoriet ditt for å bekrefte at det kom fra en legitim kilde. Kopier det nå — det vises ikke igjen. Lim det inn i webhook-innstillingene for repositoriet som hemmelighet.",
       "slot_duration": "Varighet",
-    "slot_factor": "Ganger kontraktens basistimepris for tid registrert i denne luken. For eksempel betyr 1,5 at 1,5 × basisprisen brukes. La stå på 1 for å bare bruke lukas prisfeltet uten multiplikasjon.",
+      "slot_factor": "Ganger kontraktens basistimepris for tid registrert i denne luken. For eksempel betyr 1,5 at 1,5 × basisprisen brukes. La stå på 1 for å bare bruke lukas prisfeltet uten multiplikasjon.",
       "slot_rate": "Fast timepris for tid registrert i denne luken, som overstyrer kontraktens basistimepris. Hvis både en pris og en multiplikator er angitt, multipliseres prisen. La stå tomt for å bare bruke multiplikatoren mot kontraktens basistimepris.",
       "slot_end_day": "For nattlige luker, velg når sluttiden faller. 'Samme dag' slutter før midnatt. 'Neste dag' slutter neste morgen (f.eks. start fredag 19:00, slutt lørdag 07:00). 'To dager senere' dekker en vakt som strekker seg over en hel natt og dag.",
       "slot_day_type": "Begrenser denne prisluka til bestemte dager. 'Alle dager' gjelder hver dag; 'Hverdager' dekker mandag–fredag; 'Helger' dekker lørdag–søndag; individuelle dagsalternativer gjelder bare på den eksakte ukedagen."

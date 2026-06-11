@@ -679,10 +679,13 @@
     "req_digit": "Tala (0–9)",
     "req_special": "Sértákn (!{'@'}#$…)",
     "working_hours": "Vinnutími",
-    "working_hours_hint": "Stillu inn venjulegan upphafstíma fyrir hvern vikudag. Skildu eftir autt á frídögum.",
+    "working_hours_hint": "Settu inn venjulegan upphafs- og lokatíma fyrir hvern dag. Dálkurinn Klukkustundir sýnir reiknað tímalengd. Skildu báða eftir auða fyrir daga sem þú vinnur ekki.",
     "dashboard_default": "Dashboard shows",
     "dashboard_default_boards": "Boards (projects)",
-    "dashboard_default_tickets": "Tickets (helpdesk)"
+    "dashboard_default_tickets": "Tickets (helpdesk)",
+    "work_start": "Byrjun",
+    "work_end": "Endir",
+    "work_hours": "Klst"
   },
   "dm": {
     "title": "Spjall",
@@ -1804,7 +1807,7 @@
       "webhook_type": "Veldu þá vettvang sem sendir webhook. GitHub-, GitLab-, Gitea- og Forgejo-hleðslur eru þáttaðar sjálfkrafa: commitum og pull requestum er birt í verkefnaspjallinu og spilstilvísanir (t.d. PRJ-42) í commit-skilaboðum tengjast sjálfkrafa við samsvarandi spil. Almenn sendir aðeins einfalda JSON-tilkynningu.",
       "webhook_secret": "Lykill sem er innifalinn í hverri beiðni frá geymslu þinni til að staðfesta að hún komi frá lögmætum uppruna. Afritaðu hann núna — hann verður ekki sýndur aftur. Límdu hann inn í webhook-stillingar geymslu þinnar sem leyndarmál.",
       "slot_duration": "Lengd",
-    "slot_factor": "Margfaldar grunntímaverð samningsins fyrir tíma skráðan á þessum rauf. Til dæmis þýðir 1,5 að 1,5 × grunntímaverðið er notað. Skildu eftir á 1 til að nota aðeins verðreitinn á rafinni án margföldunar.",
+      "slot_factor": "Margfaldar grunntímaverð samningsins fyrir tíma skráðan á þessum rauf. Til dæmis þýðir 1,5 að 1,5 × grunntímaverðið er notað. Skildu eftir á 1 til að nota aðeins verðreitinn á rafinni án margföldunar.",
       "slot_rate": "Fast tímaverð fyrir tíma skráðan á þessari rauf, sem hnekkir grunntímaverði samningsins. Ef bæði verð og margfaldari eru stillt er verðið margfaldað. Skildu eftir tómt til að nota aðeins margfaldarann á grunntímaverð samningsins.",
       "slot_end_day": "Fyrir næturraufar skaltu velja hvenær lokatíminn fellur. 'Sama dag' lýkur fyrir miðnætti. 'Næsti dagur' lýkur næsta morgun (t.d. byrjun föstudagur 19:00, lok laugardagur 07:00). 'Tveimur dögum síðar' nær yfir vakt sem spannar heila nótt og dag.",
       "slot_day_type": "Takmarkar þessa verðrauf við tilteknar daga. 'Allir dagar' gildir á hverjum degi; 'Virkir dagar' nær yfir mánudag–föstudag; 'Helgar' nær yfir laugardag–sunnudag; einstakar dagsvalkostir gilda aðeins á þeim nákvæma vikudegi."
