@@ -685,7 +685,9 @@
     "dashboard_default_tickets": "Tickets (helpdesk)",
     "work_start": "Start",
     "work_end": "Slutt",
-    "work_hours": "Timer"
+    "work_hours": "Timer",
+    "lunch_break": "Lunsjpause",
+    "lunch_break_unit": "minutter"
   },
   "dm": {
     "title": "Chatter",

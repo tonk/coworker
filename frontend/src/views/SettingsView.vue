@@ -226,6 +226,23 @@
               </div>
               <div class="wh-hours">{{ workHoursLabel(form[d.fieldStart], form[d.fieldEnd]) }}</div>
             </div>
+            <div class="form-row wh-row" style="margin-top:8px">
+              <div class="form-group day-label">
+                <label class="form-label" for="lunch-break">{{ $t('settings.lunch_break') }}</label>
+              </div>
+              <div class="form-group wh-input">
+                <input
+                  id="lunch-break"
+                  class="form-input"
+                  type="number"
+                  min="0"
+                  max="120"
+                  v-model.number="form.lunch_break_minutes"
+                  :aria-label="$t('settings.lunch_break')"
+                />
+              </div>
+              <div class="wh-col-label" style="padding-top:6px">{{ $t('settings.lunch_break_unit') }}</div>
+            </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingProfile">
                 {{ savingProfile ? $t('common.loading') : $t('common.save') }}
@@ -572,7 +589,7 @@ function workHoursLabel(start, end) {
   const s = parseHHMM(start)
   const e = parseHHMM(end)
   if (s === null || e === null || e <= s) return '—'
-  const mins = e - s
+  const mins = Math.max(0, e - s - (form.value.lunch_break_minutes || 0))
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return m === 0 ? `${h}h` : `${h}h ${m}m`
@@ -662,7 +679,8 @@ onMounted(async () => {
       sat_work_start: u.sat_work_start ?? '',
       sat_work_end:   u.sat_work_end   ?? '',
       sun_work_start: u.sun_work_start ?? '',
-      sun_work_end:   u.sun_work_end   ?? ''
+      sun_work_end:   u.sun_work_end   ?? '',
+      lunch_break_minutes: u.lunch_break_minutes ?? 30
     }
   }
 })
@@ -708,7 +726,8 @@ async function saveProfile() {
       sat_work_start: form.value.sat_work_start,
       sat_work_end:   form.value.sat_work_end,
       sun_work_start: form.value.sun_work_start,
-      sun_work_end:   form.value.sun_work_end
+      sun_work_end:   form.value.sun_work_end,
+      lunch_break_minutes: form.value.lunch_break_minutes
     })
     applyUserPreferences(auth.user)
     setTheme(form.value.theme)

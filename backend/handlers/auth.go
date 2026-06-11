@@ -325,6 +325,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		SatWorkEnd           string  `json:"sat_work_end"`
 		SunWorkStart         string  `json:"sun_work_start"`
 		SunWorkEnd           string  `json:"sun_work_end"`
+		LunchBreakMinutes    int     `json:"lunch_break_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -425,6 +426,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	updates["sat_work_end"] = req.SatWorkEnd
 	updates["sun_work_start"] = req.SunWorkStart
 	updates["sun_work_end"] = req.SunWorkEnd
+	updates["lunch_break_minutes"] = req.LunchBreakMinutes
 
 	now := time.Now()
 	updates["settings_updated_at"] = now

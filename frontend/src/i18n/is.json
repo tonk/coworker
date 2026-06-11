@@ -685,7 +685,9 @@
     "dashboard_default_tickets": "Tickets (helpdesk)",
     "work_start": "Byrjun",
     "work_end": "Endir",
-    "work_hours": "Klst"
+    "work_hours": "Klst",
+    "lunch_break": "Hádegishlé",
+    "lunch_break_unit": "mínútur"
   },
   "dm": {
     "title": "Spjall",

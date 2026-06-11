@@ -61,6 +61,7 @@ type User struct {
 	SatWorkEnd          string         `gorm:"size:5" json:"sat_work_end"`
 	SunWorkStart        string         `gorm:"size:5" json:"sun_work_start"`
 	SunWorkEnd          string         `gorm:"size:5" json:"sun_work_end"`
+	LunchBreakMinutes   int            `gorm:"default:30" json:"lunch_break_minutes"`
 	TOTPSecret          string         `gorm:"size:64" json:"-"`
 	TOTPEnabled         bool           `gorm:"default:false" json:"totp_enabled"`
 	PasswordResetToken  string         `gorm:"size:64;index" json:"-"`

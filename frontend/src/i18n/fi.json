@@ -685,7 +685,9 @@
     "dashboard_default_tickets": "Tickets (helpdesk)",
     "work_start": "Alku",
     "work_end": "Loppu",
-    "work_hours": "Tunnit"
+    "work_hours": "Tunnit",
+    "lunch_break": "Lounastauko",
+    "lunch_break_unit": "minuuttia"
   },
   "dm": {
     "title": "Chatit",

@@ -685,7 +685,9 @@
     "dashboard_default_tickets": "Tickets (helpdesk)",
     "work_start": "Start",
     "work_end": "Slut",
-    "work_hours": "Timmar"
+    "work_hours": "Timmar",
+    "lunch_break": "Lunchrast",
+    "lunch_break_unit": "minuter"
   },
   "dm": {
     "title": "Chattar",

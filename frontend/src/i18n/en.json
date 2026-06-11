@@ -822,7 +822,9 @@
     "working_hours_hint": "Set your usual start and end time for each day. The hours column shows the calculated duration. Leave both blank for days you don't work.",
     "work_start": "Start",
     "work_end": "End",
-    "work_hours": "Hours"
+    "work_hours": "Hours",
+    "lunch_break": "Lunch break",
+    "lunch_break_unit": "minutes"
   },
   "dm": {
     "title": "Chats",

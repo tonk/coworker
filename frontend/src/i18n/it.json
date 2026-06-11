@@ -685,7 +685,9 @@
     "dashboard_default_tickets": "Tickets (helpdesk)",
     "work_start": "Inizio",
     "work_end": "Fine",
-    "work_hours": "Ore"
+    "work_hours": "Ore",
+    "lunch_break": "Pausa pranzo",
+    "lunch_break_unit": "minuti"
   },
   "dm": {
     "title": "Chat",

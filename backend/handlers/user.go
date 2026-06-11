@@ -168,6 +168,7 @@ func AdminUpdateUser(c *gin.Context) {
 		SatWorkEnd          string `json:"sat_work_end"`
 		SunWorkStart        string `json:"sun_work_start"`
 		SunWorkEnd          string `json:"sun_work_end"`
+		LunchBreakMinutes   int    `json:"lunch_break_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -264,6 +265,7 @@ func AdminUpdateUser(c *gin.Context) {
 	updates["sat_work_end"] = req.SatWorkEnd
 	updates["sun_work_start"] = req.SunWorkStart
 	updates["sun_work_end"] = req.SunWorkEnd
+	updates["lunch_break_minutes"] = req.LunchBreakMinutes
 	if req.Password != "" {
 		if len(req.Password) < 8 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "password must be at least 8 characters"})
