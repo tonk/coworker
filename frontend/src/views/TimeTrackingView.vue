@@ -848,7 +848,7 @@ import {
   parseWallClock as parseShiftWallClock,
 } from '@/utils/shiftTimeEntries'
 import { entryUndeclMins, rowDeclarableMins } from '@/utils/timeTrackingUndecl'
-import { slotCoverageOnWeekday } from '@/utils/contractSlotPreview'
+import { slotCoverageOnWeekday, slotDayTypeMatches } from '@/utils/contractSlotPreview'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -2729,6 +2729,19 @@ function confirmNewRow() {
   return k
 }
 
+function mergeIntervals(intervals) {
+  if (!intervals.length) return []
+  const sorted = [...intervals].sort((a, b) => a[0] - b[0])
+  const merged = [[sorted[0][0], sorted[0][1]]]
+  for (let i = 1; i < sorted.length; i++) {
+    const [s, e] = sorted[i]
+    const last = merged[merged.length - 1]
+    if (s <= last[1]) { if (e > last[1]) last[1] = e }
+    else merged.push([s, e])
+  }
+  return merged
+}
+
 async function fillFromSlots(row) {
   if (!row.contract_id) return
   if (!contractsByCustomer.value[row.customer_id]) {
@@ -2743,12 +2756,22 @@ async function fillFromSlots(row) {
   const saves = []
   for (const day of weekDays.value) {
     const dow = (new Date(day.iso).getDay() + 6) % 7 // 0=Mon…6=Sun
-    let totalMinutes = 0
+
+    // Slots that START on this day (slotDayTypeMatches = true).
+    // Multi-day overnight slots (e.g. Fri 19:00→Mon 07:00) only match on the anchor day,
+    // so Sat/Sun have no starting slots even though they are fully covered.
+    const startingSlots = contract.time_slots.filter(s => slotDayTypeMatches(s.day_type, dow))
+    // Whole-day slots (empty start/end) aren't computed by slotCoverageOnWeekday.
+    const hasWholeDaySlot = startingSlots.some(s => !s.start_time && !s.end_time)
+
+    const allIntervals = []
     for (const slot of contract.time_slots) {
-      for (const [start, end] of slotCoverageOnWeekday(slot, dow)) {
-        totalMinutes += end - start
-      }
+      for (const iv of slotCoverageOnWeekday(slot, dow)) allIntervals.push(iv)
     }
+    const merged = mergeIntervals(allIntervals)
+    let totalMinutes = merged.reduce((s, [a, b]) => s + b - a, 0)
+    if (hasWholeDaySlot) totalMinutes = 1440
+
     if (totalMinutes <= 0) continue
     const existing = getEntry(row, day.iso)
     const payload = {
@@ -2759,6 +2782,36 @@ async function fillFromSlots(row) {
       minutes:     totalMinutes,
       description: row.description,
       is_holiday:  false,
+    }
+    const startingTimedSlots = startingSlots.filter(s => s.start_time && s.end_time)
+    if (startingTimedSlots.length >= 1) {
+      // A slot starts on this day with explicit times — pick the best one.
+      const uniqueTimes = new Set(startingTimedSlots.map(s => `${s.start_time}/${s.end_time}`))
+      let chosen
+      if (uniqueTimes.size === 1) {
+        chosen = startingTimedSlots[0]
+      } else {
+        const sorted = [...startingTimedSlots].sort((a, b) => {
+          const aOv = a.end_time < a.start_time ? 1 : 0
+          const bOv = b.end_time < b.start_time ? 1 : 0
+          if (aOv !== bOv) return bOv - aOv           // overnight slots first
+          return b.start_time.localeCompare(a.start_time) // then latest start
+        })
+        chosen = sorted[0]
+      }
+      payload.start_time = chosen.start_time
+      payload.end_time   = chosen.end_time
+    } else if (hasWholeDaySlot) {
+      // Whole-day slot (empty times) starts here → 00:00/00:00
+      payload.start_time = '00:00'
+      payload.end_time   = '00:00'
+    } else if (merged.length > 0 && merged[0][0] === 0) {
+      // Coverage starts at midnight: this day is an overnight continuation from a
+      // prior anchor day (e.g. Fri 19:00→Mon 07:00 covering Sat and Sun fully).
+      const lastEnd = merged[merged.length - 1][1]
+      payload.start_time = '00:00'
+      payload.end_time   = lastEnd >= 1440 ? '00:00'
+        : `${String(Math.floor(lastEnd / 60)).padStart(2, '0')}:${String(lastEnd % 60).padStart(2, '0')}`
     }
     saves.push(existing
       ? timeEntriesApi.update(existing.id, payload)
