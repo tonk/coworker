@@ -717,3 +717,5 @@ Create an application that has all these features and requirements
 - Show contract hourly rate in the weekly time log grid: display the base rate (e.g. "45 €/h") per row with a ✦ badge when time-slot overrides are present; contracts are eagerly loaded on week load
 - Route all backend log output to syslog (LOG_DAEMON, tag "warmdesk") in addition to stderr so auth events and server messages are captured by standard log aggregation tools
 - Change server startup message to "Starting WarmDesk - Time Tracking <version>" when running in --mode=timetracking
+- Fix fill-from-slots: multi-day overnight slots (e.g. Fri 19:00→Mon 07:00 with end_day_offset=3) now store start_time="00:00"/end_time="00:00" on continuation days (Sat/Sun), showing the dot indicator and correct shift times in the popup instead of the 09:00–17:00 placeholder
+- Seed standby entries for current week: warmdesk-seed --reset pre-fills Mon–Sun with Acme Phase 1 standby time entries (Mon–Fri 19:00→07:00, Sat/Sun 00:00–00:00) so the rate column and time-slot features are immediately visible

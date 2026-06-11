@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.11)
+## Latest release (v0.12.12)
 
-- **Rate column in the weekly time log** — the Log Time grid shows the contract's hourly rate per row; a ✦ badge flags time-slot overrides.
-- **Syslog output** — the backend now writes all log output (including auth events) to the system syslog in addition to stderr.
+- **Fill-from-slots overnight fix** — multi-day overnight slots (e.g. Fri 19:00→Mon 07:00) now correctly set 00:00–00:00 on continuation days (Sat/Sun), showing the dot indicator and correct times in the popup.
+- **Seed pre-fills standby week** — `warmdesk-seed --reset` now seeds a full Mon–Sun standby row for Acme Phase 1 so the rate column and time-slot features are visible immediately after a reset.
 
 ## Experiment
 

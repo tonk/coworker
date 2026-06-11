@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.12.12 — 2026-06-11
+
+### Fixed
+- **Fill-from-slots: overnight-continuation days now get correct start/end times** — multi-day overnight slots (e.g. a Friday standby running until Monday 07:00) cover Saturday and Sunday via their overflow extension. Previously those continuation days got no start/end time stored, so the dot indicator was missing and the time popup showed the 09:00–17:00 placeholder. They now correctly store 00:00–00:00 (full-day coverage).
+
+### Changed
+- **Seed: standby entries pre-filled for current week** — `warmdesk-seed --reset` now creates Mon–Sun standby entries for the Acme Phase 1 contract so the time-tracking grid immediately demonstrates the rate column, dot indicators, and special-rate slots.
+
 ## v0.12.11 — 2026-06-11
 
 ### Added
