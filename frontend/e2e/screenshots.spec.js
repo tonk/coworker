@@ -298,12 +298,16 @@ test.describe('screenshots', () => {
   })
 
   // ── 20: Standby shift / Time tracking ─────────────────────────────
+  // Shows the weekly grid with the Rate column and Mon–Sun standby entries
+  // (dots = start/end time recorded, ✦ = special rate tier active).
   test('20-standby-shift', async ({ browser }) => {
     const context = await browser.newContext({ storageState: AUTH_FILE })
     const page = await context.newPage()
     await page.goto(`${BASE_URL}/time-tracking`)
     await page.waitForLoadState('networkidle')
     await dismissWelcome(page)
+    // Wait for the grid rows to render (time entries loaded)
+    await page.waitForSelector('.tt-row', { timeout: 8000 }).catch(() => {})
     await page.screenshot(ss('20-standby-shift'))
     await context.close()
   })

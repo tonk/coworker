@@ -721,6 +721,32 @@ Use the week picker (left/right arrows or the week label) to navigate between
 weeks. An **Add holidays** dropdown in the navigation bar lets you insert public
 holidays for a country as 0-minute entries.
 
+#### Rate column
+
+When a row is linked to a contract, a **Rate** column shows the contract's base
+hourly rate. If the contract has time slots with a different rate or multiplication
+factor, a ✦ badge appears next to the rate to signal that one or more days on
+this row may be billed at a different effective rate. Hover over the ✦ to see the
+full list of rate tiers.
+
+#### Contract and fill-from-slots
+
+When adding a row you can optionally select a **Contract** from the dropdown. Once
+a contract is selected, the ⏱ button appears on each day cell. Clicking ⏱ on a
+row header automatically fills the entire week according to the contract's time
+slots: hours per day are calculated from the slot definitions, and the cell stores
+the shift's **start time** and **end time** so the exact working period is recorded
+alongside the duration.
+
+A small dot indicator on a cell means a start/end time has been recorded for that
+day. Click the cell's clock icon to open the time popup and view or edit the stored
+times. Cells without a dot show the default 09:00–17:00 placeholder in the popup.
+
+Multi-day overnight slots (e.g. a Friday standby that runs until Monday 07:00) are
+handled automatically: the anchor day stores the slot's actual start time, and the
+continuation days (Saturday, Sunday) store 00:00–00:00 to indicate full-day
+coverage.
+
 ### Time-tracking-only projects and customers
 
 Beyond regular board-backed projects, WarmDesk supports lightweight
