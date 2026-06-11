@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.12)
+## Latest release (v0.12.13)
 
-- **Fill-from-slots overnight fix** — multi-day overnight slots (e.g. Fri 19:00→Mon 07:00) now correctly set 00:00–00:00 on continuation days (Sat/Sun), showing the dot indicator and correct times in the popup.
-- **Seed pre-fills standby week** — `warmdesk-seed --reset` now seeds a full Mon–Sun standby row for Acme Phase 1 so the rate column and time-slot features are visible immediately after a reset.
+- **Working hours start & end time** — User Settings now has Start + End columns per day with a calculated net hours column.
+- **Lunch break setting** — a configurable lunch break (default 30 min) is subtracted from each day's net hours.
+- **Docs in AsciiDoc** — user and admin guides converted to `.adoc` for proper PDF export and native GitHub rendering.
 
 ## Experiment
 

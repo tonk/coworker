@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.12.13 — 2026-06-11
+
+### Added
+- **Working hours start & end time** — the Working Hours section in User Settings now has a Start and End column per day instead of a single start time. The calculated net hours are shown in a third column.
+- **Lunch break setting** — a single "Lunch break" field (default 30 minutes, 0–120 range) is subtracted from each day's net hours calculation.
+
+### Changed
+- **Docs converted to AsciiDoc** — `user-guide` and `admin-guide` are now `.adoc` files, enabling proper `asciidoctor-pdf` output and native GitHub rendering from the same source.
+
 ## v0.12.12 — 2026-06-11
 
 ### Fixed

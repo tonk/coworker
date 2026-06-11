@@ -719,3 +719,6 @@ Create an application that has all these features and requirements
 - Change server startup message to "Starting WarmDesk - Time Tracking <version>" when running in --mode=timetracking
 - Fix fill-from-slots: multi-day overnight slots (e.g. Fri 19:00→Mon 07:00 with end_day_offset=3) now store start_time="00:00"/end_time="00:00" on continuation days (Sat/Sun), showing the dot indicator and correct shift times in the popup instead of the 09:00–17:00 placeholder
 - Seed standby entries for current week: warmdesk-seed --reset pre-fills Mon–Sun with Acme Phase 1 standby time entries (Mon–Fri 19:00→07:00, Sat/Sun 00:00–00:00) so the rate column and time-slot features are immediately visible
+- Replace working-hours single start-time input with start+end time pair per day: three-column grid (Start / End / Hours) with calculated net hours displayed live; existing start-time values are preserved
+- Add lunch break field (default 30 minutes, 0–120 range) to working hours settings; subtracted from each day's net hours calculation
+- Convert user-guide and admin-guide documentation from Markdown to AsciiDoc for asciidoctor-pdf support and native GitHub rendering
