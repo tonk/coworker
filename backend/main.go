@@ -89,7 +89,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	log.Printf("Starting WarmDesk %s", version)
+	setupSyslog("warmdesk")
 
 	cfg := config.Load(*configFile)
 	if *appMode != "" {
@@ -102,7 +102,10 @@ func main() {
 		log.Fatalf("invalid --mode %q: valid values are '' (full) and 'timetracking'", cfg.AppMode)
 	}
 	if cfg.AppMode == "timetracking" {
+		log.Printf("Starting WarmDesk - Time Tracking %s", version)
 		log.Println("Running in time-tracking-only mode: boards, chat, and helpdesk routes are disabled")
+	} else {
+		log.Printf("Starting WarmDesk %s", version)
 	}
 
 	if cfg.JWTSecret == "change-me-in-production" {

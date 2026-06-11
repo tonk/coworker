@@ -127,6 +127,7 @@
                   <span class="sort-icon" aria-hidden="true">{{ sortCol === 'desc' ? (sortDir === 'asc' ? '△' : '▽') : '▽' }}</span>
                 </button>
               </th>
+              <th class="c-rate">{{ $t('timeTracking.rate') }}</th>
               <th v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
                 <div class="dh-abbr">{{ d.abbr }}</div>
                 <div class="dh-date">{{ d.mmdd }}</div>
@@ -196,6 +197,13 @@
                 </td>
                 <td class="c-desc">{{ row.description || '—' }}</td>
               </template>
+
+              <td class="c-rate">
+                <span v-if="rowRateLabel(row)" class="rc-rate">
+                  {{ rowRateLabel(row) }}
+                  <span v-if="rowHasSlots(row)" class="rc-rate-slots" aria-hidden="true" :title="$t('contract.time_slots')">✦</span>
+                </span>
+              </td>
 
               <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), copiedCell?.sourceKey === row.key + d.iso ? 'c-day-copied' : '', d.isToday ? 'c-day-today' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
                 <input
@@ -337,6 +345,7 @@
                   @keydown.escape="cancelNewRow"
                 />
               </td>
+              <td class="c-rate"></td>
               <td v-for="d in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', d.isToday ? 'c-day-today' : '']">
                 <input class="h-inp" :type="timeNotation === 'hhmm' ? 'text' : 'number'" value="" disabled />
               </td>
@@ -351,7 +360,7 @@
 
           <tfoot>
             <tr class="tt-foot">
-              <td colspan="4" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
+              <td colspan="5" class="foot-lbl">{{ $t('timeTracking.total') }}</td>
               <td v-for="d in weekDays" :key="d.iso" :class="['c-day', 'c-total', 'c-dttotal', holidayDates.has(d.iso) ? 'c-day-holiday' : '', dayOverLimit(d.iso) ? 'c-day-over' : '', d.isToday ? 'c-day-today' : '']" :title="dayExpectedLabel(d.iso)" :aria-label="dayUndeclMins(d.iso) > 0 ? dayDeclTotal(d.iso) + ', ' + $t('timeTracking.undeclarable') + ': -' + dayUndecl(d.iso) : undefined">
                 <span :aria-hidden="dayUndeclMins(d.iso) > 0 ? 'true' : undefined">{{ dayDeclTotal(d.iso) }}</span>
                 <span v-if="dayUndeclMins(d.iso) > 0" class="foot-undecl-inline" aria-hidden="true">-{{ dayUndecl(d.iso) }}</span>
@@ -1503,6 +1512,12 @@ async function loadWeek() {
       timeEntriesApi.getRowOrder(weekOrderParams()).catch(() => ({ data: { keys: [] } })),
     ])
     rawEntries.value = data
+    // Eagerly load contracts for all customers that appear in this week's entries
+    // so the rate column is populated without waiting for a row interaction.
+    const contractCustomerIds = [...new Set(
+      data.filter(e => e.contract_id && e.customer_id).map(e => e.customer_id)
+    )]
+    contractCustomerIds.forEach(id => loadContractsForCustomer(id))
     rowComments.value = orderRes.data?.comments || {}
     const keys = orderRes.data?.keys
     if (keys?.length) {
@@ -1754,6 +1769,24 @@ async function onCellBlur(row, dateISO, rawVal) {
   } finally {
     if (savingCell.value === ck) savingCell.value = ''
   }
+}
+
+// ── Rate column helpers ───────────────────────────────────────────────────
+function rowContract(row) {
+  if (!row.contract_id || !row.customer_id) return null
+  const contracts = contractsByCustomer.value[row.customer_id] || []
+  return contracts.find(c => c.id === row.contract_id) || null
+}
+
+function rowRateLabel(row) {
+  const c = rowContract(row)
+  if (!c || c.price_per_hour == null) return ''
+  const currency = c.currency || '€'
+  return `${c.price_per_hour} ${currency}/h`
+}
+
+function rowHasSlots(row) {
+  return !!(rowContract(row)?.time_slots?.length)
 }
 
 // ── Edit row ──────────────────────────────────────────────────────────────
@@ -3667,6 +3700,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .c-nr   { width: 40px; }
 .c-info { width: 210px; overflow: visible; }
 .c-desc { width: 180px; }
+.c-rate { width: 88px; }
 .c-day  { width: 82px; }
 .c-total { width: 70px; }
 .c-act  { width: 72px; }
@@ -3742,6 +3776,8 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .rc-cust { font-weight: 600; font-size: 12px; line-height: 1.3; color: var(--color-text); }
 .rc-proj { font-size: 11px; color: var(--color-text-muted); line-height: 1.3; }
 .rc-contract { font-size: 11px; color: var(--color-primary); line-height: 1.3; }
+.rc-rate { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+.rc-rate-slots { color: var(--color-primary); font-size: 10px; margin-left: 2px; cursor: default; }
 .rc-comment-wrap { position: relative; display: inline-block; }
 .rc-comment-btn {
   display: inline-flex; align-items: center; justify-content: center;
