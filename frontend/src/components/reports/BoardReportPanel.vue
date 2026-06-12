@@ -110,7 +110,7 @@
 
     <!-- Per-page print header -->
     <div class="brp-print-header" v-if="report">
-      <img src="/logo.svg" alt="WarmDesk" class="brp-print-logo" />
+      <img :src="systemStore.logoSrc" alt="WarmDesk" class="brp-print-logo" />
       <span class="brp-print-name">WarmDesk</span>
     </div>
 
@@ -193,11 +193,13 @@ import { messagesApi } from '@/api/messages'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import { useUIStore } from '@/stores/ui'
+import { useSystemStore } from '@/stores/system'
 import { triggerDownload } from '@/api/client'
 
 const { t, locale } = useI18n()
 const { formatDateTime, formatDate } = useDateFormat()
 const ui = useUIStore()
+const systemStore = useSystemStore()
 
 const loading = ref(false)
 const report = ref(null)

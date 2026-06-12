@@ -5,7 +5,7 @@
         <button class="about-close" @click="$emit('close')" aria-label="Close">✕</button>
 
         <div class="about-logo">
-          <img src="/logo-full.svg" alt="WarmDesk" />
+          <img :src="systemStore.logoFullSrc" alt="WarmDesk" />
         </div>
 
         <div class="about-version">
@@ -54,8 +54,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import client from '@/api/client'
+import { useSystemStore } from '@/stores/system'
 
 const emit = defineEmits(['close'])
+const systemStore = useSystemStore()
 
 const appVersion = __APP_VERSION__
 const serverVersion = ref('')

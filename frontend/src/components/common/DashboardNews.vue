@@ -8,7 +8,7 @@
     >
       <button class="widget-dismiss" :aria-label="$t('common.close')" @click="dismiss(item.id)">×</button>
       <div class="widget-header">
-        <img src="/logo.svg" alt="WarmDesk" class="widget-logo" />
+        <img :src="systemStore.logoSrc" alt="WarmDesk" class="widget-logo" />
         <span class="widget-tag">{{ $t('dashboard.news_title') }}</span>
       </div>
       <h2 class="widget-title">{{ item.title }}</h2>
@@ -24,8 +24,10 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { newsApi } from '@/api/news'
 import { useDateFormat } from '@/composables/useDateFormat'
+import { useSystemStore } from '@/stores/system'
 
 const { formatDate } = useDateFormat()
+const systemStore = useSystemStore()
 
 const STORAGE_KEY = 'dashboard_news_dismissed_ids'
 

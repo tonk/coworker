@@ -4,7 +4,7 @@
       <div class="welcome-modal" role="dialog" aria-modal="true" :aria-labelledby="'welcome-title-' + current.id">
         <div class="welcome-header" :style="current.sidebar_color ? { borderTopColor: current.sidebar_color } : {}">
           <div class="welcome-logo-row">
-            <img src="/logo.svg" alt="WarmDesk" class="welcome-logo" />
+            <img :src="systemStore.logoSrc" alt="WarmDesk" class="welcome-logo" />
             <span class="welcome-tag">{{ $t('dashboard.news_title') }}</span>
             <span v-if="items.length > 1" class="welcome-counter">{{ idx + 1 }} / {{ items.length }}</span>
           </div>
@@ -34,7 +34,9 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import { useSystemStore } from '@/stores/system'
 
+const systemStore = useSystemStore()
 const props = defineProps({
   items: { type: Array, required: true },
 })

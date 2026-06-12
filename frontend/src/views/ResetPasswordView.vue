@@ -2,7 +2,7 @@
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-logo">
-        <img src="/logo.svg" alt="WarmDesk" style="height:36px;width:auto" />
+        <img :src="systemStore.logoSrc" alt="WarmDesk" style="height:36px;width:auto" />
       </div>
 
       <!-- No token in URL -->
@@ -62,7 +62,9 @@ import { RouterLink, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { authApi } from '@/api/auth'
 import { systemApi } from '@/api/system'
+import { useSystemStore } from '@/stores/system'
 
+const systemStore = useSystemStore()
 const { t } = useI18n()
 const route = useRoute()
 

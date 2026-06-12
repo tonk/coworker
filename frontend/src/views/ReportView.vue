@@ -113,7 +113,7 @@
     <!-- Report content (visible on screen and when printing) -->
     <!-- Per-page header: hidden on screen, repeats on every printed page via position:fixed -->
     <div class="print-page-header" v-if="report">
-      <img src="/logo.svg" alt="WarmDesk" class="print-logo" />
+      <img :src="systemStore.logoSrc" alt="WarmDesk" class="print-logo" />
       <span class="print-app-name">WarmDesk</span>
     </div>
 
@@ -200,8 +200,10 @@ import { messagesApi } from '@/api/messages'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { resolveAssetUrl } from '@/api/serverConfig'
 import { useUIStore } from '@/stores/ui'
+import { useSystemStore } from '@/stores/system'
 
 const { t, locale } = useI18n()
+const systemStore = useSystemStore()
 const { formatDateTime, formatDate } = useDateFormat()
 const ui = useUIStore()
 

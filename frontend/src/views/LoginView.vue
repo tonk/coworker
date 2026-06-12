@@ -18,7 +18,7 @@
       <!-- Right: login form -->
       <div class="auth-card">
         <div class="auth-logo">
-          <img src="/logo.svg" alt="WarmDesk" style="height:32px;width:auto" />
+          <img :src="systemStore.logoSrc" alt="WarmDesk" style="height:32px;width:auto" />
           <span class="auth-wordmark">WarmDesk</span>
         </div>
         <template v-if="!mfaStep">
@@ -106,7 +106,7 @@
     <!-- ── Plain centered layout (no branding) ── -->
     <div v-else class="auth-card">
       <div class="auth-logo">
-        <img src="/logo.svg" alt="WarmDesk" style="height:36px;width:auto" />
+        <img :src="systemStore.logoSrc" alt="WarmDesk" style="height:36px;width:auto" />
         <span class="auth-wordmark">WarmDesk</span>
       </div>
       <template v-if="!mfaStep">

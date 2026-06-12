@@ -1,7 +1,7 @@
 <template>
   <div class="connect-page">
     <div class="connect-card">
-      <img src="/logo.svg" alt="WarmDesk" class="connect-logo" />
+      <img :src="systemStore.logoSrc" alt="WarmDesk" class="connect-logo" />
       <h1 class="connect-title">Connect to WarmDesk</h1>
       <p class="connect-hint">Enter the URL of your WarmDesk server.</p>
 

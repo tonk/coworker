@@ -11,6 +11,8 @@ export const useSystemStore = defineStore('system', () => {
   const sessionTimeoutMinutes = ref(60)
   const appMode = ref('')
   const isTimetrackingMode = computed(() => appMode.value === 'timetracking')
+  const logoSrc     = computed(() => isTimetrackingMode.value ? '/timetracking.svg'      : '/logo.svg')
+  const logoFullSrc = computed(() => isTimetrackingMode.value ? '/timetracking-full.svg' : '/logo-full.svg')
   const defaults = ref({
     date_time_format: 'YYYY-MM-DD HH:mm',
     timezone: 'UTC',
@@ -48,5 +50,5 @@ export const useSystemStore = defineStore('system', () => {
     } catch {}
   }
 
-  return { registrationEnabled, scrumStorypointsEnabled, externalImageProxyEnabled, sessionTimeoutMinutes, appMode, isTimetrackingMode, defaults, fetchAppMode, fetchSettings }
+  return { registrationEnabled, scrumStorypointsEnabled, externalImageProxyEnabled, sessionTimeoutMinutes, appMode, isTimetrackingMode, logoSrc, logoFullSrc, defaults, fetchAppMode, fetchSettings }
 })

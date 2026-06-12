@@ -2,7 +2,7 @@
   <header class="app-header">
     <div class="header-left">
       <RouterLink to="/" class="logo">
-        <img src="/logo-full.svg" alt="WarmDesk" class="logo-img" />
+        <img :src="systemStore.logoFullSrc" alt="WarmDesk" class="logo-img" />
       </RouterLink>
       <slot name="breadcrumb" />
     </div>

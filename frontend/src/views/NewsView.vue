@@ -52,7 +52,7 @@
           :style="item.sidebar_color ? { borderLeftColor: item.sidebar_color } : {}"
         >
           <div class="news-tile-header">
-            <img src="/logo.svg" alt="WarmDesk" class="news-tile-logo" />
+            <img :src="systemStore.logoSrc" alt="WarmDesk" class="news-tile-logo" />
             <span class="news-tile-tag">{{ $t('dashboard.news_title') }}</span>
             <div class="news-tile-badges">
               <span v-if="!item.active" class="news-badge badge-inactive">{{ $t('news.badge_inactive') }}</span>
@@ -97,7 +97,9 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { newsApi } from '@/api/news'
 import { useDateFormat } from '@/composables/useDateFormat'
+import { useSystemStore } from '@/stores/system'
 
+const systemStore = useSystemStore()
 const { t } = useI18n()
 const { formatDate } = useDateFormat()
 

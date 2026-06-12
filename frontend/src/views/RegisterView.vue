@@ -2,7 +2,7 @@
   <div class="auth-page">
     <div class="auth-card">
       <div class="auth-logo">
-        <img src="/logo.svg" alt="WarmDesk" style="height:36px;width:auto" />
+        <img :src="systemStore.logoSrc" alt="WarmDesk" style="height:36px;width:auto" />
       </div>
       <h1 class="auth-title">{{ $t('auth.register_title') }}</h1>
       <form @submit.prevent="handleSubmit">
@@ -41,9 +41,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useSystemStore } from '@/stores/system'
 import { getServerUrl } from '@/api/serverConfig'
 
 const auth = useAuthStore()
+const systemStore = useSystemStore()
 const router = useRouter()
 const form = ref({ email: '', username: '', display_name: '', password: '' })
 const error = ref('')
