@@ -1,0 +1,69 @@
+---
+title: "v0.12.16: Time-tracking logo set and mode branding"
+date: "2026-06-12"
+author: "Ton Kersten"
+description: "A new clock-on-desk logo for the time-tracking module, and automatic logo swapping when the server runs in --mode=timetracking."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` ships a dedicated logo set for the time-tracking module and wires it into the `--mode=timetracking` deployment option so every surface — web UI, login screen, and PDF exports — reflects the right branding automatically.
+
+== The time-tracking logo
+
+The new logo keeps the same geometric green palette as the main WarmDesk mark, swapping the coffee cup for a clock face.
+
+[.logo-showcase]
+====
+image::timetracking.svg[WarmDesk Time Tracking icon — clock on desk, 160, role="logo-icon"]
+image::timetracking-full.svg[WarmDesk Time Tracking full wordmark, 462, role="logo-full"]
+====
+
+The *icon* (`timetracking.svg`, 160 × 157 px) shows the clock centred above the familiar desk surface — the same two legs, apron, and top rail.
+The *full wordmark* (`timetracking-full.svg`) pairs the icon with *Time* in mint green and *Tracking* beneath it, followed by the tagline _time reporting_ in the same spaced-cap style as the main logo.
+
+Both files are embedded in the server binary and served at `/timetracking.svg` and `/timetracking-full.svg`.
+
+== Automatic branding in time-tracking-only mode
+
+WarmDesk has supported `--mode=timetracking` for some time — it disables the boards, chat, topics, and helpdesk routes so the server acts as a focused time-reporting tool.
+
+Starting with this release, that flag also flips the branding:
+
+* `/logo.svg` and `/logo-full.svg` transparently serve the time-tracking variants, so every hardcoded logo reference in the web interface picks up the correct image without any frontend changes.
+* PDF time reports use the clock-on-desk logo in the page header when no custom company logo is configured in Admin → Branding.
+
+Set it in `warmdesk.yaml`:
+
+[source,yaml]
+----
+app_mode: "timetracking"
+----
+
+Or pass it on the command line:
+
+[source,bash]
+----
+./warmdesk --mode=timetracking
+----
+
+Or via environment variable:
+
+[source,bash]
+----
+APP_MODE=timetracking ./warmdesk
+----
+
+The running mode is visible in the `GET /api/v1/version` response as `"app_mode": "timetracking"`.
+
+== Documentation
+
+The admin guide has a new *Time-tracking-only mode* section under the Configuration Reference covering all three ways to activate it and a full list of effects.
+The user guide Time Tracking section now includes a note explaining that boards, chat, and helpdesk may be absent in a time-tracking-only deployment.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Run the new version in-place — no database migration required.
