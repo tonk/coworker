@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.12.18 — 2026-06-12
+
+### Added
+- **`warmdesk-timetracking.desktop`** — deb and rpm packages now install a dedicated timetracking launcher entry with `Icon=warmdesk-timetracking`, making it easy to pin a timetracking-branded shortcut alongside the main WarmDesk entry.
+
+### Changed
+- **Admin settings in timetracking mode** — Scrum Story Points, New project defaults, Email (SMTP), and Incoming Mail (IMAP) sections are now hidden when the server runs in `--mode=timetracking`.
+- **User settings in timetracking mode** — Email Notifications and Personal API Keys are now hidden in timetracking mode.
+
+### Fixed
+- **Blog post sort order** — posts sharing the same date now sort with the newest release first (filename descending as tiebreaker) instead of oldest first.
+
 ## v0.12.17 — 2026-06-12
 
 ### Fixed
