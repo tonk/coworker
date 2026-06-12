@@ -132,7 +132,24 @@ redis_url: ""
 default_locale: "en"
 # DEFAULT_LOCALE — en | nl | de | fr | es | da | sv |
 # nb | fi | is | pt | it
+
+# Application mode (optional)
+# app_mode: "timetracking"
+# APP_MODE — leave empty for full WarmDesk; set to "timetracking" for
+# a time-tracking-only deployment (see below).
 ----
+
+=== Time-tracking-only mode
+
+Set `app_mode: "timetracking"` (or pass `--mode=timetracking` on the command line, or set `APP_MODE=timetracking` as an environment variable) to run WarmDesk as a dedicated time-tracking server.
+
+Effects:
+
+* Board, chat, topic, and helpdesk API routes are disabled — only time tracking and user management remain active.
+* The time-tracking logos (clock-on-desk) replace the default WarmDesk logos everywhere: the web interface, the login screen, and exported PDFs (when no custom company logo is configured in Admin → Branding).
+* The `/api/v1/version` endpoint returns `"app_mode": "timetracking"` so clients can detect the mode.
+
+The CLI flag takes precedence over the YAML key, which takes precedence over the environment variable.
 
 === Generating a strong JWT secret
 
