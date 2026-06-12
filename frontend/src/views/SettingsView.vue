@@ -154,7 +154,7 @@
                 <span>Receive email notifications for mentions, DMs, and card assignments</span>
               </label>
             </div>
-            <div class="form-group">
+            <div v-if="!systemStore.isTimetrackingMode" class="form-group">
               <label class="form-label">{{ $t('timeTracking.label') }}</label>
               <label class="toggle-label">
                 <input type="checkbox" v-model="form.time_tracking_enabled" />
@@ -175,7 +175,7 @@
                 <option value="sunday">{{ $t('settings.week_start_sunday') }}</option>
               </select>
             </div>
-            <div class="form-group">
+            <div v-if="!systemStore.isTimetrackingMode" class="form-group">
               <label class="form-label" for="dashboard-default-select">{{ $t('settings.dashboard_default') }}</label>
               <select id="dashboard-default-select" class="form-input" v-model="form.dashboard_default">
                 <option value="boards">{{ $t('settings.dashboard_default_boards') }}</option>
