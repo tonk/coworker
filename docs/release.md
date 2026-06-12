@@ -38,29 +38,29 @@ Claude Code will:
 
 ---
 
-## Manual workflow — `./release` script
+## Manual workflow — `scripts/release`
 
-The repo root `./release` script automates the mechanical version bumps.
+The `scripts/release` helper automates the mechanical version bumps.
 Use it when releasing outside Claude Code.
 
 ### Commands reference
 
 ```bash
 # Show help
-./release help
+./scripts/release help
 
 # Bump version strings only (usual workflow)
 # Edit CHANGELOG.md and README.md bullets first, then:
-./release bump v0.10.30
+./scripts/release bump v0.10.30
 
 # Dry run (no file writes)
-./release --dry-run bump v0.10.30
+./scripts/release --dry-run bump v0.10.30
 
 # One-shot: bump + commit + tag + push
-./release publish v0.10.30
+./scripts/release publish v0.10.30
 ```
 
-**Files touched by `./release bump`:**
+**Files touched by `./scripts/release bump`:**
 
 | File | What changes |
 |------|-------------|
@@ -83,7 +83,7 @@ V=v0.10.30
 D=$(date -u +%Y-%m-%d)
 
 # After editing CHANGELOG.md, README.md bullets, and what.md:
-./release bump $V
+./scripts/release bump $V
 
 git add CHANGELOG.md README.md what.md website/hugo.toml ansible/galaxy.yml
 git commit -m "chore: release $V — CHANGELOG, README, what.md"

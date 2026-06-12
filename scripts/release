@@ -4,12 +4,12 @@
 #
 # Typical flow (see docs/release.md):
 #   1. Write CHANGELOG.md section and README "Latest release" bullets by hand.
-#   2. ./release bump v0.9.40
-#   3. Review diff, commit, tag, push (or use: ./release publish v0.9.40).
+#   2. ./scripts/release bump v0.9.40
+#   3. Review diff, commit, tag, push (or use: ./scripts/release publish v0.9.40).
 #
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 die() { echo "release: $*" >&2; exit 1; }
@@ -33,9 +33,9 @@ Environment:
   RELEASE_DATE                        Override ISO date for website/hugo.toml (default: today UTC).
 
 Examples:
-  ./release bump v0.9.40
-  ./release --dry-run bump 0.9.40
-  ./release publish v0.9.40
+  ./scripts/release bump v0.9.40
+  ./scripts/release --dry-run bump 0.9.40
+  ./scripts/release publish v0.9.40
 EOF
 }
 
@@ -115,7 +115,7 @@ cmd_bump() {
   echo "Manual checklist (if not done yet):"
   echo "  • CHANGELOG.md — add ## ${V_TAG} — ${REL_DATE} with Added/Fixed/Changed entries"
   echo "  • README.md — bullet list under Latest release (heading was updated)"
-  echo "  • git add, commit, tag, push — or run: ./release publish ${V_TAG}"
+  echo "  • git add, commit, tag, push — or run: ./scripts/release publish ${V_TAG}"
 }
 
 cmd_check() {
@@ -177,7 +177,7 @@ case "$SUB" in
     if [[ "$SUB" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
       cmd_bump "$SUB"
     else
-      die "unknown command '$SUB' — try: ./release help"
+      die "unknown command '$SUB' — try: ./scripts/release help"
     fi
     ;;
 esac
