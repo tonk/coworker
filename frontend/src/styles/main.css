@@ -146,10 +146,9 @@ body {
      webkit2gtk 2.50.x / Skia on Fedora 43 (colrv1_configure_skpaint
      assertion failure). Has no effect on other browsers/platforms. */
   font-variant-emoji: text;
-  user-select: none;
 }
 
-input, textarea, [contenteditable], .selectable {
+input, textarea, [contenteditable] {
   user-select: text;
 }
 
