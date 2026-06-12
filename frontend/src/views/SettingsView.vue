@@ -147,7 +147,7 @@
                 <span>Show breadcrumbs at the top</span>
               </label>
             </div>
-            <div class="form-group">
+            <div v-if="!systemStore.isTimetrackingMode" class="form-group">
               <label class="form-label">Email Notifications</label>
               <label class="toggle-label">
                 <input type="checkbox" v-model="form.email_notifications" />
@@ -423,7 +423,7 @@
           </div>
         </div>
 
-        <div class="settings-card" data-help-context="settings.apiKeys">
+        <div v-if="!systemStore.isTimetrackingMode" class="settings-card" data-help-context="settings.apiKeys">
           <h2>{{ $t('apikeys.personal_title') }}</h2>
           <p class="form-hint" style="margin-bottom:16px">{{ $t('apikeys.personal_description') }}</p>
           <div class="form-group" style="max-width:400px">
@@ -485,6 +485,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
+import { useSystemStore } from '@/stores/system'
 import { useTheme } from '@/composables/useTheme'
 import { useHelpSectionObserver } from '@/composables/useHelpSectionObserver'
 import { authApi } from '@/api/auth'
@@ -503,6 +504,7 @@ import { useDateFormat } from '@/composables/useDateFormat'
 const route = useRoute()
 const auth = useAuthStore()
 const ui = useUIStore()
+const systemStore = useSystemStore()
 const passwordExpired = ref(false)
 const pwCardRef = ref(null)
 const settingsRootRef = ref(null)
