@@ -31,11 +31,17 @@
     "linux": {
       "deb": {
         "depends": [],
-        "desktopTemplate": "warmdesk.desktop"
+        "desktopTemplate": "warmdesk.desktop",
+        "files": {
+          "usr/share/icons/hicolor/scalable/apps/warmdesk-timetracking.svg": "icons/timetracking.svg"
+        }
       },
       "rpm": {
         "depends": [],
-        "desktopTemplate": "warmdesk.desktop"
+        "desktopTemplate": "warmdesk.desktop",
+        "files": {
+          "usr/share/icons/hicolor/scalable/apps/warmdesk-timetracking.svg": "icons/timetracking.svg"
+        }
       }
     }
   }
