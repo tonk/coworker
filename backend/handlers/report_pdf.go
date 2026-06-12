@@ -64,6 +64,16 @@ func resolveLogoBytes(logoURL string) ([]byte, string, bool) {
 	if rel == "" {
 		return nil, "", false
 	}
+	// In timetracking mode, substitute the time-tracking logo variants so PDFs
+	// get the correct branding without requiring a custom company logo to be set.
+	if serverAppMode == "timetracking" {
+		switch rel {
+		case "logo.svg":
+			rel, ext = "timetracking.svg", ".svg"
+		case "logo-full.svg":
+			rel, ext = "timetracking-full.svg", ".svg"
+		}
+	}
 	// Try WebDir on disk first
 	if reportCfg != nil && reportCfg.WebDir != "" {
 		if data, err := os.ReadFile(filepath.Join(reportCfg.WebDir, rel)); err == nil {

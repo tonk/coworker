@@ -587,6 +587,16 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			}
 			// Serve matching static file from web root; fall back to index.html for SPA routes
 			path := strings.TrimPrefix(c.Request.URL.Path, "/")
+			// In timetracking mode, serve the time-tracking logo variants instead of the
+			// default WarmDesk logos so every client (browser, Tauri) gets the right branding.
+			if ttMode {
+				switch path {
+				case "logo.svg":
+					path = "timetracking.svg"
+				case "logo-full.svg":
+					path = "timetracking-full.svg"
+				}
+			}
 			if path != "" {
 				if f, err := webFS.Open(path); err == nil {
 					if st, err := f.Stat(); err == nil && !st.IsDir() {
@@ -594,6 +604,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 						if strings.HasSuffix(path, ".html") {
 							c.Header("Cache-Control", "no-store")
 						}
+						c.Request.URL.Path = "/" + path
 						fileServer.ServeHTTP(c.Writer, c.Request)
 						return
 					}
