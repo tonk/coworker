@@ -54,7 +54,8 @@
       <hr class="article-divider">
 
       <ul class="post-list">
-        {{- range .Pages }}
+        {{- $byPath := sort .Pages ".File.Path" "desc" }}
+        {{- range sort $byPath "Date" "desc" }}
           <li class="post-list-item">
             <h2><a href="{{ .Permalink }}">{{ .Title }}</a></h2>
             <div class="post-list-meta">
