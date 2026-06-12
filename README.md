@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.15)
+## Latest release (v0.12.16)
 
-- **Destructive confirms** — delete, revoke, and purge flows show a red *Delete* button; non-destructive prompts keep *Yes*.
-- **Versioned guide PDFs** — downloads named `WarmDesk-user-guide-v0.12.15.pdf` (and admin equivalent) from the avatar menu.
-- **Release helper** — `./scripts/release bump` syncs guide revision metadata from `CHANGELOG.md`.
+- **Time-tracking logo set** — clock-on-desk icon and full wordmark in the same green style as the WarmDesk logo.
+- **`--mode=timetracking` branding** — time-tracking logos replace the default logos in the web UI, login screen, and PDFs when running in time-tracking-only mode.
 
 ## Experiment
 

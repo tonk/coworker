@@ -736,3 +736,6 @@ Create an application that has all these features and requirements
 - Add website release blog post for v0.12.14
 - Move release helper to scripts/release and seed_tickets.py to scripts/
 - Fix CI asciidoctor-pdf install with sudo gem install in server workflows
+- Add time-tracking logo set (clock-on-desk icon and full wordmark)
+- Remap logos to time-tracking variants when running with --mode=timetracking
+- Document time-tracking-only mode in admin guide, user guide, and config reference

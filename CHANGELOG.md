@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.12.16 — 2026-06-12
+
+### Added
+- **Time-tracking logo set** — new clock-on-desk icon (`timetracking.svg`) and full wordmark (`timetracking-full.svg`) in the same geometric green style as the WarmDesk logo.
+- **`--mode=timetracking` logo branding** — when the server runs in time-tracking-only mode, the time-tracking logos replace the default WarmDesk logos everywhere: web UI, login screen, and exported PDFs (when no custom company logo is configured).
+
+### Changed
+- **Admin guide** — new *Time-tracking-only mode* sub-section documents `app_mode`, its three setting methods, and all effects.
+- **User guide** — NOTE at the top of the Time Tracking section explains that boards/chat/helpdesk may be absent in time-tracking-only deployments.
+
 ## v0.12.15 — 2026-06-12
 
 ### Added
