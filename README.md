@@ -8,11 +8,12 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.13)
+## Latest release (v0.12.14)
 
-- **Working hours start & end time** — User Settings now has Start + End columns per day with a calculated net hours column.
-- **Lunch break setting** — a configurable lunch break (default 30 min) is subtracted from each day's net hours.
-- **Docs in AsciiDoc** — user and admin guides converted to `.adoc` for proper PDF export and native GitHub rendering.
+- **Guide PDF downloads** — avatar menu → **Downloads** serves the user and admin guide PDFs (built into every server release).
+- **Weekly working hours total** — User Settings shows total net hours per week below the grid.
+- **Copy Previous Week** — confirms before overwriting non-empty rows; the copy is undoable.
+- **Undeclarable time styling** — muted secondary text instead of red in the timesheet grid and report.
 
 ## Experiment
 

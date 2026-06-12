@@ -12,7 +12,13 @@
     "about": "Over",
     "user_menu": "Gebruikersmenu",
     "keyboard_shortcuts": "Sneltoetsen",
-    "news": "Nieuws"
+    "news": "Nieuws",
+    "downloads": "Downloads",
+    "user_guide": "Gebruikershandleiding",
+    "admin_guide": "Beheerdershandleiding",
+    "download_user_guide": "Gebruikershandleiding downloaden",
+    "download_admin_guide": "Beheerdershandleiding downloaden",
+    "guide_download_error": "Downloaden van handleiding mislukt."
   },
   "auth": {
     "login": "Inloggen",
@@ -652,7 +658,8 @@
     "work_end": "Einde",
     "work_hours": "Uren",
     "lunch_break": "Lunchpauze",
-    "lunch_break_unit": "minuten"
+    "lunch_break_unit": "minuten",
+    "weekly_total": "Totaal per week"
   },
   "dm": {
     "title": "Chats",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Klanten",
     "copy_prev_week": "Vorige week kopiëren",
     "copy_prev_nothing": "Vorige week heeft geen nieuwe rijen om te kopiëren",
+    "copy_prev_confirm_one": "Deze week heeft al rijen. 1 rij uit de vorige week toevoegen?",
+    "copy_prev_confirm": "Deze week heeft al rijen. {count} rijen uit de vorige week toevoegen?",
+    "copy_prev_confirm_action": "Rijen toevoegen",
     "copy_prev_error": "Kopiëren van vorige week mislukt",
     "group_by": "Groeperen op",
     "group_by_period": "Periode",

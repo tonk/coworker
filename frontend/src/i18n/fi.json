@@ -12,7 +12,13 @@
     "about": "Tietoja",
     "user_menu": "Käyttäjävalikko",
     "news": "Uutiset",
-    "keyboard_shortcuts": "Pikanäppäimet"
+    "keyboard_shortcuts": "Pikanäppäimet",
+    "downloads": "Lataukset",
+    "user_guide": "Käyttöopas",
+    "admin_guide": "Ylläpito-opas",
+    "download_user_guide": "Lataa käyttöopas",
+    "download_admin_guide": "Lataa ylläpito-opas",
+    "guide_download_error": "Opaan lataaminen epäonnistui."
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -687,7 +693,8 @@
     "work_end": "Loppu",
     "work_hours": "Tunnit",
     "lunch_break": "Lounastauko",
-    "lunch_break_unit": "minuuttia"
+    "lunch_break_unit": "minuuttia",
+    "weekly_total": "Viikon yhteensä"
   },
   "dm": {
     "title": "Chatit",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Asiakkaat",
     "copy_prev_week": "Kopioi edellinen viikko",
     "copy_prev_nothing": "Edellisellä viikolla ei ole uusia rivejä kopioitavaksi",
+    "copy_prev_confirm_one": "Tällä viikolla on jo rivejä. Lisätäänkö 1 rivi edelliseltä viikolta?",
+    "copy_prev_confirm": "Tällä viikolla on jo rivejä. Lisätäänkö {count} riviä edelliseltä viikolta?",
+    "copy_prev_confirm_action": "Lisää rivit",
     "copy_prev_error": "Edellisen viikon kopiointi epäonnistui",
     "group_by": "Ryhmittele",
     "group_by_period": "Ajanjakso",

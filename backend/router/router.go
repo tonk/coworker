@@ -187,6 +187,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		// News (active items visible to all authenticated users)
 		protected.GET("/news", handlers.ListActiveNews)
 
+		protected.GET("/docs/user-guide.pdf", handlers.DownloadUserGuide)
+		protected.GET("/docs/admin-guide.pdf", middleware.AdminOnly(), handlers.DownloadAdminGuide)
+
 		if !ttMode {
 			// Macros — active list visible to all helpdesk users
 			protected.GET("/macros", handlers.ListMacros)

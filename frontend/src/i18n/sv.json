@@ -12,7 +12,13 @@
     "about": "Om",
     "user_menu": "Användarmeny",
     "keyboard_shortcuts": "Tangentbordsgenvägar",
-    "news": "Nyheter"
+    "news": "Nyheter",
+    "downloads": "Nedladdningar",
+    "user_guide": "Användarhandbok",
+    "admin_guide": "Administratörshandbok",
+    "download_user_guide": "Ladda ner användarhandbok",
+    "download_admin_guide": "Ladda ner administratörshandbok",
+    "guide_download_error": "Kunde inte ladda ner handboken."
   },
   "auth": {
     "login": "Logga in",
@@ -687,7 +693,8 @@
     "work_end": "Slut",
     "work_hours": "Timmar",
     "lunch_break": "Lunchrast",
-    "lunch_break_unit": "minuter"
+    "lunch_break_unit": "minuter",
+    "weekly_total": "Veckototal"
   },
   "dm": {
     "title": "Chattar",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Kunder",
     "copy_prev_week": "Kopiera föregående vecka",
     "copy_prev_nothing": "Föregående vecka har inga nya rader att kopiera",
+    "copy_prev_confirm_one": "Den här veckan har redan rader. Lägga till 1 rad från föregående vecka?",
+    "copy_prev_confirm": "Den här veckan har redan rader. Lägga till {count} rader från föregående vecka?",
+    "copy_prev_confirm_action": "Lägg till rader",
     "copy_prev_error": "Det gick inte att kopiera föregående vecka",
     "group_by": "Gruppera efter",
     "group_by_period": "Period",

@@ -205,6 +205,7 @@ func main() {
 		webFS = staticweb.FS
 	}
 	handlers.InitReport(cfg, webFS)
+	handlers.InitDocs(cfg, webFS)
 	r := router.Setup(authSvc, cfg.AllowedOrigins, webFS, cfg.APILog, cfg.UploadDir, trustedProxies, cfg.AppMode)
 
 	addr := ":" + cfg.Port

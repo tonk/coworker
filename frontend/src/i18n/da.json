@@ -12,7 +12,13 @@
     "about": "Om",
     "user_menu": "Brugermenu",
     "keyboard_shortcuts": "Tastaturgenveje",
-    "news": "Nyheder"
+    "news": "Nyheder",
+    "downloads": "Downloads",
+    "user_guide": "Brugervejledning",
+    "admin_guide": "Administratorvejledning",
+    "download_user_guide": "Download brugervejledning",
+    "download_admin_guide": "Download administratorvejledning",
+    "guide_download_error": "Kunne ikke downloade vejledningen."
   },
   "auth": {
     "login": "Log ind",
@@ -687,7 +693,8 @@
     "work_end": "Slut",
     "work_hours": "Timer",
     "lunch_break": "Frokostpause",
-    "lunch_break_unit": "minutter"
+    "lunch_break_unit": "minutter",
+    "weekly_total": "Ugentligt total"
   },
   "dm": {
     "title": "Chats",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Kunder",
     "copy_prev_week": "Kopier forrige uge",
     "copy_prev_nothing": "Forrige uge har ingen nye rækker at kopiere",
+    "copy_prev_confirm_one": "Denne uge har allerede rækker. Tilføj 1 række fra forrige uge?",
+    "copy_prev_confirm": "Denne uge har allerede rækker. Tilføj {count} rækker fra forrige uge?",
+    "copy_prev_confirm_action": "Tilføj rækker",
     "copy_prev_error": "Kopiering af forrige uge mislykkedes",
     "group_by": "Grupper efter",
     "group_by_period": "Periode",

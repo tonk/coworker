@@ -1,4 +1,12 @@
 = WarmDesk — Administrator Guide
+:revnumber: v0.12.14
+:revdate: 2026-06-12
+Ton Kersten <tonk@smartowl.nl>
+ifdef::backend-pdf[]
+:title-page:
+:pdf-theme: warmdesk
+:pdf-themesdir: pdf-theme
+endif::backend-pdf[]
 :toc: left
 :toc-title: Table of Contents
 :toclevels: 3
@@ -34,6 +42,16 @@ This guide assumes the binary is already running and focuses on configuration an
 
 No external runtime dependencies — Go produces a single statically-linked binary (except for SQLite, which requires `glibc` / `musl`).
 
+=== Documentation PDFs
+
+`make build` produces branded PDFs in the distribution tarball under `docs/`:
+
+* `user-guide.pdf` — end-user documentation
+* `admin-guide.pdf` — this guide
+
+Logged-in users can download the user and admin guides from the avatar menu → *Downloads*.
+The admin guide entry is visible to admins only.
+
 '''
 
 == Configuration Reference
@@ -52,42 +70,68 @@ Environment variables always override the YAML file.
 
 [source,yaml]
 ----
-# ── Server ────────────────────────────────────────────────────────────────────
-port: 8080                        # PORT — HTTP listen port
-base_url: "https://desk.example.com"  # BASE_URL — public URL; sets Swagger UI host
-allowed_origins: "https://app.example.com"  # ALLOWED_ORIGINS — CORS origins
+# Server
+port: 8080
+# PORT — HTTP listen port
 
-# ── Security ──────────────────────────────────────────────────────────────────
-jwt_secret: "change-me-in-production"  # JWT_SECRET — HS256 signing key
-                                        # Generate: openssl rand -hex 32
+base_url: "https://desk.example.com"
+# BASE_URL — public URL; sets Swagger UI host
 
-# ── Web assets ────────────────────────────────────────────────────────────────
-web_dir: "./web"                  # WEB_DIR — compiled frontend (required in prod)
+allowed_origins: "https://app.example.com"
+# ALLOWED_ORIGINS — CORS origins
 
-# ── Database ──────────────────────────────────────────────────────────────────
-db_driver: "sqlite"               # DB_DRIVER — sqlite | postgres | mysql
-db_dsn: "./warmdesk.db"           # DB_DSN — file path or connection string
-db_log: "warn"                    # DB_LOG — silent | error | warn | info
+# Security
+jwt_secret: "change-me-in-production"
+# JWT_SECRET — HS256 signing key
+# Generate: openssl rand -hex 32
 
-# ── File uploads ──────────────────────────────────────────────────────────────
-upload_dir: "./uploads"           # UPLOAD_DIR — where attachments are stored
-max_upload_mb: 25                 # MAX_UPLOAD_MB — per-file upload limit
+# Web assets
+web_dir: "./web"
+# WEB_DIR — compiled frontend (required in prod)
 
-# ── Group video calls (optional, LiveKit SFU) ────────────────────────────────
-livekit_url: "wss://livekit.example.com"  # LIVEKIT_URL — LiveKit websocket URL
-livekit_api_key: "APIxxxxxxxxxxxxxxxx"    # LIVEKIT_API_KEY — server API key
-livekit_api_secret: "your-secret"         # LIVEKIT_API_SECRET — matching secret
+# Database
+db_driver: "sqlite"
+# DB_DRIVER — sqlite | postgres | mysql
 
-# ── Logging ───────────────────────────────────────────────────────────────────
-gin_mode: "release"               # GIN_MODE — debug | release
-api_log: false                    # API_LOG — log every HTTP request
+db_dsn: "./warmdesk.db"
+# DB_DSN — file path or connection string
 
-# ── Redis (optional — for horizontal scaling) ─────────────────────────────────
-redis_url: ""                     # REDIS_URL — e.g. redis://localhost:6379
-                                  # Leave empty to use in-process pub/sub
+db_log: "warn"
+# DB_LOG — silent | error | warn | info
 
-# ── Locale defaults (overridden per user) ─────────────────────────────────────
-default_locale: "en"              # DEFAULT_LOCALE — en | nl | de | fr | es | da | sv | nb | fi | is | pt | it
+# File uploads
+upload_dir: "./uploads"
+# UPLOAD_DIR — where attachments are stored
+
+max_upload_mb: 25
+# MAX_UPLOAD_MB — per-file upload limit
+
+# Group video calls (optional, LiveKit SFU)
+livekit_url: "wss://livekit.example.com"
+# LIVEKIT_URL — LiveKit websocket URL
+
+livekit_api_key: "APIxxxxxxxxxxxxxxxx"
+# LIVEKIT_API_KEY — server API key
+
+livekit_api_secret: "your-secret"
+# LIVEKIT_API_SECRET — matching secret
+
+# Logging
+gin_mode: "release"
+# GIN_MODE — debug | release
+
+api_log: false
+# API_LOG — log every HTTP request
+
+# Redis (optional — horizontal scaling)
+redis_url: ""
+# REDIS_URL — e.g. redis://localhost:6379
+# Leave empty to use in-process pub/sub
+
+# Locale defaults (overridden per user)
+default_locale: "en"
+# DEFAULT_LOCALE — en | nl | de | fr | es | da | sv |
+# nb | fi | is | pt | it
 ----
 
 === Generating a strong JWT secret
@@ -130,22 +174,27 @@ psql -U postgres -c "CREATE DATABASE warmdesk OWNER warmdesk;"
 [source,yaml]
 ----
 db_driver: postgres
-db_dsn: "host=localhost user=warmdesk password=secret dbname=warmdesk port=5432 sslmode=require"
+db_dsn: "host=localhost user=warmdesk password=secret dbname=warmdesk"
+# port=5432 sslmode=require
 ----
 
 === MySQL / MariaDB
 
 [source,bash]
 ----
-mysql -u root -p -e "CREATE DATABASE warmdesk CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root -p -e "CREATE USER 'warmdesk'@'localhost' IDENTIFIED BY 'secret';"
-mysql -u root -p -e "GRANT ALL PRIVILEGES ON warmdesk.* TO 'warmdesk'@'localhost';"
+mysql -u root -p -e \
+  "CREATE DATABASE warmdesk CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p -e \
+  "CREATE USER 'warmdesk'@'localhost' IDENTIFIED BY 'secret';"
+mysql -u root -p -e \
+  "GRANT ALL PRIVILEGES ON warmdesk.* TO 'warmdesk'@'localhost';"
 ----
 
 [source,yaml]
 ----
 db_driver: mysql
-db_dsn: "warmdesk:secret@tcp(localhost:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local"
+db_dsn: "warmdesk:secret@tcp(localhost:3306)/warmdesk"
+# ?charset=utf8mb4&parseTime=True&loc=Local
 ----
 
 === Database TLS

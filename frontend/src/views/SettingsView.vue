@@ -194,13 +194,13 @@
           <h2>{{ $t('settings.working_hours') }}</h2>
           <p class="settings-hint">{{ $t('settings.working_hours_hint') }}</p>
           <form @submit.prevent="saveProfile">
-            <div class="wh-header form-row">
+            <div class="form-row wh-grid wh-header">
               <div class="form-group day-label"></div>
               <div class="wh-col-label">{{ $t('settings.work_start') }}</div>
               <div class="wh-col-label">{{ $t('settings.work_end') }}</div>
               <div class="wh-col-label wh-hours-label">{{ $t('settings.work_hours') }}</div>
             </div>
-            <div v-for="d in weekDays" :key="d.key" class="form-row wh-row">
+            <div v-for="d in weekDays" :key="d.key" class="form-row wh-grid wh-row">
               <div class="form-group day-label">
                 <label class="form-label">{{ d.label }}</label>
               </div>
@@ -226,7 +226,7 @@
               </div>
               <div class="wh-hours">{{ workHoursLabel(form[d.fieldStart], form[d.fieldEnd]) }}</div>
             </div>
-            <div class="form-row wh-row" style="margin-top:8px">
+            <div class="form-row wh-grid wh-row wh-lunch-row">
               <div class="form-group day-label">
                 <label class="form-label" for="lunch-break">{{ $t('settings.lunch_break') }}</label>
               </div>
@@ -241,7 +241,13 @@
                   :aria-label="$t('settings.lunch_break')"
                 />
               </div>
-              <div class="wh-col-label" style="padding-top:6px">{{ $t('settings.lunch_break_unit') }}</div>
+              <div class="wh-col-label">{{ $t('settings.lunch_break_unit') }}</div>
+            </div>
+            <div class="form-row wh-grid wh-row wh-weekly-total">
+              <div class="form-group day-label">
+                <span class="form-label">{{ $t('settings.weekly_total') }}</span>
+              </div>
+              <div class="wh-hours wh-weekly-hours" :aria-label="$t('settings.weekly_total') + ': ' + weeklyWorkLabel">{{ weeklyWorkLabel }}</div>
             </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingProfile">
@@ -585,15 +591,31 @@ function onWorkTimeHHMMChange(field, raw) {
   form.value[field] = `${String(h).padStart(2, '0')}:${String(Math.max(0, Math.min(59, m || 0))).padStart(2, '0')}`
 }
 
-function workHoursLabel(start, end) {
+function workDayMinutes(start, end) {
   const s = parseHHMM(start)
   const e = parseHHMM(end)
-  if (s === null || e === null || e <= s) return '—'
-  const mins = Math.max(0, e - s - (form.value.lunch_break_minutes || 0))
+  if (s === null || e === null || e <= s) return 0
+  return Math.max(0, e - s - (form.value.lunch_break_minutes || 0))
+}
+
+function formatWorkMinutes(mins) {
+  if (mins <= 0) return '—'
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return m === 0 ? `${h}h` : `${h}h ${m}m`
 }
+
+function workHoursLabel(start, end) {
+  return formatWorkMinutes(workDayMinutes(start, end))
+}
+
+const weeklyWorkLabel = computed(() => {
+  const total = weekDays.reduce(
+    (sum, d) => sum + workDayMinutes(form.value[d.fieldStart], form.value[d.fieldEnd]),
+    0
+  )
+  return formatWorkMinutes(total)
+})
 
 const pwForm = ref({ current_password: '', new_password: '' })
 const passwordPolicy = ref({ min_length: 8, require_upper: false, require_lower: false, require_digit: false, require_special: false })
@@ -1066,23 +1088,43 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 .day-label .form-label {
   padding-top: 8px;
 }
-.wh-row, .wh-header {
-  display: flex;
+.form-row.wh-grid {
+  display: grid;
+  grid-template-columns: 80px 100px 100px 60px;
+  column-gap: 12px;
+  row-gap: 8px;
   align-items: center;
-  gap: 12px;
 }
-.wh-input { flex: 0 0 100px; margin-bottom: 0; }
+.wh-row .form-group,
+.wh-header .form-group {
+  margin-bottom: 0;
+}
+.wh-input { margin-bottom: 0; }
 .wh-col-label {
-  flex: 0 0 100px;
   font-size: 12px;
   color: var(--color-text-secondary);
   font-weight: 500;
 }
-.wh-hours-label { flex: 0 0 60px; }
+.wh-hours-label { text-align: left; }
 .wh-hours {
-  flex: 0 0 60px;
   font-size: 13px;
   color: var(--color-text-secondary);
-  padding-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.wh-lunch-row {
+  margin-top: 8px;
+}
+.wh-weekly-total {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+.wh-weekly-total .wh-hours {
+  grid-column: 4;
+}
+.wh-weekly-hours {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text);
 }
 </style>

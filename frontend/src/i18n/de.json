@@ -12,7 +12,13 @@
     "about": "Über",
     "user_menu": "Benutzermenü",
     "keyboard_shortcuts": "Tastenkürzel",
-    "news": "Neuigkeiten"
+    "news": "Neuigkeiten",
+    "downloads": "Downloads",
+    "user_guide": "Benutzerhandbuch",
+    "admin_guide": "Admin-Handbuch",
+    "download_user_guide": "Benutzerhandbuch herunterladen",
+    "download_admin_guide": "Admin-Handbuch herunterladen",
+    "guide_download_error": "Handbuch konnte nicht heruntergeladen werden."
   },
   "auth": {
     "login": "Anmelden",
@@ -652,7 +658,8 @@
     "work_end": "Ende",
     "work_hours": "Stunden",
     "lunch_break": "Mittagspause",
-    "lunch_break_unit": "Minuten"
+    "lunch_break_unit": "Minuten",
+    "weekly_total": "Wochensumme"
   },
   "dm": {
     "title": "Chats",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Kunden",
     "copy_prev_week": "Vorherige Woche kopieren",
     "copy_prev_nothing": "Vorherige Woche hat keine neuen Zeilen zum Kopieren",
+    "copy_prev_confirm_one": "Diese Woche enthält bereits Zeilen. 1 Zeile aus der Vorwoche hinzufügen?",
+    "copy_prev_confirm": "Diese Woche enthält bereits Zeilen. {count} Zeilen aus der Vorwoche hinzufügen?",
+    "copy_prev_confirm_action": "Zeilen hinzufügen",
     "copy_prev_error": "Kopieren der vorherigen Woche fehlgeschlagen",
     "group_by": "Gruppieren nach",
     "group_by_period": "Zeitraum",

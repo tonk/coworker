@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="480" height="140" viewBox="0 0 480 140" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .desk-top { fill: #9FE1CB; }
+      .desk-body { fill: #5DCAA5; }
+      .desk-leg { fill: #1D9E75; }
+      .steam { stroke: #5DCAA5; }
+      .cup-body { fill: #1D9E75; }
+      .cup-rim { fill: #0F6E56; }
+      .cup-handle { stroke: #5DCAA5; }
+    </style>
+  </defs>
+  <g transform="translate(8, 0) scale(0.72)">
+    <rect class="desk-leg" x="24" y="104.5" width="11" height="52" rx="3"/>
+    <rect class="desk-leg" x="125" y="104.5" width="11" height="52" rx="3"/>
+    <rect class="desk-body" x="10" y="88.5" width="140" height="20" rx="5"/>
+    <rect class="desk-top" x="0" y="76.5" width="160" height="16" rx="4"/>
+    <rect class="cup-body" x="54" y="40.5" width="52" height="40" rx="5"/>
+    <rect class="cup-rim" x="48" y="34.5" width="64" height="10" rx="4"/>
+    <path d="m 106,50.5 q 20,0 20,10 0,10 -20,10" fill="none" class="cup-handle" stroke-width="5" stroke-linecap="round"/>
+    <path class="steam" d="m 66,30.5 q -4,-12 0,-24" fill="none" stroke-width="3" stroke-linecap="round"/>
+    <path class="steam" d="m 80,27.5 q -4,-13 0,-26" fill="none" stroke-width="3" stroke-linecap="round"/>
+    <path class="steam" d="m 94,30.5 q -4,-12 0,-24" fill="none" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <text x="138" y="72" font-family="FreeSans, 'Liberation Sans', Arial, Helvetica, sans-serif" font-size="52" font-weight="600" fill="#1D9E75" letter-spacing="-1">Warm</text>
+  <text x="138" y="118" font-family="FreeSans, 'Liberation Sans', Arial, Helvetica, sans-serif" font-size="52" font-weight="600" fill="#0F6E56" letter-spacing="-1">Desk</text>
+  <text x="140" y="136" font-family="FreeSans, 'Liberation Sans', Arial, Helvetica, sans-serif" font-size="12" font-weight="400" fill="#6B7280" letter-spacing="2.5">TEAM COLLABORATION</text>
+</svg>

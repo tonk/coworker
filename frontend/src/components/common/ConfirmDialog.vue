@@ -7,7 +7,12 @@
           <p class="confirm-message">{{ ui.confirmState.message }}</p>
           <div class="confirm-actions">
             <button class="btn btn-secondary btn-sm" @click="cancel">{{ $t('common.cancel') }}</button>
-            <button class="btn btn-danger btn-sm" @click="ok" ref="okBtn">{{ $t('common.delete') }}</button>
+            <button
+              class="btn btn-sm"
+              :class="ui.confirmState.destructive ? 'btn-danger' : 'btn-primary'"
+              @click="ok"
+              ref="okBtn"
+            >{{ confirmLabel }}</button>
           </div>
         </div>
       </div>
@@ -16,13 +21,22 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUIStore } from '@/stores/ui'
 
 const ui = useUIStore()
+const { t } = useI18n()
 const dialogEl = ref(null)
 const okBtn = ref(null)
 const titleId = 'confirm-dialog-title'
+
+const confirmLabel = computed(() => {
+  const state = ui.confirmState
+  if (!state) return t('common.yes')
+  if (state.confirmLabel) return state.confirmLabel
+  return state.destructive ? t('common.delete') : t('common.yes')
+})
 
 let previousFocus = null
 

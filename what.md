@@ -722,3 +722,10 @@ Create an application that has all these features and requirements
 - Replace working-hours single start-time input with start+end time pair per day: three-column grid (Start / End / Hours) with calculated net hours displayed live; existing start-time values are preserved
 - Add lunch break field (default 30 minutes, 0–120 range) to working hours settings; subtracted from each day's net hours calculation
 - Convert user-guide and admin-guide documentation from Markdown to AsciiDoc for asciidoctor-pdf support and native GitHub rendering
+- Ship user and admin guide PDFs in the server distribution; download from avatar menu → Downloads submenu (keyboard-accessible flyout)
+- Branded PDF documentation theme with title page, logo, revision metadata, and bundled fonts (make docs-pdf-guides)
+- Show weekly net working hours total below the working hours grid in User Settings
+- Confirm before Copy Previous Week when the timesheet grid is not empty; make the copy undoable
+- Confirm dialog primary button defaults to Yes; destructive actions use optional red Delete label
+- Use muted styling for undeclarable time in the timesheet grid, report tab, and project manage modal
+- Remove warmdesk-blog.adoc from docs tree

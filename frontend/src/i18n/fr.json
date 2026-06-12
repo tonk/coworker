@@ -12,7 +12,13 @@
     "about": "À propos",
     "user_menu": "Menu utilisateur",
     "keyboard_shortcuts": "Raccourcis clavier",
-    "news": "Actualités"
+    "news": "Actualités",
+    "downloads": "Téléchargements",
+    "user_guide": "Guide utilisateur",
+    "admin_guide": "Guide administrateur",
+    "download_user_guide": "Télécharger le guide utilisateur",
+    "download_admin_guide": "Télécharger le guide administrateur",
+    "guide_download_error": "Échec du téléchargement du guide."
   },
   "auth": {
     "login": "Connexion",
@@ -652,7 +658,8 @@
     "work_end": "Fin",
     "work_hours": "Heures",
     "lunch_break": "Pause déjeuner",
-    "lunch_break_unit": "minutes"
+    "lunch_break_unit": "minutes",
+    "weekly_total": "Total hebdomadaire"
   },
   "dm": {
     "title": "Chats",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Clients",
     "copy_prev_week": "Copier la semaine précédente",
     "copy_prev_nothing": "La semaine précédente n'a pas de nouvelles lignes à copier",
+    "copy_prev_confirm_one": "Cette semaine contient déjà des lignes. Ajouter 1 ligne de la semaine précédente ?",
+    "copy_prev_confirm": "Cette semaine contient déjà des lignes. Ajouter {count} lignes de la semaine précédente ?",
+    "copy_prev_confirm_action": "Ajouter les lignes",
     "copy_prev_error": "Échec de la copie de la semaine précédente",
     "group_by": "Regrouper par",
     "group_by_period": "Période",

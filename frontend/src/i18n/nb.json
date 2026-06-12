@@ -12,7 +12,13 @@
     "about": "Om",
     "user_menu": "Brukermeny",
     "keyboard_shortcuts": "Tastatursnarveier",
-    "news": "Nyheter"
+    "news": "Nyheter",
+    "downloads": "Nedlastinger",
+    "user_guide": "Brukerveiledning",
+    "admin_guide": "Administratorveiledning",
+    "download_user_guide": "Last ned brukerveiledning",
+    "download_admin_guide": "Last ned administratorveiledning",
+    "guide_download_error": "Kunne ikke laste ned veiledningen."
   },
   "auth": {
     "login": "Logg inn",
@@ -687,7 +693,8 @@
     "work_end": "Slutt",
     "work_hours": "Timer",
     "lunch_break": "Lunsjpause",
-    "lunch_break_unit": "minutter"
+    "lunch_break_unit": "minutter",
+    "weekly_total": "Ukentlig total"
   },
   "dm": {
     "title": "Chatter",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Kunder",
     "copy_prev_week": "Kopier forrige uke",
     "copy_prev_nothing": "Forrige uke har ingen nye rader å kopiere",
+    "copy_prev_confirm_one": "Denne uken har allerede rader. Legge til 1 rad fra forrige uke?",
+    "copy_prev_confirm": "Denne uken har allerede rader. Legge til {count} rader fra forrige uke?",
+    "copy_prev_confirm_action": "Legg til rader",
     "copy_prev_error": "Kopiering av forrige uke mislyktes",
     "group_by": "Grupper etter",
     "group_by_period": "Periode",

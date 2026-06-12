@@ -5,7 +5,7 @@ BACKEND   := backend
 FRONTEND  := frontend
 VERSION   := $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
 ARCHIVE   := warmdesk-$(VERSION).tar.gz
-.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 _fetch-gst-plugin deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit test test-backend test-frontend screenshots screenshots-dev help
+.PHONY: all build build-frontend embed-web build-backend build-arm64 build-backend-arm64 clean dev-backend dev-frontend run package stamp-desktop-version appimage appimage-arm64 _fetch-gst-plugin deb deb-arm64 rpm rpm-arm64 dmg windows-installer windows-portable docs-commit sync-doc-revisions docs-pdf docs-pdf-guides docs-pdf-assets test test-backend test-frontend screenshots screenshots-dev help
 
 help:
 	@echo "WarmDesk $(VERSION)"
@@ -21,6 +21,10 @@ help:
 	@echo "  package              build then create a dist tarball (warmdesk-<version>.tar.gz)"
 	@echo "  clean                Remove dist/, build artifacts and Tauri target directory"
 	@echo "  docs-commit          Stage docs/website files and create a commit (set MSG=... and BODY=...)"
+	@echo "  sync-doc-revisions   Set :revnumber:/:revdate: in docs/*.adoc from CHANGELOG.md"
+	@echo "  docs-pdf-guides      Build user-guide.pdf and admin-guide.pdf (included in make build)"
+	@echo "  docs-pdf             Alias for docs-pdf-guides"
+	@echo "  docs-pdf-assets      Regenerate docs/pdf-theme/warmdesk-title-logo.png from SVG"
 	@echo ""
 	@echo "Linux desktop  (requires Rust + webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel)"
 	@echo "  appimage             AppImage (x86_64)"
@@ -49,7 +53,7 @@ help:
 # Build everything into dist/
 all: build
 
-build: build-frontend embed-web build-backend
+build: build-frontend docs-pdf-guides embed-web build-backend
 	@cp warmdesk.yaml.example $(DIST_DIR)/warmdesk.yaml.example
 	@cp warmdesk-migrate.yaml.example $(DIST_DIR)/warmdesk-migrate.yaml.example
 	@cp -r deploy $(DIST_DIR)/deploy
@@ -69,6 +73,8 @@ embed-web:
 	@echo "Embedding web files into binary..."
 	@find $(BACKEND)/staticweb/files -mindepth 1 -not -name 'placeholder' -delete 2>/dev/null || true
 	cp -r $(FRONTEND)/dist/. $(BACKEND)/staticweb/files/
+	@mkdir -p $(BACKEND)/staticweb/files/docs
+	@cp docs/user-guide.pdf docs/admin-guide.pdf $(BACKEND)/staticweb/files/docs/
 
 build-backend:
 	@echo "Building backend..."
@@ -81,7 +87,7 @@ build-backend:
 
 # Build everything for linux/arm64 (server + embedded web assets).
 # No C cross-compiler required — the SQLite driver (glebarez/sqlite) is pure Go.
-build-arm64: build-frontend embed-web build-backend-arm64
+build-arm64: build-frontend docs-pdf-guides embed-web build-backend-arm64
 	@cp warmdesk.yaml.example $(DIST_ARM64)/warmdesk.yaml.example
 	@cp warmdesk-migrate.yaml.example $(DIST_ARM64)/warmdesk-migrate.yaml.example
 	@cp -r deploy $(DIST_ARM64)/deploy
@@ -257,8 +263,37 @@ clean:
 run: build
 	cd $(DIST_DIR) && ./$(BINARY)
 
+# Sync :revnumber: / :revdate: in docs/*.adoc from the latest CHANGELOG.md release header.
+sync-doc-revisions:
+	@./scripts/sync-doc-revisions.sh
+
 # Stage docs/website updates and create a formatted commit.
 # Usage:
 #   make docs-commit MSG="docs: update group video docs" BODY="Add LiveKit docs and blog item."
-docs-commit:
+docs-commit: sync-doc-revisions
 	@./scripts/commit-docs-website.sh "$(MSG)" "$(BODY)"
+
+DOCS_GUIDE_PDF_SOURCES := user-guide admin-guide
+
+# Regenerate the title-page logo PNG (source: docs/pdf-theme/warmdesk-title-logo.svg).
+docs-pdf-assets:
+	@command -v inkscape >/dev/null 2>&1 || { echo "inkscape is required to build docs/pdf-theme/warmdesk-title-logo.png"; exit 1; }
+	@mkdir -p docs/pdf-theme/fonts
+	cp backend/handlers/fonts/FreeSans.ttf backend/handlers/fonts/FreeSansBold.ttf \
+		backend/handlers/fonts/SourceCodePro-Regular.ttf backend/handlers/fonts/SourceCodePro-Bold.ttf \
+		docs/pdf-theme/fonts/
+	inkscape docs/pdf-theme/warmdesk-title-logo.svg \
+		--export-type=png \
+		--export-filename=docs/pdf-theme/warmdesk-title-logo.png \
+		-w 900
+
+# Build user/admin guide PDFs (included in server distribution).
+docs-pdf-guides: sync-doc-revisions docs-pdf-assets
+	@command -v asciidoctor-pdf >/dev/null 2>&1 || { echo "asciidoctor-pdf is required (gem install asciidoctor-pdf)"; exit 1; }
+	@set -e; for src in $(DOCS_GUIDE_PDF_SOURCES); do \
+		echo "Building docs/$${src}.pdf …"; \
+		cd docs && asciidoctor-pdf -o "$${src}.pdf" "$${src}.adoc" && cd ..; \
+	done
+
+# Build all branded PDFs (same as docs-pdf-guides).
+docs-pdf: docs-pdf-guides

@@ -12,7 +12,13 @@
     "about": "About",
     "user_menu": "User menu",
     "keyboard_shortcuts": "Keyboard Shortcuts",
-    "news": "News"
+    "news": "News",
+    "downloads": "Downloads",
+    "user_guide": "User Guide",
+    "admin_guide": "Admin Guide",
+    "download_user_guide": "Download User Guide",
+    "download_admin_guide": "Download Admin Guide",
+    "guide_download_error": "Failed to download guide."
   },
   "auth": {
     "login": "Login",
@@ -824,7 +830,8 @@
     "work_end": "End",
     "work_hours": "Hours",
     "lunch_break": "Lunch break",
-    "lunch_break_unit": "minutes"
+    "lunch_break_unit": "minutes",
+    "weekly_total": "Weekly total"
   },
   "dm": {
     "title": "Chats",
@@ -1079,6 +1086,9 @@
     "tt_tab_customers": "Customers",
     "copy_prev_week": "Copy Previous Week",
     "copy_prev_nothing": "Previous week has no new rows to copy",
+    "copy_prev_confirm_one": "This week already has rows. Add 1 row from the previous week?",
+    "copy_prev_confirm": "This week already has rows. Add {count} rows from the previous week?",
+    "copy_prev_confirm_action": "Add rows",
     "copy_prev_error": "Failed to copy previous week",
     "group_by": "Group by",
     "group_by_period": "Period",

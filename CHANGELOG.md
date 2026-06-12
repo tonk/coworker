@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.12.14 — 2026-06-12
+
+### Added
+- **Guide PDF downloads** — user and admin guide PDFs are built on every server release, embedded in the binary, and downloadable from the avatar menu → **Downloads** (admin guide for admins only).
+- **Branded documentation PDFs** — `make docs-pdf-guides` produces PDFs with the WarmDesk title page, logo, revision metadata, and bundled fonts.
+- **Weekly working hours total** — User Settings shows the total net hours per week below the working hours grid.
+- **Copy Previous Week confirmation** — prompts before adding rows when the grid is not empty; the copy action is undoable.
+
+### Changed
+- **Confirm dialog** — the primary button defaults to *Yes*; destructive flows can pass `{ destructive: true }` for a red *Delete* label.
+- **Time-tracking undeclarable styling** — grid totals, report undeclarable lines, and project undeclarable badges use muted text instead of red.
+- **Admin guide PDF layout** — long configuration and database example blocks reformatted to fit the page width.
+- **User guide** — icons & indicators overview table; avatar menu documents the Downloads submenu.
+
+### Removed
+- **`warmdesk-blog.adoc`** — marketing blog document removed from the docs tree.
+
 ## v0.12.13 — 2026-06-11
 
 ### Added

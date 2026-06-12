@@ -1,0 +1,95 @@
+extends: default
+font:
+  catalog:
+    FreeSans:
+      normal: fonts/FreeSans.ttf
+      bold: fonts/FreeSansBold.ttf
+      italic: fonts/FreeSans.ttf
+      bold_italic: fonts/FreeSansBold.ttf
+    Source Code Pro:
+      normal: fonts/SourceCodePro-Regular.ttf
+      bold: fonts/SourceCodePro-Bold.ttf
+      italic: fonts/SourceCodePro-Regular.ttf
+      bold_italic: fonts/SourceCodePro-Bold.ttf
+page:
+  background_color: F7F6F3
+  margin: [0.75in, 0.85in, 0.85in, 0.85in]
+base:
+  font_family: FreeSans
+  font_color: 2A2A2A
+  border_color: D8E6DF
+codespan:
+  font_family: Source Code Pro
+code:
+  font_family: Source Code Pro
+kbd:
+  font_family: Source Code Pro
+link:
+  font_color: 1D9E75
+role:
+  tt-icon-blue:
+    font_color: 6366f1
+    font_size: 14
+  tt-icon-amber:
+    font_color: f59e0b
+    font_size: 14
+  tt-danger:
+    font_color: e53e3e
+    font_style: bold
+  tt-copied:
+    border_color: 6366f1
+    border_width: 1
+    border_style: dashed
+    padding: [2, 6]
+  tt-today:
+    background_color: EEF2FF
+    font_color: 6366f1
+heading:
+  font_family: FreeSans
+  font_color: 1F3D33
+  h1_font_color: 1D9E75
+  h2_font_color: 234A3D
+  h3_font_color: 2A5546
+title_page:
+  align: center
+  text_align: center
+  logo:
+    top: 10%
+    image: image:warmdesk-title-logo.png[pdfwidth=4.5in]
+  title:
+    top: 46%
+    font_family: FreeSans
+    font_size: 24
+    font_color: 1F3D33
+    font_style: bold
+    line_height: 1.1
+    text_align: center
+  subtitle:
+    top: 58%
+    font_family: FreeSans
+    font_size: 13
+    font_color: 5A6B63
+    font_style: normal
+    line_height: 1.2
+    text_align: center
+  revision:
+    margin_top: 18
+    font_family: FreeSans
+    font_size: 11
+    font_color: 666666
+    font_style: normal
+    delimiter: ' · '
+  authors:
+    margin_top: 12
+    font_family: FreeSans
+    font_size: 11
+    font_color: 888888
+footer:
+  font_family: FreeSans
+  font_size: 8
+  font_color: 999999
+  border_color: D8E6DF
+  recto_content:
+    center: '{revnumber} · {revdate}'
+  verso_content:
+    center: '{revnumber} · {revdate}'

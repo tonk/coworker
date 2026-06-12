@@ -1,4 +1,12 @@
 = WarmDesk — User Guide
+:revnumber: v0.12.14
+:revdate: 2026-06-12
+Ton Kersten <tonk@smartowl.nl>
+ifdef::backend-pdf[]
+:title-page:
+:pdf-theme: warmdesk
+:pdf-themesdir: pdf-theme
+endif::backend-pdf[]
 :toc: left
 :toc-title: Table of Contents
 :toclevels: 3
@@ -147,7 +155,7 @@ The header has three zones:
 |*?* help button, theme toggle (light / dark / system), language selector, user avatar
 |===
 
-Click the *avatar* to open a dropdown menu with links to the dashboard, settings, admin panel (admins only), chats, time reports, and *Logout*.
+Click the *avatar* to open a dropdown menu with links to the dashboard, settings, admin panel (admins only), chats, time reports, the user and admin guide PDFs under *Downloads*, and *Logout*.
 
 ==== Contextual help (?)
 
@@ -911,21 +919,88 @@ The row total, day totals, and grand total update automatically.
 Use the week picker (left/right arrows or the week label) to navigate between weeks.
 An *Add holidays* dropdown in the navigation bar lets you insert public holidays for a country as 0-minute entries.
 
+==== Icons and indicators
+
+The Log Time grid and its toolbar use several visual cues.
+Symbols that appear on hover (cell buttons) also stay visible when active (e.g. a stored time range or a marked holiday).
+
+[cols="1,4", options="header"]
+|===
+|Icon |Meaning
+
+|[.tt-icon-blue]#●#
+|*Blue dot* (upper-left of a day cell) — that cell has a stored *start time* and *end time* (wall-clock shift), separate from the hours figure you type.
+
+|⏱
+|*Set Time Range* (bottom-left of a day cell, on hover) — opens the time-range popup for that cell.
+Highlighted in the primary colour when a range is stored (see the blue dot).
+
+|✦
+|*Extra time slots* (next to the rate in the *Rate* column) — this row's contract has alternate rate tiers for certain days or times.
+Hover to see the full list.
+
+|⏱
+|*Fill from slots* (*Actions* column, contract rows only) — fills the current week from the contract's time slot definitions, including start/end times on each affected cell.
+
+|⏳
+|*Log Standby Shift* (*Actions* column) — creates one entry per calendar day across a date range with start/end times (e.g. Fri 19:00 → Mon 07:00) so standby rates apply.
+
+|₡
+|*Contract Rates* (tab bar, right of the mode tabs) — opens the overview of all contracts with extra time slots, across customers.
+
+|⚙
+|*Manage projects* (tab bar) — opens the time-tracking project and customer manager.
+
+|icon:comment[]
+|*Row comment* (beside the project name) — add or edit a row-level comment.
+Highlighted when a comment is saved on that row.
+
+|[.tt-today]#Wed#
+|*Today's column* — the current date is highlighted with a primary tint in the column header and cells.
+
+|[.tt-icon-amber]#●#
+|*Public holiday* — darker column shading with an amber dot in the column header (from *Add Holidays* or an existing holiday row).
+
+|[.tt-icon-amber]#●#
+|*Cell holiday mark* (small circle, bottom-right of a cell, on hover) — mark or unmark that cell as a *holiday* entry (0 minutes).
+Amber when active; the cell gets darker shading.
+
+|[.tt-danger]#8:30#
+|*Over allotment* (red day total in the footer row) — logged time for that day exceeds your *Working Hours* allotment from User Settings.
+Hover the cell for the allotted amount.
+
+|[.tt-danger]#-0:45#
+|*Undeclarable time* (red `-` below a time value) — minutes deducted for that cell (configured per time-tracking project).
+Row, day, and grand totals show declarable time; the red line shows what was subtracted.
+
+|[.tt-copied]#8:00#
+|*Copy source* — dashed outline on a cell selected for paste.
+Use `Ctrl+C` / `Shift+Insert` to copy and `Ctrl+V` / `Shift+Insert` to paste into selected cells.
+
+|⠿
+|*Drag handle* (left edge of a row) — reorder rows.
+
+|⇐
+|*Copy Previous Week* (bottom bar) — copies row definitions (customer, project, activity) from the previous week into the current week without copying hours.
+
+|↶
+|*Undo* (bottom bar) — reverts the last cell edit.
+|===
+
 ==== Rate column
 
 When a row is linked to a contract, a *Rate* column shows the contract's base hourly rate.
-If the contract has time slots with a different rate or multiplication factor, a ✦ badge appears next to the rate to signal that one or more days on this row may be billed at a different effective rate.
-Hover over the ✦ to see the full list of rate tiers.
+If the contract has time slots with a different rate or multiplication factor, a ✦ badge appears next to the rate (see the table above).
 
 ==== Contract and fill-from-slots
 
 When adding a row you can optionally select a *Contract* from the dropdown.
-Once a contract is selected, the ⏱ button appears on each day cell.
-Clicking ⏱ on a row header automatically fills the entire week according to the contract's time slots: hours per day are calculated from the slot definitions, and the cell stores the shift's *start time* and *end time* so the exact working period is recorded alongside the duration.
+Once a contract is selected, the row *Actions* column shows ⏱ *Fill from slots* when the contract defines time slots.
 
-A small dot indicator on a cell means a start/end time has been recorded for that day.
-Click the cell's clock icon to open the time popup and view or edit the stored times.
-Cells without a dot show the default 09:00–17:00 placeholder in the popup.
+Clicking *Fill from slots* fills the entire week according to the contract's slot definitions: hours per day are calculated from the slot rules, and each affected cell stores a *start time* and *end time* alongside the duration (marked with the blue dot).
+
+You can also set or edit times per cell with the ⏱ button inside the cell (see *Icons and indicators* above).
+Cells without a stored range show a 09:00–17:00 placeholder in the popup.
 
 Multi-day overnight slots (e.g. a Friday standby that runs until Monday 07:00) are handled automatically: the anchor day stores the slot's actual start time, and the continuation days (Saturday, Sunday) store 00:00–00:00 to indicate full-day coverage.
 

@@ -12,7 +12,13 @@
     "about": "Um",
     "user_menu": "Notendavalmynd",
     "keyboard_shortcuts": "Lyklaborðsflýtilyklar",
-    "news": "Fréttir"
+    "news": "Fréttir",
+    "downloads": "Niðurhal",
+    "user_guide": "Notendahandbók",
+    "admin_guide": "Kerfisstjórahandbók",
+    "download_user_guide": "Sækja notendahandbók",
+    "download_admin_guide": "Sækja kerfisstjórahandbók",
+    "guide_download_error": "Ekki tókst að sækja handbókina."
   },
   "auth": {
     "login": "Skrá inn",
@@ -687,7 +693,8 @@
     "work_end": "Endir",
     "work_hours": "Klst",
     "lunch_break": "Hádegishlé",
-    "lunch_break_unit": "mínútur"
+    "lunch_break_unit": "mínútur",
+    "weekly_total": "Heildartími vikunnar"
   },
   "dm": {
     "title": "Spjall",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Viðskiptavinir",
     "copy_prev_week": "Afrita fyrri viku",
     "copy_prev_nothing": "Fyrri vika hefur engar nýjar línur til að afrita",
+    "copy_prev_confirm_one": "Þessi vika er þegar með línur. Bæta við 1 línu úr fyrri viku?",
+    "copy_prev_confirm": "Þessi vika er þegar með línur. Bæta við {count} línum úr fyrri viku?",
+    "copy_prev_confirm_action": "Bæta við línum",
     "copy_prev_error": "Mistókst að afrita fyrri viku",
     "group_by": "Flokka eftir",
     "group_by_period": "Tímabil",

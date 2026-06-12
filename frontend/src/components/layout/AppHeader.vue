@@ -120,7 +120,7 @@
             <span v-else aria-hidden="true">{{ initials }}</span>
           </div>
         </button>
-        <div class="dropdown" v-if="menuOpen" role="menu">
+        <div class="dropdown" v-if="menuOpen" role="menu" @keydown="handleMenuKeyDown">
           <div v-if="!systemStore.isTimetrackingMode" class="dropdown-item" role="menuitem" @click="navigate('/')">{{ $t('nav.dashboard') }}</div>
           <div class="dropdown-item" role="menuitem" @click="navigate('/news')">{{ $t('nav.news') }}</div>
           <div class="dropdown-item" role="menuitem" @click="navigate('/settings')">{{ $t('nav.settings') }}</div>
@@ -134,6 +134,36 @@
           <div class="dropdown-item" role="menuitem" v-if="auth.timeTrackingEnabled || auth.canViewReports" @click="navigate('/time-tracking')">{{ $t('timeTracking.nav') }}</div>
           <div class="dropdown-divider" role="separator"></div>
           <div class="dropdown-item" role="menuitem" @click="openShortcuts">{{ $t('nav.keyboard_shortcuts') }}</div>
+          <div
+            class="dropdown-submenu"
+            :class="{ 'dropdown-submenu-open': downloadsOpen }"
+          >
+            <button
+              ref="downloadsTriggerRef"
+              type="button"
+              class="dropdown-item dropdown-submenu-trigger"
+              role="menuitem"
+              aria-haspopup="menu"
+              :aria-expanded="downloadsOpen"
+              :aria-label="$t('nav.downloads')"
+              @click.stop="toggleDownloads"
+            >
+              <span>{{ $t('nav.downloads') }}</span>
+              <svg class="dropdown-submenu-chevron" aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <div
+              ref="downloadsPanelRef"
+              class="dropdown-submenu-panel"
+              role="menu"
+              :aria-label="$t('nav.downloads')"
+              @keydown="handleDownloadsKeyDown"
+            >
+              <button type="button" class="dropdown-item" role="menuitem" @click="downloadUserGuide">{{ $t('nav.user_guide') }}</button>
+              <button type="button" class="dropdown-item" role="menuitem" v-if="auth.isAdmin" @click="downloadAdminGuide">{{ $t('nav.admin_guide') }}</button>
+            </div>
+          </div>
           <div class="dropdown-item" role="menuitem" @click="openAbout">{{ $t('nav.about') }}</div>
           <div class="dropdown-item dropdown-item-danger" role="menuitem" @click="handleLogout">{{ $t('nav.logout') }}</div>
         </div>
@@ -145,7 +175,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
@@ -154,6 +184,8 @@ import { setLocale } from '@/i18n'
 import { useTheme } from '@/composables/useTheme'
 import { useNotificationsStore } from '@/stores/notifications'
 import { avatarUrl } from '@/composables/useAvatar'
+import { fetchBinary, triggerDownload } from '@/api/client'
+import { useUIStore } from '@/stores/ui'
 import GlobalSearch from '@/components/common/GlobalSearch.vue'
 import AboutModal from '@/components/common/AboutModal.vue'
 import HelpPanelModal from '@/components/common/HelpPanelModal.vue'
@@ -165,15 +197,19 @@ const auth = useAuthStore()
 const systemStore = useSystemStore()
 const router = useRouter()
 const route = useRoute()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 const { theme, setTheme } = useTheme()
 const notificationsStore = useNotificationsStore()
+const ui = useUIStore()
 const menuOpen = ref(false)
+const downloadsOpen = ref(false)
 const themeOpen = ref(false)
 const showAbout = ref(false)
 const showHelp = ref(false)
 const menuRef = ref(null)
 const themeRef = ref(null)
+const downloadsTriggerRef = ref(null)
+const downloadsPanelRef = ref(null)
 const avatarErr = ref(false)
 
 const userAvatar = computed(() => avatarErr.value ? null : avatarUrl(auth.user))
@@ -195,35 +231,102 @@ async function onLocaleChange(e) {
   if (auth.isLoggedIn) auth.updateProfile({ locale: lang })
 }
 
-function navigate(path) {
+function closeMenu() {
   menuOpen.value = false
+  downloadsOpen.value = false
+}
+
+function navigate(path) {
+  closeMenu()
   router.push(path)
 }
 
 function openShortcuts() {
-  menuOpen.value = false
+  closeMenu()
   emit('open-shortcuts')
 }
 
 function openAbout() {
-  menuOpen.value = false
+  closeMenu()
   showAbout.value = true
 }
 
+function closeDownloads() {
+  downloadsOpen.value = false
+}
+
+function toggleDownloads() {
+  downloadsOpen.value = !downloadsOpen.value
+  if (downloadsOpen.value) {
+    nextTick(() => {
+      const first = downloadsPanelRef.value?.querySelector('[role="menuitem"]')
+      first?.focus()
+    })
+  }
+}
+
+function openDownloads() {
+  downloadsOpen.value = true
+  nextTick(() => {
+    const first = downloadsPanelRef.value?.querySelector('[role="menuitem"]')
+    first?.focus()
+  })
+}
+
+async function downloadGuide(path, filename) {
+  closeMenu()
+  try {
+    const data = await fetchBinary(path)
+    await triggerDownload(data, filename, 'application/pdf')
+  } catch {
+    ui.error(t('nav.guide_download_error'))
+  }
+}
+
+async function downloadUserGuide() {
+  await downloadGuide('/docs/user-guide.pdf', 'user-guide.pdf')
+}
+
+async function downloadAdminGuide() {
+  await downloadGuide('/docs/admin-guide.pdf', 'admin-guide.pdf')
+}
+
+function handleDownloadsKeyDown(e) {
+  if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+    e.preventDefault()
+    e.stopPropagation()
+    closeDownloads()
+    downloadsTriggerRef.value?.focus()
+  }
+}
+
+function handleMenuKeyDown(e) {
+  if (e.target !== downloadsTriggerRef.value) return
+  if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault()
+    openDownloads()
+  }
+}
+
 function handleLogout() {
-  menuOpen.value = false
+  closeMenu()
   auth.logout()
   router.push('/login')
 }
 
 function handleClick(e) {
-  if (menuRef.value && !menuRef.value.contains(e.target)) menuOpen.value = false
+  if (menuRef.value && !menuRef.value.contains(e.target)) closeMenu()
   if (themeRef.value && !themeRef.value.contains(e.target)) themeOpen.value = false
 }
 
 function handleKeyDown(e) {
   if (e.key === 'Escape') {
-    menuOpen.value = false
+    if (downloadsOpen.value) {
+      closeDownloads()
+      downloadsTriggerRef.value?.focus()
+      return
+    }
+    closeMenu()
     themeOpen.value = false
   }
 }
@@ -300,7 +403,9 @@ onBeforeUnmount(() => {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
-  min-width: 160px;
+  min-width: 280px;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 24px));
   z-index: 200;
 }
 
@@ -309,9 +414,50 @@ onBeforeUnmount(() => {
   cursor: pointer;
   font-size: 14px;
   color: var(--color-text);
+  white-space: nowrap;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
 }
 .dropdown-item:hover { background: var(--color-bg); }
 .dropdown-item { display: flex; align-items: center; gap: 6px; }
+
+.dropdown-submenu { position: relative; }
+.dropdown-submenu-trigger {
+  justify-content: space-between;
+}
+.dropdown-submenu-trigger:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.dropdown-item:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.dropdown-submenu-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: transform 0.15s;
+}
+.dropdown-submenu-open .dropdown-submenu-chevron,
+.dropdown-submenu:focus-within .dropdown-submenu-chevron {
+  transform: rotate(-90deg);
+}
+.dropdown-submenu-panel {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: calc(100% - 2px);
+  min-width: 280px;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 24px));
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 210;
+}
+.dropdown-submenu:hover .dropdown-submenu-panel,
+.dropdown-submenu:focus-within .dropdown-submenu-panel,
+.dropdown-submenu-open .dropdown-submenu-panel {
+  display: block;
+}
 
 .msg-unread-dot {
   width: 8px;

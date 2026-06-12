@@ -12,7 +12,13 @@
     "about": "Sobre",
     "user_menu": "Menu do utilizador",
     "keyboard_shortcuts": "Atalhos de teclado",
-    "news": "Notícias"
+    "news": "Notícias",
+    "downloads": "Transferências",
+    "user_guide": "Guia do utilizador",
+    "admin_guide": "Guia de administrador",
+    "download_user_guide": "Transferir guia do utilizador",
+    "download_admin_guide": "Transferir guia de administrador",
+    "guide_download_error": "Falha ao transferir o guia."
   },
   "auth": {
     "login": "Entrar",
@@ -687,7 +693,8 @@
     "work_end": "Fim",
     "work_hours": "Horas",
     "lunch_break": "Pausa para almoço",
-    "lunch_break_unit": "minutos"
+    "lunch_break_unit": "minutos",
+    "weekly_total": "Total semanal"
   },
   "dm": {
     "title": "Chats",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Clientes",
     "copy_prev_week": "Copiar semana anterior",
     "copy_prev_nothing": "A semana anterior não tem novas linhas para copiar",
+    "copy_prev_confirm_one": "Esta semana já tem linhas. Adicionar 1 linha da semana anterior?",
+    "copy_prev_confirm": "Esta semana já tem linhas. Adicionar {count} linhas da semana anterior?",
+    "copy_prev_confirm_action": "Adicionar linhas",
     "copy_prev_error": "Falha ao copiar a semana anterior",
     "group_by": "Agrupar por",
     "group_by_period": "Período",

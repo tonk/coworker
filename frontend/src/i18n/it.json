@@ -12,7 +12,13 @@
     "about": "Informazioni",
     "user_menu": "Menu utente",
     "keyboard_shortcuts": "Scorciatoie da tastiera",
-    "news": "Notizie"
+    "news": "Notizie",
+    "downloads": "Download",
+    "user_guide": "Guida utente",
+    "admin_guide": "Guida amministratore",
+    "download_user_guide": "Scarica guida utente",
+    "download_admin_guide": "Scarica guida amministratore",
+    "guide_download_error": "Impossibile scaricare la guida."
   },
   "auth": {
     "login": "Accedi",
@@ -687,7 +693,8 @@
     "work_end": "Fine",
     "work_hours": "Ore",
     "lunch_break": "Pausa pranzo",
-    "lunch_break_unit": "minuti"
+    "lunch_break_unit": "minuti",
+    "weekly_total": "Totale settimanale"
   },
   "dm": {
     "title": "Chat",
@@ -943,6 +950,9 @@
     "tt_tab_customers": "Clienti",
     "copy_prev_week": "Copia settimana precedente",
     "copy_prev_nothing": "La settimana precedente non ha nuove righe da copiare",
+    "copy_prev_confirm_one": "Questa settimana ha già delle righe. Aggiungere 1 riga dalla settimana precedente?",
+    "copy_prev_confirm": "Questa settimana ha già delle righe. Aggiungere {count} righe dalla settimana precedente?",
+    "copy_prev_confirm_action": "Aggiungi righe",
     "copy_prev_error": "Impossibile copiare la settimana precedente",
     "group_by": "Raggruppa per",
     "group_by_period": "Periodo",

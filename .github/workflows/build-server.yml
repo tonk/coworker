@@ -47,10 +47,21 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
 
+      - name: Install doc build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y inkscape
+          gem install asciidoctor-pdf
+
+      - name: Build guide PDFs
+        run: make docs-pdf-guides
+
       - name: Embed frontend into binary
         run: |
           mkdir -p backend/staticweb/files
           cp -r frontend/dist/. backend/staticweb/files/
+          mkdir -p backend/staticweb/files/docs
+          cp docs/user-guide.pdf docs/admin-guide.pdf backend/staticweb/files/docs/
 
       - name: Build backend (linux/amd64)
         env:

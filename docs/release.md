@@ -8,9 +8,10 @@ Releases are cut from the `main` branch. Every release:
 2. Updates `README.md` — the **Latest release** heading and bullet highlights.
 3. Appends new-feature bullets to `what.md`.
 4. Bumps version strings in `website/hugo.toml` (and the AsciiDoc attribute).
-5. Bumps `ansible/galaxy.yml` version if anything under `ansible/` changed since the last tag.
-6. Commits with message `chore: release vX.Y.Z — CHANGELOG, README, what.md`.
-7. Creates an annotated tag `vX.Y.Z` and pushes branch + tag.
+5. Runs `make sync-doc-revisions` so `docs/*.adoc` `:revnumber:` / `:revdate:` match `CHANGELOG.md`.
+6. Bumps `ansible/galaxy.yml` version if anything under `ansible/` changed since the last tag.
+7. Commits with message `chore: release vX.Y.Z — CHANGELOG, README, what.md`.
+8. Creates an annotated tag `vX.Y.Z` and pushes branch + tag.
 
 The **Git tag** drives the build: `make` and CI use
 `git describe --tags --match 'v*'` to embed the version string in the Go
@@ -110,6 +111,9 @@ Ensure `CHANGELOG.md` and `README.md` are committed **before** pushing the tag.
 - [ ] `README.md` — **Latest release** bullets updated
 - [ ] `what.md` — new-feature bullets appended
 - [ ] `website/hugo.toml` — version and date bumped
+- [ ] `make sync-doc-revisions` — `:revnumber:` / `:revdate:` in `docs/*.adoc`
+- [ ] `make docs-pdf-guides` — user/admin guide PDFs (included in `make build`; `make docs-pdf` is the same)
+- [ ] Avatar menu → **Downloads** — verify user and admin guide PDFs download in browser and Tauri
 - [ ] `ansible/galaxy.yml` — version bumped (if Ansible files changed)
 - [ ] Commit message: `chore: release vX.Y.Z — CHANGELOG, README, what.md`
 - [ ] Annotated tag `vX.Y.Z` on `main`

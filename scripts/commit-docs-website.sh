@@ -17,6 +17,9 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 1
 fi
 
+# Keep docs/*.adoc revision metadata aligned with CHANGELOG.md.
+"$(dirname "$0")/sync-doc-revisions.sh"
+
 # Stage docs + website content related files.
 git add docs/ website/content/ README.md CHANGELOG.md 2>/dev/null || true
 

@@ -1608,8 +1608,22 @@ function pushUndoBatch(items) {
     before: before ? { ...before } : null,
   }))
   if (!changes.length) return
-  undoStack.value.push({ changes })
+  undoStack.value.push({ type: 'cells', changes })
   if (undoStack.value.length > MAX_UNDO) undoStack.value.shift()
+}
+
+function pushUndoCopyPrevWeek(snapshot) {
+  undoStack.value.push({ type: 'copy_prev_week', ...snapshot })
+  if (undoStack.value.length > MAX_UNDO) undoStack.value.shift()
+}
+
+function undoCopyPrevWeek(action) {
+  const addedSet = new Set(action.addedKeys)
+  localRows.value = localRows.value.filter(r => !addedSet.has(r.key))
+  _keyOrder.value = [...action.prevKeyOrder]
+  rowComments.value = { ...action.prevComments }
+  _scheduleSaveOrder(_keyOrder.value)
+  cellRenderEpoch.value++
 }
 
 function clearUndoStack() {
@@ -1669,11 +1683,15 @@ async function undoLastChange() {
   undoInProgress.value = true
   const action = undoStack.value.pop()
   try {
-    for (const change of action.changes) {
-      await restoreCellChange(change)
+    if (action.type === 'copy_prev_week') {
+      undoCopyPrevWeek(action)
+    } else {
+      for (const change of action.changes) {
+        await restoreCellChange(change)
+      }
+      refreshCellInputs()
+      cellRenderEpoch.value++
     }
-    refreshCellInputs()
-    cellRenderEpoch.value++
     return true
   } catch {
     undoStack.value.push(action)
@@ -2921,6 +2939,19 @@ async function copyPrevWeek() {
       return
     }
 
+    if (allRows.value.length > 0) {
+      const msg = toAdd.length === 1
+        ? t('timeTracking.copy_prev_confirm_one')
+        : t('timeTracking.copy_prev_confirm', { count: toAdd.length })
+      if (!await ui.confirm(msg, { confirmLabel: t('timeTracking.copy_prev_confirm_action') })) return
+    }
+
+    const undoSnapshot = {
+      addedKeys: toAdd.map(r => r.key),
+      prevKeyOrder: [...(_keyOrder.value || [])],
+      prevComments: { ...rowComments.value },
+    }
+
     for (const row of toAdd) {
       localRows.value.push(row)
       if (prevComments[row.key]) {
@@ -2930,6 +2961,7 @@ async function copyPrevWeek() {
     const newKeys = toAdd.map(r => r.key)
     _keyOrder.value = [...(_keyOrder.value || []), ...newKeys]
     _scheduleSaveOrder(_keyOrder.value)
+    pushUndoCopyPrevWeek(undoSnapshot)
   } catch {
     ui.error(t('timeTracking.copy_prev_error'))
   } finally {
@@ -3886,7 +3918,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .h-inp:focus::placeholder { color: var(--color-text-muted); opacity: .5; }
 
 /* Totals */
-.c-total { text-align: right; font-weight: 600; font-size: 13px; padding: 4px 10px; }
+.c-total { text-align: right; font-weight: 600; font-size: 13px; padding: 4px 10px; color: var(--color-text); }
 .c-rowtotal { color: var(--color-text); }
 
 /* Undeclarable row-total badge */
@@ -3894,8 +3926,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   display: block;
   font-size: 10px;
   font-weight: 500;
-  color: var(--color-danger, #e53e3e);
-  opacity: .75;
+  color: var(--color-text-muted);
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
@@ -3904,7 +3935,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .cell-undecl {
   font-size: 10px;
   font-weight: 500;
-  color: var(--color-danger, #e53e3e);
+  color: var(--color-text-muted);
   text-align: right;
   line-height: 1.2;
   padding: 1px calc(var(--h-inp-pad-x) + 1px) 0 var(--h-inp-pad-x);
@@ -3916,8 +3947,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   display: block;
   font-size: 11px;
   font-weight: 500;
-  color: var(--color-danger, #e53e3e);
-  opacity: .85;
+  color: var(--color-text-muted);
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
@@ -3929,11 +3959,15 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   border-right: 1px solid var(--color-border);
   padding: 6px 8px;
   font-weight: 700;
+  color: var(--color-text);
 }
 .foot-lbl { text-align: right; }
-.c-dttotal { text-align: right; font-size: 13px; }
-.c-dttotal.c-day-over { color: var(--color-danger, #e53e3e); font-weight: 600; }
-.grand-total { color: var(--color-primary); font-size: 14px; }
+.c-dttotal { text-align: right; font-size: 13px; color: var(--color-text); }
+.c-dttotal.c-day-over {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-warning) 14%, var(--color-surface));
+}
+.grand-total { color: var(--color-text); font-size: 14px; font-weight: 800; }
 
 
 /* Add-row bar */
@@ -4177,10 +4211,9 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   padding: 5px 14px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--color-danger, #e53e3e);
-  background: color-mix(in srgb, var(--color-danger, #e53e3e) 6%, var(--color-surface));
-  border-top: 1px dashed color-mix(in srgb, var(--color-danger, #e53e3e) 30%, var(--color-border));
-  opacity: .9;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border-top: 1px dashed var(--color-border);
 }
 
 .rpt-table {
@@ -4221,9 +4254,10 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   display: flex;
   justify-content: space-between;
   padding: 8px 16px;
-  background: color-mix(in srgb, var(--color-danger, #e53e3e) 10%, var(--color-surface));
-  color: var(--color-danger, #e53e3e);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
   font-weight: 500;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius);
   margin-top: 4px;
   font-size: 13px;
@@ -4371,18 +4405,17 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
   width: 62px;
   font-size: 12px;
   padding: 4px 6px;
-  border: 1px solid color-mix(in srgb, var(--color-danger, #e53e3e) 50%, var(--color-border));
+  border: 1px solid var(--color-border);
   border-radius: 3px;
   background: var(--color-bg);
-  color: var(--color-danger, #e53e3e);
+  color: var(--color-text);
   text-align: right;
 }
-.ttp-undecl-input:focus { outline: none; border-color: var(--color-danger, #e53e3e); }
+.ttp-undecl-input:focus { outline: none; border-color: var(--color-primary); }
 .ttp-undecl-badge {
   font-size: 11px;
-  font-weight: 600;
-  color: var(--color-danger, #e53e3e);
-  opacity: .8;
+  font-weight: 500;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 .ttp-color-input {

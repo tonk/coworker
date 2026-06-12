@@ -43,12 +43,17 @@ sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev \
 ### Targets
 
 ```bash
-make build          # builds frontend + backend → dist/
+make build          # builds frontend + backend → dist/ (includes user + admin guide PDFs)
+make docs-pdf-guides  # user-guide.pdf + admin-guide.pdf only (also run by make build)
+make docs-pdf       # alias for docs-pdf-guides
 make run            # build then run
 make appimage       # Linux AppImage (requires Rust + system libs above)
 make dmg            # macOS universal DMG
 make windows-installer  # Windows NSIS installer
 ```
+
+Guide PDFs are embedded in the server binary (`staticweb/files/docs/`) and copied to `dist/docs/`.
+Authenticated users download the user and admin guides via the avatar menu → **Downloads** (`GET /api/v1/docs/user-guide.pdf` and `/docs/admin-guide.pdf`).
 
 Production:
 ```bash

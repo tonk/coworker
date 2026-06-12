@@ -73,7 +73,11 @@ dist/
   warmdesk.yaml.example  # annotated server config template
   warmdesk-migrate.yaml.example  # migration tool config template
   deploy/                # systemd / nginx / Apache templates
-  docs/                  # user, API, and admin documentation
+  docs/                  # user, API, and admin documentation (PDFs built by make build)
+```
+
+Logged-in users can download the bundled PDF guides from the avatar menu → **Downloads** (user guide for everyone; admin guide for admins). The same files live under `docs/` in the distribution tarball.
+
 ```
 
 ---
