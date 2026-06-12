@@ -390,7 +390,7 @@
                 @change="saveSecuritySettings" />
             </div>
 
-            <div class="form-group" style="max-width:400px">
+            <div v-if="!systemStore.isTimetrackingMode" class="form-group" style="max-width:400px">
               <label class="toggle-row">
                 <span>{{ $t('admin.scrum_storypoints_enabled') }}<HelpIcon i18n-key="admin.scrum_storypoints_hint" :label="$t('admin.scrum_storypoints_enabled')" /></span>
                 <input type="checkbox" v-model="systemSettings.scrum_storypoints_enabled" @change="saveGeneralSettings" />
@@ -496,6 +496,7 @@
               </select>
             </div>
 
+            <template v-if="!systemStore.isTimetrackingMode">
             <h3 class="settings-subsection">
               {{ $t('admin.project_defaults_title') }}
               <HelpIcon i18n-key="admin.default_columns_hint" :label="$t('admin.project_defaults_title')" />
@@ -518,7 +519,9 @@
             <div style="max-width:400px;margin-top:8px">
               <button class="btn btn-primary btn-sm" @click="saveGeneralSettings">{{ $t('common.save') }}</button>
             </div>
+            </template>
 
+            <template v-if="!systemStore.isTimetrackingMode">
             <h3 class="settings-subsection">
               {{ $t('admin.smtp_title') }}
               <HelpIcon i18n-key="admin.smtp_hint" :label="$t('admin.smtp_title')" />
@@ -565,6 +568,9 @@
               </div>
             </div>
 
+            </template>
+
+            <template v-if="!systemStore.isTimetrackingMode">
             <h3 class="settings-subsection">
               {{ $t('admin.imap_title') }}
               <HelpIcon i18n-key="admin.imap_hint" :label="$t('admin.imap_title')" />
@@ -653,6 +659,8 @@
               <button class="btn btn-secondary btn-sm" @click="testImap" :disabled="imapTesting">{{ imapTesting ? $t('common.loading') : $t('admin.imap_test') }}</button>
               <button class="btn btn-secondary btn-sm" @click="pollImap" :disabled="imapPolling">{{ imapPolling ? $t('common.loading') : $t('admin.imap_poll') }}</button>
             </div>
+
+            </template>
 
             <h3 class="settings-subsection">
               {{ $t('admin.branding_title') }}
