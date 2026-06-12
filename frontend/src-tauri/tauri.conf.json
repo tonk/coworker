@@ -33,6 +33,7 @@
         "depends": [],
         "desktopTemplate": "warmdesk.desktop",
         "files": {
+          "/usr/share/applications/warmdesk-timetracking.desktop":            "warmdesk-timetracking.desktop",
           "/usr/share/icons/hicolor/scalable/apps/warmdesk.svg":              "icons/warmdesk.svg",
           "/usr/share/icons/hicolor/scalable/apps/warmdesk-timetracking.svg": "icons/timetracking.svg",
           "/usr/share/icons/hicolor/32x32/apps/warmdesk-timetracking.png":    "icons/timetracking-32.png",
@@ -45,6 +46,7 @@
         "depends": [],
         "desktopTemplate": "warmdesk.desktop",
         "files": {
+          "/usr/share/applications/warmdesk-timetracking.desktop":            "warmdesk-timetracking.desktop",
           "/usr/share/icons/hicolor/scalable/apps/warmdesk.svg":              "icons/warmdesk.svg",
           "/usr/share/icons/hicolor/scalable/apps/warmdesk-timetracking.svg": "icons/timetracking.svg",
           "/usr/share/icons/hicolor/32x32/apps/warmdesk-timetracking.png":    "icons/timetracking-32.png",

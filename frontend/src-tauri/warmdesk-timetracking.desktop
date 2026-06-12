@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WarmDesk Time Tracking
+GenericName=Time Tracking
+Comment=Self-hosted time tracking and reporting
+Exec=/usr/bin/warmdesk
+Icon=warmdesk-timetracking
+Categories=Office;TimeTracking;
+Keywords=time;tracking;reporting;timesheet;
+StartupWMClass=WarmDesk
+StartupNotify=true
+Terminal=false
