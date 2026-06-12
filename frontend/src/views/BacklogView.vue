@@ -569,7 +569,7 @@ async function completeSprint(sprint) {
 }
 
 async function deleteSprint(sprint) {
-  if (!await ui.confirm(t('sprint.delete_sprint_confirm'))) return
+  if (!await ui.confirm(t('sprint.delete_sprint_confirm'), { destructive: true })) return
   try {
     await sprintStore.deleteSprint(sprint.id)
   } catch (e) {

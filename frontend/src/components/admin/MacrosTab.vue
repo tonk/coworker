@@ -325,7 +325,7 @@ async function confirmSave() {
 }
 
 async function deleteMacro(m) {
-  if (!await ui.confirm(`Delete macro "${m.name}"?`)) return
+  if (!await ui.confirm(`Delete macro "${m.name}"?`, { destructive: true })) return
   try {
     await macrosApi.delete(m.id)
     ui.success('Macro deleted')

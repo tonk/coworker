@@ -221,7 +221,7 @@ async function confirmSave() {
 }
 
 async function confirmDelete(epic) {
-  if (!await ui.confirm(`${t('epic.delete_confirm')} "${epic.name}"?`)) return
+  if (!await ui.confirm(`${t('epic.delete_confirm')} "${epic.name}"?`, { destructive: true })) return
   try {
     await epicsStore.deleteEpic(epic.id)
     ui.success(t('epic.deleted'))

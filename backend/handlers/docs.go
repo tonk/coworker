@@ -22,21 +22,29 @@ func InitDocs(cfg *config.Config, webFS fs.FS) {
 
 // DownloadUserGuide serves the bundled user guide PDF to authenticated users.
 func DownloadUserGuide(c *gin.Context) {
-	serveGuidePDF(c, "user-guide.pdf")
+	serveGuidePDF(c, "user-guide.pdf", guideDownloadFilename("user-guide"))
 }
 
 // DownloadAdminGuide serves the bundled admin guide PDF to admins.
 func DownloadAdminGuide(c *gin.Context) {
-	serveGuidePDF(c, "admin-guide.pdf")
+	serveGuidePDF(c, "admin-guide.pdf", guideDownloadFilename("admin-guide"))
 }
 
-func serveGuidePDF(c *gin.Context, filename string) {
+func guideDownloadFilename(slug string) string {
+	v := serverVersion
+	if v != "" && v[0] != 'v' {
+		v = "v" + v
+	}
+	return fmt.Sprintf("WarmDesk-%s-%s.pdf", slug, v)
+}
+
+func serveGuidePDF(c *gin.Context, filename, downloadName string) {
 	data, err := readGuidePDF(filename)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "guide not available"})
 		return
 	}
-	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
+	c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, downloadName))
 	c.Data(http.StatusOK, "application/pdf", data)
 }
 

@@ -866,7 +866,7 @@ async function saveEdit() {
 }
 
 async function doDelete() {
-  if (!await ui.confirm(this.$t?.('customer.delete_confirm') || 'Delete this customer?')) return
+  if (!await ui.confirm(this.$t?.('customer.delete_confirm') || 'Delete this customer?', { destructive: true })) return
   try {
     await customersApi.delete(custId.value)
     await custStore.fetchCustomers()
@@ -949,7 +949,7 @@ async function saveContract() {
 }
 
 async function deleteContract(grp) {
-  if (!await ui.confirm('Delete contract "' + grp.name + '"?')) return
+  if (!await ui.confirm('Delete contract "' + grp.name + '"?', { destructive: true })) return
   try {
     await customersApi.deleteContract(custId.value, grp.id)
     await load()

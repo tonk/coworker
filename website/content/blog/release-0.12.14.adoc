@@ -1,0 +1,43 @@
+---
+title: "v0.12.14: Guide PDFs, copy-week safety, and time-grid polish"
+date: "2026-06-12"
+author: "Ton Kersten"
+description: "Download user and admin guide PDFs from the avatar menu, confirm before copying the previous week’s rows, and clearer undeclarable-time styling in the time-tracking grid."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` ships documentation with the server, tightens a few time-tracking workflows, and refreshes confirm-dialog behaviour.
+
+== Guide PDF downloads
+
+Every server release now builds branded *User Guide* and *Admin Guide* PDFs.
+They are embedded in the binary and available from the avatar menu → *Downloads* (the admin guide appears for admins only).
+
+The PDFs use the WarmDesk title page, logo, bundled fonts, and revision metadata synced to the release version.
+
+== Copy Previous Week — confirm and undo
+
+The *Copy Previous Week* action (⇐ in the time-tracking sheet footer) now asks for confirmation when the current week already has rows, so you do not accidentally duplicate row definitions.
+
+After a copy, use *Undo* (↶) to remove the rows that were added.
+The undo stack keeps up to 50 recent actions, including cell edits and copy-week operations.
+
+== Time-tracking polish
+
+Undeclarable minutes (travel time, per-project deductions, and similar) now use muted secondary styling in the grid footer, personal report, and project badges instead of red emphasis — over-allotment warnings stay red.
+
+User Settings also shows the total net *Working hours* per week below the day grid.
+
+== Confirm dialog
+
+Destructive actions (delete, revoke, purge, and similar) can show a red *Delete* button by passing `{ destructive: true }` to the confirm helper.
+Other confirmations default to a primary *Yes* label — for example the copy-previous-week prompt.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Run the new version in-place — no database migration beyond the usual AutoMigrate on startup.
+Open the avatar menu → *Downloads* to save the updated guides locally.

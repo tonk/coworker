@@ -8,12 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.14)
+## Latest release (v0.12.15)
 
-- **Guide PDF downloads** — avatar menu → **Downloads** serves the user and admin guide PDFs (built into every server release).
-- **Weekly working hours total** — User Settings shows total net hours per week below the grid.
-- **Copy Previous Week** — confirms before overwriting non-empty rows; the copy is undoable.
-- **Undeclarable time styling** — muted secondary text instead of red in the timesheet grid and report.
+- **Destructive confirms** — delete, revoke, and purge flows show a red *Delete* button; non-destructive prompts keep *Yes*.
+- **Versioned guide PDFs** — downloads named `WarmDesk-user-guide-v0.12.15.pdf` (and admin equivalent) from the avatar menu.
+- **Release helper** — `./scripts/release bump` syncs guide revision metadata from `CHANGELOG.md`.
 
 ## Experiment
 

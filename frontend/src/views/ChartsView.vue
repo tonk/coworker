@@ -673,7 +673,7 @@ async function saveRelease() {
 }
 
 async function confirmDeleteRelease(release) {
-  if (!await ui.confirm(`${t('sprint.delete_release')} "${release.name}"?`)) return
+  if (!await ui.confirm(`${t('sprint.delete_release')} "${release.name}"?`, { destructive: true })) return
   try {
     await projectsApi.deleteRelease(slug.value, release.id)
     releases.value = releases.value.filter(r => r.id !== release.id)

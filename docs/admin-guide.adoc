@@ -1,5 +1,5 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.12.14
+:revnumber: v0.12.15
 :revdate: 2026-06-12
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -174,7 +174,8 @@ psql -U postgres -c "CREATE DATABASE warmdesk OWNER warmdesk;"
 [source,yaml]
 ----
 db_driver: postgres
-db_dsn: "host=localhost user=warmdesk password=secret dbname=warmdesk"
+db_dsn: "host=localhost user=warmdesk password=secret \
+  dbname=warmdesk"
 # port=5432 sslmode=require
 ----
 
@@ -183,7 +184,8 @@ db_dsn: "host=localhost user=warmdesk password=secret dbname=warmdesk"
 [source,bash]
 ----
 mysql -u root -p -e \
-  "CREATE DATABASE warmdesk CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+  "CREATE DATABASE warmdesk \
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 mysql -u root -p -e \
   "CREATE USER 'warmdesk'@'localhost' IDENTIFIED BY 'secret';"
 mysql -u root -p -e \
@@ -304,7 +306,8 @@ The template in `deploy/nginx.conf` includes:
 ----
 sudo cp deploy/nginx.conf /etc/nginx/sites-available/warmdesk
 # Edit: replace yourdomain.com and SSL certificate paths
-sudo ln -s /etc/nginx/sites-available/warmdesk /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/warmdesk \
+  /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ----
 
@@ -313,7 +316,8 @@ sudo nginx -t && sudo systemctl reload nginx
 [source,bash]
 ----
 sudo a2enmod proxy proxy_http proxy_wstunnel ssl headers rewrite
-sudo cp deploy/apache.conf /etc/apache2/sites-available/warmdesk.conf
+sudo cp deploy/apache.conf \
+  /etc/apache2/sites-available/warmdesk.conf
 # Edit: replace yourdomain.com and SSL certificate paths
 sudo a2ensite warmdesk
 sudo systemctl reload apache2
@@ -349,10 +353,11 @@ A mismatch will prevent the frontend from making API calls.
 ALLOWED_ORIGINS=https://warmdesk.example.com
 
 # Multiple domains (comma-separated)
-ALLOWED_ORIGINS=https://warmdesk.example.com,https://warmdesk.internal
+ALLOWED_ORIGINS=https://warmdesk.example.com,\
+https://warmdesk.internal
 
-# Allow any origin (useful when the desktop app connects to an internal server
-# that is not exposed to the internet)
+# Allow any origin (useful when the desktop app connects to an
+# internal server that is not exposed to the internet)
 ALLOWED_ORIGINS=*
 ----
 
@@ -390,7 +395,9 @@ UPDATE users SET global_role = 'admin' WHERE username = 'yourname';
 
 [source,bash]
 ----
-mysql -u warmdesk -p -e "UPDATE users SET global_role='admin' WHERE username='yourname';" warmdesk
+mysql -u warmdesk -p warmdesk -e \
+  "UPDATE users SET global_role='admin' \
+WHERE username='yourname';"
 ----
 
 '''
@@ -1350,10 +1357,12 @@ To verify a download:
 [source,bash]
 ----
 # Import the WarmDesk release key once
-gpg --import signing-key.asc          # key is in the root of the repository
+gpg --import signing-key.asc
+# key is in the root of the repository
 
 # Verify any downloaded file
-gpg --verify WarmDesk-vX.Y.Z-x86_64.AppImage.asc WarmDesk-vX.Y.Z-x86_64.AppImage
+gpg --verify WarmDesk-vX.Y.Z-x86_64.AppImage.asc \
+  WarmDesk-vX.Y.Z-x86_64.AppImage
 ----
 
 A `Good signature from "WarmDesk Releases"` message confirms the file is unmodified and was signed by the official release key.
@@ -1373,8 +1382,10 @@ Run it as root to download and install the latest release automatically:
 
 [source,bash]
 ----
-sudo get_warmdesk            # install latest if a newer version is available
-sudo get_warmdesk --force    # install even if already on the latest version
+# install latest if a newer version is available
+sudo get_warmdesk
+# install even if already on the latest version
+sudo get_warmdesk --force
 ----
 
 The script:
@@ -1523,7 +1534,8 @@ sqlite3 /var/lib/warmdesk/warmdesk.db \
 
 [source,bash]
 ----
-pg_dump -U warmdesk warmdesk | gzip > /backup/warmdesk-$(date +%Y%m%d).sql.gz
+pg_dump -U warmdesk warmdesk \
+  | gzip > /backup/warmdesk-$(date +%Y%m%d).sql.gz
 ----
 
 *Restoring manually*
@@ -1536,7 +1548,8 @@ cp /backup/warmdesk-20260416.db /var/lib/warmdesk/warmdesk.db
 sudo systemctl start warmdesk
 
 # PostgreSQL
-gunzip -c /backup/warmdesk-20260416.sql.gz | psql -U warmdesk warmdesk
+gunzip -c /backup/warmdesk-20260416.sql.gz \
+  | psql -U warmdesk warmdesk
 ----
 
 '''
@@ -1548,7 +1561,8 @@ The `warmdesk-seed` binary ships alongside `warmdesk` and populates the database
 [source,bash]
 ----
 cd dist
-./warmdesk-seed           # seed (idempotent — safe to run multiple times)
+# idempotent — safe to run multiple times
+./warmdesk-seed
 ./warmdesk-seed --reset   # wipe all demo data and re-seed
 ----
 
@@ -1626,7 +1640,8 @@ The `warmdesk-training` binary sets up isolated training environments — one cu
 
 [source,bash]
 ----
-# Create trainer (guru00) + 5 trainees (guru01…guru05), password base "Training"
+# Create trainer (guru00) + 5 trainees (guru01…guru05),
+# password base "Training"
 ./warmdesk-training 5 Training
 
 # Remove all guru** training data from the database

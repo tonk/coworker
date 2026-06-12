@@ -1,0 +1,36 @@
+---
+title: "v0.12.15: Destructive confirms and versioned guide PDFs"
+date: "2026-06-12"
+author: "Ton Kersten"
+description: "Delete and revoke flows get a red Delete button, guide PDF downloads include the release version in the filename, and the release helper keeps doc revisions in sync."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` polishes confirmation dialogs, guide downloads, and the release workflow.
+
+== Destructive confirm dialogs
+
+Delete, revoke, purge, leave conversation, remove member, and similar actions now show a red *Delete* button in the confirm dialog.
+
+Non-destructive prompts — sprint start/complete and *Copy Previous Week* — keep the primary *Yes* label.
+
+== Versioned guide PDF filenames
+
+Guide downloads from the avatar menu → *Downloads* (and the matching API endpoints) now save as `WarmDesk-user-guide-vX.Y.Z.pdf` and `WarmDesk-admin-guide-vX.Y.Z.pdf`, using the running server version.
+
+== Release helper
+
+`./scripts/release bump` runs `make sync-doc-revisions` after updating version metadata, so the user and admin guide `:revnumber:` / `:revdate:` attributes always match the latest `CHANGELOG.md` entry.
+
+== Documentation
+
+The admin guide PDF received another pass on long shell and configuration examples.
+The user guide icons table now documents Copy Previous Week confirmation, undo, and muted undeclarable-time styling.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Run the new version in-place — no database migration required.

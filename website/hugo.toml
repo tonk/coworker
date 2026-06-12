@@ -15,15 +15,15 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.12.14"
+  warmdesk_version = "v0.12.15"
   release_date     = "2026-06-12"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.12.14/"
+  release_blog     = "blog/release-0.12.15/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Guide PDF downloads** — avatar menu → Downloads serves user and admin guide PDFs built into every server release.",
-    "**Weekly working hours total** — User Settings shows total net hours per week below the grid.",
-    "**Copy Previous Week** — confirms before overwriting rows; the copy is undoable.",
+    "**Destructive confirms** — delete, revoke, and purge flows show a red *Delete* button.",
+    "**Versioned guide PDFs** — downloads named with the release version (e.g. WarmDesk-user-guide-v0.12.15.pdf).",
+    "**Release helper** — `./scripts/release bump` syncs guide revision metadata from CHANGELOG.md.",
   ]
 
 [markup]
@@ -42,7 +42,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.12.14"
+      "warmdesk-version" = "v0.12.15"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]

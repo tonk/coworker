@@ -150,7 +150,7 @@ async function confirmSave() {
 }
 
 async function deletePolicy(p) {
-  if (!await ui.confirm('Delete this SLA policy?')) return
+  if (!await ui.confirm('Delete this SLA policy?', { destructive: true })) return
   try {
     await slaApi.delete(p.id)
     ui.success('SLA policy deleted')

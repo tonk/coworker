@@ -1826,7 +1826,7 @@ async function saveNews() {
   }
 }
 async function deleteNewsItem(item) {
-  if (!await ui.confirm(t('admin.news_delete_confirm', { title: item.title }))) return
+  if (!await ui.confirm(t('admin.news_delete_confirm', { title: item.title }), { destructive: true })) return
   await newsApi.adminDelete(item.id)
   await loadNews()
 }
@@ -2046,7 +2046,7 @@ async function saveGroup() {
 }
 
 async function deleteGroup(g) {
-  if (!await ui.confirm(t('groups.delete_confirm'))) return
+  if (!await ui.confirm(t('groups.delete_confirm'), { destructive: true })) return
   try {
     await groupsApi.delete(g.id)
     groups.value = groups.value.filter(x => x.id !== g.id)
@@ -2303,7 +2303,7 @@ async function restoreProject(project) {
 }
 
 async function purgeProject(project) {
-  if (!await ui.confirm(t('admin.purge_project_confirm', { name: project.name }))) return
+  if (!await ui.confirm(t('admin.purge_project_confirm', { name: project.name }), { destructive: true })) return
   try {
     await adminApi.purgeProject(project.id)
     projects.value = projects.value.filter(p => p.id !== project.id)
@@ -2557,7 +2557,7 @@ async function createBackup() {
 }
 
 async function restoreBackup(b) {
-  if (!await ui.confirm(`Replace the current database with "${b.filename}"? All changes since this backup will be lost.`)) return
+  if (!await ui.confirm(`Replace the current database with "${b.filename}"? All changes since this backup will be lost.`, { destructive: true })) return
   restoringBackup.value = b.filename
   try {
     await adminApi.restoreBackup(b.filename)
@@ -2579,7 +2579,7 @@ async function downloadBackup(b) {
 }
 
 async function deleteBackup(b) {
-  if (!await ui.confirm(`Delete backup "${b.filename}"?`)) return
+  if (!await ui.confirm(`Delete backup "${b.filename}"?`, { destructive: true })) return
   try {
     await adminApi.deleteBackup(b.filename)
     backups.value = backups.value.filter(x => x.filename !== b.filename)
@@ -2878,7 +2878,7 @@ async function toggleFeature(user, field, value) {
 }
 
 async function deleteUser(user) {
-  if (!await ui.confirm(`Delete user ${user.username}?`)) return
+  if (!await ui.confirm(`Delete user ${user.username}?`, { destructive: true })) return
   try {
     await adminApi.deleteUser(user.id)
     users.value = users.value.filter(u => u.id !== user.id)
@@ -2900,7 +2900,7 @@ async function restoreUser(user) {
 }
 
 async function purgeUser(user) {
-  if (!await ui.confirm(t('admin.purge_user_confirm', { name: user.username }))) return
+  if (!await ui.confirm(t('admin.purge_user_confirm', { name: user.username }), { destructive: true })) return
   try {
     await adminApi.purgeUser(user.id)
     users.value = users.value.filter(u => u.id !== user.id)
@@ -2911,7 +2911,7 @@ async function purgeUser(user) {
 }
 
 async function adminResetMFA(user) {
-  if (!await ui.confirm(`Disable MFA for ${user.display_name || user.username}?`)) return
+  if (!await ui.confirm(`Disable MFA for ${user.display_name || user.username}?`, { destructive: true })) return
   try {
     const { data } = await adminApi.disableUserMFA(user.id)
     // Update both the modal and the list
@@ -2984,7 +2984,7 @@ async function createUserApiKey() {
 }
 
 async function deleteUserApiKey(keyId) {
-  if (!await ui.confirm(t('admin.api_key_revoke_confirm'))) return
+  if (!await ui.confirm(t('admin.api_key_revoke_confirm'), { destructive: true })) return
   try {
     await adminApi.deleteUserApiKey(editUser.value.id, keyId)
     editUserApiKeys.value = editUserApiKeys.value.filter(k => k.id !== keyId)
@@ -3127,7 +3127,7 @@ async function toggleArchive(project) {
 }
 
 async function deleteProject(project) {
-  if (!await ui.confirm(`Delete project "${project.name}"?`)) return
+  if (!await ui.confirm(`Delete project "${project.name}"?`, { destructive: true })) return
   try {
     await adminApi.deleteProject(project.id)
     projects.value = projects.value.filter(p => p.id !== project.id)
@@ -3187,7 +3187,7 @@ async function saveEditCustomer() {
 }
 
 async function deleteAdminCustomer(c) {
-  if (!await ui.confirm(`Delete customer "${c.name}"? All linked projects will be detached.`)) return
+  if (!await ui.confirm(`Delete customer "${c.name}"? All linked projects will be detached.`, { destructive: true })) return
   try {
     await customersApi.delete(c.id)
     adminCustomers.value = adminCustomers.value.filter(ac => ac.id !== c.id)
@@ -3309,7 +3309,7 @@ async function saveEditTTProject() {
 }
 
 async function deleteTTProject(p) {
-  if (!await ui.confirm(t('timeTracking.tt_project_delete_confirm'))) return
+  if (!await ui.confirm(t('timeTracking.tt_project_delete_confirm'), { destructive: true })) return
   try {
     await projectsApi.deleteTimeTracking(p.id)
     adminTTProjects.value = adminTTProjects.value.filter(x => x.id !== p.id)
@@ -3336,7 +3336,7 @@ async function saveEditTTCustomer() {
 }
 
 async function deleteTTCustomer(c) {
-  if (!await ui.confirm(t('timeTracking.tt_customer_delete_confirm'))) return
+  if (!await ui.confirm(t('timeTracking.tt_customer_delete_confirm'), { destructive: true })) return
   try {
     await customersApi.deleteTimeTracking(c.id)
     adminTTCustomers.value = adminTTCustomers.value.filter(x => x.id !== c.id)

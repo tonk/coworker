@@ -1215,7 +1215,7 @@ async function leaveConversation(conv) {
   const msg = conv.is_group
     ? t('dm.leave_conversation_confirm_group')
     : t('dm.leave_conversation_confirm_dm')
-  if (!await ui.confirm(msg)) return
+  if (!await ui.confirm(msg, { destructive: true })) return
   try {
     await messagesApi.leaveConversation(conv.id)
     conversations.value = conversations.value.filter(c => c.id !== conv.id)
@@ -1231,7 +1231,7 @@ async function leaveConversation(conv) {
 }
 
 async function removeMember(member) {
-  if (!await ui.confirm(t('dm.remove_member_confirm'))) return
+  if (!await ui.confirm(t('dm.remove_member_confirm'), { destructive: true })) return
   try {
     const { data } = await messagesApi.removeMember(activeConv.value.id, member.user_id)
     if (data?.conversation_deleted) {

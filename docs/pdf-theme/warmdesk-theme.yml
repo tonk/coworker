@@ -36,6 +36,9 @@ role:
   tt-danger:
     font_color: e53e3e
     font_style: bold
+  tt-muted:
+    font_color: 888888
+    font_style: italic
   tt-copied:
     border_color: 6366f1
     border_width: 1

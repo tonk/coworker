@@ -82,6 +82,7 @@ cmd_bump() {
     echo "[dry-run] would edit:"
     printf '   %s\n' "${files[@]}"
     echo "[dry-run] would run: (cd frontend/src-tauri && cargo metadata --format-version 1 > /dev/null)"
+    echo "[dry-run] would run: make sync-doc-revisions"
     echo "[dry-run] then: remind you to update CHANGELOG.md + README bullets if not done yet."
     return 0
   fi
@@ -109,12 +110,16 @@ cmd_bump() {
   echo "→ Refreshing Rust lockfile (cargo metadata)…"
   (cd frontend/src-tauri && cargo metadata --format-version 1 > /dev/null)
 
+  echo "→ Syncing doc :revnumber: / :revdate: from CHANGELOG.md…"
+  make sync-doc-revisions
+
   echo ""
-  echo "✓ Bumped mechanical version fields."
+  echo "✓ Bumped mechanical version fields and synced doc revisions."
   echo ""
   echo "Manual checklist (if not done yet):"
-  echo "  • CHANGELOG.md — add ## ${V_TAG} — ${REL_DATE} with Added/Fixed/Changed entries"
+  echo "  • CHANGELOG.md — add ## ${V_TAG} — ${REL_DATE} with Added/Fixed/Changed entries (must exist before sync-doc-revisions)"
   echo "  • README.md — bullet list under Latest release (heading was updated)"
+  echo "  • make docs-pdf-guides — rebuild user/admin PDFs before commit if guide content changed"
   echo "  • git add, commit, tag, push — or run: ./scripts/release publish ${V_TAG}"
 }
 

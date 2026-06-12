@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.12.15 — 2026-06-12
+
+### Added
+- **Website release blog** — `release-0.12.14` post documents guide PDF downloads, copy-week safety, and time-grid polish.
+
+### Changed
+- **Destructive confirm dialogs** — delete, revoke, purge, leave/remove, and similar actions use `{ destructive: true }` for a red *Delete* button app-wide; sprint start/complete and Copy Previous Week keep a primary *Yes* label.
+- **Versioned guide PDF filenames** — avatar menu and API downloads use `WarmDesk-user-guide-vX.Y.Z.pdf` and `WarmDesk-admin-guide-vX.Y.Z.pdf` matching the running release.
+- **`scripts/release bump`** — runs `make sync-doc-revisions` so guide `:revnumber:` / `:revdate:` track `CHANGELOG.md` automatically.
+- **Admin guide PDF layout** — remaining long configuration, backup, and shell example blocks reformatted for page width.
+- **User guide** — icons table documents Copy Previous Week confirmation, undo (50-action stack), and muted undeclarable-time styling.
+
+### Fixed
+- **CI PDF build** — install `asciidoctor-pdf` with `sudo gem install` in server workflows to avoid permission errors.
+
+### Removed
+- *(none)*
+
 ## v0.12.14 — 2026-06-12
 
 ### Added

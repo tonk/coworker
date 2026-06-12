@@ -646,7 +646,7 @@ function groupAvatar(group) {
 }
 
 async function confirmDelete() {
-  if (!await ui.confirm('Delete this project? This cannot be undone.')) return
+  if (!await ui.confirm('Delete this project? This cannot be undone.', { destructive: true })) return
   try {
     await projectStore.deleteProject(slug.value)
     router.push('/')
@@ -665,7 +665,7 @@ async function updateRole(member) {
 }
 
 async function removeMember(member) {
-  if (!await ui.confirm('Remove this member?')) return
+  if (!await ui.confirm('Remove this member?', { destructive: true })) return
   await projectsApi.removeMember(slug.value, member.user.id)
   loadMembers()
 }
@@ -704,7 +704,7 @@ async function createLabel() {
 }
 
 async function deleteLabel(label) {
-  if (!await ui.confirm('Delete this label?')) return
+  if (!await ui.confirm('Delete this label?', { destructive: true })) return
   await projectsApi.deleteLabel(slug.value, label.id)
   loadLabels()
 }
@@ -726,7 +726,7 @@ async function generateKey() {
 }
 
 async function revokeKey(key) {
-  if (!await ui.confirm('Revoke this API key?')) return
+  if (!await ui.confirm('Revoke this API key?', { destructive: true })) return
   await projectsApi.deleteApiKey(slug.value, key.id)
   loadApiKeys()
 }
@@ -763,13 +763,13 @@ async function createWebhook() {
 }
 
 async function deleteWebhook(wh) {
-  if (!await ui.confirm('Delete this webhook?')) return
+  if (!await ui.confirm('Delete this webhook?', { destructive: true })) return
   await projectsApi.deleteWebhook(slug.value, wh.id)
   await loadWebhooks()
 }
 
 async function regenerateWebhook(wh) {
-  if (!await ui.confirm('Regenerate token? The old token will stop working immediately.')) return
+  if (!await ui.confirm('Regenerate token? The old token will stop working immediately.', { destructive: true })) return
   try {
     const { data } = await projectsApi.regenerateWebhook(slug.value, wh.id)
     createdWebhookToken.value = data.token
@@ -821,7 +821,7 @@ async function loadDeletedCards() {
 }
 
 async function permanentDeleteCard(card) {
-  if (!await ui.confirm(`Permanently delete ${project.value?.key_prefix}-${card.card_number} "${card.title}"? This cannot be undone.`)) return
+  if (!await ui.confirm(`Permanently delete ${project.value?.key_prefix}-${card.card_number} "${card.title}"? This cannot be undone.`, { destructive: true })) return
   try {
     await projectsApi.permanentDeleteCard(slug.value, card.id)
     deletedCards.value = deletedCards.value.filter(c => c.id !== card.id)

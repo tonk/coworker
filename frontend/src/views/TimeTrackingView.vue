@@ -3273,7 +3273,7 @@ async function saveTTProject() {
 }
 
 async function deleteTTProject(p) {
-  if (!await ui.confirm(t('timeTracking.tt_project_delete_confirm'))) return
+  if (!await ui.confirm(t('timeTracking.tt_project_delete_confirm'), { destructive: true })) return
   try {
     await projectsApi.deleteTimeTracking(p.id)
     ttProjects.value = ttProjects.value.filter(x => x.id !== p.id)
@@ -3330,7 +3330,7 @@ async function saveTTCustomer() {
 }
 
 async function deleteTTCustomer(c) {
-  if (!await ui.confirm(t('timeTracking.tt_customer_delete_confirm'))) return
+  if (!await ui.confirm(t('timeTracking.tt_customer_delete_confirm'), { destructive: true })) return
   try {
     await customersApi.deleteTimeTracking(c.id)
     ttCustomers.value = ttCustomers.value.filter(x => x.id !== c.id)

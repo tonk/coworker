@@ -33,6 +33,8 @@ Claude Code will:
 - Update the **Latest release** heading and bullets in `README.md`.
 - Append bullets to `what.md`.
 - Update `website/hugo.toml` (`warmdesk_version`, `release_date`, `warmdesk-version`).
+- Run `./scripts/release bump vX.Y.Z` (or equivalent edits) so mechanical version fields and `docs/*.adoc` `:revnumber:` / `:revdate:` stay in sync via `make sync-doc-revisions`.
+- Rebuild guide PDFs with `make docs-pdf-guides` when guide content changed.
 - Bump `ansible/galaxy.yml` if Ansible files changed.
 - Commit, tag, and push.
 
@@ -68,10 +70,11 @@ Use it when releasing outside Claude Code.
 | `frontend/src-tauri/tauri.conf.json` | `"version"` (semver without `v` prefix) |
 | `frontend/src-tauri/Cargo.toml` | `version = "x.y.z"` |
 | `README.md` | Only the `## Latest release (vX.Y.Z)` heading line |
+| `docs/*.adoc` | `:revnumber:` and `:revdate:` synced from the latest `CHANGELOG.md` header via `make sync-doc-revisions` |
 
 **Not modified by the script** (update manually):
 
-- `CHANGELOG.md` — write by hand before running the script
+- `CHANGELOG.md` — write by hand **before** running the script (required for `sync-doc-revisions`)
 - `what.md` — append new-feature bullets by hand
 - `frontend/package.json` — independent; not used for versioning
 - Go source — version comes from linker flags at build time

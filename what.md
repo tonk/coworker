@@ -729,3 +729,10 @@ Create an application that has all these features and requirements
 - Confirm dialog primary button defaults to Yes; destructive actions use optional red Delete label
 - Use muted styling for undeclarable time in the timesheet grid, report tab, and project manage modal
 - Remove warmdesk-blog.adoc from docs tree
+- Apply destructive confirm styling (red Delete button) to delete, revoke, purge, and leave/remove flows app-wide
+- Version guide PDF downloads as WarmDesk-user-guide-vX.Y.Z.pdf and WarmDesk-admin-guide-vX.Y.Z.pdf
+- Run make sync-doc-revisions automatically from scripts/release bump
+- Reformat remaining admin guide code blocks for PDF page width; document copy-week confirm/undo and muted undeclarable styling in user guide
+- Add website release blog post for v0.12.14
+- Move release helper to scripts/release and seed_tickets.py to scripts/
+- Fix CI asciidoctor-pdf install with sudo gem install in server workflows

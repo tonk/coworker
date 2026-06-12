@@ -273,22 +273,27 @@ function openDownloads() {
   })
 }
 
-async function downloadGuide(path, filename) {
+function guideDownloadFilename(slug) {
+  const ver = __APP_VERSION__.startsWith('v') ? __APP_VERSION__ : `v${__APP_VERSION__}`
+  return `WarmDesk-${slug}-${ver}.pdf`
+}
+
+async function downloadGuide(path, slug) {
   closeMenu()
   try {
     const data = await fetchBinary(path)
-    await triggerDownload(data, filename, 'application/pdf')
+    await triggerDownload(data, guideDownloadFilename(slug), 'application/pdf')
   } catch {
     ui.error(t('nav.guide_download_error'))
   }
 }
 
 async function downloadUserGuide() {
-  await downloadGuide('/docs/user-guide.pdf', 'user-guide.pdf')
+  await downloadGuide('/docs/user-guide.pdf', 'user-guide')
 }
 
 async function downloadAdminGuide() {
-  await downloadGuide('/docs/admin-guide.pdf', 'admin-guide.pdf')
+  await downloadGuide('/docs/admin-guide.pdf', 'admin-guide')
 }
 
 function handleDownloadsKeyDown(e) {

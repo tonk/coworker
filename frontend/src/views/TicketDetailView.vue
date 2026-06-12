@@ -1285,7 +1285,7 @@ async function logTime() {
 }
 
 async function deleteTimeEntry(te) {
-  if (!await ui.confirm('Delete this time entry?')) return
+  if (!await ui.confirm('Delete this time entry?', { destructive: true })) return
   try {
     await timeEntriesApi.remove(te.id)
     ticketTimeEntries.value = ticketTimeEntries.value.filter(e => e.id !== te.id)
@@ -1313,7 +1313,7 @@ async function copyTicketRef() {
 }
 
 async function deleteTicket() {
-  if (!await ui.confirm('Delete this ticket?')) return
+  if (!await ui.confirm('Delete this ticket?', { destructive: true })) return
   try {
     if (isInbox.value) {
       await ticketsApi.inboxDelete(ticketId.value)

@@ -1,5 +1,5 @@
 = WarmDesk — User Guide
-:revnumber: v0.12.14
+:revnumber: v0.12.15
 :revdate: 2026-06-12
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -969,9 +969,9 @@ Amber when active; the cell gets darker shading.
 |*Over allotment* (red day total in the footer row) — logged time for that day exceeds your *Working Hours* allotment from User Settings.
 Hover the cell for the allotted amount.
 
-|[.tt-danger]#-0:45#
-|*Undeclarable time* (red `-` below a time value) — minutes deducted for that cell (configured per time-tracking project).
-Row, day, and grand totals show declarable time; the red line shows what was subtracted.
+|[.tt-muted]#-0:45#
+|*Undeclarable time* (muted `-` below a time value) — minutes deducted for that cell (configured per time-tracking project).
+Row, day, and grand totals show declarable time; the muted line shows what was subtracted.
 
 |[.tt-copied]#8:00#
 |*Copy source* — dashed outline on a cell selected for paste.
@@ -982,9 +982,11 @@ Use `Ctrl+C` / `Shift+Insert` to copy and `Ctrl+V` / `Shift+Insert` to paste int
 
 |⇐
 |*Copy Previous Week* (bottom bar) — copies row definitions (customer, project, activity) from the previous week into the current week without copying hours.
+If the current week already has rows, WarmDesk asks for confirmation before adding duplicates.
 
 |↶
-|*Undo* (bottom bar) — reverts the last cell edit.
+|*Undo* (bottom bar) — reverts the last change (cell edit or a confirmed *Copy Previous Week*).
+The undo stack keeps up to 50 recent actions.
 |===
 
 ==== Rate column
