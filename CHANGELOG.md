@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.12.17 — 2026-06-12
+
+### Fixed
+- **Logo switching in timetracking mode (web UI)** — all 13 logo `<img>` elements in the frontend (header, login, register, forgot/reset password, connect, about, news modals, and print headers) now switch to the time-tracking variants when the server runs in `--mode=timetracking`. Previously only the Go backend's static-file remapping handled this, which had no effect in dev mode or on surfaces that bypassed the NoRoute handler.
+
+### Changed
+- **deb/rpm icon tree** — both `warmdesk` and `warmdesk-timetracking` icon sets are now fully installed into the system icon tree: scalable SVG plus PNGs at 32×32, 128×128, 256×256, and 512×512. A custom `.desktop` file can reference `Icon=warmdesk-timetracking` without the icon being buried inside the binary.
+
 ## v0.12.16 — 2026-06-12
 
 ### Added

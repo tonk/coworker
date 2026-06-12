@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.16)
+## Latest release (v0.12.17)
 
-- **Time-tracking logo set** — clock-on-desk icon and full wordmark in the same green style as the WarmDesk logo.
-- **`--mode=timetracking` branding** — time-tracking logos replace the default logos in the web UI, login screen, and PDFs when running in time-tracking-only mode.
+- **Logo switching in timetracking mode** — all logo surfaces (header, login, modals, print headers) now switch to the time-tracking variants in `--mode=timetracking`.
+- **Complete icon sets in deb/rpm** — `warmdesk` and `warmdesk-timetracking` icons installed at all four PNG sizes plus scalable SVG in the system icon tree.
 
 ## Experiment
 

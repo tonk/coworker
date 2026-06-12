@@ -739,3 +739,5 @@ Create an application that has all these features and requirements
 - Add time-tracking logo set (clock-on-desk icon and full wordmark)
 - Remap logos to time-tracking variants when running with --mode=timetracking
 - Document time-tracking-only mode in admin guide, user guide, and config reference
+- Switch all frontend logo elements to timetracking variants via systemStore.logoSrc/logoFullSrc
+- Install warmdesk and warmdesk-timetracking icon sets (SVG + 4 PNG sizes) into deb/rpm system icon tree
