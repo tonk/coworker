@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="160"
+   height="156.5"
+   viewBox="0 0 160 156.5"
+   version="1.1"
+   id="svg9"
+   sodipodi:docname="warmdesk-icon-dark.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview9"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="7.34"
+     inkscape:cx="79.972752"
+     inkscape:cy="82.561308"
+     inkscape:window-width="3072"
+     inkscape:window-height="1677"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg9" />
+  <defs
+     id="defs1">
+    <style
+       id="style1">
+      .desk-top { fill: #9FE1CB; }
+      .desk-body { fill: #5DCAA5; }
+      .desk-leg { fill: #1D9E75; }
+      .steam { stroke: #9FE1CB; }
+      .cup-body { fill: #1D9E75; }
+      .cup-rim { fill: #0F6E56; }
+      .cup-handle { stroke: #9FE1CB; }
+    </style>
+  </defs>
+  <!-- Desk legs -->
+  <rect
+     class="desk-leg"
+     x="24"
+     y="104.5"
+     width="11"
+     height="52"
+     rx="3"
+     id="rect1" />
+  <rect
+     class="desk-leg"
+     x="125"
+     y="104.5"
+     width="11"
+     height="52"
+     rx="3"
+     id="rect2" />
+  <!-- Desk surface -->
+  <rect
+     class="desk-body"
+     x="10"
+     y="88.5"
+     width="140"
+     height="20"
+     rx="5"
+     id="rect3" />
+  <rect
+     class="desk-top"
+     x="0"
+     y="76.5"
+     width="160"
+     height="16"
+     rx="4"
+     id="rect4" />
+  <!-- Cup body -->
+  <rect
+     class="cup-body"
+     x="54"
+     y="40.5"
+     width="52"
+     height="40"
+     rx="5"
+     id="rect5" />
+  <!-- Cup rim -->
+  <rect
+     class="cup-rim"
+     x="48"
+     y="34.5"
+     width="64"
+     height="10"
+     rx="4"
+     id="rect6" />
+  <!-- Cup handle -->
+  <path
+     d="m 106,50.5 q 20,0 20,10 0,10 -20,10"
+     fill="none"
+     class="cup-handle"
+     stroke-width="5"
+     stroke-linecap="round"
+     id="path6" />
+  <!-- Steam -->
+  <path
+     class="steam"
+     d="m 66,30.5 q -4,-12 0,-24"
+     fill="none"
+     stroke-width="3"
+     stroke-linecap="round"
+     id="path7" />
+  <path
+     class="steam"
+     d="m 80,27.5 q -4,-13 0,-26"
+     fill="none"
+     stroke-width="3"
+     stroke-linecap="round"
+     id="path8" />
+  <path
+     class="steam"
+     d="m 94,30.5 q -4,-12 0,-24"
+     fill="none"
+     stroke-width="3"
+     stroke-linecap="round"
+     id="path9" />
+</svg>
