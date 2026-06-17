@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.12.19 — 2026-06-17
+
+### Added
+- **Travel distance per time entry** — each cell in the weekly time sheet now has a distance field (km or miles). Click the ⇆ icon in the cell to set the distance for that entry.
+- **Distance unit preference** — user profile settings now include a km / miles selector. The chosen unit is used across all views and exports.
+- **Distance in PDF export** — when *Show distance* is checked in the PDF export options, distance appears as a column in every entry row, group subtotal row, and grand total row so customers can be billed per trip.
+- **Distance in XLSX export** — distance column added to the spreadsheet export with per-entry values, group subtotals, and grand total.
+- **Distance totals** — the weekly time sheet footer and the report tab both show the total distance travelled when any entry has a distance logged.
+
 ## v0.12.18 — 2026-06-12
 
 ### Added

@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.18)
+## Latest release (v0.12.19)
 
-- **Timetracking mode UI polish** — irrelevant admin and user settings (SMTP, IMAP, project defaults, Scrum Story Points, API keys, email notifications) are now hidden when running in `--mode=timetracking`.
-- **`warmdesk-timetracking.desktop`** — deb/rpm packages include a dedicated timetracking launcher entry with the clock-on-desk icon.
+- **Travel distance per time entry** — log km or miles per cell in the weekly time sheet; totals appear in the footer and report tab.
+- **Distance in PDF/XLSX exports** — distance shows as a proper column (per entry, group subtotal, grand total) so customers can be billed per trip.
 
 ## Experiment
 
