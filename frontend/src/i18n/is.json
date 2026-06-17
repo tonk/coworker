@@ -694,7 +694,10 @@
     "work_hours": "Klst",
     "lunch_break": "Hádegishlé",
     "lunch_break_unit": "mínútur",
-    "weekly_total": "Heildartími vikunnar"
+    "weekly_total": "Heildartími vikunnar",
+    "distance_unit": "Fjarlægðareining",
+    "distance_unit_km": "Kílómetrar (km)",
+    "distance_unit_miles": "Mílur (mi)"
   },
   "dm": {
     "title": "Spjall",
@@ -1000,7 +1003,11 @@
     "fill_from_slots": "Fylla ur hólfum",
     "no_slots_on_contract": "Þessi samningur hefur engin tímahólf.",
     "no_slots_match_week": "Engin tímahólf eiga við um núverandi viku.",
-    "slots_filled": "Tímahólf fyllt fyrir núverandi viku."
+    "slots_filled": "Tímahólf fyllt fyrir núverandi viku.",
+    "pdf_show_distance": "Sýna heildarfjarlægð",
+    "distance": "Fjarlægð",
+    "set_distance": "Stilla fjarlægð",
+    "distance_total": "Heildarfjarlægð"
   },
   "call": {
     "incoming": "Móttekið símtal",

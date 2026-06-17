@@ -694,7 +694,10 @@
     "work_hours": "Horas",
     "lunch_break": "Pausa para almoço",
     "lunch_break_unit": "minutos",
-    "weekly_total": "Total semanal"
+    "weekly_total": "Total semanal",
+    "distance_unit": "Unidade de distância",
+    "distance_unit_km": "Quilómetros (km)",
+    "distance_unit_miles": "Milhas (mi)"
   },
   "dm": {
     "title": "Chats",
@@ -1000,7 +1003,11 @@
     "fill_from_slots": "Preencher a partir de slots",
     "no_slots_on_contract": "Este contrato não tem intervalos de tempo.",
     "no_slots_match_week": "Nenhum intervalo de tempo se aplica à semana atual.",
-    "slots_filled": "Intervalos de tempo preenchidos para a semana atual."
+    "slots_filled": "Intervalos de tempo preenchidos para a semana atual.",
+    "pdf_show_distance": "Mostrar distância total",
+    "distance": "Distância",
+    "set_distance": "Definir distância",
+    "distance_total": "Distância total"
   },
   "call": {
     "incoming": "Chamada recebida",

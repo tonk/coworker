@@ -287,6 +287,42 @@
                     <button v-if="getEntry(row, d.iso)?.start_time" class="tp-btn tp-clear" @mousedown.prevent="clearTimePopup(row, d.iso)">{{ $t('common.clear') }}</button>
                   </div>
                 </div>
+                <!-- Distance button -->
+                <span
+                  v-if="getEntry(row, d.iso)?.distance"
+                  class="cell-dist-dot"
+                  aria-hidden="true"
+                ></span>
+                <button v-if="!viewingOther"
+                  class="cell-dist-toggle"
+                  :class="{ 'cell-dist-on': !!getEntry(row, d.iso)?.distance }"
+                  :aria-label="$t('timeTracking.set_distance')"
+                  :title="$t('timeTracking.set_distance')"
+                  @mousedown.prevent="openDistPopup(row, d.iso, $event)"
+                  tabindex="-1"
+                >⇆</button>
+                <!-- Distance popup -->
+                <div
+                  v-if="distPopupKey === row.key + d.iso"
+                  class="time-popup dist-popup"
+                  :class="{ 'time-popup-below': distPopupFlip }"
+                  ref="distPopupRef"
+                  role="dialog"
+                  :aria-label="$t('timeTracking.set_distance')"
+                  @mousedown.stop
+                >
+                  <label class="tp-label">{{ $t('timeTracking.distance') }} ({{ distanceUnit }})
+                    <input type="number" class="tp-inp" v-model="distPopupVal"
+                      min="0" step="0.1"
+                      @keydown.enter.prevent="applyDistPopup(row, d.iso)"
+                      @keydown.escape.prevent="distPopupKey = ''"
+                    />
+                  </label>
+                  <div class="tp-actions">
+                    <button class="tp-btn tp-apply" @mousedown.prevent="applyDistPopup(row, d.iso)">{{ $t('common.save') }}</button>
+                    <button v-if="getEntry(row, d.iso)?.distance" class="tp-btn tp-clear" @mousedown.prevent="clearDistPopup(row, d.iso)">{{ $t('common.clear') }}</button>
+                  </div>
+                </div>
                 <div v-if="cellUndeclMins(row, d.iso) > 0" :id="'tt-undecl-' + idx + '-' + di" class="cell-undecl">
                   <span aria-hidden="true">-{{ fmtTime(cellUndeclMins(row, d.iso)) }}</span>
                   <span class="sr-only">{{ $t('timeTracking.undeclarable') }}: {{ fmtTime(cellUndeclMins(row, d.iso)) }}</span>
@@ -369,6 +405,14 @@
                 <span :aria-hidden="grandUndeclTotal > 0 ? 'true' : undefined">{{ fmtTime(grandDeclarable) }}</span>
                 <span v-if="grandUndeclTotal > 0" class="foot-undecl-inline" aria-hidden="true">-{{ fmtTime(grandUndeclTotal) }}</span>
               </td>
+              <td class="c-act"></td>
+            </tr>
+            <tr v-if="weekDistanceTotal > 0" class="tt-foot tt-foot-dist">
+              <td colspan="5" class="foot-lbl foot-dist-lbl">{{ $t('timeTracking.distance_total') }} ({{ distanceUnit }})</td>
+              <td v-for="d in weekDays" :key="d.iso" class="c-day c-total c-dttotal">
+                <span v-if="dayDistanceTotal(d.iso) > 0">{{ fmtDistance(dayDistanceTotal(d.iso)) }}</span>
+              </td>
+              <td class="c-total grand-total">{{ fmtDistance(weekDistanceTotal) }}</td>
               <td class="c-act"></td>
             </tr>
           </tfoot>
@@ -612,6 +656,10 @@
                 <input type="checkbox" v-model="pdfShowUndeclarable" />
                 {{ $t('timeTracking.pdf_show_undeclarable') }}
               </label>
+              <label v-if="report && report.total_distance > 0" class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowDistance)">
+                <input type="checkbox" v-model="pdfShowDistance" />
+                {{ $t('timeTracking.pdf_show_distance') }}
+              </label>
             </div>
           </div>
           <button class="btn btn-secondary" @click="exportReportXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
@@ -680,6 +728,10 @@
         <div v-if="rpt.group_by === 'customer' && report.undeclarable_minutes > 0" class="rpt-undeclarable">
           <span>{{ $t('timeTracking.undeclarable') }}</span>
           <span>-{{ fmtTime(report.undeclarable_minutes) }}</span>
+        </div>
+        <div v-if="report.total_distance > 0" class="rpt-distance-total">
+          <span>{{ $t('timeTracking.distance_total') }} ({{ distanceUnit }})</span>
+          <span>{{ fmtDistance(report.total_distance) }}</span>
         </div>
       </template>
     </div>
@@ -932,6 +984,8 @@ const pdfShowPageNumbers = ref(localStorage.getItem('timeTracking.pdfShowPageNum
 watch(pdfShowPageNumbers, v => localStorage.setItem('timeTracking.pdfShowPageNumbers', v ? '1' : '0'))
 const pdfShowUndeclarable = ref(localStorage.getItem('timeTracking.pdfShowUndeclarable') !== '0')
 watch(pdfShowUndeclarable, v => localStorage.setItem('timeTracking.pdfShowUndeclarable', v ? '1' : '0'))
+const pdfShowDistance = ref(localStorage.getItem('timeTracking.pdfShowDistance') === '1')
+watch(pdfShowDistance, v => localStorage.setItem('timeTracking.pdfShowDistance', v ? '1' : '0'))
 const pdfOptionsOpen = ref(false)
 const pdfOptionsRef = ref(null)
 const gridPdfOpen = ref(false)
@@ -1498,9 +1552,21 @@ const grandDeclarable = computed(() => {
   return Math.max(0, total - grandUndeclTotal.value)
 })
 
+function dayDistanceTotal(dateISO) {
+  return rawEntries.value
+    .filter(e => e.date?.startsWith(dateISO) && e.distance)
+    .reduce((s, e) => s + (e.distance || 0), 0)
+}
+
+const weekDistanceTotal = computed(() =>
+  rawEntries.value.reduce((s, e) => s + (e.distance || 0), 0)
+)
+
 // ── Load week ─────────────────────────────────────────────────────────────
 async function loadWeek() {
   localRows.value = []
+  timePopupKey.value = ''
+  distPopupKey.value = ''
   loading.value = true
   try {
     const from = weekDays.value[0].iso
@@ -2345,6 +2411,80 @@ function onCellPaste(event) {
   onCellInput({ target: el })
 }
 
+// ── Per-cell distance popup ───────────────────────────────────────────────
+const distPopupKey  = ref('')
+const distPopupFlip = ref(false)
+const distPopupVal  = ref('')
+const distPopupRef  = ref(null)
+
+function openDistPopup(row, dateISO, event) {
+  const key = row.key + dateISO
+  if (distPopupKey.value === key) { distPopupKey.value = ''; return }
+  const existing = getEntry(row, dateISO)
+  distPopupVal.value = existing?.distance != null ? String(existing.distance) : ''
+  const rect = event?.currentTarget?.getBoundingClientRect()
+  const scrollEl = event?.currentTarget?.closest('.tt-scroll')
+  const scrollTop = scrollEl ? scrollEl.getBoundingClientRect().top : 0
+  distPopupFlip.value = rect ? (rect.top - scrollTop) < 200 : false
+  distPopupKey.value = key
+}
+
+async function applyDistPopup(row, dateISO) {
+  const raw = parseFloat(distPopupVal.value)
+  const dist = isNaN(raw) || raw <= 0 ? null : raw
+  const existing = getEntry(row, dateISO)
+  if (!existing) { distPopupKey.value = ''; return }
+  const ck = row.key + dateISO
+  savingCell.value = ck
+  try {
+    const { data } = await timeEntriesApi.update(existing.id, {
+      customer_id: row.customer_id || null,
+      project_id:  row.project_id  || null,
+      date:        dateISO,
+      minutes:     existing.minutes,
+      description: row.description,
+      is_holiday:  existing.is_holiday,
+      start_time:  existing.start_time || null,
+      end_time:    existing.end_time   || null,
+      distance:    dist,
+    })
+    const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+    rawEntries.value[idx] = data
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  } finally {
+    if (savingCell.value === ck) savingCell.value = ''
+    distPopupKey.value = ''
+  }
+}
+
+async function clearDistPopup(row, dateISO) {
+  const existing = getEntry(row, dateISO)
+  if (!existing) { distPopupKey.value = ''; return }
+  const ck = row.key + dateISO
+  savingCell.value = ck
+  try {
+    const { data } = await timeEntriesApi.update(existing.id, {
+      customer_id: row.customer_id || null,
+      project_id:  row.project_id  || null,
+      date:        dateISO,
+      minutes:     existing.minutes,
+      description: row.description,
+      is_holiday:  existing.is_holiday,
+      start_time:  existing.start_time || null,
+      end_time:    existing.end_time   || null,
+      distance:    null,
+    })
+    const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+    rawEntries.value[idx] = data
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  } finally {
+    if (savingCell.value === ck) savingCell.value = ''
+    distPopupKey.value = ''
+  }
+}
+
 // ── Per-cell time range popup ─────────────────────────────────────────────
 const timePopupKey   = ref('')        // row.key + dateISO when open
 const timePopupFlip  = ref(false)     // true → open downward instead of upward
@@ -2682,6 +2822,14 @@ function onTimePopupDocClick(e) {
   }
 }
 
+function onDistPopupDocClick(e) {
+  if (!distPopupKey.value) return
+  const el = Array.isArray(distPopupRef.value) ? distPopupRef.value[0] : distPopupRef.value
+  if (el && !el.contains(e.target) && !e.target.closest('.cell-dist-toggle')) {
+    distPopupKey.value = ''
+  }
+}
+
 // ── Add row ───────────────────────────────────────────────────────────────
 const addingRow   = ref(false)
 const newDescRef  = ref(null)
@@ -3005,6 +3153,16 @@ async function loadReport() {
   }
 }
 
+// ── Distance unit ─────────────────────────────────────────────────────────
+const distanceUnit = computed(() => auth.user?.distance_unit || 'km')
+
+function fmtDistance(val) {
+  if (!val) return '0'
+  const n = parseFloat(val)
+  if (isNaN(n)) return '0'
+  return n === Math.floor(n) ? String(Math.floor(n)) : n.toFixed(1)
+}
+
 // ── Time notation ─────────────────────────────────────────────────────────
 const timeNotation = computed(() => auth.user?.time_notation || 'decimal')
 
@@ -3136,6 +3294,7 @@ async function exportReportXLSX() {
       group_by: rpt.value.group_by,
     }
     if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    params.distance_unit = distanceUnit.value
     const data = await timeEntriesApi.reportXLSX(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -3164,6 +3323,8 @@ async function exportReportPDF() {
     if (pdfShowCosts.value) params.show_costs = '1'
     params.show_page_numbers = pdfShowPageNumbers.value ? '1' : '0'
     params.show_undeclarable = pdfShowUndeclarable.value ? '1' : '0'
+    if (pdfShowDistance.value) params.show_distance = '1'
+    params.distance_unit = distanceUnit.value
     const data = await timeEntriesApi.reportPDF(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
     await triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
@@ -3356,6 +3517,7 @@ onMounted(() => {
   document.addEventListener('mousedown', onHolidaysDocClick)
   document.addEventListener('mousedown', onWkPickerDocClick)
   document.addEventListener('mousedown', onTimePopupDocClick)
+  document.addEventListener('mousedown', onDistPopupDocClick)
 })
 
 function initRowSortable() {
@@ -3397,6 +3559,7 @@ onUnmounted(() => {
   document.removeEventListener('mousedown', onHolidaysDocClick)
   document.removeEventListener('mousedown', onWkPickerDocClick)
   document.removeEventListener('mousedown', onTimePopupDocClick)
+  document.removeEventListener('mousedown', onDistPopupDocClick)
   ui.setHelpContext(null)
 })
 
@@ -3622,6 +3785,60 @@ td.c-day:focus-within .cell-time-toggle,
   border-radius: 50%;
   background: var(--color-primary);
   pointer-events: none;
+}
+
+/* Distance toggle button */
+.cell-dist-toggle {
+  position: absolute;
+  bottom: 3px; left: 19px;
+  width: 14px; height: 14px;
+  padding: 0; border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--color-text-muted, #888);
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.15s, color 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+td.c-day:hover .cell-dist-toggle,
+td.c-day:focus-within .cell-dist-toggle,
+.cell-dist-toggle.cell-dist-on { opacity: 1; }
+.cell-dist-toggle.cell-dist-on { color: var(--color-success, #16a34a); }
+.cell-dist-toggle:focus-visible { opacity: 1; }
+
+/* Green dot indicator for cells that have distance set */
+.cell-dist-dot {
+  position: absolute;
+  top: 3px; left: 11px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--color-success, #16a34a);
+  pointer-events: none;
+}
+
+/* Distance footer row */
+.tt-foot-dist .foot-dist-lbl {
+  font-weight: 500;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+.tt-foot-dist td {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* Distance total in report tab */
+.rpt-distance-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
 }
 
 /* Time range popup */

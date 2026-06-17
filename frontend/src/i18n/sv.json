@@ -694,7 +694,10 @@
     "work_hours": "Timmar",
     "lunch_break": "Lunchrast",
     "lunch_break_unit": "minuter",
-    "weekly_total": "Veckototal"
+    "weekly_total": "Veckototal",
+    "distance_unit": "Avståndsenhet",
+    "distance_unit_km": "Kilometer (km)",
+    "distance_unit_miles": "Miles (mi)"
   },
   "dm": {
     "title": "Chattar",
@@ -1000,7 +1003,11 @@
     "fill_from_slots": "Fyll från slots",
     "no_slots_on_contract": "Detta kontrakt har inga tidsplatser.",
     "no_slots_match_week": "Inga tidsplatser gäller för den aktuella veckan.",
-    "slots_filled": "Tidsplatser ifyllda för den aktuella veckan."
+    "slots_filled": "Tidsplatser ifyllda för den aktuella veckan.",
+    "pdf_show_distance": "Visa totalt avstånd",
+    "distance": "Avstånd",
+    "set_distance": "Ange avstånd",
+    "distance_total": "Totalt avstånd"
   },
   "call": {
     "incoming": "Inkommande samtal",

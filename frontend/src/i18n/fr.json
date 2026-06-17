@@ -659,7 +659,10 @@
     "work_hours": "Heures",
     "lunch_break": "Pause déjeuner",
     "lunch_break_unit": "minutes",
-    "weekly_total": "Total hebdomadaire"
+    "weekly_total": "Total hebdomadaire",
+    "distance_unit": "Unité de distance",
+    "distance_unit_km": "Kilomètres (km)",
+    "distance_unit_miles": "Miles (mi)"
   },
   "dm": {
     "title": "Chats",
@@ -1000,7 +1003,11 @@
     "fill_from_slots": "Remplir depuis les créneaux",
     "no_slots_on_contract": "Ce contrat n'a pas de créneaux horaires.",
     "no_slots_match_week": "Aucun créneau ne correspond à la semaine en cours.",
-    "slots_filled": "Créneaux horaires remplis pour la semaine en cours."
+    "slots_filled": "Créneaux horaires remplis pour la semaine en cours.",
+    "pdf_show_distance": "Afficher la distance totale",
+    "distance": "Distance",
+    "set_distance": "Définir la distance",
+    "distance_total": "Distance totale"
   },
   "call": {
     "incoming": "Appel entrant",

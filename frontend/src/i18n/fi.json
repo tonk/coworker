@@ -694,7 +694,10 @@
     "work_hours": "Tunnit",
     "lunch_break": "Lounastauko",
     "lunch_break_unit": "minuuttia",
-    "weekly_total": "Viikon yhteensä"
+    "weekly_total": "Viikon yhteensä",
+    "distance_unit": "Etäisyysyksikkö",
+    "distance_unit_km": "Kilometriä (km)",
+    "distance_unit_miles": "Mailia (mi)"
   },
   "dm": {
     "title": "Chatit",
@@ -1000,7 +1003,11 @@
     "fill_from_slots": "Täytä ajoista",
     "no_slots_on_contract": "Tällä sopimuksella ei ole aikapaikkoja.",
     "no_slots_match_week": "Yksikään aikapaikka ei vastaa nykyistä viikkoa.",
-    "slots_filled": "Aikapaikat täytetty nykyiselle viikolle."
+    "slots_filled": "Aikapaikat täytetty nykyiselle viikolle.",
+    "pdf_show_distance": "Näytä kokonaismatka",
+    "distance": "Matka",
+    "set_distance": "Aseta matka",
+    "distance_total": "Kokonaismatka"
   },
   "call": {
     "incoming": "Saapuva puhelu",

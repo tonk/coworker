@@ -34,9 +34,10 @@ type TimeEntry struct {
 	Date        time.Time `gorm:"not null;index" json:"date"`
 	Minutes     int     `gorm:"not null" json:"minutes"`
 	Description string  `json:"description"`
-	IsHoliday   bool    `gorm:"default:false" json:"is_holiday"`
-	StartTime   *string `gorm:"size:5" json:"start_time,omitempty"`
-	EndTime     *string `gorm:"size:5" json:"end_time,omitempty"`
+	IsHoliday   bool     `gorm:"default:false" json:"is_holiday"`
+	StartTime   *string  `gorm:"size:5" json:"start_time,omitempty"`
+	EndTime     *string  `gorm:"size:5" json:"end_time,omitempty"`
+	Distance    *float64 `json:"distance,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

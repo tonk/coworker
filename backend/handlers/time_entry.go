@@ -117,9 +117,10 @@ func CreateTimeEntry(c *gin.Context) {
 		Date        string  `json:"date"`
 		Minutes     int     `json:"minutes"`
 		Description string  `json:"description"`
-		IsHoliday   bool    `json:"is_holiday"`
-		StartTime   *string `json:"start_time"`
-		EndTime     *string `json:"end_time"`
+		IsHoliday   bool     `json:"is_holiday"`
+		StartTime   *string  `json:"start_time"`
+		EndTime     *string  `json:"end_time"`
+		Distance    *float64 `json:"distance"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -160,6 +161,7 @@ func CreateTimeEntry(c *gin.Context) {
 		IsHoliday:   req.IsHoliday,
 		StartTime:   req.StartTime,
 		EndTime:     req.EndTime,
+		Distance:    req.Distance,
 	}
 	if err := database.DB.Create(&entry).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -185,15 +187,16 @@ func UpdateTimeEntry(c *gin.Context) {
 	}
 
 	var req struct {
-		CustomerID  *uint   `json:"customer_id"`
-		ProjectID   *uint   `json:"project_id"`
-		ContractID  *uint   `json:"contract_id"`
-		Date        string  `json:"date"`
-		Minutes     int     `json:"minutes"`
-		Description string  `json:"description"`
-		IsHoliday   bool    `json:"is_holiday"`
-		StartTime   *string `json:"start_time"`
-		EndTime     *string `json:"end_time"`
+		CustomerID  *uint    `json:"customer_id"`
+		ProjectID   *uint    `json:"project_id"`
+		ContractID  *uint    `json:"contract_id"`
+		Date        string   `json:"date"`
+		Minutes     int      `json:"minutes"`
+		Description string   `json:"description"`
+		IsHoliday   bool     `json:"is_holiday"`
+		StartTime   *string  `json:"start_time"`
+		EndTime     *string  `json:"end_time"`
+		Distance    *float64 `json:"distance"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -223,6 +226,7 @@ func UpdateTimeEntry(c *gin.Context) {
 	entry.IsHoliday = req.IsHoliday
 	entry.StartTime = req.StartTime
 	entry.EndTime = req.EndTime
+	entry.Distance = req.Distance
 
 	// Explicitly clear nullable FK columns so zeroing them is persisted.
 	if req.CustomerID == nil {
@@ -239,6 +243,9 @@ func UpdateTimeEntry(c *gin.Context) {
 	}
 	if req.EndTime == nil {
 		database.DB.Model(&entry).Update("end_time", nil)
+	}
+	if req.Distance == nil {
+		database.DB.Model(&entry).Update("distance", nil)
 	}
 	if err := database.DB.Save(&entry).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -272,6 +279,7 @@ type timeEntryGroup struct {
 	TotalMinutes        int                `json:"total_minutes"`
 	UndeclarableMinutes int                `json:"undeclarable_minutes"`
 	DeclarableMinutes   int                `json:"declarable_minutes"`
+	TotalDistance       float64            `json:"total_distance"`
 }
 
 // TimeEntryReportResponse is the shape returned by GetTimeEntryReport.
@@ -282,6 +290,7 @@ type TimeEntryReportResponse struct {
 	TotalMinutes        int              `json:"total_minutes"`
 	UndeclarableMinutes int              `json:"undeclarable_minutes"`
 	DeclarableMinutes   int              `json:"declarable_minutes"`
+	TotalDistance       float64          `json:"total_distance"`
 	CompanyName         string           `json:"company_name"`
 	CompanyLogo         string           `json:"company_logo"`
 }
@@ -350,9 +359,11 @@ func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryRepor
 	}
 
 	total, undeclarable := 0, 0
+	totalDist := 0.0
 	for _, g := range groups {
 		total += g.TotalMinutes
 		undeclarable += g.UndeclarableMinutes
+		totalDist += g.TotalDistance
 	}
 	declarable := total - undeclarable
 	if declarable < 0 {
@@ -367,6 +378,7 @@ func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryRepor
 		TotalMinutes:        total,
 		UndeclarableMinutes: undeclarable,
 		DeclarableMinutes:   declarable,
+		TotalDistance:       totalDist,
 		CompanyName:         settings["company_name"],
 		CompanyLogo:         settings["company_logo"],
 	}, 0, ""
@@ -441,6 +453,9 @@ func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) 
 		b.Entries = append(b.Entries, entries[i])
 		b.TotalMinutes += entries[i].Minutes
 		b.UndeclarableMinutes += projUndecl(entries[i])
+		if entries[i].Distance != nil {
+			b.TotalDistance += *entries[i].Distance
+		}
 	}
 
 	// Fill empty buckets for periods with no entries so the report always
@@ -544,6 +559,9 @@ func buildGroupsByCustomer(entries []models.TimeEntry) []timeEntryGroup {
 		b.Entries = append(b.Entries, e)
 		b.TotalMinutes += e.Minutes
 		b.UndeclarableMinutes += projUndecl(e)
+		if e.Distance != nil {
+			b.TotalDistance += *e.Distance
+		}
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
@@ -574,6 +592,9 @@ func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
 		b.Entries = append(b.Entries, e)
 		b.TotalMinutes += e.Minutes
 		b.UndeclarableMinutes += projUndecl(e)
+		if e.Distance != nil {
+			b.TotalDistance += *e.Distance
+		}
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
@@ -605,6 +626,9 @@ func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
 		b.Entries = append(b.Entries, e)
 		b.TotalMinutes += e.Minutes
 		b.UndeclarableMinutes += projUndecl(e)
+		if e.Distance != nil {
+			b.TotalDistance += *e.Distance
+		}
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]

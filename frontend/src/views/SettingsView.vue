@@ -169,6 +169,13 @@
               </select>
             </div>
             <div class="form-group">
+              <label class="form-label" for="distance-unit-select">{{ $t('settings.distance_unit') }}</label>
+              <select id="distance-unit-select" class="form-input" v-model="form.distance_unit">
+                <option value="km">{{ $t('settings.distance_unit_km') }}</option>
+                <option value="miles">{{ $t('settings.distance_unit_miles') }}</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label class="form-label" for="week-start-select">{{ $t('settings.week_start') }}</label>
               <select id="week-start-select" class="form-input" v-model="form.week_start">
                 <option value="monday">{{ $t('settings.week_start_monday') }}</option>
@@ -546,6 +553,7 @@ const form = ref({
   email_notifications: true,
   time_tracking_enabled: false,
   time_notation: 'decimal',
+  distance_unit: 'km',
   week_start: 'monday',
   dashboard_default: 'boards',
   mon_work_start: '08:00',
@@ -688,6 +696,7 @@ onMounted(async () => {
       email_notifications: u.email_notifications !== undefined ? u.email_notifications : true,
       time_tracking_enabled: !!u.time_tracking_enabled,
       time_notation: u.time_notation || 'decimal',
+      distance_unit: u.distance_unit || 'km',
       week_start: u.week_start || 'monday',
       dashboard_default: u.dashboard_default || 'boards',
       mon_work_start: u.mon_work_start ?? '08:00',
@@ -735,6 +744,7 @@ async function saveProfile() {
       email_notifications: form.value.email_notifications,
       time_tracking_enabled: form.value.time_tracking_enabled,
       time_notation: form.value.time_notation,
+      distance_unit: form.value.distance_unit,
       week_start: form.value.week_start,
       dashboard_default: form.value.dashboard_default,
       mon_work_start: form.value.mon_work_start,

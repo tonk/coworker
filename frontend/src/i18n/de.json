@@ -659,7 +659,10 @@
     "work_hours": "Stunden",
     "lunch_break": "Mittagspause",
     "lunch_break_unit": "Minuten",
-    "weekly_total": "Wochensumme"
+    "weekly_total": "Wochensumme",
+    "distance_unit": "Entfernungseinheit",
+    "distance_unit_km": "Kilometer (km)",
+    "distance_unit_miles": "Meilen (mi)"
   },
   "dm": {
     "title": "Chats",
@@ -1000,7 +1003,11 @@
     "fill_from_slots": "Aus Slots füllen",
     "no_slots_on_contract": "Dieser Vertrag hat keine Zeitslots.",
     "no_slots_match_week": "Keine Zeitslots für die aktuelle Woche.",
-    "slots_filled": "Zeitslots für die aktuelle Woche gefüllt."
+    "slots_filled": "Zeitslots für die aktuelle Woche gefüllt.",
+    "pdf_show_distance": "Gesamtentfernung anzeigen",
+    "distance": "Entfernung",
+    "set_distance": "Entfernung festlegen",
+    "distance_total": "Gesamtentfernung"
   },
   "call": {
     "incoming": "Eingehender Anruf",

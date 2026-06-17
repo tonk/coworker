@@ -118,6 +118,8 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	showAbbr := c.Query("show_abbr") == "1"
 	showCosts := c.Query("show_costs") == "1"
 	showUndeclarable := c.DefaultQuery("show_undeclarable", "1") != "0"
+	showDistance := c.Query("show_distance") == "1"
+	distanceUnit := c.DefaultQuery("distance_unit", "km")
 
 	// Build contract info map for cost display (includes time slots for slot-aware costing).
 	var contractInfos map[uint]projectContractInfo
@@ -189,6 +191,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		colProj = 45.0
 		colDesc = 50.0
 		colCost = 0.0
+		colDist = 0.0
 	)
 	if showCosts {
 		colDate = 22.0
@@ -197,16 +200,25 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		colDesc = 47.0
 		colCost = 20.0
 	}
+	if showDistance {
+		colDist = 16.0
+		colDesc -= 16.0
+	}
 	if showAbbr {
 		colDate = colAbbr + 25.0
 		if showCosts {
-			colDesc = 37.0
+			colDesc = 37.0 - colDist
 		} else {
-			colDesc = 40.0
+			colDesc = 40.0 - colDist
 		}
 	}
-	colHours := pdfBodyW - colDate - colCust - colProj - colDesc - colCost
-	nonHourW := colDate + colCust + colProj + colDesc + colCost
+	colHours := pdfBodyW - colDate - colCust - colProj - colDesc - colCost - colDist
+	nonHourW := colDate + colCust + colProj + colDesc + colCost + colDist
+
+	distHdr := tr.TotalDistance
+	if len(distHdr) > 8 {
+		distHdr = distanceUnit
+	}
 
 	// ── Table header ──────────────────────────────────────────────────────────
 	drawTableHeader := func() {
@@ -220,6 +232,9 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.CellFormat(colDesc, rowH, tr.Activity, "0", 0, "L", true, 0, "")
 		if showCosts {
 			pdf.CellFormat(colCost, rowH, tr.Cost, "0", 0, "R", true, 0, "")
+		}
+		if showDistance {
+			pdf.CellFormat(colDist, rowH, distHdr, "0", 0, "R", true, 0, "")
 		}
 		pdf.CellFormat(colHours, rowH, tr.Hours, "0", 1, "R", true, 0, "")
 		setTxt(pdf, clrText)
@@ -359,6 +374,13 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 				}
 				pdf.CellFormat(colCost, entryRowH, costStr, "B", 0, "R", true, 0, "")
 			}
+			if showDistance {
+				distStr := ""
+				if e.Distance != nil && *e.Distance > 0 {
+					distStr = fmtDistance(*e.Distance)
+				}
+				pdf.CellFormat(colDist, entryRowH, distStr, "B", 0, "R", true, 0, "")
+			}
 			pdf.CellFormat(colHours, entryRowH, fmtDecimalH(pdfEntryDeclarable(e)), "B", 1, "R", true, 0, "")
 
 			// ── Per-entry time-slot sub-rows ─────────────────────────────────
@@ -445,6 +467,9 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 								}
 								pdf.CellFormat(colCost, subH, costStr, "B", 0, "R", true, 0, "")
 							}
+							if showDistance {
+								pdf.CellFormat(colDist, subH, "", "B", 0, "R", true, 0, "")
+							}
 							pdf.CellFormat(colHours, subH, fmtDecimalH(sr.minutes), "B", 1, "R", true, 0, "")
 						}
 					}
@@ -471,13 +496,21 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.SetFont(fontFamily, "B", 8)
 		setTxt(pdf, clrMuted)
 		setFill(pdf, rgb{238, 242, 248})
-		pdf.CellFormat(nonHourW-colCost, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" - "+tr.Total, "0", 0, "R", true, 0, "")
+		pdf.CellFormat(nonHourW-colCost-colDist, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" - "+tr.Total, "0", 0, "R", true, 0, "")
 		if showCosts {
 			costStr := ""
 			if grpCost > 0 {
 				costStr = fmtCost(grpCost) + " " + grpCurrency
 			}
 			pdf.CellFormat(colCost, rowH, costStr, "0", 0, "R", true, 0, "")
+		}
+		if showDistance {
+			grpDistStr := ""
+			if grp.TotalDistance > 0 {
+				grpDistStr = fmtDistance(grp.TotalDistance)
+			}
+			setTxt(pdf, clrMuted)
+			pdf.CellFormat(colDist, rowH, grpDistStr, "0", 0, "R", true, 0, "")
 		}
 		setTxt(pdf, clrPrimary)
 		pdf.CellFormat(colHours, rowH, fmtDecimalH(grp.DeclarableMinutes), "0", 1, "R", true, 0, "")
@@ -487,9 +520,12 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 			setFill(pdf, rgb{252, 245, 245})
 			setTxt(pdf, clrMuted)
 			pdf.SetFont(fontFamily, "", 8)
-			pdf.CellFormat(nonHourW-colCost, rowH, "  "+tr.Undeclarable, "0", 0, "R", true, 0, "")
+			pdf.CellFormat(nonHourW-colCost-colDist, rowH, "  "+tr.Undeclarable, "0", 0, "R", true, 0, "")
 			if showCosts {
 				pdf.CellFormat(colCost, rowH, "", "0", 0, "R", true, 0, "")
+			}
+			if showDistance {
+				pdf.CellFormat(colDist, rowH, "", "0", 0, "R", true, 0, "")
 			}
 			setTxt(pdf, rgb{180, 80, 80})
 			pdf.CellFormat(colHours, rowH, "-"+fmtDecimalH(grp.UndeclarableMinutes), "0", 1, "R", true, 0, "")
@@ -530,7 +566,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		setFill(pdf, clrPrimary)
 		setTxt(pdf, rgb{255, 255, 255})
 		pdf.SetFont(fontFamily, "B", 9)
-		pdf.CellFormat(nonHourW-colCost, rowH+1, "  "+tr.Total, "0", 0, "L", true, 0, "")
+		pdf.CellFormat(nonHourW-colCost-colDist, rowH+1, "  "+tr.Total, "0", 0, "L", true, 0, "")
 		if showCosts {
 			costStr := ""
 			if totalCost > 0 {
@@ -538,15 +574,25 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 			}
 			pdf.CellFormat(colCost, rowH+1, costStr, "0", 0, "R", true, 0, "")
 		}
+		if showDistance {
+			totalDistStr := ""
+			if report.TotalDistance > 0 {
+				totalDistStr = fmtDistance(report.TotalDistance)
+			}
+			pdf.CellFormat(colDist, rowH+1, totalDistStr, "0", 0, "R", true, 0, "")
+		}
 		pdf.CellFormat(colHours, rowH+1, fmtDecimalH(grandMinutes), "0", 1, "R", true, 0, "")
 
 		if showUndeclarable && groupBy == "customer" && report.UndeclarableMinutes > 0 {
 			setFill(pdf, rgb{252, 245, 245})
 			setTxt(pdf, clrMuted)
 			pdf.SetFont(fontFamily, "", 8.5)
-			pdf.CellFormat(nonHourW-colCost, rowH, "  "+tr.Undeclarable, "0", 0, "L", true, 0, "")
+			pdf.CellFormat(nonHourW-colCost-colDist, rowH, "  "+tr.Undeclarable, "0", 0, "L", true, 0, "")
 			if showCosts {
 				pdf.CellFormat(colCost, rowH, "", "0", 0, "R", true, 0, "")
+			}
+			if showDistance {
+				pdf.CellFormat(colDist, rowH, "", "0", 0, "R", true, 0, "")
 			}
 			setTxt(pdf, rgb{180, 80, 80})
 			pdf.CellFormat(colHours, rowH, "-"+fmtDecimalH(report.UndeclarableMinutes), "0", 1, "R", true, 0, "")
@@ -587,6 +633,14 @@ func fmtDecimalH(minutes int) string {
 		return "0.00"
 	}
 	return fmt.Sprintf("%.2f", float64(minutes)/60.0)
+}
+
+// fmtDistance formats a distance value, omitting the decimal part when it is zero.
+func fmtDistance(d float64) string {
+	if d == float64(int(d)) {
+		return fmt.Sprintf("%d", int(d))
+	}
+	return fmt.Sprintf("%.1f", d)
 }
 
 // truncate clips a string to max n runes.

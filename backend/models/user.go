@@ -44,8 +44,9 @@ type User struct {
 	BoardEnabled        bool           `gorm:"default:true" json:"board_enabled"`
 	ChatEnabled         bool           `gorm:"default:true" json:"chat_enabled"`
 	HelpdeskEnabled     bool           `gorm:"default:false" json:"helpdesk_enabled"`
-	TimeNotation        string         `gorm:"size:10;default:'decimal'" json:"time_notation"` // "decimal" | "hhmm"
-	WeekStart           string         `gorm:"size:10;default:'monday'" json:"week_start"`     // "monday" | "sunday"
+	TimeNotation        string         `gorm:"size:10;default:'decimal'" json:"time_notation"`  // "decimal" | "hhmm"
+	WeekStart           string         `gorm:"size:10;default:'monday'" json:"week_start"`      // "monday" | "sunday"
+	DistanceUnit        string         `gorm:"size:10;default:'km'" json:"distance_unit"`       // "km" | "miles"
 	DashboardDefault    string         `gorm:"size:10;default:'boards'" json:"dashboard_default"` // "boards" | "tickets"
 	MonWorkStart        string         `gorm:"size:5;default:'08:00'" json:"mon_work_start"`
 	MonWorkEnd          string         `gorm:"size:5;default:'17:00'" json:"mon_work_end"`

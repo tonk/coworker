@@ -310,6 +310,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		ChatEnabled          *bool   `json:"chat_enabled"`
 		TimeNotation         string  `json:"time_notation"`
 		WeekStart            string  `json:"week_start"`
+		DistanceUnit         string  `json:"distance_unit"`
 		DashboardDefault     string  `json:"dashboard_default"`
 		MonWorkStart         string  `json:"mon_work_start"`
 		MonWorkEnd           string  `json:"mon_work_end"`
@@ -408,6 +409,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.WeekStart == "monday" || req.WeekStart == "sunday" {
 		updates["week_start"] = req.WeekStart
+	}
+	if req.DistanceUnit == "km" || req.DistanceUnit == "miles" {
+		updates["distance_unit"] = req.DistanceUnit
 	}
 	if req.DashboardDefault == "boards" || req.DashboardDefault == "tickets" {
 		updates["dashboard_default"] = req.DashboardDefault

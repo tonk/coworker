@@ -119,8 +119,8 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 	f.SetCellValue(sheetName, cell(1, row), report.PeriodLabel)
 	row += 2
 
-	costCol := 8
-	headers := []string{"Date", "Customer", "Project", "Activity", "Hours", "Currency", "Rate", "Cost"}
+	distanceUnit := c.DefaultQuery("distance_unit", "km")
+	headers := []string{"Date", "Customer", "Project", "Activity", "Hours", "Currency", "Rate", "Cost", "Distance (" + distanceUnit + ")"}
 	for col, h := range headers {
 		cr := cell(col+1, row)
 		f.SetCellValue(sheetName, cr, h)
@@ -133,7 +133,7 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 			continue
 		}
 		f.SetCellValue(sheetName, cell(1, row), grp.Label)
-		f.SetCellStyle(sheetName, cell(1, row), cell(costCol, row), bold)
+		f.SetCellStyle(sheetName, cell(1, row), cell(9, row), bold)
 		row++
 
 		for _, e := range grp.Entries {
@@ -165,6 +165,9 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 			}
 			if cost > 0 {
 				f.SetCellValue(sheetName, cell(8, row), cost)
+			}
+			if e.Distance != nil && *e.Distance > 0 {
+				f.SetCellValue(sheetName, cell(9, row), *e.Distance)
 			}
 			row++
 
@@ -209,7 +212,10 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 		if grpCost > 0 {
 			f.SetCellValue(sheetName, cell(8, row), grpCost)
 		}
-		f.SetCellStyle(sheetName, cell(1, row), cell(8, row), bold)
+		if grp.TotalDistance > 0 {
+			f.SetCellValue(sheetName, cell(9, row), grp.TotalDistance)
+		}
+		f.SetCellStyle(sheetName, cell(1, row), cell(9, row), bold)
 		row += 2
 	}
 
@@ -233,7 +239,10 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 	if totalCost > 0 {
 		f.SetCellValue(sheetName, cell(8, row), totalCost)
 	}
-	f.SetCellStyle(sheetName, cell(1, row), cell(8, row), moneyFmt)
+	if report.TotalDistance > 0 {
+		f.SetCellValue(sheetName, cell(9, row), report.TotalDistance)
+	}
+	f.SetCellStyle(sheetName, cell(1, row), cell(9, row), moneyFmt)
 
 	if report.UndeclarableMinutes > 0 {
 		row++
@@ -253,6 +262,7 @@ func GetTimeEntryReportXLSX(c *gin.Context) {
 	f.SetColWidth(sheetName, "F", "F", 10)
 	f.SetColWidth(sheetName, "G", "G", 10)
 	f.SetColWidth(sheetName, "H", "H", 14)
+	f.SetColWidth(sheetName, "I", "I", 14)
 
 	var buf bytes.Buffer
 	if err := f.Write(&buf); err != nil {

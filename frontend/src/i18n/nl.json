@@ -659,7 +659,10 @@
     "work_hours": "Uren",
     "lunch_break": "Lunchpauze",
     "lunch_break_unit": "minuten",
-    "weekly_total": "Totaal per week"
+    "weekly_total": "Totaal per week",
+    "distance_unit": "Afstandseenheid",
+    "distance_unit_km": "Kilometer (km)",
+    "distance_unit_miles": "Mijl (mi)"
   },
   "dm": {
     "title": "Chats",
@@ -1000,7 +1003,11 @@
     "fill_from_slots": "Invullen vanuit slots",
     "no_slots_on_contract": "Dit contract heeft geen tijdslots.",
     "no_slots_match_week": "Geen tijdslots van toepassing op deze week.",
-    "slots_filled": "Tijdslots ingevuld voor de huidige week."
+    "slots_filled": "Tijdslots ingevuld voor de huidige week.",
+    "pdf_show_distance": "Totale afstand weergeven",
+    "distance": "Afstand",
+    "set_distance": "Afstand instellen",
+    "distance_total": "Totale afstand"
   },
   "call": {
     "incoming": "Inkomende oproep",
