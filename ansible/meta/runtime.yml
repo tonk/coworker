@@ -1,2 +1,30 @@
 ---
 requires_ansible: ">=2.14"
+
+action_groups:
+  all:
+    - api_key
+    - card
+    - card_comment
+    - checklist_item
+    - column
+    - contract
+    - customer
+    - customer_member
+    - epic
+    - from_vars
+    - group
+    - label
+    - macro
+    - news
+    - project
+    - project_member
+    - sla_policy
+    - sprint
+    - system_settings
+    - ticket
+    - ticket_checklist_template
+    - user
+    - user_access
+    - user_options
+    - webhook

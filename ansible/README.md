@@ -29,6 +29,36 @@ All modules and plugins accept the same connection parameters (or their environm
 
 Only one authentication method should be used at a time.
 
+## module_defaults — set connection parameters once
+
+Every module in this collection belongs to the `ansilabnl.warmdesk.all` action group.
+Use `module_defaults` to supply the shared connection parameters once per play instead of repeating them on every task:
+
+```yaml
+- name: Provision WarmDesk
+  hosts: localhost
+  gather_facts: false
+  module_defaults:
+    group/ansilabnl.warmdesk.all:
+      warmdesk_url: "https://warmdesk.example.com"
+      warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+
+  tasks:
+    - name: Create project
+      ansilabnl.warmdesk.project:
+        name: My Project
+        state: present
+
+    - name: Add a member
+      ansilabnl.warmdesk.project_member:
+        project: my-project
+        username: jdoe
+        role: member
+        state: present
+```
+
+Any parameter set in `module_defaults` can still be overridden per task by supplying it explicitly on the task itself.
+
 ## Modules
 
 | Module | Description |
@@ -103,23 +133,20 @@ Only one authentication method should be used at a time.
 - name: Provision a new project with columns and members
   hosts: localhost
   gather_facts: false
-  vars:
-    warmdesk_url: https://warmdesk.example.com
-    warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
+  module_defaults:
+    group/ansilabnl.warmdesk.all:
+      warmdesk_url: https://warmdesk.example.com
+      warmdesk_api_key: "{{ lookup('env', 'WARMDESK_API_KEY') }}"
 
   tasks:
     - name: Create project
       ansilabnl.warmdesk.project:
-        warmdesk_url: "{{ warmdesk_url }}"
-        warmdesk_api_key: "{{ warmdesk_api_key }}"
         name: My Project
         state: present
       register: project
 
     - name: Add columns
       ansilabnl.warmdesk.column:
-        warmdesk_url: "{{ warmdesk_url }}"
-        warmdesk_api_key: "{{ warmdesk_api_key }}"
         project: "{{ project.project.slug }}"
         name: "{{ item }}"
         state: present
@@ -131,8 +158,6 @@ Only one authentication method should be used at a time.
 
     - name: Add a member
       ansilabnl.warmdesk.project_member:
-        warmdesk_url: "{{ warmdesk_url }}"
-        warmdesk_api_key: "{{ warmdesk_api_key }}"
         project: "{{ project.project.slug }}"
         username: jdoe
         role: member
