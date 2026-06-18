@@ -4,6 +4,7 @@ Install the three required tools before running or building WarmDesk:
 
 | Tool | Minimum version | Required for |
 |---|---|---|
+| make | any | Running all build targets |
 | Go | 1.26 | Backend |
 | Node.js | 20 LTS | Frontend |
 | Rust + Cargo | 1.85 | Desktop (AppImage / DMG / Windows installer) |
@@ -11,6 +12,12 @@ Install the three required tools before running or building WarmDesk:
 ---
 
 ## Linux — Debian / Ubuntu
+
+### make
+
+```bash
+sudo apt install -y build-essential
+```
 
 ### Go
 
@@ -58,6 +65,12 @@ sudo apt install -y \
 ---
 
 ## Linux — Fedora / RHEL / CentOS
+
+### make
+
+```bash
+sudo dnf install -y make
+```
 
 ### Go
 
@@ -112,6 +125,14 @@ sudo dnf install -y \
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
+### make
+
+`make` is part of the Xcode Command Line Tools:
+
+```bash
+xcode-select --install
+```
+
 ### Go
 
 ```bash
@@ -140,6 +161,18 @@ No extra system libraries are needed for `make dmg` on macOS.
 ## Windows
 
 [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/) is included with Windows 11 and recent Windows 10 builds. Run the commands below in **PowerShell** or **Windows Terminal**.
+
+### make
+
+Windows does not ship with `make`. Install GnuWin32 make via winget:
+
+```powershell
+winget install --id GnuWin32.Make
+```
+
+Then add `C:\Program Files (x86)\GnuWin32\bin` to your `PATH` in **System Properties → Environment Variables**.
+
+Alternatively, use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) (Windows Subsystem for Linux) and follow the Debian/Ubuntu instructions above — this is the recommended approach for a full Linux-compatible build environment on Windows.
 
 ### Go
 
@@ -178,6 +211,7 @@ winget install --id NSIS.NSIS
 Run these after completing the steps above to confirm everything is in place:
 
 ```bash
+make --version  # GNU Make 4.x ...
 go version      # go version go1.26.x ...
 node --version  # v20.x.x
 npm --version   # 10.x.x
