@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.12.20 — 2026-06-18
+
+### Added
+- **Black theme in quick switcher** — the pure black (AMOLED) theme is now available directly from the header theme menu alongside Light, Dark, and System, without needing to open Settings.
+
 ## v0.12.19 — 2026-06-17
 
 ### Added

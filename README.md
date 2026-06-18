@@ -8,10 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.19)
+## Latest release (v0.12.20)
 
-- **Travel distance per time entry** — log km or miles per cell in the weekly time sheet; totals appear in the footer and report tab.
-- **Distance in PDF/XLSX exports** — distance shows as a proper column (per entry, group subtotal, grand total) so customers can be billed per trip.
+- **Black theme in quick switcher** — the pure black (AMOLED) theme is now selectable directly from the header theme menu.
 
 ## Experiment
 
@@ -348,7 +347,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
 - **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages
 - **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted); all sections are drag-to-reorder with custom order persisted in localStorage
-- **Dark / light / system theme** — defaults to light
+- **Dark / light / black / system theme** — defaults to light; black mode uses a pure #000000 background (AMOLED-friendly); switchable from the header menu
 - **Accent colour** — per-user accent colour (blue, red, green, or orange) applied throughout the UI; saved as a user setting
 - **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français), Danish (Dansk), Swedish (Svenska), Norwegian (Norsk), Finnish (Suomi), Icelandic (Íslenska), Portuguese (Português), Italian (Italiano)
 - **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, time notation (decimal or HH:MM), password change

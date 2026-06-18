@@ -744,3 +744,4 @@ Create an application that has all these features and requirements
 - Add warmdesk-timetracking.desktop launcher entry to deb/rpm packages
 - Hide SMTP, IMAP, project defaults, and Scrum Story Points in admin settings when in timetracking mode
 - Hide Email Notifications and Personal API Keys in user settings when in timetracking mode
+- Add black (pure #000000 / AMOLED) theme option to the header quick theme switcher
