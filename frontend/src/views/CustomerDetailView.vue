@@ -491,17 +491,38 @@
       <div class="form-group form-row">
         <div class="form-group half">
           <label class="form-label" for="inv-from">{{ $t('invoice.period_start') }}</label>
-          <input id="inv-from" class="form-input" type="date" v-model="invoiceForm.period_start" />
+          <div class="date-input-row">
+            <input id="inv-from" class="form-input" type="text" v-model="displayInvFrom" :placeholder="dateOnlyFormat()" @blur="parseInvFrom" />
+            <label class="picker-wrap" :title="$t('common.pick_date')">
+              <span class="btn-icon-xs">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="invoiceForm.period_start" @change="e => { invoiceForm.period_start = e.target.value; displayInvFrom = e.target.value ? formatDate(e.target.value) : '' }" />
+            </label>
+            <button v-if="displayInvFrom" class="btn-icon-xs" @click="displayInvFrom = ''; invoiceForm.period_start = ''" title="Clear">×</button>
+          </div>
         </div>
         <div class="form-group half">
           <label class="form-label" for="inv-to">{{ $t('invoice.period_end') }}</label>
-          <input id="inv-to" class="form-input" type="date" v-model="invoiceForm.period_end" />
+          <div class="date-input-row">
+            <input id="inv-to" class="form-input" type="text" v-model="displayInvTo" :placeholder="dateOnlyFormat()" @blur="parseInvTo" />
+            <label class="picker-wrap" :title="$t('common.pick_date')">
+              <span class="btn-icon-xs">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="invoiceForm.period_end" @change="e => { invoiceForm.period_end = e.target.value; displayInvTo = e.target.value ? formatDate(e.target.value) : '' }" />
+            </label>
+            <button v-if="displayInvTo" class="btn-icon-xs" @click="displayInvTo = ''; invoiceForm.period_end = ''" title="Clear">×</button>
+          </div>
         </div>
       </div>
       <div class="form-group form-row">
         <div class="form-group half">
           <label class="form-label" for="inv-due">{{ $t('invoice.due_date') }}</label>
-          <input id="inv-due" class="form-input" type="date" v-model="invoiceForm.due_date" />
+          <div class="date-input-row">
+            <input id="inv-due" class="form-input" type="text" v-model="displayInvDue" :placeholder="dateOnlyFormat()" @blur="parseInvDue" />
+            <label class="picker-wrap" :title="$t('common.pick_date')">
+              <span class="btn-icon-xs">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="invoiceForm.due_date" @change="e => { invoiceForm.due_date = e.target.value; displayInvDue = e.target.value ? formatDate(e.target.value) : '' }" />
+            </label>
+            <button v-if="displayInvDue" class="btn-icon-xs" @click="displayInvDue = ''; invoiceForm.due_date = ''" title="Clear">×</button>
+          </div>
         </div>
         <div class="form-group half">
           <label class="form-label" for="inv-vat">{{ $t('invoice.vat_rate') }}</label>
@@ -534,7 +555,7 @@
           </thead>
           <tbody>
             <tr v-for="(li, i) in invoiceLineItems" :key="i">
-              <td>{{ li.date }}</td>
+              <td>{{ li.date ? formatDate(li.date) : '' }}</td>
               <td>{{ li.project_name }}</td>
               <td>{{ li.description }}</td>
               <td class="num">{{ fmtMinutes(li.minutes) }}</td>
@@ -614,6 +635,30 @@ const savingInvoice = ref(false)
 const invoiceLineItems = ref([])
 const invoiceForm = ref({ period_start: '', period_end: '', due_date: '', vat_rate: 0, notes: '' })
 
+const displayInvFrom = ref('')
+const displayInvTo   = ref('')
+const displayInvDue  = ref('')
+
+function _parseInvDate(displayRef, isoKey) {
+  const val = displayRef.value.trim()
+  if (!val) { invoiceForm.value[isoKey] = ''; return }
+  const fmt = dateOnlyFormat()
+  const yPos = fmt.indexOf('YYYY'), mPos = fmt.indexOf('MM'), dPos = fmt.indexOf('DD')
+  const y = parseInt(val.slice(yPos, yPos + 4))
+  const m = parseInt(val.slice(mPos, mPos + 2))
+  const d = parseInt(val.slice(dPos, dPos + 2))
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    displayRef.value = invoiceForm.value[isoKey] ? formatDate(invoiceForm.value[isoKey]) : ''
+    return
+  }
+  const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  invoiceForm.value[isoKey] = iso
+  displayRef.value = formatDate(iso)
+}
+function parseInvFrom() { _parseInvDate(displayInvFrom, 'period_start') }
+function parseInvTo()   { _parseInvDate(displayInvTo,   'period_end') }
+function parseInvDue()  { _parseInvDate(displayInvDue,  'due_date') }
+
 const invoiceHasDistance = computed(() => invoiceLineItems.value.some(li => li.distance > 0))
 const invoicePreviewSubtotal = computed(() => invoiceLineItems.value.reduce((s, li) => s + li.amount, 0))
 const invoicePreviewVAT = computed(() => invoicePreviewSubtotal.value * invoiceForm.value.vat_rate / 100)
@@ -649,13 +694,12 @@ function openNewInvoice() {
   const y = now.getFullYear(), m = now.getMonth()
   const firstDay = new Date(y, m, 1)
   const lastDay = new Date(y, m + 1, 0)
-  invoiceForm.value = {
-    period_start: firstDay.toISOString().slice(0, 10),
-    period_end:   lastDay.toISOString().slice(0, 10),
-    due_date: '',
-    vat_rate: 0,
-    notes: '',
-  }
+  const fromIso = firstDay.toISOString().slice(0, 10)
+  const toIso   = lastDay.toISOString().slice(0, 10)
+  invoiceForm.value = { period_start: fromIso, period_end: toIso, due_date: '', vat_rate: 0, notes: '' }
+  displayInvFrom.value = formatDate(fromIso)
+  displayInvTo.value   = formatDate(toIso)
+  displayInvDue.value  = ''
   invoiceLineItems.value = []
   invoiceStep.value = 1
   showNewInvoice.value = true
