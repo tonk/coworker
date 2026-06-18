@@ -450,9 +450,9 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		CompanyCOCNumber          *string     `json:"company_coc_number"`
 		CompanyIBAN               *string     `json:"company_iban"`
 		CompanyBIC                *string     `json:"company_bic"`
-		CompanyPaymentTerms       *string     `json:"company_payment_terms"`
+		CompanyPaymentTerms       json.Number `json:"company_payment_terms"` // accepts "30" or 30
 		InvoiceNumberPrefix       *string     `json:"invoice_number_prefix"`
-		DefaultVATRate            *string     `json:"default_vat_rate"`
+		DefaultVATRate            json.Number `json:"default_vat_rate"` // accepts "21.5" or 21.5
 		DefaultColumns            *string     `json:"default_columns"`
 		DefaultLabels             *string     `json:"default_labels"`
 		BackupSchedule            *string     `json:"backup_schedule"`
@@ -625,14 +625,14 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	if req.CompanyBIC != nil {
 		saveSetting(settingCompanyBIC, *req.CompanyBIC)
 	}
-	if req.CompanyPaymentTerms != nil {
-		saveSetting(settingCompanyPaymentTerms, *req.CompanyPaymentTerms)
+	if req.CompanyPaymentTerms != "" {
+		saveSetting(settingCompanyPaymentTerms, req.CompanyPaymentTerms.String())
 	}
 	if req.InvoiceNumberPrefix != nil {
 		saveSetting(settingInvoiceNumberPrefix, *req.InvoiceNumberPrefix)
 	}
-	if req.DefaultVATRate != nil {
-		saveSetting(settingDefaultVATRate, *req.DefaultVATRate)
+	if req.DefaultVATRate != "" {
+		saveSetting(settingDefaultVATRate, req.DefaultVATRate.String())
 	}
 	if req.DefaultColumns != nil {
 		saveSetting(settingDefaultColumns, *req.DefaultColumns)
