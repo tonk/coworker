@@ -17,7 +17,7 @@ warmdesk/
 | `ansible/` | Ansible collection (`ansilabnl.warmdesk`) for automating WarmDesk via playbooks |
 | `backend/` | Go server — REST API, WebSocket, database, business logic |
 | `deploy/` | Deployment templates — systemd service, nginx/Apache config, `.desktop` entry, `get_warmdesk` update script |
-| `docs/` | User-facing documentation (admin guide, API docs, user guide) |
+| `docs/` | Developer and user-facing documentation (admin guide, API docs, user guide, setup guide) |
 | `frontend/` | Vue 3 web app + Tauri desktop wrapper |
 | `screenshots/` | 24 reference screenshots used in README.md and the Hugo website (`website/Makefile` copies them at build time) |
 
