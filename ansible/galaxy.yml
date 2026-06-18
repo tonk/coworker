@@ -1,7 +1,7 @@
 ---
 namespace: ansilabnl
 name: warmdesk
-version: 0.5.0
+version: 0.6.0
 readme: README.md
 description: >
   Ansible collection to manage WarmDesk — users, projects, boards,
