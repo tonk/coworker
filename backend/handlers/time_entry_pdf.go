@@ -652,11 +652,12 @@ func truncate(s string, n int) string {
 	return string(r[:n-1]) + "…"
 }
 
-// projectContractInfo holds the base rate, currency and time slots for a project's contract.
+// projectContractInfo holds the base rate, distance rate, currency and time slots for a project's contract.
 type projectContractInfo struct {
-	BaseRate  *float64
-	Currency  string
-	TimeSlots []models.ContractTimeSlot
+	BaseRate   *float64
+	PricePerKm *float64
+	Currency   string
+	TimeSlots  []models.ContractTimeSlot
 }
 
 // contractInfoMap builds a projectContractInfo for every project referenced by the entries.
@@ -688,6 +689,9 @@ func contractInfoMap(entries []models.TimeEntry) map[uint]projectContractInfo {
 		info := projectContractInfo{Currency: c.Currency, TimeSlots: c.TimeSlots}
 		if c.PricePerHour != nil {
 			info.BaseRate = c.PricePerHour
+		}
+		if c.PricePerKm != nil {
+			info.PricePerKm = c.PricePerKm
 		}
 		result[p.ID] = info
 	}
@@ -947,8 +951,10 @@ func entrySlotBreakdown(entry models.TimeEntry, info projectContractInfo) (int, 
 }
 
 // entrySlotCost computes the cost for an entry using time-slot-aware rates.
+// When the entry has a distance and the contract has a price_per_km, the
+// distance cost is added on top of the hourly cost.
 func entrySlotCost(entry models.TimeEntry, info projectContractInfo) (float64, string) {
-	if info.BaseRate == nil && len(info.TimeSlots) == 0 {
+	if info.BaseRate == nil && len(info.TimeSlots) == 0 && info.PricePerKm == nil {
 		return 0, ""
 	}
 	standard, slots := entrySlotBreakdown(entry, info)
@@ -965,6 +971,9 @@ func entrySlotCost(entry models.TimeEntry, info projectContractInfo) (float64, s
 		case info.BaseRate != nil:
 			total += float64(s.Minutes) / 60.0 * *info.BaseRate
 		}
+	}
+	if info.PricePerKm != nil && entry.Distance != nil && *entry.Distance > 0 {
+		total += *entry.Distance * *info.PricePerKm
 	}
 	return total, info.Currency
 }

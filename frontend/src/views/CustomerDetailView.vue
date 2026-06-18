@@ -57,6 +57,7 @@
                 {{ formatDate(grp.start_date) }}{{ grp.end_date ? ' – ' + formatDate(grp.end_date) : '' }}
               </span>
               <span v-if="grp.price_per_hour != null" class="contract-rate">{{ grp.price_per_hour }} {{ grp.currency }}/h</span>
+              <span v-if="grp.price_per_km != null" class="contract-rate">{{ grp.price_per_km }} {{ grp.currency }}/{{ distanceUnit }}</span>
             </div>
             <div v-if="grp.time_slots && grp.time_slots.length" class="slot-indicator-wrap">
               <span class="slot-badge" tabindex="0" :aria-label="grp.time_slots.length + ' ' + $t('contract.time_slots')">
@@ -210,6 +211,35 @@
         </div>
         <input ref="logoFileInput" type="file" accept="image/*" style="display:none" @change="onLogoFileSelected" />
       </div>
+      <h4 class="form-section-title">{{ $t('customer.billing_section') }}</h4>
+      <div class="form-group">
+        <label class="form-label" for="edit-cust-street">{{ $t('customer.billing_street') }}</label>
+        <input id="edit-cust-street" class="form-input" v-model="editForm.billing_street" />
+      </div>
+      <div class="form-group form-row">
+        <div class="form-group half">
+          <label class="form-label" for="edit-cust-postal">{{ $t('customer.billing_postal_code') }}</label>
+          <input id="edit-cust-postal" class="form-input" v-model="editForm.billing_postal_code" />
+        </div>
+        <div class="form-group half">
+          <label class="form-label" for="edit-cust-city">{{ $t('customer.billing_city') }}</label>
+          <input id="edit-cust-city" class="form-input" v-model="editForm.billing_city" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-cust-country">{{ $t('customer.billing_country') }}</label>
+        <input id="edit-cust-country" class="form-input" v-model="editForm.billing_country" />
+      </div>
+      <div class="form-group form-row">
+        <div class="form-group half">
+          <label class="form-label" for="edit-cust-vat">{{ $t('customer.vat_number') }}</label>
+          <input id="edit-cust-vat" class="form-input" v-model="editForm.vat_number" />
+        </div>
+        <div class="form-group half">
+          <label class="form-label" for="edit-cust-po">{{ $t('customer.po_reference') }}</label>
+          <input id="edit-cust-po" class="form-input" v-model="editForm.po_reference" />
+        </div>
+      </div>
       <template #footer>
         <button class="btn" @click="showEdit = false">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="saveEdit">{{ $t('common.save') }}</button>
@@ -261,6 +291,12 @@
           <label class="form-label" for="contract-rate">{{ $t('contract.price_per_hour') }}</label>
           <input id="contract-rate" class="form-input" type="number" min="0" step="0.01" v-model="contractForm.price_per_hour" />
         </div>
+        <div class="form-group half">
+          <label class="form-label" for="contract-rate-km">{{ $t('contract.price_per_km', { unit: distanceUnit }) }}</label>
+          <input id="contract-rate-km" class="form-input" type="number" min="0" step="0.01" v-model="contractForm.price_per_km" />
+        </div>
+      </div>
+      <div class="detail-row">
         <div class="form-group half">
           <label class="form-label" for="contract-currency">{{ $t('contract.currency') }}</label>
           <select id="contract-currency" class="form-input" v-model="contractForm.currency">
@@ -443,11 +479,13 @@ const auth = useAuthStore()
 const custStore = useCustomersStore()
 const ui = useUIStore()
 
+const distanceUnit = computed(() => auth.user?.distance_unit || 'km')
+
 const loading = ref(true)
 const detail = ref(null)
 
 const showEdit = ref(false)
-const editForm = ref({ name: '', description: '', logo_url: '' })
+const editForm = ref({ name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
 
 const { formatDate, dateOnlyFormat } = useDateFormat()
 
@@ -500,7 +538,7 @@ const slotTimePlaceholder = computed(() => prefers12HourSlotTime.value ? 'hh:mm 
 
 const showAddContract = ref(false)
 const editingContract = ref(null)
-const contractForm = ref({ name: '', description: '', start_date: '', end_date: '', price_per_hour: null, currency: '€', time_slots: [] })
+const contractForm = ref({ name: '', description: '', start_date: '', end_date: '', price_per_hour: null, price_per_km: null, currency: '€', time_slots: [] })
 const emptySlot = () => ({ label: '', start_time: '', end_time: '', day_type: 'all', end_day_offset: 1, multiplication_factor: null, hourly_rate: null })
 
 function isOvernightSlot(slot) {
@@ -837,7 +875,13 @@ async function saveNameEdit() {
 }
 
 function openEdit() {
-  editForm.value = { name: detail.value.customer.name, description: detail.value.customer.description, logo_url: detail.value.customer.logo_url }
+  const c = detail.value.customer
+  editForm.value = {
+    name: c.name, description: c.description || '', logo_url: c.logo_url || '',
+    billing_street: c.billing_street || '', billing_city: c.billing_city || '',
+    billing_postal_code: c.billing_postal_code || '', billing_country: c.billing_country || '',
+    vat_number: c.vat_number || '', po_reference: c.po_reference || '',
+  }
   showEdit.value = true
 }
 
@@ -884,6 +928,7 @@ function editContract(grp) {
     start_date: grp.start_date ? grp.start_date.split('T')[0] : '',
     end_date:   grp.end_date   ? grp.end_date.split('T')[0]   : '',
     price_per_hour: grp.price_per_hour != null ? grp.price_per_hour : null,
+    price_per_km:   grp.price_per_km != null ? grp.price_per_km : null,
     currency:       grp.currency || '€',
     time_slots: (grp.time_slots || []).map(s => ({
       label:                s.label || '',
@@ -922,6 +967,7 @@ async function saveContract() {
     start_date:     contractForm.value.start_date || '',
     end_date:       contractForm.value.end_date   || '',
     price_per_hour: contractForm.value.price_per_hour,
+    price_per_km:   contractForm.value.price_per_km,
     currency:       contractForm.value.currency || '€',
     time_slots:     contractForm.value.time_slots
       .filter(s => s.start_time && s.end_time)

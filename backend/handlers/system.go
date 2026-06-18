@@ -76,6 +76,18 @@ const (
 	settingIMAPTokenExpiry           = "imap_token_expiry"
 	settingMetricsLastAccess         = "metrics_last_access"
 	settingMetricsLastSuccess        = "metrics_last_access_success"
+	// Billing / invoice settings
+	settingCompanyAddress     = "company_address"
+	settingCompanyCity        = "company_city"
+	settingCompanyPostalCode  = "company_postal_code"
+	settingCompanyCountry     = "company_country"
+	settingCompanyVATNumber   = "company_vat_number"
+	settingCompanyCOCNumber   = "company_coc_number"
+	settingCompanyIBAN        = "company_iban"
+	settingCompanyBIC         = "company_bic"
+	settingCompanyPaymentTerms = "company_payment_terms"
+	settingInvoiceNumberPrefix = "invoice_number_prefix"
+	settingDefaultVATRate     = "default_vat_rate"
 )
 
 func init() {
@@ -351,6 +363,17 @@ func GetSystemSettings(c *gin.Context) {
 		"company_logo":                 all[settingCompanyLogo],
 		"company_logo_dark":            all[settingCompanyLogoDark],
 		"login_branding_enabled":       all[settingLoginBrandingEnabled] == "true",
+		"company_address":              all[settingCompanyAddress],
+		"company_city":                 all[settingCompanyCity],
+		"company_postal_code":          all[settingCompanyPostalCode],
+		"company_country":              all[settingCompanyCountry],
+		"company_vat_number":           all[settingCompanyVATNumber],
+		"company_coc_number":           all[settingCompanyCOCNumber],
+		"company_iban":                 all[settingCompanyIBAN],
+		"company_bic":                  all[settingCompanyBIC],
+		"company_payment_terms":        all[settingCompanyPaymentTerms],
+		"invoice_number_prefix":        all[settingInvoiceNumberPrefix],
+		"default_vat_rate":             all[settingDefaultVATRate],
 		"mfa_required":                 all[settingMFARequired] == "true",
 		"mfa_remember_devices":         normalizeMFARememberDevicesPolicy(all[settingMFARememberDevices]),
 		"password_policy":              GetPasswordPolicy(),
@@ -419,6 +442,17 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		CompanyName               *string     `json:"company_name"`
 		CompanyLogo               *string     `json:"company_logo"`
 		CompanyLogoDark           *string     `json:"company_logo_dark"`
+		CompanyAddress            *string     `json:"company_address"`
+		CompanyCity               *string     `json:"company_city"`
+		CompanyPostalCode         *string     `json:"company_postal_code"`
+		CompanyCountry            *string     `json:"company_country"`
+		CompanyVATNumber          *string     `json:"company_vat_number"`
+		CompanyCOCNumber          *string     `json:"company_coc_number"`
+		CompanyIBAN               *string     `json:"company_iban"`
+		CompanyBIC                *string     `json:"company_bic"`
+		CompanyPaymentTerms       *string     `json:"company_payment_terms"`
+		InvoiceNumberPrefix       *string     `json:"invoice_number_prefix"`
+		DefaultVATRate            *string     `json:"default_vat_rate"`
 		DefaultColumns            *string     `json:"default_columns"`
 		DefaultLabels             *string     `json:"default_labels"`
 		BackupSchedule            *string     `json:"backup_schedule"`
@@ -566,6 +600,39 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	}
 	if req.CompanyLogoDark != nil {
 		saveSetting(settingCompanyLogoDark, *req.CompanyLogoDark)
+	}
+	if req.CompanyAddress != nil {
+		saveSetting(settingCompanyAddress, *req.CompanyAddress)
+	}
+	if req.CompanyCity != nil {
+		saveSetting(settingCompanyCity, *req.CompanyCity)
+	}
+	if req.CompanyPostalCode != nil {
+		saveSetting(settingCompanyPostalCode, *req.CompanyPostalCode)
+	}
+	if req.CompanyCountry != nil {
+		saveSetting(settingCompanyCountry, *req.CompanyCountry)
+	}
+	if req.CompanyVATNumber != nil {
+		saveSetting(settingCompanyVATNumber, *req.CompanyVATNumber)
+	}
+	if req.CompanyCOCNumber != nil {
+		saveSetting(settingCompanyCOCNumber, *req.CompanyCOCNumber)
+	}
+	if req.CompanyIBAN != nil {
+		saveSetting(settingCompanyIBAN, *req.CompanyIBAN)
+	}
+	if req.CompanyBIC != nil {
+		saveSetting(settingCompanyBIC, *req.CompanyBIC)
+	}
+	if req.CompanyPaymentTerms != nil {
+		saveSetting(settingCompanyPaymentTerms, *req.CompanyPaymentTerms)
+	}
+	if req.InvoiceNumberPrefix != nil {
+		saveSetting(settingInvoiceNumberPrefix, *req.InvoiceNumberPrefix)
+	}
+	if req.DefaultVATRate != nil {
+		saveSetting(settingDefaultVATRate, *req.DefaultVATRate)
 	}
 	if req.DefaultColumns != nil {
 		saveSetting(settingDefaultColumns, *req.DefaultColumns)

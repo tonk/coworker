@@ -2486,6 +2486,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		endDays      int // 0 = no end date
 		projects     []string
 		pricePerHour *float64
+		pricePerKm   *float64
 		timeSlots    []timeSlotSpec
 	}
 	type customerSpec struct {
@@ -2497,6 +2498,8 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 
 	acmePricePerHour := 110.0
+	acmePricePerKm := 0.23
+	globexPricePerKm := 0.28
 	acmeStandbySlots := []timeSlotSpec{
 		{label: "Standby - week", from: "19:00", to: "07:00", days: "weekdays", factor: 1.5, endDayOffset: 1},
 		{label: "Standby - weekend", from: "19:00", to: "07:00", days: "friday", factor: 2.0, endDayOffset: 3},
@@ -2515,6 +2518,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 					endDays:      90,
 					projects:     []string{"website-redesign"},
 					pricePerHour: &acmePricePerHour,
+					pricePerKm:   &acmePricePerKm,
 					timeSlots:    acmeStandbySlots,
 				},
 				{
@@ -2524,6 +2528,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 					endDays:      180,
 					projects:     []string{"mobile-app-v2"},
 					pricePerHour: &acmePricePerHour,
+					pricePerKm:   &acmePricePerKm,
 					timeSlots:    acmeStandbySlots,
 				},
 			},
@@ -2534,11 +2539,12 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			logoURL: "https://api.dicebear.com/9.x/shapes/svg?seed=Globex-Systems&backgroundColor=fef3c7,fde68a,fee2e2",
 			contracts: []contractSpec{
 				{
-					name:      "Managed DevOps 2025",
-					desc:      "Kubernetes migration, monitoring setup, and on-call engineering support.",
-					startDays: -90,
-					endDays:   275,
-					projects:  []string{"devops-infra"},
+					name:         "Managed DevOps 2025",
+					desc:         "Kubernetes migration, monitoring setup, and on-call engineering support.",
+					startDays:    -90,
+					endDays:      275,
+					projects:     []string{"devops-infra"},
+					pricePerKm:   &globexPricePerKm,
 				},
 			},
 		},
@@ -2588,6 +2594,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				Description:  conSpec.desc,
 				StartDate:    &start,
 				PricePerHour: conSpec.pricePerHour,
+				PricePerKm:   conSpec.pricePerKm,
 			}
 			if conSpec.endDays != 0 {
 				end := time.Now().UTC().AddDate(0, 0, conSpec.endDays).Truncate(24 * time.Hour)
@@ -3304,80 +3311,81 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		daysAgo  int
 		minutes  int
 		desc     string
+		distance float64 // 0 = no distance logged
 	}
 
 	pUint := func(v uint) *uint { return &v }
 
 	teSpecs := []teSpec{
 		// ── Ton Kersten (system admin) ─────────────────────────────────────────
-		{"tonk", "Acme Corporation", "website-redesign", 14, 240, "Sprint planning and backlog grooming"},
-		{"tonk", "Acme Corporation", "website-redesign", 13, 390, "Architecture review and stakeholder call"},
-		{"tonk", "Acme Corporation", "mobile-app-v2",    12, 300, "API design session with Marc"},
-		{"tonk", "Globex Systems",   "devops-infra",     11, 480, "Kubernetes migration kick-off"},
-		{"tonk", "Globex Systems",   "devops-infra",     10, 360, "Infrastructure review and documentation"},
-		{"tonk", "Acme Corporation", "website-redesign",  7, 480, "Design system implementation"},
-		{"tonk", "Acme Corporation", "mobile-app-v2",     6, 240, "Mobile API review"},
-		{"tonk", "Globex Systems",   "devops-infra",      5, 480, "CI/CD pipeline setup"},
-		{"tonk", "Acme Corporation", "website-redesign",  4, 300, "Code review and QA"},
-		{"tonk", "Acme Corporation", "website-redesign",  3, 120, "Client demo preparation"},
-		{"tonk", "Acme Corporation", "website-redesign",  2, 480, "Sprint review and retrospective"},
-		{"tonk", "Globex Systems",   "devops-infra",      1, 360, "On-call handover and monitoring setup"},
+		{"tonk", "Acme Corporation", "website-redesign", 14, 240, "Sprint planning and backlog grooming", 0},
+		{"tonk", "Acme Corporation", "website-redesign", 13, 390, "Architecture review and stakeholder call", 42},
+		{"tonk", "Acme Corporation", "mobile-app-v2",    12, 300, "API design session with Marc", 0},
+		{"tonk", "Globex Systems",   "devops-infra",     11, 480, "Kubernetes migration kick-off", 67},
+		{"tonk", "Globex Systems",   "devops-infra",     10, 360, "Infrastructure review and documentation", 0},
+		{"tonk", "Acme Corporation", "website-redesign",  7, 480, "Design system implementation", 0},
+		{"tonk", "Acme Corporation", "mobile-app-v2",     6, 240, "Mobile API review", 0},
+		{"tonk", "Globex Systems",   "devops-infra",      5, 480, "CI/CD pipeline setup", 67},
+		{"tonk", "Acme Corporation", "website-redesign",  4, 300, "Code review and QA", 0},
+		{"tonk", "Acme Corporation", "website-redesign",  3, 120, "Client demo preparation", 42},
+		{"tonk", "Acme Corporation", "website-redesign",  2, 480, "Sprint review and retrospective", 42},
+		{"tonk", "Globex Systems",   "devops-infra",      1, 360, "On-call handover and monitoring setup", 0},
 
 		// ── Sarah Chen — website redesign ──────────────────────────────────────
-		{"sarah", "Acme Corporation", "website-redesign", 14, 480, "Component library setup"},
-		{"sarah", "Acme Corporation", "website-redesign", 13, 360, "Design implementation: hero section"},
-		{"sarah", "Acme Corporation", "website-redesign", 12, 480, "Responsive layout work"},
-		{"sarah", "Acme Corporation", "website-redesign", 11, 300, "Cross-browser testing"},
-		{"sarah", "Acme Corporation", "website-redesign", 10, 420, "Accessibility audit and fixes"},
-		{"sarah", "Acme Corporation", "website-redesign",  7, 480, "Navigation and routing refactor"},
-		{"sarah", "Acme Corporation", "website-redesign",  6, 360, "CMS integration"},
-		{"sarah", "Acme Corporation", "website-redesign",  5, 480, "Performance optimisation"},
-		{"sarah", "Acme Corporation", "website-redesign",  4, 240, "Content migration"},
-		{"sarah", "Acme Corporation", "website-redesign",  3, 420, "UAT support and bug fixes"},
-		{"sarah", "Acme Corporation", "website-redesign",  2, 480, "Pre-launch checklist"},
-		{"sarah", "Acme Corporation", "website-redesign",  1, 300, "Go-live support"},
+		{"sarah", "Acme Corporation", "website-redesign", 14, 480, "Component library setup", 0},
+		{"sarah", "Acme Corporation", "website-redesign", 13, 360, "Design implementation: hero section", 0},
+		{"sarah", "Acme Corporation", "website-redesign", 12, 480, "Responsive layout work", 0},
+		{"sarah", "Acme Corporation", "website-redesign", 11, 300, "Cross-browser testing", 38},
+		{"sarah", "Acme Corporation", "website-redesign", 10, 420, "Accessibility audit and fixes", 0},
+		{"sarah", "Acme Corporation", "website-redesign",  7, 480, "Navigation and routing refactor", 0},
+		{"sarah", "Acme Corporation", "website-redesign",  6, 360, "CMS integration", 38},
+		{"sarah", "Acme Corporation", "website-redesign",  5, 480, "Performance optimisation", 0},
+		{"sarah", "Acme Corporation", "website-redesign",  4, 240, "Content migration", 0},
+		{"sarah", "Acme Corporation", "website-redesign",  3, 420, "UAT support and bug fixes", 38},
+		{"sarah", "Acme Corporation", "website-redesign",  2, 480, "Pre-launch checklist", 0},
+		{"sarah", "Acme Corporation", "website-redesign",  1, 300, "Go-live support", 38},
 
 		// ── Marc Dubois — mobile app + devops ──────────────────────────────────
-		{"marc", "Acme Corporation", "mobile-app-v2", 14, 480, "React Native project setup"},
-		{"marc", "Acme Corporation", "mobile-app-v2", 13, 360, "Authentication flow implementation"},
-		{"marc", "Acme Corporation", "mobile-app-v2", 12, 480, "Push notification integration"},
-		{"marc", "Globex Systems",   "devops-infra",  11, 240, "Terraform modules for Globex"},
-		{"marc", "Acme Corporation", "mobile-app-v2", 10, 420, "Offline sync implementation"},
-		{"marc", "Acme Corporation", "mobile-app-v2",  7, 480, "App store submission preparation"},
-		{"marc", "Acme Corporation", "mobile-app-v2",  6, 300, "Beta testing and feedback"},
-		{"marc", "Globex Systems",   "devops-infra",   5, 480, "Monitoring dashboard setup"},
-		{"marc", "Acme Corporation", "mobile-app-v2",  4, 360, "Bug fixes from beta"},
-		{"marc", "Acme Corporation", "mobile-app-v2",  3, 240, "Performance profiling"},
-		{"marc", "Globex Systems",   "devops-infra",   2, 480, "Alerting rules configuration"},
-		{"marc", "Acme Corporation", "mobile-app-v2",  1, 420, "App submission and review"},
+		{"marc", "Acme Corporation", "mobile-app-v2", 14, 480, "React Native project setup", 0},
+		{"marc", "Acme Corporation", "mobile-app-v2", 13, 360, "Authentication flow implementation", 0},
+		{"marc", "Acme Corporation", "mobile-app-v2", 12, 480, "Push notification integration", 55},
+		{"marc", "Globex Systems",   "devops-infra",  11, 240, "Terraform modules for Globex", 0},
+		{"marc", "Acme Corporation", "mobile-app-v2", 10, 420, "Offline sync implementation", 0},
+		{"marc", "Acme Corporation", "mobile-app-v2",  7, 480, "App store submission preparation", 55},
+		{"marc", "Acme Corporation", "mobile-app-v2",  6, 300, "Beta testing and feedback", 0},
+		{"marc", "Globex Systems",   "devops-infra",   5, 480, "Monitoring dashboard setup", 91},
+		{"marc", "Acme Corporation", "mobile-app-v2",  4, 360, "Bug fixes from beta", 0},
+		{"marc", "Acme Corporation", "mobile-app-v2",  3, 240, "Performance profiling", 55},
+		{"marc", "Globex Systems",   "devops-infra",   2, 480, "Alerting rules configuration", 0},
+		{"marc", "Acme Corporation", "mobile-app-v2",  1, 420, "App submission and review", 55},
 
 		// ── Lisa Park — devops ─────────────────────────────────────────────────
-		{"lisa", "Globex Systems", "devops-infra", 14, 480, "Kubernetes cluster audit"},
-		{"lisa", "Globex Systems", "devops-infra", 13, 420, "Node upgrade and security patching"},
-		{"lisa", "Globex Systems", "devops-infra", 12, 360, "Helm chart updates"},
-		{"lisa", "Globex Systems", "devops-infra", 11, 480, "Service mesh configuration"},
-		{"lisa", "Globex Systems", "devops-infra", 10, 300, "Load testing and capacity planning"},
-		{"lisa", "Globex Systems", "devops-infra",  7, 480, "Disaster recovery drill"},
-		{"lisa", "Globex Systems", "devops-infra",  6, 360, "Cost optimisation review"},
-		{"lisa", "Globex Systems", "devops-infra",  5, 480, "Log aggregation setup"},
-		{"lisa", "Globex Systems", "devops-infra",  4, 240, "Runbook documentation"},
-		{"lisa", "Globex Systems", "devops-infra",  3, 420, "Incident post-mortem"},
-		{"lisa", "Globex Systems", "devops-infra",  2, 480, "Database backup automation"},
-		{"lisa", "Globex Systems", "devops-infra",  1, 360, "Weekly ops review"},
+		{"lisa", "Globex Systems", "devops-infra", 14, 480, "Kubernetes cluster audit", 83},
+		{"lisa", "Globex Systems", "devops-infra", 13, 420, "Node upgrade and security patching", 0},
+		{"lisa", "Globex Systems", "devops-infra", 12, 360, "Helm chart updates", 0},
+		{"lisa", "Globex Systems", "devops-infra", 11, 480, "Service mesh configuration", 83},
+		{"lisa", "Globex Systems", "devops-infra", 10, 300, "Load testing and capacity planning", 0},
+		{"lisa", "Globex Systems", "devops-infra",  7, 480, "Disaster recovery drill", 83},
+		{"lisa", "Globex Systems", "devops-infra",  6, 360, "Cost optimisation review", 0},
+		{"lisa", "Globex Systems", "devops-infra",  5, 480, "Log aggregation setup", 0},
+		{"lisa", "Globex Systems", "devops-infra",  4, 240, "Runbook documentation", 0},
+		{"lisa", "Globex Systems", "devops-infra",  3, 420, "Incident post-mortem", 83},
+		{"lisa", "Globex Systems", "devops-infra",  2, 480, "Database backup automation", 0},
+		{"lisa", "Globex Systems", "devops-infra",  1, 360, "Weekly ops review", 0},
 
 		// ── Alex Admin — cross-project management ──────────────────────────────
-		{"admin", "Acme Corporation", "website-redesign", 14, 120, "Project kick-off meeting"},
-		{"admin", "Acme Corporation", "mobile-app-v2",    13, 180, "Requirements refinement"},
-		{"admin", "Acme Corporation", "",                 12, 120, "Client status update call"},
-		{"admin", "Globex Systems",   "devops-infra",     11, 120, "Contract review meeting"},
-		{"admin", "Acme Corporation", "website-redesign", 10, 180, "Sprint 3 review"},
-		{"admin", "Acme Corporation", "mobile-app-v2",     7, 120, "Sprint planning"},
-		{"admin", "Globex Systems",   "devops-infra",      6, 180, "Quarterly business review"},
-		{"admin", "Acme Corporation", "website-redesign",  5, 120, "Stakeholder presentation"},
-		{"admin", "",                 "",                  4, 120, "Internal team sync"},
-		{"admin", "Acme Corporation", "mobile-app-v2",     3, 180, "Beta sign-off meeting"},
-		{"admin", "Globex Systems",   "devops-infra",      2, 120, "SLA review"},
-		{"admin", "Acme Corporation", "website-redesign",  1, 180, "Launch readiness check"},
+		{"admin", "Acme Corporation", "website-redesign", 14, 120, "Project kick-off meeting", 48},
+		{"admin", "Acme Corporation", "mobile-app-v2",    13, 180, "Requirements refinement", 0},
+		{"admin", "Acme Corporation", "",                 12, 120, "Client status update call", 0},
+		{"admin", "Globex Systems",   "devops-infra",     11, 120, "Contract review meeting", 75},
+		{"admin", "Acme Corporation", "website-redesign", 10, 180, "Sprint 3 review", 48},
+		{"admin", "Acme Corporation", "mobile-app-v2",     7, 120, "Sprint planning", 0},
+		{"admin", "Globex Systems",   "devops-infra",      6, 180, "Quarterly business review", 75},
+		{"admin", "Acme Corporation", "website-redesign",  5, 120, "Stakeholder presentation", 48},
+		{"admin", "",                 "",                  4, 120, "Internal team sync", 0},
+		{"admin", "Acme Corporation", "mobile-app-v2",     3, 180, "Beta sign-off meeting", 48},
+		{"admin", "Globex Systems",   "devops-infra",      2, 120, "SLA review", 75},
+		{"admin", "Acme Corporation", "website-redesign",  1, 180, "Launch readiness check", 48},
 	}
 
 	totalTimeEntries := 0
@@ -3392,6 +3400,9 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			Date:        date,
 			Minutes:     s.minutes,
 			Description: s.desc,
+		}
+		if s.distance > 0 {
+			entry.Distance = ptr(s.distance)
 		}
 		if cid, ok := custIDByName[s.customer]; ok {
 			entry.CustomerID = pUint(cid)
@@ -3523,13 +3534,14 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		daysAgo  int
 		minutes  int
 		desc     string
+		distance float64 // 0 = no distance logged
 	}
 	ttEntries := []ttTeSpec{
 		// Travel
-		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 1, minutes: 120, desc: "Travel to customer site"},
-		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 3, minutes: 90, desc: "Travel to Amsterdam office"},
-		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 8, minutes: 120, desc: "Travel to and from training location"},
-		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 15, minutes: 90, desc: "Travel to customer workshop"},
+		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 1, minutes: 120, desc: "Travel to customer site", distance: 84},
+		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 3, minutes: 90, desc: "Travel to Amsterdam office", distance: 52},
+		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 8, minutes: 120, desc: "Travel to and from training location", distance: 116},
+		{slug: "travel-tt", customer: "Smart Owl Consulting", daysAgo: 15, minutes: 90, desc: "Travel to customer workshop", distance: 67},
 		// Holidays
 		{slug: "holidays-tt", customer: "Smart Owl Consulting", daysAgo: 5, minutes: 480, desc: "Annual leave"},
 		{slug: "holidays-tt", customer: "Smart Owl Consulting", daysAgo: 6, minutes: 480, desc: "Annual leave"},
@@ -3551,6 +3563,9 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			Date:        date,
 			Minutes:     te.minutes,
 			Description: te.desc,
+		}
+		if te.distance > 0 {
+			entry.Distance = ptr(te.distance)
 		}
 		if cid, ok := ttCustIDByName[te.customer]; ok {
 			entry.CustomerID = pUint(cid)

@@ -679,6 +679,61 @@
               <input id="sys-company-name" class="form-input" v-model="systemSettings.company_name" :placeholder="$t('admin.company_name_placeholder')" />
             </div>
 
+            <h4 class="settings-subsection" style="margin-top:16px">{{ $t('admin.billing_section') }}</h4>
+
+            <div class="form-group" style="max-width:400px">
+              <label class="form-label" for="sys-company-address">{{ $t('admin.company_address') }}</label>
+              <input id="sys-company-address" class="form-input" v-model="systemSettings.company_address" />
+            </div>
+            <div class="detail-row" style="max-width:400px">
+              <div class="form-group half">
+                <label class="form-label" for="sys-company-postal">{{ $t('admin.company_postal_code') }}</label>
+                <input id="sys-company-postal" class="form-input" v-model="systemSettings.company_postal_code" />
+              </div>
+              <div class="form-group half">
+                <label class="form-label" for="sys-company-city">{{ $t('admin.company_city') }}</label>
+                <input id="sys-company-city" class="form-input" v-model="systemSettings.company_city" />
+              </div>
+            </div>
+            <div class="form-group" style="max-width:400px">
+              <label class="form-label" for="sys-company-country">{{ $t('admin.company_country') }}</label>
+              <input id="sys-company-country" class="form-input" v-model="systemSettings.company_country" />
+            </div>
+            <div class="detail-row" style="max-width:400px">
+              <div class="form-group half">
+                <label class="form-label" for="sys-company-vat">{{ $t('admin.company_vat_number') }}</label>
+                <input id="sys-company-vat" class="form-input" v-model="systemSettings.company_vat_number" />
+              </div>
+              <div class="form-group half">
+                <label class="form-label" for="sys-company-coc">{{ $t('admin.company_coc_number') }}</label>
+                <input id="sys-company-coc" class="form-input" v-model="systemSettings.company_coc_number" />
+              </div>
+            </div>
+            <div class="detail-row" style="max-width:400px">
+              <div class="form-group half">
+                <label class="form-label" for="sys-company-iban">{{ $t('admin.company_iban') }}</label>
+                <input id="sys-company-iban" class="form-input" v-model="systemSettings.company_iban" />
+              </div>
+              <div class="form-group half">
+                <label class="form-label" for="sys-company-bic">{{ $t('admin.company_bic') }}</label>
+                <input id="sys-company-bic" class="form-input" v-model="systemSettings.company_bic" />
+              </div>
+            </div>
+            <div class="detail-row" style="max-width:400px">
+              <div class="form-group half">
+                <label class="form-label" for="sys-payment-terms">{{ $t('admin.company_payment_terms') }}</label>
+                <input id="sys-payment-terms" class="form-input" type="number" min="0" v-model="systemSettings.company_payment_terms" />
+              </div>
+              <div class="form-group half">
+                <label class="form-label" for="sys-vat-rate">{{ $t('admin.default_vat_rate') }}</label>
+                <input id="sys-vat-rate" class="form-input" type="number" min="0" max="100" step="0.1" v-model="systemSettings.default_vat_rate" />
+              </div>
+            </div>
+            <div class="form-group" style="max-width:400px">
+              <label class="form-label" for="sys-invoice-prefix">{{ $t('admin.invoice_number_prefix') }}</label>
+              <input id="sys-invoice-prefix" class="form-input" v-model="systemSettings.invoice_number_prefix" :placeholder="$t('admin.invoice_number_prefix_placeholder')" />
+            </div>
+
             <div class="form-group" style="max-width:400px">
               <label class="form-label" for="sys-company-logo">{{ $t('admin.company_logo') }}</label>
               <input id="sys-company-logo" class="form-input" v-model="systemSettings.company_logo" :placeholder="'https://...'" style="margin-bottom:8px" />
@@ -1590,6 +1645,35 @@
       <label class="form-label" for="admin-cust-logo">{{ $t('customer.logo_url') }}</label>
       <input id="admin-cust-logo" class="form-input" v-model="customerForm.logo_url" placeholder="https://..." />
     </div>
+    <h4 class="form-section-title">{{ $t('customer.billing_section') }}</h4>
+    <div class="form-group">
+      <label class="form-label" for="admin-cust-street">{{ $t('customer.billing_street') }}</label>
+      <input id="admin-cust-street" class="form-input" v-model="customerForm.billing_street" />
+    </div>
+    <div class="detail-row">
+      <div class="form-group half">
+        <label class="form-label" for="admin-cust-postal">{{ $t('customer.billing_postal_code') }}</label>
+        <input id="admin-cust-postal" class="form-input" v-model="customerForm.billing_postal_code" />
+      </div>
+      <div class="form-group half">
+        <label class="form-label" for="admin-cust-city">{{ $t('customer.billing_city') }}</label>
+        <input id="admin-cust-city" class="form-input" v-model="customerForm.billing_city" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="admin-cust-country">{{ $t('customer.billing_country') }}</label>
+      <input id="admin-cust-country" class="form-input" v-model="customerForm.billing_country" />
+    </div>
+    <div class="detail-row">
+      <div class="form-group half">
+        <label class="form-label" for="admin-cust-vat">{{ $t('customer.vat_number') }}</label>
+        <input id="admin-cust-vat" class="form-input" v-model="customerForm.vat_number" />
+      </div>
+      <div class="form-group half">
+        <label class="form-label" for="admin-cust-po">{{ $t('customer.po_reference') }}</label>
+        <input id="admin-cust-po" class="form-input" v-model="customerForm.po_reference" />
+      </div>
+    </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showCreateCustomer = false; editingCustomer = null">{{ $t('common.cancel') }}</button>
       <button class="btn btn-primary" :disabled="!customerForm.name.trim()" @click="editingCustomer ? saveEditCustomer() : submitCreateCustomer()">
@@ -2003,7 +2087,7 @@ const sortedProjects = computed(() => {
   )
 })
 const editingCustomer = ref(null)
-const customerForm = ref({ name: '', description: '', logo_url: '' })
+const customerForm = ref({ name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
 let adminCustomersLoaded = false
 
 async function loadGroups() {
@@ -2369,6 +2453,17 @@ async function loadSettings() {
     systemSettings.value.company_logo             = data.company_logo || ''
     systemSettings.value.company_logo_dark        = data.company_logo_dark || ''
     systemSettings.value.login_branding_enabled   = data.login_branding_enabled === 'true'
+    systemSettings.value.company_address          = data.company_address || ''
+    systemSettings.value.company_city             = data.company_city || ''
+    systemSettings.value.company_postal_code      = data.company_postal_code || ''
+    systemSettings.value.company_country          = data.company_country || ''
+    systemSettings.value.company_vat_number       = data.company_vat_number || ''
+    systemSettings.value.company_coc_number       = data.company_coc_number || ''
+    systemSettings.value.company_iban             = data.company_iban || ''
+    systemSettings.value.company_bic              = data.company_bic || ''
+    systemSettings.value.company_payment_terms    = data.company_payment_terms || ''
+    systemSettings.value.invoice_number_prefix    = data.invoice_number_prefix || ''
+    systemSettings.value.default_vat_rate         = data.default_vat_rate || ''
     systemSettings.value.default_columns          = data.default_columns || 'Backlog'
     systemSettings.value.default_labels           = data.default_labels || 'Bug\nFeature\nDesign\nContent'
     systemSettings.value.password_min_length      = parseInt(data.password_min_length) || 8
@@ -2429,10 +2524,21 @@ async function clearCompanyLogoDark() {
 async function saveBrandingSettings() {
   try {
     await adminApi.updateSystemSettings({
-      company_name: systemSettings.value.company_name,
-      company_logo: systemSettings.value.company_logo,
-      company_logo_dark: systemSettings.value.company_logo_dark,
-      login_branding_enabled: systemSettings.value.login_branding_enabled,
+      company_name:             systemSettings.value.company_name,
+      company_logo:             systemSettings.value.company_logo,
+      company_logo_dark:        systemSettings.value.company_logo_dark,
+      login_branding_enabled:   systemSettings.value.login_branding_enabled,
+      company_address:          systemSettings.value.company_address,
+      company_city:             systemSettings.value.company_city,
+      company_postal_code:      systemSettings.value.company_postal_code,
+      company_country:          systemSettings.value.company_country,
+      company_vat_number:       systemSettings.value.company_vat_number,
+      company_coc_number:       systemSettings.value.company_coc_number,
+      company_iban:             systemSettings.value.company_iban,
+      company_bic:              systemSettings.value.company_bic,
+      company_payment_terms:    systemSettings.value.company_payment_terms,
+      invoice_number_prefix:    systemSettings.value.invoice_number_prefix,
+      default_vat_rate:         systemSettings.value.default_vat_rate,
     })
     ui.success('Settings saved')
   } catch {
@@ -3166,10 +3272,16 @@ async function submitCreateCustomer() {
       name: customerForm.value.name.trim(),
       description: customerForm.value.description,
       logo_url: customerForm.value.logo_url,
+      billing_street: customerForm.value.billing_street,
+      billing_city: customerForm.value.billing_city,
+      billing_postal_code: customerForm.value.billing_postal_code,
+      billing_country: customerForm.value.billing_country,
+      vat_number: customerForm.value.vat_number,
+      po_reference: customerForm.value.po_reference,
     })
     adminCustomers.value.push(data)
     showCreateCustomer.value = false
-    customerForm.value = { name: '', description: '', logo_url: '' }
+    customerForm.value = { name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' }
     ui.success('Customer created')
   } catch (e) {
     ui.error(e?.response?.data?.error || 'Failed to create customer')
@@ -3178,7 +3290,12 @@ async function submitCreateCustomer() {
 
 function openEditCustomer(c) {
   editingCustomer.value = { ...c }
-  customerForm.value = { name: c.name, description: c.description || '', logo_url: c.logo_url || '' }
+  customerForm.value = {
+    name: c.name, description: c.description || '', logo_url: c.logo_url || '',
+    billing_street: c.billing_street || '', billing_city: c.billing_city || '',
+    billing_postal_code: c.billing_postal_code || '', billing_country: c.billing_country || '',
+    vat_number: c.vat_number || '', po_reference: c.po_reference || '',
+  }
 }
 
 async function saveEditCustomer() {

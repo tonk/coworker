@@ -226,9 +226,15 @@ func CreateCustomer(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name        string `json:"name" binding:"required,min=1,max=200"`
-		Description string `json:"description"`
-		LogoURL     string `json:"logo_url"`
+		Name              string `json:"name" binding:"required,min=1,max=200"`
+		Description       string `json:"description"`
+		LogoURL           string `json:"logo_url"`
+		BillingStreet     string `json:"billing_street"`
+		BillingCity       string `json:"billing_city"`
+		BillingPostalCode string `json:"billing_postal_code"`
+		BillingCountry    string `json:"billing_country"`
+		VATNumber         string `json:"vat_number"`
+		POReference       string `json:"po_reference"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -239,10 +245,16 @@ func CreateCustomer(c *gin.Context) {
 	database.DB.Model(&models.Customer{}).Select("COALESCE(MAX(position),0)").Scan(&maxPos)
 
 	cust := models.Customer{
-		Name:        req.Name,
-		Description: req.Description,
-		LogoURL:     req.LogoURL,
-		Position:    maxPos + 1,
+		Name:              req.Name,
+		Description:       req.Description,
+		LogoURL:           req.LogoURL,
+		BillingStreet:     req.BillingStreet,
+		BillingCity:       req.BillingCity,
+		BillingPostalCode: req.BillingPostalCode,
+		BillingCountry:    req.BillingCountry,
+		VATNumber:         req.VATNumber,
+		POReference:       req.POReference,
+		Position:          maxPos + 1,
 	}
 	if err := database.DB.Create(&cust).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
@@ -268,17 +280,29 @@ func UpdateCustomer(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		LogoURL     string `json:"logo_url"`
+		Name              string `json:"name"`
+		Description       string `json:"description"`
+		LogoURL           string `json:"logo_url"`
+		BillingStreet     string `json:"billing_street"`
+		BillingCity       string `json:"billing_city"`
+		BillingPostalCode string `json:"billing_postal_code"`
+		BillingCountry    string `json:"billing_country"`
+		VATNumber         string `json:"vat_number"`
+		POReference       string `json:"po_reference"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 	updates := map[string]interface{}{
-		"description": req.Description,
-		"logo_url":    req.LogoURL,
+		"description":         req.Description,
+		"logo_url":            req.LogoURL,
+		"billing_street":      req.BillingStreet,
+		"billing_city":        req.BillingCity,
+		"billing_postal_code": req.BillingPostalCode,
+		"billing_country":     req.BillingCountry,
+		"vat_number":          req.VATNumber,
+		"po_reference":        req.POReference,
 	}
 	if req.Name != "" {
 		updates["name"] = req.Name
@@ -379,6 +403,7 @@ func CreateContract(c *gin.Context) {
 		StartDate     string   `json:"start_date"`
 		EndDate       string   `json:"end_date"`
 		PricePerHour  *float64 `json:"price_per_hour"`
+		PricePerKm    *float64 `json:"price_per_km"`
 		Currency      string   `json:"currency"`
 		TimeSlots     []struct {
 			Label                string   `json:"label"`
@@ -403,6 +428,7 @@ func CreateContract(c *gin.Context) {
 		Name:         req.Name,
 		Description:  req.Description,
 		PricePerHour: req.PricePerHour,
+		PricePerKm:   req.PricePerKm,
 		Currency:     currency,
 	}
 	if t, err := parseContractDate(req.StartDate); err == nil && t != nil {
@@ -460,6 +486,7 @@ func UpdateContract(c *gin.Context) {
 		StartDate     string   `json:"start_date"`
 		EndDate       string   `json:"end_date"`
 		PricePerHour  *float64 `json:"price_per_hour"`
+		PricePerKm    *float64 `json:"price_per_km"`
 		Currency      string   `json:"currency"`
 		TimeSlots     []struct {
 			Label                string   `json:"label"`
@@ -486,6 +513,7 @@ func UpdateContract(c *gin.Context) {
 		updates["end_date"] = t
 	}
 	updates["price_per_hour"] = req.PricePerHour
+	updates["price_per_km"] = req.PricePerKm
 	if req.Currency != "" {
 		updates["currency"] = req.Currency
 	}

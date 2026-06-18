@@ -11,8 +11,16 @@ type Customer struct {
 	Position         int       `gorm:"default:0" json:"position"`
 	TimeTrackingOnly bool      `gorm:"default:false" json:"time_tracking_only"`
 	CreatedByID      *uint     `gorm:"index" json:"created_by_id,omitempty"`
-	CreatedAt        time.Time `json:"created_at"`
-	UpdatedAt        time.Time `json:"updated_at"`
+	// Billing address
+	BillingStreet     string `gorm:"size:300" json:"billing_street"`
+	BillingCity       string `gorm:"size:200" json:"billing_city"`
+	BillingPostalCode string `gorm:"size:20" json:"billing_postal_code"`
+	BillingCountry    string `gorm:"size:100" json:"billing_country"`
+	// Billing identifiers
+	VATNumber   string `gorm:"size:50" json:"vat_number"`
+	POReference string `gorm:"size:100" json:"po_reference"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // Contract is an agreement between a Customer and the organisation, under which
@@ -25,6 +33,7 @@ type Contract struct {
 	StartDate     *time.Time           `json:"start_date,omitempty"`
 	EndDate       *time.Time           `json:"end_date,omitempty"`
 	PricePerHour  *float64             `json:"price_per_hour,omitempty"`
+	PricePerKm    *float64             `json:"price_per_km,omitempty"`
 	Currency      string               `gorm:"size:3;default:€" json:"currency"`
 	TimeSlots     []ContractTimeSlot   `gorm:"foreignKey:ContractID" json:"time_slots,omitempty"`
 	CreatedAt     time.Time            `json:"created_at"`
