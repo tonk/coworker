@@ -24,6 +24,44 @@ func nextInvoiceNumber(prefix string) string {
 	return fmt.Sprintf("%s-%04d", prefix, count+1)
 }
 
+// ListAllInvoices returns all invoices accessible to the requesting user,
+// optionally filtered by ?customer_id= and/or ?status=.
+// Admins see all invoices; regular users only see invoices for customers
+// they have access to.
+func ListAllInvoices(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
+
+	q := database.DB.Preload("Customer").Order("created_at desc")
+
+	if globalRole != "admin" {
+		// Restrict to customers this user can access.
+		accessible := getAccessibleCustomerRoles(userID)
+		if len(accessible) == 0 {
+			c.JSON(http.StatusOK, []models.Invoice{})
+			return
+		}
+		ids := make([]uint, 0, len(accessible))
+		for id := range accessible {
+			ids = append(ids, id)
+		}
+		q = q.Where("customer_id IN ?", ids)
+	}
+
+	if custStr := c.Query("customer_id"); custStr != "" {
+		if custID, err := strconv.ParseUint(custStr, 10, 64); err == nil && custID > 0 {
+			q = q.Where("customer_id = ?", custID)
+		}
+	}
+	if status := c.Query("status"); status != "" {
+		q = q.Where("status = ?", status)
+	}
+
+	var invoices []models.Invoice
+	q.Find(&invoices)
+	c.JSON(http.StatusOK, invoices)
+}
+
 // ListInvoices returns all invoices for a customer, newest first.
 func ListInvoices(c *gin.Context) {
 	custID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)

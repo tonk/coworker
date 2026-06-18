@@ -207,7 +207,13 @@
     "line_rate": "Hinta",
     "line_amount": "Summa",
     "no_billable_entries": "Tälle jaksolle ei löytynyt laskutettavia tuntimerkintöjä.",
-    "confirm_create": "Luo lasku"
+    "confirm_create": "Luo lasku",
+    "all_customers": "Kaikki asiakkaat",
+    "all_statuses": "Kaikki tilat",
+    "filter_status": "Tila",
+    "customer": "Asiakas",
+    "date_created": "Päivämäärä",
+    "invoice_date": "Laskupäivä"
   },
   "subcard": {
     "sub_cards": "Alakortit",
@@ -941,6 +947,8 @@
     "tab_log": "Kirjaa aika",
     "tab_report": "Raportti",
     "tab_board_report": "Taulu",
+    "tab_invoices": "Laskut",
+    "create_invoice": "Luo lasku",
     "new_entry": "Uusi merkintä",
     "edit_entry": "Muokkaa merkintää",
     "recent_entries": "Viimeisimmät merkinnät",

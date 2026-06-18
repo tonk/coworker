@@ -98,6 +98,17 @@
         >
           {{ $t('timeTracking.tab_board_report') }}
         </button>
+        <button
+          id="tab-invoices"
+          class="tt-mode-btn"
+          role="tab"
+          :aria-selected="mode === 'invoices'"
+          aria-controls="panel-invoices"
+          :class="{ active: mode === 'invoices' }"
+          @click="mode = 'invoices'; loadAllInvoices()"
+        >
+          {{ $t('timeTracking.tab_invoices') }}
+        </button>
       </div>
       <button class="tt-mode-btn tt-rates-btn" @click="showRates = true" :title="$t('contract.rates_overview')" :aria-label="$t('contract.rates_overview')">₡</button>
       <button v-if="auth.timeTrackingEnabled" class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
@@ -687,6 +698,11 @@
           <div class="rpt-group-hd">
             <span>{{ grp.label }}</span>
             <span class="rpt-grp-total">{{ fmtTime(grp.declarable_minutes) }}</span>
+            <button
+              v-if="rpt.group_by === 'customer' && grp.entries.some(e => e.contract_id)"
+              class="btn btn-sm rpt-invoice-btn"
+              @click="openCreateInvoiceFromGroup(grp)"
+            >{{ $t('timeTracking.create_invoice') }}</button>
           </div>
           <table v-if="grp.entries.length" class="rpt-table">
             <colgroup>
@@ -741,7 +757,162 @@
       <BoardReportPanel />
     </div>
 
+    <!-- ── Invoices ──────────────────────────────────────────────────────────── -->
+    <div v-if="mode === 'invoices'" id="panel-invoices" role="tabpanel" aria-labelledby="tab-invoices" class="tt-invoices-outer">
+      <div class="inv-toolbar">
+        <select class="form-input fi-sm" v-model="invFilterCustomer" @change="loadAllInvoices">
+          <option value="">{{ $t('invoice.all_customers') }}</option>
+          <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
+        </select>
+        <select class="form-input fi-sm" v-model="invFilterStatus" @change="loadAllInvoices">
+          <option value="">{{ $t('invoice.all_statuses') }}</option>
+          <option value="draft">{{ $t('invoice.status_draft') }}</option>
+          <option value="sent">{{ $t('invoice.status_sent') }}</option>
+          <option value="paid">{{ $t('invoice.status_paid') }}</option>
+        </select>
+        <button class="btn btn-secondary" @click="loadAllInvoices">{{ $t('timeTracking.refresh') }}</button>
+      </div>
+      <div v-if="loadingAllInvoices" class="tt-loading">{{ $t('common.loading') }}</div>
+      <div v-else-if="allInvoices.length === 0" class="rpt-empty">{{ $t('invoice.no_invoices') }}</div>
+      <table v-else class="inv-table">
+        <thead>
+          <tr>
+            <th>{{ $t('invoice.invoice_number') }}</th>
+            <th>{{ $t('invoice.customer') }}</th>
+            <th>{{ $t('invoice.period') }}</th>
+            <th>{{ $t('invoice.invoice_date') }}</th>
+            <th>{{ $t('invoice.due_date') }}</th>
+            <th>{{ $t('invoice.filter_status') }}</th>
+            <th class="inv-col-num">{{ $t('invoice.total') }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="inv in allInvoices" :key="inv.id" :class="`inv-row-${inv.status}`">
+            <td class="inv-num-cell">{{ inv.invoice_number }}</td>
+            <td>{{ inv.customer?.name || '—' }}</td>
+            <td class="inv-muted">{{ formatDate(inv.period_start) }} – {{ formatDate(inv.period_end) }}</td>
+            <td class="inv-muted">{{ formatDate(inv.created_at) }}</td>
+            <td class="inv-muted">{{ inv.due_date ? formatDate(inv.due_date) : '—' }}</td>
+            <td><span :class="['inv-status-badge', `inv-${inv.status}`]">{{ $t(`invoice.status_${inv.status}`) }}</span></td>
+            <td class="inv-col-num inv-total-cell">{{ inv.currency }} {{ inv.total.toFixed(2) }}</td>
+            <td class="inv-actions-cell">
+              <a :href="invPdfUrl(inv)" target="_blank" class="btn btn-sm">PDF</a>
+              <button v-if="inv.status === 'draft'" class="btn btn-sm" @click="changeAllInvStatus(inv, 'sent')">{{ $t('invoice.mark_sent') }}</button>
+              <button v-if="inv.status === 'sent'" class="btn btn-sm btn-primary" @click="changeAllInvStatus(inv, 'paid')">{{ $t('invoice.mark_paid') }}</button>
+              <button v-if="inv.status !== 'draft'" class="btn btn-sm" @click="changeAllInvStatus(inv, 'draft')">{{ $t('invoice.mark_draft') }}</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
+
+  <!-- ── Create Invoice from report group modal ───────────────────────── -->
+  <Teleport to="body">
+    <div v-if="showCreateInvoiceFromGroup" class="tt-modal-backdrop" @click.self="showCreateInvoiceFromGroup = false" @keydown.escape="showCreateInvoiceFromGroup = false">
+      <div class="tt-modal tt-modal-lg" role="dialog" aria-modal="true" aria-labelledby="cinv-grp-title">
+        <div class="tt-modal-hd">
+          <h2 id="cinv-grp-title" class="tt-modal-title">{{ $t('invoice.new_invoice') }}</h2>
+          <button class="tt-modal-close" @click="showCreateInvoiceFromGroup = false" :aria-label="$t('common.close')">✕</button>
+        </div>
+        <!-- Step 1: form -->
+        <div v-if="createInvStep === 1" class="tt-modal-body">
+          <div class="cinv-field-row">
+            <div class="cinv-field">
+              <label for="cinv-grp-from">{{ $t('invoice.period_start') }}</label>
+              <div class="date-input-wrap">
+                <input id="cinv-grp-from" class="form-input" type="text" v-model="createInvDisplayFrom"
+                  :placeholder="dateOnlyFormat()" @blur="parseCreateInvFrom" />
+                <input type="date" tabindex="-1" aria-hidden="true" class="date-hidden-picker"
+                  :value="createInvForm.period_start"
+                  @change="e => { createInvForm.period_start = e.target.value; createInvDisplayFrom = formatDate(e.target.value) }" />
+                <button v-if="createInvDisplayFrom" class="btn-icon-xs" @click="createInvDisplayFrom = ''; createInvForm.period_start = ''" :aria-label="$t('common.clear')">✕</button>
+              </div>
+            </div>
+            <div class="cinv-field">
+              <label for="cinv-grp-to">{{ $t('invoice.period_end') }}</label>
+              <div class="date-input-wrap">
+                <input id="cinv-grp-to" class="form-input" type="text" v-model="createInvDisplayTo"
+                  :placeholder="dateOnlyFormat()" @blur="parseCreateInvTo" />
+                <input type="date" tabindex="-1" aria-hidden="true" class="date-hidden-picker"
+                  :value="createInvForm.period_end"
+                  @change="e => { createInvForm.period_end = e.target.value; createInvDisplayTo = formatDate(e.target.value) }" />
+                <button v-if="createInvDisplayTo" class="btn-icon-xs" @click="createInvDisplayTo = ''; createInvForm.period_end = ''" :aria-label="$t('common.clear')">✕</button>
+              </div>
+            </div>
+          </div>
+          <div class="cinv-field-row">
+            <div class="cinv-field">
+              <label for="cinv-grp-due">{{ $t('invoice.due_date') }}</label>
+              <div class="date-input-wrap">
+                <input id="cinv-grp-due" class="form-input" type="text" v-model="createInvDisplayDue"
+                  :placeholder="dateOnlyFormat()" @blur="parseCreateInvDue" />
+                <input type="date" tabindex="-1" aria-hidden="true" class="date-hidden-picker"
+                  :value="createInvForm.due_date"
+                  @change="e => { createInvForm.due_date = e.target.value; createInvDisplayDue = formatDate(e.target.value) }" />
+                <button v-if="createInvDisplayDue" class="btn-icon-xs" @click="createInvDisplayDue = ''; createInvForm.due_date = ''" :aria-label="$t('common.clear')">✕</button>
+              </div>
+            </div>
+            <div class="cinv-field">
+              <label for="cinv-grp-vat">{{ $t('invoice.vat_rate') }} (%)</label>
+              <input id="cinv-grp-vat" class="form-input" type="number" min="0" max="100" step="0.1" v-model.number="createInvForm.vat_rate" />
+            </div>
+          </div>
+          <div class="cinv-field">
+            <label for="cinv-grp-notes">{{ $t('invoice.notes') }}</label>
+            <textarea id="cinv-grp-notes" class="form-input" rows="2" v-model="createInvForm.notes"></textarea>
+          </div>
+        </div>
+        <!-- Step 2: preview line items -->
+        <div v-else class="tt-modal-body">
+          <div v-if="createInvLineItems.length === 0" class="rpt-empty">{{ $t('invoice.no_billable_entries') }}</div>
+          <div v-else class="inv-preview-table-wrap">
+            <table class="inv-preview-table">
+              <thead>
+                <tr>
+                  <th>{{ $t('invoice.line_date') }}</th>
+                  <th>{{ $t('invoice.line_project') }}</th>
+                  <th>{{ $t('invoice.line_description') }}</th>
+                  <th class="num">{{ $t('invoice.line_hours') }}</th>
+                  <th v-if="createInvHasDistance" class="num">{{ $t('invoice.line_distance') }}</th>
+                  <th class="num">{{ $t('invoice.line_rate') }}</th>
+                  <th class="num">{{ $t('invoice.line_amount') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(li, i) in createInvLineItems" :key="i">
+                  <td>{{ formatDate(li.date) }}</td>
+                  <td>{{ li.project_name }}</td>
+                  <td>{{ li.description }}</td>
+                  <td class="num">{{ fmtMinutesInv(li.minutes) }}</td>
+                  <td v-if="createInvHasDistance" class="num">{{ li.distance > 0 ? li.distance : '—' }}</td>
+                  <td class="num">{{ li.currency }} {{ li.hourly_rate.toFixed(2) }}</td>
+                  <td class="num">{{ li.currency }} {{ li.amount.toFixed(2) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="inv-preview-totals">
+              <div><span>{{ $t('invoice.subtotal') }}</span><strong>{{ createInvCurrency }} {{ createInvSubtotal.toFixed(2) }}</strong></div>
+              <div v-if="createInvForm.vat_rate > 0"><span>{{ $t('invoice.vat_amount') }} ({{ createInvForm.vat_rate }}%)</span><strong>{{ createInvCurrency }} {{ createInvVAT.toFixed(2) }}</strong></div>
+              <div class="inv-total-row"><span>{{ $t('invoice.total') }}</span><strong>{{ createInvCurrency }} {{ createInvTotal.toFixed(2) }}</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="tt-modal-ft">
+          <template v-if="createInvStep === 1">
+            <button class="btn btn-secondary" @click="showCreateInvoiceFromGroup = false">{{ $t('common.cancel') }}</button>
+            <button class="btn btn-primary" :disabled="!createInvForm.period_start || !createInvForm.period_end" @click="createInvStep = 2">{{ $t('invoice.preview_items') }}</button>
+          </template>
+          <template v-else>
+            <button class="btn btn-secondary" @click="createInvStep = 1">{{ $t('common.go_back') }}</button>
+            <button class="btn btn-primary" :disabled="createInvLineItems.length === 0 || savingInvFromGrp" @click="saveInvoiceFromGroup">{{ $t('invoice.confirm_create') }}</button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 
   <!-- ── Manage time-tracking projects & customers modal ───────────────── -->
   <Teleport to="body">
@@ -888,7 +1059,7 @@ import { timeEntriesApi } from '@/api/timeEntries'
 import { customersApi } from '@/api/customers'
 import { projectsApi } from '@/api/projects'
 import client, { triggerDownload } from '@/api/client'
-import { resolveAssetUrl } from '@/api/serverConfig'
+import { resolveAssetUrl, getServerUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import HelpIcon from '@/components/common/HelpIcon.vue'
 import ContractRatesModal from '@/components/common/ContractRatesModal.vue'
@@ -3592,6 +3763,149 @@ onMounted(async () => {
   initRowSortable()
   await loadReport()
 })
+
+// ── Invoices ──────────────────────────────────────────────────────────────
+const allInvoices       = ref([])
+const loadingAllInvoices = ref(false)
+const invFilterCustomer  = ref('')
+const invFilterStatus    = ref('')
+
+async function loadAllInvoices() {
+  loadingAllInvoices.value = true
+  try {
+    const params = {}
+    if (invFilterCustomer.value) params.customer_id = invFilterCustomer.value
+    if (invFilterStatus.value)   params.status       = invFilterStatus.value
+    const { data } = await customersApi.listAllInvoices(params)
+    allInvoices.value = data || []
+  } catch {
+    allInvoices.value = []
+  } finally {
+    loadingAllInvoices.value = false
+  }
+}
+
+function invPdfUrl(inv) {
+  const server = getServerUrl()
+  const base = server ? `${server}/api/v1` : '/api/v1'
+  return `${base}/customers/${inv.customer_id}/invoices/${inv.id}/pdf`
+}
+
+async function changeAllInvStatus(inv, status) {
+  try {
+    const { data } = await customersApi.updateInvoice(inv.customer_id, inv.id, { status })
+    const idx = allInvoices.value.findIndex(i => i.id === inv.id)
+    if (idx >= 0) allInvoices.value[idx] = data
+  } catch {
+    ui.error(t('invoice.invoices'))
+  }
+}
+
+// ── Create invoice from report group ─────────────────────────────────────
+const showCreateInvoiceFromGroup = ref(false)
+const createInvGroup   = ref(null)
+const createInvStep    = ref(1)
+const createInvLineItems = ref([])
+const createInvForm    = ref({ period_start: '', period_end: '', due_date: '', vat_rate: 0, notes: '' })
+const savingInvFromGrp = ref(false)
+
+const createInvDisplayFrom = ref('')
+const createInvDisplayTo   = ref('')
+const createInvDisplayDue  = ref('')
+
+function _parseCreateInvDate(displayRef, isoKey) {
+  const val = displayRef.value.trim()
+  if (!val) { createInvForm.value[isoKey] = ''; return }
+  const fmt = dateOnlyFormat()
+  const yPos = fmt.indexOf('YYYY'), mPos = fmt.indexOf('MM'), dPos = fmt.indexOf('DD')
+  const y = parseInt(val.slice(yPos, yPos + 4))
+  const m = parseInt(val.slice(mPos, mPos + 2))
+  const d = parseInt(val.slice(dPos, dPos + 2))
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    displayRef.value = createInvForm.value[isoKey] ? formatDate(createInvForm.value[isoKey]) : ''
+    return
+  }
+  const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  createInvForm.value[isoKey] = iso
+  displayRef.value = formatDate(iso)
+}
+function parseCreateInvFrom() { _parseCreateInvDate(createInvDisplayFrom, 'period_start') }
+function parseCreateInvTo()   { _parseCreateInvDate(createInvDisplayTo,   'period_end') }
+function parseCreateInvDue()  { _parseCreateInvDate(createInvDisplayDue,  'due_date') }
+
+const createInvHasDistance = computed(() => createInvLineItems.value.some(li => li.distance > 0))
+const createInvSubtotal    = computed(() => createInvLineItems.value.reduce((s, li) => s + li.amount, 0))
+const createInvVAT         = computed(() => createInvSubtotal.value * createInvForm.value.vat_rate / 100)
+const createInvTotal       = computed(() => createInvSubtotal.value + createInvVAT.value)
+const createInvCurrency    = computed(() => createInvLineItems.value[0]?.currency || '€')
+
+function fmtMinutesInv(mins) {
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
+
+function openCreateInvoiceFromGroup(grp) {
+  createInvGroup.value = grp
+  const entries = grp.entries || []
+  const dates = entries.map(e => e.date).filter(Boolean).sort()
+  const fromIso = dates[0] || new Date().toISOString().slice(0, 10)
+  const toIso   = dates[dates.length - 1] || fromIso
+  createInvForm.value = { period_start: fromIso, period_end: toIso, due_date: '', vat_rate: 0, notes: '' }
+  createInvDisplayFrom.value = formatDate(fromIso)
+  createInvDisplayTo.value   = formatDate(toIso)
+  createInvDisplayDue.value  = ''
+  // Build line items from entries that have a contract
+  const items = []
+  for (const entry of entries) {
+    if (!entry.contract_id) continue
+    const rate   = entry.contract?.price_per_hour ?? 0
+    const km     = entry.contract?.price_per_km ?? 0
+    const hours  = entry.minutes / 60
+    const dist   = entry.distance ?? 0
+    const amount = (hours * rate) + (dist * km)
+    if (amount <= 0 && entry.minutes <= 0) continue
+    items.push({
+      date:         entry.date ? entry.date.slice(0, 10) : '',
+      project_name: entry.project?.name || '',
+      description:  entry.description || '',
+      minutes:      entry.minutes,
+      hourly_rate:  rate,
+      distance:     dist,
+      price_per_km: km,
+      amount:       amount,
+      currency:     entry.contract?.currency || '€',
+    })
+  }
+  items.sort((a, b) => a.date.localeCompare(b.date))
+  createInvLineItems.value = items
+  createInvStep.value = 1
+  showCreateInvoiceFromGroup.value = true
+}
+
+async function saveInvoiceFromGroup() {
+  const grp = createInvGroup.value
+  if (!grp?.customer_id) return
+  savingInvFromGrp.value = true
+  try {
+    await customersApi.createInvoice(grp.customer_id, {
+      period_start: createInvForm.value.period_start,
+      period_end:   createInvForm.value.period_end,
+      due_date:     createInvForm.value.due_date || undefined,
+      vat_rate:     createInvForm.value.vat_rate,
+      notes:        createInvForm.value.notes,
+      line_items:   createInvLineItems.value,
+      currency:     createInvCurrency.value,
+    })
+    showCreateInvoiceFromGroup.value = false
+    ui.success(t('invoice.invoices'))
+    if (mode.value === 'invoices') await loadAllInvoices()
+  } catch {
+    ui.error('Failed to create invoice')
+  } finally {
+    savingInvFromGrp.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -4677,4 +4991,98 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 }
 /* ── Board Report ── */
 .tt-board-rpt-outer { flex: 1; overflow: auto; }
+
+/* ── Invoices tab ── */
+.tt-invoices-outer {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.inv-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.fi-sm { height: 28px; padding: 0 8px; font-size: 12px; min-width: 140px; }
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.inv-table th, .inv-table td {
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.inv-table th { font-weight: 600; color: var(--color-text-muted); font-size: 11px; }
+.inv-col-num { text-align: right !important; }
+.inv-total-cell { font-weight: 600; }
+.inv-num-cell { font-family: monospace; }
+.inv-muted { color: var(--color-text-muted); }
+.inv-actions-cell { display: flex; gap: 4px; align-items: center; }
+.inv-status-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.inv-draft { background: var(--color-bg-alt, #f0f0f0); color: var(--color-text-muted); }
+.inv-sent  { background: #dbeafe; color: #1d4ed8; }
+.inv-paid  { background: #d1fae5; color: #065f46; }
+.inv-row-draft td { opacity: .85; }
+.inv-row-paid  td { opacity: .9; }
+
+/* ── Create Invoice modal ── */
+.tt-modal-lg { max-width: 700px; width: 95vw; }
+.tt-modal-body { padding: 16px 20px; overflow-y: auto; max-height: 60vh; }
+.tt-modal-ft { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-border); }
+.cinv-field-row { display: flex; gap: 16px; margin-bottom: 12px; }
+.cinv-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.cinv-field label { font-size: 12px; font-weight: 500; color: var(--color-text-muted); }
+.cinv-field .form-input { height: 30px; font-size: 13px; }
+
+/* ── Report invoice button ── */
+.rpt-invoice-btn { margin-left: 8px; font-size: 11px; padding: 2px 8px; }
+
+/* ── Invoice preview table (reuse from CustomerDetailView) ── */
+.inv-preview-table-wrap { overflow-x: auto; }
+.inv-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.inv-preview-table th,
+.inv-preview-table td {
+  padding: 5px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.inv-preview-table th { font-weight: 600; color: var(--color-text-muted); }
+.inv-preview-table td.num,
+.inv-preview-table th.num { text-align: right; }
+.inv-preview-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 13px;
+}
+.inv-preview-totals > div {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  min-width: 260px;
+}
+.inv-preview-totals span { color: var(--color-text-muted); }
+.inv-total-row strong { color: var(--color-primary); font-size: 15px; }
 </style>

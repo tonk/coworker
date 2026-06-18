@@ -207,7 +207,13 @@
     "line_rate": "Tarif",
     "line_amount": "Montant",
     "no_billable_entries": "Aucune saisie de temps facturable trouvée pour cette période.",
-    "confirm_create": "Créer la facture"
+    "confirm_create": "Créer la facture",
+    "all_customers": "Tous les clients",
+    "all_statuses": "Tous les statuts",
+    "filter_status": "Statut",
+    "customer": "Client",
+    "date_created": "Date",
+    "invoice_date": "Date de facture"
   },
   "subcard": {
     "sub_cards": "Sous-tâches",
@@ -941,6 +947,8 @@
     "tab_log": "Saisir du temps",
     "tab_report": "Rapport",
     "tab_board_report": "Tableau",
+    "tab_invoices": "Factures",
+    "create_invoice": "Créer une facture",
     "new_entry": "Nouvelle entrée",
     "edit_entry": "Modifier l'entrée",
     "recent_entries": "Entrées récentes",

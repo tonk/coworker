@@ -207,7 +207,13 @@
     "line_rate": "Taxti",
     "line_amount": "Upphæð",
     "no_billable_entries": "Engar reikningshæfar tímafærslur fundust fyrir þetta tímabil.",
-    "confirm_create": "Búa til reikning"
+    "confirm_create": "Búa til reikning",
+    "all_customers": "Allir viðskiptavinir",
+    "all_statuses": "Allar stöður",
+    "filter_status": "Staða",
+    "customer": "Viðskiptavinur",
+    "date_created": "Dagsetning",
+    "invoice_date": "Reikningsdagsetning"
   },
   "subcard": {
     "sub_cards": "Undirspjöld",
@@ -941,6 +947,8 @@
     "tab_log": "Skrá tíma",
     "tab_report": "Skýrsla",
     "tab_board_report": "Tafla",
+    "tab_invoices": "Reikningar",
+    "create_invoice": "Búa til reikning",
     "new_entry": "Ný færsla",
     "edit_entry": "Breyta færslu",
     "recent_entries": "Nýlegar færslur",

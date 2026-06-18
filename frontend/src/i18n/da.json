@@ -207,7 +207,13 @@
     "line_rate": "Sats",
     "line_amount": "Beløb",
     "no_billable_entries": "Ingen fakturerbare tidsregistreringer fundet for denne periode.",
-    "confirm_create": "Opret faktura"
+    "confirm_create": "Opret faktura",
+    "all_customers": "Alle kunder",
+    "all_statuses": "Alle statusser",
+    "filter_status": "Status",
+    "customer": "Kunde",
+    "date_created": "Dato",
+    "invoice_date": "Fakturadato"
   },
   "subcard": {
     "sub_cards": "Underkort",
@@ -941,6 +947,8 @@
     "tab_log": "Log tid",
     "tab_report": "Rapport",
     "tab_board_report": "Tavle",
+    "tab_invoices": "Fakturaer",
+    "create_invoice": "Opret faktura",
     "new_entry": "Ny post",
     "edit_entry": "Rediger post",
     "recent_entries": "Seneste poster",

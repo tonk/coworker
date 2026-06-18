@@ -207,7 +207,13 @@
     "line_rate": "Satz",
     "line_amount": "Betrag",
     "no_billable_entries": "Keine abrechenbaren Zeiteinträge für diesen Zeitraum gefunden.",
-    "confirm_create": "Rechnung erstellen"
+    "confirm_create": "Rechnung erstellen",
+    "all_customers": "Alle Kunden",
+    "all_statuses": "Alle Status",
+    "filter_status": "Status",
+    "customer": "Kunde",
+    "date_created": "Datum",
+    "invoice_date": "Rechnungsdatum"
   },
   "subcard": {
     "sub_cards": "Teilaufgaben",
@@ -941,6 +947,8 @@
     "tab_log": "Zeit erfassen",
     "tab_report": "Bericht",
     "tab_board_report": "Board",
+    "tab_invoices": "Rechnungen",
+    "create_invoice": "Rechnung erstellen",
     "new_entry": "Neuer Eintrag",
     "edit_entry": "Eintrag bearbeiten",
     "recent_entries": "Letzte Einträge",

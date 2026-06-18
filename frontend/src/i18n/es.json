@@ -207,7 +207,13 @@
     "line_rate": "Tarifa",
     "line_amount": "Importe",
     "no_billable_entries": "No se encontraron registros de tiempo facturables para este período.",
-    "confirm_create": "Crear factura"
+    "confirm_create": "Crear factura",
+    "all_customers": "Todos los clientes",
+    "all_statuses": "Todos los estados",
+    "filter_status": "Estado",
+    "customer": "Cliente",
+    "date_created": "Fecha",
+    "invoice_date": "Fecha de factura"
   },
   "subcard": {
     "sub_cards": "Subtareas",
@@ -941,6 +947,8 @@
     "tab_log": "Registrar tiempo",
     "tab_report": "Informe",
     "tab_board_report": "Tablero",
+    "tab_invoices": "Facturas",
+    "create_invoice": "Crear factura",
     "new_entry": "Nueva entrada",
     "edit_entry": "Editar entrada",
     "recent_entries": "Entradas recientes",

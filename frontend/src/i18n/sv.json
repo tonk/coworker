@@ -207,7 +207,13 @@
     "line_rate": "Taxa",
     "line_amount": "Belopp",
     "no_billable_entries": "Inga fakturerbara tidsposter hittades för denna period.",
-    "confirm_create": "Skapa faktura"
+    "confirm_create": "Skapa faktura",
+    "all_customers": "Alla kunder",
+    "all_statuses": "Alla statusar",
+    "filter_status": "Status",
+    "customer": "Kund",
+    "date_created": "Datum",
+    "invoice_date": "Fakturadatum"
   },
   "subcard": {
     "sub_cards": "Delkort",
@@ -941,6 +947,8 @@
     "tab_log": "Logga tid",
     "tab_report": "Rapport",
     "tab_board_report": "Tavla",
+    "tab_invoices": "Fakturor",
+    "create_invoice": "Skapa faktura",
     "new_entry": "Ny post",
     "edit_entry": "Redigera post",
     "recent_entries": "Senaste poster",

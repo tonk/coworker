@@ -207,7 +207,13 @@
     "line_rate": "Taxa",
     "line_amount": "Valor",
     "no_billable_entries": "Não foram encontrados registos de tempo faturáveis para este período.",
-    "confirm_create": "Criar fatura"
+    "confirm_create": "Criar fatura",
+    "all_customers": "Todos os clientes",
+    "all_statuses": "Todos os estados",
+    "filter_status": "Estado",
+    "customer": "Cliente",
+    "date_created": "Data",
+    "invoice_date": "Data da fatura"
   },
   "subcard": {
     "sub_cards": "Subcartões",
@@ -941,6 +947,8 @@
     "tab_log": "Registar tempo",
     "tab_report": "Relatório",
     "tab_board_report": "Quadro",
+    "tab_invoices": "Faturas",
+    "create_invoice": "Criar fatura",
     "new_entry": "Nova entrada",
     "edit_entry": "Editar entrada",
     "recent_entries": "Entradas recentes",

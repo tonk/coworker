@@ -16,7 +16,10 @@ export const customersApi = {
   setMembers:     (cid, members)             => client.put(`/customers/${cid}/members`, { members }),
   listAllContractRates: ()                   => client.get('/customers/rates'),
 
-  // Invoices
+  // Invoices (global)
+  listAllInvoices: (params)        => client.get('/invoices', { params }),
+
+  // Invoices (per customer)
   listInvoices:   (cid)            => client.get(`/customers/${cid}/invoices`),
   getInvoice:     (cid, iid)       => client.get(`/customers/${cid}/invoices/${iid}`),
   createInvoice:  (cid, data)      => client.post(`/customers/${cid}/invoices`, data),

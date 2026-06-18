@@ -207,7 +207,13 @@
     "line_rate": "Tariffa",
     "line_amount": "Importo",
     "no_billable_entries": "Nessuna voce di tempo fatturabile trovata per questo periodo.",
-    "confirm_create": "Crea fattura"
+    "confirm_create": "Crea fattura",
+    "all_customers": "Tutti i clienti",
+    "all_statuses": "Tutti gli stati",
+    "filter_status": "Stato",
+    "customer": "Cliente",
+    "date_created": "Data",
+    "invoice_date": "Data fattura"
   },
   "subcard": {
     "sub_cards": "Sottoschede",
@@ -941,6 +947,8 @@
     "tab_log": "Registra tempo",
     "tab_report": "Report",
     "tab_board_report": "Board",
+    "tab_invoices": "Fatture",
+    "create_invoice": "Crea fattura",
     "new_entry": "Nuova voce",
     "edit_entry": "Modifica voce",
     "recent_entries": "Voci recenti",

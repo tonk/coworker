@@ -207,7 +207,13 @@
     "line_rate": "Rate",
     "line_amount": "Amount",
     "no_billable_entries": "No billable time entries found for this period.",
-    "confirm_create": "Create Invoice"
+    "confirm_create": "Create Invoice",
+    "all_customers": "All Customers",
+    "all_statuses": "All Statuses",
+    "filter_status": "Status",
+    "customer": "Customer",
+    "date_created": "Date",
+    "invoice_date": "Invoice Date"
   },
   "subcard": {
     "sub_cards": "Sub-cards",
@@ -1078,6 +1084,8 @@
     "tab_log": "Log Time",
     "tab_report": "Report",
     "tab_board_report": "Board",
+    "tab_invoices": "Invoices",
+    "create_invoice": "Create Invoice",
     "new_entry": "New Entry",
     "edit_entry": "Edit Entry",
     "recent_entries": "Recent Entries",

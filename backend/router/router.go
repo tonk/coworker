@@ -345,6 +345,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.PUT("/time-tracking-projects/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.UpdateTimeTrackingProject)
 		protected.DELETE("/time-tracking-projects/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.DeleteTimeTrackingProject)
 
+		// Global invoice list (across all accessible customers)
+		protected.GET("/invoices", handlers.ListAllInvoices)
+
 		// Time entries (personal time registration)
 		protected.GET("/time-entries", middleware.RequireFeature("time_tracking_enabled"), handlers.ListTimeEntries)
 		protected.POST("/time-entries", middleware.RequireFeature("time_tracking_enabled"), handlers.CreateTimeEntry)

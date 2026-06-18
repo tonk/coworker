@@ -207,7 +207,13 @@
     "line_rate": "Tarief",
     "line_amount": "Bedrag",
     "no_billable_entries": "Geen factureerbare tijdregistraties gevonden voor deze periode.",
-    "confirm_create": "Factuur aanmaken"
+    "confirm_create": "Factuur aanmaken",
+    "all_customers": "Alle klanten",
+    "all_statuses": "Alle statussen",
+    "filter_status": "Status",
+    "customer": "Klant",
+    "date_created": "Datum",
+    "invoice_date": "Factuurdatum"
   },
   "subcard": {
     "sub_cards": "Deeltaken",
@@ -941,6 +947,8 @@
     "tab_log": "Tijd loggen",
     "tab_report": "Rapport",
     "tab_board_report": "Bord",
+    "tab_invoices": "Facturen",
+    "create_invoice": "Factuur aanmaken",
     "new_entry": "Nieuwe invoer",
     "edit_entry": "Invoer bewerken",
     "recent_entries": "Recente invoer",
