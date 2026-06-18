@@ -69,7 +69,7 @@ sudo apt install -y \
 ### make
 
 ```bash
-sudo dnf install -y make
+sudo dnf -y install make
 ```
 
 ### Go
@@ -89,7 +89,7 @@ export PATH=$PATH:/usr/local/go/bin
 ```bash
 # Via NodeSource
 curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
-sudo dnf install -y nodejs
+sudo dnf -y install nodejs
 ```
 
 ### Rust
@@ -105,7 +105,7 @@ Only needed when building the Linux desktop package (`make appimage`).
 Requires Fedora 39+ or RHEL 9+ for `webkit2gtk4.1`:
 
 ```bash
-sudo dnf install -y \
+sudo dnf -y install \
     webkit2gtk4.1-devel \
     gtk3-devel \
     librsvg2-devel \
