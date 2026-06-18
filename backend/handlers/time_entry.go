@@ -52,6 +52,11 @@ func ListTimeEntries(c *gin.Context) {
 			q = q.Where("ticket_id = ?", ticketID)
 		}
 	}
+	if custStr := c.Query("customer_id"); custStr != "" {
+		if custID, err := strconv.ParseUint(custStr, 10, 64); err == nil && custID > 0 {
+			q = q.Where("customer_id = ?", custID)
+		}
+	}
 	if from := c.Query("from"); from != "" {
 		if t, err := time.Parse("2006-01-02", from); err == nil {
 			q = q.Where("date >= ?", t)

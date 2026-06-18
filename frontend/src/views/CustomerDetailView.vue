@@ -117,6 +117,39 @@
         </div>
       </section>
 
+      <!-- Invoices section -->
+      <section class="invoices-section">
+        <div class="section-header-row">
+          <h2>{{ $t('invoice.invoices') }}</h2>
+          <button v-if="canManage" class="btn btn-primary btn-sm" @click="openNewInvoice">
+            + {{ $t('invoice.new_invoice') }}
+          </button>
+        </div>
+
+        <div v-if="invoicesLoading" class="empty-state-sm">{{ $t('common.loading') }}</div>
+        <div v-else-if="invoices.length === 0" class="empty-state-sm">{{ $t('invoice.no_invoices') }}</div>
+        <div v-else class="invoice-list">
+          <div v-for="inv in invoices" :key="inv.id" class="invoice-row">
+            <div class="invoice-row-main">
+              <span class="invoice-number">{{ inv.invoice_number }}</span>
+              <span class="invoice-period">{{ formatDate(inv.period_start) }} – {{ formatDate(inv.period_end) }}</span>
+              <span :class="['invoice-status', `inv-${inv.status}`]">{{ $t(`invoice.status_${inv.status}`) }}</span>
+              <span class="invoice-total">{{ inv.currency }} {{ inv.total.toFixed(2) }}</span>
+              <span v-if="inv.due_date" class="invoice-due">{{ $t('invoice.due_date') }}: {{ formatDate(inv.due_date) }}</span>
+            </div>
+            <div class="invoice-row-actions">
+              <a :href="invoicePdfUrl(inv.id)" target="_blank" class="btn btn-sm" :aria-label="$t('invoice.download_pdf')">PDF</a>
+              <template v-if="canManage">
+                <button v-if="inv.status === 'draft'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'sent')">{{ $t('invoice.mark_sent') }}</button>
+                <button v-if="inv.status === 'sent'" class="btn btn-sm btn-primary" @click="changeInvoiceStatus(inv, 'paid')">{{ $t('invoice.mark_paid') }}</button>
+                <button v-if="inv.status !== 'draft'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'draft')">{{ $t('invoice.mark_draft') }}</button>
+                <button v-if="inv.status === 'draft'" class="icon-btn icon-danger" @click="doDeleteInvoice(inv)" :aria-label="$t('common.delete')" title="Delete">✕</button>
+              </template>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Members section (visible to admins and customer-admins) -->
       <section v-if="canManage" class="members-section">
         <div class="section-header-row">
@@ -451,6 +484,88 @@
     </template>
   </BaseModal>
 
+  <!-- Create Invoice modal -->
+  <BaseModal v-if="showNewInvoice" :title="$t('invoice.create_from_entries')" @close="closeNewInvoice" style="--modal-width:700px">
+    <!-- Step 1: period selection -->
+    <template v-if="invoiceStep === 1">
+      <div class="form-group form-row">
+        <div class="form-group half">
+          <label class="form-label" for="inv-from">{{ $t('invoice.period_start') }}</label>
+          <input id="inv-from" class="form-input" type="date" v-model="invoiceForm.period_start" />
+        </div>
+        <div class="form-group half">
+          <label class="form-label" for="inv-to">{{ $t('invoice.period_end') }}</label>
+          <input id="inv-to" class="form-input" type="date" v-model="invoiceForm.period_end" />
+        </div>
+      </div>
+      <div class="form-group form-row">
+        <div class="form-group half">
+          <label class="form-label" for="inv-due">{{ $t('invoice.due_date') }}</label>
+          <input id="inv-due" class="form-input" type="date" v-model="invoiceForm.due_date" />
+        </div>
+        <div class="form-group half">
+          <label class="form-label" for="inv-vat">{{ $t('invoice.vat_rate') }}</label>
+          <input id="inv-vat" class="form-input" type="number" min="0" max="100" step="0.1" v-model.number="invoiceForm.vat_rate" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="inv-notes">{{ $t('invoice.notes') }}</label>
+        <textarea id="inv-notes" class="form-input" rows="2" v-model="invoiceForm.notes"></textarea>
+      </div>
+    </template>
+
+    <!-- Step 2: line item preview -->
+    <template v-else-if="invoiceStep === 2">
+      <div v-if="invoiceLineItems.length === 0" class="empty-state-sm" style="padding:16px 0">
+        {{ $t('invoice.no_billable_entries') }}
+      </div>
+      <div v-else class="inv-preview-table-wrap">
+        <table class="inv-preview-table">
+          <thead>
+            <tr>
+              <th>{{ $t('invoice.line_date') }}</th>
+              <th>{{ $t('invoice.line_project') }}</th>
+              <th>{{ $t('invoice.line_description') }}</th>
+              <th class="num">{{ $t('invoice.line_hours') }}</th>
+              <th v-if="invoiceHasDistance" class="num">{{ $t('invoice.line_distance') }}</th>
+              <th class="num">{{ $t('invoice.line_rate') }}</th>
+              <th class="num">{{ $t('invoice.line_amount') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(li, i) in invoiceLineItems" :key="i">
+              <td>{{ li.date }}</td>
+              <td>{{ li.project_name }}</td>
+              <td>{{ li.description }}</td>
+              <td class="num">{{ fmtMinutes(li.minutes) }}</td>
+              <td v-if="invoiceHasDistance" class="num">{{ li.distance > 0 ? li.distance.toFixed(1) : '' }}</td>
+              <td class="num">{{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : '' }}</td>
+              <td class="num">{{ li.currency }} {{ li.amount.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="inv-preview-totals">
+        <span>{{ $t('invoice.subtotal') }}: <strong>{{ invoicePreviewCurrency }} {{ invoicePreviewSubtotal.toFixed(2) }}</strong></span>
+        <span v-if="invoiceForm.vat_rate > 0">VAT {{ invoiceForm.vat_rate }}%: <strong>{{ invoicePreviewCurrency }} {{ invoicePreviewVAT.toFixed(2) }}</strong></span>
+        <span>{{ $t('invoice.total') }}: <strong>{{ invoicePreviewCurrency }} {{ invoicePreviewTotal.toFixed(2) }}</strong></span>
+      </div>
+    </template>
+
+    <template #footer>
+      <button class="btn" @click="closeNewInvoice">{{ $t('common.cancel') }}</button>
+      <button v-if="invoiceStep === 1" class="btn btn-primary" :disabled="!invoiceForm.period_start || !invoiceForm.period_end" @click="previewInvoice">
+        {{ $t('invoice.preview_items') }} →
+      </button>
+      <template v-if="invoiceStep === 2">
+        <button class="btn btn-secondary" @click="invoiceStep = 1">← {{ $t('common.go_back') }}</button>
+        <button class="btn btn-primary" :disabled="invoiceLineItems.length === 0 || savingInvoice" @click="saveInvoice">
+          {{ $t('invoice.confirm_create') }}
+        </button>
+      </template>
+    </template>
+  </BaseModal>
+
   </div>
 </template>
 
@@ -462,9 +577,10 @@ import { useAuthStore } from '@/stores/auth'
 import { useCustomersStore } from '@/stores/customers'
 import { useUIStore } from '@/stores/ui'
 import { customersApi } from '@/api/customers'
+import { timeEntriesApi } from '@/api/timeEntries'
 import { groupsApi } from '@/api/groups'
 import { attachmentsApi } from '@/api/attachments'
-import { resolveAssetUrl } from '@/api/serverConfig'
+import { resolveAssetUrl, getServerUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import HelpIcon from '@/components/common/HelpIcon.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
@@ -488,6 +604,147 @@ const showEdit = ref(false)
 const editForm = ref({ name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
 
 const { formatDate, dateOnlyFormat } = useDateFormat()
+
+// ── Invoices ──────────────────────────────────────────────────────────────────
+const invoices = ref([])
+const invoicesLoading = ref(false)
+const showNewInvoice = ref(false)
+const invoiceStep = ref(1)
+const savingInvoice = ref(false)
+const invoiceLineItems = ref([])
+const invoiceForm = ref({ period_start: '', period_end: '', due_date: '', vat_rate: 0, notes: '' })
+
+const invoiceHasDistance = computed(() => invoiceLineItems.value.some(li => li.distance > 0))
+const invoicePreviewSubtotal = computed(() => invoiceLineItems.value.reduce((s, li) => s + li.amount, 0))
+const invoicePreviewVAT = computed(() => invoicePreviewSubtotal.value * invoiceForm.value.vat_rate / 100)
+const invoicePreviewTotal = computed(() => invoicePreviewSubtotal.value + invoicePreviewVAT.value)
+const invoicePreviewCurrency = computed(() => invoiceLineItems.value[0]?.currency || '€')
+
+function invoicePdfUrl(invoiceId) {
+  const server = getServerUrl()
+  const base = server ? `${server}/api/v1` : '/api/v1'
+  return `${base}/customers/${custId.value}/invoices/${invoiceId}/pdf`
+}
+
+function fmtMinutes(mins) {
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return m > 0 ? `${h}h ${m}m` : `${h}h`
+}
+
+async function loadInvoices() {
+  invoicesLoading.value = true
+  try {
+    const { data } = await customersApi.listInvoices(custId.value)
+    invoices.value = data || []
+  } catch {
+    invoices.value = []
+  } finally {
+    invoicesLoading.value = false
+  }
+}
+
+function openNewInvoice() {
+  const now = new Date()
+  const y = now.getFullYear(), m = now.getMonth()
+  const firstDay = new Date(y, m, 1)
+  const lastDay = new Date(y, m + 1, 0)
+  invoiceForm.value = {
+    period_start: firstDay.toISOString().slice(0, 10),
+    period_end:   lastDay.toISOString().slice(0, 10),
+    due_date: '',
+    vat_rate: 0,
+    notes: '',
+  }
+  invoiceLineItems.value = []
+  invoiceStep.value = 1
+  showNewInvoice.value = true
+}
+
+function closeNewInvoice() {
+  showNewInvoice.value = false
+}
+
+async function previewInvoice() {
+  try {
+    const { data } = await timeEntriesApi.list({
+      customer_id: custId.value,
+      from: invoiceForm.value.period_start,
+      to:   invoiceForm.value.period_end,
+      user_id: 0,  // all users (admin only; non-admins see own entries)
+    })
+    const entries = Array.isArray(data) ? data : []
+    const items = []
+    for (const entry of entries) {
+      if (!entry.contract_id) continue
+      const rate = entry.contract?.price_per_hour ?? 0
+      const km   = entry.contract?.price_per_km ?? 0
+      const hours = entry.minutes / 60
+      const dist  = entry.distance ?? 0
+      const amount = (hours * rate) + (dist * km)
+      if (amount <= 0 && entry.minutes <= 0) continue
+      items.push({
+        date:         entry.date ? entry.date.slice(0, 10) : '',
+        project_name: entry.project?.name || '',
+        description:  entry.description || '',
+        minutes:      entry.minutes,
+        hourly_rate:  rate,
+        distance:     dist,
+        price_per_km: km,
+        amount:       amount,
+        currency:     entry.contract?.currency || '€',
+      })
+    }
+    // sort by date ascending
+    items.sort((a, b) => a.date.localeCompare(b.date))
+    invoiceLineItems.value = items
+    invoiceStep.value = 2
+  } catch {
+    ui.error('Failed to load time entries')
+  }
+}
+
+async function saveInvoice() {
+  savingInvoice.value = true
+  try {
+    await customersApi.createInvoice(custId.value, {
+      period_start: invoiceForm.value.period_start,
+      period_end:   invoiceForm.value.period_end,
+      due_date:     invoiceForm.value.due_date || undefined,
+      vat_rate:     invoiceForm.value.vat_rate,
+      notes:        invoiceForm.value.notes,
+      line_items:   invoiceLineItems.value,
+      currency:     invoicePreviewCurrency.value,
+    })
+    await loadInvoices()
+    closeNewInvoice()
+    ui.success(t('invoice.invoices'))
+  } catch {
+    ui.error('Failed to create invoice')
+  } finally {
+    savingInvoice.value = false
+  }
+}
+
+async function changeInvoiceStatus(inv, status) {
+  try {
+    const { data } = await customersApi.updateInvoice(custId.value, inv.id, { status })
+    const idx = invoices.value.findIndex(i => i.id === inv.id)
+    if (idx >= 0) invoices.value[idx] = data
+  } catch {
+    ui.error('Failed to update invoice')
+  }
+}
+
+async function doDeleteInvoice(inv) {
+  if (!await ui.confirm(t('invoice.delete_confirm'), { destructive: true })) return
+  try {
+    await customersApi.deleteInvoice(custId.value, inv.id)
+    invoices.value = invoices.value.filter(i => i.id !== inv.id)
+  } catch {
+    ui.error('Failed to delete invoice')
+  }
+}
 
 const prefers12HourSlotTime = computed(() => {
   const fmt = auth.user?.date_time_format || 'YYYY-MM-DD HH:mm'
@@ -844,6 +1101,7 @@ async function load() {
     if (data?.customer?.my_role === 'admin' || auth.isAdmin) {
       await loadMembers()
     }
+    await loadInvoices()
   } catch {
     ui.error('Customer not found')
     router.push('/customers')
@@ -1424,4 +1682,74 @@ async function deleteContract(grp) {
   border-radius: 2px;
   min-width: 2px;
 }
+
+/* ── Invoices ── */
+.invoices-section { margin-top: 32px; }
+
+.invoice-list { display: flex; flex-direction: column; gap: 8px; }
+
+.invoice-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.invoice-row-main { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.invoice-row-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+.invoice-number { font-weight: 700; font-size: 13px; white-space: nowrap; }
+.invoice-period { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+.invoice-total  { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.invoice-due    { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+
+.invoice-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.inv-draft { background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+.inv-sent  { background: #dbeafe; color: #1d4ed8; }
+.inv-paid  { background: #dcfce7; color: #15803d; }
+
+.inv-preview-table-wrap { overflow-x: auto; margin-bottom: 12px; }
+.inv-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.inv-preview-table th,
+.inv-preview-table td {
+  padding: 5px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.inv-preview-table th {
+  background: var(--color-bg);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+.inv-preview-table td.num,
+.inv-preview-table th.num { text-align: right; }
+.inv-preview-table tbody tr:nth-child(even) { background: var(--color-bg); }
+
+.inv-preview-totals {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end;
+  font-size: 13px;
+  padding: 8px 0 0;
+  flex-wrap: wrap;
+}
+.inv-preview-totals strong { color: var(--color-primary); }
 </style>
