@@ -432,6 +432,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.TicketChecklistTemplate{},
 		&models.TicketChecklistItem{},
 		&models.LoginHistory{},
+		&models.Invoice{},
 	)
 	if err != nil {
 		return err

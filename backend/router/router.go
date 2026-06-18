@@ -229,6 +229,12 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			customers.POST("/:customerId/contracts", handlers.CreateContract)
 			customers.PUT("/:customerId/contracts/:contractId", handlers.UpdateContract)
 			customers.DELETE("/:customerId/contracts/:contractId", handlers.DeleteContract)
+			customers.GET("/:customerId/invoices", handlers.ListInvoices)
+			customers.POST("/:customerId/invoices", handlers.CreateInvoice)
+			customers.GET("/:customerId/invoices/:invoiceId", handlers.GetInvoice)
+			customers.PUT("/:customerId/invoices/:invoiceId", handlers.UpdateInvoice)
+			customers.DELETE("/:customerId/invoices/:invoiceId", handlers.DeleteInvoice)
+			customers.GET("/:customerId/invoices/:invoiceId/pdf", handlers.GetInvoicePDF)
 			customers.GET("/:customerId/members", handlers.ListCustomerMembers)
 			customers.PUT("/:customerId/members", handlers.SetCustomerMembers)
 			// Group membership management delegated to customer owners
