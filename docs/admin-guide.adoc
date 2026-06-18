@@ -1,6 +1,6 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.12.19
-:revdate: 2026-06-17
+:revnumber: v0.12.21
+:revdate: 2026-06-18
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -805,6 +805,89 @@ Each slot has:
 
 A contract can have any number of slots.
 The PDF time report renders a sub-row per slot for each entry that overlaps the window, showing the billable hours broken down by rate.
+
+==== Billing information
+
+Each customer record can store billing address, VAT / CoC number, and PO reference.
+This information is printed on generated invoices.
+Fields are optional — only fill in what applies.
+
+[cols="1,3", options="header"]
+|===
+|Field |Purpose
+
+|*Billing address* (street, city, postal code, country)
+|Printed in the "Bill To" block on invoices
+
+|*VAT number*
+|Customer's tax registration number; shown under the address on invoices
+
+|*PO reference*
+|Purchase-order number the customer wants quoted on each invoice
+|===
+
+==== Invoices
+
+Invoices are generated from time-entry data and stored per customer.
+Access via *Customers → (click customer) → Invoices* or the global *Invoices* tab in Time Tracking.
+
+===== Creating an invoice
+
+. Go to a customer detail page → *Invoices* → *New Invoice*.
+. Set the billing period, due date, VAT rate (%), and optional notes.
+. Click *Preview items* — WarmDesk fetches all time entries for that customer in the selected period that are linked to a contract (i.e. have a billable hourly rate or distance rate).
+. Review the line items and totals, then click *Confirm & Create*.
+
+The invoice is created in *Draft* status.
+
+===== Invoice statuses
+
+[cols="1,3", options="header"]
+|===
+|Status |Meaning
+
+|*Draft*
+|Not yet sent; can be edited or deleted
+
+|*Sent*
+|Marked as sent to the customer; PDF can be downloaded and emailed manually
+
+|*Paid*
+|Invoice has been settled; shown for reporting purposes
+|===
+
+===== Global invoice list
+
+The *Invoices* tab in Time Tracking shows every invoice across all accessible customers.
+You can filter by customer and status, change the status of any invoice, and download the PDF.
+
+===== Invoice PDF
+
+WarmDesk generates a professional PDF invoice containing:
+
+* Company logo and address (from *Admin → Settings → Branding*)
+* Bill-to block (from customer billing fields)
+* Itemised line table (date, project, description, hours, rate, amount)
+* Subtotal, VAT, and total
+* Payment details (IBAN/BIC from company settings)
+* Notes field
+
+Download via the *PDF* button next to any invoice.
+
+===== Invoice number prefix and default VAT rate
+
+Configure these in *Admin → Settings → Branding*:
+
+[cols="1,3", options="header"]
+|===
+|Setting |Effect
+
+|*Invoice number prefix*
+|Prepended to the auto-incremented sequence (default `INV`, e.g. `INV-0042`)
+
+|*Default VAT rate (%)*
+|Pre-fills the VAT rate field when creating a new invoice
+|===
 
 === Projects
 

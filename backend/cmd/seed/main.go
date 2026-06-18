@@ -207,6 +207,39 @@ func main() {
 	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "login_branding_enabled").Update("value", "true"); r.RowsAffected == 0 {
 		must(db.Create(&models.SystemSetting{Key: "login_branding_enabled", Value: "true"}).Error)
 	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_address").Update("value", "Burgemeester Roelenweg 15"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_address", Value: "Burgemeester Roelenweg 15"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_city").Update("value", "Zwolle"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_city", Value: "Zwolle"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_postal_code").Update("value", "8021 EW"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_postal_code", Value: "8021 EW"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_country").Update("value", "Netherlands"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_country", Value: "Netherlands"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_vat_number").Update("value", "NL001234567B01"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_vat_number", Value: "NL001234567B01"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_coc_number").Update("value", "12345678"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_coc_number", Value: "12345678"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_iban").Update("value", "NL91 ABNA 0417 1643 00"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_iban", Value: "NL91 ABNA 0417 1643 00"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_bic").Update("value", "ABNANL2A"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_bic", Value: "ABNANL2A"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_payment_terms").Update("value", "30"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_payment_terms", Value: "30"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "invoice_number_prefix").Update("value", "INV"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "invoice_number_prefix", Value: "INV"}).Error)
+	}
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "default_vat_rate").Update("value", "21"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "default_vat_rate", Value: "21"}).Error)
+	}
 
 	// ── 1. Users ──────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating users…")
@@ -2490,11 +2523,16 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		timeSlots    []timeSlotSpec
 	}
 	type customerSpec struct {
-		name      string
-		desc      string
-		logoURL   string
-		contracts []contractSpec
-		projects  []string // unassigned projects (no contract)
+		name              string
+		desc              string
+		logoURL           string
+		contracts         []contractSpec
+		projects          []string // unassigned projects (no contract)
+		billingStreet     string
+		billingCity       string
+		billingPostalCode string
+		billingCountry    string
+		vatNumber         string
 	}
 
 	acmePricePerHour := 110.0
@@ -2532,6 +2570,11 @@ Pagerduty schedules will be updated to match this by Friday.`,
 					timeSlots:    acmeStandbySlots,
 				},
 			},
+			billingStreet:     "42 Acme Way",
+			billingCity:       "London",
+			billingPostalCode: "EC2A 4BX",
+			billingCountry:    "United Kingdom",
+			vatNumber:         "GB123456789",
 		},
 		{
 			name:    "Globex Systems",
@@ -2547,12 +2590,22 @@ Pagerduty schedules will be updated to match this by Friday.`,
 					pricePerKm:   &globexPricePerKm,
 				},
 			},
+			billingStreet:     "10 Innovation Drive",
+			billingCity:       "Dublin",
+			billingPostalCode: "D01 X2X1",
+			billingCountry:    "Ireland",
+			vatNumber:         "IE1234567F",
 		},
 		{
-			name:     "Initech Ltd",
-			desc:     "Prospective client — evaluation phase, no active contract yet.",
-			logoURL:  "https://api.dicebear.com/9.x/shapes/svg?seed=Initech-Ltd&backgroundColor=d1fae5,ddd6fe,fce7f3",
-			projects: []string{}, // no projects yet
+			name:              "Initech Ltd",
+			desc:              "Prospective client — evaluation phase, no active contract yet.",
+			logoURL:           "https://api.dicebear.com/9.x/shapes/svg?seed=Initech-Ltd&backgroundColor=d1fae5,ddd6fe,fce7f3",
+			projects:          []string{}, // no projects yet
+			billingStreet:     "Keizersgracht 999",
+			billingCity:       "Amsterdam",
+			billingPostalCode: "1017 DS",
+			billingCountry:    "Netherlands",
+			vatNumber:         "NL987654321B02",
 		},
 	}
 
@@ -2560,7 +2613,16 @@ Pagerduty schedules will be updated to match this by Friday.`,
 
 	var demoCustomerIDs []uint
 	for _, cs := range demoCustomers {
-		cust := &models.Customer{Name: cs.name, Description: cs.desc, LogoURL: cs.logoURL}
+		cust := &models.Customer{
+			Name:              cs.name,
+			Description:       cs.desc,
+			LogoURL:           cs.logoURL,
+			BillingStreet:     cs.billingStreet,
+			BillingCity:       cs.billingCity,
+			BillingPostalCode: cs.billingPostalCode,
+			BillingCountry:    cs.billingCountry,
+			VATNumber:         cs.vatNumber,
+		}
 		must(db.Create(cust).Error)
 		demoCustomerIDs = append(demoCustomerIDs, cust.ID)
 
@@ -2628,6 +2690,144 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		}
 	}
 	fmt.Printf("   Created %d customers with contracts\n", len(demoCustomers))
+
+	// ── 6b. Invoices ─────────────────────────────────────────────────────────
+	fmt.Println("→ Creating invoices…")
+
+	type invLineItem struct {
+		Date        string  `json:"date"`
+		ProjectName string  `json:"project_name"`
+		Description string  `json:"description"`
+		Minutes     int     `json:"minutes"`
+		HourlyRate  float64 `json:"hourly_rate,omitempty"`
+		Distance    float64 `json:"distance,omitempty"`
+		PricePerKm  float64 `json:"price_per_km,omitempty"`
+		Amount      float64 `json:"amount"`
+		Currency    string  `json:"currency"`
+	}
+
+	type invSpec struct {
+		customerName string
+		status       string  // draft / sent / paid
+		periodStart  int     // days ago
+		periodEnd    int     // days ago
+		dueInDays    int     // days from periodEnd
+		vatRate      float64
+		notes        string
+		lineItems    []invLineItem
+	}
+
+	isoDay := func(daysAgo int) string {
+		return time.Now().UTC().AddDate(0, 0, -daysAgo).Format("2006-01-02")
+	}
+
+	invSpecs := []invSpec{
+		{
+			customerName: "Acme Corporation",
+			status:       "paid",
+			periodStart:  90,
+			periodEnd:    60,
+			dueInDays:    30,
+			vatRate:      21,
+			notes:        "Thank you for your continued partnership.",
+			lineItems: []invLineItem{
+				{Date: isoDay(88), ProjectName: "website-redesign", Description: "UX audit and wireframe review", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
+				{Date: isoDay(85), ProjectName: "website-redesign", Description: "Homepage redesign — initial concept", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(81), ProjectName: "website-redesign", Description: "Component library setup (Storybook)", Minutes: 360, HourlyRate: 110.0, Amount: 660.0, Currency: "€"},
+				{Date: isoDay(78), ProjectName: "website-redesign", Description: "Responsive layout implementation", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(75), ProjectName: "website-redesign", Description: "Accessibility review and WCAG fixes", Minutes: 300, HourlyRate: 110.0, Amount: 550.0, Currency: "€"},
+				{Date: isoDay(72), ProjectName: "website-redesign", Description: "Travel to client site", Minutes: 90, Distance: 68, PricePerKm: 0.23, Amount: 15.64, Currency: "€"},
+				{Date: isoDay(68), ProjectName: "website-redesign", Description: "CMS integration and content migration", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(64), ProjectName: "website-redesign", Description: "SEO optimisation and meta tags", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
+				{Date: isoDay(61), ProjectName: "website-redesign", Description: "QA and cross-browser testing", Minutes: 360, HourlyRate: 110.0, Amount: 660.0, Currency: "€"},
+			},
+		},
+		{
+			customerName: "Acme Corporation",
+			status:       "sent",
+			periodStart:  59,
+			periodEnd:    30,
+			dueInDays:    30,
+			vatRate:      21,
+			notes:        "Mobile app Phase 2 — sprint 1 & 2.",
+			lineItems: []invLineItem{
+				{Date: isoDay(57), ProjectName: "mobile-app-v2", Description: "Project kick-off and architecture planning", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
+				{Date: isoDay(54), ProjectName: "mobile-app-v2", Description: "React Native project scaffold and CI setup", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(50), ProjectName: "mobile-app-v2", Description: "Authentication flow (OAuth2 / biometric)", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(47), ProjectName: "mobile-app-v2", Description: "Dashboard and navigation shell", Minutes: 360, HourlyRate: 110.0, Amount: 660.0, Currency: "€"},
+				{Date: isoDay(43), ProjectName: "mobile-app-v2", Description: "Push notifications integration", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
+				{Date: isoDay(39), ProjectName: "mobile-app-v2", Description: "Offline cache and sync layer", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(35), ProjectName: "mobile-app-v2", Description: "Travel to client — demo sprint 2", Minutes: 90, Distance: 68, PricePerKm: 0.23, Amount: 15.64, Currency: "€"},
+				{Date: isoDay(33), ProjectName: "mobile-app-v2", Description: "Sprint 2 demo and stakeholder review", Minutes: 180, HourlyRate: 110.0, Amount: 330.0, Currency: "€"},
+			},
+		},
+		{
+			customerName: "Globex Systems",
+			status:       "draft",
+			periodStart:  45,
+			periodEnd:    15,
+			dueInDays:    30,
+			vatRate:      21,
+			notes:        "Managed DevOps — monthly retainer April.",
+			lineItems: []invLineItem{
+				{Date: isoDay(43), ProjectName: "devops-infra", Description: "Kubernetes cluster health audit", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
+				{Date: isoDay(40), ProjectName: "devops-infra", Description: "Prometheus / Grafana monitoring stack setup", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
+				{Date: isoDay(36), ProjectName: "devops-infra", Description: "Incident response — node memory leak", Minutes: 180, HourlyRate: 95.0, Amount: 285.0, Currency: "€"},
+				{Date: isoDay(32), ProjectName: "devops-infra", Description: "Cluster autoscaler tuning and load test", Minutes: 360, HourlyRate: 95.0, Amount: 570.0, Currency: "€"},
+				{Date: isoDay(28), ProjectName: "devops-infra", Description: "Security hardening — CIS benchmark", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
+				{Date: isoDay(22), ProjectName: "devops-infra", Description: "CI/CD pipeline optimisation", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
+				{Date: isoDay(17), ProjectName: "devops-infra", Description: "On-call rotation handover and runbooks", Minutes: 180, HourlyRate: 95.0, Amount: 285.0, Currency: "€"},
+			},
+		},
+	}
+
+	totalInvoices := 0
+	for i, is := range invSpecs {
+		var invCust models.Customer
+		if db.Where("name = ?", is.customerName).First(&invCust).Error != nil {
+			continue
+		}
+		startDate, _ := time.Parse("2006-01-02", isoDay(is.periodStart))
+		endDate, _ := time.Parse("2006-01-02", isoDay(is.periodEnd))
+		dueDate := endDate.AddDate(0, 0, is.dueInDays)
+
+		subtotal := 0.0
+		currency := "€"
+		for _, li := range is.lineItems {
+			subtotal += li.Amount
+			if li.Currency != "" {
+				currency = li.Currency
+			}
+		}
+		vatAmount := subtotal * is.vatRate / 100.0
+		total := subtotal + vatAmount
+
+		lineItemsJSON, _ := json.Marshal(is.lineItems)
+		invNumber := fmt.Sprintf("INV-%04d", i+1)
+
+		var existingInv models.Invoice
+		if db.Where("invoice_number = ?", invNumber).First(&existingInv).Error != nil {
+			inv := models.Invoice{
+				InvoiceNumber: invNumber,
+				CustomerID:    invCust.ID,
+				PeriodStart:   startDate,
+				PeriodEnd:     endDate,
+				Status:        is.status,
+				Currency:      currency,
+				LineItems:     string(lineItemsJSON),
+				Subtotal:      subtotal,
+				VATRate:       is.vatRate,
+				VATAmount:     vatAmount,
+				Total:         total,
+				DueDate:       &dueDate,
+				Notes:         is.notes,
+				CreatedByID:   &tonk.ID,
+			}
+			must(db.Create(&inv).Error)
+			totalInvoices++
+		}
+	}
+	fmt.Printf("   Created %d invoices\n", totalInvoices)
 
 	// ── 7. SLA Policies ───────────────────────────────────────────────────────
 	fmt.Println("→ Creating SLA policies…")

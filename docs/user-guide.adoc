@@ -1,6 +1,6 @@
 = WarmDesk — User Guide
-:revnumber: v0.12.19
-:revdate: 2026-06-17
+:revnumber: v0.12.21
+:revdate: 2026-06-18
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -1034,6 +1034,17 @@ Projects and customers created by a *global admin* are labelled *Global (created
 Non-admin users see these global entries alongside their own, but cannot edit or delete them.
 Projects and customers you create yourself are private — only you see them unless another admin chooses to edit them.
 
+=== Invoices tab
+
+The *Invoices* tab shows all invoices across every customer you have access to.
+
+* Filter by customer and status using the dropdowns in the toolbar.
+* *PDF* — download the invoice PDF.
+* *Mark sent* / *Mark paid* / *Mark draft* — change invoice status.
+
+You can also create an invoice directly from the *Report* tab: when the report is grouped by customer and a group contains billable entries (time entries linked to a contract), a *Create Invoice* button appears in the group header.
+Clicking it opens the invoice wizard pre-filled with that customer's entries for the selected report period.
+
 '''
 
 == Helpdesk
@@ -1274,6 +1285,23 @@ Each contract shows its name, date range, hourly rate, and linked projects.
 Contracts can have *time slots* — named time-of-day rate tiers (e.g. "Evening", "Weekend") with configurable start/end time, day type, hourly rate, and multiplication factor.
 When a contract has time slots, a badge appears; hover or focus to see the full list.
 Time slots are used in PDF and XLSX time-tracking exports to compute slot-aware billing automatically.
+
+==== Billing information
+
+If the customer has billing fields set (address, VAT number, PO reference), they appear in the *Billing* section of the customer detail page.
+These fields are printed on generated invoices and can be edited by customer-admins.
+
+==== Invoices
+
+If invoicing is available for your account, an *Invoices* section appears on the customer detail page.
+
+* Click *New Invoice* to open the two-step invoice wizard:
+  . Set the billing period, due date, VAT rate, and notes.
+  . Preview the line items pulled from time entries linked to a contract in that period.
+  . Confirm to create a *Draft* invoice.
+* Download the PDF with the *PDF* button.
+* Change the status with *Mark sent* / *Mark paid* / *Mark draft*.
+* Delete a draft invoice with the trash icon.
 
 === Managing members (customer-admins)
 
