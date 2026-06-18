@@ -668,7 +668,9 @@ const invoicePreviewCurrency = computed(() => invoiceLineItems.value[0]?.currenc
 function invoicePdfUrl(invoiceId) {
   const server = getServerUrl()
   const base = server ? `${server}/api/v1` : '/api/v1'
-  return `${base}/customers/${custId.value}/invoices/${invoiceId}/pdf`
+  const lang = auth.user?.locale || 'en'
+  const du = distanceUnit.value
+  return `${base}/customers/${custId.value}/invoices/${invoiceId}/pdf?lang=${lang}&distance_unit=${du}`
 }
 
 function fmtMinutes(mins) {

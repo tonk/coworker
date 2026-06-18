@@ -294,6 +294,8 @@ func GetInvoicePDF(c *gin.Context) {
 		rateStr := ""
 		if li.HourlyRate > 0 {
 			rateStr = fmt.Sprintf("%.2f", li.HourlyRate)
+		} else if li.Distance > 0 && li.PricePerKm > 0 {
+			rateStr = fmt.Sprintf("%.2f", li.PricePerKm)
 		}
 		pdf.CellFormat(colRate, pdfRowH, rateStr, "", 0, "R", alt, 0, "")
 		amtStr := fmt.Sprintf("%s %.2f", invoice.Currency, li.Amount)

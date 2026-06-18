@@ -3788,7 +3788,9 @@ async function loadAllInvoices() {
 function invPdfUrl(inv) {
   const server = getServerUrl()
   const base = server ? `${server}/api/v1` : '/api/v1'
-  return `${base}/customers/${inv.customer_id}/invoices/${inv.id}/pdf`
+  const lang = pdfLang.value === 'auto' ? (auth.user?.locale || 'en') : pdfLang.value
+  const du = distanceUnit.value
+  return `${base}/customers/${inv.customer_id}/invoices/${inv.id}/pdf?font=${pdfFont.value}&lang=${lang}&distance_unit=${du}`
 }
 
 async function changeAllInvStatus(inv, status) {
