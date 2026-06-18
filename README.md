@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.20)
+## Latest release (v0.12.21)
 
-- **Black theme in quick switcher** — the pure black (AMOLED) theme is now selectable directly from the header theme menu.
+- **Card delete confirmation fix** — the confirmation dialog no longer appears behind the open card detail modal.
 
 ## Experiment
 

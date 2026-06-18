@@ -745,3 +745,4 @@ Create an application that has all these features and requirements
 - Hide SMTP, IMAP, project defaults, and Scrum Story Points in admin settings when in timetracking mode
 - Hide Email Notifications and Personal API Keys in user settings when in timetracking mode
 - Add black (pure #000000 / AMOLED) theme option to the header quick theme switcher
+- Fix card delete confirmation dialog appearing behind the open card detail modal

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.12.21 — 2026-06-18
+
+### Fixed
+- **Card delete confirmation** — the confirmation dialog no longer appears behind the open card detail modal.
+
 ## v0.12.20 — 2026-06-18
 
 ### Added
