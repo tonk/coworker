@@ -433,6 +433,7 @@ func autoMigrate(db *gorm.DB) error {
 		&models.TicketChecklistItem{},
 		&models.LoginHistory{},
 		&models.Invoice{},
+		&models.CustomerContact{},
 	)
 	if err != nil {
 		return err
