@@ -735,9 +735,8 @@
             </div>
             <div class="form-group" style="max-width:400px">
               <label class="form-label">{{ $t('admin.invoice_vat_exempt') }}</label>
-              <label class="toggle-label">
-                <input type="checkbox" v-model="systemSettings.invoice_vat_exempt" />
-                <span class="toggle-slider" aria-hidden="true"></span>
+              <label class="toggle-label" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
+                <input type="checkbox" v-model="systemSettings.invoice_vat_exempt" style="margin-top:2px;flex-shrink:0" />
                 <span>{{ $t('admin.invoice_vat_exempt_hint') }}</span>
               </label>
             </div>

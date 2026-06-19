@@ -2,6 +2,7 @@ package services
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"net/mail"
@@ -225,6 +226,55 @@ func (s *EmailService) SendHTML(to, subject, htmlBody, textBody string) error {
 	fmt.Fprintf(&b, "Content-Type: text/plain; charset=UTF-8\r\n\r\n%s\r\n", foldBody(textBody))
 	fmt.Fprintf(&b, "--%s\r\n", boundary)
 	fmt.Fprintf(&b, "Content-Type: text/html; charset=UTF-8\r\n\r\n%s\r\n", foldBody(htmlBody))
+	fmt.Fprintf(&b, "--%s--\r\n", boundary)
+
+	var auth smtp.Auth
+	if cfg.Username != "" {
+		auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
+	}
+
+	return smtp.SendMail(addr, auth, envelopeAddress(from), []string{to}, []byte(b.String()))
+}
+
+// SendWithAttachment sends a plain-text email with a single binary attachment.
+func (s *EmailService) SendWithAttachment(to, subject, body, filename, mimeType string, data []byte) error {
+	cfg := s.cfg()
+	if cfg.Host == "" {
+		return nil
+	}
+	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	from := cfg.From
+	if from == "" {
+		from = "warmdesk@localhost"
+	}
+
+	boundary := "==WarmDesk_attach_boundary=="
+	encoded := base64.StdEncoding.EncodeToString(data)
+	// Wrap base64 at 76 characters per line (RFC 2045).
+	var wrapped strings.Builder
+	for i := 0; i < len(encoded); i += 76 {
+		end := i + 76
+		if end > len(encoded) {
+			end = len(encoded)
+		}
+		wrapped.WriteString(encoded[i:end])
+		wrapped.WriteString("\r\n")
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "From: %s\r\n", from)
+	fmt.Fprintf(&b, "To: %s\r\n", to)
+	fmt.Fprintf(&b, "Subject: %s\r\n", foldHeader(subject))
+	fmt.Fprintf(&b, "MIME-Version: 1.0\r\n")
+	fmt.Fprintf(&b, "Content-Type: multipart/mixed; boundary=%q\r\n", boundary)
+	fmt.Fprintf(&b, "\r\n")
+	fmt.Fprintf(&b, "--%s\r\n", boundary)
+	fmt.Fprintf(&b, "Content-Type: text/plain; charset=UTF-8\r\n\r\n%s\r\n\r\n", foldBody(body))
+	fmt.Fprintf(&b, "--%s\r\n", boundary)
+	fmt.Fprintf(&b, "Content-Type: %s\r\n", mimeType)
+	fmt.Fprintf(&b, "Content-Transfer-Encoding: base64\r\n")
+	fmt.Fprintf(&b, "Content-Disposition: attachment; filename=%q\r\n\r\n", filename)
+	fmt.Fprintf(&b, "%s", wrapped.String())
 	fmt.Fprintf(&b, "--%s--\r\n", boundary)
 
 	var auth smtp.Auth

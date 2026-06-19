@@ -132,17 +132,38 @@
           <div v-for="inv in invoices" :key="inv.id" class="invoice-row">
             <div class="invoice-row-main">
               <span class="invoice-number">{{ inv.invoice_number }}</span>
+              <span v-if="inv.credited_invoice_id" class="invoice-credits">↩ {{ $t('invoice.credits_invoice') }} #{{ inv.credited_invoice_id }}</span>
               <span class="invoice-period">{{ formatDate(inv.period_start) }} – {{ formatDate(inv.period_end) }}</span>
               <span :class="['invoice-status', `inv-${inv.status}`]">{{ $t(`invoice.status_${inv.status}`) }}</span>
               <span class="invoice-total">{{ inv.currency }} {{ inv.total.toFixed(2) }}</span>
               <span v-if="inv.due_date" class="invoice-due">{{ $t('invoice.due_date') }}: {{ formatDate(inv.due_date) }}</span>
+              <span v-if="inv.status === 'paid' && inv.payment_date" class="invoice-paid-info">
+                {{ $t('invoice.payment_info') }}: {{ formatDate(inv.payment_date) }}<template v-if="inv.payment_reference"> · {{ inv.payment_reference }}</template>
+              </span>
             </div>
             <div class="invoice-row-actions">
               <a :href="invoicePdfUrl(inv.id)" target="_blank" class="btn btn-sm" :aria-label="$t('invoice.download_pdf')">PDF</a>
               <template v-if="canManage">
+                <button
+                  v-if="inv.status !== 'credit_note'"
+                  class="icon-btn"
+                  @click="openEditLines(inv)"
+                  :aria-label="$t('invoice.edit_lines')"
+                  :title="$t('invoice.edit_lines')"
+                >✎</button>
+                <button
+                  v-if="inv.status === 'draft' || inv.status === 'sent'"
+                  class="btn btn-sm"
+                  @click="openSendEmail(inv)"
+                >{{ $t('invoice.send_email') }}</button>
                 <button v-if="inv.status === 'draft'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'sent')">{{ $t('invoice.mark_sent') }}</button>
-                <button v-if="inv.status === 'sent'" class="btn btn-sm btn-primary" @click="changeInvoiceStatus(inv, 'paid')">{{ $t('invoice.mark_paid') }}</button>
-                <button v-if="inv.status !== 'draft'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'draft')">{{ $t('invoice.mark_draft') }}</button>
+                <button v-if="inv.status === 'sent'" class="btn btn-sm btn-primary" @click="openRecordPayment(inv)">{{ $t('invoice.mark_paid') }}</button>
+                <button v-if="inv.status !== 'draft' && inv.status !== 'credit_note'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'draft')">{{ $t('invoice.mark_draft') }}</button>
+                <button
+                  v-if="inv.status === 'sent' || inv.status === 'paid'"
+                  class="btn btn-sm"
+                  @click="doIssueCreditNote(inv)"
+                >{{ $t('invoice.issue_credit_note') }}</button>
                 <button v-if="inv.status === 'draft'" class="icon-btn icon-danger" @click="doDeleteInvoice(inv)" :aria-label="$t('common.delete')" title="Delete">✕</button>
               </template>
             </div>
@@ -587,6 +608,143 @@
     </template>
   </BaseModal>
 
+  <!-- Edit line items modal -->
+  <BaseModal
+    v-if="showEditLines"
+    :title="$t('invoice.edit_lines')"
+    @close="showEditLines = false"
+    style="--modal-width:760px"
+    aria-labelledby="edit-lines-title"
+  >
+    <h2 id="edit-lines-title" class="sr-only">{{ $t('invoice.edit_lines') }}</h2>
+    <div class="inv-edit-table-wrap">
+      <table class="inv-preview-table">
+        <thead>
+          <tr>
+            <th>{{ $t('invoice.line_date') }}</th>
+            <th>{{ $t('invoice.line_description') }}</th>
+            <th class="num">{{ $t('invoice.manual_line_qty') }}</th>
+            <th class="num">{{ $t('invoice.manual_line_price') }}</th>
+            <th class="num">{{ $t('invoice.line_amount') }}</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(li, idx) in editLineItems" :key="idx">
+            <td><input class="form-input form-input-sm" type="text" v-model="li.date" :aria-label="$t('invoice.line_date')" /></td>
+            <td><input class="form-input form-input-sm" type="text" v-model="li.description" :aria-label="$t('invoice.line_description')" /></td>
+            <td class="num">
+              <input
+                v-if="li.is_manual"
+                class="form-input form-input-sm num-input"
+                type="number" min="0" step="0.01"
+                v-model.number="li.quantity"
+                @input="li.amount = +(li.quantity * li.unit_price).toFixed(2)"
+                :aria-label="$t('invoice.manual_line_qty')"
+              />
+              <span v-else>{{ li.minutes > 0 ? fmtMinutes(li.minutes) : '' }}</span>
+            </td>
+            <td class="num">
+              <input
+                v-if="li.is_manual"
+                class="form-input form-input-sm num-input"
+                type="number" min="0" step="0.01"
+                v-model.number="li.unit_price"
+                @input="li.amount = +(li.quantity * li.unit_price).toFixed(2)"
+                :aria-label="$t('invoice.manual_line_price')"
+              />
+              <span v-else>{{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : (li.price_per_km > 0 ? li.price_per_km.toFixed(2) : '') }}</span>
+            </td>
+            <td class="num">
+              <input
+                class="form-input form-input-sm num-input"
+                type="number" step="0.01"
+                v-model.number="li.amount"
+                :aria-label="$t('invoice.line_amount')"
+              />
+            </td>
+            <td>
+              <button class="icon-btn icon-danger" @click="editLineItems.splice(idx,1)" :aria-label="$t('common.delete')">✕</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:8px">
+      <button class="btn btn-sm" @click="addManualLine">+ {{ $t('invoice.add_manual_line') }}</button>
+    </div>
+    <div class="inv-preview-totals" style="margin-top:8px">
+      <span>{{ $t('invoice.total') }}: <strong>{{ editingInvoice?.currency }} {{ editLinesTotal.toFixed(2) }}</strong></span>
+    </div>
+    <template #footer>
+      <button class="btn" @click="showEditLines = false">{{ $t('common.cancel') }}</button>
+      <button class="btn btn-primary" @click="saveEditLines">{{ $t('common.save') }}</button>
+    </template>
+  </BaseModal>
+
+  <!-- Send by email modal -->
+  <BaseModal
+    v-if="showSendEmail"
+    :title="$t('invoice.send_email')"
+    @close="showSendEmail = false"
+    style="--modal-width:520px"
+    aria-labelledby="send-email-title"
+  >
+    <h2 id="send-email-title" class="sr-only">{{ $t('invoice.send_email') }}</h2>
+    <div class="form-group">
+      <label class="form-label" for="send-to">{{ $t('invoice.send_email_to') }}</label>
+      <input id="send-to" class="form-input" type="email" v-model="sendEmailForm.to" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="send-subject">{{ $t('invoice.send_email_subject') }}</label>
+      <input id="send-subject" class="form-input" type="text" v-model="sendEmailForm.subject" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="send-body">{{ $t('invoice.send_email_body') }}</label>
+      <textarea id="send-body" class="form-input" rows="5" v-model="sendEmailForm.body"></textarea>
+    </div>
+    <template #footer>
+      <button class="btn" @click="showSendEmail = false">{{ $t('common.cancel') }}</button>
+      <button class="btn btn-primary" :disabled="!sendEmailForm.to || sendingEmail" @click="doSendEmail">
+        {{ sendingEmail ? $t('invoice.send_email_sending') : $t('invoice.send_email') }}
+      </button>
+    </template>
+  </BaseModal>
+
+  <!-- Record payment modal -->
+  <BaseModal
+    v-if="showRecordPayment"
+    :title="$t('invoice.record_payment')"
+    @close="showRecordPayment = false"
+    style="--modal-width:440px"
+    aria-labelledby="record-payment-title"
+  >
+    <h2 id="record-payment-title" class="sr-only">{{ $t('invoice.record_payment') }}</h2>
+    <div class="form-group">
+      <label class="form-label" for="pay-date">{{ $t('invoice.payment_date') }}</label>
+      <div class="date-input-row">
+        <input id="pay-date" class="form-input" type="text" v-model="paymentForm.display_payment_date" :placeholder="dateOnlyFormat()" @blur="parsePaymentDate" />
+        <label class="picker-wrap" :title="$t('common.pick_date')">
+          <span class="btn-icon-xs">&#128197;</span>
+          <input type="date" class="date-picker-overlay" :value="paymentForm.payment_date" @change="e => { paymentForm.payment_date = e.target.value; paymentForm.display_payment_date = e.target.value ? formatDate(e.target.value) : '' }" />
+        </label>
+        <button v-if="paymentForm.display_payment_date" class="btn-icon-xs" @click="paymentForm.display_payment_date = ''; paymentForm.payment_date = ''" title="Clear">×</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="pay-amount">{{ $t('invoice.payment_amount') }}</label>
+      <input id="pay-amount" class="form-input" type="number" step="0.01" v-model.number="paymentForm.payment_amount" />
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="pay-ref">{{ $t('invoice.payment_reference') }}</label>
+      <input id="pay-ref" class="form-input" type="text" v-model="paymentForm.payment_reference" />
+    </div>
+    <template #footer>
+      <button class="btn" @click="showRecordPayment = false">{{ $t('common.cancel') }}</button>
+      <button class="btn btn-primary" @click="doRecordPayment">{{ $t('invoice.mark_paid') }}</button>
+    </template>
+  </BaseModal>
+
   </div>
 </template>
 
@@ -789,6 +947,161 @@ async function doDeleteInvoice(inv) {
     invoices.value = invoices.value.filter(i => i.id !== inv.id)
   } catch {
     ui.error('Failed to delete invoice')
+  }
+}
+
+// ── Edit line items ──────────────────────────────────────────────────────────
+const showEditLines = ref(false)
+const editingInvoice = ref(null)
+const editLineItems = ref([])
+const editLinesTotal = computed(() => editLineItems.value.reduce((s, li) => s + (li.amount || 0), 0))
+
+function openEditLines(inv) {
+  editingInvoice.value = inv
+  try {
+    editLineItems.value = JSON.parse(inv.line_items || '[]').map(li => ({ ...li }))
+  } catch {
+    editLineItems.value = []
+  }
+  showEditLines.value = true
+}
+
+function addManualLine() {
+  const today = new Date().toISOString().slice(0, 10)
+  editLineItems.value.push({
+    date: today,
+    project_name: '',
+    description: '',
+    minutes: 0,
+    hourly_rate: 0,
+    distance: 0,
+    price_per_km: 0,
+    quantity: 1,
+    unit_price: 0,
+    amount: 0,
+    currency: editingInvoice.value?.currency || '€',
+    is_manual: true,
+  })
+}
+
+async function saveEditLines() {
+  const inv = editingInvoice.value
+  try {
+    const { data } = await customersApi.updateInvoice(custId.value, inv.id, {
+      line_items: editLineItems.value,
+      vat_rate: inv.vat_rate,
+    })
+    const idx = invoices.value.findIndex(i => i.id === inv.id)
+    if (idx >= 0) invoices.value[idx] = data
+    showEditLines.value = false
+    ui.success(t('common.saved'))
+  } catch {
+    ui.error('Failed to save line items')
+  }
+}
+
+// ── Send by email ─────────────────────────────────────────────────────────────
+const showSendEmail = ref(false)
+const sendEmailInvoice = ref(null)
+const sendEmailForm = ref({ to: '', subject: '', body: '' })
+const sendingEmail = ref(false)
+
+function openSendEmail(inv) {
+  sendEmailInvoice.value = inv
+  sendEmailForm.value = {
+    to: detail.value?.customer?.email || '',
+    subject: `${t('invoice.invoices')} ${inv.invoice_number}`,
+    body: `Dear customer,\n\nPlease find your invoice ${inv.invoice_number} attached.\n\nKind regards`,
+  }
+  showSendEmail.value = true
+}
+
+async function doSendEmail() {
+  const inv = sendEmailInvoice.value
+  sendingEmail.value = true
+  try {
+    const { data } = await customersApi.sendInvoice(custId.value, inv.id, {
+      to: sendEmailForm.value.to,
+      subject: sendEmailForm.value.subject,
+      body: sendEmailForm.value.body,
+    })
+    const idx = invoices.value.findIndex(i => i.id === inv.id)
+    if (idx >= 0) invoices.value[idx] = data
+    showSendEmail.value = false
+    ui.success(t('invoice.send_email'))
+  } catch (err) {
+    const msg = err?.response?.data?.error || 'Failed to send email'
+    if (msg.includes('not configured')) {
+      ui.error(t('invoice.no_email_configured'))
+    } else {
+      ui.error(msg)
+    }
+  } finally {
+    sendingEmail.value = false
+  }
+}
+
+// ── Record payment ────────────────────────────────────────────────────────────
+const showRecordPayment = ref(false)
+const paymentInvoice = ref(null)
+const paymentForm = ref({ payment_date: '', display_payment_date: '', payment_amount: null, payment_reference: '' })
+
+function openRecordPayment(inv) {
+  paymentInvoice.value = inv
+  const today = new Date().toISOString().slice(0, 10)
+  paymentForm.value = {
+    payment_date: today,
+    display_payment_date: formatDate(today),
+    payment_amount: inv.total,
+    payment_reference: '',
+  }
+  showRecordPayment.value = true
+}
+
+function parsePaymentDate() {
+  const val = paymentForm.value.display_payment_date.trim()
+  if (!val) { paymentForm.value.payment_date = ''; return }
+  const fmt = dateOnlyFormat()
+  const yPos = fmt.indexOf('YYYY'), mPos = fmt.indexOf('MM'), dPos = fmt.indexOf('DD')
+  const y = parseInt(val.slice(yPos, yPos + 4))
+  const m = parseInt(val.slice(mPos, mPos + 2))
+  const d = parseInt(val.slice(dPos, dPos + 2))
+  if (!y || m < 1 || m > 12 || d < 1 || d > 31) {
+    paymentForm.value.display_payment_date = paymentForm.value.payment_date ? formatDate(paymentForm.value.payment_date) : ''
+    return
+  }
+  const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+  paymentForm.value.payment_date = iso
+  paymentForm.value.display_payment_date = formatDate(iso)
+}
+
+async function doRecordPayment() {
+  const inv = paymentInvoice.value
+  try {
+    const { data } = await customersApi.updateInvoice(custId.value, inv.id, {
+      status: 'paid',
+      payment_date: paymentForm.value.payment_date,
+      payment_amount: paymentForm.value.payment_amount,
+      payment_reference: paymentForm.value.payment_reference,
+    })
+    const idx = invoices.value.findIndex(i => i.id === inv.id)
+    if (idx >= 0) invoices.value[idx] = data
+    showRecordPayment.value = false
+    ui.success(t('invoice.payment_info'))
+  } catch {
+    ui.error('Failed to record payment')
+  }
+}
+
+// ── Credit notes ──────────────────────────────────────────────────────────────
+async function doIssueCreditNote(inv) {
+  if (!await ui.confirm(t('invoice.credit_note_confirm', { number: inv.invoice_number }), { destructive: false })) return
+  try {
+    const { data } = await customersApi.createCreditNote(custId.value, inv.id)
+    invoices.value.unshift(data)
+    ui.success(t('invoice.credit_note'))
+  } catch {
+    ui.error('Failed to create credit note')
   }
 }
 
@@ -1762,9 +2075,10 @@ async function deleteContract(grp) {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.inv-draft { background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border); }
-.inv-sent  { background: #dbeafe; color: #1d4ed8; }
-.inv-paid  { background: #dcfce7; color: #15803d; }
+.inv-draft       { background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+.inv-sent        { background: #dbeafe; color: #1d4ed8; }
+.inv-paid        { background: #dcfce7; color: #15803d; }
+.inv-credit_note { background: #fef9c3; color: #854d0e; }
 
 .inv-preview-table-wrap { overflow-x: auto; margin-bottom: 12px; }
 .inv-preview-table {
@@ -1798,4 +2112,12 @@ async function deleteContract(grp) {
   flex-wrap: wrap;
 }
 .inv-preview-totals strong { color: var(--color-primary); }
+
+.invoice-credits  { font-size: 11px; color: var(--color-text-muted); font-style: italic; white-space: nowrap; }
+.invoice-paid-info { font-size: 11px; color: #15803d; white-space: nowrap; }
+
+.inv-edit-table-wrap { overflow-x: auto; margin-bottom: 4px; }
+.form-input-sm { padding: 4px 6px; font-size: 12px; }
+.num-input { width: 80px; text-align: right; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 </style>

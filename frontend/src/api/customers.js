@@ -24,7 +24,9 @@ export const customersApi = {
   getInvoice:     (cid, iid)       => client.get(`/customers/${cid}/invoices/${iid}`),
   createInvoice:  (cid, data)      => client.post(`/customers/${cid}/invoices`, data),
   updateInvoice:  (cid, iid, data) => client.put(`/customers/${cid}/invoices/${iid}`, data),
-  deleteInvoice:  (cid, iid)       => client.delete(`/customers/${cid}/invoices/${iid}`),
+  deleteInvoice:   (cid, iid)       => client.delete(`/customers/${cid}/invoices/${iid}`),
+  sendInvoice:     (cid, iid, data) => client.post(`/customers/${cid}/invoices/${iid}/send`, data),
+  createCreditNote:(cid, iid)       => client.post(`/customers/${cid}/invoices/${iid}/credit-note`),
 
   // Time-tracking-only customers (no CRM entry)
   listTimeTracking:   ()           => client.get('/time-tracking-customers'),

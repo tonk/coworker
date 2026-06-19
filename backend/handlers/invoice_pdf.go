@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,48 +15,24 @@ import (
 	"github.com/tonk/warmdesk/models"
 )
 
-// GetInvoicePDF renders an invoice as a PDF and streams it to the client.
-func GetInvoicePDF(c *gin.Context) {
-	custID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
-		return
-	}
-	invoiceID, err := strconv.ParseUint(c.Param("invoiceId"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid invoice id"})
-		return
-	}
-	userID := middleware.GetUserID(c)
-	globalRole := middleware.GetGlobalRole(c)
-	if err := requireCustomerAccess(uint(custID), userID, globalRole); err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
-		return
-	}
+// renderInvoicePDF generates an invoice PDF and returns the raw bytes.
+// lang is a BCP-47 language tag (e.g. "en", "nl"). Other display options
+// (font, distance_unit) use the requesting user's DB preferences.
+func renderInvoicePDF(invoice models.Invoice, lang string) ([]byte, error) {
+	// Reuse the full PDF-generation logic by synthesising a gin context that
+	// writes into a buffer.  The simplest approach is to call the same helper
+	// code.  Here we duplicate just the parameters needed and call
+	// buildInvoicePDF, which is the refactored core of GetInvoicePDF.
+	return buildInvoicePDF(invoice, lang, "FreeSans", "km")
+}
 
-	var invoice models.Invoice
-	if err := database.DB.Preload("Customer").First(&invoice, invoiceID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
-		return
-	}
-	if invoice.CustomerID != uint(custID) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
-		return
-	}
-
+// buildInvoicePDF contains all PDF-building logic and returns the raw PDF bytes.
+// It is the shared core called by both GetInvoicePDF and renderInvoicePDF.
+func buildInvoicePDF(invoice models.Invoice, lang, fontFamily, distanceUnit string) ([]byte, error) {
 	var lineItems []models.InvoiceLineItem
 	_ = json.Unmarshal([]byte(invoice.LineItems), &lineItems)
 
-	// Requesting user's font preference.
-	var requestingUser models.User
-	fontFamily := "FreeSans"
-	if err := database.DB.First(&requestingUser, userID).Error; err == nil {
-		fontFamily = pdfFontFamily(requestingUser.Font)
-	}
-	if fam, ok := pdfFontFromParam(c.Query("font")); ok {
-		fontFamily = fam
-	}
-	tr := pdfI18nFromLang(c.Query("lang"))
+	tr := pdfI18nFromLang(lang)
 
 	settings := loadAllSettings()
 	companyName := settings[settingCompanyName]
@@ -73,8 +50,6 @@ func GetInvoicePDF(c *gin.Context) {
 	companyBIC := settings[settingCompanyBIC]
 	companyTerms := settings[settingCompanyPaymentTerms]
 	vatExempt := settings[settingInvoiceVATExempt] == "true"
-
-	distanceUnit := c.DefaultQuery("distance_unit", "km")
 
 	// ── Build PDF ────────────────────────────────────────────────────────────
 	pdf := gofpdf.New("P", "mm", "A4", "")
@@ -234,13 +209,13 @@ func GetInvoicePDF(c *gin.Context) {
 
 	// ── Line items table ──────────────────────────────────────────────────────
 	const (
-		colDate    = 22.0
-		colProj    = 38.0
-		colDesc    = 0.0 // filled dynamically
-		colHours   = 18.0
-		colDist    = 16.0
-		colRate    = 18.0
-		colAmount  = 22.0
+		colDate   = 22.0
+		colProj   = 38.0
+		colDesc   = 0.0 // filled dynamically
+		colHours  = 18.0
+		colDist   = 16.0
+		colRate   = 18.0
+		colAmount = 22.0
 	)
 	hasDistance := false
 	for _, li := range lineItems {
@@ -387,13 +362,65 @@ func GetInvoicePDF(c *gin.Context) {
 		pdf.MultiCell(pdfBodyW, 5, invoice.Notes, "", "L", false)
 	}
 
+	var buf bytes.Buffer
+	if err := pdf.Output(&buf); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// GetInvoicePDF renders an invoice as a PDF and streams it to the client.
+func GetInvoicePDF(c *gin.Context) {
+	custID, err := strconv.ParseUint(c.Param("customerId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid customer id"})
+		return
+	}
+	invoiceID, err := strconv.ParseUint(c.Param("invoiceId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid invoice id"})
+		return
+	}
+	userID := middleware.GetUserID(c)
+	globalRole := middleware.GetGlobalRole(c)
+	if err := requireCustomerAccess(uint(custID), userID, globalRole); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var invoice models.Invoice
+	if err := database.DB.Preload("Customer").First(&invoice, invoiceID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+	if invoice.CustomerID != uint(custID) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+		return
+	}
+
+	// Requesting user's font preference.
+	var requestingUser models.User
+	fontFamily := "FreeSans"
+	if err := database.DB.First(&requestingUser, userID).Error; err == nil {
+		fontFamily = pdfFontFamily(requestingUser.Font)
+	}
+	if fam, ok := pdfFontFromParam(c.Query("font")); ok {
+		fontFamily = fam
+	}
+	lang := c.Query("lang")
+	distanceUnit := c.DefaultQuery("distance_unit", "km")
+
+	pdfBytes, err := buildInvoicePDF(invoice, lang, fontFamily, distanceUnit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate PDF"})
+		return
+	}
+
 	// ── Stream PDF ───────────────────────────────────────────────────────────
 	filename := fmt.Sprintf("invoice-%s.pdf", invoice.InvoiceNumber)
 	c.Header("Content-Type", "application/pdf")
 	c.Header("Content-Disposition", `inline; filename="`+filename+`"`)
-	if err := pdf.Output(c.Writer); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate PDF"})
-	}
+	c.Data(http.StatusOK, "application/pdf", pdfBytes)
 }
 
 // invoiceDateLabel formats a time.Time for the invoice using the locale's DMY setting.
