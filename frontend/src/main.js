@@ -30,6 +30,8 @@ import '@fontsource/source-code-pro/600.css'
 // ES module bundle loads so Axios captures it at import time.
 async function init() {
   if (window.__TAURI_INTERNALS__) {
+    window.addEventListener('contextmenu', e => e.preventDefault())
+
     const httpPlugin = await import('@tauri-apps/plugin-http')
     const tauriFetch =
       httpPlugin.fetch ||
