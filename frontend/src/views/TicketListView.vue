@@ -2,9 +2,34 @@
   <main class="ticket-list-main">
     <div class="ticket-list-container">
       <DashboardNews />
+
+      <!-- Customer tab bar — matches CustomerDetailView -->
+      <div v-if="customer" class="cust-mini-header">
+        <RouterLink :to="`/customers/${customerId}`" class="cust-mini-name">{{ customer.name }}</RouterLink>
+      </div>
+      <div class="cust-tabs" role="tablist" :aria-label="customer?.name || $t('ticket.tickets')">
+        <RouterLink
+          role="tab"
+          :aria-selected="false"
+          class="tab"
+          :to="`/customers/${customerId}`"
+        >{{ $t('customer.tab_overview') }}</RouterLink>
+        <RouterLink
+          role="tab"
+          :aria-selected="false"
+          class="tab"
+          :to="`/customers/${customerId}?tab=invoices`"
+        >{{ $t('invoice.invoices') }}</RouterLink>
+        <RouterLink
+          role="tab"
+          :aria-selected="false"
+          class="tab"
+          :to="`/customers/${customerId}?tab=contacts`"
+        >{{ $t('customer.contacts') }}</RouterLink>
+        <span role="tab" aria-selected="true" class="tab active" aria-current="page">{{ $t('ticket.tickets') }}</span>
+      </div>
+
       <header class="ticket-list-header">
-        <RouterLink :to="`/customers/${customerId}`" class="back-link">{{ $t('common.go_back') }}</RouterLink>
-        <h1>{{ customer?.name || $t('ticket.tickets') }}</h1>
         <div class="header-actions">
           <div class="view-toggle" role="tablist">
             <button role="tab" :aria-selected="viewMode === 'cards'" :class="['view-toggle-btn', { active: viewMode === 'cards' }]" @click="viewMode = 'cards'">☰ {{ $t('ticket.card_view') }}</button>
@@ -761,16 +786,42 @@ async function onDescPaste(e) {
 .ticket-list-main { padding: 24px; margin: 0 auto; }
 .ticket-list-main:has(.ticket-table) { max-width: 100%; padding: 24px 32px; }
 .ticket-list-main:not(:has(.ticket-table)) { max-width: 1200px; }
-.ticket-list-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-.ticket-list-header h1 { flex: 1; margin: 0; font-size: 22px; }
-.header-actions { display: flex; align-items: center; gap: 8px; }
+
+.cust-mini-header { margin-bottom: 4px; }
+.cust-mini-name { font-size: 13px; font-weight: 600; color: var(--color-text-muted); text-decoration: none; }
+.cust-mini-name:hover { color: var(--color-primary); }
+
+.cust-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 20px;
+}
+.tab {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: -1px;
+  text-decoration: none;
+  display: inline-block;
+  transition: color 0.15s;
+}
+.tab:hover { color: var(--color-text); }
+.tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+.tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+
+.ticket-list-header { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .view-toggle { display: flex; border: 1px solid var(--color-border); border-radius: 6px; overflow: hidden; }
 .view-toggle-btn { background: none; border: none; padding: 5px 12px; font-size: 12px; cursor: pointer; color: var(--color-text-muted); transition: background .15s, color .15s; }
 .view-toggle-btn:not(:last-child) { border-right: 1px solid var(--color-border); }
 .view-toggle-btn:hover { background: var(--color-bg-alt); }
 .view-toggle-btn.active { background: var(--color-primary); color: #fff; }
-.back-link { font-size: 13px; color: var(--color-primary); text-decoration: none; }
-.back-link:hover { text-decoration: underline; }
 .loading-state { display: flex; justify-content: center; padding: 48px; }
 .empty-state { text-align: center; padding: 64px 24px; color: var(--color-text-muted); }
 .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }

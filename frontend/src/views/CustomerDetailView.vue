@@ -60,6 +60,13 @@
           :class="['tab', { active: activeTab === 'contacts' }]"
           @click="activeTab = 'contacts'"
         >{{ $t('customer.contacts') }}</button>
+        <button
+          v-if="auth.helpdeskEnabled"
+          role="tab"
+          :aria-selected="false"
+          :class="['tab']"
+          @click="router.push(`/customers/${custId}/tickets`)"
+        >{{ $t('ticket.tickets') }}</button>
       </div>
 
       <!-- Overview tab: contracts + members -->
@@ -931,7 +938,8 @@ const distanceUnit = computed(() => auth.user?.distance_unit || 'km')
 
 const loading = ref(true)
 const detail = ref(null)
-const activeTab = ref('overview')
+const VALID_TABS = ['overview', 'invoices', 'contacts']
+const activeTab = ref(VALID_TABS.includes(route.query.tab) ? route.query.tab : 'overview')
 
 const showEdit = ref(false)
 const editForm = ref({ name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
