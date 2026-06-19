@@ -520,6 +520,8 @@
     "invoice_number_prefix": "Invoice Number Prefix",
     "invoice_number_prefix_placeholder": "INV",
     "default_vat_rate": "Default VAT Rate (%)",
+    "invoice_vat_exempt": "VAT Exempt",
+    "invoice_vat_exempt_hint": "Company is exempt from VAT (small business scheme). Invoices will show the statutory exemption text instead of a VAT line.",
     "billing_section": "Billing Details",
     "company_logo": "Company Logo (light background)",
     "company_logo_hint": "Paste a URL or upload an image file.",

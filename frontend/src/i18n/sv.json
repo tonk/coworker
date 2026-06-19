@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Fakturanummerprefix",
     "invoice_number_prefix_placeholder": "FAKT",
     "default_vat_rate": "Standard momssats (%)",
+    "invoice_vat_exempt": "Momsbefriad",
+    "invoice_vat_exempt_hint": "Företaget är befriat från moms (småföretagsschema). Fakturor visar den lagstadgade befrielsetexten istället för en momsrad.",
     "billing_section": "Faktureringsuppgifter",
     "company_logo": "Företagslogotyp (ljus bakgrund)",
     "company_logo_hint": "Ange en URL eller ladda upp en bildfil.",

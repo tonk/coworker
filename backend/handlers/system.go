@@ -88,6 +88,7 @@ const (
 	settingCompanyPaymentTerms = "company_payment_terms"
 	settingInvoiceNumberPrefix = "invoice_number_prefix"
 	settingDefaultVATRate     = "default_vat_rate"
+	settingInvoiceVATExempt   = "invoice_vat_exempt"
 )
 
 func init() {
@@ -374,6 +375,7 @@ func GetSystemSettings(c *gin.Context) {
 		"company_payment_terms":        all[settingCompanyPaymentTerms],
 		"invoice_number_prefix":        all[settingInvoiceNumberPrefix],
 		"default_vat_rate":             all[settingDefaultVATRate],
+		"invoice_vat_exempt":           all[settingInvoiceVATExempt] == "true",
 		"mfa_required":                 all[settingMFARequired] == "true",
 		"mfa_remember_devices":         normalizeMFARememberDevicesPolicy(all[settingMFARememberDevices]),
 		"password_policy":              GetPasswordPolicy(),
@@ -453,6 +455,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		CompanyPaymentTerms       json.Number `json:"company_payment_terms"` // accepts "30" or 30
 		InvoiceNumberPrefix       *string     `json:"invoice_number_prefix"`
 		DefaultVATRate            json.Number `json:"default_vat_rate"` // accepts "21.5" or 21.5
+		InvoiceVATExempt          *bool       `json:"invoice_vat_exempt"`
 		DefaultColumns            *string     `json:"default_columns"`
 		DefaultLabels             *string     `json:"default_labels"`
 		BackupSchedule            *string     `json:"backup_schedule"`
@@ -633,6 +636,13 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	}
 	if req.DefaultVATRate != "" {
 		saveSetting(settingDefaultVATRate, req.DefaultVATRate.String())
+	}
+	if req.InvoiceVATExempt != nil {
+		if *req.InvoiceVATExempt {
+			saveSetting(settingInvoiceVATExempt, "true")
+		} else {
+			saveSetting(settingInvoiceVATExempt, "false")
+		}
 	}
 	if req.DefaultColumns != nil {
 		saveSetting(settingDefaultColumns, *req.DefaultColumns)

@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Prefisso numero fattura",
     "invoice_number_prefix_placeholder": "FATT",
     "default_vat_rate": "Aliquota IVA predefinita (%)",
+    "invoice_vat_exempt": "Esenzione IVA",
+    "invoice_vat_exempt_hint": "L'azienda è esente da IVA (regime forfetario). Le fatture mostreranno il testo di esenzione di legge invece di una riga IVA.",
     "billing_section": "Dettagli fatturazione",
     "company_logo": "Logo aziendale (sfondo chiaro)",
     "company_logo_hint": "Inserisci un URL o carica un file immagine.",

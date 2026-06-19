@@ -72,6 +72,7 @@ func GetInvoicePDF(c *gin.Context) {
 	companyIBAN := settings[settingCompanyIBAN]
 	companyBIC := settings[settingCompanyBIC]
 	companyTerms := settings[settingCompanyPaymentTerms]
+	vatExempt := settings[settingInvoiceVATExempt] == "true"
 
 	distanceUnit := c.DefaultQuery("distance_unit", "km")
 
@@ -316,7 +317,19 @@ func GetInvoicePDF(c *gin.Context) {
 	pdf.CellFormat(totalsLabelW, pdfRowH, tr.Subtotal, "", 0, "L", true, 0, "")
 	pdf.CellFormat(totalsValW, pdfRowH, fmt.Sprintf("%s %.2f", invoice.Currency, invoice.Subtotal), "", 2, "R", true, 0, "")
 
-	if invoice.VATRate > 0 {
+	if vatExempt {
+		// Show exemption note below the subtotal, spanning the full body width.
+		pdf.SetX(pdfMargin)
+		setTxt(pdf, clrMuted)
+		pdf.SetFont(fontFamily, "I", 8)
+		exemptNote := tr.VATExemptNote
+		if exemptNote == "" {
+			exemptNote = "VAT exempt under the small business scheme"
+		}
+		pdf.CellFormat(pdfBodyW, pdfRowH, exemptNote, "", 2, "L", false, 0, "")
+		pdf.SetFont(fontFamily, "", 9)
+		pdf.SetX(totalsX)
+	} else if invoice.VATRate > 0 {
 		pdf.SetX(totalsX)
 		setTxt(pdf, clrMuted)
 		vatLabel := fmt.Sprintf("VAT %.0f%%", invoice.VATRate)

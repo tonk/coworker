@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Laskunumeron etuliite",
     "invoice_number_prefix_placeholder": "LASKU",
     "default_vat_rate": "Oletusarvoinen ALV-kanta (%)",
+    "invoice_vat_exempt": "ALV-vapautus",
+    "invoice_vat_exempt_hint": "Yritys on vapautettu arvonlisäverosta (pienyritysasema). Laskut näyttävät lakisääteisen vapautustekstin ALV-rivin sijaan.",
     "billing_section": "Laskutustiedot",
     "company_logo": "Yrityksen logo (vaalea tausta)",
     "company_logo_hint": "Anna URL tai lataa kuvatiedosto.",

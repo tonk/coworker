@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Fakturanummerprefiks",
     "invoice_number_prefix_placeholder": "FAKT",
     "default_vat_rate": "Standard merverdiavgiftssats (%)",
+    "invoice_vat_exempt": "Momsfritak",
+    "invoice_vat_exempt_hint": "Bedriften er fritatt for merverdiavgift (SMB-ordning). Fakturaer viser den lovpålagte fritaksteksten i stedet for en MVA-linje.",
     "billing_section": "Faktureringsopplysninger",
     "company_logo": "Firmalogo (lys bakgrunn)",
     "company_logo_hint": "Skriv inn en URL eller last opp en bildefil.",

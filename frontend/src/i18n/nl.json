@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Factuurprefix",
     "invoice_number_prefix_placeholder": "FACT",
     "default_vat_rate": "Standaard BTW-tarief (%)",
+    "invoice_vat_exempt": "BTW-vrijstelling",
+    "invoice_vat_exempt_hint": "Bedrijf is vrijgesteld van BTW (kleine ondernemersregeling). Facturen tonen de wettelijke vrijstellingstekst in plaats van een BTW-regel.",
     "billing_section": "Factureringsgegevens",
     "company_logo": "Bedrijfslogo (lichte achtergrond)",
     "company_logo_hint": "Plak een URL of upload een afbeelding.",

@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Préfixe de numéro de facture",
     "invoice_number_prefix_placeholder": "FACT",
     "default_vat_rate": "Taux de TVA par défaut (%)",
+    "invoice_vat_exempt": "Exonération de TVA",
+    "invoice_vat_exempt_hint": "L'entreprise est exonérée de TVA (régime des micro-entreprises). Les factures afficheront le texte d'exonération légal au lieu d'une ligne TVA.",
     "billing_section": "Détails de facturation",
     "company_logo": "Logo de l'entreprise (fond clair)",
     "company_logo_hint": "Collez une URL ou téléchargez une image.",

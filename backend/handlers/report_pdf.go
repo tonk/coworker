@@ -202,6 +202,7 @@ type pdfI18n struct {
 	PaymentDetails  string // e.g. "Payment Details"
 	Notes           string // e.g. "Notes"
 	PaymentTermsDays string // e.g. "Net %s days" — %s is replaced with the number
+	VATExemptNote    string // statutory VAT-exemption text for small businesses
 	// DMY signals that dates should be rendered in day-month order ("17 mei")
 	// rather than the American month-day order ("May 17") that Go's time.Format
 	// always produces. Set to true for every non-English locale.
@@ -244,6 +245,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Payment Details",
 		Notes:           "Notes",
 		PaymentTermsDays: "Net %s days",
+		VATExemptNote:    "VAT exempt under the small business scheme",
 		MonthsFull:   [12]string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"},
 		MonthsAbbr:   [12]string{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"},
 		DaysFull:     [7]string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"},
@@ -282,6 +284,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Betalingsgegevens",
 		Notes:           "Opmerkingen",
 		PaymentTermsDays: "Netto %s dagen",
+		VATExemptNote:    "Vrijgesteld van btw op grond van artikel 25 Wet OB",
 		MonthsFull:   [12]string{"januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
 		DaysFull:     [7]string{"maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"},
@@ -321,6 +324,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Zahlungsdetails",
 		Notes:           "Anmerkungen",
 		PaymentTermsDays: "Netto %s Tage",
+		VATExemptNote:    "Steuerbefreit gemäß § 19 UStG (Kleinunternehmer)",
 		MonthsFull:   [12]string{"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"},
 		MonthsAbbr:   [12]string{"Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"},
 		DaysFull:     [7]string{"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"},
@@ -360,6 +364,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Détails de paiement",
 		Notes:           "Notes",
 		PaymentTermsDays: "Règlement à %s jours",
+		VATExemptNote:    "TVA non applicable, art. 293 B du CGI",
 		MonthsFull:   [12]string{"janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"},
 		MonthsAbbr:   [12]string{"janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."},
 		DaysFull:     [7]string{"lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"},
@@ -399,6 +404,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Detalles de pago",
 		Notes:           "Notas",
 		PaymentTermsDays: "Pago a %s días",
+		VATExemptNote:    "Operación exenta de IVA (régimen de franquicia, art. 124 Ley 37/1992)",
 		MonthsFull:   [12]string{"enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"},
 		MonthsAbbr:   [12]string{"ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"},
 		DaysFull:     [7]string{"lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"},
@@ -438,6 +444,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Betalingsoplysninger",
 		Notes:           "Noter",
 		PaymentTermsDays: "Netto %s dage",
+		VATExemptNote:    "Momsfritaget jf. momslovens § 48",
 		MonthsFull:   [12]string{"januar", "februar", "marts", "april", "maj", "juni", "juli", "august", "september", "oktober", "november", "december"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
 		DaysFull:     [7]string{"mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"},
@@ -477,6 +484,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Betalningsinformation",
 		Notes:           "Anteckningar",
 		PaymentTermsDays: "Netto %s dagar",
+		VATExemptNote:    "Momsfri enligt mervärdesskattelagen (2023:200)",
 		MonthsFull:   [12]string{"januari", "februari", "mars", "april", "maj", "juni", "juli", "augusti", "september", "oktober", "november", "december"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"},
 		DaysFull:     [7]string{"måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag", "söndag"},
@@ -516,6 +524,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Betalingsdetaljer",
 		Notes:           "Notater",
 		PaymentTermsDays: "Netto %s dager",
+		VATExemptNote:    "Fritatt for merverdiavgift etter mval. § 3-4",
 		MonthsFull:   [12]string{"januar", "februar", "mars", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "desember"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"},
 		DaysFull:     [7]string{"mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"},
@@ -555,6 +564,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Maksutiedot",
 		Notes:           "Huomiot",
 		PaymentTermsDays: "Maksuaika %s päivää",
+		VATExemptNote:    "ALV 0 % – pienyritys (AVL 3 §)",
 		MonthsFull:   [12]string{"tammikuu", "helmikuu", "maaliskuu", "huhtikuu", "toukokuu", "kesäkuu", "heinäkuu", "elokuu", "syyskuu", "lokakuu", "marraskuu", "joulukuu"},
 		MonthsAbbr:   [12]string{"tammi", "helmi", "maalis", "huhti", "touko", "kesä", "heinä", "elo", "syys", "loka", "marras", "joulu"},
 		DaysFull:     [7]string{"maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"},
@@ -594,6 +604,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Greiðsluupplýsingar",
 		Notes:           "Athugasemdir",
 		PaymentTermsDays: "Greiðsluskilmálar %s dagar",
+		VATExemptNote:    "Undanþegið VSK samkvæmt 2. gr. laga um virðisaukaskatt",
 		MonthsFull:   [12]string{"janúar", "febrúar", "mars", "apríl", "maí", "júní", "júlí", "ágúst", "september", "október", "nóvember", "desember"},
 		MonthsAbbr:   [12]string{"jan", "feb", "mar", "apr", "maí", "jún", "júl", "ágú", "sep", "okt", "nóv", "des"},
 		DaysFull:     [7]string{"mánudagur", "þriðjudagur", "miðvikudagur", "fimmtudagur", "föstudagur", "laugardagur", "sunnudagur"},
@@ -633,6 +644,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Detalhes de pagamento",
 		Notes:           "Notas",
 		PaymentTermsDays: "Líquido %s dias",
+		VATExemptNote:    "Isento de IVA ao abrigo do artigo 53.º do CIVA",
 		MonthsFull:   [12]string{"janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"},
 		MonthsAbbr:   [12]string{"jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"},
 		DaysFull:     [7]string{"segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado", "domingo"},
@@ -672,6 +684,7 @@ var pdfTranslations = map[string]pdfI18n{
 		PaymentDetails:  "Dettagli di pagamento",
 		Notes:           "Note",
 		PaymentTermsDays: "Netto %s giorni",
+		VATExemptNote:    "Operazione fuori campo IVA ai sensi dell'art. 1, commi 54-89, L. 190/2014 (regime forfetario)",
 		MonthsFull:   [12]string{"gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"},
 		MonthsAbbr:   [12]string{"gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"},
 		DaysFull:     [7]string{"lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"},

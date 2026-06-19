@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Forskeytir reikningsnúmers",
     "invoice_number_prefix_placeholder": "REIKN",
     "default_vat_rate": "Sjálfgefið VSK-hlutfall (%)",
+    "invoice_vat_exempt": "VSK-undanþága",
+    "invoice_vat_exempt_hint": "Fyrirtækið er undanþegið virðisaukaskatti (smáfyrirtækjakerfi). Reikningar sýna lögbundinn undanþágutexta í stað VSK-línu.",
     "billing_section": "Reikningsfærsluupplýsingar",
     "company_logo": "Lógó fyrirtækis (ljós bakgrunnur)",
     "company_logo_hint": "Sláðu inn URL eða hladdu upp myndaskrá.",

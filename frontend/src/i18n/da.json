@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Fakturanummerpræfiks",
     "invoice_number_prefix_placeholder": "FAKT",
     "default_vat_rate": "Standard momssats (%)",
+    "invoice_vat_exempt": "Momsfritagelse",
+    "invoice_vat_exempt_hint": "Virksomheden er fritaget for moms (SMV-ordning). Fakturaer viser den lovpligtige fritagelsestekst i stedet for en momslinje.",
     "billing_section": "Faktureringsoplysninger",
     "company_logo": "Firmalogo (lys baggrund)",
     "company_logo_hint": "Indsæt en URL eller upload en billedfil.",

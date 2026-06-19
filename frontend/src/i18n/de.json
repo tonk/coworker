@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Rechnungsnummer-Präfix",
     "invoice_number_prefix_placeholder": "RE",
     "default_vat_rate": "Standard-MwSt.-Satz (%)",
+    "invoice_vat_exempt": "Steuerbefreiung",
+    "invoice_vat_exempt_hint": "Unternehmen ist von der Umsatzsteuer befreit (Kleinunternehmerregelung). Rechnungen zeigen den gesetzlichen Befreiungstext statt einer MwSt.-Zeile.",
     "billing_section": "Rechnungsdetails",
     "company_logo": "Firmenlogo (heller Hintergrund)",
     "company_logo_hint": "URL einfügen oder Bilddatei hochladen.",

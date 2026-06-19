@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Prefijo número de factura",
     "invoice_number_prefix_placeholder": "FAC",
     "default_vat_rate": "Tipo de IVA por defecto (%)",
+    "invoice_vat_exempt": "Exención de IVA",
+    "invoice_vat_exempt_hint": "La empresa está exenta de IVA (régimen de franquicia). Las facturas mostrarán el texto de exención legal en lugar de una línea de IVA.",
     "billing_section": "Datos de facturación",
     "company_logo": "Logotipo de la empresa (fondo claro)",
     "company_logo_hint": "Pegue una URL o suba una imagen.",

@@ -483,6 +483,8 @@
     "invoice_number_prefix": "Prefixo do número de fatura",
     "invoice_number_prefix_placeholder": "FAT",
     "default_vat_rate": "Taxa de IVA padrão (%)",
+    "invoice_vat_exempt": "Isenção de IVA",
+    "invoice_vat_exempt_hint": "A empresa está isenta de IVA (regime de isenção para pequenas empresas). As faturas mostrarão o texto de isenção legal em vez de uma linha de IVA.",
     "billing_section": "Detalhes de faturação",
     "company_logo": "Logótipo da empresa (fundo claro)",
     "company_logo_hint": "Introduza um URL ou carregue um ficheiro de imagem.",

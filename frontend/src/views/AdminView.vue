@@ -733,6 +733,14 @@
               <label class="form-label" for="sys-invoice-prefix">{{ $t('admin.invoice_number_prefix') }}</label>
               <input id="sys-invoice-prefix" class="form-input" v-model="systemSettings.invoice_number_prefix" :placeholder="$t('admin.invoice_number_prefix_placeholder')" />
             </div>
+            <div class="form-group" style="max-width:400px">
+              <label class="form-label">{{ $t('admin.invoice_vat_exempt') }}</label>
+              <label class="toggle-label">
+                <input type="checkbox" v-model="systemSettings.invoice_vat_exempt" />
+                <span class="toggle-slider" aria-hidden="true"></span>
+                <span>{{ $t('admin.invoice_vat_exempt_hint') }}</span>
+              </label>
+            </div>
 
             <div class="form-group" style="max-width:400px">
               <label class="form-label" for="sys-company-logo">{{ $t('admin.company_logo') }}</label>
@@ -2464,6 +2472,7 @@ async function loadSettings() {
     systemSettings.value.company_payment_terms    = data.company_payment_terms || ''
     systemSettings.value.invoice_number_prefix    = data.invoice_number_prefix || ''
     systemSettings.value.default_vat_rate         = data.default_vat_rate || ''
+    systemSettings.value.invoice_vat_exempt       = !!data.invoice_vat_exempt
     systemSettings.value.default_columns          = data.default_columns || 'Backlog'
     systemSettings.value.default_labels           = data.default_labels || 'Bug\nFeature\nDesign\nContent'
     systemSettings.value.password_min_length      = parseInt(data.password_min_length) || 8
@@ -2539,6 +2548,7 @@ async function saveBrandingSettings() {
       company_payment_terms:    systemSettings.value.company_payment_terms,
       invoice_number_prefix:    systemSettings.value.invoice_number_prefix,
       default_vat_rate:         systemSettings.value.default_vat_rate,
+      invoice_vat_exempt:       systemSettings.value.invoice_vat_exempt,
     })
     ui.success('Settings saved')
   } catch {
