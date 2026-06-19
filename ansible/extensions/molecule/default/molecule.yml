@@ -1,0 +1,49 @@
+---
+driver:
+  name: default
+
+platforms:
+  - name: instance
+
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_COLLECTIONS_PATH: "/tmp/warmdesk-molecule-collections"
+  inventory:
+    hosts:
+      all:
+        hosts:
+          instance:
+            ansible_connection: local
+  config_options:
+    defaults:
+      interpreter_python: auto_silent
+      result_format: yaml
+
+verifier:
+  name: ansible
+
+scenario:
+  # Skip Molecule's built-in idempotency check; converge.yml implements
+  # explicit idempotency assertions instead (full create→update→absent lifecycle).
+  #
+  # cleanup+destroy at the START kill any stale WarmDesk process and reset
+  # Molecule's instance-state metadata from a previous interrupted run.
+  # Without this, Molecule skips prepare on a second make-test invocation
+  # ("instances already prepared"), so credentials.yml is never written and
+  # converge fails with "warmdesk_api_key is undefined".
+  #
+  # cleanup+destroy at the END leave the environment clean for the next run.
+  # prepare is kept because in the test_sequence each entry is an independent
+  # action: create only runs create.yml (no-op for us), it does NOT trigger
+  # prepare.yml automatically.
+  test_sequence:
+    - syntax
+    - cleanup
+    - destroy
+    - create
+    - prepare
+    - converge
+    - verify
+    - cleanup
+    - destroy

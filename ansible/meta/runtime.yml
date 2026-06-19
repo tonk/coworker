@@ -10,10 +10,13 @@ action_groups:
     - column
     - contract
     - customer
+    - customer_contact
     - customer_member
     - epic
     - from_vars
     - group
+    - invoice
+    - invoice_template
     - label
     - macro
     - news

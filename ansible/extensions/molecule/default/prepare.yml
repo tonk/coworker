@@ -1,0 +1,123 @@
+---
+# Builds the WarmDesk backend binary (if needed), starts a test server on
+# port 18080, registers the first admin user, and writes an API key to
+# /tmp/warmdesk-molecule/credentials.yml for use by converge.yml.
+
+- name: Prepare WarmDesk test instance
+  hosts: all
+  gather_facts: true
+  connection: local
+
+  vars:
+    warmdesk_test_port: 18080
+    warmdesk_test_url: "http://localhost:{{ warmdesk_test_port }}"
+    warmdesk_test_db: "/tmp/warmdesk-molecule/warmdesk-test.db"
+    warmdesk_test_upload_dir: "/tmp/warmdesk-molecule/uploads"
+    warmdesk_pid_file: "/tmp/warmdesk-molecule/warmdesk.pid"
+    warmdesk_log_file: "/tmp/warmdesk-molecule/warmdesk.log"
+    warmdesk_credentials_file: "/tmp/warmdesk-molecule/credentials.yml"
+    backend_dir: "{{ playbook_dir }}/../../../../backend"
+    warmdesk_binary: "/tmp/warmdesk-molecule/warmdesk"
+    # Must be ≥32 chars and not the default "change-me-in-production"
+    warmdesk_jwt_secret: "molecule-test-jwt-secret-32-chars-ok"
+    admin_username: "molecule-admin"
+    admin_password: "Molecule1234!"
+    admin_email: "molecule-admin@example.com"
+    admin_display_name: "Molecule Admin"
+
+  tasks:
+    - name: Create temp directory
+      ansible.builtin.file:
+        path: /tmp/warmdesk-molecule
+        state: directory
+        mode: "0755"
+
+    - name: Check if WarmDesk binary is already built
+      ansible.builtin.stat:
+        path: "{{ warmdesk_binary }}"
+      register: binary_stat
+
+    - name: Build WarmDesk backend binary
+      ansible.builtin.command:
+        cmd: "go build -o {{ warmdesk_binary }} ."
+        chdir: "{{ backend_dir }}"
+      when: not binary_stat.stat.exists
+      changed_when: true
+
+    - name: Check whether WarmDesk is already running
+      ansible.builtin.shell: |
+        if [ -f "{{ warmdesk_pid_file }}" ]; then
+          PID=$(cat "{{ warmdesk_pid_file }}")
+          kill -0 "$PID" 2>/dev/null && echo "running" || echo "dead"
+        else
+          echo "no-pid"
+        fi
+      changed_when: false
+      register: warmdesk_running
+
+    - name: Start WarmDesk server
+      ansible.builtin.shell: |
+        nohup {{ warmdesk_binary }} >> {{ warmdesk_log_file }} 2>&1 &
+        echo $! > {{ warmdesk_pid_file }}
+      environment:
+        JWT_SECRET: "{{ warmdesk_jwt_secret }}"
+        GIN_MODE: debug
+        DB_DSN: "{{ warmdesk_test_db }}"
+        PORT: "{{ warmdesk_test_port | string }}"
+        UPLOAD_DIR: "{{ warmdesk_test_upload_dir }}"
+      when: warmdesk_running.stdout != "running"
+      changed_when: true
+
+    - name: Wait for WarmDesk port to open
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: "{{ warmdesk_test_port }}"
+        timeout: 60
+        delay: 1
+
+    - name: Register first admin user (idempotent — 409 if already exists)
+      ansible.builtin.uri:
+        url: "{{ warmdesk_test_url }}/api/v1/auth/register"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ admin_username }}"
+          password: "{{ admin_password }}"
+          email: "{{ admin_email }}"
+          display_name: "{{ admin_display_name }}"
+        status_code: [200, 201, 409]
+      register: register_result
+
+    - name: Login to get access token
+      ansible.builtin.uri:
+        url: "{{ warmdesk_test_url }}/api/v1/auth/login"
+        method: POST
+        body_format: json
+        body:
+          login: "{{ admin_username }}"
+          password: "{{ admin_password }}"
+        status_code: 200
+      register: login_result
+
+    - name: Create API key for molecule tests
+      ansible.builtin.uri:
+        url: "{{ warmdesk_test_url }}/api/v1/auth/api-keys"
+        method: POST
+        body_format: json
+        body:
+          name: "molecule-test-{{ ansible_facts['date_time']['epoch'] }}"
+        headers:
+          Authorization: "Bearer {{ login_result.json.access_token }}"
+        status_code: [200, 201]
+      register: api_key_result
+
+    - name: Write credentials to shared file
+      ansible.builtin.copy:
+        content: |
+          ---
+          warmdesk_url: "{{ warmdesk_test_url }}"
+          warmdesk_api_key: "{{ api_key_result.json.key }}"
+          warmdesk_admin_username: "{{ admin_username }}"
+          warmdesk_admin_password: "{{ admin_password }}"
+        dest: "{{ warmdesk_credentials_file }}"
+        mode: "0600"

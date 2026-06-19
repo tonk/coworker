@@ -18,10 +18,10 @@ description:
       Resources are always processed in dependency order regardless of how they
       are declared in the files, so playbook task order does not matter.
   - |
-      Processing order: users → customers (with contracts and customer members) →
-      projects (with columns, labels, project members, and cards) →
+      Processing order: users → customers (with contracts, contacts, and customer
+      members) → projects (with columns, labels, project members, and cards) →
       groups (with members, customer access, and project access) →
-      system settings.
+      system settings → news items → macros → invoice templates.
   - |
       All resources are treated as C(state=present). To remove a resource use
       the dedicated module (for example M(ansilabnl.warmdesk.project) with
@@ -46,7 +46,7 @@ options:
       - |
           Each file may contain any combination of the supported top-level keys
           (C(users), C(customers), C(groups), C(projects), C(system_settings),
-          C(news_items), C(macros)).
+          C(news_items), C(macros), C(invoice_templates)).
       - |
           Use C({{ playbook_dir }}/vars/warmdesk.yml) for paths relative to the
           playbook.
@@ -74,6 +74,12 @@ EXAMPLES = r'''
 #       - name: Support 2026
 #         start_date: "2026-01-01"
 #         end_date: "2026-12-31"
+#     contacts:
+#       - name: Jane Doe
+#         department: Finance
+#         email: jane.doe@acme.example.com
+#         phone: "+31201234567"
+#         is_primary: true
 #     members:
 #       - username: alice
 #         role: admin
@@ -125,6 +131,17 @@ EXAMPLES = r'''
 #         value: "Hi {fname}, your ticket {ticket_id} has been resolved. Thanks!"
 #     is_active: true
 #     sort_order: 10
+#
+# invoice_templates:
+#   - name: Monthly Support Hours
+#     default_vat_rate: 21.0
+#     default_currency: "€"
+#     notes: "Payment within 30 days."
+#     line_items:
+#       - description: Support hours
+#         quantity: 8
+#         unit_price: 95.00
+#         currency: "€"
 # ────────────────────────────────────────────────────────────────────────────
 
 - name: Provision all WarmDesk resources from a single vars file
@@ -164,6 +181,9 @@ results:
     contracts:
       description: Counts for contract operations.
       type: dict
+    customer_contacts:
+      description: Counts for customer contact person operations.
+      type: dict
     customer_members:
       description: Counts for customer membership operations.
       type: dict
@@ -190,6 +210,9 @@ results:
       type: dict
     macros:
       description: Counts for macro operations.
+      type: dict
+    invoice_templates:
+      description: Counts for invoice template operations.
       type: dict
 '''
 
@@ -243,9 +266,9 @@ def _load_var_files(paths):
 # ---------------------------------------------------------------------------
 
 _RESOURCE_TYPES = (
-    'users', 'customers', 'contracts', 'customer_members',
+    'users', 'customers', 'contracts', 'customer_contacts', 'customer_members',
     'projects', 'columns', 'labels', 'project_members', 'cards',
-    'groups', 'system_settings', 'news_items', 'macros',
+    'groups', 'system_settings', 'news_items', 'macros', 'invoice_templates',
 )
 
 
@@ -546,6 +569,48 @@ class Provisioner(object):
             self._counts['customer_members'].updated += 1
         else:
             self._counts['customer_members'].unchanged += 1
+
+    def ensure_customer_contact(self, customer_name, defn):
+        name = defn.get('name')
+        if not name:
+            self.module.warn('contact entry under customer "%s" missing name, skipping' % customer_name)
+            return
+
+        try:
+            customer_id = self._require_customer_id(customer_name)
+        except WarmDeskAPIError:
+            self.module.warn('customer "%s" not found for contact "%s"' % (customer_name, name))
+            return
+
+        contacts = self.client.get('/customers/%d/contacts' % customer_id) or []
+        existing = next((c for c in contacts if c.get('name') == name), None)
+
+        body = {'name': name}
+        for f in ('department', 'phone', 'email'):
+            if defn.get(f) is not None:
+                body[f] = defn[f]
+        if defn.get('is_primary') is not None:
+            body['is_primary'] = defn['is_primary']
+
+        if existing is None:
+            if not self.check_mode:
+                self.client.post('/customers/%d/contacts' % customer_id, body)
+            self._counts['customer_contacts'].created += 1
+            return
+
+        update = {}
+        for f in ('department', 'phone', 'email'):
+            if defn.get(f) is not None and defn[f] != (existing.get(f) or ''):
+                update[f] = defn[f]
+        if defn.get('is_primary') is not None and defn['is_primary'] != existing.get('is_primary'):
+            update['is_primary'] = defn['is_primary']
+
+        if update:
+            if not self.check_mode:
+                self.client.put('/customers/%d/contacts/%d' % (customer_id, existing['id']), update)
+            self._counts['customer_contacts'].updated += 1
+        else:
+            self._counts['customer_contacts'].unchanged += 1
 
     # ── Projects ──────────────────────────────────────────────────────────────
 
@@ -1033,6 +1098,79 @@ class Provisioner(object):
         else:
             self._counts['macros'].unchanged += 1
 
+    def ensure_invoice_template(self, defn):
+        import json as _json
+        name = defn.get('name', '').strip()
+        if not name:
+            return
+
+        all_templates = self.client.get('/invoice-templates') or []
+        existing = next((t for t in all_templates if t.get('name') == name), None)
+
+        # Normalise line_items from a list of dicts to a JSON string for the API.
+        raw_items = defn.get('line_items') or []
+        items = []
+        for li in raw_items:
+            qty = float(li.get('quantity', 1))
+            price = float(li.get('unit_price', 0))
+            items.append({
+                'description': li.get('description', ''),
+                'quantity': qty,
+                'unit_price': price,
+                'amount': qty * price,
+                'currency': li.get('currency', defn.get('default_currency', '€')),
+                'is_manual': True,
+            })
+        line_items_json = _json.dumps(items)
+
+        payload = dict(
+            name=name,
+            line_items=line_items_json,
+            default_vat_rate=float(defn.get('default_vat_rate', 0)),
+            default_currency=defn.get('default_currency', '€'),
+            notes=defn.get('notes', ''),
+        )
+
+        if existing is None:
+            if not self.check_mode:
+                self.client.post('/admin/invoice-templates', payload)
+            self._counts['invoice_templates'].created += 1
+            return
+
+        # Compare to detect changes.
+        def _parse_items(v):
+            if not v:
+                return []
+            if isinstance(v, list):
+                return v
+            try:
+                return _json.loads(v)
+            except (ValueError, TypeError):
+                return []
+
+        existing_items = _parse_items(existing.get('line_items'))
+        items_changed = (
+            len(items) != len(existing_items)
+            or any(
+                d.get('description') != e.get('description')
+                or float(d.get('quantity', 1)) != float(e.get('quantity', 1))
+                or float(d.get('unit_price', 0)) != float(e.get('unit_price', 0))
+                for d, e in zip(items, existing_items)
+            )
+        )
+        scalars_changed = (
+            existing.get('default_vat_rate') != payload['default_vat_rate']
+            or existing.get('default_currency') != payload['default_currency']
+            or existing.get('notes') != payload['notes']
+        )
+
+        if items_changed or scalars_changed:
+            if not self.check_mode:
+                self.client.put('/admin/invoice-templates/%d' % existing['id'], payload)
+            self._counts['invoice_templates'].updated += 1
+        else:
+            self._counts['invoice_templates'].unchanged += 1
+
     # ── Main entry point ──────────────────────────────────────────────────────
 
     def run(self, data):
@@ -1040,11 +1178,13 @@ class Provisioner(object):
         for defn in data.get('users', []):
             self.ensure_user(defn)
 
-        # Phase 2a — customers (with nested contracts and customer members)
+        # Phase 2a — customers (with nested contracts, contacts, and customer members)
         for defn in data.get('customers', []):
             self.ensure_customer(defn)
             for contract_def in defn.get('contracts', []):
                 self.ensure_contract(defn['name'], contract_def)
+            for contact_def in defn.get('contacts', []):
+                self.ensure_customer_contact(defn['name'], contact_def)
             for member_def in defn.get('members', []):
                 self.ensure_customer_member(defn['name'], member_def)
 
@@ -1093,6 +1233,10 @@ class Provisioner(object):
         # Phase 7 — macros (admin only)
         for defn in data.get('macros', []):
             self.ensure_macro(defn)
+
+        # Phase 8 — invoice templates (admin only)
+        for defn in data.get('invoice_templates', []):
+            self.ensure_invoice_template(defn)
 
 
 # ---------------------------------------------------------------------------

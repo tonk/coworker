@@ -1,0 +1,28 @@
+---
+# Stop the WarmDesk test server and remove all temporary files.
+
+- name: Cleanup WarmDesk test instance
+  hosts: all
+  gather_facts: false
+  connection: local
+
+  vars:
+    warmdesk_pid_file: "/tmp/warmdesk-molecule/warmdesk.pid"
+    warmdesk_tmp_dir: "/tmp/warmdesk-molecule"
+
+  tasks:
+    - name: Stop WarmDesk server
+      ansible.builtin.shell: |
+        if [ -f "{{ warmdesk_pid_file }}" ]; then
+          PID=$(cat "{{ warmdesk_pid_file }}")
+          kill "$PID" 2>/dev/null || true
+          rm -f "{{ warmdesk_pid_file }}"
+          echo changed
+        fi
+      register: _stop
+      changed_when: "'changed' in _stop.stdout"
+
+    - name: Remove temp directory
+      ansible.builtin.file:
+        path: "{{ warmdesk_tmp_dir }}"
+        state: absent

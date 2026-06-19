@@ -1,0 +1,485 @@
+---
+# Full lifecycle test for key WarmDesk Ansible modules.
+# Each resource goes through: create → idempotency → update → update-idempotency → absent → absent-idempotency.
+# Assertions use `ansible.builtin.assert` immediately after each operation.
+
+- name: Converge
+  hosts: all
+  gather_facts: false
+  connection: local
+
+  vars_files:
+    - /tmp/warmdesk-molecule/credentials.yml
+
+  tasks:
+
+    # =========================================================================
+    # Pre-flight teardown — ensure test resources don't exist from a prior
+    # interrupted run so each converge starts from a clean state.
+    # =========================================================================
+
+    - name: "[preflight] Remove customer if left over from a failed run"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        state: absent
+
+    - name: "[preflight] Remove invoice_template if left over"
+      ansilabnl.warmdesk.invoice_template:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Monthly Support"
+        state: absent
+
+    - name: "[preflight] Purge test user if left over (hard-delete so username/email can be reused)"
+      ansilabnl.warmdesk.user:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        username: "mol-testuser"
+        state: purge
+
+    # =========================================================================
+    # customer module
+    # =========================================================================
+
+    - name: "[customer] Create customer"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        description: "Created by Molecule tests"
+        state: present
+      register: cust_create
+
+    - name: "[customer] Assert create reported changed and returned the resource"
+      ansible.builtin.assert:
+        that:
+          - cust_create.changed
+          - cust_create.customer is not none
+          - cust_create.customer.name == "Molecule Test Customer"
+          - cust_create.customer.id is defined
+        fail_msg: "customer create failed: {{ cust_create }}"
+
+    - name: "[customer] Create same customer again (idempotency)"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        description: "Created by Molecule tests"
+        state: present
+      register: cust_idempotent
+
+    - name: "[customer] Assert no change on idempotent re-run"
+      ansible.builtin.assert:
+        that:
+          - not cust_idempotent.changed
+        fail_msg: "customer idempotency failed: module reported changed on second run"
+
+    - name: "[customer] Update customer description"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        description: "Updated by Molecule"
+        state: present
+      register: cust_update
+
+    - name: "[customer] Assert update reported changed"
+      ansible.builtin.assert:
+        that:
+          - cust_update.changed
+        fail_msg: "customer update failed: module did not report changed"
+
+    - name: "[customer] Update same description again (idempotency)"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        description: "Updated by Molecule"
+        state: present
+      register: cust_update_idempotent
+
+    - name: "[customer] Assert no change on update idempotency"
+      ansible.builtin.assert:
+        that:
+          - not cust_update_idempotent.changed
+        fail_msg: "customer update idempotency failed"
+
+    - name: "[customer] Star the customer"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        starred: true
+        state: present
+      register: cust_star
+
+    - name: "[customer] Assert starring reported changed"
+      ansible.builtin.assert:
+        that:
+          - cust_star.changed
+        fail_msg: "customer star failed"
+
+    - name: "[customer] Star again (idempotency)"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        starred: true
+        state: present
+      register: cust_star_idempotent
+
+    - name: "[customer] Assert no change when already starred"
+      ansible.builtin.assert:
+        that:
+          - not cust_star_idempotent.changed
+        fail_msg: "customer star idempotency failed"
+
+    # =========================================================================
+    # customer_contact module  (depends on customer existing above)
+    # =========================================================================
+
+    - name: "[customer_contact] Create contact under customer"
+      ansilabnl.warmdesk.customer_contact:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        customer: "Molecule Test Customer"
+        name: "Alice Bakker"
+        department: "Procurement"
+        email: "alice@example.com"
+        phone: "+31 20 123 4567"
+        is_primary: true
+        state: present
+      register: contact_create
+
+    - name: "[customer_contact] Assert contact created"
+      ansible.builtin.assert:
+        that:
+          - contact_create.changed
+          - contact_create.contact is not none
+          - contact_create.contact.name == "Alice Bakker"
+          - contact_create.contact.email == "alice@example.com"
+        fail_msg: "customer_contact create failed: {{ contact_create }}"
+
+    - name: "[customer_contact] Create same contact again (idempotency)"
+      ansilabnl.warmdesk.customer_contact:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        customer: "Molecule Test Customer"
+        name: "Alice Bakker"
+        department: "Procurement"
+        email: "alice@example.com"
+        phone: "+31 20 123 4567"
+        is_primary: true
+        state: present
+      register: contact_idempotent
+
+    - name: "[customer_contact] Assert no change on idempotent re-run"
+      ansible.builtin.assert:
+        that:
+          - not contact_idempotent.changed
+        fail_msg: "customer_contact idempotency failed"
+
+    - name: "[customer_contact] Update contact email"
+      ansilabnl.warmdesk.customer_contact:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        customer: "Molecule Test Customer"
+        name: "Alice Bakker"
+        email: "alice.bakker@example.com"
+        state: present
+      register: contact_update
+
+    - name: "[customer_contact] Assert update reported changed"
+      ansible.builtin.assert:
+        that:
+          - contact_update.changed
+        fail_msg: "customer_contact update failed"
+
+    - name: "[customer_contact] Remove contact"
+      ansilabnl.warmdesk.customer_contact:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        customer: "Molecule Test Customer"
+        name: "Alice Bakker"
+        state: absent
+      register: contact_absent
+
+    - name: "[customer_contact] Assert removal reported changed"
+      ansible.builtin.assert:
+        that:
+          - contact_absent.changed
+        fail_msg: "customer_contact absent failed"
+
+    - name: "[customer_contact] Remove absent contact again (idempotency)"
+      ansilabnl.warmdesk.customer_contact:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        customer: "Molecule Test Customer"
+        name: "Alice Bakker"
+        state: absent
+      register: contact_absent_idempotent
+
+    - name: "[customer_contact] Assert no change when already absent"
+      ansible.builtin.assert:
+        that:
+          - not contact_absent_idempotent.changed
+        fail_msg: "customer_contact absent idempotency failed"
+
+    # =========================================================================
+    # Delete customer (must happen after contact tests)
+    # =========================================================================
+
+    - name: "[customer] Remove customer"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        state: absent
+      register: cust_absent
+
+    - name: "[customer] Assert removal reported changed"
+      ansible.builtin.assert:
+        that:
+          - cust_absent.changed
+        fail_msg: "customer absent failed"
+
+    - name: "[customer] Remove absent customer again (idempotency)"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        state: absent
+      register: cust_absent_idempotent
+
+    - name: "[customer] Assert no change when already absent"
+      ansible.builtin.assert:
+        that:
+          - not cust_absent_idempotent.changed
+        fail_msg: "customer absent idempotency failed"
+
+    # =========================================================================
+    # invoice_template module
+    # =========================================================================
+
+    - name: "[invoice_template] Create template"
+      ansilabnl.warmdesk.invoice_template:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Monthly Support"
+        line_items:
+          - description: "Monthly support retainer"
+            quantity: 1.0
+            unit_price: 500.0
+            currency: "EUR"
+        default_vat_rate: 21.0
+        default_currency: "EUR"
+        notes: "8 hours included"
+        state: present
+      register: tmpl_create
+
+    - name: "[invoice_template] Assert template created"
+      ansible.builtin.assert:
+        that:
+          - tmpl_create.changed
+          - tmpl_create.invoice_template is not none
+          - tmpl_create.invoice_template.name == "Monthly Support"
+        fail_msg: "invoice_template create failed: {{ tmpl_create }}"
+
+    - name: "[invoice_template] Create same template again (idempotency)"
+      ansilabnl.warmdesk.invoice_template:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Monthly Support"
+        line_items:
+          - description: "Monthly support retainer"
+            quantity: 1.0
+            unit_price: 500.0
+            currency: "EUR"
+        default_vat_rate: 21.0
+        default_currency: "EUR"
+        notes: "8 hours included"
+        state: present
+      register: tmpl_idempotent
+
+    - name: "[invoice_template] Assert no change on idempotent re-run"
+      ansible.builtin.assert:
+        that:
+          - not tmpl_idempotent.changed
+        fail_msg: "invoice_template idempotency failed"
+
+    - name: "[invoice_template] Update template notes"
+      ansilabnl.warmdesk.invoice_template:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Monthly Support"
+        notes: "8 hours included — updated"
+        state: present
+      register: tmpl_update
+
+    - name: "[invoice_template] Assert update reported changed"
+      ansible.builtin.assert:
+        that:
+          - tmpl_update.changed
+        fail_msg: "invoice_template update failed"
+
+    - name: "[invoice_template] Update same notes again (idempotency)"
+      ansilabnl.warmdesk.invoice_template:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Monthly Support"
+        notes: "8 hours included — updated"
+        state: present
+      register: tmpl_update_idempotent
+
+    - name: "[invoice_template] Assert no change on update idempotency"
+      ansible.builtin.assert:
+        that:
+          - not tmpl_update_idempotent.changed
+        fail_msg: "invoice_template update idempotency failed"
+
+    - name: "[invoice_template] Remove template"
+      ansilabnl.warmdesk.invoice_template:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Monthly Support"
+        state: absent
+      register: tmpl_absent
+
+    - name: "[invoice_template] Assert removal reported changed"
+      ansible.builtin.assert:
+        that:
+          - tmpl_absent.changed
+        fail_msg: "invoice_template absent failed"
+
+    - name: "[invoice_template] Remove absent template again (idempotency)"
+      ansilabnl.warmdesk.invoice_template:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Monthly Support"
+        state: absent
+      register: tmpl_absent_idempotent
+
+    - name: "[invoice_template] Assert no change when already absent"
+      ansible.builtin.assert:
+        that:
+          - not tmpl_absent_idempotent.changed
+        fail_msg: "invoice_template absent idempotency failed"
+
+    # =========================================================================
+    # user module
+    # =========================================================================
+
+    - name: "[user] Create user"
+      ansilabnl.warmdesk.user:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        username: "mol-testuser"
+        password: "TestUser1234!"
+        email: "mol-testuser@example.com"
+        display_name: "Molecule Test User"
+        global_role: "user"
+        state: present
+      register: user_create
+
+    - name: "[user] Assert user created"
+      ansible.builtin.assert:
+        that:
+          - user_create.changed
+          - user_create.user is not none
+          - user_create.user.username == "mol-testuser"
+        fail_msg: "user create failed: {{ user_create }}"
+
+    - name: "[user] Update user display_name (email required but unchanged)"
+      ansilabnl.warmdesk.user:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        username: "mol-testuser"
+        email: "mol-testuser@example.com"
+        display_name: "Molecule Test User Updated"
+        state: present
+      register: user_update
+
+    - name: "[user] Assert update reported changed"
+      ansible.builtin.assert:
+        that:
+          - user_update.changed
+        fail_msg: "user update failed"
+
+    - name: "[user] Update same display_name again (idempotency)"
+      ansilabnl.warmdesk.user:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        username: "mol-testuser"
+        email: "mol-testuser@example.com"
+        display_name: "Molecule Test User Updated"
+        state: present
+      register: user_update_idempotent
+
+    - name: "[user] Assert no change on update idempotency"
+      ansible.builtin.assert:
+        that:
+          - not user_update_idempotent.changed
+        fail_msg: "user update idempotency failed"
+
+    - name: "[user] Remove user (soft-delete)"
+      ansilabnl.warmdesk.user:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        username: "mol-testuser"
+        state: absent
+      register: user_absent
+
+    - name: "[user] Assert removal reported changed"
+      ansible.builtin.assert:
+        that:
+          - user_absent.changed
+        fail_msg: "user absent failed"
+
+    - name: "[user] Remove absent user again (idempotency)"
+      ansilabnl.warmdesk.user:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        username: "mol-testuser"
+        state: absent
+      register: user_absent_idempotent
+
+    - name: "[user] Assert no change when already absent"
+      ansible.builtin.assert:
+        that:
+          - not user_absent_idempotent.changed
+        fail_msg: "user absent idempotency failed"
+
+    # =========================================================================
+    # check_mode smoke test
+    # =========================================================================
+
+    - name: "[check_mode] Create customer in check mode"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Check Mode Customer"
+        state: present
+      register: cm_create
+      check_mode: true
+
+    - name: "[check_mode] Assert check_mode reported would-change without creating"
+      ansible.builtin.assert:
+        that:
+          - cm_create.changed
+        fail_msg: "check_mode create did not report changed"
+
+    - name: "[check_mode] Confirm resource was NOT actually created"
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Check Mode Customer"
+        state: absent
+      register: cm_absent
+
+    - name: "[check_mode] Assert resource was never persisted (absent reports no change)"
+      ansible.builtin.assert:
+        that:
+          - not cm_absent.changed
+        fail_msg: "check_mode did not prevent creation: absent reported changed"

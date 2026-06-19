@@ -1,0 +1,69 @@
+---
+# Verify final state after converge: confirm WarmDesk is still responding
+# and that all test resources were cleaned up.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  connection: local
+
+  vars_files:
+    - /tmp/warmdesk-molecule/credentials.yml
+
+  tasks:
+    - name: WarmDesk server is still responding
+      ansible.builtin.uri:
+        url: "{{ warmdesk_url }}/api/v1/auth/me"
+        headers:
+          X-API-Key: "{{ warmdesk_api_key }}"
+        status_code: 200
+      register: me_response
+
+    - name: Assert authenticated user is the admin
+      ansible.builtin.assert:
+        that:
+          - me_response.json.username is defined
+          - me_response.json.global_role == "admin"
+        fail_msg: "Unexpected /me response: {{ me_response.json }}"
+
+    - name: Molecule Test Customer must not exist
+      ansilabnl.warmdesk.customer:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Molecule Test Customer"
+        state: absent
+      register: verify_cust_absent
+
+    - name: Assert customer was cleaned up
+      ansible.builtin.assert:
+        that:
+          - not verify_cust_absent.changed
+        fail_msg: "Molecule Test Customer still exists after converge"
+
+    - name: Monthly Support invoice template must not exist
+      ansilabnl.warmdesk.invoice_template:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        name: "Monthly Support"
+        state: absent
+      register: verify_tmpl_absent
+
+    - name: Assert invoice template was cleaned up
+      ansible.builtin.assert:
+        that:
+          - not verify_tmpl_absent.changed
+        fail_msg: "Monthly Support invoice template still exists after converge"
+
+    - name: mol-testuser must not exist (or be deleted)
+      ansilabnl.warmdesk.user:
+        warmdesk_url: "{{ warmdesk_url }}"
+        warmdesk_api_key: "{{ warmdesk_api_key }}"
+        username: "mol-testuser"
+        state: absent
+      register: verify_user_absent
+
+    - name: Assert user was cleaned up
+      ansible.builtin.assert:
+        that:
+          - not verify_user_absent.changed
+        fail_msg: "mol-testuser still exists after converge"
