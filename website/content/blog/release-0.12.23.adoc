@@ -1,0 +1,24 @@
+---
+title: "v0.12.23: Fix contact persons not saving"
+date: "2026-06-19"
+author: "Ton Kersten"
+description: "Patch release: the CustomerContact model was missing from AutoMigrate, so the customer_contacts table was never created and every save attempt failed."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` is a single-fix patch on top of v0.12.22.
+
+== Fix: contact persons could not be saved
+
+The `CustomerContact` model introduced in v0.12.22 was accidentally omitted from the `AutoMigrate` list in `database/database.go`.
+As a result the `customer_contacts` table was never created, and any attempt to add or edit a contact person returned *"Failed to save contact"*.
+
+The model is now registered correctly; the table is created automatically on first boot after upgrading.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+No other changes — run the new binary in-place and the table will appear on startup.
