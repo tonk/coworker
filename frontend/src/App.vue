@@ -16,7 +16,15 @@
       </template>
     </nav>
     <div class="app-shell-body" :class="sidebarPos === 'right' ? 'sidebar-right' : 'sidebar-left'">
-      <AppSidebar v-if="!systemStore.isTimetrackingMode" />
+      <AppSidebar v-if="!systemStore.isTimetrackingMode" :collapsed="sidebarCollapsed" @toggle="toggleSidebar" />
+      <button
+        v-if="!systemStore.isTimetrackingMode && sidebarCollapsed"
+        class="sidebar-reveal-btn"
+        :class="sidebarPos === 'right' ? 'reveal-right' : 'reveal-left'"
+        @click="toggleSidebar"
+        :aria-label="$t('sidebar.show_sidebar')"
+        :title="$t('sidebar.show_sidebar')"
+      ><span aria-hidden="true">{{ sidebarPos === 'right' ? '‹' : '›' }}</span></button>
       <main class="app-shell-content" id="main-content" tabindex="-1">
         <RouterView />
         <footer class="app-footer">
@@ -191,6 +199,13 @@ watch(() => auth.user?.id, (userID) => {
 }, { immediate: true })
 
 const sidebarPos = computed(() => auth.user?.sidebar_position || localStorage.getItem('sidebar_position') || 'left')
+
+const SIDEBAR_HIDDEN_KEY = 'sidebar_hidden'
+const sidebarCollapsed = ref(localStorage.getItem(SIDEBAR_HIDDEN_KEY) === 'true')
+function toggleSidebar() {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+  localStorage.setItem(SIDEBAR_HIDDEN_KEY, sidebarCollapsed.value)
+}
 const showBreadcrumbs = computed(() => {
   if (auth.user?.show_breadcrumbs !== undefined) return !!auth.user.show_breadcrumbs
   return localStorage.getItem('show_breadcrumbs') !== 'false'
@@ -482,6 +497,27 @@ onUnmounted(() => {
 
 .app-shell-body.sidebar-right {
   flex-direction: row-reverse;
+}
+
+.sidebar-reveal-btn {
+  flex-shrink: 0;
+  width: 14px;
+  border: none;
+  background: var(--color-surface);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-reveal-btn.reveal-left { border-right: 1px solid var(--color-border); }
+.sidebar-reveal-btn.reveal-right { border-left: 1px solid var(--color-border); }
+.sidebar-reveal-btn:hover {
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+  color: var(--color-primary);
 }
 
 .app-shell-content {

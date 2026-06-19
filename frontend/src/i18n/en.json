@@ -1001,7 +1001,9 @@
     "offline": "Offline",
     "all_chats": "All chats…",
     "unread_messages": "Unread messages",
-    "all_invoices": "All Invoices"
+    "all_invoices": "All Invoices",
+    "hide_sidebar": "Hide sidebar",
+    "show_sidebar": "Show sidebar"
   },
   "apikeys": {
     "tab": "API Keys",

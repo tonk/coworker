@@ -829,7 +829,9 @@
     "unread_messages": "Ongelezen berichten",
     "customers": "Favoriete klanten",
     "no_customers": "Geen gemarkeerde klanten",
-    "all_invoices": "Alle facturen"
+    "all_invoices": "Alle facturen",
+    "hide_sidebar": "Zijbalk verbergen",
+    "show_sidebar": "Zijbalk tonen"
   },
   "apikeys": {
     "tab": "API-sleutels",

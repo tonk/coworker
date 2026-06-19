@@ -864,7 +864,9 @@
     "offline": "Offline",
     "all_chats": "Alla chattar…",
     "unread_messages": "Olästa meddelanden",
-    "all_invoices": "Alla fakturor"
+    "all_invoices": "Alla fakturor",
+    "hide_sidebar": "Dölj sidofält",
+    "show_sidebar": "Visa sidofält"
   },
   "apikeys": {
     "tab": "API-nycklar",

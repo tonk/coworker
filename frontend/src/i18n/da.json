@@ -864,7 +864,9 @@
     "offline": "Offline",
     "all_chats": "Alle chats…",
     "unread_messages": "Ulæste beskeder",
-    "all_invoices": "Alle fakturaer"
+    "all_invoices": "Alle fakturaer",
+    "hide_sidebar": "Skjul sidepanel",
+    "show_sidebar": "Vis sidepanel"
   },
   "apikeys": {
     "tab": "API-nøgler",

@@ -829,7 +829,9 @@
     "unread_messages": "Ungelesene Nachrichten",
     "customers": "Favoritenkunden",
     "no_customers": "Keine markierten Kunden",
-    "all_invoices": "Alle Rechnungen"
+    "all_invoices": "Alle Rechnungen",
+    "hide_sidebar": "Seitenleiste ausblenden",
+    "show_sidebar": "Seitenleiste einblenden"
   },
   "apikeys": {
     "tab": "API-Schlüssel",

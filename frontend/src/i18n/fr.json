@@ -829,7 +829,9 @@
     "unread_messages": "Messages non lus",
     "customers": "Clients favoris",
     "no_customers": "Aucun client marqué",
-    "all_invoices": "Toutes les factures"
+    "all_invoices": "Toutes les factures",
+    "hide_sidebar": "Masquer la barre latérale",
+    "show_sidebar": "Afficher la barre latérale"
   },
   "apikeys": {
     "tab": "Clés API",

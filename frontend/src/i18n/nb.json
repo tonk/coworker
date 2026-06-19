@@ -864,7 +864,9 @@
     "offline": "Frakoblet",
     "all_chats": "Alle chatter…",
     "unread_messages": "Uleste meldinger",
-    "all_invoices": "Alle fakturaer"
+    "all_invoices": "Alle fakturaer",
+    "hide_sidebar": "Skjul sidepanel",
+    "show_sidebar": "Vis sidepanel"
   },
   "apikeys": {
     "tab": "API-nøkler",

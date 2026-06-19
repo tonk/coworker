@@ -864,7 +864,9 @@
     "offline": "Offline",
     "all_chats": "Kaikki chatit…",
     "unread_messages": "Lukemattomat viestit",
-    "all_invoices": "Kaikki laskut"
+    "all_invoices": "Kaikki laskut",
+    "hide_sidebar": "Piilota sivupalkki",
+    "show_sidebar": "Näytä sivupalkki"
   },
   "apikeys": {
     "tab": "API-avaimet",

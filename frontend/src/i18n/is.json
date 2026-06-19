@@ -864,7 +864,9 @@
     "offline": "Utan nets",
     "all_chats": "Öll spjöll…",
     "unread_messages": "Ólesnar skilaboð",
-    "all_invoices": "Allar reikningar"
+    "all_invoices": "Allar reikningar",
+    "hide_sidebar": "Fela hliðarstiku",
+    "show_sidebar": "Sýna hliðarstiku"
   },
   "apikeys": {
     "tab": "API-lyklar",

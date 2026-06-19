@@ -1,6 +1,15 @@
 <template>
-  <aside class="app-sidebar" :style="{ width: sidebarWidth + 'px' }">
-    <div class="resize-handle" :class="sidebarPos === 'right' ? 'handle-left' : 'handle-right'" @mousedown="startResize"></div>
+  <aside class="app-sidebar" :class="{ 'is-collapsed': collapsed }" :style="collapsed ? { width: '0px', overflow: 'hidden' } : { width: sidebarWidth + 'px' }">
+    <div v-if="!collapsed" class="resize-handle" :class="sidebarPos === 'right' ? 'handle-left' : 'handle-right'" @mousedown="startResize"></div>
+
+    <button
+      v-if="!collapsed"
+      class="sidebar-collapse-btn"
+      :class="sidebarPos === 'right' ? 'collapse-btn-right' : 'collapse-btn-left'"
+      @click="$emit('toggle')"
+      :aria-label="$t('sidebar.hide_sidebar')"
+      :title="$t('sidebar.hide_sidebar')"
+    ><span aria-hidden="true">{{ sidebarPos === 'right' ? '›' : '‹' }}</span></button>
 
     <div class="sidebar-scroll">
     <!-- Starred Projects -->
@@ -306,6 +315,11 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
+
+const props = defineProps({
+  collapsed: { type: Boolean, default: false }
+})
+defineEmits(['toggle'])
 
 const avatarErrors = reactive(new Set())
 
@@ -677,6 +691,40 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   overflow: visible;
+  transition: width 0.2s ease;
+}
+
+.sidebar-collapse-btn {
+  position: absolute;
+  bottom: 12px;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  z-index: 11;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+.collapse-btn-left  { right: -10px; }
+.collapse-btn-right { left: -10px; }
+.app-sidebar:hover .sidebar-collapse-btn,
+.sidebar-collapse-btn:focus-visible {
+  opacity: 1;
+}
+.sidebar-collapse-btn:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  opacity: 1;
 }
 
 .sidebar-scroll {

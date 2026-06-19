@@ -864,7 +864,9 @@
     "offline": "Offline",
     "all_chats": "Todos os chats…",
     "unread_messages": "Mensagens não lidas",
-    "all_invoices": "Todas as faturas"
+    "all_invoices": "Todas as faturas",
+    "hide_sidebar": "Ocultar barra lateral",
+    "show_sidebar": "Mostrar barra lateral"
   },
   "apikeys": {
     "tab": "Chaves de API",
