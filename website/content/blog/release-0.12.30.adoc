@@ -1,0 +1,157 @@
+---
+title: "v0.12.30: Global invoices view, tabbed settings, and Ansible modules"
+date: "2026-06-19"
+author: "Ton Kersten"
+description: "See all invoices across every customer in one place, navigate account settings via tabs, and automate your helpdesk billing resources with three new Ansible modules backed by a full Molecule test suite."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` adds a global invoices view for admins, reorganises Account Settings into tabs, fixes text selection in dark and black themes, and ships three new Ansible collection modules for billing automation — all exercised by a live Molecule test suite.
+
+== Global invoices view
+
+Admins now have a dedicated *Invoices* entry in the main navigation.
+The view lists invoices across every customer in one table — no need to visit each customer page to check payment status.
+
+Key capabilities:
+
+* Filter by status: *All*, *Draft*, *Sent*, *Paid*, *Overdue*, and *Cancelled*.
+* Overdue invoices surface at the top and are highlighted so nothing slips through.
+* Clicking a row navigates directly to that customer's invoice detail.
+* Only global admins see the navigation entry and can access the view — other roles are blocked at the API level.
+
+== Account Settings tabs
+
+The single-page Account Settings scroll is gone.
+Settings are now split into four tabs:
+
+[cols="1,3"]
+|===
+| Tab | Contents
+
+| Profile
+| Display name, email, avatar, locale, date/time format, week start, dashboard default.
+
+| Security
+| Password change, passkeys, MFA / TOTP, trusted devices.
+
+| Notifications
+| Per-event email and in-app notification preferences.
+
+| API Keys
+| Personal API key management (create, revoke, copy).
+|===
+
+Each tab is bookmarkable — the active tab is reflected in the URL hash so deep-linking to e.g. `#security` works.
+
+== Text selection in dark and black themes
+
+Selected text in the dark and pure-black (AMOLED) themes now uses a theme-aware highlight colour.
+Previously the browser default selection colour was used, which produced near-invisible light-blue-on-dark highlights.
+All text areas, inputs, and read-only content panels are affected.
+
+== Ansible collection — billing automation modules
+
+The `ansilabnl.warmdesk` Ansible collection gains three modules for managing helpdesk billing resources:
+
+=== `ansilabnl.warmdesk.customer_contact`
+
+Create, update, and delete contacts attached to a customer record.
+
+[source,yaml]
+----
+- name: Add primary contact
+  ansilabnl.warmdesk.customer_contact:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ api_key }}"
+    customer_name: Acme Corp
+    name: Jane Smith
+    email: jane@acme.example
+    phone: "+31 20 555 0100"
+    department: Sales
+    is_primary: true
+    state: present
+----
+
+=== `ansilabnl.warmdesk.invoice`
+
+Manage customer invoices — create drafts, set line items, and control status.
+
+[source,yaml]
+----
+- name: Create a draft invoice
+  ansilabnl.warmdesk.invoice:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ api_key }}"
+    customer_name: Acme Corp
+    reference: "INV-2026-007"
+    currency: "€"
+    vat_rate: 21.0
+    line_items:
+      - description: Managed hosting — June 2026
+        quantity: 1
+        unit_price: 499.00
+    state: present
+----
+
+=== `ansilabnl.warmdesk.invoice_template`
+
+Create and maintain reusable invoice templates in the admin panel.
+
+[source,yaml]
+----
+- name: Ensure monthly hosting template exists
+  ansilabnl.warmdesk.invoice_template:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ api_key }}"
+    name: Managed Services Monthly
+    default_currency: "€"
+    default_vat_rate: 21.0
+    notes: "Payment due within 30 days."
+    line_items:
+      - description: Managed hosting — monthly fee
+        quantity: 1
+        unit_price: 499.00
+        currency: "€"
+    state: present
+----
+
+All three modules are fully idempotent and support check mode.
+
+=== Molecule test suite
+
+The collection ships a complete Molecule scenario (`extensions/molecule/default/`) that:
+
+. Builds the WarmDesk Go binary from source and starts a real server on a throwaway port.
+. Registers an admin user and creates an API key.
+. Runs the full lifecycle for every module: create → idempotency → update → update-idempotency → absent → absent-idempotency.
+. Runs a check-mode smoke test to verify no changes are reported against an already-absent resource.
+. Tears down the server and cleans up on exit.
+
+Run the suite from the `ansible/` directory:
+
+[source,bash]
+----
+make test
+----
+
+== Documentation
+
+The API reference (`docs/api.md`) gains three new sections:
+
+* **Section 8 — Invoices**: all `GET / POST / PUT / DELETE` endpoints under `/customers/:id/invoices`, full request/response schemas, credit-note endpoint.
+* **Section 9 — Invoice Templates**: admin CRUD endpoints with schema documentation.
+* **Section 10 — Customer Contacts**: create/update/delete contacts with `department`, `phone`, and `is_primary` fields.
+
+The admin and user guides expand the Invoices chapter (credit notes, payment methods, overdue tracking) and add a dedicated Contacts sub-section under Customer Detail.
+A new Invoice Templates section covers the admin workflow for creating and applying templates.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No manual database changes are required.
+New columns are applied automatically via GORM AutoMigrate on first boot.
