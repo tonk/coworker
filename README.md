@@ -8,9 +8,12 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.21)
+## Latest release (v0.12.30)
 
-- **Card delete confirmation fix** — the confirmation dialog no longer appears behind the open card detail modal.
+- **Global invoices view** — admins can now see all invoices across customers in one place.
+- **Account Settings tabs** — Profile, Security, Notifications, and API Keys are now in separate tabs.
+- **Text selection fix in dark/black themes** — selected text is readable again.
+- **Ansible collection** — new `customer_contact`, `invoice`, and `invoice_template` modules with a full Molecule test suite.
 
 ## Experiment
 

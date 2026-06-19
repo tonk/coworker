@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.12.30 — 2026-06-19
+
+### Added
+- **Global invoices view** — admins now have a dedicated *Invoices* tab in the main navigation that lists invoices across all customers with status filtering and overdue highlighting.
+- **Ansible collection modules** — new `customer_contact`, `invoice`, and `invoice_template` modules for automating helpdesk and billing resources via the `ansilabnl.warmdesk` collection.
+- **Molecule test suite** — the Ansible collection ships a full Molecule scenario (`extensions/molecule/default/`) that spins up a live WarmDesk server and exercises create / idempotency / update / absent lifecycle tests for every module.
+
+### Fixed
+- **Invoices view access control** — the global invoices list is now restricted to admin users only; non-admin users no longer see the navigation entry.
+
+### Changed
+- **Account Settings layout** — the settings page is split into clearly labelled tabs (Profile, Security, Notifications, API Keys) to reduce scrolling and make individual sections easier to find.
+- **Text selection in dark and black themes** — selected text now uses a theme-aware highlight colour instead of the browser default, which was unreadable against dark backgrounds.
+
+### Documentation
+- **API reference** — sections 8–10 added for Invoices, Invoice Templates, and Customer Contacts, including all endpoints, request/response schemas, and Bruno collection requests.
+- **Admin and user guides** — expanded Invoices chapter (credit notes, payment methods, overdue tracking), new Contacts sub-section, new Invoice Templates section.
+
 ## v0.12.21 — 2026-06-18
 
 ### Fixed
