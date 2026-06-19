@@ -801,7 +801,10 @@
     "weekly_total": "Ugentligt total",
     "distance_unit": "Afstandsenhed",
     "distance_unit_km": "Kilometer (km)",
-    "distance_unit_miles": "Miles (mi)"
+    "distance_unit_miles": "Miles (mi)",
+    "tab_interface": "Grænseflade",
+    "tab_security": "Sikkerhed",
+    "tab_api_keys": "API-nøgler"
   },
   "dm": {
     "title": "Chats",

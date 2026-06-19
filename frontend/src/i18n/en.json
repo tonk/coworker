@@ -938,7 +938,10 @@
     "work_hours": "Hours",
     "lunch_break": "Lunch break",
     "lunch_break_unit": "minutes",
-    "weekly_total": "Weekly total"
+    "weekly_total": "Weekly total",
+    "tab_interface": "Interface",
+    "tab_security": "Security",
+    "tab_api_keys": "API Keys"
   },
   "dm": {
     "title": "Chats",

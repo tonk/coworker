@@ -766,7 +766,10 @@
     "weekly_total": "Totaal per week",
     "distance_unit": "Afstandseenheid",
     "distance_unit_km": "Kilometer (km)",
-    "distance_unit_miles": "Mijl (mi)"
+    "distance_unit_miles": "Mijl (mi)",
+    "tab_interface": "Interface",
+    "tab_security": "Beveiliging",
+    "tab_api_keys": "API-sleutels"
   },
   "dm": {
     "title": "Chats",

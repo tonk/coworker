@@ -1,8 +1,17 @@
 <template>
   <main class="settings-main">
-      <div class="settings-container" ref="settingsRootRef">
-        <h1>{{ $t('settings.title') }}</h1>
+    <div class="settings-container" ref="settingsRootRef">
+      <h1>{{ $t('settings.title') }}</h1>
 
+      <div class="tabs" role="tablist" :aria-label="$t('settings.title')">
+        <button :class="['tab', { active: tab === 'profile' }]" @click="tab = 'profile'" role="tab" :aria-selected="tab === 'profile'" aria-controls="tab-panel-profile" id="tab-btn-profile">{{ $t('settings.profile') }}</button>
+        <button :class="['tab', { active: tab === 'interface' }]" @click="tab = 'interface'" role="tab" :aria-selected="tab === 'interface'" aria-controls="tab-panel-interface" id="tab-btn-interface">{{ $t('settings.tab_interface') }}</button>
+        <button :class="['tab', { active: tab === 'security' }]" @click="tab = 'security'" role="tab" :aria-selected="tab === 'security'" aria-controls="tab-panel-security" id="tab-btn-security">{{ $t('settings.tab_security') }}</button>
+        <button v-if="!systemStore.isTimetrackingMode" :class="['tab', { active: tab === 'apikeys' }]" @click="tab = 'apikeys'" role="tab" :aria-selected="tab === 'apikeys'" aria-controls="tab-panel-apikeys" id="tab-btn-apikeys">{{ $t('settings.tab_api_keys') }}</button>
+      </div>
+
+      <!-- Profile tab -->
+      <div v-show="tab === 'profile'" role="tabpanel" id="tab-panel-profile" aria-labelledby="tab-btn-profile">
         <div class="settings-card" data-help-context="settings.profile">
           <h2>{{ $t('settings.profile') }}</h2>
           <form @submit.prevent="saveProfile">
@@ -36,6 +45,35 @@
                 <img :src="resolveAssetUrl(form.avatar_url)" :alt="$t('settings.avatar_preview')" class="avatar-img" @error="avatarError = true" />
               </div>
             </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" :disabled="savingProfile">
+                {{ savingProfile ? $t('common.loading') : $t('common.save') }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="settings-card info-card">
+          <div class="info-row">
+            <span class="info-label">{{ $t('auth.username') }}</span>
+            <span class="info-value">{{ auth.user?.username }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ $t('settings.last_login') }}</span>
+            <span class="info-value">{{ auth.user?.last_login_at ? formatDateTime(auth.user.last_login_at) : '-' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ $t('settings.settings_updated_at') }}</span>
+            <span class="info-value">{{ auth.user?.settings_updated_at ? formatDateTime(auth.user.settings_updated_at) : '-' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interface tab -->
+      <div v-show="tab === 'interface'" role="tabpanel" id="tab-panel-interface" aria-labelledby="tab-btn-interface">
+        <div class="settings-card" data-help-context="settings.interface">
+          <h2>{{ $t('settings.tab_interface') }}</h2>
+          <form @submit.prevent="saveProfile">
             <div class="form-group">
               <label class="form-label" for="settings-locale">{{ $t('common.language') }}</label>
               <select id="settings-locale" class="form-input" v-model="form.locale">
@@ -93,22 +131,6 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label" for="settings-datetime-format">{{ $t('settings.date_time_format') }}</label>
-              <select id="settings-datetime-format" class="form-input" v-model="form.date_time_format">
-                <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm (ISO)</option>
-                <option value="DD/MM/YYYY HH:mm">DD/MM/YYYY HH:mm</option>
-                <option value="MM/DD/YYYY hh:mm a">MM/DD/YYYY hh:mm a</option>
-                <option value="DD-MM-YYYY HH:mm">DD-MM-YYYY HH:mm</option>
-                <option value="DD.MM.YYYY HH:mm">DD.MM.YYYY HH:mm</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="settings-timezone">{{ $t('settings.timezone') }}</label>
-              <select id="settings-timezone" class="form-input" v-model="form.timezone">
-                <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
-              </select>
-            </div>
-            <div class="form-group">
               <label class="form-label" for="settings-font">{{ $t('settings.font') }}</label>
               <select id="settings-font" class="form-input" v-model="form.font">
                 <option value="system">{{ $t('settings.font_system') }}</option>
@@ -141,6 +163,43 @@
               </select>
             </div>
             <div class="form-group">
+              <label class="form-label" for="settings-datetime-format">{{ $t('settings.date_time_format') }}</label>
+              <select id="settings-datetime-format" class="form-input" v-model="form.date_time_format">
+                <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm (ISO)</option>
+                <option value="DD/MM/YYYY HH:mm">DD/MM/YYYY HH:mm</option>
+                <option value="MM/DD/YYYY hh:mm a">MM/DD/YYYY hh:mm a</option>
+                <option value="DD-MM-YYYY HH:mm">DD-MM-YYYY HH:mm</option>
+                <option value="DD.MM.YYYY HH:mm">DD.MM.YYYY HH:mm</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="settings-timezone">{{ $t('settings.timezone') }}</label>
+              <select id="settings-timezone" class="form-input" v-model="form.timezone">
+                <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="week-start-select">{{ $t('settings.week_start') }}</label>
+              <select id="week-start-select" class="form-input" v-model="form.week_start">
+                <option value="monday">{{ $t('settings.week_start_monday') }}</option>
+                <option value="sunday">{{ $t('settings.week_start_sunday') }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="time-notation-select">{{ $t('settings.time_notation') }}</label>
+              <select id="time-notation-select" class="form-input" v-model="form.time_notation">
+                <option value="decimal">{{ $t('settings.time_notation_decimal') }}</option>
+                <option value="hhmm">{{ $t('settings.time_notation_hhmm') }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="distance-unit-select">{{ $t('settings.distance_unit') }}</label>
+              <select id="distance-unit-select" class="form-input" v-model="form.distance_unit">
+                <option value="km">{{ $t('settings.distance_unit_km') }}</option>
+                <option value="miles">{{ $t('settings.distance_unit_miles') }}</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label class="form-label">Navigation</label>
               <label class="toggle-label">
                 <input type="checkbox" v-model="form.show_breadcrumbs" />
@@ -160,27 +219,6 @@
                 <input type="checkbox" v-model="form.time_tracking_enabled" />
                 <span>{{ $t('timeTracking.toggle_hint') }}</span>
               </label>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="time-notation-select">{{ $t('settings.time_notation') }}</label>
-              <select id="time-notation-select" class="form-input" v-model="form.time_notation">
-                <option value="decimal">{{ $t('settings.time_notation_decimal') }}</option>
-                <option value="hhmm">{{ $t('settings.time_notation_hhmm') }}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="distance-unit-select">{{ $t('settings.distance_unit') }}</label>
-              <select id="distance-unit-select" class="form-input" v-model="form.distance_unit">
-                <option value="km">{{ $t('settings.distance_unit_km') }}</option>
-                <option value="miles">{{ $t('settings.distance_unit_miles') }}</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="week-start-select">{{ $t('settings.week_start') }}</label>
-              <select id="week-start-select" class="form-input" v-model="form.week_start">
-                <option value="monday">{{ $t('settings.week_start_monday') }}</option>
-                <option value="sunday">{{ $t('settings.week_start_sunday') }}</option>
-              </select>
             </div>
             <div v-if="!systemStore.isTimetrackingMode" class="form-group">
               <label class="form-label" for="dashboard-default-select">{{ $t('settings.dashboard_default') }}</label>
@@ -263,12 +301,15 @@
             </div>
           </form>
         </div>
+      </div>
 
+      <!-- Security tab -->
+      <div v-show="tab === 'security'" role="tabpanel" id="tab-panel-security" aria-labelledby="tab-btn-security">
         <div v-if="passwordExpired" class="auth-error" style="margin-bottom:16px;padding:12px 16px;border-radius:6px">
           {{ $t('auth.password_expired') }}
         </div>
 
-        <div ref="pwCardRef" class="settings-card" data-help-context="settings.password">
+        <div class="settings-card" data-help-context="settings.password">
           <h2>{{ $t('auth.change_password') }}</h2>
           <form @submit.prevent="savePassword">
             <div class="form-group">
@@ -387,8 +428,8 @@
           <p class="form-hint">{{ $t('mfa.trusted_devices_admin_disabled') }}</p>
         </div>
 
-        <!-- Passkeys card -->
-        <div class="settings-card" data-help-context="settings.passkey">
+        <!-- Passkeys card — hidden when WebAuthn is unavailable (e.g. Tauri desktop on Linux) -->
+        <div v-if="passkeySupported" class="settings-card" data-help-context="settings.passkey">
           <h2>{{ $t('passkey.title') }}</h2>
           <p class="form-hint" style="margin-bottom:16px">{{ $t('passkey.description') }}</p>
 
@@ -429,8 +470,11 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <div v-if="!systemStore.isTimetrackingMode" class="settings-card" data-help-context="settings.apiKeys">
+      <!-- API Keys tab -->
+      <div v-show="tab === 'apikeys'" role="tabpanel" id="tab-panel-apikeys" aria-labelledby="tab-btn-apikeys">
+        <div class="settings-card" data-help-context="settings.apiKeys">
           <h2>{{ $t('apikeys.personal_title') }}</h2>
           <p class="form-hint" style="margin-bottom:16px">{{ $t('apikeys.personal_description') }}</p>
           <div class="form-group" style="max-width:400px">
@@ -467,22 +511,9 @@
             </tbody>
           </table>
         </div>
-
-        <div class="settings-card info-card">
-          <div class="info-row">
-            <span class="info-label">{{ $t('settings.last_login') }}</span>
-            <span class="info-value">{{ auth.user?.last_login_at ? formatDateTime(auth.user.last_login_at) : '-' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">{{ $t('settings.settings_updated_at') }}</span>
-            <span class="info-value">{{ auth.user?.settings_updated_at ? formatDateTime(auth.user.settings_updated_at) : '-' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">{{ $t('auth.username') }}</span>
-            <span class="info-value">{{ auth.user?.username }}</span>
-          </div>
-        </div>
       </div>
+
+    </div>
   </main>
 </template>
 
@@ -512,8 +543,8 @@ const route = useRoute()
 const auth = useAuthStore()
 const ui = useUIStore()
 const systemStore = useSystemStore()
+const tab = ref('profile')
 const passwordExpired = ref(false)
-const pwCardRef = ref(null)
 const settingsRootRef = ref(null)
 useHelpSectionObserver(settingsRootRef)
 const { setTheme, setAccentColor } = useTheme()
@@ -656,7 +687,8 @@ const mfaDisablePassword = ref('')
 const mfaLoading = ref(false)
 const qrCanvas = ref(null)
 
-// Passkeys
+// Passkeys — WebAuthn is not available in the Tauri desktop WebView on Linux
+const passkeySupported = !!window.PublicKeyCredential
 const passkeys = ref([])
 const addingPasskey = ref(false)
 const newPasskeyName = ref('')
@@ -664,7 +696,7 @@ const passkeyLoading = ref(false)
 
 onMounted(async () => {
   loadPersonalKeys()
-  loadPasskeys()
+  if (passkeySupported) loadPasskeys()
   loadTrustedDevices()
   try {
     const { data } = await systemApi.getSettings()
@@ -673,8 +705,7 @@ onMounted(async () => {
   } catch {}
   if (route.query.expired === '1') {
     passwordExpired.value = true
-    await nextTick()
-    pwCardRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    tab.value = 'security'
   }
   const u = auth.user
   if (u) {
@@ -959,6 +990,25 @@ async function revokeAllTrustedDevices() {
 .settings-main { flex: 1; padding: 32px 24px; }
 .settings-container { max-width: 640px; margin: 0 auto; }
 h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border); }
+.tab {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: -1px;
+}
+.tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+.tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 2px; }
+
+.data-table { width: 100%; border-collapse: collapse; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); overflow: hidden; }
+.data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--color-border); font-size: 13px; vertical-align: middle; }
+.data-table th { font-weight: 600; color: var(--color-text-muted); font-size: 12px; background: var(--color-bg); }
 
 .settings-card {
   background: var(--color-surface);

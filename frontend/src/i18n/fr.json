@@ -766,7 +766,10 @@
     "weekly_total": "Total hebdomadaire",
     "distance_unit": "Unité de distance",
     "distance_unit_km": "Kilomètres (km)",
-    "distance_unit_miles": "Miles (mi)"
+    "distance_unit_miles": "Miles (mi)",
+    "tab_interface": "Interface",
+    "tab_security": "Sécurité",
+    "tab_api_keys": "Clés API"
   },
   "dm": {
     "title": "Chats",

@@ -801,7 +801,10 @@
     "weekly_total": "Ukentlig total",
     "distance_unit": "Avstandsenhet",
     "distance_unit_km": "Kilometer (km)",
-    "distance_unit_miles": "Miles (mi)"
+    "distance_unit_miles": "Miles (mi)",
+    "tab_interface": "Grensesnitt",
+    "tab_security": "Sikkerhet",
+    "tab_api_keys": "API-nøkler"
   },
   "dm": {
     "title": "Chatter",

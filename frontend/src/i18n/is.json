@@ -801,7 +801,10 @@
     "weekly_total": "Heildartími vikunnar",
     "distance_unit": "Fjarlægðareining",
     "distance_unit_km": "Kílómetrar (km)",
-    "distance_unit_miles": "Mílur (mi)"
+    "distance_unit_miles": "Mílur (mi)",
+    "tab_interface": "Viðmót",
+    "tab_security": "Öryggi",
+    "tab_api_keys": "API-lyklar"
   },
   "dm": {
     "title": "Spjall",

@@ -801,7 +801,10 @@
     "weekly_total": "Viikon yhteensä",
     "distance_unit": "Etäisyysyksikkö",
     "distance_unit_km": "Kilometriä (km)",
-    "distance_unit_miles": "Mailia (mi)"
+    "distance_unit_miles": "Mailia (mi)",
+    "tab_interface": "Käyttöliittymä",
+    "tab_security": "Turvallisuus",
+    "tab_api_keys": "API-avaimet"
   },
   "dm": {
     "title": "Chatit",

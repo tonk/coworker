@@ -801,7 +801,10 @@
     "weekly_total": "Totale settimanale",
     "distance_unit": "Unità di distanza",
     "distance_unit_km": "Chilometri (km)",
-    "distance_unit_miles": "Miglia (mi)"
+    "distance_unit_miles": "Miglia (mi)",
+    "tab_interface": "Interfaccia",
+    "tab_security": "Sicurezza",
+    "tab_api_keys": "Chiavi API"
   },
   "dm": {
     "title": "Chat",

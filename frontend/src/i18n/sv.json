@@ -801,7 +801,10 @@
     "weekly_total": "Veckototal",
     "distance_unit": "Avståndsenhet",
     "distance_unit_km": "Kilometer (km)",
-    "distance_unit_miles": "Miles (mi)"
+    "distance_unit_miles": "Miles (mi)",
+    "tab_interface": "Gränssnitt",
+    "tab_security": "Säkerhet",
+    "tab_api_keys": "API-nycklar"
   },
   "dm": {
     "title": "Chattar",
