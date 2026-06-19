@@ -704,7 +704,7 @@
     v-if="showSendEmail"
     :title="$t('invoice.send_email')"
     @close="showSendEmail = false"
-    style="--modal-width:520px"
+    style="--modal-width:560px"
     aria-labelledby="send-email-title"
   >
     <h2 id="send-email-title" class="sr-only">{{ $t('invoice.send_email') }}</h2>
@@ -717,8 +717,37 @@
       <input id="send-subject" class="form-input" type="text" v-model="sendEmailForm.subject" />
     </div>
     <div class="form-group">
-      <label class="form-label" for="send-body">{{ $t('invoice.send_email_body') }}</label>
-      <textarea id="send-body" class="form-input" rows="5" v-model="sendEmailForm.body"></textarea>
+      <div class="email-body-header">
+        <label class="form-label">{{ $t('invoice.send_email_body') }}</label>
+        <div class="email-body-tabs" role="tablist">
+          <button
+            role="tab"
+            :aria-selected="!sendEmailPreview"
+            :class="['email-tab', { active: !sendEmailPreview }]"
+            @click="sendEmailPreview = false"
+          >{{ $t('common.write') }}</button>
+          <button
+            role="tab"
+            :aria-selected="sendEmailPreview"
+            :class="['email-tab', { active: sendEmailPreview }]"
+            @click="sendEmailPreview = true"
+          >{{ $t('common.preview') }}</button>
+        </div>
+      </div>
+      <textarea
+        v-if="!sendEmailPreview"
+        id="send-body"
+        class="form-input email-body-textarea"
+        rows="8"
+        v-model="sendEmailForm.body"
+        :placeholder="$t('invoice.send_email_md_hint')"
+      ></textarea>
+      <div
+        v-else
+        class="email-body-preview markdown-body"
+        v-html="sendEmailRendered"
+        aria-live="polite"
+      ></div>
     </div>
     <template #footer>
       <button class="btn" @click="showSendEmail = false">{{ $t('common.cancel') }}</button>
@@ -767,6 +796,8 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -1051,13 +1082,18 @@ const showSendEmail = ref(false)
 const sendEmailInvoice = ref(null)
 const sendEmailForm = ref({ to: '', subject: '', body: '' })
 const sendingEmail = ref(false)
+const sendEmailPreview = ref(false)
+const sendEmailRendered = computed(() =>
+  DOMPurify.sanitize(marked.parse(sendEmailForm.value.body || ''))
+)
 
 function openSendEmail(inv) {
   sendEmailInvoice.value = inv
+  sendEmailPreview.value = false
   sendEmailForm.value = {
     to: detail.value?.customer?.email || '',
     subject: `${t('invoice.invoices')} ${inv.invoice_number}`,
-    body: `Dear customer,\n\nPlease find your invoice ${inv.invoice_number} attached.\n\nKind regards`,
+    body: `Dear customer,\n\nPlease find your invoice **${inv.invoice_number}** attached.\n\nKind regards`,
   }
   showSendEmail.value = true
 }
@@ -1070,6 +1106,7 @@ async function doSendEmail() {
       to: sendEmailForm.value.to,
       subject: sendEmailForm.value.subject,
       body: sendEmailForm.value.body,
+      body_html: DOMPurify.sanitize(marked.parse(sendEmailForm.value.body || '')),
     })
     const idx = invoices.value.findIndex(i => i.id === inv.id)
     if (idx >= 0) invoices.value[idx] = data
@@ -2159,6 +2196,27 @@ async function deleteContract(grp) {
 }
 .inv-preview-totals strong { color: var(--color-primary); }
 
+.email-body-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.email-body-header .form-label { margin-bottom: 0; }
+.email-body-tabs { display: flex; gap: 2px; }
+.email-tab {
+  background: none; border: 1px solid var(--color-border); border-radius: 4px;
+  padding: 2px 10px; font-size: 12px; cursor: pointer; color: var(--color-text-muted);
+}
+.email-tab.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.email-tab:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
+.email-body-textarea { resize: vertical; font-family: monospace; font-size: 13px; }
+.email-body-preview {
+  min-height: 140px; max-height: 340px; overflow-y: auto;
+  border: 1px solid var(--color-border); border-radius: 6px;
+  padding: 10px 14px; background: var(--color-bg); font-size: 14px; line-height: 1.6;
+}
+.email-body-preview :deep(p) { margin: 0 0 .7em; }
+.email-body-preview :deep(strong) { font-weight: 700; }
+.email-body-preview :deep(em) { font-style: italic; }
+.email-body-preview :deep(ul), .email-body-preview :deep(ol) { padding-left: 1.4em; margin: 0 0 .7em; }
+.email-body-preview :deep(a) { color: var(--color-primary); }
+.email-body-preview :deep(code) { background: var(--color-surface); border-radius: 3px; padding: 1px 4px; font-size: .9em; }
 .invoice-credits       { font-size: 11px; color: var(--color-text-muted); font-style: italic; white-space: nowrap; }
 .invoice-credit-issued { font-size: 11px; color: #b45309; background: #fef3c7; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
 .invoice-paid-info { font-size: 11px; color: #15803d; white-space: nowrap; }

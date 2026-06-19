@@ -348,9 +348,10 @@ func DeleteInvoice(c *gin.Context) {
 
 // SendInvoiceRequest is the body for POST /customers/:id/invoices/:id/send.
 type SendInvoiceRequest struct {
-	To      string `json:"to" binding:"required"`
-	Subject string `json:"subject"`
-	Body    string `json:"body"`
+	To       string `json:"to" binding:"required"`
+	Subject  string `json:"subject"`
+	Body     string `json:"body"`
+	BodyHTML string `json:"body_html"` // rendered HTML from the frontend (markdown→HTML)
 }
 
 // SendInvoice emails the invoice PDF to the given address and marks it sent.
@@ -408,7 +409,11 @@ func SendInvoice(c *gin.Context) {
 		body = "Please find your invoice attached."
 	}
 
-	if err := svc.SendWithAttachment(req.To, subject, body, invoice.InvoiceNumber+".pdf", "application/pdf", pdfBytes); err != nil {
+	bodyHTML := req.BodyHTML
+	if bodyHTML == "" {
+		bodyHTML = "<p>" + body + "</p>"
+	}
+	if err := svc.SendWithHTMLAndAttachment(req.To, subject, body, bodyHTML, invoice.InvoiceNumber+".pdf", "application/pdf", pdfBytes); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send email: " + err.Error()})
 		return
 	}
