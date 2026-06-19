@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.12.31 — 2026-06-19
+
+### Added
+- **Hideable sidebar** — hover the sidebar edge to reveal a collapse button; a thin reveal strip brings it back. State is persisted across sessions.
+
+### Fixed
+- **Desktop context menu** — the WebKit right-click menu (Back, Reload, Inspect Element) is suppressed in the desktop app. Browser builds are unaffected.
+
 ## v0.12.30 — 2026-06-19
 
 ### Added
