@@ -4730,9 +4730,10 @@ func removeDemoData(db *gorm.DB) {
 	demoChecklistNames := []string{"Offboarding"}
 	db.Unscoped().Where("name IN ?", demoChecklistNames).Delete(&models.TicketChecklistTemplate{})
 
-	// Customers and contracts
+	// Customers, invoices, and contracts
 	db.Model(&models.Customer{}).Where("name IN ?", demoCustomerNames).Pluck("id", &custIDs)
 	if len(custIDs) > 0 {
+		db.Where("customer_id IN ?", custIDs).Delete(&models.Invoice{})
 		db.Where("customer_id IN ?", custIDs).Delete(&models.CustomerFavorite{})
 		db.Where("customer_id IN ?", custIDs).Delete(&models.Contract{})
 		db.Where("id IN ?", custIDs).Delete(&models.Customer{})
