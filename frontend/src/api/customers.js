@@ -28,6 +28,12 @@ export const customersApi = {
   sendInvoice:     (cid, iid, data) => client.post(`/customers/${cid}/invoices/${iid}/send`, data),
   createCreditNote:(cid, iid)       => client.post(`/customers/${cid}/invoices/${iid}/credit-note`),
 
+  // Contacts
+  listContacts:   (cid)             => client.get(`/customers/${cid}/contacts`),
+  createContact:  (cid, data)       => client.post(`/customers/${cid}/contacts`, data),
+  updateContact:  (cid, ctid, data) => client.put(`/customers/${cid}/contacts/${ctid}`, data),
+  deleteContact:  (cid, ctid)       => client.delete(`/customers/${cid}/contacts/${ctid}`),
+
   // Time-tracking-only customers (no CRM entry)
   listTimeTracking:   ()           => client.get('/time-tracking-customers'),
   createTimeTracking: (data)       => client.post('/time-tracking-customers', data),

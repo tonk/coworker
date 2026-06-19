@@ -116,7 +116,19 @@
     "billing_postal_code": "Código postal",
     "billing_country": "País",
     "vat_number": "NIF / CIF",
-    "po_reference": "PO / Referencia"
+    "po_reference": "PO / Referencia",
+    "contacts": "Personas de contacto",
+    "add_contact": "Agregar contacto",
+    "edit_contact": "Editar contacto",
+    "no_contacts": "Aún no hay personas de contacto.",
+    "contact_name": "Nombre",
+    "contact_department": "Departamento",
+    "contact_phone": "Teléfono",
+    "contact_email": "Correo electrónico",
+    "contact_primary": "Principal",
+    "contact_is_primary": "Establecer como contacto principal",
+    "delete_contact_confirm": "¿Eliminar este contacto?",
+    "tab_overview": "Resumen"
   },
   "contract": {
     "contracts": "Contratos",

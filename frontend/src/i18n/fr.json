@@ -116,7 +116,19 @@
     "billing_postal_code": "Code postal",
     "billing_country": "Pays",
     "vat_number": "Numéro de TVA",
-    "po_reference": "Bon de commande / Référence"
+    "po_reference": "Bon de commande / Référence",
+    "contacts": "Personnes de contact",
+    "add_contact": "Ajouter un contact",
+    "edit_contact": "Modifier le contact",
+    "no_contacts": "Aucune personne de contact.",
+    "contact_name": "Nom",
+    "contact_department": "Département",
+    "contact_phone": "Téléphone",
+    "contact_email": "E-mail",
+    "contact_primary": "Principal",
+    "contact_is_primary": "Définir comme contact principal",
+    "delete_contact_confirm": "Supprimer ce contact ?",
+    "tab_overview": "Aperçu"
   },
   "contract": {
     "contracts": "Contrats",

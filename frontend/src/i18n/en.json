@@ -116,7 +116,19 @@
     "billing_postal_code": "Postal Code",
     "billing_country": "Country",
     "vat_number": "VAT Number",
-    "po_reference": "PO / Reference"
+    "po_reference": "PO / Reference",
+    "contacts": "Contacts",
+    "add_contact": "Add Contact",
+    "edit_contact": "Edit Contact",
+    "no_contacts": "No contact persons yet.",
+    "contact_name": "Name",
+    "contact_department": "Department",
+    "contact_phone": "Phone",
+    "contact_email": "Email",
+    "contact_primary": "Primary",
+    "contact_is_primary": "Set as primary contact",
+    "delete_contact_confirm": "Delete this contact?",
+    "tab_overview": "Overview"
   },
   "contract": {
     "contracts": "Contracts",

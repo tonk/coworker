@@ -116,7 +116,19 @@
     "billing_postal_code": "Postcode",
     "billing_country": "Land",
     "vat_number": "BTW-nummer",
-    "po_reference": "PO / Referentie"
+    "po_reference": "PO / Referentie",
+    "contacts": "Contactpersonen",
+    "add_contact": "Contactpersoon toevoegen",
+    "edit_contact": "Contactpersoon bewerken",
+    "no_contacts": "Nog geen contactpersonen.",
+    "contact_name": "Naam",
+    "contact_department": "Afdeling",
+    "contact_phone": "Telefoon",
+    "contact_email": "E-mail",
+    "contact_primary": "Primair",
+    "contact_is_primary": "Instellen als primair contactpersoon",
+    "delete_contact_confirm": "Dit contactpersoon verwijderen?",
+    "tab_overview": "Overzicht"
   },
   "contract": {
     "contracts": "Contracten",

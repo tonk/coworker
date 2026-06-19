@@ -116,7 +116,19 @@
     "billing_postal_code": "Postinumero",
     "billing_country": "Maa",
     "vat_number": "ALV-numero",
-    "po_reference": "PO / Viite"
+    "po_reference": "PO / Viite",
+    "contacts": "Yhteyshenkilöt",
+    "add_contact": "Lisää yhteyshenkilö",
+    "edit_contact": "Muokkaa yhteyshenkilöä",
+    "no_contacts": "Ei yhteyshenkilöitä vielä.",
+    "contact_name": "Nimi",
+    "contact_department": "Osasto",
+    "contact_phone": "Puhelin",
+    "contact_email": "Sähköposti",
+    "contact_primary": "Ensisijainen",
+    "contact_is_primary": "Aseta ensisijaiseksi yhteyshenkilöksi",
+    "delete_contact_confirm": "Poista tämä yhteyshenkilö?",
+    "tab_overview": "Yleiskatsaus"
   },
   "contract": {
     "contracts": "Sopimukset",

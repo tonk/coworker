@@ -148,9 +148,10 @@ func ListCustomers(c *gin.Context) {
 
 // CustomerDetailResponse is the full view returned by GetCustomer.
 type CustomerDetailResponse struct {
-	Customer  CustomerListItem `json:"customer"`
-	Contracts []ContractGroup  `json:"contracts"`
-	Projects  []models.Project `json:"projects"` // projects with no contract
+	Customer  CustomerListItem          `json:"customer"`
+	Contracts []ContractGroup           `json:"contracts"`
+	Projects  []models.Project          `json:"projects"` // projects with no contract
+	Contacts  []models.CustomerContact  `json:"contacts"`
 }
 
 // ContractGroup bundles a contract with its projects.
@@ -212,10 +213,14 @@ func GetCustomer(c *gin.Context) {
 	database.DB.Where("customer_id = ? AND contract_id IS NULL AND deleted_at IS NULL", cust.ID).
 		Order("position asc, id asc").Find(&unassigned)
 
+	var contacts []models.CustomerContact
+	database.DB.Where("customer_id = ?", cust.ID).Order("is_primary desc, id asc").Find(&contacts)
+
 	c.JSON(http.StatusOK, CustomerDetailResponse{
 		Customer:  custItem,
 		Contracts: contractGroups,
 		Projects:  unassigned,
+		Contacts:  contacts,
 	})
 }
 

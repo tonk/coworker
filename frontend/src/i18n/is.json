@@ -116,7 +116,19 @@
     "billing_postal_code": "Póstnúmer",
     "billing_country": "Land",
     "vat_number": "VSK-númer",
-    "po_reference": "Innkaupapöntun / Tilvísun"
+    "po_reference": "Innkaupapöntun / Tilvísun",
+    "contacts": "Tengiliðir",
+    "add_contact": "Bæta við tengilið",
+    "edit_contact": "Breyta tengilið",
+    "no_contacts": "Engir tengiliðir enn.",
+    "contact_name": "Nafn",
+    "contact_department": "Deild",
+    "contact_phone": "Sími",
+    "contact_email": "Netfang",
+    "contact_primary": "Aðal",
+    "contact_is_primary": "Stilla sem aðaltengil",
+    "delete_contact_confirm": "Eyða þessum tengilið?",
+    "tab_overview": "Yfirlit"
   },
   "contract": {
     "contracts": "Samningar",

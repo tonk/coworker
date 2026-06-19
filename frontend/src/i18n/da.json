@@ -116,7 +116,19 @@
     "billing_postal_code": "Postnummer",
     "billing_country": "Land",
     "vat_number": "CVR-nummer",
-    "po_reference": "PO / Reference"
+    "po_reference": "PO / Reference",
+    "contacts": "Kontaktpersoner",
+    "add_contact": "Tilføj kontakt",
+    "edit_contact": "Rediger kontakt",
+    "no_contacts": "Ingen kontaktpersoner endnu.",
+    "contact_name": "Navn",
+    "contact_department": "Afdeling",
+    "contact_phone": "Telefon",
+    "contact_email": "E-mail",
+    "contact_primary": "Primær",
+    "contact_is_primary": "Angiv som primær kontakt",
+    "delete_contact_confirm": "Slet denne kontakt?",
+    "tab_overview": "Oversigt"
   },
   "contract": {
     "contracts": "Kontrakter",

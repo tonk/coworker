@@ -116,7 +116,19 @@
     "billing_postal_code": "CAP",
     "billing_country": "Paese",
     "vat_number": "Partita IVA",
-    "po_reference": "PO / Riferimento"
+    "po_reference": "PO / Riferimento",
+    "contacts": "Persone di contatto",
+    "add_contact": "Aggiungi contatto",
+    "edit_contact": "Modifica contatto",
+    "no_contacts": "Nessuna persona di contatto ancora.",
+    "contact_name": "Nome",
+    "contact_department": "Reparto",
+    "contact_phone": "Telefono",
+    "contact_email": "E-mail",
+    "contact_primary": "Principale",
+    "contact_is_primary": "Imposta come contatto principale",
+    "delete_contact_confirm": "Eliminare questo contatto?",
+    "tab_overview": "Panoramica"
   },
   "contract": {
     "contracts": "Contratti",

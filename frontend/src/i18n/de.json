@@ -116,7 +116,19 @@
     "billing_postal_code": "Postleitzahl",
     "billing_country": "Land",
     "vat_number": "USt-IdNr.",
-    "po_reference": "PO / Referenz"
+    "po_reference": "PO / Referenz",
+    "contacts": "Kontaktpersonen",
+    "add_contact": "Kontakt hinzufügen",
+    "edit_contact": "Kontakt bearbeiten",
+    "no_contacts": "Noch keine Kontaktpersonen.",
+    "contact_name": "Name",
+    "contact_department": "Abteilung",
+    "contact_phone": "Telefon",
+    "contact_email": "E-Mail",
+    "contact_primary": "Primär",
+    "contact_is_primary": "Als primären Kontakt festlegen",
+    "delete_contact_confirm": "Diesen Kontakt löschen?",
+    "tab_overview": "Übersicht"
   },
   "contract": {
     "contracts": "Verträge",

@@ -34,6 +34,37 @@
         </div>
       </div>
 
+      <!-- Tab navigation -->
+      <div class="cust-tabs" role="tablist" :aria-label="detail.customer.name">
+        <button
+          id="tab-btn-overview"
+          role="tab"
+          :aria-selected="activeTab === 'overview'"
+          aria-controls="tab-panel-overview"
+          :class="['tab', { active: activeTab === 'overview' }]"
+          @click="activeTab = 'overview'"
+        >{{ $t('customer.tab_overview') }}</button>
+        <button
+          id="tab-btn-invoices"
+          role="tab"
+          :aria-selected="activeTab === 'invoices'"
+          aria-controls="tab-panel-invoices"
+          :class="['tab', { active: activeTab === 'invoices' }]"
+          @click="activeTab = 'invoices'"
+        >{{ $t('invoice.invoices') }}</button>
+        <button
+          id="tab-btn-contacts"
+          role="tab"
+          :aria-selected="activeTab === 'contacts'"
+          aria-controls="tab-panel-contacts"
+          :class="['tab', { active: activeTab === 'contacts' }]"
+          @click="activeTab = 'contacts'"
+        >{{ $t('customer.contacts') }}</button>
+      </div>
+
+      <!-- Overview tab: contracts + members -->
+      <div id="tab-panel-overview" role="tabpanel" aria-labelledby="tab-btn-overview" v-show="activeTab === 'overview'">
+
       <!-- Contracts -->
       <section class="contracts-section">
         <div class="section-header-row">
@@ -117,62 +148,6 @@
         </div>
       </section>
 
-      <!-- Invoices section -->
-      <section class="invoices-section">
-        <div class="section-header-row">
-          <h2>{{ $t('invoice.invoices') }}</h2>
-          <button v-if="canManage" class="btn btn-primary btn-sm" @click="openNewInvoice">
-            + {{ $t('invoice.new_invoice') }}
-          </button>
-        </div>
-
-        <div v-if="invoicesLoading" class="empty-state-sm">{{ $t('common.loading') }}</div>
-        <div v-else-if="invoices.length === 0" class="empty-state-sm">{{ $t('invoice.no_invoices') }}</div>
-        <div v-else class="invoice-list">
-          <div v-for="inv in invoices" :key="inv.id" class="invoice-row">
-            <div class="invoice-row-main">
-              <span class="invoice-number">{{ inv.invoice_number }}</span>
-              <span v-if="inv.credited_invoice_id" class="invoice-credits">↩ {{ $t('invoice.credits_invoice') }} #{{ inv.credited_invoice_id }}</span>
-              <span v-if="creditNoteByOriginal[inv.id]" class="invoice-credit-issued">↩ {{ $t('invoice.credit_note_issued') }}: {{ creditNoteByOriginal[inv.id].invoice_number }}</span>
-              <span class="invoice-period">{{ formatDate(inv.period_start) }} – {{ formatDate(inv.period_end) }}</span>
-              <span :class="['invoice-status', `inv-${inv.status}`]">{{ $t(`invoice.status_${inv.status}`) }}</span>
-              <span class="invoice-total">{{ inv.currency }} {{ inv.total.toFixed(2) }}</span>
-              <span v-if="inv.due_date" class="invoice-due">{{ $t('invoice.due_date') }}: {{ formatDate(inv.due_date) }}</span>
-              <span v-if="inv.status === 'paid' && inv.payment_date" class="invoice-paid-info">
-                {{ $t('invoice.payment_info') }}: {{ formatDate(inv.payment_date) }}<template v-if="inv.payment_reference"> · {{ inv.payment_reference }}</template>
-              </span>
-            </div>
-            <div class="invoice-row-actions">
-              <a :href="invoicePdfUrl(inv.id)" target="_blank" class="btn btn-sm" :aria-label="$t('invoice.download_pdf')">PDF</a>
-              <template v-if="canManage">
-                <button
-                  v-if="inv.status !== 'credit_note'"
-                  class="icon-btn"
-                  @click="openEditLines(inv)"
-                  :aria-label="$t('invoice.edit_lines')"
-                  :title="$t('invoice.edit_lines')"
-                >✎</button>
-                <button
-                  v-if="inv.status === 'draft' || inv.status === 'sent'"
-                  class="btn btn-sm"
-                  @click="openSendEmail(inv)"
-                >{{ $t('invoice.send_email') }}</button>
-                <button v-if="inv.status === 'draft'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'sent')">{{ $t('invoice.mark_sent') }}</button>
-                <button v-if="inv.status === 'sent'" class="btn btn-sm btn-primary" @click="openRecordPayment(inv)">{{ $t('invoice.mark_paid') }}</button>
-                <button v-if="inv.status !== 'draft' && inv.status !== 'credit_note'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'draft')">{{ $t('invoice.mark_draft') }}</button>
-                <button
-                  v-if="inv.status === 'sent' || inv.status === 'paid'"
-                  class="btn btn-sm"
-                  @click="doIssueCreditNote(inv)"
-                >{{ $t('invoice.issue_credit_note') }}</button>
-                <button v-if="inv.status === 'draft'" class="icon-btn icon-danger" @click="doDeleteInvoice(inv)" :aria-label="$t('common.delete')" title="Delete">✕</button>
-                <button v-if="inv.status === 'credit_note'" class="btn btn-sm btn-danger" @click="doDeleteInvoice(inv)">{{ $t('invoice.void_credit_note') }}</button>
-              </template>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Members section (visible to admins and customer-admins) -->
       <section v-if="canManage" class="members-section">
         <div class="section-header-row">
@@ -247,7 +222,137 @@
         </div>
       </section>
 
+      </div><!-- end tab-panel-overview -->
+
+      <!-- Invoices tab -->
+      <div id="tab-panel-invoices" role="tabpanel" aria-labelledby="tab-btn-invoices" v-show="activeTab === 'invoices'">
+
+      <!-- Invoices section -->
+      <section class="invoices-section">
+        <div class="section-header-row">
+          <h2>{{ $t('invoice.invoices') }}</h2>
+          <button v-if="canManage" class="btn btn-primary btn-sm" @click="openNewInvoice">
+            + {{ $t('invoice.new_invoice') }}
+          </button>
+        </div>
+
+        <div v-if="invoicesLoading" class="empty-state-sm">{{ $t('common.loading') }}</div>
+        <div v-else-if="invoices.length === 0" class="empty-state-sm">{{ $t('invoice.no_invoices') }}</div>
+        <div v-else class="invoice-list">
+          <div v-for="inv in invoices" :key="inv.id" class="invoice-row">
+            <div class="invoice-row-main">
+              <span class="invoice-number">{{ inv.invoice_number }}</span>
+              <span v-if="inv.credited_invoice_id" class="invoice-credits">↩ {{ $t('invoice.credits_invoice') }} #{{ inv.credited_invoice_id }}</span>
+              <span v-if="creditNoteByOriginal[inv.id]" class="invoice-credit-issued">↩ {{ $t('invoice.credit_note_issued') }}: {{ creditNoteByOriginal[inv.id].invoice_number }}</span>
+              <span class="invoice-period">{{ formatDate(inv.period_start) }} – {{ formatDate(inv.period_end) }}</span>
+              <span :class="['invoice-status', `inv-${inv.status}`]">{{ $t(`invoice.status_${inv.status}`) }}</span>
+              <span class="invoice-total">{{ inv.currency }} {{ inv.total.toFixed(2) }}</span>
+              <span v-if="inv.due_date" class="invoice-due">{{ $t('invoice.due_date') }}: {{ formatDate(inv.due_date) }}</span>
+              <span v-if="inv.status === 'paid' && inv.payment_date" class="invoice-paid-info">
+                {{ $t('invoice.payment_info') }}: {{ formatDate(inv.payment_date) }}<template v-if="inv.payment_reference"> · {{ inv.payment_reference }}</template>
+              </span>
+            </div>
+            <div class="invoice-row-actions">
+              <a :href="invoicePdfUrl(inv.id)" target="_blank" class="btn btn-sm" :aria-label="$t('invoice.download_pdf')">PDF</a>
+              <template v-if="canManage">
+                <button
+                  v-if="inv.status !== 'credit_note'"
+                  class="icon-btn"
+                  @click="openEditLines(inv)"
+                  :aria-label="$t('invoice.edit_lines')"
+                  :title="$t('invoice.edit_lines')"
+                >✎</button>
+                <button
+                  v-if="inv.status === 'draft' || inv.status === 'sent'"
+                  class="btn btn-sm"
+                  @click="openSendEmail(inv)"
+                >{{ $t('invoice.send_email') }}</button>
+                <button v-if="inv.status === 'draft'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'sent')">{{ $t('invoice.mark_sent') }}</button>
+                <button v-if="inv.status === 'sent'" class="btn btn-sm btn-primary" @click="openRecordPayment(inv)">{{ $t('invoice.mark_paid') }}</button>
+                <button v-if="inv.status !== 'draft' && inv.status !== 'credit_note'" class="btn btn-sm" @click="changeInvoiceStatus(inv, 'draft')">{{ $t('invoice.mark_draft') }}</button>
+                <button
+                  v-if="inv.status === 'sent' || inv.status === 'paid'"
+                  class="btn btn-sm"
+                  @click="doIssueCreditNote(inv)"
+                >{{ $t('invoice.issue_credit_note') }}</button>
+                <button v-if="inv.status === 'draft'" class="icon-btn icon-danger" @click="doDeleteInvoice(inv)" :aria-label="$t('common.delete')" title="Delete">✕</button>
+                <button v-if="inv.status === 'credit_note'" class="btn btn-sm btn-danger" @click="doDeleteInvoice(inv)">{{ $t('invoice.void_credit_note') }}</button>
+              </template>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      </div><!-- end tab-panel-invoices -->
+
+      <!-- Contacts tab -->
+      <div id="tab-panel-contacts" role="tabpanel" aria-labelledby="tab-btn-contacts" v-show="activeTab === 'contacts'">
+
+      <!-- Contacts section -->
+      <section class="contacts-section">
+        <div class="section-header-row">
+          <h2>{{ $t('customer.contacts') }}</h2>
+          <button v-if="canManage" class="btn btn-primary btn-sm" @click="openAddContact">+ {{ $t('customer.add_contact') }}</button>
+        </div>
+        <div v-if="!contacts.length" class="empty-state-sm" style="padding:16px 0">
+          {{ $t('customer.no_contacts') }}
+        </div>
+        <div v-else class="contacts-list">
+          <div v-for="ct in contacts" :key="ct.id" class="contact-row">
+            <div class="contact-info">
+              <span class="contact-name">{{ ct.name }}</span>
+              <span v-if="ct.department" class="contact-detail">{{ ct.department }}</span>
+              <span v-if="ct.phone" class="contact-detail">
+                <span aria-hidden="true">📞</span> {{ ct.phone }}
+              </span>
+              <span v-if="ct.email" class="contact-detail">
+                <span aria-hidden="true">✉</span> {{ ct.email }}
+              </span>
+            </div>
+            <span v-if="ct.is_primary" class="badge-primary-contact">{{ $t('customer.contact_primary') }}</span>
+            <div v-if="canManage" class="contact-actions">
+              <button class="btn btn-sm" @click="openEditContact(ct)" :aria-label="$t('customer.edit_contact') + ': ' + ct.name">✎</button>
+              <button class="icon-btn icon-danger" @click="removeContact(ct)" :aria-label="$t('common.delete') + ' ' + ct.name">✕</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      </div><!-- end tab-panel-contacts -->
+
     </template>
+
+    <!-- Add / edit contact modal -->
+    <BaseModal
+      v-if="showContactModal"
+      :title="editingContact ? $t('customer.edit_contact') : $t('customer.add_contact')"
+      @close="showContactModal = false"
+    >
+      <div class="form-group">
+        <label class="form-label" for="ct-name">{{ $t('customer.contact_name') }}</label>
+        <input id="ct-name" class="form-input" type="text" v-model="contactForm.name" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="ct-dept">{{ $t('customer.contact_department') }}</label>
+        <input id="ct-dept" class="form-input" type="text" v-model="contactForm.department" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="ct-phone">{{ $t('customer.contact_phone') }}</label>
+        <input id="ct-phone" class="form-input" type="tel" v-model="contactForm.phone" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="ct-email">{{ $t('customer.contact_email') }}</label>
+        <input id="ct-email" class="form-input" type="email" v-model="contactForm.email" />
+      </div>
+      <div class="form-group form-check-row">
+        <input id="ct-primary" type="checkbox" v-model="contactForm.is_primary" />
+        <label for="ct-primary">{{ $t('customer.contact_is_primary') }}</label>
+      </div>
+      <template #footer>
+        <button class="btn" @click="showContactModal = false">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-primary" :disabled="!contactForm.name.trim()" @click="saveContact">{{ $t('common.save') }}</button>
+      </template>
+    </BaseModal>
 
     <!-- Edit customer modal -->
     <BaseModal v-if="showEdit" :title="$t('customer.edit')" @close="showEdit = false">
@@ -826,6 +931,7 @@ const distanceUnit = computed(() => auth.user?.distance_unit || 'km')
 
 const loading = ref(true)
 const detail = ref(null)
+const activeTab = ref('overview')
 
 const showEdit = ref(false)
 const editForm = ref({ name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
@@ -1090,10 +1196,13 @@ const sendEmailRendered = computed(() =>
 function openSendEmail(inv) {
   sendEmailInvoice.value = inv
   sendEmailPreview.value = false
+  const primary = contacts.value.find(c => c.is_primary)
+  const toEmail = primary?.email || detail.value?.customer?.email || ''
+  const firstName = primary ? primary.name.split(' ')[0] : 'customer'
   sendEmailForm.value = {
-    to: detail.value?.customer?.email || '',
+    to: toEmail,
     subject: `${t('invoice.invoices')} ${inv.invoice_number}`,
-    body: `Dear customer,\n\nPlease find your invoice **${inv.invoice_number}** attached.\n\nKind regards`,
+    body: `Dear ${firstName},\n\nPlease find your invoice **${inv.invoice_number}** attached.\n\nKind regards`,
   }
   showSendEmail.value = true
 }
@@ -1185,6 +1294,55 @@ async function doIssueCreditNote(inv) {
     ui.success(t('invoice.credit_note'))
   } catch {
     ui.error('Failed to create credit note')
+  }
+}
+
+// ── Contacts ─────────────────────────────────────────────────────────────────
+const contacts = ref([])
+const showContactModal = ref(false)
+const editingContact = ref(null)
+const contactForm = ref({ name: '', department: '', phone: '', email: '', is_primary: false })
+
+watch(() => detail.value?.contacts, (v) => { if (v) contacts.value = [...v] }, { immediate: true })
+
+function openAddContact() {
+  editingContact.value = null
+  contactForm.value = { name: '', department: '', phone: '', email: '', is_primary: contacts.value.length === 0 }
+  showContactModal.value = true
+}
+
+function openEditContact(ct) {
+  editingContact.value = ct
+  contactForm.value = { name: ct.name, department: ct.department || '', phone: ct.phone || '', email: ct.email || '', is_primary: ct.is_primary }
+  showContactModal.value = true
+}
+
+async function saveContact() {
+  try {
+    if (editingContact.value) {
+      const { data } = await customersApi.updateContact(custId.value, editingContact.value.id, contactForm.value)
+      const idx = contacts.value.findIndex(c => c.id === data.id)
+      if (idx >= 0) contacts.value.splice(idx, 1, data)
+      if (data.is_primary) contacts.value.forEach(c => { if (c.id !== data.id) c.is_primary = false })
+    } else {
+      const { data } = await customersApi.createContact(custId.value, contactForm.value)
+      if (data.is_primary) contacts.value.forEach(c => { c.is_primary = false })
+      contacts.value.push(data)
+      contacts.value.sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0))
+    }
+    showContactModal.value = false
+  } catch {
+    ui.error('Failed to save contact')
+  }
+}
+
+async function removeContact(ct) {
+  if (!await ui.confirm(t('customer.delete_contact_confirm'), { destructive: true })) return
+  try {
+    await customersApi.deleteContact(custId.value, ct.id)
+    contacts.value = contacts.value.filter(c => c.id !== ct.id)
+  } catch {
+    ui.error('Failed to delete contact')
   }
 }
 
@@ -1719,10 +1877,33 @@ async function deleteContract(grp) {
   display: flex;
   gap: 20px;
   align-items: flex-start;
-  margin-bottom: 32px;
+  margin-bottom: 0;
   padding-bottom: 24px;
   border-bottom: 1px solid var(--color-border);
 }
+
+.cust-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 28px;
+}
+
+.tab {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: -1px;
+  transition: color 0.15s;
+}
+.tab:hover { color: var(--color-text); }
+.tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+.tab:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
 
 .cust-logo-wrap { flex-shrink: 0; }
 .cust-logo { width: 64px; height: 64px; border-radius: 12px; object-fit: contain; }
@@ -1899,6 +2080,40 @@ async function deleteContract(grp) {
   padding: 2px 4px; font-size: 13px; line-height: 1; border-radius: 3px; flex-shrink: 0;
 }
 .btn-icon-xs:hover { background: var(--color-bg); color: var(--color-text); }
+
+.contacts-section { margin-top: 32px; }
+
+.contacts-list { display: flex; flex-direction: column; gap: 8px; }
+
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.contact-info { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.contact-name { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.contact-detail { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+
+.badge-primary-contact {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: #0ea5e9;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.contact-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.form-check-row { display: flex; align-items: center; gap: 8px; }
+.form-check-row input[type="checkbox"] { width: 16px; height: 16px; flex-shrink: 0; }
+.form-check-row label { font-size: 13px; color: var(--color-text); cursor: pointer; }
 
 .members-section { margin-top: 32px; }
 

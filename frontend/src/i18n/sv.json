@@ -116,7 +116,19 @@
     "billing_postal_code": "Postnummer",
     "billing_country": "Land",
     "vat_number": "Momsregistreringsnummer",
-    "po_reference": "PO / Referens"
+    "po_reference": "PO / Referens",
+    "contacts": "Kontaktpersoner",
+    "add_contact": "Lägg till kontakt",
+    "edit_contact": "Redigera kontakt",
+    "no_contacts": "Inga kontaktpersoner ännu.",
+    "contact_name": "Namn",
+    "contact_department": "Avdelning",
+    "contact_phone": "Telefon",
+    "contact_email": "E-post",
+    "contact_primary": "Primär",
+    "contact_is_primary": "Ange som primär kontakt",
+    "delete_contact_confirm": "Ta bort denna kontakt?",
+    "tab_overview": "Översikt"
   },
   "contract": {
     "contracts": "Kontrakt",
