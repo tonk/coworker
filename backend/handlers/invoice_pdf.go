@@ -358,7 +358,7 @@ func GetInvoicePDF(c *gin.Context) {
 		if companyTerms != "" {
 			pdf.SetFont(fontFamily, "", 9)
 			setTxt(pdf, clrMuted)
-			pdf.CellFormat(pdfBodyW, 5, companyTerms, "", 2, "L", false, 0, "")
+			pdf.CellFormat(pdfBodyW, 5, invoicePaymentTermsStr(companyTerms, tr), "", 2, "L", false, 0, "")
 		}
 	}
 
@@ -392,18 +392,47 @@ func invoiceDateLabel(t time.Time, tr pdfI18n) string {
 }
 
 // invoiceBillToLabel returns the "Bill To" label for the current locale.
-func invoiceBillToLabel(_ pdfI18n) string {
+func invoiceBillToLabel(tr pdfI18n) string {
+	if tr.BillTo != "" {
+		return tr.BillTo
+	}
 	return "Bill To"
 }
 
-// invoicePeriodLabel returns the "Period" label.
-func invoicePeriodLabel(_ pdfI18n) string { return "Period" }
+func invoicePeriodLabel(tr pdfI18n) string {
+	if tr.Period != "" {
+		return tr.Period
+	}
+	return "Period"
+}
 
-// invoiceDueDateLabel returns the "Due" label.
-func invoiceDueDateLabel(_ pdfI18n) string { return "Due" }
+func invoiceDueDateLabel(tr pdfI18n) string {
+	if tr.Due != "" {
+		return tr.Due
+	}
+	return "Due"
+}
 
-// invoicePaymentLabel returns the "Payment Details" label.
-func invoicePaymentLabel(_ pdfI18n) string { return "Payment Details" }
+func invoicePaymentLabel(tr pdfI18n) string {
+	if tr.PaymentDetails != "" {
+		return tr.PaymentDetails
+	}
+	return "Payment Details"
+}
 
-// invoiceNotesLabel returns the "Notes" label.
-func invoiceNotesLabel(_ pdfI18n) string { return "Notes" }
+func invoiceNotesLabel(tr pdfI18n) string {
+	if tr.Notes != "" {
+		return tr.Notes
+	}
+	return "Notes"
+}
+
+// invoicePaymentTermsStr formats a raw payment-terms value (e.g. "30") as a
+// human-readable string ("Net 30 days") using the locale template.
+func invoicePaymentTermsStr(terms string, tr pdfI18n) string {
+	tmpl := tr.PaymentTermsDays
+	if tmpl == "" {
+		tmpl = "Net %s days"
+	}
+	return fmt.Sprintf(tmpl, terms)
+}
