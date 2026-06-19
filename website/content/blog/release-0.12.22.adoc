@@ -1,0 +1,86 @@
+---
+title: "v0.12.22: Billing suite — invoices, contact persons, and tabbed customer view"
+date: "2026-06-19"
+author: "Ton Kersten"
+description: "A complete invoicing suite with email sending, credit notes, payment recording, line-item editing, contact persons per customer, and a tabbed layout that keeps long customer pages manageable."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` ships a significant set of billing improvements alongside a redesigned customer detail page that organises contracts, invoices, contacts, and helpdesk tickets into separate tabs.
+
+== Invoicing suite
+
+=== Send invoice by email
+
+Invoices in *Draft* or *Sent* status can now be emailed directly from WarmDesk.
+Click *Send by Email* on any invoice row to open a compose dialog.
+The *To* field and greeting are pre-filled from the customer's primary contact (see below).
+The message body supports Markdown — **bold**, _italic_, bullet lists, and links — with a live *Preview* tab so you can see the rendered email before sending.
+WarmDesk sends a multipart email with a plain-text fallback and the invoice PDF attached.
+
+[NOTE]
+====
+Email delivery requires SMTP to be configured in Admin → Settings → Outgoing Mail.
+====
+
+=== Edit line items
+
+The pencil icon on every invoice opens an *Edit Lines* dialog where you can change descriptions, quantities, and unit prices for any existing line.
+You can also add new manual lines (quantity × unit price) or comment lines — full-width italic rows used for notes such as _"On 2026-06-09 only charged 2 hours due to client being unprepared"_.
+The invoice subtotal, VAT, and total recalculate automatically on save.
+
+=== Record payment
+
+Instead of a one-click status change, *Mark Paid* now opens a *Record Payment* dialog where you enter the payment date, amount received, and an optional reference number (bank transaction ID, cheque number, and so on).
+The date and reference are shown on the invoice row so you always have a quick audit trail.
+
+=== Credit notes
+
+For invoices that have already been sent or paid, an *Issue Credit Note* button creates a matching negating invoice — all line amounts are flipped — with status *Credit Note*.
+The original invoice gains an amber badge showing the credit note number.
+Credit notes that were issued in error can be voided (deleted) with *Void Credit Note*.
+Credit note PDFs show *Credit Note* as the document heading rather than *Invoice*.
+
+=== VAT exemption
+
+A per-customer *VAT-exempt* flag suppresses the VAT row in PDFs entirely and inserts the locale-appropriate statutory note (_"BTW verlegd"_, _"Reverse charge"_, and so on) for all 12 supported languages.
+
+== Contact persons
+
+Each customer now has a *Contacts* tab listing contact persons with name, department, phone, and email.
+Mark one contact as *Primary* and WarmDesk will pre-fill the *To* field and greeting in the Send by Email dialog automatically.
+
+Contact management (add, edit, delete) is available to customer admins and global admins.
+
+== Tabbed customer detail page
+
+The customer detail page is now organised into four tabs:
+
+[cols="1,3"]
+|===
+| Tab | Contents
+
+| *Overview*
+| Contracts, linked projects, team members, and group access
+
+| *Invoices*
+| Full invoice list with all actions (edit, send, pay, credit note, PDF download)
+
+| *Contacts*
+| Contact persons for this customer
+
+| *Tickets*
+| Links to the helpdesk ticket list for this customer (only shown when helpdesk is enabled)
+|===
+
+Tabs are directly linkable — `/customers/:id?tab=invoices` opens the Invoices tab, for example.
+The helpdesk ticket list page shows the same tab bar so navigation between sections is seamless.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Run the new version in-place — no manual database migration is required.
+AutoMigrate adds the new `customer_contacts` table and the new columns on `invoices` and `invoice_line_items` on first boot.
