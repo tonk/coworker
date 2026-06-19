@@ -235,6 +235,8 @@
     "credits_invoice": "Krediterar",
     "credit_note_confirm": "Kreditreikningur fyrir {number} verður búinn til. Halda áfram?",
     "no_email_configured": "Tölvupóstur er ekki stilltur. Sæktu PDF og sendu handvirkt.",
+    "add_comment_line": "Bæta við athugasemd",
+    "comment_placeholder": "t.d. Þann 2026-06-09 voru aðeins 2 klukkustundir rukkaðar vegna ófullnægjandi undirbúnings",
     "credit_note_issued": "Kreditreikningur gefinn út",
     "void_credit_note": "Ógilda kreditreikning",
     "void_credit_note_confirm": "Eyða kreditreikningi {number} varanlega?"

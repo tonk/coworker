@@ -235,6 +235,8 @@
     "credits_invoice": "Gutschrift für",
     "credit_note_confirm": "Eine Gutschrift für {number} wird erstellt. Fortfahren?",
     "no_email_configured": "E-Mail ist nicht konfiguriert. PDF herunterladen und manuell senden.",
+    "add_comment_line": "Kommentar hinzufügen",
+    "comment_placeholder": "z. B. Am 2026-06-09 nur 2 Stunden berechnet, da unvorbereitet",
     "credit_note_issued": "Gutschrift ausgestellt",
     "void_credit_note": "Gutschrift stornieren",
     "void_credit_note_confirm": "Gutschrift {number} endgültig löschen?"

@@ -235,6 +235,8 @@
     "credits_invoice": "Krediterar",
     "credit_note_confirm": "En kreditnota för {number} skapas. Fortsätt?",
     "no_email_configured": "E-post är inte konfigurerad. Ladda ner PDF och skicka manuellt.",
+    "add_comment_line": "Lägg till kommentar",
+    "comment_placeholder": "t.ex. Den 2026-06-09 fakturerades bara 2 timmar pga. bristande förberedelse",
     "credit_note_issued": "Kreditnota utfärdad",
     "void_credit_note": "Makulera kreditnota",
     "void_credit_note_confirm": "Ta bort kreditnota {number} permanent?"

@@ -257,9 +257,18 @@ func buildInvoicePDF(invoice models.Invoice, lang, fontFamily, distanceUnit stri
 		} else {
 			setFill(pdf, clrWhite)
 		}
+		pdf.SetX(pdfMargin)
+
+		if li.IsComment {
+			// Comment rows span the full width in italic muted text.
+			pdf.SetFont(fontFamily, "I", 8)
+			setTxt(pdf, clrMuted)
+			pdf.CellFormat(pdfBodyW, pdfRowH, truncStr(li.Description, 100), "", 2, "L", alt, 0, "")
+			continue
+		}
+
 		setTxt(pdf, clrText)
 		pdf.SetFont(fontFamily, "", 8)
-		pdf.SetX(pdfMargin)
 		pdf.CellFormat(colDate, pdfRowH, li.Date, "", 0, "L", alt, 0, "")
 		pdf.CellFormat(colProj, pdfRowH, truncStr(li.ProjectName, 22), "", 0, "L", alt, 0, "")
 		pdf.CellFormat(descW, pdfRowH, truncStr(li.Description, 40), "", 0, "L", alt, 0, "")

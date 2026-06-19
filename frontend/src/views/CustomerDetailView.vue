@@ -633,38 +633,52 @@
         </thead>
         <tbody>
           <tr v-for="(li, idx) in editLineItems" :key="idx">
-            <td><input class="form-input form-input-sm" type="text" v-model="li.date" :aria-label="$t('invoice.line_date')" /></td>
-            <td><input class="form-input form-input-sm" type="text" v-model="li.description" :aria-label="$t('invoice.line_description')" /></td>
-            <td class="num">
-              <input
-                v-if="li.is_manual"
-                class="form-input form-input-sm num-input"
-                type="number" min="0" step="0.01"
-                v-model.number="li.quantity"
-                @input="li.amount = +(li.quantity * li.unit_price).toFixed(2)"
-                :aria-label="$t('invoice.manual_line_qty')"
-              />
-              <span v-else>{{ li.minutes > 0 ? fmtMinutes(li.minutes) : '' }}</span>
-            </td>
-            <td class="num">
-              <input
-                v-if="li.is_manual"
-                class="form-input form-input-sm num-input"
-                type="number" min="0" step="0.01"
-                v-model.number="li.unit_price"
-                @input="li.amount = +(li.quantity * li.unit_price).toFixed(2)"
-                :aria-label="$t('invoice.manual_line_price')"
-              />
-              <span v-else>{{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : (li.price_per_km > 0 ? li.price_per_km.toFixed(2) : '') }}</span>
-            </td>
-            <td class="num">
-              <input
-                class="form-input form-input-sm num-input"
-                type="number" step="0.01"
-                v-model.number="li.amount"
-                :aria-label="$t('invoice.line_amount')"
-              />
-            </td>
+            <template v-if="li.is_comment">
+              <td colspan="5" style="padding:2px 4px">
+                <input
+                  class="form-input form-input-sm"
+                  style="width:100%;font-style:italic;color:var(--color-text-muted)"
+                  type="text"
+                  v-model="li.description"
+                  :placeholder="$t('invoice.comment_placeholder')"
+                  :aria-label="$t('invoice.add_comment_line')"
+                />
+              </td>
+            </template>
+            <template v-else>
+              <td><input class="form-input form-input-sm" type="text" v-model="li.date" :aria-label="$t('invoice.line_date')" /></td>
+              <td><input class="form-input form-input-sm" type="text" v-model="li.description" :aria-label="$t('invoice.line_description')" /></td>
+              <td class="num">
+                <input
+                  v-if="li.is_manual"
+                  class="form-input form-input-sm num-input"
+                  type="number" min="0" step="0.01"
+                  v-model.number="li.quantity"
+                  @input="li.amount = +(li.quantity * li.unit_price).toFixed(2)"
+                  :aria-label="$t('invoice.manual_line_qty')"
+                />
+                <span v-else>{{ li.minutes > 0 ? fmtMinutes(li.minutes) : '' }}</span>
+              </td>
+              <td class="num">
+                <input
+                  v-if="li.is_manual"
+                  class="form-input form-input-sm num-input"
+                  type="number" min="0" step="0.01"
+                  v-model.number="li.unit_price"
+                  @input="li.amount = +(li.quantity * li.unit_price).toFixed(2)"
+                  :aria-label="$t('invoice.manual_line_price')"
+                />
+                <span v-else>{{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : (li.price_per_km > 0 ? li.price_per_km.toFixed(2) : '') }}</span>
+              </td>
+              <td class="num">
+                <input
+                  class="form-input form-input-sm num-input"
+                  type="number" step="0.01"
+                  v-model.number="li.amount"
+                  :aria-label="$t('invoice.line_amount')"
+                />
+              </td>
+            </template>
             <td>
               <button class="icon-btn icon-danger" @click="editLineItems.splice(idx,1)" :aria-label="$t('common.delete')">✕</button>
             </td>
@@ -672,8 +686,9 @@
         </tbody>
       </table>
     </div>
-    <div style="margin-top:8px">
+    <div style="margin-top:8px;display:flex;gap:8px">
       <button class="btn btn-sm" @click="addManualLine">+ {{ $t('invoice.add_manual_line') }}</button>
+      <button class="btn btn-sm" @click="addCommentLine">+ {{ $t('invoice.add_comment_line') }}</button>
     </div>
     <div class="inv-preview-totals" style="margin-top:8px">
       <span>{{ $t('invoice.total') }}: <strong>{{ editingInvoice?.currency }} {{ editLinesTotal.toFixed(2) }}</strong></span>
@@ -997,6 +1012,21 @@ function addManualLine() {
     amount: 0,
     currency: editingInvoice.value?.currency || '€',
     is_manual: true,
+  })
+}
+
+function addCommentLine() {
+  editLineItems.value.push({
+    date: '',
+    project_name: '',
+    description: '',
+    minutes: 0,
+    hourly_rate: 0,
+    distance: 0,
+    price_per_km: 0,
+    amount: 0,
+    currency: editingInvoice.value?.currency || '€',
+    is_comment: true,
   })
 }
 

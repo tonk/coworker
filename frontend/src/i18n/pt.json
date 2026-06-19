@@ -235,6 +235,8 @@
     "credits_invoice": "Credita",
     "credit_note_confirm": "Será criada uma nota de crédito para {number}. Continuar?",
     "no_email_configured": "O e-mail não está configurado. Descarregue o PDF e envie manualmente.",
+    "add_comment_line": "Adicionar comentário",
+    "comment_placeholder": "ex. Em 2026-06-09 foram cobradas apenas 2 horas por falta de preparação",
     "credit_note_issued": "Nota de crédito emitida",
     "void_credit_note": "Anular nota de crédito",
     "void_credit_note_confirm": "Eliminar permanentemente a nota de crédito {number}?"

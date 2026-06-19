@@ -50,4 +50,5 @@ type InvoiceLineItem struct {
 	Quantity    float64 `json:"quantity,omitempty"`
 	UnitPrice   float64 `json:"unit_price,omitempty"`
 	IsManual    bool    `json:"is_manual,omitempty"`
+	IsComment   bool    `json:"is_comment,omitempty"`
 }

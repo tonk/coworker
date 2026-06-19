@@ -235,6 +235,8 @@
     "credits_invoice": "Krediterer",
     "credit_note_confirm": "Der oprettes en kreditnota for {number}. Fortsæt?",
     "no_email_configured": "E-mail er ikke konfigureret. Download PDF og send manuelt.",
+    "add_comment_line": "Tilføj kommentar",
+    "comment_placeholder": "f.eks. Den 2026-06-09 kun faktureret 2 timer pga. manglende forberedelse",
     "credit_note_issued": "Kreditnota udstedt",
     "void_credit_note": "Annuller kreditnota",
     "void_credit_note_confirm": "Slet kreditnota {number} permanent?"

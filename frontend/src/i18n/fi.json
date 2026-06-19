@@ -235,6 +235,8 @@
     "credits_invoice": "Hyvittää",
     "credit_note_confirm": "Hyvityslasku laskulle {number} luodaan. Jatketaanko?",
     "no_email_configured": "Sähköposti ei ole määritetty. Lataa PDF ja lähetä manuaalisesti.",
+    "add_comment_line": "Lisää kommentti",
+    "comment_placeholder": "esim. 2026-06-09 laskutettiin vain 2 tuntia, koska ei oltu valmistauduttu",
     "credit_note_issued": "Hyvityslasku kirjoitettu",
     "void_credit_note": "Mitätöi hyvityslasku",
     "void_credit_note_confirm": "Poistetaanko hyvityslasku {number} pysyvästi?"

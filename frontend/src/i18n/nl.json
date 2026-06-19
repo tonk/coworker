@@ -235,6 +235,8 @@
     "credits_invoice": "Crediteert",
     "credit_note_confirm": "Dit maakt een creditnota aan voor {number}. Doorgaan?",
     "no_email_configured": "E-mail is niet geconfigureerd. Download de PDF en verstuur handmatig.",
+    "add_comment_line": "Opmerking toevoegen",
+    "comment_placeholder": "bijv. Op 2026-06-09 slechts 2 uur gefactureerd, wegens onvoorbereidheid",
     "credit_note_issued": "Creditnota aangemaakt",
     "void_credit_note": "Creditnota annuleren",
     "void_credit_note_confirm": "Creditnota {number} definitief verwijderen?"
