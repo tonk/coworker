@@ -252,7 +252,18 @@
     "comment_placeholder": "f.eks. Den 2026-06-09 ble bare 2 timer fakturert pga. manglende forberedelse",
     "credit_note_issued": "Kreditnota utstedt",
     "void_credit_note": "Annuller kreditnota",
-    "void_credit_note_confirm": "Slett kreditnota {number} permanent?"
+    "void_credit_note_confirm": "Slett kreditnota {number} permanent?",
+    "overdue": "Forfalt",
+    "total_invoiced": "Totalt fakturert",
+    "outstanding": "Utestående",
+    "overdue_amount": "Forfalt",
+    "paid_total": "Totalt betalt",
+    "payment_method": "Betalingsmetode",
+    "payment_method_bank": "Bankoverføring",
+    "payment_method_card": "Kredit-/debetkort",
+    "payment_method_cash": "Kontant",
+    "payment_method_other": "Annet",
+    "load_template": "Last fra mal"
   },
   "subcard": {
     "sub_cards": "Delkort",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Tidsregistreringsprosjekter",
     "tt_customers_title": "Tidsregistreringskunder",
     "show_inactive": "Vis inaktive",
-    "new_user": "Ny bruker"
+    "new_user": "Ny bruker",
+    "invoice_templates": "Fakturamallar",
+    "invoice_template_new": "Ny mal",
+    "invoice_template_edit": "Rediger mal",
+    "invoice_template_no": "Ingen fakturamallar ennå.",
+    "invoice_template_name": "Malnavn",
+    "invoice_template_vat": "Standard momssats (%)",
+    "invoice_template_currency": "Standardvaluta",
+    "invoice_template_notes": "Notater",
+    "invoice_template_saved": "Mal lagret.",
+    "invoice_template_deleted": "Mal slettet."
   },
   "report": {
     "title": "Tidsrapport",

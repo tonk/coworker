@@ -1,0 +1,30 @@
+meta {
+  name: Update Invoice
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/invoices/{{invoiceId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "status": "sent",
+    "due_date": "2026-06-30",
+    "notes": "Updated notes"
+  }
+}
+
+docs {
+  Patch-style update — all fields optional.
+  Only draft invoices may have their content edited.
+  status: draft | sent | paid | credit_note
+  payment_method (on paid): bank | card | cash | other
+}

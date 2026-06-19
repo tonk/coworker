@@ -1,0 +1,32 @@
+meta {
+  name: Create Invoice Template (admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/admin/invoice-templates
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Monthly Support",
+    "line_items": [
+      { "description": "Monthly support retainer", "quantity": 1, "unit_price": 500.00 }
+    ],
+    "default_vat_rate": 21.0,
+    "default_currency": "EUR",
+    "notes": "Monthly retainer — 8 h included"
+  }
+}
+
+docs {
+  Admin only. Creates a new invoice template.
+  name is required; all other fields are optional.
+}

@@ -1,0 +1,20 @@
+meta {
+  name: List Customer Invoices
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/invoices
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Returns all invoices for the given customer, newest first.
+  Requires customer access (direct assignment, group membership, or admin role).
+}

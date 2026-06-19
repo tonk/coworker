@@ -252,7 +252,18 @@
     "comment_placeholder": "z. B. Am 2026-06-09 nur 2 Stunden berechnet, da unvorbereitet",
     "credit_note_issued": "Gutschrift ausgestellt",
     "void_credit_note": "Gutschrift stornieren",
-    "void_credit_note_confirm": "Gutschrift {number} endgültig löschen?"
+    "void_credit_note_confirm": "Gutschrift {number} endgültig löschen?",
+    "overdue": "Überfällig",
+    "total_invoiced": "Gesamt fakturiert",
+    "outstanding": "Ausstehend",
+    "overdue_amount": "Überfällig",
+    "paid_total": "Gesamt bezahlt",
+    "payment_method": "Zahlungsmethode",
+    "payment_method_bank": "Überweisung",
+    "payment_method_card": "Kredit-/Debitkarte",
+    "payment_method_cash": "Bargeld",
+    "payment_method_other": "Sonstige",
+    "load_template": "Aus Vorlage laden"
   },
   "subcard": {
     "sub_cards": "Teilaufgaben",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Zeiterfassungsprojekte",
     "tt_customers_title": "Zeiterfassungskunden",
     "show_inactive": "Inaktive anzeigen",
-    "new_user": "Neuer Benutzer"
+    "new_user": "Neuer Benutzer",
+    "invoice_templates": "Rechnungsvorlagen",
+    "invoice_template_new": "Neue Vorlage",
+    "invoice_template_edit": "Vorlage bearbeiten",
+    "invoice_template_no": "Noch keine Rechnungsvorlagen.",
+    "invoice_template_name": "Vorlagenname",
+    "invoice_template_vat": "Standard-MwSt.-Satz (%)",
+    "invoice_template_currency": "Standardwährung",
+    "invoice_template_notes": "Notizen",
+    "invoice_template_saved": "Vorlage gespeichert.",
+    "invoice_template_deleted": "Vorlage gelöscht."
   },
   "update": {
     "available": "Eine neue Version von WarmDesk ist verfügbar: v{version}.",

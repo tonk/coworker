@@ -14,6 +14,7 @@
           <button v-if="!systemStore.isTimetrackingMode" :class="['tab', { active: tab === 'sla' }]" @click="tab = 'sla'" role="tab" :aria-selected="tab === 'sla'" aria-controls="tab-panel-sla" id="tab-btn-sla">{{ $t('sla.title') }}</button>
           <button v-if="!systemStore.isTimetrackingMode" :class="['tab', { active: tab === 'macros' }]" @click="tab = 'macros'" role="tab" :aria-selected="tab === 'macros'" aria-controls="tab-panel-macros" id="tab-btn-macros">{{ $t('macro.title') }}</button>
           <button v-if="!systemStore.isTimetrackingMode" :class="['tab', { active: tab === 'ticket-checklists' }]" @click="tab = 'ticket-checklists'" role="tab" :aria-selected="tab === 'ticket-checklists'" aria-controls="tab-panel-ticket-checklists" id="tab-btn-ticket-checklists">{{ $t('ticketChecklist.title') }}</button>
+          <button :class="['tab', { active: tab === 'invoice-templates' }]" @click="tab = 'invoice-templates'" role="tab" :aria-selected="tab === 'invoice-templates'" aria-controls="tab-panel-invoice-templates" id="tab-btn-invoice-templates">{{ $t('admin.invoice_templates') }}</button>
           <button :class="['tab', { active: tab === 'backup' }]" @click="tab = 'backup'; loadBackups(); loadSettings()" role="tab" :aria-selected="tab === 'backup'" aria-controls="tab-panel-backup" id="tab-btn-backup">{{ $t('admin.backup_tab') }}</button>
         </div>
 
@@ -1019,6 +1020,11 @@
           <TicketChecklistTemplatesTab />
         </div>
 
+        <!-- Invoice templates tab -->
+        <div v-show="tab === 'invoice-templates'" role="tabpanel" id="tab-panel-invoice-templates" aria-labelledby="tab-btn-invoice-templates">
+          <InvoiceTemplatesTab />
+        </div>
+
         <!-- Backup / Restore tab -->
         <div v-show="tab === 'backup'" role="tabpanel" id="tab-panel-backup" aria-labelledby="tab-btn-backup">
           <!-- Scheduled backups -->
@@ -1837,6 +1843,7 @@ import { useDateFormat } from '@/composables/useDateFormat'
 import SlaPoliciesTab from '@/components/admin/SlaPoliciesTab.vue'
 import MacrosTab from '@/components/admin/MacrosTab.vue'
 import TicketChecklistTemplatesTab from '@/components/admin/TicketChecklistTemplatesTab.vue'
+import InvoiceTemplatesTab from '@/components/admin/InvoiceTemplatesTab.vue'
 import HelpIcon from '@/components/common/HelpIcon.vue'
 
 const { t } = useI18n()

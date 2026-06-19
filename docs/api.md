@@ -12,6 +12,9 @@
    - [GitLab](#53-gitlab)
 6. [Card References](#6-card-references)
 7. [Response Formats](#7-response-formats)
+8. [Invoices](#8-invoices)
+9. [Invoice Templates](#9-invoice-templates)
+10. [Customer Contacts](#10-customer-contacts)
 
 See also: [Interactive API (Swagger UI)](#interactive-api-swagger-ui) · [Bruno Collection](#bruno-collection)
 
@@ -70,6 +73,9 @@ collections as plain text files — no account or cloud sync required.
 | `helpdesk` | Customer ticket list, ticket detail, messages, tags, links, macros |
 | `helpdesk-admin` | SLA policies, macros, checklist templates |
 | `helpdesk-inbox` | Inbox list, inbox ticket detail, move, spam |
+| `customers` | Invoice CRUD, invoice send/credit-note/PDF, customer contacts |
+| `invoices` | Global invoice list |
+| `invoice-templates` | List, create, update, delete invoice templates (admin) |
 | `admin` | User management, system settings, backup |
 | `ticket-api` | Create card, add comment, move card (API key auth) |
 
@@ -559,3 +565,335 @@ Common status codes:
 
 All dates and timestamps are returned as ISO 8601 strings in UTC:
 `2026-03-29T14:05:00Z`
+
+---
+
+## 8. Invoices
+
+Invoices are linked to customers. All endpoints require authentication and the
+user must have access to the customer (`CustomerAccess` row, group-based access,
+or the global `admin` role).
+
+### List invoices for a customer
+
+```
+GET /api/v1/customers/{customerId}/invoices
+```
+
+Returns all invoices for the customer, newest first.
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "customer_id": 3,
+    "invoice_number": "INV-0001",
+    "period_start": "2026-05-01",
+    "period_end": "2026-05-31",
+    "due_date": "2026-06-15",
+    "status": "sent",
+    "currency": "EUR",
+    "vat_rate": 21.0,
+    "subtotal": 1200.00,
+    "vat_amount": 252.00,
+    "total": 1452.00,
+    "notes": "",
+    "payment_method": "",
+    "credited_invoice_id": null,
+    "created_at": "2026-06-01T08:00:00Z",
+    "updated_at": "2026-06-01T08:00:00Z"
+  }
+]
+```
+
+### Get a single invoice
+
+```
+GET /api/v1/customers/{customerId}/invoices/{invoiceId}
+```
+
+Returns the invoice with its full line items array.
+
+### Create an invoice
+
+```
+POST /api/v1/customers/{customerId}/invoices
+```
+
+**Body**
+
+```json
+{
+  "period_start":    "2026-05-01",
+  "period_end":      "2026-05-31",
+  "due_date":        "2026-06-15",
+  "vat_rate":        21.0,
+  "currency":        "EUR",
+  "notes":           "May services",
+  "line_items": [
+    { "description": "Backend development", "quantity": 20, "unit_price": 95.00 },
+    { "description": "DevOps consulting",   "quantity": 4,  "unit_price": 110.00 }
+  ]
+}
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `period_start` | string (date) | yes | `YYYY-MM-DD` |
+| `period_end` | string (date) | yes | `YYYY-MM-DD` |
+| `due_date` | string (date) | no | `YYYY-MM-DD` |
+| `vat_rate` | float | no | Default 0 |
+| `currency` | string | no | ISO 4217 code, e.g. `EUR` |
+| `notes` | string | no | Free text; appears on the PDF |
+| `line_items` | array | no | See line item fields below |
+
+**Line item fields**
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `description` | string | Row label |
+| `quantity` | float | Number of units |
+| `unit_price` | float | Price per unit (exc. VAT) |
+
+The invoice is created in `draft` status.
+
+**Response** `201 Created` — the created invoice object.
+
+### Update an invoice
+
+```
+PUT /api/v1/customers/{customerId}/invoices/{invoiceId}
+```
+
+Accepts the same body as create. All fields are optional (patch-style). Only
+`draft` invoices may be edited — attempting to modify a `sent` or `paid` invoice
+returns `403 Forbidden`.
+
+Additional field available on update:
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `status` | string | `draft` / `sent` / `paid` / `credit_note` |
+| `payment_method` | string | `bank` / `card` / `cash` / `other` — recorded when marking as paid |
+
+### Delete an invoice
+
+```
+DELETE /api/v1/customers/{customerId}/invoices/{invoiceId}
+```
+
+Only `draft` invoices may be deleted. Returns `204 No Content` on success.
+
+### Send an invoice (mark as sent)
+
+```
+POST /api/v1/customers/{customerId}/invoices/{invoiceId}/send
+```
+
+No body required. Changes the invoice status to `sent`.
+
+**Response** `200 OK` — the updated invoice object.
+
+### Create a credit note
+
+```
+POST /api/v1/customers/{customerId}/invoices/{invoiceId}/credit-note
+```
+
+Creates a new invoice that credits the original. The new invoice has:
+- `status` set to `credit_note`
+- `credited_invoice_id` set to the original invoice's ID
+- Line items with negated amounts
+- The original invoice is marked void (status set to `credit_note` as well)
+
+No body required.
+
+**Response** `201 Created` — the new credit-note invoice object.
+
+### Download invoice PDF
+
+```
+GET /api/v1/customers/{customerId}/invoices/{invoiceId}/pdf?lang=en
+```
+
+Returns the PDF as `application/pdf`. The `lang` query parameter selects the
+PDF language (default `en`; supported: `en`, `nl`, `de`, `fr`, `es`, `da`,
+`sv`, `nb`, `fi`, `is`, `pt`, `it`).
+
+### Global invoice list
+
+```
+GET /api/v1/invoices
+```
+
+Returns invoices across all customers the requesting user has access to.
+
+**Query parameters**
+
+| Parameter | Type | Notes |
+|-----------|------|-------|
+| `customer_id` | number | Filter to a single customer |
+| `status` | string | Filter by status: `draft`, `sent`, `paid`, `credit_note` |
+
+**Response** `200 OK` — array of invoice objects (same schema as above), each
+with a nested `customer` object `{ id, name }`.
+
+---
+
+## 9. Invoice Templates
+
+Invoice templates let admins define reusable sets of line items and default
+settings that users can apply when creating a new invoice.
+
+### List templates
+
+```
+GET /api/v1/invoice-templates
+```
+
+Returns all active templates. No admin role required — any authenticated user
+may read templates.
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Monthly Support",
+    "line_items": "[{\"description\":\"Monthly support\",\"quantity\":1,\"unit_price\":500}]",
+    "default_vat_rate": 21.0,
+    "default_currency": "EUR",
+    "notes": "Monthly retainer — 8 h included",
+    "created_at": "2026-05-01T00:00:00Z",
+    "updated_at": "2026-05-01T00:00:00Z"
+  }
+]
+```
+
+`line_items` is a JSON-encoded string. Parse it to get the array.
+
+### Create a template (admin only)
+
+```
+POST /api/v1/admin/invoice-templates
+```
+
+**Body**
+
+```json
+{
+  "name":              "Monthly Support",
+  "line_items":        [{ "description": "Monthly support", "quantity": 1, "unit_price": 500 }],
+  "default_vat_rate":  21.0,
+  "default_currency":  "EUR",
+  "notes":             "Monthly retainer — 8 h included"
+}
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `name` | string | yes | Unique display name |
+| `line_items` | array | no | Pre-defined line items (same schema as invoice line items) |
+| `default_vat_rate` | float | no | Pre-fills the VAT rate field |
+| `default_currency` | string | no | Pre-fills the currency field |
+| `notes` | string | no | Default notes text for the invoice |
+
+**Response** `201 Created` — the created template object.
+
+### Update a template (admin only)
+
+```
+PUT /api/v1/admin/invoice-templates/{id}
+```
+
+Same body as create; all fields optional.
+
+**Response** `200 OK` — the updated template object.
+
+### Delete a template (admin only)
+
+```
+DELETE /api/v1/admin/invoice-templates/{id}
+```
+
+**Response** `204 No Content`
+
+---
+
+## 10. Customer Contacts
+
+Contact persons are stored per customer and appear in the customer detail view.
+They are informational — they are not WarmDesk user accounts.
+
+### List contacts
+
+```
+GET /api/v1/customers/{customerId}/contacts
+```
+
+**Response** `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "customer_id": 3,
+    "name": "Alice Bakker",
+    "email": "alice@example.com",
+    "phone": "+31 20 123 4567",
+    "department": "Procurement",
+    "is_primary": true,
+    "created_at": "2026-05-01T00:00:00Z",
+    "updated_at": "2026-05-01T00:00:00Z"
+  }
+]
+```
+
+### Create a contact
+
+```
+POST /api/v1/customers/{customerId}/contacts
+```
+
+**Body**
+
+```json
+{
+  "name":       "Alice Bakker",
+  "email":      "alice@example.com",
+  "phone":      "+31 20 123 4567",
+  "department": "Procurement",
+  "is_primary": true
+}
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `name` | string | yes | Contact full name |
+| `email` | string | no | Email address |
+| `phone` | string | no | Phone number |
+| `department` | string | no | Department or job title at the customer |
+| `is_primary` | bool | no | Whether this is the primary contact; setting to `true` clears the flag on all other contacts for this customer |
+
+**Response** `201 Created` — the created contact object.
+
+### Update a contact
+
+```
+PUT /api/v1/customers/{customerId}/contacts/{contactId}
+```
+
+Same body as create; all fields optional.
+
+**Response** `200 OK` — the updated contact object.
+
+### Delete a contact
+
+```
+DELETE /api/v1/customers/{customerId}/contacts/{contactId}
+```
+
+**Response** `204 No Content`

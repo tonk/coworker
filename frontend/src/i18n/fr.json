@@ -252,7 +252,18 @@
     "comment_placeholder": "ex. Le 2026-06-09, seulement 2 heures facturées, faute de préparation",
     "credit_note_issued": "Note de crédit émise",
     "void_credit_note": "Annuler la note de crédit",
-    "void_credit_note_confirm": "Supprimer définitivement la note de crédit {number} ?"
+    "void_credit_note_confirm": "Supprimer définitivement la note de crédit {number} ?",
+    "overdue": "En retard",
+    "total_invoiced": "Total facturé",
+    "outstanding": "En attente",
+    "overdue_amount": "En retard",
+    "paid_total": "Total payé",
+    "payment_method": "Mode de paiement",
+    "payment_method_bank": "Virement bancaire",
+    "payment_method_card": "Carte bancaire",
+    "payment_method_cash": "Espèces",
+    "payment_method_other": "Autre",
+    "load_template": "Charger depuis un modèle"
   },
   "subcard": {
     "sub_cards": "Sous-tâches",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Projets de suivi du temps",
     "tt_customers_title": "Clients de suivi du temps",
     "show_inactive": "Afficher inactifs",
-    "new_user": "Nouvel utilisateur"
+    "new_user": "Nouvel utilisateur",
+    "invoice_templates": "Modèles de facture",
+    "invoice_template_new": "Nouveau modèle",
+    "invoice_template_edit": "Modifier le modèle",
+    "invoice_template_no": "Aucun modèle de facture.",
+    "invoice_template_name": "Nom du modèle",
+    "invoice_template_vat": "Taux de TVA par défaut (%)",
+    "invoice_template_currency": "Devise par défaut",
+    "invoice_template_notes": "Notes",
+    "invoice_template_saved": "Modèle enregistré.",
+    "invoice_template_deleted": "Modèle supprimé."
   },
   "update": {
     "available": "Une nouvelle version de WarmDesk est disponible : v{version}.",

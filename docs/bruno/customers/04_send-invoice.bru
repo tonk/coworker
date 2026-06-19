@@ -1,0 +1,19 @@
+meta {
+  name: Send Invoice
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/invoices/{{invoiceId}}/send
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Marks the invoice as sent (status → sent). No body required.
+}

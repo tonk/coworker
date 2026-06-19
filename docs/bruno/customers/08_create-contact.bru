@@ -1,0 +1,31 @@
+meta {
+  name: Create Contact
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/contacts
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Alice Bakker",
+    "email": "alice@example.com",
+    "phone": "+31 20 123 4567",
+    "department": "Procurement",
+    "is_primary": true
+  }
+}
+
+docs {
+  Creates a new contact person for the customer.
+  name is required; email, phone, department, and is_primary are optional.
+  Setting is_primary: true clears the flag on all other contacts for this customer.
+}

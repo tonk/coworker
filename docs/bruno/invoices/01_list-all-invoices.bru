@@ -1,0 +1,28 @@
+meta {
+  name: List All Invoices
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/invoices
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+params:query {
+  ~customer_id: 3
+  ~status: sent
+}
+
+docs {
+  Returns invoices across all customers the authenticated user has access to.
+  Optional query params:
+    customer_id — filter to a single customer
+    status      — draft | sent | paid | credit_note
+  Each invoice includes a nested customer object { id, name }.
+}

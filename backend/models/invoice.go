@@ -30,10 +30,23 @@ type Invoice struct {
 	PaymentDate       *time.Time `json:"payment_date,omitempty"`
 	PaymentAmount     *float64   `json:"payment_amount,omitempty"`
 	PaymentReference  string     `gorm:"size:200" json:"payment_reference"`
+	PaymentMethod     string     `gorm:"size:50" json:"payment_method"`
 	CreditedInvoiceID *uint      `gorm:"index" json:"credited_invoice_id,omitempty"`
 	CreatedByID       *uint      `gorm:"index" json:"created_by_id,omitempty"`
 	CreatedAt         time.Time  `json:"created_at"`
 	UpdatedAt         time.Time  `json:"updated_at"`
+}
+
+// InvoiceTemplate is a reusable set of line items for quickly creating invoices.
+type InvoiceTemplate struct {
+	ID              uint      `gorm:"primaryKey" json:"id"`
+	Name            string    `gorm:"size:200;not null" json:"name"`
+	LineItems       string    `gorm:"type:text" json:"line_items"` // JSON-encoded []InvoiceLineItem
+	DefaultVATRate  float64   `gorm:"default:0" json:"default_vat_rate"`
+	DefaultCurrency string    `gorm:"size:10;default:€" json:"default_currency"`
+	Notes           string    `gorm:"type:text" json:"notes"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 // InvoiceLineItem is one billable row on an invoice, serialised into Invoice.LineItems.

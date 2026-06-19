@@ -214,6 +214,7 @@ type UpdateInvoiceRequest struct {
 	PaymentDate      string                   `json:"payment_date"`
 	PaymentAmount    *float64                 `json:"payment_amount"`
 	PaymentReference string                   `json:"payment_reference"`
+	PaymentMethod    *string                  `json:"payment_method"`
 }
 
 // UpdateInvoice updates an invoice's status, notes, due date, or VAT rate.
@@ -295,6 +296,9 @@ func UpdateInvoice(c *gin.Context) {
 	}
 	// Payment details.
 	updates["payment_reference"] = req.PaymentReference
+	if req.PaymentMethod != nil {
+		updates["payment_method"] = *req.PaymentMethod
+	}
 	if req.PaymentDate != "" {
 		if pd, err := time.Parse("2006-01-02", req.PaymentDate); err == nil {
 			updates["payment_date"] = pd

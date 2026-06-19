@@ -28,6 +28,12 @@ export const customersApi = {
   sendInvoice:     (cid, iid, data) => client.post(`/customers/${cid}/invoices/${iid}/send`, data),
   createCreditNote:(cid, iid)       => client.post(`/customers/${cid}/invoices/${iid}/credit-note`),
 
+  // Invoice templates
+  listInvoiceTemplates:   ()            => client.get('/invoice-templates'),
+  createInvoiceTemplate:  (data)        => client.post('/admin/invoice-templates', data),
+  updateInvoiceTemplate:  (id, data)    => client.put(`/admin/invoice-templates/${id}`, data),
+  deleteInvoiceTemplate:  (id)          => client.delete(`/admin/invoice-templates/${id}`),
+
   // Contacts
   listContacts:   (cid)             => client.get(`/customers/${cid}/contacts`),
   createContact:  (cid, data)       => client.post(`/customers/${cid}/contacts`, data),

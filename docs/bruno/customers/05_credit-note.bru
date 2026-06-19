@@ -1,0 +1,22 @@
+meta {
+  name: Create Credit Note
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/invoices/{{invoiceId}}/credit-note
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Creates a credit-note invoice that negates the original invoice.
+  The new invoice has status=credit_note and credited_invoice_id pointing to the original.
+  The original invoice is also set to credit_note status.
+  No body required.
+}

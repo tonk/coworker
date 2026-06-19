@@ -1,0 +1,26 @@
+meta {
+  name: Update Invoice Template (admin)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/api/v1/admin/invoice-templates/{{templateId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Monthly Support — Standard",
+    "default_vat_rate": 21.0
+  }
+}
+
+docs {
+  Admin only. Patch-style update — all fields optional.
+}

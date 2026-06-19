@@ -1,0 +1,19 @@
+meta {
+  name: Delete Contact
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/contacts/{{contactId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Permanently deletes the contact person. Returns 204 No Content on success.
+}

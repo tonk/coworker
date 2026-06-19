@@ -252,7 +252,18 @@
     "comment_placeholder": "t.ex. Den 2026-06-09 fakturerades bara 2 timmar pga. bristande förberedelse",
     "credit_note_issued": "Kreditnota utfärdad",
     "void_credit_note": "Makulera kreditnota",
-    "void_credit_note_confirm": "Ta bort kreditnota {number} permanent?"
+    "void_credit_note_confirm": "Ta bort kreditnota {number} permanent?",
+    "overdue": "Förfallen",
+    "total_invoiced": "Totalt fakturerat",
+    "outstanding": "Utestående",
+    "overdue_amount": "Förfallen",
+    "paid_total": "Totalt betalt",
+    "payment_method": "Betalningsmetod",
+    "payment_method_bank": "Banköverföring",
+    "payment_method_card": "Kredit-/betalkort",
+    "payment_method_cash": "Kontant",
+    "payment_method_other": "Annat",
+    "load_template": "Ladda från mall"
   },
   "subcard": {
     "sub_cards": "Delkort",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Tidsregistreringsprojekt",
     "tt_customers_title": "Tidsregistreringskunder",
     "show_inactive": "Visa inaktiva",
-    "new_user": "Ny användare"
+    "new_user": "Ny användare",
+    "invoice_templates": "Fakturamallar",
+    "invoice_template_new": "Ny mall",
+    "invoice_template_edit": "Redigera mall",
+    "invoice_template_no": "Inga fakturamallar än.",
+    "invoice_template_name": "Mallnamn",
+    "invoice_template_vat": "Standard momssats (%)",
+    "invoice_template_currency": "Standardvaluta",
+    "invoice_template_notes": "Anteckningar",
+    "invoice_template_saved": "Mall sparad.",
+    "invoice_template_deleted": "Mall raderad."
   },
   "report": {
     "title": "Tidsrapport",

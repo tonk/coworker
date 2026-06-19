@@ -1038,9 +1038,19 @@ Projects and customers you create yourself are private — only you see them unl
 
 The *Invoices* tab shows all invoices across every customer you have access to.
 
-* Filter by customer and status using the dropdowns in the toolbar.
+A revenue summary bar at the top displays:
+
+* *Total Invoiced* — sum of all sent and paid invoices
+* *Outstanding* — sent invoices not yet past their due date
+* *Overdue* — sent invoices past their due date (highlighted in red when non-zero)
+* *Paid* — settled invoices
+
+Use the dropdowns to filter by customer and status.
+The *Overdue* filter shows only sent invoices whose due date has passed.
+Overdue rows are shown with a red tint and a red due date.
+
 * *PDF* — download the invoice PDF.
-* *Mark sent* / *Mark paid* / *Mark draft* — change invoice status.
+* Status changes (mark sent / paid / draft) are made from the customer detail page.
 
 You can also create an invoice directly from the *Report* tab: when the report is grouped by customer and a group contains billable entries (time entries linked to a contract), a *Create Invoice* button appears in the group header.
 Clicking it opens the invoice wizard pre-filled with that customer's entries for the selected report period.
@@ -1291,17 +1301,29 @@ Time slots are used in PDF and XLSX time-tracking exports to compute slot-aware 
 If the customer has billing fields set (address, VAT number, PO reference), they appear in the *Billing* section of the customer detail page.
 These fields are printed on generated invoices and can be edited by customer-admins.
 
+==== Contacts
+
+The *Contacts* section lists the contact persons for the customer (name, role, email, phone, notes).
+Contacts are informational records — they are not WarmDesk user accounts.
+
+Customer-admins and global admins can add, edit, and delete contacts.
+
 ==== Invoices
 
 If invoicing is available for your account, an *Invoices* section appears on the customer detail page.
 
 * Click *New Invoice* to open the two-step invoice wizard:
-  . Set the billing period, due date, VAT rate, and notes.
-  . Preview the line items pulled from time entries linked to a contract in that period.
+  . (Optional) Select a template from the *Load from Template* dropdown to pre-fill line items, VAT rate, currency, and notes.
+  . Set the billing period, due date, VAT rate, and notes; then click *Preview items*.
+  . Review the line items pulled from time entries linked to a contract in that period, or enter lines manually.
   . Confirm to create a *Draft* invoice.
 * Download the PDF with the *PDF* button.
 * Change the status with *Mark sent* / *Mark paid* / *Mark draft*.
+  When marking as paid, select the *payment method* (bank, card, cash, or other).
+* Click *Create Credit Note* on a sent invoice to void it and create a corrective credit-note invoice.
 * Delete a draft invoice with the trash icon.
+
+Invoices past their due date are shown with a red overdue badge.
 
 === Managing members (customer-admins)
 

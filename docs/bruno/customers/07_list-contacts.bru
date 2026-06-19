@@ -1,0 +1,20 @@
+meta {
+  name: List Customer Contacts
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/contacts
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Returns all contact persons for the given customer.
+  Contacts are informational records — not WarmDesk user accounts.
+}

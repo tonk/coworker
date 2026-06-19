@@ -1,0 +1,21 @@
+meta {
+  name: Delete Invoice
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/invoices/{{invoiceId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Permanently deletes a draft invoice. Sent and paid invoices cannot be deleted
+  (use Create Credit Note to void them instead).
+  Returns 204 No Content on success.
+}

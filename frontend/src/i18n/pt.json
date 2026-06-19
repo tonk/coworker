@@ -252,7 +252,18 @@
     "comment_placeholder": "ex. Em 2026-06-09 foram cobradas apenas 2 horas por falta de preparação",
     "credit_note_issued": "Nota de crédito emitida",
     "void_credit_note": "Anular nota de crédito",
-    "void_credit_note_confirm": "Eliminar permanentemente a nota de crédito {number}?"
+    "void_credit_note_confirm": "Eliminar permanentemente a nota de crédito {number}?",
+    "overdue": "Vencida",
+    "total_invoiced": "Total faturado",
+    "outstanding": "Pendente",
+    "overdue_amount": "Vencida",
+    "paid_total": "Total pago",
+    "payment_method": "Método de pagamento",
+    "payment_method_bank": "Transferência bancária",
+    "payment_method_card": "Cartão de crédito/débito",
+    "payment_method_cash": "Dinheiro",
+    "payment_method_other": "Outro",
+    "load_template": "Carregar de modelo"
   },
   "subcard": {
     "sub_cards": "Subcartões",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Projetos de registo de tempo",
     "tt_customers_title": "Clientes de registo de tempo",
     "show_inactive": "Mostrar inativos",
-    "new_user": "Novo utilizador"
+    "new_user": "Novo utilizador",
+    "invoice_templates": "Modelos de fatura",
+    "invoice_template_new": "Novo modelo",
+    "invoice_template_edit": "Editar modelo",
+    "invoice_template_no": "Sem modelos de fatura ainda.",
+    "invoice_template_name": "Nome do modelo",
+    "invoice_template_vat": "Taxa de IVA padrão (%)",
+    "invoice_template_currency": "Moeda padrão",
+    "invoice_template_notes": "Notas",
+    "invoice_template_saved": "Modelo guardado.",
+    "invoice_template_deleted": "Modelo eliminado."
   },
   "report": {
     "title": "Relatório de tempo",

@@ -252,7 +252,18 @@
     "comment_placeholder": "f.eks. Den 2026-06-09 kun faktureret 2 timer pga. manglende forberedelse",
     "credit_note_issued": "Kreditnota udstedt",
     "void_credit_note": "Annuller kreditnota",
-    "void_credit_note_confirm": "Slet kreditnota {number} permanent?"
+    "void_credit_note_confirm": "Slet kreditnota {number} permanent?",
+    "overdue": "Forfalden",
+    "total_invoiced": "Samlet faktureret",
+    "outstanding": "Udestående",
+    "overdue_amount": "Forfalden",
+    "paid_total": "Samlet betalt",
+    "payment_method": "Betalingsmetode",
+    "payment_method_bank": "Bankoverførsel",
+    "payment_method_card": "Kredit-/debetkort",
+    "payment_method_cash": "Kontant",
+    "payment_method_other": "Andet",
+    "load_template": "Indlæs fra skabelon"
   },
   "subcard": {
     "sub_cards": "Underkort",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Tidsregistreringsprojekter",
     "tt_customers_title": "Tidsregistreringskunder",
     "show_inactive": "Vis inaktive",
-    "new_user": "Ny bruger"
+    "new_user": "Ny bruger",
+    "invoice_templates": "Fakturaskabeloner",
+    "invoice_template_new": "Ny skabelon",
+    "invoice_template_edit": "Rediger skabelon",
+    "invoice_template_no": "Ingen fakturaskabeloner endnu.",
+    "invoice_template_name": "Skabelonnavn",
+    "invoice_template_vat": "Standard momssats (%)",
+    "invoice_template_currency": "Standardvaluta",
+    "invoice_template_notes": "Notater",
+    "invoice_template_saved": "Skabelon gemt.",
+    "invoice_template_deleted": "Skabelon slettet."
   },
   "report": {
     "title": "Tidsrapport",

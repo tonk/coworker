@@ -252,7 +252,18 @@
     "comment_placeholder": "ej. El 2026-06-09 solo se facturaron 2 horas por falta de preparación",
     "credit_note_issued": "Nota de crédito emitida",
     "void_credit_note": "Anular nota de crédito",
-    "void_credit_note_confirm": "¿Eliminar permanentemente la nota de crédito {number}?"
+    "void_credit_note_confirm": "¿Eliminar permanentemente la nota de crédito {number}?",
+    "overdue": "Vencida",
+    "total_invoiced": "Total facturado",
+    "outstanding": "Pendiente",
+    "overdue_amount": "Vencida",
+    "paid_total": "Total pagado",
+    "payment_method": "Método de pago",
+    "payment_method_bank": "Transferencia bancaria",
+    "payment_method_card": "Tarjeta de crédito/débito",
+    "payment_method_cash": "Efectivo",
+    "payment_method_other": "Otro",
+    "load_template": "Cargar desde plantilla"
   },
   "subcard": {
     "sub_cards": "Subtareas",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Proyectos de registro de tiempo",
     "tt_customers_title": "Clientes de registro de tiempo",
     "show_inactive": "Mostrar inactivos",
-    "new_user": "Nuevo usuario"
+    "new_user": "Nuevo usuario",
+    "invoice_templates": "Plantillas de factura",
+    "invoice_template_new": "Nueva plantilla",
+    "invoice_template_edit": "Editar plantilla",
+    "invoice_template_no": "No hay plantillas de factura.",
+    "invoice_template_name": "Nombre de plantilla",
+    "invoice_template_vat": "Tipo de IVA predeterminado (%)",
+    "invoice_template_currency": "Moneda predeterminada",
+    "invoice_template_notes": "Notas",
+    "invoice_template_saved": "Plantilla guardada.",
+    "invoice_template_deleted": "Plantilla eliminada."
   },
   "update": {
     "available": "Hay una nueva versión de WarmDesk disponible: v{version}.",

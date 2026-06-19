@@ -1,5 +1,5 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.12.21
+:revnumber: v0.12.23
 :revdate: 2026-06-18
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -826,6 +826,31 @@ Fields are optional — only fill in what applies.
 |Purchase-order number the customer wants quoted on each invoice
 |===
 
+==== Contacts
+
+Each customer can have any number of contact persons (*Customers → (click customer) → Contacts*).
+Contacts are informational — they are not WarmDesk user accounts and have no login credentials.
+
+[cols="1,3", options="header"]
+|===
+|Field |Purpose
+
+|*Name*
+|Full name of the contact person
+
+|*Email*
+|Email address for direct communication
+
+|*Phone*
+|Phone or mobile number
+
+|*Department*
+|Department or job title at the customer organisation
+
+|*Primary contact*
+|When enabled, marks this as the primary contact for the customer (only one contact may be primary at a time)
+|===
+
 ==== Invoices
 
 Invoices are generated from time-entry data and stored per customer.
@@ -854,12 +879,58 @@ The invoice is created in *Draft* status.
 
 |*Paid*
 |Invoice has been settled; shown for reporting purposes
+
+|*Credit note*
+|A corrective invoice that offsets a previously sent invoice; carries a negative total
 |===
+
+An invoice whose status is *Sent* and whose due date is in the past is highlighted as *Overdue* in both the global invoice list and the customer detail page.
+Overdue is a display state derived client-side — there is no separate "overdue" status in the database.
+
+===== Credit notes
+
+To void or partially correct a sent invoice:
+
+. Open the invoice on the customer detail page → *Create Credit Note*.
+. WarmDesk creates a new invoice with negated line items and the status *Credit note*, linked back to the original invoice via a *↩* badge.
+
+The original invoice is automatically set to status *Credit note* as well.
+Credit notes appear in the global invoice list and can be downloaded as PDF.
+
+===== Recording a payment
+
+When marking an invoice as *Paid* you can record the payment method used:
+
+[cols="1,3", options="header"]
+|===
+|Method |When to use
+
+|*Bank transfer*
+|Payment received via IBAN / wire transfer
+
+|*Card*
+|Credit or debit card payment
+
+|*Cash*
+|Cash on delivery or in person
+
+|*Other*
+|Any other settlement method
+|===
+
+The payment method is recorded on the invoice and shown in the customer detail view.
 
 ===== Global invoice list
 
 The *Invoices* tab in Time Tracking shows every invoice across all accessible customers.
-You can filter by customer and status, change the status of any invoice, and download the PDF.
+A revenue summary bar at the top shows:
+
+* *Total Invoiced* — sum of all sent and paid invoices
+* *Outstanding* — sent invoices not yet past their due date
+* *Overdue* — sent invoices past their due date (shown in red when non-zero)
+* *Paid* — settled invoices
+
+You can filter by customer and status (including *Overdue* as a pseudo-status) and download the PDF for any invoice.
 
 ===== Invoice PDF
 
@@ -888,6 +959,38 @@ Configure these in *Admin → Settings → Branding*:
 |*Default VAT rate (%)*
 |Pre-fills the VAT rate field when creating a new invoice
 |===
+
+=== Invoice Templates
+
+Invoice templates are reusable starting points for new invoices.
+Manage them under *Admin → Invoice Templates*.
+
+Each template stores:
+
+[cols="1,3", options="header"]
+|===
+|Field |Purpose
+
+|*Name*
+|Display name shown in the template picker when creating an invoice
+
+|*Line items*
+|Pre-defined rows (description, quantity, unit price) that are copied into the invoice
+
+|*Default VAT rate (%)*
+|Pre-fills the VAT rate field when the template is applied
+
+|*Default currency*
+|Pre-fills the currency selector
+
+|*Notes*
+|Default notes text that appears on the invoice PDF
+|===
+
+When a user clicks *New Invoice* on a customer detail page and selects a template from the *Load from Template* dropdown, the template's line items, VAT rate, currency, and notes are copied into the form.
+The user can then adjust any field before confirming.
+
+Templates have no effect on invoice creation via the API unless the client explicitly fetches them via `GET /api/v1/invoice-templates` and applies them manually.
 
 === Projects
 

@@ -173,6 +173,11 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 				admin.PUT("/ticket-checklist-templates/:id", handlers.AdminUpdateTicketChecklistTemplate)
 				admin.DELETE("/ticket-checklist-templates/:id", handlers.AdminDeleteTicketChecklistTemplate)
 
+				// Invoice templates
+				admin.POST("/invoice-templates", handlers.AdminCreateInvoiceTemplate)
+				admin.PUT("/invoice-templates/:id", handlers.AdminUpdateInvoiceTemplate)
+				admin.DELETE("/invoice-templates/:id", handlers.AdminDeleteInvoiceTemplate)
+
 				// IMAP test & poll
 				admin.POST("/imap/test", handlers.AdminTestIMAP)
 				admin.POST("/imap/poll", handlers.AdminPollIMAP)
@@ -353,6 +358,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 		// Global invoice list (across all accessible customers)
 		protected.GET("/invoices", handlers.ListAllInvoices)
+
+		// Invoice templates (readable by all, writeable by admin only — see admin group above)
+		protected.GET("/invoice-templates", handlers.ListInvoiceTemplates)
 
 		// Time entries (personal time registration)
 		protected.GET("/time-entries", middleware.RequireFeature("time_tracking_enabled"), handlers.ListTimeEntries)

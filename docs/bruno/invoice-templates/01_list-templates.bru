@@ -1,0 +1,20 @@
+meta {
+  name: List Invoice Templates
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/invoice-templates
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Returns all invoice templates. Any authenticated user may read templates.
+  line_items is a JSON-encoded string — parse it to get the array.
+}

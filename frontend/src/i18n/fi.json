@@ -252,7 +252,18 @@
     "comment_placeholder": "esim. 2026-06-09 laskutettiin vain 2 tuntia, koska ei oltu valmistauduttu",
     "credit_note_issued": "Hyvityslasku kirjoitettu",
     "void_credit_note": "Mitätöi hyvityslasku",
-    "void_credit_note_confirm": "Poistetaanko hyvityslasku {number} pysyvästi?"
+    "void_credit_note_confirm": "Poistetaanko hyvityslasku {number} pysyvästi?",
+    "overdue": "Erääntynyt",
+    "total_invoiced": "Laskutettu yhteensä",
+    "outstanding": "Avoimet",
+    "overdue_amount": "Erääntynyt",
+    "paid_total": "Maksettu yhteensä",
+    "payment_method": "Maksutapa",
+    "payment_method_bank": "Pankkisiirto",
+    "payment_method_card": "Luotto-/pankkikortti",
+    "payment_method_cash": "Käteinen",
+    "payment_method_other": "Muu",
+    "load_template": "Lataa mallista"
   },
   "subcard": {
     "sub_cards": "Alakortit",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Ajanseurantaprojektit",
     "tt_customers_title": "Ajanseuranta-asiakkaat",
     "show_inactive": "Näytä passiiviset",
-    "new_user": "Uusi käyttäjä"
+    "new_user": "Uusi käyttäjä",
+    "invoice_templates": "Laskumallit",
+    "invoice_template_new": "Uusi malli",
+    "invoice_template_edit": "Muokkaa mallia",
+    "invoice_template_no": "Ei laskumalleja vielä.",
+    "invoice_template_name": "Mallin nimi",
+    "invoice_template_vat": "Oletus-ALV-prosentti (%)",
+    "invoice_template_currency": "Oletusvaluutta",
+    "invoice_template_notes": "Muistiinpanot",
+    "invoice_template_saved": "Malli tallennettu.",
+    "invoice_template_deleted": "Malli poistettu."
   },
   "report": {
     "title": "Aikaraportti",

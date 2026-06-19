@@ -1,0 +1,19 @@
+meta {
+  name: Delete Invoice Template (admin)
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/admin/invoice-templates/{{templateId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  Admin only. Permanently deletes the template. Returns 204 No Content on success.
+}

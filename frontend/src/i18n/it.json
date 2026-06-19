@@ -252,7 +252,18 @@
     "comment_placeholder": "es. Il 2026-06-09 sono state fatturate solo 2 ore per mancanza di preparazione",
     "credit_note_issued": "Nota di credito emessa",
     "void_credit_note": "Annulla nota di credito",
-    "void_credit_note_confirm": "Eliminare definitivamente la nota di credito {number}?"
+    "void_credit_note_confirm": "Eliminare definitivamente la nota di credito {number}?",
+    "overdue": "Scaduta",
+    "total_invoiced": "Totale fatturato",
+    "outstanding": "In sospeso",
+    "overdue_amount": "Scaduta",
+    "paid_total": "Totale pagato",
+    "payment_method": "Metodo di pagamento",
+    "payment_method_bank": "Bonifico bancario",
+    "payment_method_card": "Carta di credito/debito",
+    "payment_method_cash": "Contante",
+    "payment_method_other": "Altro",
+    "load_template": "Carica da modello"
   },
   "subcard": {
     "sub_cards": "Sottoschede",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Progetti di registrazione tempo",
     "tt_customers_title": "Clienti di registrazione tempo",
     "show_inactive": "Mostra inattivi",
-    "new_user": "Nuovo utente"
+    "new_user": "Nuovo utente",
+    "invoice_templates": "Modelli di fattura",
+    "invoice_template_new": "Nuovo modello",
+    "invoice_template_edit": "Modifica modello",
+    "invoice_template_no": "Nessun modello di fattura ancora.",
+    "invoice_template_name": "Nome del modello",
+    "invoice_template_vat": "Aliquota IVA predefinita (%)",
+    "invoice_template_currency": "Valuta predefinita",
+    "invoice_template_notes": "Note",
+    "invoice_template_saved": "Modello salvato.",
+    "invoice_template_deleted": "Modello eliminato."
   },
   "report": {
     "title": "Report ore",

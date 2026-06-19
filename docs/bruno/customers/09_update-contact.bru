@@ -1,0 +1,26 @@
+meta {
+  name: Update Contact
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/contacts/{{contactId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "email": "alice.bakker@example.com",
+    "role": "Finance Manager"
+  }
+}
+
+docs {
+  Patch-style update — all fields optional.
+}

@@ -252,7 +252,18 @@
     "comment_placeholder": "bijv. Op 2026-06-09 slechts 2 uur gefactureerd, wegens onvoorbereidheid",
     "credit_note_issued": "Creditnota aangemaakt",
     "void_credit_note": "Creditnota annuleren",
-    "void_credit_note_confirm": "Creditnota {number} definitief verwijderen?"
+    "void_credit_note_confirm": "Creditnota {number} definitief verwijderen?",
+    "overdue": "Te laat",
+    "total_invoiced": "Totaal gefactureerd",
+    "outstanding": "Uitstaand",
+    "overdue_amount": "Te laat",
+    "paid_total": "Totaal betaald",
+    "payment_method": "Betaalmethode",
+    "payment_method_bank": "Bankoverschrijving",
+    "payment_method_card": "Creditcard/Pinpas",
+    "payment_method_cash": "Contant",
+    "payment_method_other": "Overig",
+    "load_template": "Laad uit sjabloon"
   },
   "subcard": {
     "sub_cards": "Deeltaken",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Urenregistratieprojecten",
     "tt_customers_title": "Urenregistratieklanten",
     "show_inactive": "Inactieven tonen",
-    "new_user": "Nieuwe gebruiker"
+    "new_user": "Nieuwe gebruiker",
+    "invoice_templates": "Factuursjablonen",
+    "invoice_template_new": "Nieuw sjabloon",
+    "invoice_template_edit": "Sjabloon bewerken",
+    "invoice_template_no": "Nog geen factuursjablonen.",
+    "invoice_template_name": "Naam sjabloon",
+    "invoice_template_vat": "Standaard btw-tarief (%)",
+    "invoice_template_currency": "Standaardvaluta",
+    "invoice_template_notes": "Notities",
+    "invoice_template_saved": "Sjabloon opgeslagen.",
+    "invoice_template_deleted": "Sjabloon verwijderd."
   },
   "update": {
     "available": "Er is een nieuwe versie van WarmDesk beschikbaar: v{version}.",

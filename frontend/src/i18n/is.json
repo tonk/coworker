@@ -252,7 +252,18 @@
     "comment_placeholder": "t.d. Þann 2026-06-09 voru aðeins 2 klukkustundir rukkaðar vegna ófullnægjandi undirbúnings",
     "credit_note_issued": "Kreditreikningur gefinn út",
     "void_credit_note": "Ógilda kreditreikning",
-    "void_credit_note_confirm": "Eyða kreditreikningi {number} varanlega?"
+    "void_credit_note_confirm": "Eyða kreditreikningi {number} varanlega?",
+    "overdue": "Gjaldfallen",
+    "total_invoiced": "Samtals reikningsfært",
+    "outstanding": "Útistandandi",
+    "overdue_amount": "Gjaldfallen",
+    "paid_total": "Samtals greitt",
+    "payment_method": "Greiðslumáti",
+    "payment_method_bank": "Bankamillifærsla",
+    "payment_method_card": "Kredit-/debetkort",
+    "payment_method_cash": "Reiðufé",
+    "payment_method_other": "Annað",
+    "load_template": "Hlaða úr sniðmáti"
   },
   "subcard": {
     "sub_cards": "Undirspjöld",
@@ -614,7 +625,17 @@
     "tt_projects_title": "Tímaskráningarverkefni",
     "tt_customers_title": "Tímaskráningarviðskiptavinir",
     "show_inactive": "Sýna óvirka",
-    "new_user": "Nýr notandi"
+    "new_user": "Nýr notandi",
+    "invoice_templates": "Reikningssniðmát",
+    "invoice_template_new": "Nýtt sniðmát",
+    "invoice_template_edit": "Breyta sniðmáti",
+    "invoice_template_no": "Engin reikningssniðmát enn.",
+    "invoice_template_name": "Heiti sniðmáts",
+    "invoice_template_vat": "Sjálfgefið VSK-hlutfall (%)",
+    "invoice_template_currency": "Sjálfgefinn gjaldmiðill",
+    "invoice_template_notes": "Athugasemdir",
+    "invoice_template_saved": "Sniðmát vistað.",
+    "invoice_template_deleted": "Sniðmáti eytt."
   },
   "report": {
     "title": "Tímaskýrsla",

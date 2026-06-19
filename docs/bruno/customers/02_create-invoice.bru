@@ -1,0 +1,36 @@
+meta {
+  name: Create Invoice
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/invoices
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "period_start": "2026-05-01",
+    "period_end": "2026-05-31",
+    "due_date": "2026-06-15",
+    "vat_rate": 21.0,
+    "currency": "EUR",
+    "notes": "May services",
+    "line_items": [
+      { "description": "Backend development", "quantity": 20, "unit_price": 95.00 },
+      { "description": "DevOps consulting",   "quantity": 4,  "unit_price": 110.00 }
+    ]
+  }
+}
+
+docs {
+  Creates a new invoice in Draft status.
+  line_items: array of { description, quantity, unit_price }
+  Totals (subtotal, vat_amount, total) are computed server-side from line_items and vat_rate.
+}

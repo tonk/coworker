@@ -246,17 +246,18 @@
         <div v-if="invoicesLoading" class="empty-state-sm">{{ $t('common.loading') }}</div>
         <div v-else-if="invoices.length === 0" class="empty-state-sm">{{ $t('invoice.no_invoices') }}</div>
         <div v-else class="invoice-list">
-          <div v-for="inv in invoices" :key="inv.id" class="invoice-row">
+          <div v-for="inv in invoices" :key="inv.id" :class="['invoice-row', { 'invoice-row--overdue': isInvoiceOverdue(inv) }]">
             <div class="invoice-row-main">
               <span class="invoice-number">{{ inv.invoice_number }}</span>
               <span v-if="inv.credited_invoice_id" class="invoice-credits">↩ {{ $t('invoice.credits_invoice') }} #{{ inv.credited_invoice_id }}</span>
               <span v-if="creditNoteByOriginal[inv.id]" class="invoice-credit-issued">↩ {{ $t('invoice.credit_note_issued') }}: {{ creditNoteByOriginal[inv.id].invoice_number }}</span>
               <span class="invoice-period">{{ formatDate(inv.period_start) }} – {{ formatDate(inv.period_end) }}</span>
-              <span :class="['invoice-status', `inv-${inv.status}`]">{{ $t(`invoice.status_${inv.status}`) }}</span>
+              <span v-if="isInvoiceOverdue(inv)" class="invoice-status inv-overdue">{{ $t('invoice.overdue') }}</span>
+              <span v-else :class="['invoice-status', `inv-${inv.status}`]">{{ $t(`invoice.status_${inv.status}`) }}</span>
               <span class="invoice-total">{{ inv.currency }} {{ inv.total.toFixed(2) }}</span>
-              <span v-if="inv.due_date" class="invoice-due">{{ $t('invoice.due_date') }}: {{ formatDate(inv.due_date) }}</span>
+              <span v-if="inv.due_date" :class="['invoice-due', { 'invoice-due--overdue': isInvoiceOverdue(inv) }]">{{ $t('invoice.due_date') }}: {{ formatDate(inv.due_date) }}</span>
               <span v-if="inv.status === 'paid' && inv.payment_date" class="invoice-paid-info">
-                {{ $t('invoice.payment_info') }}: {{ formatDate(inv.payment_date) }}<template v-if="inv.payment_reference"> · {{ inv.payment_reference }}</template>
+                {{ $t('invoice.payment_info') }}: {{ formatDate(inv.payment_date) }}<template v-if="inv.payment_reference"> · {{ inv.payment_reference }}</template><template v-if="inv.payment_method"> · {{ $t(`invoice.payment_method_${inv.payment_method}`) }}</template>
               </span>
             </div>
             <div class="invoice-row-actions">
@@ -623,6 +624,13 @@
   <BaseModal v-if="showNewInvoice" :title="$t('invoice.create_from_entries')" @close="closeNewInvoice" style="--modal-width:700px">
     <!-- Step 1: period selection -->
     <template v-if="invoiceStep === 1">
+      <div v-if="invoiceTemplates.length > 0" class="form-group">
+        <label class="form-label" for="inv-tmpl">{{ $t('invoice.load_template') }}</label>
+        <select id="inv-tmpl" class="form-input" @change="applyInvoiceTemplate($event.target.value); $event.target.value = ''">
+          <option value="">— {{ $t('invoice.load_template') }} —</option>
+          <option v-for="tmpl in invoiceTemplates" :key="tmpl.id" :value="tmpl.id">{{ tmpl.name }}</option>
+        </select>
+      </div>
       <div class="form-group form-row">
         <div class="form-group half">
           <label class="form-label" for="inv-from">{{ $t('invoice.period_start') }}</label>
@@ -897,6 +905,16 @@
       <label class="form-label" for="pay-ref">{{ $t('invoice.payment_reference') }}</label>
       <input id="pay-ref" class="form-input" type="text" v-model="paymentForm.payment_reference" />
     </div>
+    <div class="form-group">
+      <label class="form-label" for="pay-method">{{ $t('invoice.payment_method') }}</label>
+      <select id="pay-method" class="form-input" v-model="paymentForm.payment_method">
+        <option value="">—</option>
+        <option value="bank">{{ $t('invoice.payment_method_bank') }}</option>
+        <option value="card">{{ $t('invoice.payment_method_card') }}</option>
+        <option value="cash">{{ $t('invoice.payment_method_cash') }}</option>
+        <option value="other">{{ $t('invoice.payment_method_other') }}</option>
+      </select>
+    </div>
     <template #footer>
       <button class="btn" @click="showRecordPayment = false">{{ $t('common.cancel') }}</button>
       <button class="btn btn-primary" @click="doRecordPayment">{{ $t('invoice.mark_paid') }}</button>
@@ -1019,6 +1037,37 @@ async function loadInvoices() {
     invoices.value = []
   } finally {
     invoicesLoading.value = false
+  }
+}
+
+// Invoice templates for the new-invoice modal
+const invoiceTemplates = ref([])
+async function loadInvoiceTemplates() {
+  try {
+    const { data } = await customersApi.listInvoiceTemplates()
+    invoiceTemplates.value = data || []
+  } catch {
+    invoiceTemplates.value = []
+  }
+}
+function applyInvoiceTemplate(idStr) {
+  const tmpl = invoiceTemplates.value.find(t => String(t.id) === String(idStr))
+  if (!tmpl) return
+  if (tmpl.default_vat_rate) invoiceForm.value.vat_rate = tmpl.default_vat_rate
+  if (tmpl.notes) invoiceForm.value.notes = tmpl.notes
+  if (tmpl.line_items) {
+    try {
+      const lines = JSON.parse(tmpl.line_items)
+      if (lines.length) {
+        invoiceLineItems.value = lines.map(li => ({
+          ...li,
+          currency: li.currency || tmpl.default_currency || '€',
+          amount: (li.quantity || 0) * (li.unit_price || 0),
+          is_manual: true,
+        }))
+        invoiceStep.value = 2
+      }
+    } catch { /* ignore */ }
   }
 }
 
@@ -1241,10 +1290,17 @@ async function doSendEmail() {
   }
 }
 
+// ── Overdue check ─────────────────────────────────────────────────────────────
+const _today = new Date()
+_today.setHours(0, 0, 0, 0)
+function isInvoiceOverdue(inv) {
+  return inv.status === 'sent' && !!inv.due_date && new Date(inv.due_date) < _today
+}
+
 // ── Record payment ────────────────────────────────────────────────────────────
 const showRecordPayment = ref(false)
 const paymentInvoice = ref(null)
-const paymentForm = ref({ payment_date: '', display_payment_date: '', payment_amount: null, payment_reference: '' })
+const paymentForm = ref({ payment_date: '', display_payment_date: '', payment_amount: null, payment_reference: '', payment_method: '' })
 
 function openRecordPayment(inv) {
   paymentInvoice.value = inv
@@ -1254,6 +1310,7 @@ function openRecordPayment(inv) {
     display_payment_date: formatDate(today),
     payment_amount: inv.total,
     payment_reference: '',
+    payment_method: '',
   }
   showRecordPayment.value = true
 }
@@ -1283,6 +1340,7 @@ async function doRecordPayment() {
       payment_date: paymentForm.value.payment_date,
       payment_amount: paymentForm.value.payment_amount,
       payment_reference: paymentForm.value.payment_reference,
+      payment_method: paymentForm.value.payment_method || undefined,
     })
     const idx = invoices.value.findIndex(i => i.id === inv.id)
     if (idx >= 0) invoices.value[idx] = data
@@ -1698,7 +1756,7 @@ async function setMemberRole(userId, role) {
 
 const custId = computed(() => Number(route.params.id))
 
-onMounted(() => load())
+onMounted(() => { load(); loadInvoiceTemplates() })
 watch(custId, () => load())
 
 async function load() {
@@ -2383,8 +2441,12 @@ async function deleteContract(grp) {
 }
 .inv-draft       { background: var(--color-bg); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 .inv-sent        { background: #dbeafe; color: #1d4ed8; }
+.inv-overdue     { background: color-mix(in srgb, var(--color-danger, #e53e3e) 15%, transparent); color: var(--color-danger, #e53e3e); }
 .inv-paid        { background: #dcfce7; color: #15803d; }
 .inv-credit_note { background: #fef9c3; color: #854d0e; }
+
+.invoice-row--overdue { background: color-mix(in srgb, var(--color-danger, #e53e3e) 5%, var(--color-surface)); }
+.invoice-due--overdue { color: var(--color-danger, #e53e3e); font-weight: 600; }
 
 .inv-preview-table-wrap { overflow-x: auto; margin-bottom: 12px; }
 .inv-preview-table {
