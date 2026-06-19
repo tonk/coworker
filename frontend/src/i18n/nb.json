@@ -842,7 +842,8 @@
     "online": "Online",
     "offline": "Frakoblet",
     "all_chats": "Alle chatter…",
-    "unread_messages": "Uleste meldinger"
+    "unread_messages": "Uleste meldinger",
+    "all_invoices": "Alle fakturaer"
   },
   "apikeys": {
     "tab": "API-nøkler",

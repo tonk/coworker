@@ -842,7 +842,8 @@
     "online": "Online",
     "offline": "Offline",
     "all_chats": "Kaikki chatit…",
-    "unread_messages": "Lukemattomat viestit"
+    "unread_messages": "Lukemattomat viestit",
+    "all_invoices": "Kaikki laskut"
   },
   "apikeys": {
     "tab": "API-avaimet",

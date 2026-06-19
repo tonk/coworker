@@ -842,7 +842,8 @@
     "online": "Online",
     "offline": "Offline",
     "all_chats": "Alla chattar…",
-    "unread_messages": "Olästa meddelanden"
+    "unread_messages": "Olästa meddelanden",
+    "all_invoices": "Alla fakturor"
   },
   "apikeys": {
     "tab": "API-nycklar",

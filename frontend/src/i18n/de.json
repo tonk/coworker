@@ -807,7 +807,8 @@
     "all_chats": "Alle Chats…",
     "unread_messages": "Ungelesene Nachrichten",
     "customers": "Favoritenkunden",
-    "no_customers": "Keine markierten Kunden"
+    "no_customers": "Keine markierten Kunden",
+    "all_invoices": "Alle Rechnungen"
   },
   "apikeys": {
     "tab": "API-Schlüssel",

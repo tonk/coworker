@@ -129,6 +129,10 @@
           {{ $t('sidebar.no_customers') }}
         </div>
         <nav class="sidebar-nav">
+          <RouterLink v-if="!systemStore.isTimetrackingMode" to="/invoices" class="sidebar-link">
+            <span class="link-icon" aria-hidden="true">🧾</span>
+            <span class="link-text">{{ $t('sidebar.all_invoices') }}</span>
+          </RouterLink>
           <RouterLink
             v-for="c in sortedCustomers"
             :key="c.id"

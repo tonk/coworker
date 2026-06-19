@@ -842,7 +842,8 @@
     "online": "Online",
     "offline": "Offline",
     "all_chats": "Tutte le chat…",
-    "unread_messages": "Messaggi non letti"
+    "unread_messages": "Messaggi non letti",
+    "all_invoices": "Tutte le fatture"
   },
   "apikeys": {
     "tab": "Chiavi API",

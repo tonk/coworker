@@ -979,7 +979,8 @@
     "online": "Online",
     "offline": "Offline",
     "all_chats": "All chats…",
-    "unread_messages": "Unread messages"
+    "unread_messages": "Unread messages",
+    "all_invoices": "All Invoices"
   },
   "apikeys": {
     "tab": "API Keys",

@@ -842,7 +842,8 @@
     "online": "Á netinu",
     "offline": "Utan nets",
     "all_chats": "Öll spjöll…",
-    "unread_messages": "Ólesnar skilaboð"
+    "unread_messages": "Ólesnar skilaboð",
+    "all_invoices": "Allar reikningar"
   },
   "apikeys": {
     "tab": "API-lyklar",
