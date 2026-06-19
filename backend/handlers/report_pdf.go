@@ -193,8 +193,9 @@ type pdfI18n struct {
 	// Costs / invoice
 	Rate     string // e.g. "Rate"
 	Cost     string // e.g. "Cost"
-	Invoice  string // e.g. "Invoice"
-	Standard string // e.g. "Standard" (base rate for time-slot breakdowns)
+	Invoice    string // e.g. "Invoice"
+	CreditNote string // e.g. "Credit Note"
+	Standard   string // e.g. "Standard" (base rate for time-slot breakdowns)
 	// Invoice section labels
 	BillTo          string // e.g. "Bill To"
 	Period          string // e.g. "Period"
@@ -238,6 +239,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Rate",
 		Cost:         "Cost",
 		Invoice:      "Invoice",
+		CreditNote:   "Credit Note",
 		Standard:     "Standard",
 		BillTo:          "Bill To",
 		Period:          "Period",
@@ -277,6 +279,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Tarief",
 		Cost:         "Kosten",
 		Invoice:      "Factuur",
+		CreditNote:   "Creditnota",
 		Standard:     "Standaard",
 		BillTo:          "Factuuradres",
 		Period:          "Periode",
@@ -317,6 +320,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Satz",
 		Cost:         "Kosten",
 		Invoice:      "Rechnung",
+		CreditNote:   "Gutschrift",
 		Standard:     "Standard",
 		BillTo:          "Rechnungsadresse",
 		Period:          "Zeitraum",
@@ -357,6 +361,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Tarif",
 		Cost:         "Coût",
 		Invoice:      "Facture",
+		CreditNote:   "Note de crédit",
 		Standard:     "Standard",
 		BillTo:          "Facturer à",
 		Period:          "Période",
@@ -397,6 +402,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Tarifa",
 		Cost:         "Coste",
 		Invoice:      "Factura",
+		CreditNote:   "Nota de crédito",
 		Standard:     "Estándar",
 		BillTo:          "Facturar a",
 		Period:          "Período",
@@ -437,6 +443,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Sats",
 		Cost:         "Omkostning",
 		Invoice:      "Faktura",
+		CreditNote:   "Kreditnota",
 		Standard:     "Standard",
 		BillTo:          "Faktureres til",
 		Period:          "Periode",
@@ -477,6 +484,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Pris",
 		Cost:         "Kostnad",
 		Invoice:      "Faktura",
+		CreditNote:   "Kreditnota",
 		Standard:     "Standard",
 		BillTo:          "Faktureras till",
 		Period:          "Period",
@@ -517,6 +525,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Sats",
 		Cost:         "Kostnad",
 		Invoice:      "Faktura",
+		CreditNote:   "Kreditnota",
 		Standard:     "Standard",
 		BillTo:          "Faktureres til",
 		Period:          "Periode",
@@ -557,6 +566,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Tuntihinta",
 		Cost:         "Kustannus",
 		Invoice:      "Lasku",
+		CreditNote:   "Hyvityslasku",
 		Standard:     "Perusmäärä",
 		BillTo:          "Laskutusosoite",
 		Period:          "Jakso",
@@ -597,6 +607,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Gjald",
 		Cost:         "Kostnaður",
 		Invoice:      "Reikningur",
+		CreditNote:   "Kreditreikningur",
 		Standard:     "Staðlað",
 		BillTo:          "Reikningur til",
 		Period:          "Tímabil",
@@ -637,6 +648,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Taxa",
 		Cost:         "Custo",
 		Invoice:      "Fatura",
+		CreditNote:   "Nota de crédito",
 		Standard:     "Padrão",
 		BillTo:          "Faturar para",
 		Period:          "Período",
@@ -677,6 +689,7 @@ var pdfTranslations = map[string]pdfI18n{
 		Rate:         "Tariffa",
 		Cost:         "Costo",
 		Invoice:      "Fattura",
+		CreditNote:   "Nota di credito",
 		Standard:     "Standard",
 		BillTo:          "Intestatario fattura",
 		Period:          "Periodo",

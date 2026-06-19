@@ -62,7 +62,11 @@ func buildInvoicePDF(invoice models.Invoice, lang, fontFamily, distanceUnit stri
 		pdf.AddUTF8FontFromBytes(fam, "B", mustFont(files[1]))
 	}
 
-	invoiceTitle := tr.Invoice + " " + invoice.InvoiceNumber
+	docType := tr.Invoice
+	if invoice.Status == models.InvoiceStatusCreditNote {
+		docType = tr.CreditNote
+	}
+	invoiceTitle := docType + " " + invoice.InvoiceNumber
 	pdf.SetTitle(invoiceTitle, true)
 	pdf.SetAuthor(companyName, true)
 	pdf.SetSubject(companyName+" — "+invoiceTitle, true)
@@ -129,7 +133,7 @@ func buildInvoicePDF(invoice models.Invoice, lang, fontFamily, distanceUnit stri
 	pdf.SetXY(metaX, headerTopY)
 	pdf.SetFont(fontFamily, "B", 18)
 	setTxt(pdf, clrText)
-	pdf.CellFormat(metaW, 9, tr.Invoice, "", 2, "R", false, 0, "")
+	pdf.CellFormat(metaW, 9, docType, "", 2, "R", false, 0, "")
 	pdf.SetX(metaX)
 	pdf.SetFont(fontFamily, "B", 10)
 	setTxt(pdf, clrPrimary)
