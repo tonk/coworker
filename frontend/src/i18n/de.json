@@ -234,7 +234,10 @@
     "issue_credit_note": "Gutschrift erstellen",
     "credits_invoice": "Gutschrift für",
     "credit_note_confirm": "Eine Gutschrift für {number} wird erstellt. Fortfahren?",
-    "no_email_configured": "E-Mail ist nicht konfiguriert. PDF herunterladen und manuell senden."
+    "no_email_configured": "E-Mail ist nicht konfiguriert. PDF herunterladen und manuell senden.",
+    "credit_note_issued": "Gutschrift ausgestellt",
+    "void_credit_note": "Gutschrift stornieren",
+    "void_credit_note_confirm": "Gutschrift {number} endgültig löschen?"
   },
   "subcard": {
     "sub_cards": "Teilaufgaben",

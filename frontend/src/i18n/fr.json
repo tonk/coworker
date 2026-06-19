@@ -234,7 +234,10 @@
     "issue_credit_note": "Émettre une note de crédit",
     "credits_invoice": "Crédit pour",
     "credit_note_confirm": "Une note de crédit pour {number} va être créée. Continuer ?",
-    "no_email_configured": "L'e-mail n'est pas configuré. Téléchargez le PDF et envoyez manuellement."
+    "no_email_configured": "L'e-mail n'est pas configuré. Téléchargez le PDF et envoyez manuellement.",
+    "credit_note_issued": "Note de crédit émise",
+    "void_credit_note": "Annuler la note de crédit",
+    "void_credit_note_confirm": "Supprimer définitivement la note de crédit {number} ?"
   },
   "subcard": {
     "sub_cards": "Sous-tâches",

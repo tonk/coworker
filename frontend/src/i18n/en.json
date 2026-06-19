@@ -234,7 +234,10 @@
     "issue_credit_note": "Issue Credit Note",
     "credits_invoice": "Credits",
     "credit_note_confirm": "This will create a credit note negating {number}. Continue?",
-    "no_email_configured": "Email is not configured. Download the PDF and send manually."
+    "no_email_configured": "Email is not configured. Download the PDF and send manually.",
+    "credit_note_issued": "Credit note issued",
+    "void_credit_note": "Void Credit Note",
+    "void_credit_note_confirm": "Permanently delete credit note {number}?"
   },
   "subcard": {
     "sub_cards": "Sub-cards",

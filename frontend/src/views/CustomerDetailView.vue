@@ -133,6 +133,7 @@
             <div class="invoice-row-main">
               <span class="invoice-number">{{ inv.invoice_number }}</span>
               <span v-if="inv.credited_invoice_id" class="invoice-credits">↩ {{ $t('invoice.credits_invoice') }} #{{ inv.credited_invoice_id }}</span>
+              <span v-if="creditNoteByOriginal[inv.id]" class="invoice-credit-issued">↩ {{ $t('invoice.credit_note_issued') }}: {{ creditNoteByOriginal[inv.id].invoice_number }}</span>
               <span class="invoice-period">{{ formatDate(inv.period_start) }} – {{ formatDate(inv.period_end) }}</span>
               <span :class="['invoice-status', `inv-${inv.status}`]">{{ $t(`invoice.status_${inv.status}`) }}</span>
               <span class="invoice-total">{{ inv.currency }} {{ inv.total.toFixed(2) }}</span>
@@ -165,6 +166,7 @@
                   @click="doIssueCreditNote(inv)"
                 >{{ $t('invoice.issue_credit_note') }}</button>
                 <button v-if="inv.status === 'draft'" class="icon-btn icon-danger" @click="doDeleteInvoice(inv)" :aria-label="$t('common.delete')" title="Delete">✕</button>
+                <button v-if="inv.status === 'credit_note'" class="btn btn-sm btn-danger" @click="doDeleteInvoice(inv)">{{ $t('invoice.void_credit_note') }}</button>
               </template>
             </div>
           </div>
@@ -817,6 +819,17 @@ function parseInvFrom() { _parseInvDate(displayInvFrom, 'period_start') }
 function parseInvTo()   { _parseInvDate(displayInvTo,   'period_end') }
 function parseInvDue()  { _parseInvDate(displayInvDue,  'due_date') }
 
+// Map original invoice id → credit note, so we can show the tag on the original.
+const creditNoteByOriginal = computed(() => {
+  const map = {}
+  for (const inv of invoices.value) {
+    if (inv.status === 'credit_note' && inv.credited_invoice_id) {
+      map[inv.credited_invoice_id] = inv
+    }
+  }
+  return map
+})
+
 const invoiceHasDistance = computed(() => invoiceLineItems.value.some(li => li.distance > 0))
 const invoicePreviewSubtotal = computed(() => invoiceLineItems.value.reduce((s, li) => s + li.amount, 0))
 const invoicePreviewVAT = computed(() => invoicePreviewSubtotal.value * invoiceForm.value.vat_rate / 100)
@@ -941,7 +954,10 @@ async function changeInvoiceStatus(inv, status) {
 }
 
 async function doDeleteInvoice(inv) {
-  if (!await ui.confirm(t('invoice.delete_confirm'), { destructive: true })) return
+  const msg = inv.status === 'credit_note'
+    ? t('invoice.void_credit_note_confirm', { number: inv.invoice_number })
+    : t('invoice.delete_confirm')
+  if (!await ui.confirm(msg, { destructive: true })) return
   try {
     await customersApi.deleteInvoice(custId.value, inv.id)
     invoices.value = invoices.value.filter(i => i.id !== inv.id)
@@ -2113,7 +2129,8 @@ async function deleteContract(grp) {
 }
 .inv-preview-totals strong { color: var(--color-primary); }
 
-.invoice-credits  { font-size: 11px; color: var(--color-text-muted); font-style: italic; white-space: nowrap; }
+.invoice-credits       { font-size: 11px; color: var(--color-text-muted); font-style: italic; white-space: nowrap; }
+.invoice-credit-issued { font-size: 11px; color: #b45309; background: #fef3c7; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
 .invoice-paid-info { font-size: 11px; color: #15803d; white-space: nowrap; }
 
 .inv-edit-table-wrap { overflow-x: auto; margin-bottom: 4px; }

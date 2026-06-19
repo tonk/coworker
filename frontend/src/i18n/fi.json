@@ -234,7 +234,10 @@
     "issue_credit_note": "Luo hyvityslasku",
     "credits_invoice": "Hyvittää",
     "credit_note_confirm": "Hyvityslasku laskulle {number} luodaan. Jatketaanko?",
-    "no_email_configured": "Sähköposti ei ole määritetty. Lataa PDF ja lähetä manuaalisesti."
+    "no_email_configured": "Sähköposti ei ole määritetty. Lataa PDF ja lähetä manuaalisesti.",
+    "credit_note_issued": "Hyvityslasku kirjoitettu",
+    "void_credit_note": "Mitätöi hyvityslasku",
+    "void_credit_note_confirm": "Poistetaanko hyvityslasku {number} pysyvästi?"
   },
   "subcard": {
     "sub_cards": "Alakortit",

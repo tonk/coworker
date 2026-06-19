@@ -234,7 +234,10 @@
     "issue_credit_note": "Opret kreditnota",
     "credits_invoice": "Krediterer",
     "credit_note_confirm": "Der oprettes en kreditnota for {number}. Fortsæt?",
-    "no_email_configured": "E-mail er ikke konfigureret. Download PDF og send manuelt."
+    "no_email_configured": "E-mail er ikke konfigureret. Download PDF og send manuelt.",
+    "credit_note_issued": "Kreditnota udstedt",
+    "void_credit_note": "Annuller kreditnota",
+    "void_credit_note_confirm": "Slet kreditnota {number} permanent?"
   },
   "subcard": {
     "sub_cards": "Underkort",

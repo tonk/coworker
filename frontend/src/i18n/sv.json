@@ -234,7 +234,10 @@
     "issue_credit_note": "Utfärda kreditnota",
     "credits_invoice": "Krediterar",
     "credit_note_confirm": "En kreditnota för {number} skapas. Fortsätt?",
-    "no_email_configured": "E-post är inte konfigurerad. Ladda ner PDF och skicka manuellt."
+    "no_email_configured": "E-post är inte konfigurerad. Ladda ner PDF och skicka manuellt.",
+    "credit_note_issued": "Kreditnota utfärdad",
+    "void_credit_note": "Makulera kreditnota",
+    "void_credit_note_confirm": "Ta bort kreditnota {number} permanent?"
   },
   "subcard": {
     "sub_cards": "Delkort",

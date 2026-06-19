@@ -234,7 +234,10 @@
     "issue_credit_note": "Emetti nota di credito",
     "credits_invoice": "Credita",
     "credit_note_confirm": "Verrà creata una nota di credito per {number}. Continuare?",
-    "no_email_configured": "L'e-mail non è configurato. Scarica il PDF e invia manualmente."
+    "no_email_configured": "L'e-mail non è configurato. Scarica il PDF e invia manualmente.",
+    "credit_note_issued": "Nota di credito emessa",
+    "void_credit_note": "Annulla nota di credito",
+    "void_credit_note_confirm": "Eliminare definitivamente la nota di credito {number}?"
   },
   "subcard": {
     "sub_cards": "Sottoschede",

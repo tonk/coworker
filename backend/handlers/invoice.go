@@ -338,8 +338,8 @@ func DeleteInvoice(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
-	if invoice.Status != models.InvoiceStatusDraft {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "only draft invoices can be deleted"})
+	if invoice.Status != models.InvoiceStatusDraft && invoice.Status != models.InvoiceStatusCreditNote {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "only draft invoices and credit notes can be deleted"})
 		return
 	}
 	database.DB.Delete(&invoice)
