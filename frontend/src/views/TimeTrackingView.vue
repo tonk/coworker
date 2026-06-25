@@ -1904,6 +1904,7 @@ async function restoreCellChange(change) {
     is_holiday: before.is_holiday ?? false,
     start_time: before.start_time ?? null,
     end_time: before.end_time ?? null,
+    distance: before.distance ?? null,
   }
 
   if (existing) {
@@ -2301,7 +2302,7 @@ async function toggleCellHoliday(row, dateISO) {
 // copiedCell holds the full state of the last copied cell. It persists until
 // the user copies something else or presses Escape, so the same value can be
 // pasted into multiple cells.
-const copiedCell = ref(null) // { minutes, startTime, endTime, isHoliday, sourceKey }
+const copiedCell = ref(null) // { minutes, startTime, endTime, isHoliday, distance, sourceKey }
 const selectionAnchor = ref(null) // { rowIdx, dayIdx }
 const selectionFocus = ref(null)  // { rowIdx, dayIdx }
 const selectionFromKeyboard = ref(false)
@@ -2408,6 +2409,7 @@ function copyCellData(row, dateISO, rowIdx, dayIdx) {
     startTime: entry?.start_time ?? null,
     endTime:   entry?.end_time   ?? null,
     isHoliday: entry?.is_holiday ?? false,
+    distance:  entry?.distance   ?? null,
     sourceKey: srcRow.key + srcISO,
   }
 }
@@ -2428,6 +2430,7 @@ async function pasteCellDataOne(row, dateISO, src) {
           is_holiday:  src.isHoliday,
           start_time:  src.startTime,
           end_time:    src.endTime,
+          distance:    src.distance,
         })
         const idx = rawEntries.value.findIndex(e => e.id === existing.id)
         rawEntries.value[idx] = data
@@ -2441,6 +2444,7 @@ async function pasteCellDataOne(row, dateISO, src) {
           is_holiday:   src.isHoliday,
           start_time:   src.startTime,
           end_time:     src.endTime,
+          distance:     src.distance,
         })
         rawEntries.value.push(data)
         localRows.value = localRows.value.filter(r => r.key !== row.key)
