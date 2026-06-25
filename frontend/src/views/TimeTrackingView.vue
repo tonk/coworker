@@ -55,7 +55,8 @@
             <button v-for="c in holidayLocales" :key="c.locale"
               class="hol-country-btn" role="menuitem"
               @click="addHolidays(c.locale)">
-              <span class="hol-flag" :data-country="c.flag" aria-hidden="true"></span>{{ c.label }}
+              <span v-if="isTauri" class="hol-flag" :data-country="c.flag" aria-hidden="true"></span>
+              <span v-else class="hol-flag-emoji" aria-hidden="true">{{ c.emoji }}</span>{{ c.label }}
             </button>
           </div>
         </div>
@@ -1357,19 +1358,21 @@ function onWkPickerDocClick(e) {
 const holidaysDropOpen = ref(false)
 const holidaysDropRef  = ref(null)
 
+const isTauri = !!window.__TAURI_INTERNALS__
+
 const holidayLocales = [
-  { locale: 'en', flag: 'GB', label: 'United Kingdom' },
-  { locale: 'nl', flag: 'NL', label: 'Nederland' },
-  { locale: 'de', flag: 'DE', label: 'Deutschland' },
-  { locale: 'fr', flag: 'FR', label: 'France' },
-  { locale: 'es', flag: 'ES', label: 'España' },
-  { locale: 'da', flag: 'DK', label: 'Danmark' },
-  { locale: 'sv', flag: 'SE', label: 'Sverige' },
-  { locale: 'nb', flag: 'NO', label: 'Norge' },
-  { locale: 'fi', flag: 'FI', label: 'Suomi' },
-  { locale: 'is', flag: 'IS', label: 'Ísland' },
-  { locale: 'pt', flag: 'PT', label: 'Portugal' },
-  { locale: 'it', flag: 'IT', label: 'Italia' },
+  { locale: 'en', flag: 'GB', emoji: '🇬🇧', label: 'United Kingdom' },
+  { locale: 'nl', flag: 'NL', emoji: '🇳🇱', label: 'Nederland' },
+  { locale: 'de', flag: 'DE', emoji: '🇩🇪', label: 'Deutschland' },
+  { locale: 'fr', flag: 'FR', emoji: '🇫🇷', label: 'France' },
+  { locale: 'es', flag: 'ES', emoji: '🇪🇸', label: 'España' },
+  { locale: 'da', flag: 'DK', emoji: '🇩🇰', label: 'Danmark' },
+  { locale: 'sv', flag: 'SE', emoji: '🇸🇪', label: 'Sverige' },
+  { locale: 'nb', flag: 'NO', emoji: '🇳🇴', label: 'Norge' },
+  { locale: 'fi', flag: 'FI', emoji: '🇫🇮', label: 'Suomi' },
+  { locale: 'is', flag: 'IS', emoji: '🇮🇸', label: 'Ísland' },
+  { locale: 'pt', flag: 'PT', emoji: '🇵🇹', label: 'Portugal' },
+  { locale: 'it', flag: 'IT', emoji: '🇮🇹', label: 'Italia' },
 ]
 
 function onHolidaysDocClick(e) {
@@ -4033,6 +4036,7 @@ async function saveInvoiceFromGroup() {
   display: inline-block; width: 26px; height: 17px; border-radius: 2px; flex-shrink: 0;
   box-shadow: 0 0 0 1px rgba(0,0,0,.18);
 }
+.hol-flag-emoji { font-size: 18px; line-height: 1; flex-shrink: 0; }
 /* Horizontal tricolors */
 .hol-flag[data-country="NL"] { background: linear-gradient(to bottom, #AE1C28 0% 33.4%, #fff 33.4% 66.6%, #21468B 66.6% 100%); }
 .hol-flag[data-country="DE"] { background: linear-gradient(to bottom, #222 0% 33.4%, #DD0000 33.4% 66.6%, #FFCE00 66.6% 100%); }
