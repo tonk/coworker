@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Ripristina scheda",
     "card_restored": "Scheda ripristinata",
-    "card_restore_failed": "Ripristino scheda fallito"
+    "card_restore_failed": "Ripristino scheda fallito",
+    "show_closed": "Mostra chiusi",
+    "hide_closed": "Nascondi chiusi"
   },
   "chat": {
     "title": "Chat del team",
@@ -1312,6 +1314,8 @@
     "spam": "Spam",
     "mark_spam": "Contrassegna come spam",
     "unmark_spam": "Non è spam",
+    "show_closed": "Mostra chiusi",
+    "hide_closed": "Nascondi chiusi",
     "show_spam": "Mostra spam",
     "hide_spam": "Nascondi spam",
     "spam_banner": "Questo ticket è stato contrassegnato come spam.",

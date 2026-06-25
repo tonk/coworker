@@ -99,7 +99,8 @@ const { t } = useI18n()
 
 const props = defineProps({
   column: { type: Object, required: true },
-  canManageColumns: { type: Boolean, default: false }
+  canManageColumns: { type: Boolean, default: false },
+  showClosed: { type: Boolean, default: true },
 })
 const emit = defineEmits(['add-card', 'open-card', 'card-moved', 'rename-column', 'delete-column', 'edit-column'])
 
@@ -116,7 +117,11 @@ const wipTipPinned = ref(false)
 
 const PRIORITY_ORDER = { none: 0, low: 1, medium: 2, high: 3, critical: 4 }
 
-const cardCount = computed(() => (props.column.cards || []).length)
+const visibleCards = computed(() =>
+  props.showClosed ? (props.column.cards || []) : (props.column.cards || []).filter(c => !c.closed)
+)
+
+const cardCount = computed(() => visibleCards.value.length)
 
 const cardCountTooltip = computed(() =>
   t('board.column_cards_tooltip', { count: cardCount.value })
@@ -143,7 +148,7 @@ function togglePinnedWip() {
 }
 
 const sortedCards = computed(() => {
-  const cards = props.column.cards || []
+  const cards = visibleCards.value
   if (!sortField.value) return cards
   return [...cards].sort((a, b) => {
     let av, bv

@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Återställ kort",
     "card_restored": "Kort återställt",
-    "card_restore_failed": "Kunde inte återställa kort"
+    "card_restore_failed": "Kunde inte återställa kort",
+    "show_closed": "Visa stängda",
+    "hide_closed": "Dölj stängda"
   },
   "chat": {
     "title": "Teamchatt",
@@ -1312,6 +1314,8 @@
     "spam": "Spam",
     "mark_spam": "Markera som skräppost",
     "unmark_spam": "Inte skräppost",
+    "show_closed": "Visa stängda",
+    "hide_closed": "Dölj stängda",
     "show_spam": "Visa skräppost",
     "hide_spam": "Dölj skräppost",
     "spam_banner": "Det här ärendet har markerats som skräppost.",

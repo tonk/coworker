@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Gjenopprett kort",
     "card_restored": "Kort gjenopprettet",
-    "card_restore_failed": "Kunne ikke gjenopprette kort"
+    "card_restore_failed": "Kunne ikke gjenopprette kort",
+    "show_closed": "Vis lukkede",
+    "hide_closed": "Skjul lukkede"
   },
   "chat": {
     "title": "Teamchat",
@@ -1312,6 +1314,8 @@
     "spam": "Søppelpost",
     "mark_spam": "Merk som søppelpost",
     "unmark_spam": "Ikke søppelpost",
+    "show_closed": "Vis lukkede",
+    "hide_closed": "Skjul lukkede",
     "show_spam": "Vis søppelpost",
     "hide_spam": "Skjul søppelpost",
     "spam_banner": "Denne billetten er merket som søppelpost.",

@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Endurheimta spjald",
     "card_restored": "Spjaldi endurheimt",
-    "card_restore_failed": "Mistókst að endurheimta spjald"
+    "card_restore_failed": "Mistókst að endurheimta spjald",
+    "show_closed": "Sýna lokuð",
+    "hide_closed": "Fela lokuð"
   },
   "chat": {
     "title": "Liðsspjall",
@@ -1312,6 +1314,8 @@
     "spam": "Ruslpóstur",
     "mark_spam": "Merkja sem ruslpóst",
     "unmark_spam": "Ekki ruslpóstur",
+    "show_closed": "Sýna lokuð",
+    "hide_closed": "Fela lokuð",
     "show_spam": "Sýna ruslpóst",
     "hide_spam": "Fela ruslpóst",
     "spam_banner": "Þessi miði hefur verið merktur sem ruslpóstur.",

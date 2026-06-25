@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Kaart herstellen",
     "card_restored": "Kaart hersteld",
-    "card_restore_failed": "Kaart herstellen mislukt"
+    "card_restore_failed": "Kaart herstellen mislukt",
+    "show_closed": "Toon gesloten",
+    "hide_closed": "Verberg gesloten"
   },
   "chat": {
     "title": "Teamchat",
@@ -1312,6 +1314,8 @@
     "spam": "Spam",
     "mark_spam": "Markeer als spam",
     "unmark_spam": "Geen spam",
+    "show_closed": "Toon gesloten",
+    "hide_closed": "Verberg gesloten",
     "show_spam": "Toon spam",
     "hide_spam": "Verberg spam",
     "spam_banner": "Dit ticket is gemarkeerd als spam.",

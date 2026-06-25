@@ -36,6 +36,10 @@
             <button role="tab" :aria-selected="viewMode === 'group'" :class="['view-toggle-btn', { active: viewMode === 'group' }]" @click="viewMode = 'group'">⊞ {{ $t('ticket.group_view') }}</button>
             <button role="tab" :aria-selected="viewMode === 'list'" :class="['view-toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
           </div>
+          <button :class="['btn btn-sm', showClosed ? 'btn-secondary' : 'btn-warning']" @click="showClosed = !showClosed">
+            {{ showClosed ? $t('ticket.hide_closed') : $t('ticket.show_closed') }}
+            <span v-if="!showClosed && closedCount > 0" class="spam-count-badge">{{ closedCount }}</span>
+          </button>
           <button :class="['btn btn-sm', showSpam ? 'btn-warning' : 'btn-secondary']" @click="showSpam = !showSpam">
             {{ showSpam ? $t('ticket.hide_spam') : $t('ticket.show_spam') }}
             <span v-if="!showSpam && spamCount > 0" class="spam-count-badge">{{ spamCount }}</span>
@@ -468,13 +472,23 @@ const customerGroups = ref([])
 const customerUsers = ref([])
 const viewMode = ref(localStorage.getItem('ticket_view_mode') || 'cards')
 const showSpam = ref(false)
+const showClosed = ref(localStorage.getItem('ticket_show_closed') !== 'false')
 
 watch(viewMode, (val) => {
   localStorage.setItem('ticket_view_mode', val)
 })
 
+watch(showClosed, (val) => {
+  localStorage.setItem('ticket_show_closed', String(val))
+})
+
 const spamCount = computed(() => tickets.value.filter(t => t.is_spam).length)
-const visibleTickets = computed(() => showSpam.value ? tickets.value : tickets.value.filter(t => !t.is_spam))
+const closedCount = computed(() => tickets.value.filter(t => t.status === 'closed' && !t.is_spam).length)
+const visibleTickets = computed(() => {
+  let result = showSpam.value ? tickets.value : tickets.value.filter(t => !t.is_spam)
+  if (!showClosed.value) result = result.filter(t => t.status !== 'closed')
+  return result
+})
 const groupSubMode = ref(localStorage.getItem('ticket_group_sub_mode') || 'cards')
 
 watch(groupSubMode, (val) => {

@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Karte wiederherstellen",
     "card_restored": "Karte wiederhergestellt",
-    "card_restore_failed": "Fehler beim Wiederherstellen der Karte"
+    "card_restore_failed": "Fehler beim Wiederherstellen der Karte",
+    "show_closed": "Geschlossene anzeigen",
+    "hide_closed": "Geschlossene ausblenden"
   },
   "chat": {
     "title": "Team-Chat",
@@ -1312,6 +1314,8 @@
     "spam": "Spam",
     "mark_spam": "Als Spam markieren",
     "unmark_spam": "Kein Spam",
+    "show_closed": "Geschlossene anzeigen",
+    "hide_closed": "Geschlossene ausblenden",
     "show_spam": "Spam anzeigen",
     "hide_spam": "Spam ausblenden",
     "spam_banner": "Dieses Ticket wurde als Spam markiert.",

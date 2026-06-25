@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Palauta kortti",
     "card_restored": "Kortti palautettu",
-    "card_restore_failed": "Kortin palautus epäonnistui"
+    "card_restore_failed": "Kortin palautus epäonnistui",
+    "show_closed": "Näytä suljetut",
+    "hide_closed": "Piilota suljetut"
   },
   "chat": {
     "title": "Tiimichatti",
@@ -1312,6 +1314,8 @@
     "spam": "Roskaposti",
     "mark_spam": "Merkitse roskapostiksi",
     "unmark_spam": "Ei roskapostia",
+    "show_closed": "Näytä suljetut",
+    "hide_closed": "Piilota suljetut",
     "show_spam": "Näytä roskaposti",
     "hide_spam": "Piilota roskaposti",
     "spam_banner": "Tämä tiketti on merkitty roskapostiksi.",

@@ -418,7 +418,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Restore Card",
     "card_restored": "Card restored",
-    "card_restore_failed": "Failed to restore card"
+    "card_restore_failed": "Failed to restore card",
+    "show_closed": "Show Closed",
+    "hide_closed": "Hide Closed"
   },
   "chat": {
     "title": "Team Chat",
@@ -886,6 +888,8 @@
     "spam": "Spam",
     "mark_spam": "Mark as Spam",
     "unmark_spam": "Not Spam",
+    "show_closed": "Show Closed",
+    "hide_closed": "Hide Closed",
     "show_spam": "Show Spam",
     "hide_spam": "Hide Spam",
     "spam_banner": "This ticket has been marked as spam.",

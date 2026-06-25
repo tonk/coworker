@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Restaurer la carte",
     "card_restored": "Carte restaurée",
-    "card_restore_failed": "Échec de la restauration de la carte"
+    "card_restore_failed": "Échec de la restauration de la carte",
+    "show_closed": "Afficher les fermées",
+    "hide_closed": "Masquer les fermées"
   },
   "chat": {
     "title": "Chat d'équipe",
@@ -1312,6 +1314,8 @@
     "spam": "Spam",
     "mark_spam": "Marquer comme spam",
     "unmark_spam": "Pas de spam",
+    "show_closed": "Afficher les clôturés",
+    "hide_closed": "Masquer les clôturés",
     "show_spam": "Afficher le spam",
     "hide_spam": "Masquer le spam",
     "spam_banner": "Ce ticket a été marqué comme spam.",

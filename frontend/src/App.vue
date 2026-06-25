@@ -137,12 +137,21 @@ const nameLabels = {
   gantt: 'Gantt',
   backlog: 'Backlog',
   'sprint-board': 'Sprint',
+  epics: 'Epics',
+  charts: 'Charts',
   customers: 'Customers',
   'customer-detail': 'Customer',
+  tickets: 'Tickets',
+  'ticket-detail': 'Ticket',
+  inbox: 'Inbox',
+  'inbox-ticket-detail': 'Ticket',
   chats: 'Chats',
   admin: 'Admin',
   reports: 'Reports',
   settings: 'Settings',
+  news: 'News',
+  invoices: 'Invoices',
+  'time-tracking': 'Time Tracking',
 }
 
 const routeCrumbs = computed(() => {
@@ -157,6 +166,10 @@ const routeCrumbs = computed(() => {
       label = 'Projects'
     } else if (part === 'customers') {
       label = 'Customers'
+    } else if (part === 'tickets') {
+      label = 'Tickets'
+    } else if (part === 'inbox') {
+      label = 'Inbox'
     } else if (part === 'chats') {
       label = 'Chats'
     } else {

@@ -395,7 +395,9 @@
     "sort_desc_action": "Sort descending",
     "restore_card": "Gendan kort",
     "card_restored": "Kort gendannet",
-    "card_restore_failed": "Kunne ikke gendanne kort"
+    "card_restore_failed": "Kunne ikke gendanne kort",
+    "show_closed": "Vis lukkede",
+    "hide_closed": "Skjul lukkede"
   },
   "chat": {
     "title": "Teamchat",
@@ -1312,6 +1314,8 @@
     "spam": "Spam",
     "mark_spam": "Markér som spam",
     "unmark_spam": "Ikke spam",
+    "show_closed": "Vis lukkede",
+    "hide_closed": "Skjul lukkede",
     "show_spam": "Vis spam",
     "hide_spam": "Skjul spam",
     "spam_banner": "Denne billet er markeret som spam.",

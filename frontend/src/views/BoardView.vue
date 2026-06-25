@@ -32,6 +32,10 @@
         <RouterLink :to="`/projects/${slug}/topics`" class="btn btn-ghost btn-sm">
           💬 {{ $t('topics.title') }}
         </RouterLink>
+        <button
+          :class="['btn btn-sm', showClosed ? 'btn-secondary' : 'btn-warning']"
+          @click="toggleShowClosed"
+        >{{ showClosed ? $t('board.hide_closed') : $t('board.show_closed') }}<span v-if="!showClosed && closedCardCount > 0" class="closed-count-badge">{{ closedCardCount }}</span></button>
         <button v-if="canManageColumns" class="btn btn-secondary btn-sm" @click="showAddColumn = true">
           + {{ $t('board.add_column') }}
         </button>
@@ -51,6 +55,7 @@
             :column="col"
             :data-column-id="col.id"
             :can-manage-columns="canManageColumns"
+            :show-closed="showClosed"
             @add-card="openAddCard"
             @open-card="openCardDetail"
             @card-moved="onCardMoved"
@@ -156,6 +161,15 @@ const newColumn = ref({ name: '', color: '#94a3b8', wip: '' })
 const editColumn = ref({ name: '', color: '#94a3b8', wip: '' })
 const columnsEl = ref(null)
 let columnSortable = null
+
+const showClosed = ref(localStorage.getItem('board_show_closed') !== 'false')
+function toggleShowClosed() {
+  showClosed.value = !showClosed.value
+  localStorage.setItem('board_show_closed', String(showClosed.value))
+}
+const closedCardCount = computed(() =>
+  boardStore.columns.reduce((sum, col) => sum + (col.cards || []).filter(c => c.closed).length, 0)
+)
 
 const projectMembers = ref([])
 
@@ -445,4 +459,18 @@ async function onCardMoved({ cardId, fromColumnId, toColumnId, newIndex }) {
 :global(.column-drag) { transform: rotate(1deg); box-shadow: var(--shadow-md); }
 
 .form-hint { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; margin-bottom: 0; }
+
+.closed-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-text-muted);
+  color: #fff;
+  border-radius: 9999px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+  line-height: 1.4;
+}
 </style>
