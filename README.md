@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.31)
+## Latest release (v0.12.32)
 
-- **Hideable sidebar** — hover the sidebar edge to reveal a collapse button; a thin strip brings it back.
-- **Desktop context menu** — the WebKit right-click menu is suppressed in the desktop app.
+- **Time tracking copy/paste** — copying a cell now carries distance, start/end time, and holiday flag to the target cell(s).
+- **Holiday country flags** — emoji flags are restored in the browser holidays dropdown.
 
 ## Experiment
 

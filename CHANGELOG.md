@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.12.32 — 2026-06-25
+
+### Fixed
+- **Time tracking copy/paste** — copying a cell now includes distance, start/end time, and holiday flag; all fields are pasted and correctly restored on undo.
+
+### Changed
+- **Holiday country flags** — emoji flags in the browser holidays dropdown are restored.
+
 ## v0.12.31 — 2026-06-19
 
 ### Added

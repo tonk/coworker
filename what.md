@@ -746,3 +746,5 @@ Create an application that has all these features and requirements
 - Hide Email Notifications and Personal API Keys in user settings when in timetracking mode
 - Add black (pure #000000 / AMOLED) theme option to the header quick theme switcher
 - Fix card delete confirmation dialog appearing behind the open card detail modal
+- Restore emoji flags in browser holidays dropdown
+- Copy time tracking cell including distance, start/end time, and holiday flag; paste and undo restore all fields
