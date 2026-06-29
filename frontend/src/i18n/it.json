@@ -67,6 +67,8 @@
     "labels": "Etichette",
     "archive": "Archivia",
     "delete": "Elimina progetto",
+    "close_board": "Chiudi bacheca",
+    "reopen_board": "Riapri bacheca",
     "no_projects": "Nessun progetto ancora. Crea il tuo primo progetto!",
     "star": "Aggiungi ai preferiti",
     "unstar": "Rimuovi dai preferiti",
@@ -397,7 +399,10 @@
     "card_restored": "Scheda ripristinata",
     "card_restore_failed": "Ripristino scheda fallito",
     "show_closed": "Mostra chiusi",
-    "hide_closed": "Nascondi chiusi"
+    "hide_closed": "Nascondi chiusi",
+    "board_closed": "Questa bacheca è chiusa.",
+    "close_board": "Chiudi bacheca",
+    "reopen_board": "Riapri bacheca"
   },
   "chat": {
     "title": "Chat del team",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Gli utenti vengono avvisati di cambiare la password dopo questo numero di giorni. Impostare a 0 per disabilitare.",
     "deleted": "Eliminato",
     "show_deleted": "Mostra eliminati",
+    "show_closed": "Mostra chiusi",
+    "closed": "Chiuso",
     "restore": "Ripristina",
     "purge_project": "Elimina definitivamente",
     "purge_project_confirm": "Eliminare definitivamente \"{name}\"? Non è possibile annullare — tutte le card, colonne, etichette, cronologia chat e sprint andranno perse per sempre.",

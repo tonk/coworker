@@ -66,6 +66,8 @@
     "members": "Members",
     "labels": "Labels",
     "archive": "Archive",
+    "close_board": "Close Board",
+    "reopen_board": "Reopen Board",
     "delete": "Delete Project",
     "no_projects": "No projects yet. Create your first project!",
     "star": "Star project",
@@ -420,7 +422,10 @@
     "card_restored": "Card restored",
     "card_restore_failed": "Failed to restore card",
     "show_closed": "Show Closed",
-    "hide_closed": "Hide Closed"
+    "hide_closed": "Hide Closed",
+    "board_closed": "This board is closed.",
+    "close_board": "Close Board",
+    "reopen_board": "Reopen Board"
   },
   "chat": {
     "title": "Team Chat",
@@ -487,6 +492,8 @@
     "unarchive": "Unarchive",
     "deleted": "Deleted",
     "show_deleted": "Show deleted",
+    "show_closed": "Show closed",
+    "closed": "Closed",
     "show_inactive": "Show inactive",
     "new_user": "New User",
     "restore": "Restore",

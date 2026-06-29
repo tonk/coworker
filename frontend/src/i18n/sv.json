@@ -67,6 +67,8 @@
     "labels": "Etiketter",
     "archive": "Arkivera",
     "delete": "Ta bort projekt",
+    "close_board": "Stäng anslagstavla",
+    "reopen_board": "Öppna anslagstavla igen",
     "no_projects": "Inga projekt ännu. Skapa ditt första projekt!",
     "star": "Stjärnmärk projekt",
     "unstar": "Ta bort stjärnmärkning",
@@ -397,7 +399,10 @@
     "card_restored": "Kort återställt",
     "card_restore_failed": "Kunde inte återställa kort",
     "show_closed": "Visa stängda",
-    "hide_closed": "Dölj stängda"
+    "hide_closed": "Dölj stängda",
+    "board_closed": "Denna anslagstavla är stängd.",
+    "close_board": "Stäng anslagstavla",
+    "reopen_board": "Öppna anslagstavla igen"
   },
   "chat": {
     "title": "Teamchatt",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "deleted": "Raderad",
     "show_deleted": "Visa raderade",
+    "show_closed": "Visa stängda",
+    "closed": "Stängd",
     "restore": "Återställ",
     "purge_project": "Ta bort permanent",
     "purge_project_confirm": "Ta bort projekt \"{name}\" permanent? Detta kan inte ångras — alla kort, kolumner, etiketter, chatthistorik och sprintar kommer att gå förlorade för alltid.",

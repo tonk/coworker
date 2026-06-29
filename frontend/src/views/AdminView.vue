@@ -181,6 +181,10 @@
               <input type="checkbox" v-model="showDeletedProjects" @change="loadProjects()" />
               {{ $t('admin.show_deleted') }}
             </label>
+            <label v-if="!showDeletedProjects" class="toggle-label" style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+              <input type="checkbox" v-model="showClosedProjects" @change="loadProjects()" />
+              {{ $t('admin.show_closed') }}
+            </label>
             <input v-model="projectSearch" class="form-input admin-search" type="search" :placeholder="$t('common.search')" aria-label="Search projects" />
           </div>
           <div v-if="loadingProjects" class="loading-state">
@@ -218,6 +222,7 @@
                 </td>
                 <td>
                   <span v-if="showDeletedProjects" class="badge badge-deleted">{{ $t('admin.deleted') }}</span>
+                  <span v-else-if="project.is_closed" class="badge badge-closed">{{ $t('admin.closed') }}</span>
                   <span v-else :class="['badge', project.is_archived ? 'badge-inactive' : 'badge-active']">
                     {{ project.is_archived ? $t('admin.archived') : $t('admin.active') }}
                   </span>
@@ -233,6 +238,9 @@
                   </template>
                   <template v-else>
                     <button class="btn btn-ghost btn-sm" @click="openEditProject(project)">{{ $t('common.edit') }}</button>
+                    <button class="btn btn-ghost btn-sm" @click="toggleClosedProject(project)">
+                      {{ project.is_closed ? $t('board.reopen_board') : $t('board.close_board') }}
+                    </button>
                     <button class="btn btn-ghost btn-sm" @click="toggleArchive(project)">
                       {{ project.is_archived ? $t('admin.unarchive') : $t('project.archive') }}
                     </button>
@@ -1943,6 +1951,7 @@ const loading = ref(true)
 const projects = ref([])
 const loadingProjects = ref(false)
 const showDeletedProjects = ref(false)
+const showClosedProjects = ref(false)
 let projectsLoaded = false
 
 const showInactiveUsers = ref(false)
@@ -2390,7 +2399,8 @@ async function loadProjects() {
   loadingProjects.value = true
   projectsLoaded = false
   try {
-    const { data } = await adminApi.listProjects(showDeletedProjects.value)
+    const closed = showDeletedProjects.value ? undefined : (showClosedProjects.value ? 'true' : 'hide')
+    const { data } = await adminApi.listProjects(showDeletedProjects.value, closed)
     projects.value = data
     projectsLoaded = true
   } finally {
@@ -3256,6 +3266,16 @@ async function toggleArchive(project) {
   }
 }
 
+async function toggleClosedProject(project) {
+  try {
+    const { data } = await adminApi.updateProject(project.id, { is_closed: !project.is_closed })
+    const idx = projects.value.findIndex(p => p.id === project.id)
+    if (idx >= 0) projects.value[idx] = data
+  } catch {
+    ui.error('Failed to update project')
+  }
+}
+
 async function deleteProject(project) {
   if (!await ui.confirm(`Delete project "${project.name}"?`, { destructive: true })) return
   try {
@@ -3553,6 +3573,7 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 }
 .badge-active { background: #dcfce7; color: #166534; }
 .badge-inactive { background: #fee2e2; color: #991b1b; }
+.badge-closed { background: #fef3c7; color: #92400e; }
 .badge-deleted { background: #f1f5f9; color: #64748b; }
 .badge-mfa { background: #dbeafe; color: #1e40af; margin-left: 6px; }
 [data-theme="dark"] .badge-active { background: #14532d; color: #86efac; }

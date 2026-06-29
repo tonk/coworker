@@ -67,6 +67,8 @@
     "labels": "Etiketter",
     "archive": "Arkiver",
     "delete": "Slett prosjekt",
+    "close_board": "Lukk board",
+    "reopen_board": "Gjenåpne board",
     "no_projects": "Ingen prosjekter ennå. Opprett ditt første prosjekt!",
     "star": "Merk prosjekt",
     "unstar": "Fjern merking",
@@ -397,7 +399,10 @@
     "card_restored": "Kort gjenopprettet",
     "card_restore_failed": "Kunne ikke gjenopprette kort",
     "show_closed": "Vis lukkede",
-    "hide_closed": "Skjul lukkede"
+    "hide_closed": "Skjul lukkede",
+    "board_closed": "Dette boardet er stengt.",
+    "close_board": "Lukk board",
+    "reopen_board": "Gjenåpne board"
   },
   "chat": {
     "title": "Teamchat",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "deleted": "Slettet",
     "show_deleted": "Vis slettede",
+    "show_closed": "Vis stengte",
+    "closed": "Stengt",
     "restore": "Gjenopprett",
     "purge_project": "Slett permanent",
     "purge_project_confirm": "Slett prosjekt \"{name}\" permanent? Dette kan ikke angres — alle kort, kolonner, etiketter, chathistorikk og sprinter vil gå tapt for alltid.",

@@ -1,5 +1,5 @@
 = WarmDesk — User Guide
-:revnumber: v0.12.35
+:revnumber: v0.12.36
 :revdate: 2026-06-29
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -293,11 +293,13 @@ Click again to unstar.
 
 The gear icon on the board toolbar (visible to project admins and owners) opens *Project Settings*, which has tabs for:
 
-* *General* — rename or delete the project
+* *General* — rename, close/reopen, or delete the project; close hides the board from the sidebar and project list
 * *Members* — invite, change roles, remove members
 * *Labels* — create and manage card labels for this project
 * *API Keys* — generate API keys for the Ticket API
 * *Webhooks* — set up git platform integrations (see the API Reference)
+
+A closed project remains accessible via its direct URL, and can be reopened from *General → Danger Zone* or by a global admin in the *Admin Panel → Projects* table.
 
 '''
 

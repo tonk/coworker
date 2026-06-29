@@ -68,6 +68,11 @@ func AdminListProjects(c *gin.Context) {
 	} else {
 		q = q.Where("deleted_at IS NULL")
 	}
+	if closed := c.Query("closed"); closed == "true" {
+		q = q.Where("is_closed = true")
+	} else if closed == "hide" {
+		q = q.Where("is_closed = false")
+	}
 	q.Find(&projects)
 
 	result := make([]AdminProjectListItem, len(projects))
@@ -105,6 +110,7 @@ func AdminUpdateProject(c *gin.Context) {
 		Color       string  `json:"color"`
 		Avatar      *string `json:"avatar"`
 		IsArchived  *bool   `json:"is_archived"`
+		IsClosed    *bool   `json:"is_closed"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -126,6 +132,9 @@ func AdminUpdateProject(c *gin.Context) {
 	}
 	if req.IsArchived != nil {
 		updates["is_archived"] = *req.IsArchived
+	}
+	if req.IsClosed != nil {
+		updates["is_closed"] = *req.IsClosed
 	}
 
 	if err := database.DB.Model(&models.Project{}).Where("id = ?", id).Updates(updates).Error; err != nil {

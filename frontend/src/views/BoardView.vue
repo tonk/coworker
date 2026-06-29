@@ -42,6 +42,11 @@
       </div>
     </div>
 
+    <div v-if="projectStore.currentProject?.is_closed" class="board-closed-banner">
+      {{ $t('board.board_closed') }}
+      <RouterLink v-if="canManageColumns" :to="`/projects/${slug}/settings`" class="btn btn-sm btn-secondary" style="margin-left:12px">⚙ {{ $t('project.settings') }}</RouterLink>
+    </div>
+
     <div class="board-body">
       <div class="board-columns-wrap">
         <div v-if="boardStore.loading" class="board-loading">
@@ -472,5 +477,16 @@ async function onCardMoved({ cardId, fromColumnId, toColumnId, newIndex }) {
   font-weight: 600;
   margin-left: 6px;
   line-height: 1.4;
+}
+
+.board-closed-banner {
+  background: var(--color-warning-bg, #fef3c7);
+  color: var(--color-warning-text, #92400e);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--color-warning-border, #fde68a);
 }
 </style>

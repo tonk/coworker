@@ -65,7 +65,12 @@
 
           <div class="danger-zone">
             <h3>Danger Zone</h3>
-            <button class="btn btn-danger" @click="confirmDelete">{{ $t('project.delete') }}</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn" :class="project?.is_closed ? 'btn-secondary' : 'btn-warning'" @click="toggleClosed">
+                {{ project?.is_closed ? '🔓' : '🔒' }} {{ project?.is_closed ? $t('board.reopen_board') : $t('board.close_board') }}
+              </button>
+              <button class="btn btn-danger" @click="confirmDelete">{{ $t('project.delete') }}</button>
+            </div>
           </div>
         </div>
 
@@ -438,9 +443,11 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/common/BaseModal.vue'
 import CardDetail from '@/components/board/CardDetail.vue'
 import { useProjectStore } from '@/stores/project'
+import { useSidebarStore } from '@/stores/sidebar'
 import { useUIStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import { projectsApi } from '@/api/projects'
@@ -455,10 +462,12 @@ import { attachmentsApi } from '@/api/attachments'
 import HelpIcon from '@/components/common/HelpIcon.vue'
 
 const route = useRoute()
+const { t } = useI18n()
 const { formatDateTime } = useDateFormat()
 const router = useRouter()
 const slug = computed(() => route.params.slug)
 const projectStore = useProjectStore()
+const sidebarStore = useSidebarStore()
 const ui = useUIStore()
 const auth = useAuthStore()
 
@@ -643,6 +652,21 @@ async function onProjectAvatarSelected(e) {
 
 function groupAvatar(group) {
   return resolveAssetUrl(group?.avatar || '')
+}
+
+async function toggleClosed() {
+  if (!project.value) return
+  const isClosed = !project.value.is_closed
+  try {
+    const data = await projectStore.updateProject(slug.value, { is_closed: isClosed })
+    project.value = data
+    ui.success(isClosed ? t('board.board_closed') : t('board.reopen_board'))
+    // Refresh sidebar so closed projects disappear / reappear
+    sidebarStore.fetchAllProjects()
+    sidebarStore.fetchStarred()
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to update project')
+  }
 }
 
 async function confirmDelete() {

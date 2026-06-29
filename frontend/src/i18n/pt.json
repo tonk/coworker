@@ -67,6 +67,8 @@
     "labels": "Etiquetas",
     "archive": "Arquivar",
     "delete": "Eliminar projeto",
+    "close_board": "Fechar quadro",
+    "reopen_board": "Reabrir quadro",
     "no_projects": "Ainda não há projetos. Crie o seu primeiro projeto!",
     "star": "Marcar projeto",
     "unstar": "Remover marcação",
@@ -397,7 +399,10 @@
     "card_restored": "Cartão restaurado",
     "card_restore_failed": "Falha ao restaurar cartão",
     "show_closed": "Mostrar fechados",
-    "hide_closed": "Ocultar fechados"
+    "hide_closed": "Ocultar fechados",
+    "board_closed": "Este quadro está fechado.",
+    "close_board": "Fechar quadro",
+    "reopen_board": "Reabrir quadro"
   },
   "chat": {
     "title": "Chat da equipa",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Os utilizadores são notificados para alterar a palavra-passe após este número de dias. Defina 0 para desativar.",
     "deleted": "Eliminado",
     "show_deleted": "Mostrar eliminados",
+    "show_closed": "Mostrar fechados",
+    "closed": "Fechado",
     "restore": "Restaurar",
     "purge_project": "Eliminar permanentemente",
     "purge_project_confirm": "Eliminar permanentemente \"{name}\"? Isto não pode ser desfeito — todos os cartões, colunas, etiquetas, histórico de chat e sprints serão perdidos para sempre.",

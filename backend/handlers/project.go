@@ -87,16 +87,22 @@ func projectsWithCounts(projects []models.Project) []ProjectListItem {
 // @Tags         projects
 // @Produce      json
 // @Security     BearerAuth
+// @Param        include_closed query string false "Set to 'true' to include closed projects"
 // @Success      200 {array}  models.Project
 // @Router       /projects [get]
 func ListProjects(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	globalRole := middleware.GetGlobalRole(c)
+	includeClosed := c.Query("include_closed") == "true"
 
 	// Admins and global viewers see all non-deleted, non-time-tracking-only projects
 	if globalRole == "admin" || globalRole == "viewer" {
 		var projects []models.Project
-		database.DB.Preload("Customer").Preload("Contract").Where("deleted_at IS NULL AND time_tracking_only = false").Order("position asc, id asc").Find(&projects)
+		q := database.DB.Preload("Customer").Preload("Contract").Where("deleted_at IS NULL AND time_tracking_only = false")
+		if !includeClosed {
+			q = q.Where("is_closed = false")
+		}
+		q.Order("position asc, id asc").Find(&projects)
 		c.JSON(http.StatusOK, projectsWithCounts(projects))
 		return
 	}
@@ -108,6 +114,9 @@ func ListProjects(c *gin.Context) {
 	projects := make([]models.Project, 0, len(members))
 	for _, m := range members {
 		if m.Project.DeletedAt.Valid || m.Project.TimeTrackingOnly {
+			continue
+		}
+		if !includeClosed && m.Project.IsClosed {
 			continue
 		}
 		seen[m.Project.ID] = struct{}{}
@@ -130,8 +139,12 @@ func ListProjects(c *gin.Context) {
 		}
 		if len(extra) > 0 {
 			var gProjects []models.Project
-			database.DB.Preload("Customer").Preload("Contract").
-				Where("id IN ? AND deleted_at IS NULL", extra).Find(&gProjects)
+			q := database.DB.Preload("Customer").Preload("Contract").
+				Where("id IN ? AND deleted_at IS NULL", extra)
+			if !includeClosed {
+				q = q.Where("is_closed = false")
+			}
+			q.Find(&gProjects)
 			projects = append(projects, gProjects...)
 		}
 	}
@@ -349,17 +362,13 @@ func UpdateProject(c *gin.Context) {
 		Color       string  `json:"color"`
 		Avatar      *string `json:"avatar"`
 		IsArchived  *bool   `json:"is_archived"`
+		IsClosed    *bool   `json:"is_closed"`
 		BoardType   string  `json:"board_type"`
 		CustomerID  *uint   `json:"customer_id"`
 		ContractID  *uint   `json:"contract_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
-		return
-	}
-
-	if req.CustomerID == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "customer is required"})
 		return
 	}
 
@@ -379,9 +388,16 @@ func UpdateProject(c *gin.Context) {
 	if req.IsArchived != nil {
 		updates["is_archived"] = *req.IsArchived
 	}
+	if req.IsClosed != nil {
+		updates["is_closed"] = *req.IsClosed
+	}
 	// board_type is immutable after project creation
-	updates["customer_id"] = req.CustomerID
-	updates["contract_id"] = req.ContractID
+	if req.CustomerID != nil {
+		updates["customer_id"] = req.CustomerID
+	}
+	if req.ContractID != nil {
+		updates["contract_id"] = req.ContractID
+	}
 
 	database.DB.Model(project).Updates(updates)
 	database.DB.First(project, project.ID)

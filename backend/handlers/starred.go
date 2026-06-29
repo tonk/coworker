@@ -52,7 +52,7 @@ func ListStarredProjects(c *gin.Context) {
 
 	var projects []models.Project
 	if len(projectIDs) > 0 {
-		database.DB.Preload("Customer").Where("id IN ?", projectIDs).Find(&projects)
+		database.DB.Preload("Customer").Where("id IN ? AND is_closed = false", projectIDs).Find(&projects)
 	}
 
 	c.JSON(http.StatusOK, projects)

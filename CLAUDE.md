@@ -166,6 +166,13 @@ services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "me
 // role levels: "viewer" < "member" < "owner" (admins bypass all checks)
 ```
 
+### Project closed state
+Projects have an `IsClosed` field (`is_closed` in JSON). A closed board is hidden from the sidebar (both "All Projects" and "Starred") and excluded from `GET /api/v1/projects` by default. It remains accessible via direct URL and can be reopened from **Project Settings → General → Danger Zone** or the **Admin Panel → Projects** table. Only project owners/admins and global admins can close/reopen a project.
+
+- `ListProjects` (`handlers/project.go`) adds `WHERE is_closed = false` unless `?include_closed=true`.
+- `ListStarredProjects` (`handlers/starred.go`) filters out closed projects.
+- `AdminListProjects` (`handlers/admin_project.go`) supports `?closed=true` (only closed) and `?closed=hide` (only open).
+
 ### Adding a new route
 1. Add handler function to the appropriate `handlers/*.go` file (or a new file).
 2. Register the route in `router/router.go` under the correct group (`protected`, `admin`, `projects`, etc.).

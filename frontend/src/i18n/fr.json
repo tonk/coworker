@@ -67,6 +67,8 @@
     "labels": "Étiquettes",
     "archive": "Archiver",
     "delete": "Supprimer le projet",
+    "close_board": "Fermer le tableau",
+    "reopen_board": "Rouvrir le tableau",
     "no_projects": "Aucun projet pour l'instant. Créez votre premier projet !",
     "star": "Marquer le projet",
     "unstar": "Retirer le marquage",
@@ -397,7 +399,10 @@
     "card_restored": "Carte restaurée",
     "card_restore_failed": "Échec de la restauration de la carte",
     "show_closed": "Afficher les fermées",
-    "hide_closed": "Masquer les fermées"
+    "hide_closed": "Masquer les fermées",
+    "board_closed": "Ce tableau est fermé.",
+    "close_board": "Fermer le tableau",
+    "reopen_board": "Rouvrir le tableau"
   },
   "chat": {
     "title": "Chat d'équipe",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Les utilisateurs sont invités à changer leur mot de passe après ce nombre de jours. Mettre 0 pour désactiver.",
     "deleted": "Supprimé",
     "show_deleted": "Afficher supprimés",
+    "show_closed": "Afficher les fermés",
+    "closed": "Fermé",
     "restore": "Restaurer",
     "purge_project": "Supprimer définitivement",
     "purge_project_confirm": "Supprimer définitivement \"{name}\" ? Cette action est irréversible — toutes les cartes, colonnes, labels, messages et sprints seront perdus à jamais.",

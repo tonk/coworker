@@ -67,6 +67,8 @@
     "labels": "Tunnisteet",
     "archive": "Arkistoi",
     "delete": "Poista projekti",
+    "close_board": "Sulje taulu",
+    "reopen_board": "Avaa taulu uudelleen",
     "no_projects": "Ei projekteja vielä. Luo ensimmäinen projektisi!",
     "star": "Tähdistä projekti",
     "unstar": "Poista tähti",
@@ -397,7 +399,10 @@
     "card_restored": "Kortti palautettu",
     "card_restore_failed": "Kortin palautus epäonnistui",
     "show_closed": "Näytä suljetut",
-    "hide_closed": "Piilota suljetut"
+    "hide_closed": "Piilota suljetut",
+    "board_closed": "Tämä taulu on suljettu.",
+    "close_board": "Sulje taulu",
+    "reopen_board": "Avaa taulu uudelleen"
   },
   "chat": {
     "title": "Tiimichatti",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "deleted": "Poistettu",
     "show_deleted": "Näytä poistetut",
+    "show_closed": "Näytä suljetut",
+    "closed": "Suljettu",
     "restore": "Palauta",
     "purge_project": "Poista pysyvästi",
     "purge_project_confirm": "Poista projekti \"{name}\" pysyvästi? Tätä ei voi kumota — kaikki kortit, sarakkeet, tarrat, keskusteluhistoria ja sprintit menetetään ikuisesti.",

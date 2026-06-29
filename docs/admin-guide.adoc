@@ -1,5 +1,5 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.12.35
+:revnumber: v0.12.36
 :revdate: 2026-06-29
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -994,13 +994,20 @@ Templates have no effect on invoice creation via the API unless the client expli
 
 === Projects
 
-Admins can create, rename, archive, and delete any project regardless of project membership.
+Admins can create, rename, archive, close/reopen, and delete any project regardless of project membership.
 Access via *Admin → Projects*.
+
+The table shows a *Status* column with *Active*, *Archived*, or *Closed* badges.
+Use the *Show closed* toggle to filter only closed projects when the default list hides them.
+Each project row has *Close Board* / *Reopen Board* buttons for quick toggling.
 
 When creating a project the *Card Prefix* field sets the short identifier used in all card references (e.g. `PRJ-42`).
 It is auto-generated from the project name but can be freely edited before saving — 1–10 uppercase letters or digits.
 The prefix must be *unique* across all projects; if the auto-generated value is already taken a numeric suffix is appended automatically (`WAR`, `WAR2`, `WAR3`, …).
 The prefix *cannot be changed after the project is created* — existing card codes in commit messages and external integrations would become invalid.
+
+Closing a project hides it from the sidebar and project list for all users (unless they pass `?include_closed=true`).
+The project remains accessible via its direct URL and can be reopened from *Admin → Projects* or by a project owner from *Project Settings → General → Danger Zone*.
 
 === Time tracking
 

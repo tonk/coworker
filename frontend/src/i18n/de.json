@@ -67,6 +67,8 @@
     "labels": "Labels",
     "archive": "Archivieren",
     "delete": "Projekt löschen",
+    "close_board": "Board schließen",
+    "reopen_board": "Board wieder öffnen",
     "no_projects": "Noch keine Projekte. Erstellen Sie Ihr erstes Projekt!",
     "star": "Projekt markieren",
     "unstar": "Markierung entfernen",
@@ -397,7 +399,10 @@
     "card_restored": "Karte wiederhergestellt",
     "card_restore_failed": "Fehler beim Wiederherstellen der Karte",
     "show_closed": "Geschlossene anzeigen",
-    "hide_closed": "Geschlossene ausblenden"
+    "hide_closed": "Geschlossene ausblenden",
+    "board_closed": "Dieses Board ist geschlossen.",
+    "close_board": "Board schließen",
+    "reopen_board": "Board wieder öffnen"
   },
   "chat": {
     "title": "Team-Chat",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Benutzer werden nach dieser Anzahl von Tagen aufgefordert, ihr Passwort zu ändern. Auf 0 setzen, um zu deaktivieren.",
     "deleted": "Gelöscht",
     "show_deleted": "Gelöschte anzeigen",
+    "show_closed": "Geschlossene anzeigen",
+    "closed": "Geschlossen",
     "restore": "Wiederherstellen",
     "purge_project": "Dauerhaft löschen",
     "purge_project_confirm": "Projekt \"{name}\" dauerhaft löschen? Dies kann nicht rückgängig gemacht werden — alle Karten, Spalten, Labels, Chatverlauf und Sprints gehen für immer verloren.",

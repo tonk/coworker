@@ -67,6 +67,8 @@
     "labels": "Labels",
     "archive": "Archiveren",
     "delete": "Project verwijderen",
+    "close_board": "Bord sluiten",
+    "reopen_board": "Bord heropenen",
     "no_projects": "Nog geen projecten. Maak uw eerste project aan!",
     "star": "Project markeren",
     "unstar": "Markering verwijderen",
@@ -397,7 +399,10 @@
     "card_restored": "Kaart hersteld",
     "card_restore_failed": "Kaart herstellen mislukt",
     "show_closed": "Toon gesloten",
-    "hide_closed": "Verberg gesloten"
+    "hide_closed": "Verberg gesloten",
+    "board_closed": "Dit bord is gesloten.",
+    "close_board": "Bord sluiten",
+    "reopen_board": "Bord heropenen"
   },
   "chat": {
     "title": "Teamchat",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Gebruikers worden gevraagd hun wachtwoord te wijzigen na dit aantal dagen. Stel in op 0 om uit te schakelen.",
     "deleted": "Verwijderd",
     "show_deleted": "Toon verwijderd",
+    "show_closed": "Gesloten tonen",
+    "closed": "Gesloten",
     "restore": "Herstellen",
     "purge_project": "Definitief verwijderen",
     "purge_project_confirm": "Project \"{name}\" definitief verwijderen? Dit kan niet ongedaan worden gemaakt — alle kaarten, kolommen, labels, chatberichten en sprints worden voor altijd verwijderd.",

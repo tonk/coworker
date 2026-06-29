@@ -17,6 +17,7 @@ type Project struct {
 	Color        string          `gorm:"size:7" json:"color"`
 	Avatar       string          `gorm:"size:500" json:"avatar"`
 	IsArchived   bool            `gorm:"default:false" json:"is_archived"`
+	IsClosed     bool            `gorm:"default:false" json:"is_closed"`
 	KeyPrefix    string          `gorm:"uniqueIndex;size:10;not null;default:''" json:"key_prefix"`
 	Position     int             `gorm:"default:0" json:"position"`
 	CardCounter  int             `gorm:"default:0" json:"-"`

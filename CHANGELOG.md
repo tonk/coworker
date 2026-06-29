@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.12.36 — 2026-06-29
+
+### Added
+- **Close board / project closed state** — projects can now be closed (hidden from sidebar and project lists) and reopened from Project Settings → Danger Zone or Admin Panel → Projects.
+- **Admin show/hide closed projects** — "Show closed" toggle in Admin → Projects table filters the list; closed projects show a "Closed" badge.
+- **Closed board banner** — a yellow banner appears on closed boards with a link to reopen from Project Settings.
+- **Closed project i18n** — all 12 frontend locales translated for close/reopen board actions and closed status labels.
+
+### Changed
+- **ListProjects filters closed** — `GET /api/v1/projects` excludes `is_closed = true` by default; use `?include_closed=true` to include them.
+- **ListStarredProjects filters closed** — starred/favorite endpoints also exclude closed projects.
+- **AdminListProjects closed param** — supports `?closed=true` (only closed) and `?closed=hide` (only open).
+- **UpdateProject no longer requires customer_id** — partial updates (e.g. toggling `is_closed`) no longer need to include `customer_id`.
+- **Close/reopen moved to Project Settings** — the close button is in the Danger Zone (project owners/admins only) rather than the board toolbar.
+- **User & admin guides updated** — PDF guides document the new close/reopen feature.
+
+### Documentation
+- **CLAUDE.md** — project closed state section documenting API filtering and admin options.
+- **User guide** — close/reopen documented in Project Settings with sidebar visibility note.
+- **Admin guide** — close/reopen, show/hide closed, and status badges documented.
+
 ## v0.12.35 — 2026-06-29
 
 ### Added

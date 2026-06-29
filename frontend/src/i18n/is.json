@@ -67,6 +67,8 @@
     "labels": "Merki",
     "archive": "Geyma",
     "delete": "Eyða verkefni",
+    "close_board": "Loka borði",
+    "reopen_board": "Opna borð aftur",
     "no_projects": "Engin verkefni enn. Stofnaðu fyrsta verkefnið þitt!",
     "star": "Stjörnumerkja verkefni",
     "unstar": "Fjarlægja stjörnu",
@@ -397,7 +399,10 @@
     "card_restored": "Spjaldi endurheimt",
     "card_restore_failed": "Mistókst að endurheimta spjald",
     "show_closed": "Sýna lokuð",
-    "hide_closed": "Fela lokuð"
+    "hide_closed": "Fela lokuð",
+    "board_closed": "Þetta borð er lokað.",
+    "close_board": "Loka borði",
+    "reopen_board": "Opna borð aftur"
   },
   "chat": {
     "title": "Liðsspjall",
@@ -556,6 +561,8 @@
     "password_change_period_hint": "Users are notified to change their password after this many days. Set to 0 to disable.",
     "deleted": "Eytt",
     "show_deleted": "Sýna eydd",
+    "show_closed": "Sýna lokuð",
+    "closed": "Lokað",
     "restore": "Endurheimta",
     "purge_project": "Eyða varanlega",
     "purge_project_confirm": "Eyða \"{name}\" varanlega? Þetta er óafturkallanlegt — öll spjöld, dálkar, merki, spjallferill og sprettur tapast að eilífu.",
