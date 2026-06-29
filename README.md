@@ -8,7 +8,7 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.36)
+## Latest release (v0.12.37)
 
 - **Macro server sync** — libraries follow your account across browsers and devices; demo seed includes sample teaching/travel macros.
 - **Run vs edit** — bottom-bar *⚡ Macro* runs a macro on the current week (pick start day); top-bar *⚡* opens the editor.

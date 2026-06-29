@@ -92,9 +92,14 @@ func ListCustomers(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
 	isAdmin := middleware.GetGlobalRole(c) == "admin"
+	includeHidden := c.Query("include_hidden") == "true"
 
 	var customers []models.Customer
-	database.DB.Where("time_tracking_only = false").Order("position asc, id asc").Find(&customers)
+	q := database.DB.Where("time_tracking_only = false")
+	if !includeHidden {
+		q = q.Where("is_hidden = false")
+	}
+	q.Order("position asc, id asc").Find(&customers)
 
 	// myRoles maps customerID → effective role (direct or via group) for the current user.
 	myRoles := make(map[uint]string)
@@ -294,6 +299,7 @@ func UpdateCustomer(c *gin.Context) {
 		BillingCountry    string `json:"billing_country"`
 		VATNumber         string `json:"vat_number"`
 		POReference       string `json:"po_reference"`
+		IsHidden          *bool  `json:"is_hidden"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -311,6 +317,10 @@ func UpdateCustomer(c *gin.Context) {
 	}
 	if req.Name != "" {
 		updates["name"] = req.Name
+	}
+	// is_hidden: only global admins can set this field
+	if req.IsHidden != nil && middleware.GetGlobalRole(c) == "admin" {
+		updates["is_hidden"] = *req.IsHidden
 	}
 	database.DB.Model(&cust).Updates(updates)
 	database.DB.First(&cust, id)

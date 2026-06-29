@@ -130,7 +130,11 @@
     "contact_primary": "Primær",
     "contact_is_primary": "Angiv som primær kontakt",
     "delete_contact_confirm": "Slet denne kontakt?",
-    "tab_overview": "Oversigt"
+    "tab_overview": "Oversigt",
+    "is_hidden": "Skjult",
+    "hide": "Skjul",
+    "unhide": "Vis",
+    "show_hidden": "Vis skjulte"
   },
   "contract": {
     "contracts": "Kontrakter",

@@ -130,7 +130,11 @@
     "contact_primary": "Primär",
     "contact_is_primary": "Ange som primär kontakt",
     "delete_contact_confirm": "Ta bort denna kontakt?",
-    "tab_overview": "Översikt"
+    "tab_overview": "Översikt",
+    "is_hidden": "Dold",
+    "hide": "Dölj",
+    "unhide": "Visa",
+    "show_hidden": "Visa dolda"
   },
   "contract": {
     "contracts": "Kontrakt",

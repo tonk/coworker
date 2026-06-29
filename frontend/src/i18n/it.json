@@ -130,7 +130,11 @@
     "contact_primary": "Principale",
     "contact_is_primary": "Imposta come contatto principale",
     "delete_contact_confirm": "Eliminare questo contatto?",
-    "tab_overview": "Panoramica"
+    "tab_overview": "Panoramica",
+    "is_hidden": "Nascosto",
+    "hide": "Nascondi",
+    "unhide": "Mostra",
+    "show_hidden": "Mostra nascosti"
   },
   "contract": {
     "contracts": "Contratti",

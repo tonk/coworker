@@ -130,7 +130,11 @@
     "contact_primary": "Aðal",
     "contact_is_primary": "Stilla sem aðaltengil",
     "delete_contact_confirm": "Eyða þessum tengilið?",
-    "tab_overview": "Yfirlit"
+    "tab_overview": "Yfirlit",
+    "is_hidden": "Falinn",
+    "hide": "Fela",
+    "unhide": "Sýna",
+    "show_hidden": "Sýna falin"
   },
   "contract": {
     "contracts": "Samningar",

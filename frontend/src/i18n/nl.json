@@ -130,7 +130,11 @@
     "contact_primary": "Primair",
     "contact_is_primary": "Instellen als primair contactpersoon",
     "delete_contact_confirm": "Dit contactpersoon verwijderen?",
-    "tab_overview": "Overzicht"
+    "tab_overview": "Overzicht",
+    "is_hidden": "Verborgen",
+    "hide": "Verbergen",
+    "unhide": "Tonen",
+    "show_hidden": "Verborgenen tonen"
   },
   "contract": {
     "contracts": "Contracten",

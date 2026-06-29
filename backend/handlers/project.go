@@ -95,6 +95,9 @@ func ListProjects(c *gin.Context) {
 	globalRole := middleware.GetGlobalRole(c)
 	includeClosed := c.Query("include_closed") == "true"
 
+	// Subquery to identify hidden customer IDs
+	hiddenCustIDs := database.DB.Table("customers").Select("id").Where("is_hidden = true")
+
 	// Admins and global viewers see all non-deleted, non-time-tracking-only projects
 	if globalRole == "admin" || globalRole == "viewer" {
 		var projects []models.Project
@@ -102,7 +105,8 @@ func ListProjects(c *gin.Context) {
 		if !includeClosed {
 			q = q.Where("is_closed = false")
 		}
-		q.Order("position asc, id asc").Find(&projects)
+		q.Where("(customer_id NOT IN (?) OR customer_id IS NULL)", hiddenCustIDs).
+			Order("position asc, id asc").Find(&projects)
 		c.JSON(http.StatusOK, projectsWithCounts(projects))
 		return
 	}
@@ -117,6 +121,9 @@ func ListProjects(c *gin.Context) {
 			continue
 		}
 		if !includeClosed && m.Project.IsClosed {
+			continue
+		}
+		if m.Project.Customer != nil && m.Project.Customer.IsHidden {
 			continue
 		}
 		seen[m.Project.ID] = struct{}{}
@@ -144,7 +151,8 @@ func ListProjects(c *gin.Context) {
 			if !includeClosed {
 				q = q.Where("is_closed = false")
 			}
-			q.Find(&gProjects)
+			q.Where("(customer_id NOT IN (?) OR customer_id IS NULL)", hiddenCustIDs).
+				Find(&gProjects)
 			projects = append(projects, gProjects...)
 		}
 	}

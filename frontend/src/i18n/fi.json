@@ -130,7 +130,11 @@
     "contact_primary": "Ensisijainen",
     "contact_is_primary": "Aseta ensisijaiseksi yhteyshenkilöksi",
     "delete_contact_confirm": "Poista tämä yhteyshenkilö?",
-    "tab_overview": "Yleiskatsaus"
+    "tab_overview": "Yleiskatsaus",
+    "is_hidden": "Piilotettu",
+    "hide": "Piilota",
+    "unhide": "Näytä",
+    "show_hidden": "Näytä piilotetut"
   },
   "contract": {
     "contracts": "Sopimukset",

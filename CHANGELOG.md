@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.12.37 — 2026-06-29
+
+### Added
+- **Customer hide/unhide** — customers can be hidden (filtered from list views and sidebar by default) and unhidden via Admin → Customers. A "Show hidden" checkbox controls visibility in the admin table. Projects belonging to hidden customers are excluded from project lists.
+- **Customer `is_hidden` i18n** — all 12 frontend locales translated for hide/unhide and show hidden actions.
+
+### Fixed
+- **Admin customer hide/unhide no longer zeroes counts** — `toggleHideCustomer` now updates `is_hidden` in-place on the `CustomerListItem` instead of replacing the whole object with the bare `Customer` response, preserving `contract_count`, `project_count`, `my_role`, and other list-only fields.
+
 ## v0.12.36 — 2026-06-29
 
 ### Added

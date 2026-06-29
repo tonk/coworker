@@ -9,6 +9,7 @@ type Customer struct {
 	Description      string    `gorm:"type:text" json:"description"`
 	LogoURL          string    `gorm:"size:500" json:"logo_url"`
 	Position         int       `gorm:"default:0" json:"position"`
+	IsHidden         bool      `gorm:"default:false" json:"is_hidden"`
 	TimeTrackingOnly bool      `gorm:"default:false" json:"time_tracking_only"`
 	CreatedByID      *uint     `gorm:"index" json:"created_by_id,omitempty"`
 	// Billing address

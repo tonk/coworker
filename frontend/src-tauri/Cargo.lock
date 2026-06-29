@@ -4633,7 +4633,7 @@ dependencies = [
 
 [[package]]
 name = "warmdesk"
-version = "0.12.36"
+version = "0.12.37"
 dependencies = [
  "reqwest 0.12.28",
  "serde",

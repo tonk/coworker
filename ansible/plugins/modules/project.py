@@ -80,6 +80,16 @@ options:
       - Defaults to C(false) on creation; if omitted on update the current
         value is preserved.
     type: bool
+  is_closed:
+    description:
+      - Whether the project board should be closed. Closed projects are hidden
+        from sidebar lists and excluded from I(GET /api/v1/projects) by default.
+      - Can be set to C(true) to close or C(false) to reopen a project board.
+        Only project owners, admins, and global admins can close/reopen a
+        project.
+      - Defaults to C(false) on creation; if omitted on update the current
+        value is preserved.
+    type: bool
   starred:
     description:
       - Whether the authenticated user should star this project.
@@ -155,6 +165,24 @@ EXAMPLES = r'''
     board_type: scrum
     state: present
 
+- name: Close a project board
+  ansilabnl.warmdesk.project:
+    warmdesk_url: https://desk.example.com
+    warmdesk_token: "{{ vault_wd_token }}"
+    name: Edge Data Analytics
+    customer: Acme Corp
+    is_closed: true
+    state: present
+
+- name: Reopen a project board
+  ansilabnl.warmdesk.project:
+    warmdesk_url: https://desk.example.com
+    warmdesk_token: "{{ vault_wd_token }}"
+    name: Edge Data Analytics
+    customer: Acme Corp
+    is_closed: false
+    state: present
+
 - name: Ensure a project does not exist
   ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
@@ -206,6 +234,10 @@ project:
       sample: EDA
     is_archived:
       description: Whether the project is archived.
+      type: bool
+      sample: false
+    is_closed:
+      description: Whether the project board is closed.
       type: bool
       sample: false
     position:
@@ -289,6 +321,8 @@ def _build_update_body(params, customer_id, contract_id, existing):
         body['color'] = params['color']
     if params['is_archived'] is not None:
         body['is_archived'] = params['is_archived']
+    if params['is_closed'] is not None:
+        body['is_closed'] = params['is_closed']
 
     # customer/contract: None means "caller did not supply the param" (preserve
     # existing value); an explicit empty string means "clear the association".
@@ -307,6 +341,7 @@ def _needs_update(existing, desired_body):
         'description': 'description',
         'color': 'color',
         'is_archived': 'is_archived',
+        'is_closed': 'is_closed',
         'customer_id': 'customer_id',
         'contract_id': 'contract_id',
     }
@@ -333,6 +368,7 @@ def run_module():
         customer=dict(type='str'),
         contract=dict(type='str'),
         is_archived=dict(type='bool'),
+        is_closed=dict(type='bool'),
         starred=dict(type='bool'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     )
@@ -444,6 +480,8 @@ def run_module():
             update_body['color'] = params['color']
         if params['is_archived'] is not None:
             update_body['is_archived'] = params['is_archived']
+        if params['is_closed'] is not None:
+            update_body['is_closed'] = params['is_closed']
         # Always include customer/contract so the server can clear them
         update_body['customer_id'] = resolved_customer_id
         update_body['contract_id'] = resolved_contract_id

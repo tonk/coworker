@@ -306,6 +306,10 @@
         <div v-show="tab === 'customers'" role="tabpanel" id="tab-panel-customers" aria-labelledby="tab-btn-customers">
           <div class="tab-toolbar">
             <button class="btn btn-primary btn-sm" @click="showCreateCustomer = true">+ {{ $t('customer.new_customer') }}</button>
+            <label class="checkbox-label" style="margin-left:12px;white-space:nowrap">
+              <input type="checkbox" v-model="showHiddenCustomers" @change="reloadAdminCustomers" />
+              {{ $t('customer.show_hidden') }}
+            </label>
             <input v-model="customerSearch" class="form-input admin-search" type="search" :placeholder="$t('common.search')" aria-label="Search customers" />
           </div>
           <div v-if="loadingCustomers" class="loading-state">
@@ -334,6 +338,7 @@
                 </td>
                 <td>
                   <RouterLink :to="`/customers/${c.id}`" style="font-weight:600">{{ c.name }}</RouterLink>
+                  <span v-if="c.is_hidden" class="badge badge-warning" style="margin-left:6px;font-size:11px">{{ $t('customer.is_hidden') }}</span>
                   <div v-if="c.description" style="font-size:12px;color:var(--color-text-muted)">{{ c.description }}</div>
                 </td>
                 <td>{{ c.contract_count }}</td>
@@ -341,6 +346,8 @@
                 <td>
                   <div class="actions-cell">
                     <button class="btn btn-ghost btn-sm" @click="openEditCustomer(c)">{{ $t('common.edit') }}</button>
+                    <button v-if="c.is_hidden" class="btn btn-ghost btn-sm" @click="toggleHideCustomer(c, false)">{{ $t('customer.unhide') }}</button>
+                    <button v-else class="btn btn-ghost btn-sm" @click="toggleHideCustomer(c, true)">{{ $t('customer.hide') }}</button>
                     <button class="btn btn-ghost btn-sm btn-danger" @click="deleteAdminCustomer(c)">{{ $t('common.delete') }}</button>
                   </div>
                 </td>
@@ -1959,6 +1966,7 @@ const userSearch = ref('')
 const projectSearch = ref('')
 const groupSearch = ref('')
 const customerSearch = ref('')
+const showHiddenCustomers = ref(false)
 
 const editUser = ref(null)
 const editUserApiKeys = ref([])
@@ -3289,10 +3297,10 @@ async function deleteProject(project) {
 }
 
 async function loadAdminCustomers() {
-  if (adminCustomersLoaded) return
+  if (adminCustomersLoaded && !showHiddenCustomers.value) return
   loadingCustomers.value = true
   try {
-    const { data } = await customersApi.list()
+    const { data } = await customersApi.list({ include_hidden: showHiddenCustomers.value ? 'true' : undefined })
     adminCustomers.value = data || []
     adminCustomersLoaded = true
   } catch {
@@ -3300,6 +3308,11 @@ async function loadAdminCustomers() {
   } finally {
     loadingCustomers.value = false
   }
+}
+
+function reloadAdminCustomers() {
+  adminCustomersLoaded = false
+  loadAdminCustomers()
 }
 
 async function submitCreateCustomer() {
@@ -3355,6 +3368,17 @@ async function deleteAdminCustomer(c) {
     ui.success('Customer deleted')
   } catch {
     ui.error('Failed to delete customer')
+  }
+}
+
+async function toggleHideCustomer(c, hidden) {
+  try {
+    const { data } = await customersApi.update(c.id, { is_hidden: hidden })
+    const idx = adminCustomers.value.findIndex(ac => ac.id === c.id)
+    if (idx >= 0) adminCustomers.value[idx] = data
+    ui.success(hidden ? 'Customer hidden' : 'Customer unhidden')
+  } catch {
+    ui.error('Failed to update customer')
   }
 }
 
