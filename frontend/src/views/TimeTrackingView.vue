@@ -184,7 +184,12 @@
 
               <!-- Normal mode -->
               <template v-else>
-                <td class="c-info">
+                <td
+                  class="c-info"
+                  :class="{ 'tt-field-editable': !viewingOther }"
+                  :title="!viewingOther ? $t('common.double_click_edit') : undefined"
+                  @dblclick="onRowFieldDblClick(row)"
+                >
                   <div class="rc-cust">{{ row.customer_name || '—' }}</div>
                   <div v-if="row.contract_name" class="rc-contract">{{ row.contract_name }}</div>
                   <div v-else class="rc-proj">{{ row.project_name || '—' }}</div>
@@ -193,7 +198,9 @@
                     :class="{ 'has-comment': !!rowComments[row.key] }"
                     :aria-label="rowComments[row.key] ? $t('timeTracking.edit_comment') : $t('timeTracking.add_comment')"
                     :title="rowComments[row.key] ? $t('timeTracking.edit_comment') : $t('timeTracking.add_comment')"
-                    @click.stop="openRowComment(row)">
+                    @click.stop="openRowComment(row)"
+                    @dblclick.stop
+                  >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   </button>
                   <Teleport to="body">
@@ -207,7 +214,12 @@
                   </Teleport>
                 </span>
                 </td>
-                <td class="c-desc">{{ row.description || '—' }}</td>
+                <td
+                  class="c-desc"
+                  :class="{ 'tt-field-editable': !viewingOther }"
+                  :title="!viewingOther ? $t('common.double_click_edit') : undefined"
+                  @dblclick="onRowFieldDblClick(row)"
+                >{{ row.description || '—' }}</td>
               </template>
 
               <td class="c-rate">
@@ -217,7 +229,7 @@
                 </span>
               </td>
 
-              <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), copiedCell?.sourceKey === row.key + d.iso ? 'c-day-copied' : '', d.isToday ? 'c-day-today' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
+              <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), isCellCopied(row, d.iso) ? 'c-day-copied' : '', d.isToday ? 'c-day-today' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
                 <input
                   :key="'c' + cellRenderEpoch + '-' + row.key + '-' + d.iso"
                   :id="'tt-cell-' + idx + '-' + di"
@@ -437,6 +449,9 @@
           <button class="btn-add-row" @click="startAddRow">
             ＋ {{ $t('timeTracking.add_row') }}
           </button>
+          <button class="btn-copy-prev" @click="macroEditorOpen = true" aria-label="Open macro editor">
+            ⚡ Macro
+          </button>
           <button class="btn-copy-prev" @click="copyPrevWeek" :disabled="copyingPrevWeek" :aria-label="$t('timeTracking.copy_prev_week')">
             {{ copyingPrevWeek ? '…' : '⇐' }} {{ $t('timeTracking.copy_prev_week') }}
           </button>
@@ -529,6 +544,102 @@
         </div>
       </div>
     </div>
+
+    <BaseModal
+      v-if="macroEditorOpen"
+      title="Time Macro"
+      :resizable="true"
+      style="--modal-width: 1180px"
+      @close="macroEditorOpen = false"
+    >
+      <p class="macro-hint">Create reusable rows with preset customer, project, activity, and values for the first two days.</p>
+      <div class="macro-toolbar">
+        <div class="macro-toolbar-group">
+          <label class="form-label" for="macro-select">Macro</label>
+          <select id="macro-select" class="form-input" v-model="selectedMacroId" aria-label="Select macro">
+            <option v-for="m in macroLibrary.macros" :key="m.id" :value="m.id">{{ m.name }}</option>
+          </select>
+        </div>
+        <div class="macro-toolbar-actions">
+          <button class="btn btn-secondary" @click="createMacroTemplate">New Macro</button>
+          <button class="btn btn-secondary" @click="duplicateMacroTemplate">Duplicate Macro</button>
+          <button class="btn btn-secondary" :disabled="macroLibrary.macros.length <= 1" @click="deleteMacroTemplate">Delete Macro</button>
+          <button class="btn btn-secondary" @click="exportMacroLibrary">Export JSON</button>
+          <button class="btn btn-secondary" @click="openMacroImport">Import JSON</button>
+          <input ref="macroImportRef" class="sr-only" type="file" accept="application/json,.json" @change="importMacroLibrary" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="macro-name">Macro name</label>
+        <input id="macro-name" class="form-input" type="text" v-model="activeMacro.name" />
+      </div>
+      <div class="macro-grid" role="table" aria-label="Macro rows">
+        <div class="macro-head" role="row">
+          <span>Customer</span>
+          <span>Project</span>
+          <span>Activity</span>
+          <span>{{ weekDays[0]?.abbr || 'Day 1' }}</span>
+          <span>{{ (weekDays[0]?.abbr || 'Day 1') + ' start' }}</span>
+          <span>{{ (weekDays[0]?.abbr || 'Day 1') + ' end' }}</span>
+          <span>{{ weekDays[1]?.abbr || 'Day 2' }}</span>
+          <span>{{ (weekDays[1]?.abbr || 'Day 2') + ' start' }}</span>
+          <span>{{ (weekDays[1]?.abbr || 'Day 2') + ' end' }}</span>
+          <span>{{ (weekDays[0]?.abbr || 'Day 1') + ' km' }}</span>
+          <span>{{ (weekDays[1]?.abbr || 'Day 2') + ' km' }}</span>
+          <span>Action</span>
+        </div>
+        <div
+          v-for="(row, idx) in activeMacro.rows"
+          :key="idx"
+          class="macro-row"
+          role="row"
+        >
+          <label class="sr-only" :for="'macro-customer-' + idx">Customer {{ idx + 1 }}</label>
+          <select :id="'macro-customer-' + idx" class="form-input" v-model="row.customer_id" @change="onMacroCustomerChange(row)">
+            <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
+            <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+          <label class="sr-only" :for="'macro-project-' + idx">Project {{ idx + 1 }}</label>
+          <select :id="'macro-project-' + idx" class="form-input" v-model="row.project_id">
+            <option :value="null">{{ $t('timeTracking.no_project') }}</option>
+            <option v-for="p in macroProjectsForRow(row)" :key="p.id" :value="p.id">{{ p.name }}</option>
+          </select>
+          <label class="sr-only" :for="'macro-activity-' + idx">Activity {{ idx + 1 }}</label>
+          <input :id="'macro-activity-' + idx" class="form-input" type="text" v-model="row.description" />
+          <label class="sr-only" :for="'macro-day1-min-' + idx">Day 1 time {{ idx + 1 }}</label>
+          <input :id="'macro-day1-min-' + idx" class="form-input" type="text" v-model="row.day1_minutes" :placeholder="timeNotation === 'hhmm' ? '1:30' : '1.5'" />
+          <label class="sr-only" :for="'macro-day1-start-' + idx">Day 1 start {{ idx + 1 }}</label>
+          <input :id="'macro-day1-start-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day1_start" placeholder="09:00" />
+          <label class="sr-only" :for="'macro-day1-end-' + idx">Day 1 end {{ idx + 1 }}</label>
+          <input :id="'macro-day1-end-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day1_end" placeholder="17:00" />
+          <label class="sr-only" :for="'macro-day2-min-' + idx">Day 2 time {{ idx + 1 }}</label>
+          <input :id="'macro-day2-min-' + idx" class="form-input" type="text" v-model="row.day2_minutes" :placeholder="timeNotation === 'hhmm' ? '1:30' : '1.5'" />
+          <label class="sr-only" :for="'macro-day2-start-' + idx">Day 2 start {{ idx + 1 }}</label>
+          <input :id="'macro-day2-start-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day2_start" placeholder="09:00" />
+          <label class="sr-only" :for="'macro-day2-end-' + idx">Day 2 end {{ idx + 1 }}</label>
+          <input :id="'macro-day2-end-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day2_end" placeholder="17:00" />
+          <label class="sr-only" :for="'macro-day1-dist-' + idx">Day 1 distance {{ idx + 1 }}</label>
+          <input :id="'macro-day1-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day1_distance" />
+          <label class="sr-only" :for="'macro-day2-dist-' + idx">Day 2 distance {{ idx + 1 }}</label>
+          <input :id="'macro-day2-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day2_distance" />
+          <button class="btn btn-secondary macro-row-remove" :disabled="activeMacro.rows.length <= 1" @click="removeMacroRow(idx)" :aria-label="'Remove macro row ' + (idx + 1)">Remove</button>
+        </div>
+      </div>
+      <div class="macro-actions">
+        <button class="btn btn-secondary" @click="addMacroRow">Add Row</button>
+        <div class="macro-apply-options">
+          <label class="form-label" for="macro-apply-days">Apply days</label>
+          <input id="macro-apply-days" class="form-input macro-days-input" type="number" min="1" max="7" v-model.number="macroApplyDaysCount" />
+          <span class="macro-apply-note">(day 1/day 2 pattern repeats)</span>
+        </div>
+      </div>
+      <p class="macro-apply-preview">{{ macroApplyPreview }}</p>
+      <template #footer>
+        <button class="btn" @click="macroEditorOpen = false">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-secondary" @click="saveMacroTemplate">Save Macro</button>
+        <button class="btn btn-primary" @click="applyMacroTemplate">Run Macro</button>
+      </template>
+    </BaseModal>
 
     <BaseModal
       v-if="standbyRow"
@@ -2066,6 +2177,12 @@ const editRowProjects = computed(() => {
   return [...projects.value.filter(p => p.customer_id === editForm.value.customer_id), ...ttProjects.value]
 })
 
+function onRowFieldDblClick(row) {
+  if (viewingOther.value) return
+  if (deletingRow.value === row.key) return
+  startEditRow(row)
+}
+
 function startEditRow(row) {
   cancelDeleteRow()
   editForm.value = { customer_id: row.customer_id, project_id: row.project_id, contract_id: row.contract_id || null, description: row.description }
@@ -2299,10 +2416,9 @@ async function toggleCellHoliday(row, dateISO) {
 }
 
 // ── Cell selection, copy / paste ──────────────────────────────────────────
-// copiedCell holds the full state of the last copied cell. It persists until
-// the user copies something else or presses Escape, so the same value can be
-// pasted into multiple cells.
-const copiedCell = ref(null) // { minutes, startTime, endTime, isHoliday, distance, sourceKey }
+// copiedBlock holds a rectangular grid of copied cells. It persists across
+// week navigation until the user copies something else or presses Escape.
+const copiedBlock = ref(null) // { height, width, cells[][], sourceKeys[] }
 const selectionAnchor = ref(null) // { rowIdx, dayIdx }
 const selectionFocus = ref(null)  // { rowIdx, dayIdx }
 const selectionFromKeyboard = ref(false)
@@ -2310,6 +2426,30 @@ const selectionFromKeyboard = ref(false)
 function clearCellSelection() {
   selectionAnchor.value = null
   selectionFocus.value = null
+}
+
+function getSelectionRect() {
+  if (!selectionAnchor.value || !selectionFocus.value) return null
+  const r0 = Math.min(selectionAnchor.value.rowIdx, selectionFocus.value.rowIdx)
+  const r1 = Math.max(selectionAnchor.value.rowIdx, selectionFocus.value.rowIdx)
+  const d0 = Math.min(selectionAnchor.value.dayIdx, selectionFocus.value.dayIdx)
+  const d1 = Math.max(selectionAnchor.value.dayIdx, selectionFocus.value.dayIdx)
+  return { r0, r1, d0, d1, height: r1 - r0 + 1, width: d1 - d0 + 1 }
+}
+
+function snapshotCellData(row, dateISO) {
+  const entry = getEntry(row, dateISO)
+  return {
+    minutes:   entry?.minutes    ?? 0,
+    startTime: entry?.start_time ?? null,
+    endTime:   entry?.end_time   ?? null,
+    isHoliday: entry?.is_holiday ?? false,
+    distance:  entry?.distance   ?? null,
+  }
+}
+
+function isCellCopied(row, dateISO) {
+  return copiedBlock.value?.sourceKeys?.includes(row.key + dateISO) ?? false
 }
 
 function clampSelection(rowIdx, dayIdx) {
@@ -2389,28 +2529,36 @@ function moveCellSelection(rowIdx, dayIdx, extend) {
 }
 
 function copyCellData(row, dateISO, rowIdx, dayIdx) {
-  let srcRow = row
-  let srcISO = dateISO
-  if (selectionAnchor.value) {
-    const anchorRow = sortedRows.value[selectionAnchor.value.rowIdx]
-    const anchorISO = weekDays.value[selectionAnchor.value.dayIdx]?.iso
-    if (anchorRow && anchorISO) {
-      srcRow = anchorRow
-      srcISO = anchorISO
-    }
-  } else if (rowIdx != null && dayIdx != null) {
+  let rect = getSelectionRect()
+  if (!rect && rowIdx != null && dayIdx != null) {
     selectionAnchor.value = { rowIdx, dayIdx }
     selectionFocus.value = { rowIdx, dayIdx }
+    rect = getSelectionRect()
   }
-  const entry = getEntry(srcRow, srcISO)
-  if (!entry && !cellVal(srcRow, srcISO)) return
-  copiedCell.value = {
-    minutes:   entry?.minutes    ?? 0,
-    startTime: entry?.start_time ?? null,
-    endTime:   entry?.end_time   ?? null,
-    isHoliday: entry?.is_holiday ?? false,
-    distance:  entry?.distance   ?? null,
-    sourceKey: srcRow.key + srcISO,
+  if (!rect) return
+
+  const cells = []
+  const sourceKeys = []
+  for (let ri = rect.r0; ri <= rect.r1; ri++) {
+    const rowArr = []
+    const srcRow = sortedRows.value[ri]
+    for (let di = rect.d0; di <= rect.d1; di++) {
+      const iso = weekDays.value[di]?.iso
+      if (!srcRow || !iso) {
+        rowArr.push(null)
+        continue
+      }
+      rowArr.push(snapshotCellData(srcRow, iso))
+      sourceKeys.push(srcRow.key + iso)
+    }
+    cells.push(rowArr)
+  }
+
+  copiedBlock.value = {
+    height: rect.height,
+    width: rect.width,
+    cells,
+    sourceKeys,
   }
 }
 
@@ -2459,19 +2607,93 @@ async function pasteCellDataOne(row, dateISO, src) {
   }
 }
 
-async function pasteCellData(row, dateISO) {
-  const src = copiedCell.value
-  if (!src) return
-  const targets = getSelectedCells()
-  const cells = targets.length > 0 ? targets : [{ row, dateISO }]
-  const undoItems = cells.map(cell => ({
+async function clearCellDataOne(row, dateISO) {
+  const existing = getEntry(row, dateISO)
+  if (!existing) return
+  const ck = row.key + dateISO
+  savingCell.value = ck
+  try {
+    await timeEntriesApi.remove(existing.id)
+    rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+    ensureLocalRow(row)
+  } finally {
+    if (savingCell.value === ck) savingCell.value = ''
+  }
+}
+
+async function pasteCellData(row, dateISO, rowIdx, dayIdx) {
+  const block = copiedBlock.value
+  if (!block) return
+
+  let targets = []
+
+  if (block.height === 1 && block.width === 1) {
+    const src = block.cells[0][0]
+    const selected = getSelectedCells()
+    if (selected.length > 1) {
+      targets = selected.map(cell => ({ row: cell.row, dateISO: cell.dateISO, src }))
+    } else {
+      targets = [{ row, dateISO, src }]
+    }
+  } else {
+    let pasteR = rowIdx
+    let pasteD = dayIdx
+    if (selectionAnchor.value) {
+      pasteR = Math.min(selectionAnchor.value.rowIdx, selectionFocus.value?.rowIdx ?? rowIdx)
+      pasteD = Math.min(selectionAnchor.value.dayIdx, selectionFocus.value?.dayIdx ?? dayIdx)
+    }
+    for (let r = 0; r < block.height; r++) {
+      for (let c = 0; c < block.width; c++) {
+        const cellData = block.cells[r]?.[c]
+        if (cellData == null) continue
+        const ri = pasteR + r
+        const di = pasteD + c
+        const destRow = sortedRows.value[ri]
+        const iso = weekDays.value[di]?.iso
+        if (!destRow || !iso) continue
+        targets.push({ row: destRow, dateISO: iso, src: cellData })
+      }
+    }
+  }
+
+  if (!targets.length) return
+
+  const undoItems = targets.map(cell => ({
     row: cell.row,
     dateISO: cell.dateISO,
     before: snapshotCell(cell.row, cell.dateISO),
   }))
   try {
-    for (const cell of cells) {
-      await pasteCellDataOne(cell.row, cell.dateISO, src)
+    for (const cell of targets) {
+      await pasteCellDataOne(cell.row, cell.dateISO, cell.src)
+    }
+    pushUndoBatch(undoItems)
+    refreshCellInputs()
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  }
+}
+
+async function cutCellData(row, dateISO, rowIdx, dayIdx) {
+  copyCellData(row, dateISO, rowIdx, dayIdx)
+  const rect = getSelectionRect()
+  if (!rect) return
+  const targets = []
+  for (let ri = rect.r0; ri <= rect.r1; ri++) {
+    const srcRow = sortedRows.value[ri]
+    for (let di = rect.d0; di <= rect.d1; di++) {
+      const iso = weekDays.value[di]?.iso
+      if (srcRow && iso) targets.push({ row: srcRow, dateISO: iso })
+    }
+  }
+  const undoItems = targets.map(cell => ({
+    row: cell.row,
+    dateISO: cell.dateISO,
+    before: snapshotCell(cell.row, cell.dateISO),
+  }))
+  try {
+    for (const cell of targets) {
+      await clearCellDataOne(cell.row, cell.dateISO)
     }
     pushUndoBatch(undoItems)
     refreshCellInputs()
@@ -2488,7 +2710,7 @@ function onCellKeydown(row, dateISO, rowIdx, dayIdx, event) {
     return
   }
   if (event.key === 'Escape') {
-    copiedCell.value = null
+    copiedBlock.value = null
     clearCellSelection()
     event.target.blur()
     return
@@ -2532,19 +2754,39 @@ function onCellKeydown(row, dateISO, rowIdx, dayIdx, event) {
     return
   }
 
-  if (event.shiftKey && event.key === 'Insert' && copiedCell.value) {
+  if (event.shiftKey && event.key === 'Insert' && copiedBlock.value) {
     event.preventDefault()
-    pasteCellData(row, dateISO)
+    pasteCellData(row, dateISO, rowIdx, dayIdx)
     return
   }
 
   const mod = event.ctrlKey || event.metaKey
   if (!mod) return
   if (event.key === 'c') {
-    copyCellData(row, dateISO, rowIdx, dayIdx)
-  } else if (event.key === 'v' && copiedCell.value) {
     event.preventDefault()
-    pasteCellData(row, dateISO)
+    const hasMulti = selectionAnchor.value && selectionFocus.value &&
+      (selectionAnchor.value.rowIdx !== selectionFocus.value.rowIdx ||
+       selectionAnchor.value.dayIdx !== selectionFocus.value.dayIdx)
+    if (!hasMulti) {
+      selectionAnchor.value = { rowIdx, dayIdx }
+      selectionFocus.value = { rowIdx, dayIdx }
+      event.target.select()
+    }
+    copyCellData(row, dateISO, rowIdx, dayIdx)
+  } else if (event.key === 'x') {
+    event.preventDefault()
+    const hasMulti = selectionAnchor.value && selectionFocus.value &&
+      (selectionAnchor.value.rowIdx !== selectionFocus.value.rowIdx ||
+       selectionAnchor.value.dayIdx !== selectionFocus.value.dayIdx)
+    if (!hasMulti) {
+      selectionAnchor.value = { rowIdx, dayIdx }
+      selectionFocus.value = { rowIdx, dayIdx }
+      event.target.select()
+    }
+    cutCellData(row, dateISO, rowIdx, dayIdx)
+  } else if (event.key === 'v' && copiedBlock.value) {
+    event.preventDefault()
+    pasteCellData(row, dateISO, rowIdx, dayIdx)
   }
 }
 
@@ -3012,6 +3254,99 @@ function onDistPopupDocClick(e) {
 const addingRow   = ref(false)
 const newDescRef  = ref(null)
 const newRow      = ref({ customer_id: null, project_id: null, contract_id: null, description: '' })
+const macroEditorOpen = ref(false)
+const macroStorageKey = 'timeTracking.macroTemplates.v2'
+
+function makeMacroRow(description = '') {
+  return {
+    customer_id: null,
+    project_id: null,
+    description,
+    day1_minutes: '',
+    day1_start: '',
+    day1_end: '',
+    day2_minutes: '',
+    day2_start: '',
+    day2_end: '',
+    day1_distance: '',
+    day2_distance: '',
+  }
+}
+
+function defaultMacroRows() {
+  return [
+    makeMacroRow('Teaching'),
+    makeMacroRow('Preparing for teaching'),
+    makeMacroRow('Travel to location'),
+    makeMacroRow('Travel home'),
+  ]
+}
+
+function makeMacroTemplate(id, name = 'Teaching block') {
+  return {
+    id,
+    name,
+    rows: defaultMacroRows(),
+  }
+}
+
+function normalizeMacroRow(rawRow, fallbackDescription = '') {
+  return {
+    ...makeMacroRow(fallbackDescription),
+    ...rawRow,
+  }
+}
+
+function cloneMacroTemplate(tpl) {
+  return {
+    id: tpl.id,
+    name: tpl.name,
+    rows: tpl.rows.map((r, idx) => normalizeMacroRow(r, defaultMacroRows()[idx]?.description || '')),
+  }
+}
+
+function createDefaultMacroLibrary() {
+  const first = makeMacroTemplate(1, 'Teaching block')
+  return { nextId: 2, macros: [first] }
+}
+
+function loadMacroLibrary() {
+  try {
+    const raw = localStorage.getItem(macroStorageKey)
+    if (!raw) return createDefaultMacroLibrary()
+    const parsed = JSON.parse(raw)
+    if (!parsed || !Array.isArray(parsed.macros) || !parsed.macros.length) return createDefaultMacroLibrary()
+    const macros = parsed.macros.map((m, idx) => ({
+      id: Number(m.id) || (idx + 1),
+      name: String(m.name || `Macro ${idx + 1}`),
+      rows: Array.isArray(m.rows) ? m.rows.map((r, ri) => normalizeMacroRow(r, defaultMacroRows()[ri]?.description || '')) : defaultMacroRows(),
+    }))
+    const maxId = macros.reduce((mx, m) => Math.max(mx, m.id), 0)
+    return {
+      nextId: Math.max(Number(parsed.nextId) || 1, maxId + 1),
+      macros,
+    }
+  } catch {
+    return createDefaultMacroLibrary()
+  }
+}
+
+const macroLibrary = ref(loadMacroLibrary())
+const selectedMacroId = ref(macroLibrary.value.macros[0]?.id || null)
+const activeMacro = ref(cloneMacroTemplate(macroLibrary.value.macros[0] || makeMacroTemplate(1)))
+const macroApplyDaysCount = ref(2)
+const macroImportRef = ref(null)
+const macroApplyPreview = computed(() => {
+  const dayCount = Math.max(1, Math.min(7, Number(macroApplyDaysCount.value) || 2))
+  const labels = weekDays.value.slice(0, dayCount).map(d => d.abbr)
+  if (!labels.length) return 'Applying to first selected days, alternating day 1/day 2.'
+  return `Applying to ${labels.join(', ')} (${dayCount} day${dayCount === 1 ? '' : 's'}), alternating day 1/day 2 pattern.`
+})
+
+watch(selectedMacroId, (id) => {
+  const found = macroLibrary.value.macros.find(m => m.id === id)
+  if (found) activeMacro.value = cloneMacroTemplate(found)
+})
 
 const newRowContracts = computed(() => {
   const id = newRow.value.customer_id
@@ -3025,6 +3360,241 @@ const newRowProjects = computed(() => {
     return ttProjects.value
   return [...projects.value.filter(p => p.customer_id === newRow.value.customer_id), ...ttProjects.value]
 })
+
+function macroProjectsForRow(row) {
+  if (!row.customer_id) return allProjects.value
+  if (ttCustomers.value.some(c => c.id === row.customer_id)) return ttProjects.value
+  return [...projects.value.filter(p => p.customer_id === row.customer_id), ...ttProjects.value]
+}
+
+function onMacroCustomerChange(row) {
+  row.project_id = null
+}
+
+function addMacroRow() {
+  activeMacro.value.rows.push(makeMacroRow(''))
+}
+
+function removeMacroRow(idx) {
+  if (activeMacro.value.rows.length <= 1) return
+  activeMacro.value.rows.splice(idx, 1)
+}
+
+function createMacroTemplate() {
+  const id = macroLibrary.value.nextId++
+  const tpl = makeMacroTemplate(id, `Macro ${id}`)
+  macroLibrary.value.macros.push(cloneMacroTemplate(tpl))
+  selectedMacroId.value = id
+  activeMacro.value = cloneMacroTemplate(tpl)
+  persistMacroLibrary()
+}
+
+function duplicateMacroTemplate() {
+  const id = macroLibrary.value.nextId++
+  const base = activeMacro.value
+  const tpl = {
+    id,
+    name: `${base.name || 'Macro'} copy`,
+    rows: base.rows.map((r, idx) => normalizeMacroRow(r, defaultMacroRows()[idx]?.description || '')),
+  }
+  macroLibrary.value.macros.push(cloneMacroTemplate(tpl))
+  selectedMacroId.value = id
+  activeMacro.value = cloneMacroTemplate(tpl)
+  persistMacroLibrary()
+}
+
+function deleteMacroTemplate() {
+  if (macroLibrary.value.macros.length <= 1) return
+  const idx = macroLibrary.value.macros.findIndex(m => m.id === selectedMacroId.value)
+  if (idx < 0) return
+  macroLibrary.value.macros.splice(idx, 1)
+  const next = macroLibrary.value.macros[Math.max(0, idx - 1)]
+  selectedMacroId.value = next.id
+  activeMacro.value = cloneMacroTemplate(next)
+  persistMacroLibrary()
+}
+
+function persistMacroLibrary() {
+  localStorage.setItem(macroStorageKey, JSON.stringify(macroLibrary.value))
+}
+
+function openMacroImport() {
+  macroImportRef.value?.click()
+}
+
+function exportMacroLibrary() {
+  const data = JSON.stringify(macroLibrary.value, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'warmdesk-time-macros.json'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+async function importMacroLibrary(event) {
+  try {
+    const file = event?.target?.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    const parsed = JSON.parse(text)
+    if (!parsed || !Array.isArray(parsed.macros) || !parsed.macros.length) throw new Error('invalid')
+    const macros = parsed.macros.map((m, idx) => ({
+      id: Number(m.id) || (idx + 1),
+      name: String(m.name || `Macro ${idx + 1}`),
+      rows: Array.isArray(m.rows)
+        ? m.rows.map((r, ri) => normalizeMacroRow(r, defaultMacroRows()[ri]?.description || ''))
+        : [makeMacroRow('')],
+    }))
+    const maxId = macros.reduce((mx, m) => Math.max(mx, m.id), 0)
+    macroLibrary.value = {
+      nextId: Math.max(Number(parsed.nextId) || 1, maxId + 1),
+      macros,
+    }
+    selectedMacroId.value = macros[0].id
+    activeMacro.value = cloneMacroTemplate(macros[0])
+    persistMacroLibrary()
+    ui.success('Macros imported')
+  } catch {
+    ui.error('Invalid macro JSON file')
+  } finally {
+    if (event?.target) event.target.value = ''
+  }
+}
+
+function saveMacroTemplate() {
+  const name = (activeMacro.value.name || '').trim() || `Macro ${activeMacro.value.id}`
+  const payload = {
+    id: activeMacro.value.id,
+    name,
+    rows: activeMacro.value.rows.map((r, idx) => normalizeMacroRow(r, defaultMacroRows()[idx]?.description || '')),
+  }
+  const idx = macroLibrary.value.macros.findIndex(m => m.id === payload.id)
+  if (idx >= 0) macroLibrary.value.macros[idx] = payload
+  else macroLibrary.value.macros.push(payload)
+  selectedMacroId.value = payload.id
+  activeMacro.value = cloneMacroTemplate(payload)
+  persistMacroLibrary()
+  ui.success('Macro saved')
+}
+
+function ensureMacroRow(meta) {
+  const cust = allCustomers.value.find(c => c.id === meta.customer_id)
+  const proj = allProjects.value.find(p => p.id === meta.project_id)
+  const k = rowKey(meta.customer_id, meta.project_id, meta.description)
+  let row = allRows.value.find(x => x.key === k)
+  if (!row) {
+    const newLocal = {
+      key:           k,
+      customer_id:   meta.customer_id,
+      customer_name: cust?.name || '',
+      project_id:    meta.project_id,
+      project_name:  proj?.name || '',
+      contract_id:   null,
+      contract_name: '',
+      description:   meta.description,
+      is_holiday:    false,
+    }
+    localRows.value.push(newLocal)
+    row = newLocal
+  }
+  return row
+}
+
+function normalizeMacroTimePair(startRaw, endRaw) {
+  const start = String(startRaw || '').trim()
+  const end = String(endRaw || '').trim()
+  if (!start && !end) return { start: null, end: null, valid: true, hasValue: false }
+  const valid = parseShiftWallClock(start) >= 0 && parseShiftWallClock(end) >= 0
+  if (!valid) return { start: null, end: null, valid: false, hasValue: true }
+  return { start, end, valid: true, hasValue: true }
+}
+
+async function upsertMacroCell(row, dateISO, minutes, distance, startRaw, endRaw) {
+  const existing = getEntry(row, dateISO)
+  const tp = normalizeMacroTimePair(startRaw, endRaw)
+  if (!tp.valid) throw new Error('invalid-time-range')
+  if (minutes <= 0 && !distance) {
+    if (existing) {
+      await timeEntriesApi.remove(existing.id)
+      rawEntries.value = rawEntries.value.filter(e => e.id !== existing.id)
+      ensureLocalRow(row)
+    }
+    return
+  }
+  const payload = {
+    customer_id: row.customer_id || null,
+    project_id: row.project_id || null,
+    contract_id: row.contract_id || null,
+    date: dateISO,
+    minutes,
+    description: row.description,
+    is_holiday: existing?.is_holiday || false,
+    start_time: tp.hasValue ? tp.start : (existing?.start_time || null),
+    end_time: tp.hasValue ? tp.end : (existing?.end_time || null),
+    distance: distance || null,
+  }
+  if (existing) {
+    const { data } = await timeEntriesApi.update(existing.id, payload)
+    const idx = rawEntries.value.findIndex(e => e.id === existing.id)
+    if (idx >= 0) rawEntries.value[idx] = data
+  } else {
+    const { data } = await timeEntriesApi.create(payload)
+    rawEntries.value.push(data)
+    localRows.value = localRows.value.filter(r => r.key !== row.key)
+  }
+}
+
+async function applyMacroTemplate() {
+  const dayCount = Math.max(1, Math.min(7, Number(macroApplyDaysCount.value) || 2))
+  const targetDays = weekDays.value.slice(0, dayCount).map(d => d.iso).filter(Boolean)
+  if (!targetDays.length) return
+  const undoItems = []
+  try {
+    for (const rowDef of activeMacro.value.rows) {
+      const desc = (rowDef.description || '').trim()
+      if (!desc) continue
+      const row = ensureMacroRow({
+        customer_id: rowDef.customer_id || null,
+        project_id: rowDef.project_id || null,
+        description: desc,
+      })
+      const dayPattern = [
+        {
+          minutes: parseTimeInput(rowDef.day1_minutes),
+          distance: Math.max(0, parseFloat(rowDef.day1_distance) || 0),
+          start: rowDef.day1_start,
+          end: rowDef.day1_end,
+        },
+        {
+          minutes: parseTimeInput(rowDef.day2_minutes),
+          distance: Math.max(0, parseFloat(rowDef.day2_distance) || 0),
+          start: rowDef.day2_start,
+          end: rowDef.day2_end,
+        },
+      ]
+      for (let di = 0; di < targetDays.length; di++) {
+        const dateISO = targetDays[di]
+        const pattern = dayPattern[di % 2]
+        undoItems.push({ row, dateISO, before: snapshotCell(row, dateISO) })
+        await upsertMacroCell(row, dateISO, pattern.minutes, pattern.distance, pattern.start, pattern.end)
+      }
+    }
+    if (undoItems.length) {
+      pushUndoBatch(undoItems)
+      refreshCellInputs()
+      saveMacroTemplate()
+      macroEditorOpen.value = false
+      ui.success('Macro applied')
+    }
+  } catch (err) {
+    if (err?.message === 'invalid-time-range') ui.error('Invalid macro start/end time. Use HH:MM.')
+    else ui.error(t('timeTracking.save_error'))
+  }
+}
 
 const newRowHasSlots = computed(() => {
   if (!newRow.value.contract_id) return false
@@ -4259,6 +4829,75 @@ td.c-day:focus-within .cell-dist-toggle,
   padding: 2px 4px; font-size: 13px; line-height: 1; border-radius: 3px; flex-shrink: 0;
 }
 .btn-icon-xs:hover { background: var(--color-bg); color: var(--color-text); }
+.macro-hint {
+  margin: 0 0 12px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+.macro-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.macro-toolbar-group {
+  min-width: 260px;
+}
+.macro-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.macro-grid {
+  display: grid;
+  gap: 6px;
+}
+.macro-head,
+.macro-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1.4fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr auto;
+  gap: 6px;
+  align-items: center;
+}
+.macro-head {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0 2px;
+}
+.macro-row .form-input {
+  min-width: 0;
+}
+.macro-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+.macro-row-remove {
+  white-space: nowrap;
+}
+.macro-apply-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.macro-days-input {
+  width: 72px;
+}
+.macro-apply-note {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+.macro-apply-preview {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
 .c-day-holiday { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.18); }
 .tt-head th.c-day-today { background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface)); color: var(--color-primary); }
 td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-primary) 10%, transparent); }
@@ -4271,11 +4910,26 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .tt-row-holiday .c-info, .tt-row-holiday .c-desc { font-style: italic; opacity: .9; }
 .c-day-holiday-cell { box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.30); }
 .c-day-copied { outline: 2px dashed var(--color-primary); outline-offset: -2px; }
-.c-day-selected {
+td.c-day-selected {
   background: color-mix(in srgb, var(--color-primary) 10%, transparent);
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 55%, transparent);
 }
-.c-day-selected .h-inp { background: transparent; }
+td.c-day-today.c-day-selected {
+  box-shadow:
+    inset 0 0 0 9999px color-mix(in srgb, var(--color-primary) 10%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+td.c-day-holiday.c-day-selected {
+  box-shadow:
+    inset 0 0 0 9999px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+td.c-day-holiday-cell.c-day-selected {
+  box-shadow:
+    inset 0 0 0 9999px rgba(0, 0, 0, 0.30),
+    inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+td.c-day-selected .h-inp { background: transparent; }
 
 .tt-mode-tabs { display: flex; gap: 2px; margin-left: auto; }
 .tt-mode-btn {
@@ -4430,6 +5084,7 @@ td.c-day-today { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--color-p
 .rc-comment-actions { display: flex; gap: 4px; margin-top: 4px; justify-content: flex-end; }
 .rc-comment-actions .tp-btn { font-size: 11px; padding: 2px 8px; }
 .c-desc  { font-size: 12px; color: var(--color-text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-field-editable { cursor: pointer; }
 
 /* Hour input cells */
 .c-day {

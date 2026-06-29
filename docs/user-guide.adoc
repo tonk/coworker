@@ -197,7 +197,7 @@ Help is available on the following pages:
 |Macros, reminders, close date, checklists, private messages
 
 |Time tracking
-|Sheet, personal report, board report; inline hints for undeclarable time, group-by, and export
+|Sheet, personal report, board report; row edit, copy/cut/paste, time macros; undeclarable time, group-by, and export
 
 |Project settings
 |General, members, labels, API keys, webhooks, deleted cards
@@ -978,8 +978,16 @@ Hover the cell for the allotted amount.
 Row, day, and grand totals show declarable time; the muted line shows what was subtracted.
 
 |[.tt-copied]#8:00#
-|*Copy source* — dashed outline on a cell selected for paste.
-Use `Ctrl+C` / `Shift+Insert` to copy and `Ctrl+V` / `Shift+Insert` to paste into selected cells.
+|*Copy source* — dashed outline on cells included in the last copy or cut.
+See <<cell-selection-copy-cut-paste,Cell selection, copy, cut, and paste>>.
+
+|⚡
+|*Macro* (bottom bar) — open the time macro editor to run reusable row templates.
+See <<time-macros,Time macros>>.
+
+|✎
+|*Edit row* (*Actions* column) — change customer, project, contract, and activity for the row.
+You can also *double-click* the customer/project or activity cell to start editing.
 
 |⠿
 |*Drag handle* (left edge of a row) — reorder rows.
@@ -1009,6 +1017,91 @@ You can also set or edit times per cell with the ⏱ button inside the cell (see
 Cells without a stored range show a 09:00–17:00 placeholder in the popup.
 
 Multi-day overnight slots (e.g. a Friday standby that runs until Monday 07:00) are handled automatically: the anchor day stores the slot's actual start time, and the continuation days (Saturday, Sunday) store 00:00–00:00 to indicate full-day coverage.
+
+[[editing-rows]]
+=== Editing rows
+
+Each row's customer, project, and activity can be changed after the row exists.
+
+* Click ✎ *Edit* in the *Actions* column, or *double-click* the customer/project cell or the activity cell.
+* Update customer, project, contract (when available), and activity, then click ✓ to save or ✕ to cancel.
+* Existing time entries on that row are updated to match the new customer/project/activity combination.
+
+[[cell-selection-copy-cut-paste]]
+=== Cell selection, copy, cut, and paste
+
+The weekly grid supports spreadsheet-style selection and clipboard operations on day cells.
+
+==== Selecting cells
+
+* Click or tab into a cell to select it.
+* Hold *Shift* and click another cell, or use *Shift + arrow keys*, to extend a rectangular selection across rows and days.
+* Selected cells show a primary-coloured border, including cells in *today's* column.
+
+==== Copy, cut, and paste
+
+[cols="1,3", options="header"]
+|===
+|Shortcut |Action
+
+|`Ctrl+C` (macOS: `⌘C`)
+|Copy the selected cell or rectangle.
+When the text cursor is inside a cell, the *entire cell value* is copied (not just highlighted characters).
+
+|`Ctrl+X` (macOS: `⌘X`)
+|Cut — same as copy, then clear the source cell(s).
+
+|`Ctrl+V` (macOS: `⌘V`)
+|Paste into the focused cell or the current selection.
+
+|`Shift+Insert`
+|Paste (alternative).
+
+|`Esc`
+|Clear the clipboard marker and cell selection.
+|===
+
+Copied data includes minutes, optional start/end times, holiday flag, and distance.
+The clipboard persists when you change weeks, so you can copy in one week and paste in another (matching by *day column*, e.g. Monday → Monday).
+
+* *Single cell copied* + multiple cells selected → the same value is pasted into every selected cell.
+* *Rectangular block copied* → pasted as a grid starting at the top-left of the current selection (or the focused cell).
+* Paste works across *different rows* as well as along the same row.
+
+[[time-macros]]
+=== Time macros
+
+Recurring weekly patterns (for example teaching, preparation, travel out, travel home) can be stored as *time macros* and applied in one step.
+
+Click *⚡ Macro* in the bottom bar to open the macro editor.
+
+==== Managing macros
+
+* Choose a macro from the *Macro* dropdown, or click *New Macro* to create one.
+* *Duplicate Macro* copies the current macro under a new name.
+* *Delete Macro* removes the selected macro (at least one macro always remains).
+* Edit the macro name in the *Macro name* field.
+* *Save Macro* stores the library in your browser (`localStorage`); macros are per browser/device, not synced server-side.
+* *Export JSON* / *Import JSON* — back up or share macro libraries as a `.json` file.
+
+==== Macro rows
+
+Each macro contains one or more rows.
+For every row you can preset:
+
+* Customer and project
+* Activity (description)
+* Day 1 and day 2: hours, optional start/end times (`HH:MM`), and distance
+
+Use *Add Row* / *Remove* to change how many rows the macro creates.
+The default teaching-block example ships with four rows.
+
+==== Running a macro
+
+* Set *Apply days* (`1`–`7`) to control how many days of the *current week* receive values.
+* The preview line shows which weekday abbreviations will be filled and notes that the *day 1 / day 2 pattern alternates* (day 3 uses day 1 presets, day 4 uses day 2, and so on).
+* Click *Run Macro* to create any missing rows and write time entries for the selected days.
+* Undo works like other cell edits.
 
 === Time-tracking-only projects and customers
 
