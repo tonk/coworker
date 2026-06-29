@@ -752,3 +752,5 @@ Create an application that has all these features and requirements
 - Add Ctrl+X cut for time tracking cells; improve rectangular copy/paste across rows and weeks; double-click customer/project or activity to edit row
 - Add show/hide closed toggle on Kanban board (per-column, persisted) and ticket list/inbox views
 - Fix breadcrumbs for tickets, inbox, epics, charts, news, invoices, and time-tracking routes
+- Simplify time macro apply: choose apply-to-days (default 5), alternating A/B toggle (off by default), single-column per-day grid when not alternating; settings saved per macro
+- Add website release blog posts for v0.12.33 and v0.12.34

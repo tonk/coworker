@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.12.34 — 2026-06-29
+
+### Changed
+- **Time macro apply options** — choose how many weekdays to fill (1–7, default 5) and toggle *Alternating A/B pattern* off for the same values every day; when off the editor shows a single hours/start/end/distance column per row; when on, pattern A and B columns return; apply settings are saved per macro.
+
+### Documentation
+- **User guide** — time macros section documents apply-to-days, alternating toggle, and per-day vs A/B layout.
+- **Website** — release blog posts for v0.12.33 and v0.12.34.
+
 ## v0.12.33 — 2026-06-29
 
 ### Added

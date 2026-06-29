@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.33)
+## Latest release (v0.12.34)
 
-- **Time tracking macros** — save and run reusable weekly row templates (import/export JSON, apply to first N days with alternating day-1/day-2 pattern).
-- **Copy/cut/paste** — spreadsheet-style cell clipboard across rows and weeks, plus `Ctrl+X` cut; double-click customer/project or activity to edit a row.
-- **Show/hide closed** — toggle closed cards on the board and closed tickets in list/inbox views.
+- **Time macro apply** — set how many weekdays to fill (default 5) and turn *Alternating A/B pattern* on only when you need two repeating presets; same travel → teach block every day is now the default layout.
+- **Macro editor** — single-column per-day grid when alternating is off; live preview lists which weekdays get filled.
+- **Website** — release blog posts for v0.12.33 (macros overview) and v0.12.34 (apply options).
 
 ## Experiment
 
