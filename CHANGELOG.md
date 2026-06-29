@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.12.33 — 2026-06-29
+
+### Added
+- **Time tracking macros** — reusable weekly templates (multiple named macros, variable rows, day 1/day 2 presets with optional start/end times and distance); apply to the first *N* days of the week with alternating day-1/day-2 pattern; import/export as JSON; stored per browser.
+- **Show/hide closed** — Kanban board toolbar toggle hides closed cards per column (with count badge); ticket list and inbox views get a matching toggle alongside the spam filter; preference persisted in `localStorage`.
+
+### Fixed
+- **Breadcrumbs** — correct labels and casing for tickets, inbox, epics, charts, news, invoices, and time-tracking routes; intermediate segments for nested ticket URLs.
+
+### Changed
+- **Time tracking sheet editing** — double-click the customer/project or activity cell to enter row edit mode (same as ✎ in the Actions column).
+- **Time tracking copy/cut/paste** — `Ctrl+C` copies the full cell (not partial text); `Ctrl+X` cuts; rectangular selections work across rows; clipboard persists across week navigation; paste supports multi-cell blocks and cross-week day columns; today's column shows selection highlight correctly.
+
+### Documentation
+- **User guide** — documents row editing, cell selection, copy/cut/paste, and time macros on the Log Time tab.
+
 ## v0.12.32 — 2026-06-25
 
 ### Fixed

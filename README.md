@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.32)
+## Latest release (v0.12.33)
 
-- **Time tracking copy/paste** — copying a cell now carries distance, start/end time, and holiday flag to the target cell(s).
-- **Holiday country flags** — emoji flags are restored in the browser holidays dropdown.
+- **Time tracking macros** — save and run reusable weekly row templates (import/export JSON, apply to first N days with alternating day-1/day-2 pattern).
+- **Copy/cut/paste** — spreadsheet-style cell clipboard across rows and weeks, plus `Ctrl+X` cut; double-click customer/project or activity to edit a row.
+- **Show/hide closed** — toggle closed cards on the board and closed tickets in list/inbox views.
 
 ## Experiment
 

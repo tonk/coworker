@@ -748,3 +748,7 @@ Create an application that has all these features and requirements
 - Fix card delete confirmation dialog appearing behind the open card detail modal
 - Restore emoji flags in browser holidays dropdown
 - Copy time tracking cell including distance, start/end time, and holiday flag; paste and undo restore all fields
+- Add time tracking macros: named templates, variable rows, day 1/day 2 presets (hours, start/end, distance), apply to first N days with alternating pattern, JSON import/export
+- Add Ctrl+X cut for time tracking cells; improve rectangular copy/paste across rows and weeks; double-click customer/project or activity to edit row
+- Add show/hide closed toggle on Kanban board (per-column, persisted) and ticket list/inbox views
+- Fix breadcrumbs for tickets, inbox, epics, charts, news, invoices, and time-tracking routes
