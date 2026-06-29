@@ -552,7 +552,7 @@
       style="--modal-width: 1180px"
       @close="macroEditorOpen = false"
     >
-      <p class="macro-hint">Create reusable rows with preset customer, project, activity, and values for the first two days.</p>
+      <p class="macro-hint">Define activity rows once, then apply them to the first days of the current week. Tweak individual cells in the sheet afterwards if a day differs.</p>
       <div class="macro-toolbar">
         <div class="macro-toolbar-group">
           <label class="form-label" for="macro-select">Macro</label>
@@ -573,25 +573,53 @@
         <label class="form-label" for="macro-name">Macro name</label>
         <input id="macro-name" class="form-input" type="text" v-model="activeMacro.name" />
       </div>
-      <div class="macro-grid" role="table" aria-label="Macro rows">
-        <div class="macro-head" role="row">
+      <div class="macro-apply-bar">
+        <div class="macro-apply-field">
+          <label class="form-label" for="macro-apply-days">Apply to days</label>
+          <input
+            id="macro-apply-days"
+            class="form-input macro-days-input"
+            type="number"
+            min="1"
+            max="7"
+            v-model.number="activeMacro.apply_days"
+            aria-describedby="macro-apply-preview"
+          />
+        </div>
+        <div class="macro-apply-field macro-apply-toggle">
+          <input id="macro-alternating" type="checkbox" v-model="activeMacro.alternating" />
+          <label for="macro-alternating">Alternating A/B pattern</label>
+        </div>
+      </div>
+      <p id="macro-apply-preview" class="macro-apply-preview">{{ macroApplyPreview }}</p>
+      <div
+        class="macro-grid"
+        :class="activeMacro.alternating ? 'macro-grid--alt' : 'macro-grid--single'"
+        role="table"
+        :aria-label="activeMacro.alternating ? 'Macro rows with alternating day patterns' : 'Macro rows with per-day values'"
+      >
+        <div class="macro-head" :class="activeMacro.alternating ? 'macro-head--alt' : 'macro-head--single'" role="row">
           <span>Customer</span>
           <span>Project</span>
           <span>Activity</span>
-          <span>{{ weekDays[0]?.abbr || 'Day 1' }}</span>
-          <span>{{ (weekDays[0]?.abbr || 'Day 1') + ' start' }}</span>
-          <span>{{ (weekDays[0]?.abbr || 'Day 1') + ' end' }}</span>
-          <span>{{ weekDays[1]?.abbr || 'Day 2' }}</span>
-          <span>{{ (weekDays[1]?.abbr || 'Day 2') + ' start' }}</span>
-          <span>{{ (weekDays[1]?.abbr || 'Day 2') + ' end' }}</span>
-          <span>{{ (weekDays[0]?.abbr || 'Day 1') + ' km' }}</span>
-          <span>{{ (weekDays[1]?.abbr || 'Day 2') + ' km' }}</span>
+          <span>{{ activeMacro.alternating ? 'Pattern A' : 'Hours' }}</span>
+          <span>{{ activeMacro.alternating ? 'A start' : 'Start' }}</span>
+          <span>{{ activeMacro.alternating ? 'A end' : 'End' }}</span>
+          <template v-if="activeMacro.alternating">
+            <span>Pattern B</span>
+            <span>B start</span>
+            <span>B end</span>
+            <span>A km</span>
+            <span>B km</span>
+          </template>
+          <span v-else>Distance</span>
           <span>Action</span>
         </div>
         <div
           v-for="(row, idx) in activeMacro.rows"
           :key="idx"
           class="macro-row"
+          :class="activeMacro.alternating ? 'macro-row--alt' : 'macro-row--single'"
           role="row"
         >
           <label class="sr-only" :for="'macro-customer-' + idx">Customer {{ idx + 1 }}</label>
@@ -606,34 +634,34 @@
           </select>
           <label class="sr-only" :for="'macro-activity-' + idx">Activity {{ idx + 1 }}</label>
           <input :id="'macro-activity-' + idx" class="form-input" type="text" v-model="row.description" />
-          <label class="sr-only" :for="'macro-day1-min-' + idx">Day 1 time {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-day1-min-' + idx">{{ activeMacro.alternating ? 'Pattern A time' : 'Hours' }} {{ idx + 1 }}</label>
           <input :id="'macro-day1-min-' + idx" class="form-input" type="text" v-model="row.day1_minutes" :placeholder="timeNotation === 'hhmm' ? '1:30' : '1.5'" />
-          <label class="sr-only" :for="'macro-day1-start-' + idx">Day 1 start {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-day1-start-' + idx">{{ activeMacro.alternating ? 'Pattern A start' : 'Start' }} {{ idx + 1 }}</label>
           <input :id="'macro-day1-start-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day1_start" placeholder="09:00" />
-          <label class="sr-only" :for="'macro-day1-end-' + idx">Day 1 end {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-day1-end-' + idx">{{ activeMacro.alternating ? 'Pattern A end' : 'End' }} {{ idx + 1 }}</label>
           <input :id="'macro-day1-end-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day1_end" placeholder="17:00" />
-          <label class="sr-only" :for="'macro-day2-min-' + idx">Day 2 time {{ idx + 1 }}</label>
-          <input :id="'macro-day2-min-' + idx" class="form-input" type="text" v-model="row.day2_minutes" :placeholder="timeNotation === 'hhmm' ? '1:30' : '1.5'" />
-          <label class="sr-only" :for="'macro-day2-start-' + idx">Day 2 start {{ idx + 1 }}</label>
-          <input :id="'macro-day2-start-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day2_start" placeholder="09:00" />
-          <label class="sr-only" :for="'macro-day2-end-' + idx">Day 2 end {{ idx + 1 }}</label>
-          <input :id="'macro-day2-end-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day2_end" placeholder="17:00" />
-          <label class="sr-only" :for="'macro-day1-dist-' + idx">Day 1 distance {{ idx + 1 }}</label>
-          <input :id="'macro-day1-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day1_distance" />
-          <label class="sr-only" :for="'macro-day2-dist-' + idx">Day 2 distance {{ idx + 1 }}</label>
-          <input :id="'macro-day2-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day2_distance" />
+          <template v-if="activeMacro.alternating">
+            <label class="sr-only" :for="'macro-day2-min-' + idx">Pattern B time {{ idx + 1 }}</label>
+            <input :id="'macro-day2-min-' + idx" class="form-input" type="text" v-model="row.day2_minutes" :placeholder="timeNotation === 'hhmm' ? '1:30' : '1.5'" />
+            <label class="sr-only" :for="'macro-day2-start-' + idx">Pattern B start {{ idx + 1 }}</label>
+            <input :id="'macro-day2-start-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day2_start" placeholder="09:00" />
+            <label class="sr-only" :for="'macro-day2-end-' + idx">Pattern B end {{ idx + 1 }}</label>
+            <input :id="'macro-day2-end-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day2_end" placeholder="17:00" />
+            <label class="sr-only" :for="'macro-day1-dist-' + idx">Pattern A distance {{ idx + 1 }}</label>
+            <input :id="'macro-day1-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day1_distance" />
+            <label class="sr-only" :for="'macro-day2-dist-' + idx">Pattern B distance {{ idx + 1 }}</label>
+            <input :id="'macro-day2-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day2_distance" />
+          </template>
+          <template v-else>
+            <label class="sr-only" :for="'macro-day1-dist-' + idx">Distance {{ idx + 1 }}</label>
+            <input :id="'macro-day1-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day1_distance" />
+          </template>
           <button class="btn btn-secondary macro-row-remove" :disabled="activeMacro.rows.length <= 1" @click="removeMacroRow(idx)" :aria-label="'Remove macro row ' + (idx + 1)">Remove</button>
         </div>
       </div>
       <div class="macro-actions">
         <button class="btn btn-secondary" @click="addMacroRow">Add Row</button>
-        <div class="macro-apply-options">
-          <label class="form-label" for="macro-apply-days">Apply days</label>
-          <input id="macro-apply-days" class="form-input macro-days-input" type="number" min="1" max="7" v-model.number="macroApplyDaysCount" />
-          <span class="macro-apply-note">(day 1/day 2 pattern repeats)</span>
-        </div>
       </div>
-      <p class="macro-apply-preview">{{ macroApplyPreview }}</p>
       <template #footer>
         <button class="btn" @click="macroEditorOpen = false">{{ $t('common.cancel') }}</button>
         <button class="btn btn-secondary" @click="saveMacroTemplate">Save Macro</button>
@@ -3275,17 +3303,23 @@ function makeMacroRow(description = '') {
 
 function defaultMacroRows() {
   return [
-    makeMacroRow('Teaching'),
-    makeMacroRow('Preparing for teaching'),
     makeMacroRow('Travel to location'),
+    makeMacroRow('Preparing for teaching'),
+    makeMacroRow('Teaching'),
     makeMacroRow('Travel home'),
   ]
+}
+
+function normalizeMacroApplyDays(value) {
+  return Math.max(1, Math.min(7, Number(value) || 5))
 }
 
 function makeMacroTemplate(id, name = 'Teaching block') {
   return {
     id,
     name,
+    apply_days: 5,
+    alternating: false,
     rows: defaultMacroRows(),
   }
 }
@@ -3301,6 +3335,8 @@ function cloneMacroTemplate(tpl) {
   return {
     id: tpl.id,
     name: tpl.name,
+    apply_days: normalizeMacroApplyDays(tpl.apply_days),
+    alternating: !!tpl.alternating,
     rows: tpl.rows.map((r, idx) => normalizeMacroRow(r, defaultMacroRows()[idx]?.description || '')),
   }
 }
@@ -3319,6 +3355,8 @@ function loadMacroLibrary() {
     const macros = parsed.macros.map((m, idx) => ({
       id: Number(m.id) || (idx + 1),
       name: String(m.name || `Macro ${idx + 1}`),
+      apply_days: normalizeMacroApplyDays(m.apply_days),
+      alternating: !!m.alternating,
       rows: Array.isArray(m.rows) ? m.rows.map((r, ri) => normalizeMacroRow(r, defaultMacroRows()[ri]?.description || '')) : defaultMacroRows(),
     }))
     const maxId = macros.reduce((mx, m) => Math.max(mx, m.id), 0)
@@ -3334,13 +3372,21 @@ function loadMacroLibrary() {
 const macroLibrary = ref(loadMacroLibrary())
 const selectedMacroId = ref(macroLibrary.value.macros[0]?.id || null)
 const activeMacro = ref(cloneMacroTemplate(macroLibrary.value.macros[0] || makeMacroTemplate(1)))
-const macroApplyDaysCount = ref(2)
 const macroImportRef = ref(null)
 const macroApplyPreview = computed(() => {
-  const dayCount = Math.max(1, Math.min(7, Number(macroApplyDaysCount.value) || 2))
+  const dayCount = normalizeMacroApplyDays(activeMacro.value.apply_days)
   const labels = weekDays.value.slice(0, dayCount).map(d => d.abbr)
-  if (!labels.length) return 'Applying to first selected days, alternating day 1/day 2.'
-  return `Applying to ${labels.join(', ')} (${dayCount} day${dayCount === 1 ? '' : 's'}), alternating day 1/day 2 pattern.`
+  if (!labels.length) {
+    return activeMacro.value.alternating
+      ? 'Fills the first weekdays of this week, alternating pattern A and B.'
+      : 'Fills the first weekdays of this week with the same values each day.'
+  }
+  const dayList = `${labels.join(', ')} (${dayCount} day${dayCount === 1 ? '' : 's'})`
+  if (activeMacro.value.alternating) {
+    const patternLabels = labels.map((_, i) => (i % 2 === 0 ? 'A' : 'B')).join(', ')
+    return `Fills ${dayList}: ${patternLabels}.`
+  }
+  return `Fills ${dayList} with the same values each day.`
 })
 
 watch(selectedMacroId, (id) => {
@@ -3395,6 +3441,8 @@ function duplicateMacroTemplate() {
   const tpl = {
     id,
     name: `${base.name || 'Macro'} copy`,
+    apply_days: normalizeMacroApplyDays(base.apply_days),
+    alternating: !!base.alternating,
     rows: base.rows.map((r, idx) => normalizeMacroRow(r, defaultMacroRows()[idx]?.description || '')),
   }
   macroLibrary.value.macros.push(cloneMacroTemplate(tpl))
@@ -3445,6 +3493,8 @@ async function importMacroLibrary(event) {
     const macros = parsed.macros.map((m, idx) => ({
       id: Number(m.id) || (idx + 1),
       name: String(m.name || `Macro ${idx + 1}`),
+      apply_days: normalizeMacroApplyDays(m.apply_days),
+      alternating: !!m.alternating,
       rows: Array.isArray(m.rows)
         ? m.rows.map((r, ri) => normalizeMacroRow(r, defaultMacroRows()[ri]?.description || ''))
         : [makeMacroRow('')],
@@ -3470,6 +3520,8 @@ function saveMacroTemplate() {
   const payload = {
     id: activeMacro.value.id,
     name,
+    apply_days: normalizeMacroApplyDays(activeMacro.value.apply_days),
+    alternating: !!activeMacro.value.alternating,
     rows: activeMacro.value.rows.map((r, idx) => normalizeMacroRow(r, defaultMacroRows()[idx]?.description || '')),
   }
   const idx = macroLibrary.value.macros.findIndex(m => m.id === payload.id)
@@ -3549,7 +3601,8 @@ async function upsertMacroCell(row, dateISO, minutes, distance, startRaw, endRaw
 }
 
 async function applyMacroTemplate() {
-  const dayCount = Math.max(1, Math.min(7, Number(macroApplyDaysCount.value) || 2))
+  const dayCount = normalizeMacroApplyDays(activeMacro.value.apply_days)
+  const alternating = !!activeMacro.value.alternating
   const targetDays = weekDays.value.slice(0, dayCount).map(d => d.iso).filter(Boolean)
   if (!targetDays.length) return
   const undoItems = []
@@ -3578,7 +3631,7 @@ async function applyMacroTemplate() {
       ]
       for (let di = 0; di < targetDays.length; di++) {
         const dateISO = targetDays[di]
-        const pattern = dayPattern[di % 2]
+        const pattern = alternating ? dayPattern[di % 2] : dayPattern[0]
         undoItems.push({ row, dateISO, before: snapshotCell(row, dateISO) })
         await upsertMacroCell(row, dateISO, pattern.minutes, pattern.distance, pattern.start, pattern.end)
       }
@@ -4853,8 +4906,15 @@ td.c-day:focus-within .cell-dist-toggle,
   display: grid;
   gap: 6px;
 }
-.macro-head,
-.macro-row {
+.macro-head--single,
+.macro-row--single {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1.4fr 0.7fr 0.7fr 0.7fr 0.7fr auto;
+  gap: 6px;
+  align-items: center;
+}
+.macro-head--alt,
+.macro-row--alt {
   display: grid;
   grid-template-columns: 1.1fr 1.1fr 1.4fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr auto;
   gap: 6px;
@@ -4874,27 +4934,47 @@ td.c-day:focus-within .cell-dist-toggle,
 .macro-actions {
   margin-top: 10px;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
   gap: 10px;
+}
+.macro-apply-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.macro-apply-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.macro-apply-toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+}
+.macro-apply-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.macro-apply-toggle label {
+  margin: 0;
+  font-size: 13px;
+  cursor: pointer;
 }
 .macro-row-remove {
   white-space: nowrap;
 }
-.macro-apply-options {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 .macro-days-input {
   width: 72px;
 }
-.macro-apply-note {
-  color: var(--color-text-muted);
-  font-size: 12px;
-}
 .macro-apply-preview {
-  margin: 8px 0 0;
+  margin: 0 0 10px;
   color: var(--color-text-muted);
   font-size: 12px;
 }

@@ -1,0 +1,128 @@
+---
+title: "v0.12.33: Time tracking macros and a smarter weekly sheet"
+date: "2026-06-29"
+author: "Ton Kersten"
+description: "Save recurring weekly patterns as time macros — teaching, travel, preparation — and apply them in one click. Plus cut/paste across rows and weeks, double-click row editing, and show/hide closed on boards and tickets."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` makes the weekly time sheet feel more like a spreadsheet: reusable *time macros* for recurring work patterns, richer copy/cut/paste, and quicker row editing.
+This post focuses on macros — the feature most users asked for when the same customer/project/activity lines come back every week.
+
+== Why time macros?
+
+If you teach regularly, you probably log the same four lines every week:
+
+* Teaching on site
+* Preparing materials
+* Travel to the location
+* Travel home
+
+Each line has the same customer and project, similar hours on Monday and Tuesday, and travel distance on the outbound legs.
+Typing that by hand — or copying row by row — gets old fast.
+
+*Time macros* let you define those rows once, save them under a name, and *Run Macro* to create the rows and fill the first days of the current week in one step.
+
+== Opening the macro editor
+
+On the *Log Time* tab, click *⚡ Macro* in the bottom bar (next to *Add row* and *Copy Previous Week*).
+
+The editor shows:
+
+* A *Macro* dropdown to switch between saved templates
+* *New Macro*, *Duplicate Macro*, and *Delete Macro* buttons
+* *Export JSON* / *Import JSON* for backup or sharing between browsers
+* A grid of rows with customer, project, activity, and preset values for *day 1* and *day 2*
+
+Macros are stored in your browser (`localStorage`) — they travel with your profile on that device, not on the server.
+Use *Export JSON* before switching machines or clearing site data.
+
+== What each macro row contains
+
+Every row in a macro can preset:
+
+[cols="1,3"]
+|===
+| Field | Purpose
+
+| Customer / Project
+| Pulled from the same lists as manual row entry (including time-tracking-only customers and projects).
+
+| Activity
+| The row description (e.g. `Teaching`, `Travel to location`).
+
+| Day 1 / Day 2 hours
+| Entered in your preferred notation — decimal hours (`1.5`) or `hh:mm` (`1:30`), matching your user setting.
+
+| Day 1 / Day 2 start & end
+| Optional wall-clock range (`09:00`–`17:00`) stored on the time entry, same as the ⏱ popup on a cell.
+
+| Day 1 / Day 2 distance
+| Optional kilometres or miles for travel rows.
+|===
+
+Use *Add Row* and *Remove* to change how many lines the macro creates.
+The default *Teaching block* template ships with four rows; you can trim it down or grow it for longer routines.
+
+== Running a macro
+
+At the bottom of the editor:
+
+. Set *Apply days* (`1`–`7`) — how many columns of the *current week* should receive values, counting from Monday (or Sunday, per your week-start setting).
+. Read the preview line — it lists the weekday abbreviations that will be filled and notes that the *day 1 / day 2 pattern alternates* (day 3 uses day 1 presets, day 4 uses day 2, and so on).
+. Click *Run Macro*.
+
+WarmDesk creates any missing rows (customer + project + activity combinations) and writes time entries for the selected days.
+*Undo* (↶) works like any other cell edit.
+
+=== Example: a teaching week
+
+Suppose your macro has:
+
+* *Teaching* — 6 hours on day 1, 4 hours on day 2
+* *Preparing for teaching* — 2 hours on day 1 only
+* *Travel to location* — 45 minutes + 120 km on day 1
+* *Travel home* — 45 minutes + 120 km on day 2
+
+Set *Apply days* to `2` and run on week 12.
+Monday receives the day-1 column for every row; Tuesday receives day 2.
+Nothing is written on Wednesday–Sunday unless you raise *Apply days*.
+
+Set *Apply days* to `5` before a busy week and the day-1/day-2 pattern repeats across Mon–Fri — useful when your schedule mirrors across the first half of the week.
+
+== Managing multiple macros
+
+You are not limited to one template:
+
+* *New Macro* — blank template with a single empty row.
+* *Duplicate Macro* — copy the current macro under a new name (handy for variants per customer).
+* *Save Macro* — persist changes to the library.
+* *Import JSON* — replace the whole library from a file (e.g. shared by a colleague).
+
+Rename a macro by editing the *Macro name* field before saving.
+
+== Smarter clipboard and row editing
+
+The same release improves day-to-day sheet work without opening the macro editor:
+
+* *Double-click* the customer/project or activity cell to edit the row (same as ✎ in the Actions column).
+* *Ctrl+C* copies the full cell value; *Ctrl+X* cuts; *Ctrl+V* pastes.
+* Rectangular selections work across rows; copied data persists when you change weeks (Monday paste stays Monday).
+* *Show/hide closed* toggles on the Kanban board and ticket list/inbox hide closed cards/tickets with a persisted preference.
+
+Breadcrumb labels for tickets, inbox, epics, charts, and time tracking were also corrected.
+
+== Documentation
+
+The *User Guide* PDF shipped with `{warmdesk-version}` documents macros, copy/cut/paste, and row editing on the Log Time tab.
+Guide PDFs are available from the avatar menu → *Downloads* in the app; the link:/docs/user-guide/[online user guide] covers time tracking at a high level.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No manual database changes are required.
+Macros you create after upgrading are stored locally in the browser — export them once if you rely on a specific template.

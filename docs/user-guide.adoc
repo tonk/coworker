@@ -1091,16 +1091,18 @@ For every row you can preset:
 
 * Customer and project
 * Activity (description)
-* Day 1 and day 2: hours, optional start/end times (`HH:MM`), and distance
+* Hours, optional start/end times (`HH:MM`), and distance — one set per day when *Alternating A/B pattern* is off, or separate *Pattern A* and *Pattern B* columns when it is on
 
 Use *Add Row* / *Remove* to change how many rows the macro creates.
-The default teaching-block example ships with four rows.
+The default teaching-block example ships with four rows (travel out, preparation, teaching, travel home).
 
 ==== Running a macro
 
-* Set *Apply days* (`1`–`7`) to control how many days of the *current week* receive values.
-* The preview line shows which weekday abbreviations will be filled and notes that the *day 1 / day 2 pattern alternates* (day 3 uses day 1 presets, day 4 uses day 2, and so on).
+* Set *Apply to days* (`1`–`7`) to control how many weekdays of the *current week* receive values (default `5`).
+* Toggle *Alternating A/B pattern* when Monday and Tuesday need different presets that repeat (A, B, A, B…); leave it off to copy the same values to every selected day.
+* The preview line lists the weekday abbreviations that will be filled and whether values repeat or alternate.
 * Click *Run Macro* to create any missing rows and write time entries for the selected days.
+* Adjust individual cells in the sheet afterwards if one day differs.
 * Undo works like other cell edits.
 
 === Time-tracking-only projects and customers

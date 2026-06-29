@@ -1,0 +1,44 @@
+---
+title: "v0.12.34: Clearer time macro apply options"
+date: "2026-06-29"
+author: "Ton Kersten"
+description: "Time macros now default to the same values every weekday, with an optional alternating A/B pattern when you need it."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` simplifies the time macro editor so the common case — the same travel → prepare → teach → travel home block every weekday — is obvious at a glance.
+
+== Same values each day (default)
+
+Most recurring weeks do not alternate between two different day presets.
+You define the activity rows once and apply them to Monday through Friday with the same hours, times, and distance on every day.
+
+In the macro editor:
+
+. Set *Apply to days* (default `5`).
+. Leave *Alternating A/B pattern* unchecked.
+. Fill in one *Hours* / *Start* / *End* / *Distance* column per row.
+. Click *Run Macro*.
+
+The preview line shows exactly which weekdays will be filled, for example: `Fills Mon, Tue, Wed, Thu, Fri (5 days) with the same values each day.`
+
+Tweak individual cells in the weekly sheet afterwards when one day differs — no need to build a second macro for occasional changes.
+
+== When you need alternating presets
+
+Enable *Alternating A/B pattern* when two rhythms repeat across the week — for example longer teaching hours on pattern A and shorter on pattern B, with travel distance only on A days.
+
+The grid expands to *Pattern A* and *Pattern B* columns.
+Apply to three days and you get A → B → A.
+
+Both *Apply to days* and the alternating toggle are saved with each macro.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No database changes are required.
+Existing macros load with alternating off and five apply days unless you had already saved different settings.
