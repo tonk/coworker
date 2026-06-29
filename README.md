@@ -8,11 +8,12 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.34)
+## Latest release (v0.12.35)
 
-- **Time macro apply** — set how many weekdays to fill (default 5) and turn *Alternating A/B pattern* on only when you need two repeating presets; same travel → teach block every day is now the default layout.
-- **Macro editor** — single-column per-day grid when alternating is off; live preview lists which weekdays get filled.
-- **Website** — release blog posts for v0.12.33 (macros overview) and v0.12.34 (apply options).
+- **Macro server sync** — libraries follow your account across browsers and devices; demo seed includes sample teaching/travel macros.
+- **Run vs edit** — bottom-bar *⚡ Macro* runs a macro on the current week (pick start day); top-bar *⚡* opens the editor.
+- **i18n** — macro UI and weekly-sheet row comments translated in all 12 languages.
+- **Website** — release blog post for v0.12.35.
 
 ## Experiment
 

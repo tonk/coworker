@@ -754,3 +754,5 @@ Create an application that has all these features and requirements
 - Fix breadcrumbs for tickets, inbox, epics, charts, news, invoices, and time-tracking routes
 - Simplify time macro apply: choose apply-to-days (default 5), alternating A/B toggle (off by default), single-column per-day grid when not alternating; settings saved per macro
 - Add website release blog posts for v0.12.33 and v0.12.34
+- Sync time macro libraries per user on the server; separate run popout (bottom bar) from editor (top bar); macro i18n in all languages; fix row-comment and double-click-edit translations
+- Add website release blog post for v0.12.35

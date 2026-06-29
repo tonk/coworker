@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.12.35 — 2026-06-29
+
+### Added
+- **Time macro server sync** — macro libraries are stored per user on the server (`GET/PUT /api/v1/time-entries/macro-library`) with a browser cache fallback; seed data includes sample macros for demo users.
+- **Macro run popout** — bottom-bar *⚡ Macro* opens a run panel (pick macro, choose *Start on*, preview, run); top-bar *⚡* opens the editor next to contract rates.
+- **Macro i18n** — macro UI strings translated in all 12 frontend languages.
+
+### Fixed
+- **Macro JSON export (Tauri)** — desktop app uses `triggerDownload` so export works on Linux WebKit.
+- **Macro time parsing** — `HH:MM` values in macro templates parse correctly even when the user prefers decimal hour notation.
+- **Time sheet comment i18n** — row-comment add/edit/placeholder strings and `common.double_click_edit` are translated in every locale.
+
+### Changed
+- **Macro editor UX** — run and edit are separate; macro dropdown sorted alphabetically; time/distance popups use accent-coloured borders.
+- **User guide** — time macros section documents server sync, run popout, and the top-bar editor.
+
+### Documentation
+- **Website** — release blog post for v0.12.35.
+
 ## v0.12.34 — 2026-06-29
 
 ### Changed

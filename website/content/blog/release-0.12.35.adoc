@@ -1,0 +1,42 @@
+---
+title: "v0.12.35: Synced time macros and a clearer run flow"
+date: "2026-06-29"
+author: "Ton Kersten"
+description: "Time macros sync to your account, the bottom bar runs them on any start day, and the top bar opens the editor — with full translations."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` polishes the time macro workflow introduced in v0.12.33–v0.12.34: libraries sync server-side, running a macro is a one-step popout, and the UI speaks your language.
+
+== Macros follow your account
+
+Macro libraries are no longer trapped in one browser.
+WarmDesk stores them per user via `GET/PUT /api/v1/time-entries/macro-library` and keeps a `localStorage` cache for offline resilience.
+
+Sign in on another machine and your teaching blocks, workshop templates, and JSON imports are already there.
+Demo seed data includes sample macros for `tonk` and `demo.admin`.
+
+== Run from the bottom bar, edit from the top
+
+The weekly sheet now separates *running* from *editing*:
+
+* *⚡ Macro* (bottom bar) — pick a macro, choose *Start on* (any weekday in the current week), read the preview, click *Run macro*.
+* *⚡* (top bar, next to contract rates ₡) — open the full editor to create, duplicate, import, or export macros.
+
+The start day is chosen at run time, so the same macro can begin on Wednesday this week and Monday next week without editing the template.
+
+== Translations and fixes
+
+All macro labels, previews, and toasts are translated in the 12 frontend languages.
+Row-level comments on the weekly sheet (the speech-bubble next to customer/project) no longer show English placeholders in Dutch, German, and other locales.
+
+Macro JSON export works in the Tauri desktop app on Linux, and `HH:MM` values inside macros parse correctly even when you log time in decimal notation.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+GORM AutoMigrate adds the `time_macro_libraries` table on startup — no manual migration step.
