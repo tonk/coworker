@@ -19,6 +19,13 @@ type TimeEntryWeekRowOrder struct {
 	Comments    string `gorm:"type:text" json:"comments"`
 }
 
+// TimeMacroLibrary stores a user's time-tracking macro templates as JSON
+// (same shape as the frontend timeTracking.macroTemplates.v2 value).
+type TimeMacroLibrary struct {
+	UserID  uint   `gorm:"primaryKey" json:"user_id"`
+	Payload string `gorm:"type:text;not null" json:"payload"`
+}
+
 type TimeEntry struct {
 	ID          uint      `gorm:"primarykey" json:"id"`
 	UserID      uint      `gorm:"not null;index" json:"user_id"`

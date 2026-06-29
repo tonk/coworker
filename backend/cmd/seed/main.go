@@ -3778,6 +3778,63 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	fmt.Printf("   Created %d TT-only customers, %d TT-only projects, %d personal time entries for tonk\n",
 		len(ttCustomers), len(ttProjectSpecs), len(ttEntries))
 
+	// ── 10b2. Time macro libraries ───────────────────────────────────────────
+	fmt.Println("→ Creating time macro libraries…")
+
+	acmeCustID := demoCustomerIDs[0]
+	webProjID := projects["website-redesign"].project.ID
+	mobileProjID := projects["mobile-app-v2"].project.ID
+	smartOwlCustID := ttCustIDByName["Smart Owl Consulting"]
+	internalProjID := ttProjIDBySlug["internal-tt"]
+
+	tonkMacroLib := map[string]any{
+		"nextId": 3,
+		"macros": []map[string]any{
+			{
+				"id": 1, "name": "Teaching block", "apply_days": 5, "alternating": false,
+				"rows": []map[string]any{
+					seedMacroRow(acmeCustID, webProjID, "Travel to location", "1:30", "06:30", "08:00", "", "", "", "120", ""),
+					seedMacroRow(acmeCustID, webProjID, "Preparing for teaching", "2:00", "08:00", "10:00", "", "", "", "", ""),
+					seedMacroRow(acmeCustID, webProjID, "Teaching", "6:00", "10:00", "16:00", "", "", "", "", ""),
+					seedMacroRow(acmeCustID, webProjID, "Travel home", "1:30", "16:00", "17:30", "", "", "", "120", ""),
+				},
+			},
+			{
+				"id": 2, "name": "Workshop (2 days)", "apply_days": 2, "alternating": true,
+				"rows": []map[string]any{
+					seedMacroRow(acmeCustID, mobileProjID, "Travel to location", "1:30", "07:00", "08:30", "1:00", "07:00", "08:00", "68", "68"),
+					seedMacroRow(acmeCustID, mobileProjID, "Workshop delivery", "8:00", "09:00", "17:00", "4:00", "09:00", "13:00", "", ""),
+					seedMacroRow(acmeCustID, mobileProjID, "Travel home", "", "", "", "1:30", "17:00", "18:30", "", "68"),
+				},
+			},
+		},
+	}
+	must(seedTimeMacroLibrary(db, tonk.ID, tonkMacroLib))
+
+	adminMacroLib := map[string]any{
+		"nextId": 2,
+		"macros": []map[string]any{
+			{
+				"id": 1, "name": "Client on-site day", "apply_days": 1, "alternating": false,
+				"rows": []map[string]any{
+					seedMacroRow(acmeCustID, webProjID, "Travel to client", "1:30", "07:00", "08:30", "", "", "", "68", ""),
+					seedMacroRow(acmeCustID, webProjID, "Stakeholder meetings", "4:00", "09:00", "13:00", "", "", "", "", ""),
+					seedMacroRow(acmeCustID, webProjID, "Travel home", "1:30", "16:00", "17:30", "", "", "", "68", ""),
+				},
+			},
+			{
+				"id": 2, "name": "Internal week", "apply_days": 5, "alternating": false,
+				"rows": []map[string]any{
+					seedMacroRow(smartOwlCustID, internalProjID, "Team standup", "1:00", "09:00", "10:00", "", "", "", "", ""),
+					seedMacroRow(smartOwlCustID, internalProjID, "Planning and email", "1:30", "10:00", "11:30", "", "", "", "", ""),
+					seedMacroRow(smartOwlCustID, internalProjID, "Project work", "5:00", "13:00", "18:00", "", "", "", "", ""),
+				},
+			},
+		},
+	}
+	must(seedTimeMacroLibrary(db, users["admin"].ID, adminMacroLib))
+	fmt.Println("   Created time macro libraries for tonk and demo.admin")
+
 	// ── 10c. Week row orders with comments ──────────────────────────────────
 	fmt.Println("→ Creating week row orders…")
 
@@ -4593,6 +4650,30 @@ func joinNames(arr []string) string {
 	return s
 }
 
+func seedMacroRow(customerID, projectID uint, description, day1Min, day1Start, day1End, day2Min, day2Start, day2End, day1Dist, day2Dist string) map[string]any {
+	return map[string]any{
+		"customer_id":   customerID,
+		"project_id":    projectID,
+		"description":   description,
+		"day1_minutes":  day1Min,
+		"day1_start":    day1Start,
+		"day1_end":      day1End,
+		"day2_minutes":  day2Min,
+		"day2_start":    day2Start,
+		"day2_end":      day2End,
+		"day1_distance": day1Dist,
+		"day2_distance": day2Dist,
+	}
+}
+
+func seedTimeMacroLibrary(db *gorm.DB, userID uint, lib map[string]any) error {
+	raw, err := json.Marshal(lib)
+	if err != nil {
+		return err
+	}
+	return db.Save(&models.TimeMacroLibrary{UserID: userID, Payload: string(raw)}).Error
+}
+
 // removeDemoData deletes all records created by the seed (identified by the
 // demo users and projects), then the users themselves,
 func removeDemoData(db *gorm.DB) {
@@ -4670,6 +4751,7 @@ func removeDemoData(db *gorm.DB) {
 			db.Unscoped().Where("id IN ?", convIDs).Delete(&models.Conversation{})
 		}
 		db.Where("user_id IN ?", userIDs).Delete(&models.TimeEntry{})
+		db.Where("user_id IN ?", userIDs).Delete(&models.TimeMacroLibrary{})
 		db.Unscoped().Where("id IN ?", userIDs).Delete(&models.User{})
 	}
 

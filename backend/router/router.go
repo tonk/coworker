@@ -375,6 +375,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.POST("/time-entries/holidays", middleware.RequireFeature("time_tracking_enabled"), handlers.AddHolidays)
 		protected.GET("/time-entries/row-order", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryRowOrder)
 		protected.PUT("/time-entries/row-order", middleware.RequireFeature("time_tracking_enabled"), handlers.UpdateTimeEntryRowOrder)
+		protected.GET("/time-entries/macro-library", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeMacroLibrary)
+		protected.PUT("/time-entries/macro-library", middleware.RequireFeature("time_tracking_enabled"), handlers.UpdateTimeMacroLibrary)
 
 		// Prometheus metrics (admin or metrics role)
 		protected.GET("/metrics", middleware.MetricsAuth(), handlers.GetMetrics)

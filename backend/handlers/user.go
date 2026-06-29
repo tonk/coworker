@@ -83,6 +83,7 @@ func AdminPurgeUser(c *gin.Context) {
 	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.ProjectMember{})
 	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.PasskeyCredential{})
 	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.TimeEntryRowOrder{})
+	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.TimeMacroLibrary{})
 	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.FavoriteUser{})
 	database.DB.Unscoped().Where("favorite_user_id = ?", uid).Delete(&models.FavoriteUser{})
 	database.DB.Unscoped().Where("user_id = ?", uid).Delete(&models.CardAssignee{})

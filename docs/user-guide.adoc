@@ -981,8 +981,12 @@ Row, day, and grand totals show declarable time; the muted line shows what was s
 |*Copy source* — dashed outline on cells included in the last copy or cut.
 See <<cell-selection-copy-cut-paste,Cell selection, copy, cut, and paste>>.
 
-|⚡
-|*Macro* (bottom bar) — open the time macro editor to run reusable row templates.
+|⚡ (top bar)
+|*Edit macros* — open the macro editor to create and manage reusable row templates.
+See <<time-macros,Time macros>>.
+
+|⚡ (bottom bar)
+|*Run macro* — choose a macro and start day, then apply it to the current week.
 See <<time-macros,Time macros>>.
 
 |✎
@@ -1073,7 +1077,10 @@ The clipboard persists when you change weeks, so you can copy in one week and pa
 
 Recurring weekly patterns (for example teaching, preparation, travel out, travel home) can be stored as *time macros* and applied in one step.
 
-Click *⚡ Macro* in the bottom bar to open the macro editor.
+* *⚡ Macro* (bottom bar) — opens a run popout: pick a macro, choose *Start on* (weekday), and click *Run macro*.
+* *⚡* (top bar, next to contract rates) — opens the macro *editor* to create, duplicate, import, and export macros.
+
+Macros are stored per user on the server and cached in your browser; they follow you across devices when you sign in.
 
 ==== Managing macros
 
@@ -1081,7 +1088,7 @@ Click *⚡ Macro* in the bottom bar to open the macro editor.
 * *Duplicate Macro* copies the current macro under a new name.
 * *Delete Macro* removes the selected macro (at least one macro always remains).
 * Edit the macro name in the *Macro name* field.
-* *Save Macro* stores the library in your browser (`localStorage`); macros are per browser/device, not synced server-side.
+* *Save Macro* stores the library on the server (and in `localStorage` as a cache).
 * *Export JSON* / *Import JSON* — back up or share macro libraries as a `.json` file.
 
 ==== Macro rows
@@ -1098,10 +1105,11 @@ The default teaching-block example ships with four rows (travel out, preparation
 
 ==== Running a macro
 
-* Set *Apply to days* (`1`–`7`) to control how many weekdays of the *current week* receive values (default `5`).
-* Toggle *Alternating A/B pattern* when Monday and Tuesday need different presets that repeat (A, B, A, B…); leave it off to copy the same values to every selected day.
+* Set *Apply to days* (`1`–`7`) in the editor to control how many weekdays receive values when the macro runs (default `5`).
+* Toggle *Alternating A/B pattern* when consecutive days need different presets that repeat (A, B, A, B…); leave it off to copy the same values to every selected day.
+* In the bottom-bar run popout, choose *Start on* to pick which weekday of the *current week* the macro begins (defaults to today when it falls in the week).
 * The preview line lists the weekday abbreviations that will be filled and whether values repeat or alternate.
-* Click *Run Macro* to create any missing rows and write time entries for the selected days.
+* Click *Run macro* to create any missing rows and write time entries for the selected days.
 * Adjust individual cells in the sheet afterwards if one day differs.
 * Undo works like other cell edits.
 

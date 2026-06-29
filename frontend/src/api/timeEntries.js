@@ -13,4 +13,6 @@ export const timeEntriesApi = {
   addHolidays: (data) => client.post('/time-entries/holidays', data),
   getRowOrder: (params) => client.get('/time-entries/row-order', { params }),
   setRowOrder: (keys, comments, params) => client.put('/time-entries/row-order', { keys, comments }, { params }),
+  getMacroLibrary: () => client.get('/time-entries/macro-library'),
+  setMacroLibrary: (library) => client.put('/time-entries/macro-library', { library }),
 }

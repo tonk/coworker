@@ -112,6 +112,13 @@
         </button>
       </div>
       <button class="tt-mode-btn tt-rates-btn" @click="showRates = true" :title="$t('contract.rates_overview')" :aria-label="$t('contract.rates_overview')">₡</button>
+      <button
+        v-if="auth.timeTrackingEnabled"
+        class="tt-mode-btn tt-macro-edit-btn"
+        @click="openMacroEditor"
+        :title="$t('timeTracking.macro_edit')"
+        :aria-label="$t('timeTracking.macro_edit')"
+      >⚡</button>
       <button v-if="auth.timeTrackingEnabled" class="tt-mode-btn tt-manage-btn" @click="openManageProjects" :title="$t('timeTracking.manage_tt_projects')" :aria-label="$t('timeTracking.manage_tt_projects')">⚙</button>
     </div>
 
@@ -229,7 +236,7 @@
                 </span>
               </td>
 
-              <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), isCellCopied(row, d.iso) ? 'c-day-copied' : '', d.isToday ? 'c-day-today' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
+              <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), isCellCopied(row, d.iso) ? 'c-day-copied' : '', d.isToday ? 'c-day-today' : '', isCellPopupOpen(row, d.iso) ? 'c-day-popup-open' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
                 <input
                   :key="'c' + cellRenderEpoch + '-' + row.key + '-' + d.iso"
                   :id="'tt-cell-' + idx + '-' + di"
@@ -449,9 +456,40 @@
           <button class="btn-add-row" @click="startAddRow">
             ＋ {{ $t('timeTracking.add_row') }}
           </button>
-          <button class="btn-copy-prev" @click="macroEditorOpen = true" aria-label="Open macro editor">
-            ⚡ Macro
-          </button>
+          <div class="macro-run-wrap" ref="macroRunRef">
+            <button
+              type="button"
+              class="btn-copy-prev"
+              :class="{ 'macro-run-open': macroRunOpen }"
+              @click="toggleMacroRun"
+              :aria-expanded="String(macroRunOpen)"
+              aria-haspopup="dialog"
+              aria-controls="macro-run-panel"
+              :aria-label="$t('timeTracking.macro_run_aria')"
+            >
+              ⚡ {{ $t('timeTracking.macro_button') }}
+            </button>
+            <div
+              v-if="macroRunOpen"
+              id="macro-run-panel"
+              class="macro-run-drop"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="macro-run-title"
+            >
+              <p id="macro-run-title" class="macro-run-title">{{ $t('timeTracking.macro_run') }}</p>
+              <label class="form-label" for="macro-run-select">{{ $t('timeTracking.macro_label') }}</label>
+              <select id="macro-run-select" class="form-input" v-model="macroRunId" :aria-label="$t('timeTracking.macro_run_select')">
+                <option v-for="m in macrosSorted" :key="m.id" :value="m.id">{{ m.name }}</option>
+              </select>
+              <label class="form-label" for="macro-run-start">{{ $t('timeTracking.macro_start_on') }}</label>
+              <select id="macro-run-start" class="form-input" v-model.number="macroRunStartDay" aria-describedby="macro-run-preview-text">
+                <option v-for="(d, i) in weekDays" :key="d.iso" :value="i">{{ d.abbr }} {{ d.mmdd }}</option>
+              </select>
+              <p id="macro-run-preview-text" class="macro-run-preview">{{ macroRunPreview }}</p>
+              <button type="button" class="btn btn-primary macro-run-btn" @click="runMacroFromPopout">{{ $t('timeTracking.macro_run') }}</button>
+            </div>
+          </div>
           <button class="btn-copy-prev" @click="copyPrevWeek" :disabled="copyingPrevWeek" :aria-label="$t('timeTracking.copy_prev_week')">
             {{ copyingPrevWeek ? '…' : '⇐' }} {{ $t('timeTracking.copy_prev_week') }}
           </button>
@@ -547,35 +585,35 @@
 
     <BaseModal
       v-if="macroEditorOpen"
-      title="Time Macro"
+      :title="$t('timeTracking.macro_edit')"
       :resizable="true"
       style="--modal-width: 1180px"
       @close="macroEditorOpen = false"
     >
-      <p class="macro-hint">Define activity rows once, then apply them to the first days of the current week. Tweak individual cells in the sheet afterwards if a day differs.</p>
+      <p class="macro-hint">{{ $t('timeTracking.macro_hint') }}</p>
       <div class="macro-toolbar">
         <div class="macro-toolbar-group">
-          <label class="form-label" for="macro-select">Macro</label>
-          <select id="macro-select" class="form-input" v-model="selectedMacroId" aria-label="Select macro">
-            <option v-for="m in macroLibrary.macros" :key="m.id" :value="m.id">{{ m.name }}</option>
+          <label class="form-label" for="macro-select">{{ $t('timeTracking.macro_label') }}</label>
+          <select id="macro-select" class="form-input" v-model="selectedMacroId" :aria-label="$t('timeTracking.macro_select')">
+            <option v-for="m in macrosSorted" :key="m.id" :value="m.id">{{ m.name }}</option>
           </select>
         </div>
         <div class="macro-toolbar-actions">
-          <button class="btn btn-secondary" @click="createMacroTemplate">New Macro</button>
-          <button class="btn btn-secondary" @click="duplicateMacroTemplate">Duplicate Macro</button>
-          <button class="btn btn-secondary" :disabled="macroLibrary.macros.length <= 1" @click="deleteMacroTemplate">Delete Macro</button>
-          <button class="btn btn-secondary" @click="exportMacroLibrary">Export JSON</button>
-          <button class="btn btn-secondary" @click="openMacroImport">Import JSON</button>
+          <button class="btn btn-secondary" @click="createMacroTemplate">{{ $t('timeTracking.macro_new') }}</button>
+          <button class="btn btn-secondary" @click="duplicateMacroTemplate">{{ $t('timeTracking.macro_duplicate') }}</button>
+          <button class="btn btn-secondary" :disabled="macroLibrary.macros.length <= 1" @click="deleteMacroTemplate">{{ $t('timeTracking.macro_delete') }}</button>
+          <button class="btn btn-secondary" @click="exportMacroLibrary">{{ $t('timeTracking.macro_export_json') }}</button>
+          <button class="btn btn-secondary" @click="openMacroImport">{{ $t('timeTracking.macro_import_json') }}</button>
           <input ref="macroImportRef" class="sr-only" type="file" accept="application/json,.json" @change="importMacroLibrary" />
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label" for="macro-name">Macro name</label>
+        <label class="form-label" for="macro-name">{{ $t('timeTracking.macro_name') }}</label>
         <input id="macro-name" class="form-input" type="text" v-model="activeMacro.name" />
       </div>
       <div class="macro-apply-bar">
         <div class="macro-apply-field">
-          <label class="form-label" for="macro-apply-days">Apply to days</label>
+          <label class="form-label" for="macro-apply-days">{{ $t('timeTracking.macro_apply_days') }}</label>
           <input
             id="macro-apply-days"
             class="form-input macro-days-input"
@@ -588,7 +626,7 @@
         </div>
         <div class="macro-apply-field macro-apply-toggle">
           <input id="macro-alternating" type="checkbox" v-model="activeMacro.alternating" />
-          <label for="macro-alternating">Alternating A/B pattern</label>
+          <label for="macro-alternating">{{ $t('timeTracking.macro_alternating') }}</label>
         </div>
       </div>
       <p id="macro-apply-preview" class="macro-apply-preview">{{ macroApplyPreview }}</p>
@@ -596,24 +634,24 @@
         class="macro-grid"
         :class="activeMacro.alternating ? 'macro-grid--alt' : 'macro-grid--single'"
         role="table"
-        :aria-label="activeMacro.alternating ? 'Macro rows with alternating day patterns' : 'Macro rows with per-day values'"
+        :aria-label="activeMacro.alternating ? $t('timeTracking.macro_grid_alt_aria') : $t('timeTracking.macro_grid_single_aria')"
       >
         <div class="macro-head" :class="activeMacro.alternating ? 'macro-head--alt' : 'macro-head--single'" role="row">
-          <span>Customer</span>
-          <span>Project</span>
-          <span>Activity</span>
-          <span>{{ activeMacro.alternating ? 'Pattern A' : 'Hours' }}</span>
-          <span>{{ activeMacro.alternating ? 'A start' : 'Start' }}</span>
-          <span>{{ activeMacro.alternating ? 'A end' : 'End' }}</span>
+          <span>{{ $t('timeTracking.macro_col_customer') }}</span>
+          <span>{{ $t('timeTracking.macro_col_project') }}</span>
+          <span>{{ $t('timeTracking.macro_col_activity') }}</span>
+          <span>{{ activeMacro.alternating ? $t('timeTracking.macro_col_pattern_a') : $t('timeTracking.macro_col_hours') }}</span>
+          <span>{{ activeMacro.alternating ? $t('timeTracking.macro_col_a_start') : $t('timeTracking.macro_col_start') }}</span>
+          <span>{{ activeMacro.alternating ? $t('timeTracking.macro_col_a_end') : $t('timeTracking.macro_col_end') }}</span>
           <template v-if="activeMacro.alternating">
-            <span>Pattern B</span>
-            <span>B start</span>
-            <span>B end</span>
-            <span>A km</span>
-            <span>B km</span>
+            <span>{{ $t('timeTracking.macro_col_pattern_b') }}</span>
+            <span>{{ $t('timeTracking.macro_col_b_start') }}</span>
+            <span>{{ $t('timeTracking.macro_col_b_end') }}</span>
+            <span>{{ $t('timeTracking.macro_col_a_km') }}</span>
+            <span>{{ $t('timeTracking.macro_col_b_km') }}</span>
           </template>
-          <span v-else>Distance</span>
-          <span>Action</span>
+          <span v-else>{{ $t('timeTracking.macro_col_distance') }}</span>
+          <span>{{ $t('timeTracking.macro_col_action') }}</span>
         </div>
         <div
           v-for="(row, idx) in activeMacro.rows"
@@ -622,50 +660,49 @@
           :class="activeMacro.alternating ? 'macro-row--alt' : 'macro-row--single'"
           role="row"
         >
-          <label class="sr-only" :for="'macro-customer-' + idx">Customer {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-customer-' + idx">{{ $t('timeTracking.macro_row_customer', { n: idx + 1 }) }}</label>
           <select :id="'macro-customer-' + idx" class="form-input" v-model="row.customer_id" @change="onMacroCustomerChange(row)">
             <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
             <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
-          <label class="sr-only" :for="'macro-project-' + idx">Project {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-project-' + idx">{{ $t('timeTracking.macro_row_project', { n: idx + 1 }) }}</label>
           <select :id="'macro-project-' + idx" class="form-input" v-model="row.project_id">
             <option :value="null">{{ $t('timeTracking.no_project') }}</option>
             <option v-for="p in macroProjectsForRow(row)" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
-          <label class="sr-only" :for="'macro-activity-' + idx">Activity {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-activity-' + idx">{{ $t('timeTracking.macro_row_activity', { n: idx + 1 }) }}</label>
           <input :id="'macro-activity-' + idx" class="form-input" type="text" v-model="row.description" />
-          <label class="sr-only" :for="'macro-day1-min-' + idx">{{ activeMacro.alternating ? 'Pattern A time' : 'Hours' }} {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-day1-min-' + idx">{{ (activeMacro.alternating ? $t('timeTracking.macro_pattern_a_time') : $t('timeTracking.macro_col_hours')) + ' ' + (idx + 1) }}</label>
           <input :id="'macro-day1-min-' + idx" class="form-input" type="text" v-model="row.day1_minutes" :placeholder="timeNotation === 'hhmm' ? '1:30' : '1.5'" />
-          <label class="sr-only" :for="'macro-day1-start-' + idx">{{ activeMacro.alternating ? 'Pattern A start' : 'Start' }} {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-day1-start-' + idx">{{ (activeMacro.alternating ? $t('timeTracking.macro_pattern_a_start') : $t('timeTracking.macro_col_start')) + ' ' + (idx + 1) }}</label>
           <input :id="'macro-day1-start-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day1_start" placeholder="09:00" />
-          <label class="sr-only" :for="'macro-day1-end-' + idx">{{ activeMacro.alternating ? 'Pattern A end' : 'End' }} {{ idx + 1 }}</label>
+          <label class="sr-only" :for="'macro-day1-end-' + idx">{{ (activeMacro.alternating ? $t('timeTracking.macro_pattern_a_end') : $t('timeTracking.macro_col_end')) + ' ' + (idx + 1) }}</label>
           <input :id="'macro-day1-end-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day1_end" placeholder="17:00" />
           <template v-if="activeMacro.alternating">
-            <label class="sr-only" :for="'macro-day2-min-' + idx">Pattern B time {{ idx + 1 }}</label>
+            <label class="sr-only" :for="'macro-day2-min-' + idx">{{ $t('timeTracking.macro_pattern_b_time') }} {{ idx + 1 }}</label>
             <input :id="'macro-day2-min-' + idx" class="form-input" type="text" v-model="row.day2_minutes" :placeholder="timeNotation === 'hhmm' ? '1:30' : '1.5'" />
-            <label class="sr-only" :for="'macro-day2-start-' + idx">Pattern B start {{ idx + 1 }}</label>
+            <label class="sr-only" :for="'macro-day2-start-' + idx">{{ $t('timeTracking.macro_pattern_b_start') }} {{ idx + 1 }}</label>
             <input :id="'macro-day2-start-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day2_start" placeholder="09:00" />
-            <label class="sr-only" :for="'macro-day2-end-' + idx">Pattern B end {{ idx + 1 }}</label>
+            <label class="sr-only" :for="'macro-day2-end-' + idx">{{ $t('timeTracking.macro_pattern_b_end') }} {{ idx + 1 }}</label>
             <input :id="'macro-day2-end-' + idx" class="form-input" type="text" maxlength="5" v-model="row.day2_end" placeholder="17:00" />
-            <label class="sr-only" :for="'macro-day1-dist-' + idx">Pattern A distance {{ idx + 1 }}</label>
+            <label class="sr-only" :for="'macro-day1-dist-' + idx">{{ $t('timeTracking.macro_pattern_a_distance') }} {{ idx + 1 }}</label>
             <input :id="'macro-day1-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day1_distance" />
-            <label class="sr-only" :for="'macro-day2-dist-' + idx">Pattern B distance {{ idx + 1 }}</label>
+            <label class="sr-only" :for="'macro-day2-dist-' + idx">{{ $t('timeTracking.macro_pattern_b_distance') }} {{ idx + 1 }}</label>
             <input :id="'macro-day2-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day2_distance" />
           </template>
           <template v-else>
-            <label class="sr-only" :for="'macro-day1-dist-' + idx">Distance {{ idx + 1 }}</label>
+            <label class="sr-only" :for="'macro-day1-dist-' + idx">{{ $t('timeTracking.macro_col_distance') }} {{ idx + 1 }}</label>
             <input :id="'macro-day1-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day1_distance" />
           </template>
-          <button class="btn btn-secondary macro-row-remove" :disabled="activeMacro.rows.length <= 1" @click="removeMacroRow(idx)" :aria-label="'Remove macro row ' + (idx + 1)">Remove</button>
+          <button class="btn btn-secondary macro-row-remove" :disabled="activeMacro.rows.length <= 1" @click="removeMacroRow(idx)" :aria-label="$t('timeTracking.macro_row_remove', { n: idx + 1 })">{{ $t('timeTracking.macro_row_remove_btn') }}</button>
         </div>
       </div>
       <div class="macro-actions">
-        <button class="btn btn-secondary" @click="addMacroRow">Add Row</button>
+        <button class="btn btn-secondary" @click="addMacroRow">{{ $t('timeTracking.macro_add_row') }}</button>
       </div>
       <template #footer>
         <button class="btn" @click="macroEditorOpen = false">{{ $t('common.cancel') }}</button>
-        <button class="btn btn-secondary" @click="saveMacroTemplate">Save Macro</button>
-        <button class="btn btn-primary" @click="applyMacroTemplate">Run Macro</button>
+        <button class="btn btn-primary" @click="saveMacroTemplate">{{ $t('timeTracking.macro_save') }}</button>
       </template>
     </BaseModal>
 
@@ -1212,6 +1249,7 @@ import {
 } from '@/utils/shiftTimeEntries'
 import { entryUndeclMins, rowDeclarableMins } from '@/utils/timeTrackingUndecl'
 import { slotCoverageOnWeekday, slotDayTypeMatches } from '@/utils/contractSlotPreview'
+import { parseMacroTimeInput, parseTimeNotationMinutes } from '@/utils/timeMacroInput'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -1523,7 +1561,8 @@ function onHolidaysDocClick(e) {
 function onNavEscapeKey(e) {
   if (e.key !== 'Escape') return
   if (wkPickerOpen.value) { wkPickerOpen.value = false; e.stopPropagation(); return }
-  if (holidaysDropOpen.value) { holidaysDropOpen.value = false; e.stopPropagation() }
+  if (holidaysDropOpen.value) { holidaysDropOpen.value = false; e.stopPropagation(); return }
+  if (macroRunOpen.value) { macroRunOpen.value = false; e.stopPropagation() }
 }
 
 async function addHolidays(loc) {
@@ -2480,6 +2519,11 @@ function isCellCopied(row, dateISO) {
   return copiedBlock.value?.sourceKeys?.includes(row.key + dateISO) ?? false
 }
 
+function isCellPopupOpen(row, dateISO) {
+  const key = row.key + dateISO
+  return timePopupKey.value === key || distPopupKey.value === key
+}
+
 function clampSelection(rowIdx, dayIdx) {
   return {
     rowIdx: Math.max(0, Math.min(rowIdx, sortedRows.value.length - 1)),
@@ -3283,6 +3327,8 @@ const addingRow   = ref(false)
 const newDescRef  = ref(null)
 const newRow      = ref({ customer_id: null, project_id: null, contract_id: null, description: '' })
 const macroEditorOpen = ref(false)
+const macroRunOpen = ref(false)
+const macroRunRef = ref(null)
 const macroStorageKey = 'timeTracking.macroTemplates.v2'
 
 function makeMacroRow(description = '') {
@@ -3325,10 +3371,19 @@ function makeMacroTemplate(id, name = 'Teaching block') {
 }
 
 function normalizeMacroRow(rawRow, fallbackDescription = '') {
-  return {
-    ...makeMacroRow(fallbackDescription),
-    ...rawRow,
-  }
+  const base = makeMacroRow(fallbackDescription)
+  const row = { ...base, ...rawRow }
+  row.customer_id = row.customer_id != null && row.customer_id !== '' ? Number(row.customer_id) : null
+  row.project_id = row.project_id != null && row.project_id !== '' ? Number(row.project_id) : null
+  row.day1_minutes = row.day1_minutes == null ? '' : String(row.day1_minutes)
+  row.day2_minutes = row.day2_minutes == null ? '' : String(row.day2_minutes)
+  row.day1_start = row.day1_start == null ? '' : String(row.day1_start)
+  row.day1_end = row.day1_end == null ? '' : String(row.day1_end)
+  row.day2_start = row.day2_start == null ? '' : String(row.day2_start)
+  row.day2_end = row.day2_end == null ? '' : String(row.day2_end)
+  row.day1_distance = row.day1_distance == null ? '' : String(row.day1_distance)
+  row.day2_distance = row.day2_distance == null ? '' : String(row.day2_distance)
+  return row
 }
 
 function cloneMacroTemplate(tpl) {
@@ -3346,24 +3401,30 @@ function createDefaultMacroLibrary() {
   return { nextId: 2, macros: [first] }
 }
 
+function parseMacroLibraryPayload(parsed) {
+  if (!parsed || !Array.isArray(parsed.macros) || !parsed.macros.length) return null
+  const macros = parsed.macros.map((m, idx) => ({
+    id: Number(m.id) || (idx + 1),
+    name: String(m.name || `Macro ${idx + 1}`),
+    apply_days: normalizeMacroApplyDays(m.apply_days),
+    alternating: !!m.alternating,
+    rows: Array.isArray(m.rows)
+      ? m.rows.map((r, ri) => normalizeMacroRow(r, defaultMacroRows()[ri]?.description || ''))
+      : defaultMacroRows(),
+  }))
+  const maxId = macros.reduce((mx, m) => Math.max(mx, m.id), 0)
+  return {
+    nextId: Math.max(Number(parsed.nextId) || 1, maxId + 1),
+    macros,
+  }
+}
+
 function loadMacroLibrary() {
   try {
     const raw = localStorage.getItem(macroStorageKey)
     if (!raw) return createDefaultMacroLibrary()
     const parsed = JSON.parse(raw)
-    if (!parsed || !Array.isArray(parsed.macros) || !parsed.macros.length) return createDefaultMacroLibrary()
-    const macros = parsed.macros.map((m, idx) => ({
-      id: Number(m.id) || (idx + 1),
-      name: String(m.name || `Macro ${idx + 1}`),
-      apply_days: normalizeMacroApplyDays(m.apply_days),
-      alternating: !!m.alternating,
-      rows: Array.isArray(m.rows) ? m.rows.map((r, ri) => normalizeMacroRow(r, defaultMacroRows()[ri]?.description || '')) : defaultMacroRows(),
-    }))
-    const maxId = macros.reduce((mx, m) => Math.max(mx, m.id), 0)
-    return {
-      nextId: Math.max(Number(parsed.nextId) || 1, maxId + 1),
-      macros,
-    }
+    return parseMacroLibraryPayload(parsed) || createDefaultMacroLibrary()
   } catch {
     return createDefaultMacroLibrary()
   }
@@ -3372,22 +3433,99 @@ function loadMacroLibrary() {
 const macroLibrary = ref(loadMacroLibrary())
 const selectedMacroId = ref(macroLibrary.value.macros[0]?.id || null)
 const activeMacro = ref(cloneMacroTemplate(macroLibrary.value.macros[0] || makeMacroTemplate(1)))
+const macroRunId = ref(macroLibrary.value.macros[0]?.id || null)
+const macroRunStartDay = ref(0)
 const macroImportRef = ref(null)
+const macrosSorted = computed(() =>
+  [...macroLibrary.value.macros].sort((a, b) =>
+    (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }),
+  ),
+)
+function macroById(id) {
+  if (id == null || id === '') return null
+  const numId = Number(id)
+  return macroLibrary.value.macros.find(m => m.id === numId || m.id === id) || null
+}
+function defaultMacroStartDayIndex() {
+  const todayIdx = weekDays.value.findIndex(d => d.isToday)
+  return todayIdx >= 0 ? todayIdx : 0
+}
+function toggleMacroRun() {
+  macroRunOpen.value = !macroRunOpen.value
+  if (macroRunOpen.value) {
+    if (!macroRunId.value || !macroById(macroRunId.value)) {
+      macroRunId.value = macrosSorted.value[0]?.id ?? null
+    }
+    macroRunStartDay.value = defaultMacroStartDayIndex()
+  }
+}
+function openMacroEditor() {
+  macroRunOpen.value = false
+  if (macroRunId.value && macroById(macroRunId.value)) {
+    selectedMacroId.value = macroRunId.value
+    activeMacro.value = cloneMacroTemplate(macroById(macroRunId.value))
+  }
+  macroEditorOpen.value = true
+}
+function onMacroRunDocClick(e) {
+  if (macroRunRef.value && !macroRunRef.value.contains(e.target)) {
+    macroRunOpen.value = false
+  }
+}
+const macroRunPreview = computed(() => {
+  const macro = macroById(macroRunId.value)
+  if (!macro) return t('timeTracking.macro_run_choose')
+  const dayCount = normalizeMacroApplyDays(macro.apply_days)
+  const startIdx = Math.max(0, Math.min(6, Number(macroRunStartDay.value) || 0))
+  const days = weekDays.value.slice(startIdx, startIdx + dayCount)
+  const labels = days.map(d => `${d.abbr} ${d.mmdd}`)
+  if (!labels.length) return t('timeTracking.macro_run_no_days')
+  const countLabel = labels.length === 1
+    ? t('timeTracking.macro_day_one')
+    : t('timeTracking.macro_day_many', { count: labels.length })
+  const dayList = `${labels.join(', ')} (${countLabel})`
+  if (macro.alternating) {
+    const patternLabels = days.map((_, i) =>
+      i % 2 === 0 ? t('timeTracking.macro_pattern_a') : t('timeTracking.macro_pattern_b'),
+    ).join(', ')
+    return t('timeTracking.macro_run_fill_alt', { days: dayList, patterns: patternLabels })
+  }
+  return t('timeTracking.macro_run_fill_same', { days: dayList })
+})
 const macroApplyPreview = computed(() => {
   const dayCount = normalizeMacroApplyDays(activeMacro.value.apply_days)
-  const labels = weekDays.value.slice(0, dayCount).map(d => d.abbr)
-  if (!labels.length) {
-    return activeMacro.value.alternating
-      ? 'Fills the first weekdays of this week, alternating pattern A and B.'
-      : 'Fills the first weekdays of this week with the same values each day.'
-  }
-  const dayList = `${labels.join(', ')} (${dayCount} day${dayCount === 1 ? '' : 's'})`
+  const countLabel = dayCount === 1
+    ? t('timeTracking.macro_day_one')
+    : t('timeTracking.macro_day_many', { count: dayCount })
   if (activeMacro.value.alternating) {
-    const patternLabels = labels.map((_, i) => (i % 2 === 0 ? 'A' : 'B')).join(', ')
-    return `Fills ${dayList}: ${patternLabels}.`
+    return t('timeTracking.macro_apply_preview_alt', { count: countLabel })
   }
-  return `Fills ${dayList} with the same values each day.`
+  return t('timeTracking.macro_apply_preview_same', { count: countLabel })
 })
+
+function applyMacroLibraryState(lib) {
+  macroLibrary.value = lib
+  if (!macroById(selectedMacroId.value)) {
+    selectedMacroId.value = lib.macros[0]?.id ?? null
+  }
+  const selected = macroById(selectedMacroId.value)
+  if (selected) activeMacro.value = cloneMacroTemplate(selected)
+  if (!macroById(macroRunId.value)) {
+    macroRunId.value = lib.macros[0]?.id ?? null
+  }
+}
+
+async function loadMacroLibraryFromServer() {
+  try {
+    const { data } = await timeEntriesApi.getMacroLibrary()
+    const lib = parseMacroLibraryPayload(data?.library)
+    if (!lib) return
+    applyMacroLibraryState(lib)
+    localStorage.setItem(macroStorageKey, JSON.stringify(lib))
+  } catch {
+    // keep local fallback
+  }
+}
 
 watch(selectedMacroId, (id) => {
   const found = macroLibrary.value.macros.find(m => m.id === id)
@@ -3428,7 +3566,7 @@ function removeMacroRow(idx) {
 
 function createMacroTemplate() {
   const id = macroLibrary.value.nextId++
-  const tpl = makeMacroTemplate(id, `Macro ${id}`)
+  const tpl = makeMacroTemplate(id, t('timeTracking.macro_default_name', { id }))
   macroLibrary.value.macros.push(cloneMacroTemplate(tpl))
   selectedMacroId.value = id
   activeMacro.value = cloneMacroTemplate(tpl)
@@ -3440,7 +3578,7 @@ function duplicateMacroTemplate() {
   const base = activeMacro.value
   const tpl = {
     id,
-    name: `${base.name || 'Macro'} copy`,
+    name: `${base.name || t('timeTracking.macro_label')}${t('timeTracking.macro_copy_suffix')}`,
     apply_days: normalizeMacroApplyDays(base.apply_days),
     alternating: !!base.alternating,
     rows: base.rows.map((r, idx) => normalizeMacroRow(r, defaultMacroRows()[idx]?.description || '')),
@@ -3455,32 +3593,31 @@ function deleteMacroTemplate() {
   if (macroLibrary.value.macros.length <= 1) return
   const idx = macroLibrary.value.macros.findIndex(m => m.id === selectedMacroId.value)
   if (idx < 0) return
+  const deletedId = macroLibrary.value.macros[idx].id
   macroLibrary.value.macros.splice(idx, 1)
   const next = macroLibrary.value.macros[Math.max(0, idx - 1)]
   selectedMacroId.value = next.id
   activeMacro.value = cloneMacroTemplate(next)
+  if (macroRunId.value === deletedId) macroRunId.value = next.id
   persistMacroLibrary()
 }
 
 function persistMacroLibrary() {
   localStorage.setItem(macroStorageKey, JSON.stringify(macroLibrary.value))
+  timeEntriesApi.setMacroLibrary(macroLibrary.value).catch(() => {})
 }
 
 function openMacroImport() {
   macroImportRef.value?.click()
 }
 
-function exportMacroLibrary() {
-  const data = JSON.stringify(macroLibrary.value, null, 2)
-  const blob = new Blob([data], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'warmdesk-time-macros.json'
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
+async function exportMacroLibrary() {
+  try {
+    const data = JSON.stringify(macroLibrary.value, null, 2)
+    await triggerDownload(data, 'warmdesk-time-macros.json', 'application/json')
+  } catch {
+    ui.error(t('timeTracking.macro_export_failed'))
+  }
 }
 
 async function importMacroLibrary(event) {
@@ -3489,34 +3626,22 @@ async function importMacroLibrary(event) {
     if (!file) return
     const text = await file.text()
     const parsed = JSON.parse(text)
-    if (!parsed || !Array.isArray(parsed.macros) || !parsed.macros.length) throw new Error('invalid')
-    const macros = parsed.macros.map((m, idx) => ({
-      id: Number(m.id) || (idx + 1),
-      name: String(m.name || `Macro ${idx + 1}`),
-      apply_days: normalizeMacroApplyDays(m.apply_days),
-      alternating: !!m.alternating,
-      rows: Array.isArray(m.rows)
-        ? m.rows.map((r, ri) => normalizeMacroRow(r, defaultMacroRows()[ri]?.description || ''))
-        : [makeMacroRow('')],
-    }))
-    const maxId = macros.reduce((mx, m) => Math.max(mx, m.id), 0)
-    macroLibrary.value = {
-      nextId: Math.max(Number(parsed.nextId) || 1, maxId + 1),
-      macros,
-    }
-    selectedMacroId.value = macros[0].id
-    activeMacro.value = cloneMacroTemplate(macros[0])
+    const lib = parseMacroLibraryPayload(parsed)
+    if (!lib) throw new Error('invalid')
+    macroLibrary.value = lib
+    selectedMacroId.value = lib.macros[0].id
+    activeMacro.value = cloneMacroTemplate(lib.macros[0])
     persistMacroLibrary()
-    ui.success('Macros imported')
+    ui.success(t('timeTracking.macro_imported'))
   } catch {
-    ui.error('Invalid macro JSON file')
+    ui.error(t('timeTracking.macro_import_invalid'))
   } finally {
     if (event?.target) event.target.value = ''
   }
 }
 
 function saveMacroTemplate() {
-  const name = (activeMacro.value.name || '').trim() || `Macro ${activeMacro.value.id}`
+  const name = (activeMacro.value.name || '').trim() || t('timeTracking.macro_default_name', { id: activeMacro.value.id })
   const payload = {
     id: activeMacro.value.id,
     name,
@@ -3530,7 +3655,7 @@ function saveMacroTemplate() {
   selectedMacroId.value = payload.id
   activeMacro.value = cloneMacroTemplate(payload)
   persistMacroLibrary()
-  ui.success('Macro saved')
+  ui.success(t('timeTracking.macro_saved'))
 }
 
 function ensureMacroRow(meta) {
@@ -3600,30 +3725,31 @@ async function upsertMacroCell(row, dateISO, minutes, distance, startRaw, endRaw
   }
 }
 
-async function applyMacroTemplate() {
-  const dayCount = normalizeMacroApplyDays(activeMacro.value.apply_days)
-  const alternating = !!activeMacro.value.alternating
-  const targetDays = weekDays.value.slice(0, dayCount).map(d => d.iso).filter(Boolean)
+async function applyMacroTemplate(macro = activeMacro.value, startDayIndex = 0) {
+  const dayCount = normalizeMacroApplyDays(macro.apply_days)
+  const alternating = !!macro.alternating
+  const startIdx = Math.max(0, Math.min(6, Number(startDayIndex) || 0))
+  const targetDays = weekDays.value.slice(startIdx, startIdx + dayCount).map(d => d.iso).filter(Boolean)
   if (!targetDays.length) return
   const undoItems = []
   try {
-    for (const rowDef of activeMacro.value.rows) {
+    for (const rowDef of macro.rows) {
       const desc = (rowDef.description || '').trim()
       if (!desc) continue
       const row = ensureMacroRow({
-        customer_id: rowDef.customer_id || null,
-        project_id: rowDef.project_id || null,
+        customer_id: rowDef.customer_id != null ? Number(rowDef.customer_id) : null,
+        project_id: rowDef.project_id != null ? Number(rowDef.project_id) : null,
         description: desc,
       })
       const dayPattern = [
         {
-          minutes: parseTimeInput(rowDef.day1_minutes),
+          minutes: parseMacroTimeInput(rowDef.day1_minutes, timeNotation.value),
           distance: Math.max(0, parseFloat(rowDef.day1_distance) || 0),
           start: rowDef.day1_start,
           end: rowDef.day1_end,
         },
         {
-          minutes: parseTimeInput(rowDef.day2_minutes),
+          minutes: parseMacroTimeInput(rowDef.day2_minutes, timeNotation.value),
           distance: Math.max(0, parseFloat(rowDef.day2_distance) || 0),
           start: rowDef.day2_start,
           end: rowDef.day2_end,
@@ -3639,14 +3765,22 @@ async function applyMacroTemplate() {
     if (undoItems.length) {
       pushUndoBatch(undoItems)
       refreshCellInputs()
-      saveMacroTemplate()
-      macroEditorOpen.value = false
-      ui.success('Macro applied')
+      macroRunOpen.value = false
+      ui.success(t('timeTracking.macro_applied'))
     }
   } catch (err) {
-    if (err?.message === 'invalid-time-range') ui.error('Invalid macro start/end time. Use HH:MM.')
+    if (err?.message === 'invalid-time-range') ui.error(t('timeTracking.macro_invalid_time'))
     else ui.error(t('timeTracking.save_error'))
   }
+}
+
+async function runMacroFromPopout() {
+  const macro = macroById(macroRunId.value)
+  if (!macro) {
+    ui.error(t('timeTracking.macro_choose_to_run'))
+    return
+  }
+  await applyMacroTemplate(macro, macroRunStartDay.value)
 }
 
 const newRowHasSlots = computed(() => {
@@ -3978,17 +4112,7 @@ function fmtTime(minutes) {
 }
 
 function parseTimeInput(val) {
-  if (!val && val !== 0) return 0
-  const s = String(val).trim()
-  if (timeNotation.value === 'hhmm') {
-    if (s.includes(':')) {
-      const [h, m] = s.split(':')
-      return (parseInt(h) || 0) * 60 + (parseInt(m) || 0)
-    }
-    // Bare digits in hhmm mode: "8" → 8:00, "20" → 20:00
-    return (parseInt(s) || 0) * 60
-  }
-  return Math.round((parseFloat(s) || 0) * 60)
+  return parseTimeNotationMinutes(val, timeNotation.value)
 }
 
 // ── Exports ───────────────────────────────────────────────────────────────
@@ -4316,6 +4440,7 @@ onMounted(() => {
   document.addEventListener('keydown', onNavEscapeKey)
   document.addEventListener('mousedown', onDocClick)
   document.addEventListener('mousedown', onHolidaysDocClick)
+  document.addEventListener('mousedown', onMacroRunDocClick)
   document.addEventListener('mousedown', onWkPickerDocClick)
   document.addEventListener('mousedown', onTimePopupDocClick)
   document.addEventListener('mousedown', onDistPopupDocClick)
@@ -4358,6 +4483,7 @@ onUnmounted(() => {
   document.removeEventListener('keydown', onNavEscapeKey)
   document.removeEventListener('mousedown', onDocClick)
   document.removeEventListener('mousedown', onHolidaysDocClick)
+  document.removeEventListener('mousedown', onMacroRunDocClick)
   document.removeEventListener('mousedown', onWkPickerDocClick)
   document.removeEventListener('mousedown', onTimePopupDocClick)
   document.removeEventListener('mousedown', onDistPopupDocClick)
@@ -4388,6 +4514,7 @@ onMounted(async () => {
     const { data } = await timeEntriesApi.getRowOrder()
     if (data.keys?.length) _serverOrder.value = data.keys
   } catch {}
+  await loadMacroLibraryFromServer()
   await loadWeek()
   await nextTick()
   initRowSortable()
@@ -4796,9 +4923,11 @@ td.c-day:focus-within .cell-dist-toggle,
   left: 0;
   z-index: 300;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-primary);
   border-radius: var(--radius-sm);
-  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.18),
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent);
   padding: 10px;
   min-width: 150px;
   display: flex;
@@ -4821,6 +4950,11 @@ td.c-day:focus-within .cell-dist-toggle,
   background: var(--color-input-bg, var(--color-surface-2));
   color: var(--color-text);
   font-size: 12px;
+}
+.tp-inp:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 28%, transparent);
 }
 .tp-preview {
   text-align: center;
@@ -5010,6 +5144,21 @@ td.c-day-holiday-cell.c-day-selected {
     inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 55%, transparent);
 }
 td.c-day-selected .h-inp { background: transparent; }
+
+td.c-day.c-day-popup-open {
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+td.c-day-today.c-day-popup-open {
+  box-shadow:
+    inset 0 0 0 9999px color-mix(in srgb, var(--color-primary) 10%, transparent),
+    inset 0 0 0 2px var(--color-primary);
+}
+td.c-day-holiday.c-day-popup-open,
+td.c-day-holiday-cell.c-day-popup-open {
+  box-shadow:
+    inset 0 0 0 9999px rgba(0, 0, 0, 0.18),
+    inset 0 0 0 2px var(--color-primary);
+}
 
 .tt-mode-tabs { display: flex; gap: 2px; margin-left: auto; }
 .tt-mode-btn {
@@ -5277,6 +5426,40 @@ td.c-day-selected .h-inp { background: transparent; }
 }
 .btn-copy-prev:hover:not(:disabled) { background: var(--color-bg); border-color: var(--color-text-muted); color: var(--color-text); }
 .btn-copy-prev:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-copy-prev.macro-run-open {
+  background: var(--color-bg);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.macro-run-wrap { position: relative; }
+.macro-run-drop {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 6px);
+  width: min(320px, calc(100vw - 24px));
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.macro-run-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.macro-run-preview {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.macro-run-btn { align-self: stretch; }
 .btn-undo {
   font-size: 13px;
   padding: 6px 12px;
@@ -5570,6 +5753,7 @@ td.c-day-selected .h-inp { background: transparent; }
 .ttp-tab:hover:not(.active) { color: var(--color-text); }
 
 /* ── Manage-projects button ── */
+.tt-macro-edit-btn,
 .tt-manage-btn {
   padding: 0 10px;
   font-size: 14px;

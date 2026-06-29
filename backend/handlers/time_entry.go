@@ -767,3 +767,49 @@ func saveTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string, keys []stri
 	}
 	return database.DB.Save(&order).Error
 }
+
+// GetTimeMacroLibrary returns the saved time-tracking macro library for the current user.
+func GetTimeMacroLibrary(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	var lib models.TimeMacroLibrary
+	if err := database.DB.Where("user_id = ?", userID).First(&lib).Error; err != nil {
+		c.JSON(http.StatusOK, gin.H{"library": nil})
+		return
+	}
+	var payload any
+	if lib.Payload != "" {
+		if err := json.Unmarshal([]byte(lib.Payload), &payload); err != nil {
+			c.JSON(http.StatusOK, gin.H{"library": nil})
+			return
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"library": payload})
+}
+
+// UpdateTimeMacroLibrary saves the time-tracking macro library for the current user.
+func UpdateTimeMacroLibrary(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	var body struct {
+		Library json.RawMessage `json:"library"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil || len(body.Library) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	var probe struct {
+		Macros []json.RawMessage `json:"macros"`
+	}
+	if err := json.Unmarshal(body.Library, &probe); err != nil || len(probe.Macros) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid macro library"})
+		return
+	}
+	lib := models.TimeMacroLibrary{
+		UserID:  userID,
+		Payload: string(body.Library),
+	}
+	if err := database.DB.Save(&lib).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save macro library"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
