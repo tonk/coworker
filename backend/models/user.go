@@ -48,6 +48,8 @@ type User struct {
 	WeekStart           string         `gorm:"size:10;default:'monday'" json:"week_start"`      // "monday" | "sunday"
 	DistanceUnit        string         `gorm:"size:10;default:'km'" json:"distance_unit"`       // "km" | "miles"
 	DashboardDefault    string         `gorm:"size:10;default:'boards'" json:"dashboard_default"` // "boards" | "tickets"
+	TrayIconEnabled     bool           `gorm:"default:true" json:"tray_icon_enabled"`
+	CloseToTrayEnabled  bool           `gorm:"default:true" json:"close_to_tray_enabled"`
 	MonWorkStart        string         `gorm:"size:5;default:'08:00'" json:"mon_work_start"`
 	MonWorkEnd          string         `gorm:"size:5;default:'17:00'" json:"mon_work_end"`
 	TueWorkStart        string         `gorm:"size:5;default:'08:00'" json:"tue_work_start"`

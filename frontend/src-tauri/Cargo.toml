@@ -1,6 +1,6 @@
 [package]
 name = "warmdesk"
-version = "0.12.37-2-ga07bc4f"
+version = "0.12.39"
 edition = "2021"
 
 [lib]
@@ -11,7 +11,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-http = { version = "2", default-features = false, features = ["rustls-tls", "charset", "macos-system-configuration", "cookies"] }
@@ -20,6 +20,7 @@ tauri-plugin-notification = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+png = "0.18"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 webkit2gtk = { version = "2.0", features = ["v2_16"] }
@@ -29,6 +30,11 @@ webkit2gtk = { version = "2.0", features = ["v2_16"] }
 # The crate is already a transitive dep via tauri; pin to the same version.
 webview2-com = "0.38"
 windows = { version = "0.61", features = ["Win32_Foundation"] }
+
+# Vendor patch: change tray-icon GTK icon description from "icon"/"tray icon"
+# to "WarmDesk" so the system tray hover never shows "warmdesk icon".
+[patch.crates-io]
+tray-icon = { path = "vendor/tray-icon" }
 
 [profile.release]
 codegen-units = 1

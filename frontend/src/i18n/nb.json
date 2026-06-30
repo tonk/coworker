@@ -840,7 +840,11 @@
     "distance_unit_miles": "Miles (mi)",
     "tab_interface": "Grensesnitt",
     "tab_security": "Sikkerhet",
-    "tab_api_keys": "API-nøkler"
+    "tab_api_keys": "API-nøkler",
+    "tray_icon": "System Tray",
+    "tray_icon_hint": "Show system tray icon with unread indicator",
+    "close_to_tray": "Close to system tray",
+    "close_to_tray_hint": "Minimise to tray instead of quitting when closing the window"
   },
   "dm": {
     "title": "Chatter",

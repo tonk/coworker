@@ -327,6 +327,8 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		SunWorkStart         string  `json:"sun_work_start"`
 		SunWorkEnd           string  `json:"sun_work_end"`
 		LunchBreakMinutes    int     `json:"lunch_break_minutes"`
+		TrayIconEnabled     *bool   `json:"tray_icon_enabled"`
+		CloseToTrayEnabled   *bool   `json:"close_to_tray_enabled"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -403,6 +405,12 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.ChatEnabled != nil {
 		updates["chat_enabled"] = *req.ChatEnabled
+	}
+	if req.TrayIconEnabled != nil {
+		updates["tray_icon_enabled"] = *req.TrayIconEnabled
+	}
+	if req.CloseToTrayEnabled != nil {
+		updates["close_to_tray_enabled"] = *req.CloseToTrayEnabled
 	}
 	if req.TimeNotation == "decimal" || req.TimeNotation == "hhmm" {
 		updates["time_notation"] = req.TimeNotation

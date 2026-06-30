@@ -1,6 +1,35 @@
+use std::io::Cursor;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
+
+static CLOSE_TO_TRAY_ENABLED: AtomicBool = AtomicBool::new(true);
 
 use serde::{Deserialize, Serialize};
+use tauri::image::Image;
+use tauri::menu::{MenuBuilder, MenuItemBuilder};
+use tauri::tray::TrayIconBuilder;
+use tauri::Manager;
+
+fn png_to_image(bytes: &[u8]) -> Result<Image<'static>, String> {
+    let decoder = png::Decoder::new(Cursor::new(bytes));
+    let mut reader = decoder.read_info().map_err(|e| e.to_string())?;
+    let buf_size = reader.output_buffer_size().unwrap_or(0);
+    let mut buf = vec![0u8; buf_size];
+    let info = reader.next_frame(&mut buf).map_err(|e| e.to_string())?;
+    let rgba = match info.color_type {
+        png::ColorType::Rgba => buf[..info.buffer_size()].to_vec(),
+        png::ColorType::Rgb => {
+            let mut rgba_buf = Vec::with_capacity(info.buffer_size() / 3 * 4);
+            for chunk in buf[..info.buffer_size()].chunks(3) {
+                rgba_buf.extend_from_slice(chunk);
+                rgba_buf.push(255);
+            }
+            rgba_buf
+        }
+        _ => return Err("unsupported PNG color type".to_string()),
+    };
+    Ok(Image::new_owned(rgba, info.width, info.height))
+}
 
 // ---------------------------------------------------------------------------
 // Profile types
@@ -415,6 +444,7 @@ pub fn run() {
             rename_profile,
             set_default_profile,
             delete_profile,
+            set_tray_unread,
         ])
         .on_page_load(move |window, _payload| {
             let js = build_init_js(
@@ -450,6 +480,18 @@ pub fn run() {
             if maximized {
                 win.maximize()?;
             }
+
+            // Close-to-tray: hide instead of quit when enabled, so the tray stays active.
+            let win_hide = win.clone();
+            win.on_window_event(move |event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    if !CLOSE_TO_TRAY_ENABLED.load(Ordering::Relaxed) {
+                        return;
+                    }
+                    api.prevent_close();
+                    let _ = win_hide.hide();
+                }
+            });
 
             // Disable WebKit hardware acceleration on Linux to work around
             // a COLRv1 font rendering crash in webkit2gtk/Skia (Fedora 43,
@@ -497,6 +539,44 @@ pub fn run() {
                     }
                 }
             })?;
+
+            // ── System tray icon ────────────────────────────────────────────
+            let tray_icon = png_to_image(include_bytes!("../icons/tray-icon.png"))
+                .expect("failed to load tray icon");
+            let show_item = MenuItemBuilder::with_id("show", "WarmDesk")
+                .build(app)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
+                .build(app)?;
+            let tray_menu = MenuBuilder::new(app)
+                .item(&show_item)
+                .separator()
+                .item(&quit_item)
+                .build()?;
+            TrayIconBuilder::new()
+                .icon(tray_icon)
+                .title("WarmDesk")
+                .tooltip("WarmDesk")
+                .menu(&tray_menu)
+                .on_menu_event(|app, event| {
+                    match event.id.as_ref() {
+                        "show" => {
+                            if let Some(w) = app.get_webview_window("main") {
+                                let visible = w.is_visible().unwrap_or(true);
+                                if visible {
+                                    let _ = w.hide();
+                                } else {
+                                    let _ = w.show();
+                                    let _ = w.set_focus();
+                                }
+                            }
+                        }
+                        "quit" => {
+                            app.exit(0);
+                        }
+                        _ => {}
+                    }
+                })
+                .build(app)?;
 
             Ok(())
         })
@@ -598,6 +678,64 @@ fn delete_profile(name: String) -> Result<(), String> {
     // The profile's data directory is intentionally left on disk to avoid
     // accidental data loss; the user can clean it up manually if desired.
     save_profiles(&cfg).map_err(|e| e.to_string())
+}
+
+// ---------------------------------------------------------------------------
+// Tray icon commands
+// ---------------------------------------------------------------------------
+
+#[tauri::command]
+fn set_tray_unread(
+    app: tauri::AppHandle,
+    count: u32,
+    enabled: bool,
+    is_timetracking: bool,
+    close_to_tray: bool,
+) -> Result<(), String> {
+    CLOSE_TO_TRAY_ENABLED.store(close_to_tray, Ordering::Relaxed);
+
+    let tray = app.tray_by_id("main").ok_or("tray not found")?;
+    let (normal_icon, badge_icon) = if is_timetracking {
+        (
+            include_bytes!("../icons/timetracking-tray-icon.png") as &[u8],
+            include_bytes!("../icons/timetracking-tray-icon-badge.png") as &[u8],
+        )
+    } else {
+        (
+            include_bytes!("../icons/tray-icon.png") as &[u8],
+            include_bytes!("../icons/tray-icon-badge.png") as &[u8],
+        )
+    };
+
+    let title = if is_timetracking {
+        "WarmDesk — Time Tracking"
+    } else {
+        "WarmDesk"
+    };
+    tray.set_title(Some(title)).map_err(|e| e.to_string())?;
+
+    if !enabled {
+        let icon = png_to_image(normal_icon)?;
+        tray.set_icon(Some(icon)).map_err(|e| e.to_string())?;
+        tray.set_tooltip(Some(title)).map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    let icon = if count > 0 {
+        png_to_image(badge_icon)?
+    } else {
+        png_to_image(normal_icon)?
+    };
+    tray.set_icon(Some(icon)).map_err(|e| e.to_string())?;
+
+    let tooltip = if count > 0 {
+        format!("{} — {} unread", title, count)
+    } else {
+        title.to_string()
+    };
+    tray.set_tooltip(Some(&tooltip)).map_err(|e| e.to_string())?;
+
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------

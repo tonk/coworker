@@ -805,7 +805,11 @@
     "distance_unit_miles": "Miles (mi)",
     "tab_interface": "Interface",
     "tab_security": "Sécurité",
-    "tab_api_keys": "Clés API"
+    "tab_api_keys": "Clés API",
+    "tray_icon": "System Tray",
+    "tray_icon_hint": "Show system tray icon with unread indicator",
+    "close_to_tray": "Close to system tray",
+    "close_to_tray_hint": "Minimise to tray instead of quitting when closing the window"
   },
   "dm": {
     "title": "Chats",

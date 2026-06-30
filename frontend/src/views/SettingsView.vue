@@ -220,6 +220,20 @@
                 <span>{{ $t('timeTracking.toggle_hint') }}</span>
               </label>
             </div>
+            <div v-if="isTauri" class="form-group">
+              <label class="form-label">{{ $t('settings.tray_icon') }}</label>
+              <label class="toggle-label">
+                <input type="checkbox" v-model="form.tray_icon_enabled" />
+                <span>{{ $t('settings.tray_icon_hint') }}</span>
+              </label>
+            </div>
+            <div v-if="isTauri" class="form-group">
+              <label class="form-label">{{ $t('settings.close_to_tray') }}</label>
+              <label class="toggle-label">
+                <input type="checkbox" v-model="form.close_to_tray_enabled" :disabled="!form.tray_icon_enabled" />
+                <span>{{ $t('settings.close_to_tray_hint') }}</span>
+              </label>
+            </div>
             <div v-if="!systemStore.isTimetrackingMode" class="form-group">
               <label class="form-label" for="dashboard-default-select">{{ $t('settings.dashboard_default') }}</label>
               <select id="dashboard-default-select" class="form-input" v-model="form.dashboard_default">
@@ -539,6 +553,7 @@ import { resolveAssetUrl } from '@/api/serverConfig'
 import { applyUserPreferences } from '@/composables/useUserPreferences'
 import { useDateFormat } from '@/composables/useDateFormat'
 
+const isTauri = !!window.__TAURI_INTERNALS__
 const route = useRoute()
 const auth = useAuthStore()
 const ui = useUIStore()
@@ -587,6 +602,8 @@ const form = ref({
   distance_unit: 'km',
   week_start: 'monday',
   dashboard_default: 'boards',
+  tray_icon_enabled: true,
+  close_to_tray_enabled: true,
   mon_work_start: '08:00',
   tue_work_start: '08:00',
   wed_work_start: '08:00',
@@ -730,6 +747,8 @@ onMounted(async () => {
       distance_unit: u.distance_unit || 'km',
       week_start: u.week_start || 'monday',
       dashboard_default: u.dashboard_default || 'boards',
+      tray_icon_enabled: u.tray_icon_enabled !== undefined ? u.tray_icon_enabled : true,
+      close_to_tray_enabled: u.close_to_tray_enabled !== undefined ? u.close_to_tray_enabled : true,
       mon_work_start: u.mon_work_start ?? '08:00',
       mon_work_end:   u.mon_work_end   ?? '17:00',
       tue_work_start: u.tue_work_start ?? '08:00',
@@ -778,6 +797,8 @@ async function saveProfile() {
       distance_unit: form.value.distance_unit,
       week_start: form.value.week_start,
       dashboard_default: form.value.dashboard_default,
+      tray_icon_enabled: form.value.tray_icon_enabled,
+      close_to_tray_enabled: form.value.close_to_tray_enabled,
       mon_work_start: form.value.mon_work_start,
       mon_work_end:   form.value.mon_work_end,
       tue_work_start: form.value.tue_work_start,

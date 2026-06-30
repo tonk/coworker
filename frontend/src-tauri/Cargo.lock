@@ -4418,8 +4418,6 @@ dependencies = [
 [[package]]
 name = "tray-icon"
 version = "0.23.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15edbb0d80583e85ee8df283410038e17314df5cba30da2087a54a85216c0773"
 dependencies = [
  "crossbeam-channel",
  "dirs",
@@ -4434,7 +4432,7 @@ dependencies = [
  "png 0.18.1",
  "serde",
  "thiserror 2.0.18",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -4633,8 +4631,9 @@ dependencies = [
 
 [[package]]
 name = "warmdesk"
-version = "0.12.37-2-ga07bc4f"
+version = "0.12.39"
 dependencies = [
+ "png 0.18.1",
  "reqwest 0.12.28",
  "serde",
  "serde_json",
