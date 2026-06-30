@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.12.38 — 2026-06-30
+
+### Added
+- **Invoice templates** — reusable line-item sets for quickly creating invoices. Manage via Admin → Invoice Templates; apply when creating an invoice. Clicking a template name opens edit mode directly.
+- **Travel time & distance in seed** — seed data now includes time entries with travel time and distance linked to contracts, visible on the generated invoices.
+
+### Fixed
+- **Invoice line items — quantity/unit-price display** — template-derived and manual (non-time) lines now show Quantity in the hours column and Unit Price in the rate column in both the invoice view, the creation preview, and the exported PDF.
+- **Invoice PDF rate column** — rate precedence (hourly → per-km → unit price) is now explicit via a `switch`; removed the ambiguous nested `else-if` chain.
+- **Invoice hours column — no NaN** — `fmtMinutes` / `fmtMinutesInv` return blank instead of `NaNh` when `minutes` is absent (template/manual lines serialised without the field).
+- **Template-derived invoice lines now editable** — `withDate` sets `is_manual: true` so lines in INV-0006/0007/0008 show editable inputs instead of blank read-only spans.
+- **Direct messages — service accounts blocked** — `metrics` and `backup` role users no longer appear in the DM picker or conversation sidebar; `SendDirectMessage` now returns 403 when the target is a service account, closing the API-level bypass.
+- **Admin user list restored** — admin users can again see all active users including service accounts; the service-account filter is restricted to the non-admin DM-picker path only.
+- **WCAG 2.1 AA — invoice template list** — template name is a keyboard-accessible button with `aria-label`; delete button has a unique `aria-label`; `:focus-visible` outline added.
+
+### Changed
+- **Seed re-seed** — template-derived invoices now refresh `line_items`, `subtotal`, `vat_amount`, and `total` (not just `notes`) when re-seeding without `--reset`.
+- **`parseLineItems` utility** — shared helper extracted to `src/utils/invoiceUtils.js`; eliminates duplicated `JSON.parse` / try-catch in `InvoiceTemplatesTab.vue` and `CustomerDetailView.vue`.
+- **Seed — type consolidation** — local `templateLineItem` and `invLineItem` types replaced with `models.InvoiceLineItem`; dead `templateIDByName` map removed; invoice numbers are now explicit fields; reset block derives template names from a package-level slice.
+
 ## v0.12.37 — 2026-06-29
 
 ### Added
