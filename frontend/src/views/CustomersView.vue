@@ -45,7 +45,7 @@
     <ContractRatesModal v-if="showRates" @close="showRates = false" />
 
     <!-- Create dialog -->
-    <BaseModal v-if="showCreate" :title="$t('customer.new_customer')" @close="showCreate = false">
+    <BaseModal v-if="showCreate" :title="$t('customer.new_customer')" @close="showCreate = false" :resizable="true">
       <div class="form-group">
         <label class="form-label" for="new-cust-name">{{ $t('customer.name') }}</label>
         <input id="new-cust-name" class="form-input" v-model="form.name" :placeholder="$t('customer.name')" />

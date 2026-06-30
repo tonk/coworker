@@ -1,5 +1,5 @@
 <template>
-  <BaseModal :title="$t('shortcuts.title')" @close="$emit('close')" style="--modal-width: 680px">
+  <BaseModal :title="$t('shortcuts.title')" @close="$emit('close')" :resizable="true" style="--modal-width: 680px">
     <div class="shortcuts-body">
       <div v-for="section in sections" :key="section.key" class="shortcut-section">
         <h4 class="shortcut-section-title">{{ $t(`shortcuts.section_${section.key}`) }}</h4>

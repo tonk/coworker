@@ -1136,7 +1136,7 @@
   </main>
 
   <!-- Create User Modal -->
-  <BaseModal v-if="showCreateUser" :title="$t('admin.new_user')" @close="showCreateUser = false">
+  <BaseModal v-if="showCreateUser" :title="$t('admin.new_user')" @close="showCreateUser = false" :resizable="true">
     <div class="form-row">
       <div class="form-group">
         <label class="form-label" for="new-user-first">{{ $t('settings.first_name') }}</label>
@@ -1414,7 +1414,7 @@
   </BaseModal>
 
   <!-- Login History Modal -->
-  <BaseModal v-if="loginHistoryUser" :title="$t('admin.login_history') + ' — ' + (loginHistoryUser.display_name || loginHistoryUser.username)" width="min(95vw, 1080px)" @close="loginHistoryUser = null">
+  <BaseModal v-if="loginHistoryUser" :title="$t('admin.login_history') + ' — ' + (loginHistoryUser.display_name || loginHistoryUser.username)" width="min(95vw, 1080px)" @close="loginHistoryUser = null" :resizable="true">
     <div v-if="loginHistoryLoading" style="text-align:center;padding:24px">
       <div class="spinner" style="width:28px;height:28px;border-width:3px;display:inline-block"></div>
     </div>
@@ -1451,7 +1451,7 @@
   </BaseModal>
 
   <!-- Create Project Modal -->
-  <BaseModal v-if="showCreateProject" :title="$t('project.new_project')" @close="showCreateProject = false; newProject.key_prefix = ''; prefixTouched = false">
+  <BaseModal v-if="showCreateProject" :title="$t('project.new_project')" @close="showCreateProject = false; newProject.key_prefix = ''; prefixTouched = false" :resizable="true">
     <div class="form-group">
       <label class="form-label" for="new-proj-name">{{ $t('project.project_name') }} *</label>
       <input id="new-proj-name" class="form-input" v-model="newProject.name" autofocus />
@@ -1501,7 +1501,7 @@
   </BaseModal>
 
   <!-- Edit Project Modal -->
-    <BaseModal v-if="editProject" :title="$t('admin.edit_project')" @close="editProject = null">
+    <BaseModal v-if="editProject" :title="$t('admin.edit_project')" @close="editProject = null" :resizable="true">
       <div class="form-group">
         <label class="form-label" for="edit-proj-name">{{ $t('project.project_name') }}</label>
         <input id="edit-proj-name" class="form-input" v-model="editProject.name" />
@@ -1530,7 +1530,7 @@
   </BaseModal>
 
   <!-- Create / Edit group modal -->
-  <BaseModal v-if="showGroupForm" :title="editingGroup ? $t('groups.edit') : $t('groups.create')" @close="showGroupForm = false">
+  <BaseModal v-if="showGroupForm" :title="editingGroup ? $t('groups.edit') : $t('groups.create')" @close="showGroupForm = false" :resizable="true">
     <div class="form-group">
       <label class="form-label" for="group-form-name">{{ $t('groups.name') }}</label>
       <input id="group-form-name" class="form-input" v-model="groupForm.name" />
@@ -1555,7 +1555,7 @@
   </BaseModal>
 
   <!-- Group detail modal: members + access -->
-  <BaseModal v-if="activeGroup" :title="activeGroup.name" @close="activeGroup = null" style="--modal-width:700px">
+  <BaseModal v-if="activeGroup" :title="activeGroup.name" @close="activeGroup = null" :resizable="true" style="--modal-width:700px">
     <div v-if="loadingGroupDetail" class="loading-state" style="padding:40px">
       <div class="spinner" style="width:28px;height:28px;border-width:3px"></div>
     </div>

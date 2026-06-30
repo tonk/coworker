@@ -364,7 +364,7 @@
     </BaseModal>
 
     <!-- Edit customer modal -->
-    <BaseModal v-if="showEdit" :title="$t('customer.edit')" @close="showEdit = false">
+    <BaseModal v-if="showEdit" :title="$t('customer.edit')" @close="showEdit = false" :resizable="true">
       <div class="form-group">
         <label class="form-label" for="edit-cust-name">{{ $t('customer.name') }}</label>
         <input id="edit-cust-name" class="form-input" v-model="editForm.name" />
@@ -592,7 +592,7 @@
       </template>
     </BaseModal>
   <!-- Add member modal -->
-  <BaseModal v-if="showAddMember" :title="$t('customer.add_member')" @close="showAddMember = false">
+  <BaseModal v-if="showAddMember" :title="$t('customer.add_member')" @close="showAddMember = false" :resizable="true">
     <div class="form-group">
       <input class="form-input" v-model="memberSearch" :aria-label="$t('common.search')" :placeholder="$t('common.search') + '…'" />
     </div>
@@ -622,7 +622,7 @@
   </BaseModal>
 
   <!-- Create Invoice modal -->
-  <BaseModal v-if="showNewInvoice" :title="$t('invoice.create_from_entries')" @close="closeNewInvoice" style="--modal-width:700px">
+  <BaseModal v-if="showNewInvoice" :title="$t('invoice.create_from_entries')" @close="closeNewInvoice" :resizable="true" style="--modal-width:700px">
     <!-- Step 1: period selection -->
     <template v-if="invoiceStep === 1">
       <div v-if="invoiceTemplates.length > 0" class="form-group">
@@ -736,7 +736,8 @@
     v-if="showEditLines"
     :title="$t('invoice.edit_lines')"
     @close="showEditLines = false"
-    style="--modal-width:760px"
+    :resizable="true"
+    style="--modal-width:960px;--modal-height:600px"
     aria-labelledby="edit-lines-title"
   >
     <h2 id="edit-lines-title" class="sr-only">{{ $t('invoice.edit_lines') }}</h2>
@@ -2443,7 +2444,8 @@ async function deleteContract(grp) {
 .invoice-row--overdue { background: color-mix(in srgb, var(--color-danger, #e53e3e) 5%, var(--color-surface)); }
 .invoice-due--overdue { color: var(--color-danger, #e53e3e); font-weight: 600; }
 
-.inv-preview-table-wrap { overflow-x: auto; margin-bottom: 12px; }
+.inv-preview-table-wrap,
+.inv-edit-table-wrap { overflow-x: auto; margin-bottom: 12px; }
 .inv-preview-table {
   width: 100%;
   border-collapse: collapse;

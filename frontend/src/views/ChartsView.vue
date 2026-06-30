@@ -255,7 +255,7 @@
   </div>
 
   <!-- Create / Edit release modal -->
-  <BaseModal v-if="showReleaseModal" :title="editingRelease ? $t('sprint.edit_release') : $t('sprint.new_release')" @close="closeReleaseModal">
+  <BaseModal v-if="showReleaseModal" :title="editingRelease ? $t('sprint.edit_release') : $t('sprint.new_release')" @close="closeReleaseModal" :resizable="true">
     <div class="form-group">
       <label class="form-label">{{ $t('sprint.release_name') }}</label>
       <input class="form-input" v-model="releaseForm.name" autofocus />

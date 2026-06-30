@@ -27,6 +27,7 @@ action_groups:
     - system_settings
     - ticket
     - ticket_checklist_template
+    - timetrack_macro_library
     - user
     - user_access
     - user_options

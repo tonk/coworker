@@ -193,7 +193,7 @@
       </template>
     </div>
 
-    <BaseModal v-if="showCreate" :title="$t('ticket.new_ticket')" @close="cancelCreate">
+    <BaseModal v-if="showCreate" :title="$t('ticket.new_ticket')" @close="cancelCreate" :resizable="true">
       <form @submit.prevent="submitCreate">
         <div class="form-group">
           <label for="inbox-title">{{ $t('ticket.title') }}</label>

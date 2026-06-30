@@ -228,7 +228,7 @@
     </div>
 
     <!-- New Topic modal -->
-    <BaseModal v-if="showNew" :title="$t('topics.new_topic')" @close="showNew = false">
+    <BaseModal v-if="showNew" :title="$t('topics.new_topic')" @close="showNew = false" :resizable="true">
       <div class="form-group">
         <label class="form-label" for="new-topic-title">{{ $t('topics.topic_title') }}</label>
         <input id="new-topic-title" class="form-input" v-model="newTopic.title" required autofocus />

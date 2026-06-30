@@ -241,7 +241,7 @@
     />
 
     <!-- Create/edit sprint modal -->
-    <BaseModal v-if="showCreateSprint || editingSprintId" :title="editingSprintId ? $t('sprint.edit') : $t('sprint.new_sprint')" @close="closeSprintModal">
+    <BaseModal v-if="showCreateSprint || editingSprintId" :title="editingSprintId ? $t('sprint.edit') : $t('sprint.new_sprint')" @close="closeSprintModal" :resizable="true">
       <div class="form-group">
         <label class="form-label">{{ $t('sprint.sprint_name') }}</label>
         <input class="form-input" v-model="sprintForm.name" autofocus />

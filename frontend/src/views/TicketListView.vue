@@ -351,7 +351,7 @@
       </template>
     </div>
 
-    <BaseModal v-if="showCreate" :title="$t('ticket.new_ticket')" @close="showCreate = false">
+    <BaseModal v-if="showCreate" :title="$t('ticket.new_ticket')" @close="showCreate = false" :resizable="true">
       <form @submit.prevent="submitCreate">
         <div class="form-group">
           <label>{{ $t('ticket.title') }}</label>

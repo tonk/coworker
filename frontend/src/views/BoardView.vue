@@ -73,7 +73,7 @@
     </div>
 
     <!-- Add column modal -->
-    <BaseModal v-if="showAddColumn" :title="$t('board.add_column')" @close="showAddColumn = false">
+    <BaseModal v-if="showAddColumn" :title="$t('board.add_column')" @close="showAddColumn = false" :resizable="true">
       <form @submit.prevent="submitAddColumn">
         <div class="form-group">
           <label class="form-label">{{ $t('board.column_name') }}</label>
@@ -96,7 +96,7 @@
     </BaseModal>
 
     <!-- Edit column modal -->
-    <BaseModal v-if="showEditColumn" :title="$t('board.edit_column')" @close="showEditColumn = false">
+    <BaseModal v-if="showEditColumn" :title="$t('board.edit_column')" @close="showEditColumn = false" :resizable="true">
       <form @submit.prevent="submitEditColumn">
         <div class="form-group">
           <label class="form-label">{{ $t('board.column_name') }}</label>

@@ -326,9 +326,12 @@ input.form-input, select.form-input { height: 36px; }
 .modal-resizable {
   resize: both;
   overflow: hidden;
+  width: var(--modal-width, 760px);
+  height: var(--modal-height, auto);
   min-width: 400px;
   min-height: 300px;
   max-width: 95vw;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   margin: auto 0;

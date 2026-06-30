@@ -60,7 +60,7 @@
       </div>
   </main>
 
-  <BaseModal v-if="showCreate" :title="$t('project.new_project')" @close="showCreate = false; newProject.key_prefix = ''; prefixTouched = false; customerError = false">
+  <BaseModal v-if="showCreate" :title="$t('project.new_project')" @close="showCreate = false; newProject.key_prefix = ''; prefixTouched = false; customerError = false" :resizable="true">
       <form @submit.prevent="handleCreate">
         <div class="form-group">
           <label class="form-label" for="dash-new-project-name">{{ $t('project.project_name') }}</label>

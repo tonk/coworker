@@ -1,5 +1,5 @@
 <template>
-  <BaseModal :title="$t('help.title')" @close="$emit('close')" style="--modal-width: 520px">
+  <BaseModal :title="$t('help.title')" @close="$emit('close')" :resizable="true" style="--modal-width: 520px">
     <article class="help-panel">
       <h4 class="help-page-title">{{ title }}</h4>
       <p v-if="intro" class="help-intro">{{ intro }}</p>

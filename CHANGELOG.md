@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.12.39 — 2026-06-30
+
+### Added
+- **Ansible — timetrack macro library module** — new `ansilabnl.warmdesk.timetrack_macro_library` module manages individual macros in a user's time-tracking macro library via `GET/PUT /api/v1/time-entries/macro-library`. Supports `state: present` (create/update) and `state: absent` (remove), idempotent, check-mode safe.
+- **Ansible — timetrack macro lookup** — new `ansilabnl.warmdesk.timetrack_macro` lookup plugin retrieves one or more macros by name from the library; follows the same interface as the existing `user` lookup.
+
+### Changed
+- **Invoice "Edit lines" modal** — wider (960 px) and taller (600 px) initial size; now resizable with a drag handle and a maximize button, consistent with other data-heavy modals.
+- **All modals now resizable** — every `BaseModal` instance in the application now includes the resize handle and maximize button for a consistent UX across all dialogs.
+- **CSS — resizable modals respect `--modal-width` / `--modal-height`** — `.modal-resizable` now uses `width: var(--modal-width)` and `height: var(--modal-height)` so callers can set a meaningful initial size; previously these variables were silently ignored for resizable modals.
+
 ## v0.12.38 — 2026-06-30
 
 ### Added

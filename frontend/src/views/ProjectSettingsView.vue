@@ -371,7 +371,7 @@
       </div>
   </main>
 
-  <BaseModal v-if="showInvite" :title="$t('project.invite_member')" @close="showInvite = false">
+  <BaseModal v-if="showInvite" :title="$t('project.invite_member')" @close="showInvite = false" :resizable="true">
       <div class="form-group">
         <label class="form-label">{{ $t('project.select_user') }}</label>
         <div class="invite-search-wrap">
@@ -412,7 +412,7 @@
       </template>
   </BaseModal>
 
-  <BaseModal v-if="showAddLabel" title="Add Label" @close="showAddLabel = false">
+  <BaseModal v-if="showAddLabel" title="Add Label" @close="showAddLabel = false" :resizable="true">
       <div class="form-group">
         <label class="form-label">Name</label>
         <input class="form-input" v-model="newLabel.name" autofocus />
