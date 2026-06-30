@@ -224,6 +224,7 @@
     "line_distance": "Distancia",
     "line_rate": "Tarifa",
     "line_amount": "Importe",
+    "line_items": "líneas",
     "no_billable_entries": "No se encontraron registros de tiempo facturables para este período.",
     "confirm_create": "Crear factura",
     "all_customers": "Todos los clientes",

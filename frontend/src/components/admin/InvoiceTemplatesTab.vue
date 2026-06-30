@@ -60,7 +60,7 @@
           <span class="tmpl-item-meta">
             {{ t.default_currency || '€' }}
             <template v-if="t.default_vat_rate"> · {{ t.default_vat_rate }}% VAT</template>
-            <template v-if="lineCount(t)"> · {{ lineCount(t) }} {{ lineCount(t) === 1 ? $t('invoice.line_description').toLowerCase() : $t('invoice.line_amount').toLowerCase() }}</template>
+            <template v-if="lineCount(t)"> · {{ lineCount(t) }} {{ $t('invoice.line_items') }}</template>
           </span>
           <span v-if="t.notes" class="tmpl-item-notes">{{ t.notes }}</span>
         </div>

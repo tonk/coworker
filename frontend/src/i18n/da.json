@@ -224,6 +224,7 @@
     "line_distance": "Distance",
     "line_rate": "Sats",
     "line_amount": "Beløb",
+    "line_items": "linjer",
     "no_billable_entries": "Ingen fakturerbare tidsregistreringer fundet for denne periode.",
     "confirm_create": "Opret faktura",
     "all_customers": "Alle kunder",

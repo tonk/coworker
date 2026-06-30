@@ -224,6 +224,7 @@
     "line_distance": "Distance",
     "line_rate": "Rate",
     "line_amount": "Amount",
+    "line_items": "lines",
     "no_billable_entries": "No billable time entries found for this period.",
     "confirm_create": "Create Invoice",
     "all_customers": "All Customers",

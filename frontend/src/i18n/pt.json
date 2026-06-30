@@ -224,6 +224,7 @@
     "line_distance": "Distância",
     "line_rate": "Taxa",
     "line_amount": "Valor",
+    "line_items": "linhas",
     "no_billable_entries": "Não foram encontrados registos de tempo faturáveis para este período.",
     "confirm_create": "Criar fatura",
     "all_customers": "Todos os clientes",

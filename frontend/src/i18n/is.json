@@ -224,6 +224,7 @@
     "line_distance": "Fjarlægð",
     "line_rate": "Taxti",
     "line_amount": "Upphæð",
+    "line_items": "línur",
     "no_billable_entries": "Engar reikningshæfar tímafærslur fundust fyrir þetta tímabil.",
     "confirm_create": "Búa til reikning",
     "all_customers": "Allir viðskiptavinir",

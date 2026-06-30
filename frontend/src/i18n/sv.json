@@ -224,6 +224,7 @@
     "line_distance": "Avstånd",
     "line_rate": "Taxa",
     "line_amount": "Belopp",
+    "line_items": "rader",
     "no_billable_entries": "Inga fakturerbara tidsposter hittades för denna period.",
     "confirm_create": "Skapa faktura",
     "all_customers": "Alla kunder",

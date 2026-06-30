@@ -224,6 +224,7 @@
     "line_distance": "Entfernung",
     "line_rate": "Satz",
     "line_amount": "Betrag",
+    "line_items": "Zeilen",
     "no_billable_entries": "Keine abrechenbaren Zeiteinträge für diesen Zeitraum gefunden.",
     "confirm_create": "Rechnung erstellen",
     "all_customers": "Alle Kunden",

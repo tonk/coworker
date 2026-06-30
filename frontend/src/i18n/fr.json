@@ -224,6 +224,7 @@
     "line_distance": "Distance",
     "line_rate": "Tarif",
     "line_amount": "Montant",
+    "line_items": "lignes",
     "no_billable_entries": "Aucune saisie de temps facturable trouvée pour cette période.",
     "confirm_create": "Créer la facture",
     "all_customers": "Tous les clients",

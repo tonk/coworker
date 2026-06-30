@@ -224,6 +224,7 @@
     "line_distance": "Matka",
     "line_rate": "Hinta",
     "line_amount": "Summa",
+    "line_items": "rivit",
     "no_billable_entries": "Tälle jaksolle ei löytynyt laskutettavia tuntimerkintöjä.",
     "confirm_create": "Luo lasku",
     "all_customers": "Kaikki asiakkaat",

@@ -2694,18 +2694,15 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	// ── 6a. Invoice templates ─────────────────────────────────────────────────
 	fmt.Println("→ Creating invoice templates…")
 
-	// templateLineItem mirrors InvoiceLineItem for JSON encoding.
+	// templateLineItem holds the fields the frontend template form uses:
+	// quantity × unit_price, not minutes × hourly_rate.
 	type templateLineItem struct {
-		ProjectName string  `json:"project_name"`
 		Description string  `json:"description"`
-		Minutes     int     `json:"minutes,omitempty"`
-		HourlyRate  float64 `json:"hourly_rate,omitempty"`
-		Distance    float64 `json:"distance,omitempty"`
-		PricePerKm  float64 `json:"price_per_km,omitempty"`
-		Amount      float64 `json:"amount"`
-		Currency    string  `json:"currency"`
 		Quantity    float64 `json:"quantity,omitempty"`
 		UnitPrice   float64 `json:"unit_price,omitempty"`
+		Amount      float64 `json:"amount"`
+		Currency    string  `json:"currency"`
+		IsManual    bool    `json:"is_manual,omitempty"`
 		IsComment   bool    `json:"is_comment,omitempty"`
 	}
 	marshalTemplateItems := func(items []templateLineItem) string {
@@ -2728,10 +2725,10 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			currency: "€",
 			notes:    "Standard consulting services at the agreed day rate.",
 			lineItems: []templateLineItem{
-				{Description: "Consulting services — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
-				{Description: "Consulting services — half day", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
-				{Description: "Travel to client site (outward)", Minutes: 90, Distance: 50, PricePerKm: 0.23, Amount: 11.50, Currency: "€"},
-				{Description: "Travel from client site (return)", Minutes: 90, Distance: 50, PricePerKm: 0.23, Amount: 11.50, Currency: "€"},
+				{Description: "Consulting services — full day", Quantity: 8, UnitPrice: 110.0, Amount: 880.0, Currency: "€"},
+				{Description: "Consulting services — half day", Quantity: 4, UnitPrice: 110.0, Amount: 440.0, Currency: "€"},
+				{Description: "Travel to client site (outward)", Quantity: 50, UnitPrice: 0.23, Amount: 11.50, Currency: "€"},
+				{Description: "Travel from client site (return)", Quantity: 50, UnitPrice: 0.23, Amount: 11.50, Currency: "€"},
 			},
 		},
 		{
@@ -2740,11 +2737,11 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			currency: "€",
 			notes:    "Monthly managed DevOps retainer. Actual hours logged per task.",
 			lineItems: []templateLineItem{
-				{Description: "Monitoring, alerting & ops", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
-				{Description: "Incident response & on-call", Minutes: 180, HourlyRate: 95.0, Amount: 285.0, Currency: "€"},
-				{Description: "Security hardening & patching", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
-				{Description: "CI/CD & infrastructure maintenance", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
-				{Description: "Monthly progress report & review call", Minutes: 120, HourlyRate: 95.0, Amount: 190.0, Currency: "€"},
+				{Description: "Monitoring, alerting & ops", Quantity: 8, UnitPrice: 95.0, Amount: 760.0, Currency: "€"},
+				{Description: "Incident response & on-call", Quantity: 3, UnitPrice: 95.0, Amount: 285.0, Currency: "€"},
+				{Description: "Security hardening & patching", Quantity: 4, UnitPrice: 95.0, Amount: 380.0, Currency: "€"},
+				{Description: "CI/CD & infrastructure maintenance", Quantity: 4, UnitPrice: 95.0, Amount: 380.0, Currency: "€"},
+				{Description: "Monthly progress report & review call", Quantity: 2, UnitPrice: 95.0, Amount: 190.0, Currency: "€"},
 			},
 		},
 		{
@@ -2753,9 +2750,9 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			currency: "€",
 			notes:    "On-site visit: travel costs (km-based) plus time at the client location.",
 			lineItems: []templateLineItem{
-				{Description: "Travel to client — outward journey", Minutes: 90, Distance: 75, PricePerKm: 0.23, Amount: 17.25, Currency: "€"},
-				{Description: "On-site work — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
-				{Description: "Travel from client — return journey", Minutes: 90, Distance: 75, PricePerKm: 0.23, Amount: 17.25, Currency: "€"},
+				{Description: "Travel to client — outward journey", Quantity: 75, UnitPrice: 0.23, Amount: 17.25, Currency: "€"},
+				{Description: "On-site work — full day", Quantity: 8, UnitPrice: 110.0, Amount: 880.0, Currency: "€"},
+				{Description: "Travel from client — return journey", Quantity: 75, UnitPrice: 0.23, Amount: 17.25, Currency: "€"},
 			},
 		},
 	}
@@ -2788,10 +2785,12 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		Date        string  `json:"date"`
 		ProjectName string  `json:"project_name"`
 		Description string  `json:"description"`
-		Minutes     int     `json:"minutes"`
+		Minutes     int     `json:"minutes,omitempty"`
 		HourlyRate  float64 `json:"hourly_rate,omitempty"`
 		Distance    float64 `json:"distance,omitempty"`
 		PricePerKm  float64 `json:"price_per_km,omitempty"`
+		Quantity    float64 `json:"quantity,omitempty"`
+		UnitPrice   float64 `json:"unit_price,omitempty"`
 		Amount      float64 `json:"amount"`
 		Currency    string  `json:"currency"`
 	}
@@ -2810,6 +2809,28 @@ Pagerduty schedules will be updated to match this by Friday.`,
 
 	isoDay := func(daysAgo int) string {
 		return time.Now().UTC().AddDate(0, 0, -daysAgo).Format("2006-01-02")
+	}
+
+	// tmplByName looks up an invoiceTemplateSpec by name for use in derived invoices.
+	tmplByName := func(name string) invoiceTemplateSpec {
+		for _, ts := range invoiceTemplateSpecs {
+			if ts.name == name {
+				return ts
+			}
+		}
+		return invoiceTemplateSpec{}
+	}
+	// withDate converts a templateLineItem to a dated invLineItem for a specific invoice.
+	withDate := func(li templateLineItem, daysAgo int, project string) invLineItem {
+		return invLineItem{
+			Date:        isoDay(daysAgo),
+			ProjectName: project,
+			Description: li.Description,
+			Quantity:    li.Quantity,
+			UnitPrice:   li.UnitPrice,
+			Amount:      li.Amount,
+			Currency:    li.Currency,
+		}
 	}
 
 	invSpecs := []invSpec{
@@ -2920,58 +2941,67 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		// ── Template-derived invoices ──────────────────────────────────────────────
 		// Each invoice below was generated from one of the seeded invoice templates.
 		// The templateName field records which template was used as the basis.
-		{
-			// From: "Consulting — Standard Rate"
-			customerName: "Acme Corporation",
-			status:       "sent",
-			periodStart:  120,
-			periodEnd:    91,
-			dueInDays:    30,
-			vatRate:      21,
-			templateName: "Consulting — Standard Rate",
-			notes:        "Phase 1 — on-site consulting days (2×full day + 1×half day + travel).",
-			lineItems: []invLineItem{
-				{Date: isoDay(118), ProjectName: "website-redesign", Description: "Consulting services — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
-				{Date: isoDay(115), ProjectName: "website-redesign", Description: "Travel to client site (outward)", Minutes: 90, Distance: 50, PricePerKm: 0.23, Amount: 11.50, Currency: "€"},
-				{Date: isoDay(115), ProjectName: "website-redesign", Description: "Consulting services — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
-				{Date: isoDay(115), ProjectName: "website-redesign", Description: "Travel from client site (return)", Minutes: 90, Distance: 50, PricePerKm: 0.23, Amount: 11.50, Currency: "€"},
-				{Date: isoDay(112), ProjectName: "website-redesign", Description: "Consulting services — half day", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
-			},
-		},
-		{
-			// From: "DevOps Retainer — Monthly"
-			customerName: "Globex Systems",
-			status:       "sent",
-			periodStart:  75,
-			periodEnd:    46,
-			dueInDays:    30,
-			vatRate:      21,
-			templateName: "DevOps Retainer — Monthly",
-			notes:        "Managed DevOps — monthly retainer March.",
-			lineItems: []invLineItem{
-				{Date: isoDay(73), ProjectName: "devops-infra", Description: "Monitoring, alerting & ops", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
-				{Date: isoDay(70), ProjectName: "devops-infra", Description: "Incident response & on-call", Minutes: 180, HourlyRate: 95.0, Amount: 285.0, Currency: "€"},
-				{Date: isoDay(67), ProjectName: "devops-infra", Description: "Security hardening & patching", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
-				{Date: isoDay(63), ProjectName: "devops-infra", Description: "CI/CD & infrastructure maintenance", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
-				{Date: isoDay(48), ProjectName: "devops-infra", Description: "Monthly progress report & review call", Minutes: 120, HourlyRate: 95.0, Amount: 190.0, Currency: "€"},
-			},
-		},
-		{
-			// From: "Travel & On-site Visit"
-			customerName: "Acme Corporation",
-			status:       "draft",
-			periodStart:  21,
-			periodEnd:    16,
-			dueInDays:    30,
-			vatRate:      21,
-			templateName: "Travel & On-site Visit",
-			notes:        "On-site architecture review at Acme HQ — travel + full work day.",
-			lineItems: []invLineItem{
-				{Date: isoDay(20), ProjectName: "website-redesign", Description: "Travel to client — outward journey", Minutes: 90, Distance: 75, PricePerKm: 0.23, Amount: 17.25, Currency: "€"},
-				{Date: isoDay(20), ProjectName: "website-redesign", Description: "On-site work — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
-				{Date: isoDay(20), ProjectName: "website-redesign", Description: "Travel from client — return journey", Minutes: 90, Distance: 75, PricePerKm: 0.23, Amount: 17.25, Currency: "€"},
-			},
-		},
+		func() invSpec {
+			// From: "Consulting — Standard Rate" — instantiated with actual dates
+			t := tmplByName("Consulting — Standard Rate")
+			return invSpec{
+				customerName: "Acme Corporation",
+				status:       "sent",
+				periodStart:  120,
+				periodEnd:    91,
+				dueInDays:    30,
+				vatRate:      21,
+				templateName: "Consulting — Standard Rate",
+				notes:        "Phase 1 — on-site consulting days (2×full day + 1×half day + travel).",
+				lineItems: []invLineItem{
+					withDate(t.lineItems[0], 118, "website-redesign"), // full day
+					withDate(t.lineItems[2], 115, "website-redesign"), // travel out
+					withDate(t.lineItems[0], 115, "website-redesign"), // full day (second visit)
+					withDate(t.lineItems[3], 115, "website-redesign"), // travel return
+					withDate(t.lineItems[1], 112, "website-redesign"), // half day
+				},
+			}
+		}(),
+		func() invSpec {
+			// From: "DevOps Retainer — Monthly" — all 5 template items, consecutive days
+			t := tmplByName("DevOps Retainer — Monthly")
+			return invSpec{
+				customerName: "Globex Systems",
+				status:       "sent",
+				periodStart:  75,
+				periodEnd:    46,
+				dueInDays:    30,
+				vatRate:      21,
+				templateName: "DevOps Retainer — Monthly",
+				notes:        "Managed DevOps — monthly retainer March.",
+				lineItems: []invLineItem{
+					withDate(t.lineItems[0], 73, "devops-infra"),
+					withDate(t.lineItems[1], 70, "devops-infra"),
+					withDate(t.lineItems[2], 67, "devops-infra"),
+					withDate(t.lineItems[3], 63, "devops-infra"),
+					withDate(t.lineItems[4], 48, "devops-infra"),
+				},
+			}
+		}(),
+		func() invSpec {
+			// From: "Travel & On-site Visit" — all 3 template items on the same day
+			t := tmplByName("Travel & On-site Visit")
+			return invSpec{
+				customerName: "Acme Corporation",
+				status:       "draft",
+				periodStart:  21,
+				periodEnd:    16,
+				dueInDays:    30,
+				vatRate:      21,
+				templateName: "Travel & On-site Visit",
+				notes:        "On-site architecture review at Acme HQ — travel + full work day.",
+				lineItems: []invLineItem{
+					withDate(t.lineItems[0], 20, "website-redesign"),
+					withDate(t.lineItems[1], 20, "website-redesign"),
+					withDate(t.lineItems[2], 20, "website-redesign"),
+				},
+			}
+		}(),
 	}
 
 	totalInvoices := 0
@@ -3705,87 +3735,98 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 
 	type teSpec struct {
-		user     string // key in users map (or "tonk")
-		customer string // customer name, "" = none
-		project  string // project slug,   "" = none
-		daysAgo  int
-		minutes  int
-		desc     string
-		distance float64 // 0 = no distance logged
+		user         string // key in users map (or "tonk")
+		customer     string // customer name, "" = none
+		project      string // project slug,   "" = none
+		daysAgo      int
+		minutes      int
+		desc         string
+		distance     float64 // 0 = no distance logged
+		contractName string  // "" = no contract link
 	}
 
 	pUint := func(v uint) *uint { return &v }
 
 	teSpecs := []teSpec{
 		// ── Ton Kersten (system admin) ─────────────────────────────────────────
-		{"tonk", "Acme Corporation", "website-redesign", 14, 240, "Sprint planning and backlog grooming", 0},
-		{"tonk", "Acme Corporation", "website-redesign", 13, 390, "Architecture review and stakeholder call", 42},
-		{"tonk", "Acme Corporation", "mobile-app-v2",    12, 300, "API design session with Marc", 0},
-		{"tonk", "Globex Systems",   "devops-infra",     11, 480, "Kubernetes migration kick-off", 67},
-		{"tonk", "Globex Systems",   "devops-infra",     10, 360, "Infrastructure review and documentation", 0},
-		{"tonk", "Acme Corporation", "website-redesign",  7, 480, "Design system implementation", 0},
-		{"tonk", "Acme Corporation", "mobile-app-v2",     6, 240, "Mobile API review", 0},
-		{"tonk", "Globex Systems",   "devops-infra",      5, 480, "CI/CD pipeline setup", 67},
-		{"tonk", "Acme Corporation", "website-redesign",  4, 300, "Code review and QA", 0},
-		{"tonk", "Acme Corporation", "website-redesign",  3, 120, "Client demo preparation", 42},
-		{"tonk", "Acme Corporation", "website-redesign",  2, 480, "Sprint review and retrospective", 42},
-		{"tonk", "Globex Systems",   "devops-infra",      1, 360, "On-call handover and monitoring setup", 0},
+		{"tonk", "Acme Corporation", "website-redesign", 14, 240, "Sprint planning and backlog grooming", 0, ""},
+		{"tonk", "Acme Corporation", "website-redesign", 13, 390, "Architecture review and stakeholder call", 42, "Phase 1 — Marketing Site"},
+		{"tonk", "Acme Corporation", "mobile-app-v2",    12, 300, "API design session with Marc", 0, ""},
+		{"tonk", "Globex Systems",   "devops-infra",     11, 480, "Kubernetes migration kick-off", 67, "Managed DevOps 2025"},
+		{"tonk", "Globex Systems",   "devops-infra",     10, 360, "Infrastructure review and documentation", 0, ""},
+		{"tonk", "Acme Corporation", "website-redesign",  7, 480, "Design system implementation", 0, ""},
+		{"tonk", "Acme Corporation", "mobile-app-v2",     6, 240, "Mobile API review", 0, ""},
+		{"tonk", "Globex Systems",   "devops-infra",      5, 480, "CI/CD pipeline setup", 67, "Managed DevOps 2025"},
+		{"tonk", "Acme Corporation", "website-redesign",  4, 300, "Code review and QA", 0, ""},
+		{"tonk", "Acme Corporation", "website-redesign",  3, 120, "Client demo preparation", 42, "Phase 1 — Marketing Site"},
+		{"tonk", "Acme Corporation", "website-redesign",  2, 480, "Sprint review and retrospective", 42, "Phase 1 — Marketing Site"},
+		{"tonk", "Globex Systems",   "devops-infra",      1, 360, "On-call handover and monitoring setup", 0, ""},
 
 		// ── Sarah Chen — website redesign ──────────────────────────────────────
-		{"sarah", "Acme Corporation", "website-redesign", 14, 480, "Component library setup", 0},
-		{"sarah", "Acme Corporation", "website-redesign", 13, 360, "Design implementation: hero section", 0},
-		{"sarah", "Acme Corporation", "website-redesign", 12, 480, "Responsive layout work", 0},
-		{"sarah", "Acme Corporation", "website-redesign", 11, 300, "Cross-browser testing", 38},
-		{"sarah", "Acme Corporation", "website-redesign", 10, 420, "Accessibility audit and fixes", 0},
-		{"sarah", "Acme Corporation", "website-redesign",  7, 480, "Navigation and routing refactor", 0},
-		{"sarah", "Acme Corporation", "website-redesign",  6, 360, "CMS integration", 38},
-		{"sarah", "Acme Corporation", "website-redesign",  5, 480, "Performance optimisation", 0},
-		{"sarah", "Acme Corporation", "website-redesign",  4, 240, "Content migration", 0},
-		{"sarah", "Acme Corporation", "website-redesign",  3, 420, "UAT support and bug fixes", 38},
-		{"sarah", "Acme Corporation", "website-redesign",  2, 480, "Pre-launch checklist", 0},
-		{"sarah", "Acme Corporation", "website-redesign",  1, 300, "Go-live support", 38},
+		{"sarah", "Acme Corporation", "website-redesign", 14, 480, "Component library setup", 0, ""},
+		{"sarah", "Acme Corporation", "website-redesign", 13, 360, "Design implementation: hero section", 0, ""},
+		{"sarah", "Acme Corporation", "website-redesign", 12, 480, "Responsive layout work", 0, ""},
+		{"sarah", "Acme Corporation", "website-redesign", 11, 300, "Cross-browser testing", 38, ""},
+		{"sarah", "Acme Corporation", "website-redesign", 10, 420, "Accessibility audit and fixes", 0, ""},
+		{"sarah", "Acme Corporation", "website-redesign",  7, 480, "Navigation and routing refactor", 0, ""},
+		{"sarah", "Acme Corporation", "website-redesign",  6, 360, "CMS integration", 38, ""},
+		{"sarah", "Acme Corporation", "website-redesign",  5, 480, "Performance optimisation", 0, ""},
+		{"sarah", "Acme Corporation", "website-redesign",  4, 240, "Content migration", 0, ""},
+		{"sarah", "Acme Corporation", "website-redesign",  3, 420, "UAT support and bug fixes", 38, ""},
+		{"sarah", "Acme Corporation", "website-redesign",  2, 480, "Pre-launch checklist", 0, ""},
+		{"sarah", "Acme Corporation", "website-redesign",  1, 300, "Go-live support", 38, ""},
 
 		// ── Marc Dubois — mobile app + devops ──────────────────────────────────
-		{"marc", "Acme Corporation", "mobile-app-v2", 14, 480, "React Native project setup", 0},
-		{"marc", "Acme Corporation", "mobile-app-v2", 13, 360, "Authentication flow implementation", 0},
-		{"marc", "Acme Corporation", "mobile-app-v2", 12, 480, "Push notification integration", 55},
-		{"marc", "Globex Systems",   "devops-infra",  11, 240, "Terraform modules for Globex", 0},
-		{"marc", "Acme Corporation", "mobile-app-v2", 10, 420, "Offline sync implementation", 0},
-		{"marc", "Acme Corporation", "mobile-app-v2",  7, 480, "App store submission preparation", 55},
-		{"marc", "Acme Corporation", "mobile-app-v2",  6, 300, "Beta testing and feedback", 0},
-		{"marc", "Globex Systems",   "devops-infra",   5, 480, "Monitoring dashboard setup", 91},
-		{"marc", "Acme Corporation", "mobile-app-v2",  4, 360, "Bug fixes from beta", 0},
-		{"marc", "Acme Corporation", "mobile-app-v2",  3, 240, "Performance profiling", 55},
-		{"marc", "Globex Systems",   "devops-infra",   2, 480, "Alerting rules configuration", 0},
-		{"marc", "Acme Corporation", "mobile-app-v2",  1, 420, "App submission and review", 55},
+		{"marc", "Acme Corporation", "mobile-app-v2", 14, 480, "React Native project setup", 0, ""},
+		{"marc", "Acme Corporation", "mobile-app-v2", 13, 360, "Authentication flow implementation", 0, ""},
+		{"marc", "Acme Corporation", "mobile-app-v2", 12, 480, "Push notification integration", 55, "Phase 2 — Mobile Apps"},
+		{"marc", "Globex Systems",   "devops-infra",  11, 240, "Terraform modules for Globex", 0, ""},
+		{"marc", "Acme Corporation", "mobile-app-v2", 10, 420, "Offline sync implementation", 0, ""},
+		{"marc", "Acme Corporation", "mobile-app-v2",  7, 480, "App store submission preparation", 55, "Phase 2 — Mobile Apps"},
+		{"marc", "Acme Corporation", "mobile-app-v2",  6, 300, "Beta testing and feedback", 0, ""},
+		{"marc", "Globex Systems",   "devops-infra",   5, 480, "Monitoring dashboard setup", 91, "Managed DevOps 2025"},
+		{"marc", "Acme Corporation", "mobile-app-v2",  4, 360, "Bug fixes from beta", 0, ""},
+		{"marc", "Acme Corporation", "mobile-app-v2",  3, 240, "Performance profiling", 55, "Phase 2 — Mobile Apps"},
+		{"marc", "Globex Systems",   "devops-infra",   2, 480, "Alerting rules configuration", 0, ""},
+		{"marc", "Acme Corporation", "mobile-app-v2",  1, 420, "App submission and review", 55, "Phase 2 — Mobile Apps"},
 
 		// ── Lisa Park — devops ─────────────────────────────────────────────────
-		{"lisa", "Globex Systems", "devops-infra", 14, 480, "Kubernetes cluster audit", 83},
-		{"lisa", "Globex Systems", "devops-infra", 13, 420, "Node upgrade and security patching", 0},
-		{"lisa", "Globex Systems", "devops-infra", 12, 360, "Helm chart updates", 0},
-		{"lisa", "Globex Systems", "devops-infra", 11, 480, "Service mesh configuration", 83},
-		{"lisa", "Globex Systems", "devops-infra", 10, 300, "Load testing and capacity planning", 0},
-		{"lisa", "Globex Systems", "devops-infra",  7, 480, "Disaster recovery drill", 83},
-		{"lisa", "Globex Systems", "devops-infra",  6, 360, "Cost optimisation review", 0},
-		{"lisa", "Globex Systems", "devops-infra",  5, 480, "Log aggregation setup", 0},
-		{"lisa", "Globex Systems", "devops-infra",  4, 240, "Runbook documentation", 0},
-		{"lisa", "Globex Systems", "devops-infra",  3, 420, "Incident post-mortem", 83},
-		{"lisa", "Globex Systems", "devops-infra",  2, 480, "Database backup automation", 0},
-		{"lisa", "Globex Systems", "devops-infra",  1, 360, "Weekly ops review", 0},
+		{"lisa", "Globex Systems", "devops-infra", 14, 480, "Kubernetes cluster audit", 83, "Managed DevOps 2025"},
+		{"lisa", "Globex Systems", "devops-infra", 13, 420, "Node upgrade and security patching", 0, ""},
+		{"lisa", "Globex Systems", "devops-infra", 12, 360, "Helm chart updates", 0, ""},
+		{"lisa", "Globex Systems", "devops-infra", 11, 480, "Service mesh configuration", 83, "Managed DevOps 2025"},
+		{"lisa", "Globex Systems", "devops-infra", 10, 300, "Load testing and capacity planning", 0, ""},
+		{"lisa", "Globex Systems", "devops-infra",  7, 480, "Disaster recovery drill", 83, "Managed DevOps 2025"},
+		{"lisa", "Globex Systems", "devops-infra",  6, 360, "Cost optimisation review", 0, ""},
+		{"lisa", "Globex Systems", "devops-infra",  5, 480, "Log aggregation setup", 0, ""},
+		{"lisa", "Globex Systems", "devops-infra",  4, 240, "Runbook documentation", 0, ""},
+		{"lisa", "Globex Systems", "devops-infra",  3, 420, "Incident post-mortem", 83, "Managed DevOps 2025"},
+		{"lisa", "Globex Systems", "devops-infra",  2, 480, "Database backup automation", 0, ""},
+		{"lisa", "Globex Systems", "devops-infra",  1, 360, "Weekly ops review", 0, ""},
 
 		// ── Alex Admin — cross-project management ──────────────────────────────
-		{"admin", "Acme Corporation", "website-redesign", 14, 120, "Project kick-off meeting", 48},
-		{"admin", "Acme Corporation", "mobile-app-v2",    13, 180, "Requirements refinement", 0},
-		{"admin", "Acme Corporation", "",                 12, 120, "Client status update call", 0},
-		{"admin", "Globex Systems",   "devops-infra",     11, 120, "Contract review meeting", 75},
-		{"admin", "Acme Corporation", "website-redesign", 10, 180, "Sprint 3 review", 48},
-		{"admin", "Acme Corporation", "mobile-app-v2",     7, 120, "Sprint planning", 0},
-		{"admin", "Globex Systems",   "devops-infra",      6, 180, "Quarterly business review", 75},
-		{"admin", "Acme Corporation", "website-redesign",  5, 120, "Stakeholder presentation", 48},
-		{"admin", "",                 "",                  4, 120, "Internal team sync", 0},
-		{"admin", "Acme Corporation", "mobile-app-v2",     3, 180, "Beta sign-off meeting", 48},
-		{"admin", "Globex Systems",   "devops-infra",      2, 120, "SLA review", 75},
-		{"admin", "Acme Corporation", "website-redesign",  1, 180, "Launch readiness check", 48},
+		{"admin", "Acme Corporation", "website-redesign", 14, 120, "Project kick-off meeting", 48, "Phase 1 — Marketing Site"},
+		{"admin", "Acme Corporation", "mobile-app-v2",    13, 180, "Requirements refinement", 0, ""},
+		{"admin", "Acme Corporation", "",                 12, 120, "Client status update call", 0, ""},
+		{"admin", "Globex Systems",   "devops-infra",     11, 120, "Contract review meeting", 75, "Managed DevOps 2025"},
+		{"admin", "Acme Corporation", "website-redesign", 10, 180, "Sprint 3 review", 48, "Phase 1 — Marketing Site"},
+		{"admin", "Acme Corporation", "mobile-app-v2",     7, 120, "Sprint planning", 0, ""},
+		{"admin", "Globex Systems",   "devops-infra",      6, 180, "Quarterly business review", 75, "Managed DevOps 2025"},
+		{"admin", "Acme Corporation", "website-redesign",  5, 120, "Stakeholder presentation", 48, "Phase 1 — Marketing Site"},
+		{"admin", "",                 "",                  4, 120, "Internal team sync", 0, ""},
+		{"admin", "Acme Corporation", "mobile-app-v2",     3, 180, "Beta sign-off meeting", 48, "Phase 2 — Mobile Apps"},
+		{"admin", "Globex Systems",   "devops-infra",      2, 120, "SLA review", 75, "Managed DevOps 2025"},
+		{"admin", "Acme Corporation", "website-redesign",  1, 180, "Launch readiness check", 48, "Phase 1 — Marketing Site"},
+
+		// ── Travel entries — contract-linked, with distance ────────────────────
+		// These verify that travel time and distance flow through to invoice lines.
+		{user: "tonk", customer: "Acme Corporation", project: "website-redesign", contractName: "Phase 1 — Marketing Site", daysAgo: 8, minutes: 90, distance: 42.0, desc: "Travel to Acme — design review"},
+		{user: "tonk", customer: "Acme Corporation", project: "website-redesign", contractName: "Phase 1 — Marketing Site", daysAgo: 8, minutes: 75, distance: 42.0, desc: "Return travel from Acme — design review"},
+		{user: "tonk", customer: "Acme Corporation", project: "mobile-app-v2", contractName: "Phase 2 — Mobile Apps", daysAgo: 3, minutes: 90, distance: 42.0, desc: "Travel to Acme — mobile kick-off"},
+		{user: "tonk", customer: "Globex Systems", project: "devops-infra", contractName: "Managed DevOps 2025", daysAgo: 6, minutes: 120, distance: 67.0, desc: "Travel to Globex — on-site infra audit"},
+		{user: "tonk", customer: "Globex Systems", project: "devops-infra", contractName: "Managed DevOps 2025", daysAgo: 6, minutes: 100, distance: 67.0, desc: "Return travel from Globex"},
+		{user: "marc", customer: "Acme Corporation", project: "mobile-app-v2", contractName: "Phase 2 — Mobile Apps", daysAgo: 5, minutes: 90, distance: 55.0, desc: "Travel to Acme — push notification demo"},
+		{user: "marc", customer: "Acme Corporation", project: "mobile-app-v2", contractName: "Phase 2 — Mobile Apps", daysAgo: 5, minutes: 80, distance: 55.0, desc: "Return travel from Acme"},
 	}
 
 	totalTimeEntries := 0
@@ -3812,10 +3853,15 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				entry.ProjectID = pUint(pd.project.ID)
 			}
 		}
+		if s.contractName != "" {
+			if cid, ok := contractIDByName[s.contractName]; ok {
+				entry.ContractID = pUint(cid)
+			}
+		}
 		must(db.Create(&entry).Error)
 		totalTimeEntries++
 	}
-	fmt.Printf("   Created %d time entries for 5 users\n", totalTimeEntries)
+	fmt.Printf("   Created %d time entries\n", totalTimeEntries)
 
 	// ── 10b. Standby entries for tonk — current week, Acme Phase 1 ────────────
 	// Demonstrates the special-rate time slots: Mon–Fri 19:00→07:00 (12 h, ×1.5),
@@ -3865,68 +3911,6 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			}).Error)
 		}
 		fmt.Println("   Created 7 standby entries (Mon–Sun)")
-	}
-
-	// ── 10b2. Travel time entries with distance — linked to contracts ─────────
-	// These exist specifically to verify that travel time and distance flow
-	// through to invoice line items.
-	fmt.Println("→ Creating travel time entries with distance (contract-linked)…")
-	{
-		type travelSpec struct {
-			user         string
-			customerName string
-			projectSlug  string
-			contractName string
-			daysAgo      int
-			minutes      int
-			distance     float64
-			desc         string
-		}
-		travelEntries := []travelSpec{
-			// Ton — Acme Phase 1, on-site visit for design review
-			{"tonk", "Acme Corporation", "website-redesign", "Phase 1 — Marketing Site", 8, 90, 42.0, "Travel to Acme — design review"},
-			// Ton — Acme Phase 1, return trip same day
-			{"tonk", "Acme Corporation", "website-redesign", "Phase 1 — Marketing Site", 8, 75, 42.0, "Return travel from Acme — design review"},
-			// Ton — Acme Phase 2, kick-off on-site
-			{"tonk", "Acme Corporation", "mobile-app-v2", "Phase 2 — Mobile Apps", 3, 90, 42.0, "Travel to Acme — mobile kick-off"},
-			// Ton — Globex on-site infra audit
-			{"tonk", "Globex Systems", "devops-infra", "Managed DevOps 2025", 6, 120, 67.0, "Travel to Globex — on-site infra audit"},
-			{"tonk", "Globex Systems", "devops-infra", "Managed DevOps 2025", 6, 100, 67.0, "Return travel from Globex"},
-			// Marc — Acme Phase 2, push notification demo
-			{"marc", "Acme Corporation", "mobile-app-v2", "Phase 2 — Mobile Apps", 5, 90, 55.0, "Travel to Acme — push notification demo"},
-			{"marc", "Acme Corporation", "mobile-app-v2", "Phase 2 — Mobile Apps", 5, 80, 55.0, "Return travel from Acme"},
-		}
-		travelCount := 0
-		for _, t := range travelEntries {
-			u, ok := users[t.user]
-			if !ok {
-				continue
-			}
-			date := time.Now().UTC().AddDate(0, 0, -t.daysAgo).Truncate(24 * time.Hour)
-			entry := models.TimeEntry{
-				UserID:      u.ID,
-				Date:        date,
-				Minutes:     t.minutes,
-				Description: t.desc,
-				Distance:    ptr(t.distance),
-			}
-			if cid, ok := custIDByName[t.customerName]; ok {
-				entry.CustomerID = pUint(cid)
-			}
-			if t.projectSlug != "" {
-				if pd, ok := projects[t.projectSlug]; ok {
-					entry.ProjectID = pUint(pd.project.ID)
-				}
-			}
-			if t.contractName != "" {
-				if cid, ok := contractIDByName[t.contractName]; ok {
-					entry.ContractID = pUint(cid)
-				}
-			}
-			must(db.Create(&entry).Error)
-			travelCount++
-		}
-		fmt.Printf("   Created %d travel time entries with distance\n", travelCount)
 	}
 
 	// ── 10c. Personal TT-only projects and customers for tonk ─────────────────

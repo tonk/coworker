@@ -224,6 +224,7 @@
     "line_distance": "Afstand",
     "line_rate": "Tarief",
     "line_amount": "Bedrag",
+    "line_items": "regels",
     "no_billable_entries": "Geen factureerbare tijdregistraties gevonden voor deze periode.",
     "confirm_create": "Factuur aanmaken",
     "all_customers": "Alle klanten",
