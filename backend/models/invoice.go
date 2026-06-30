@@ -54,7 +54,7 @@ type InvoiceLineItem struct {
 	Date        string  `json:"date"`
 	ProjectName string  `json:"project_name"`
 	Description string  `json:"description"`
-	Minutes     int     `json:"minutes"`
+	Minutes     int     `json:"minutes,omitempty"`
 	HourlyRate  float64 `json:"hourly_rate,omitempty"`
 	Distance    float64 `json:"distance,omitempty"`
 	PricePerKm  float64 `json:"price_per_km,omitempty"`

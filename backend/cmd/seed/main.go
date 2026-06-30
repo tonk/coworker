@@ -33,6 +33,14 @@ import (
 // version is set at build time via -ldflags "-X main.version=<tag>".
 var version = "dev"
 
+// seedInvoiceTemplateNames is the canonical list of template names created by
+// the seed. It is used both to create and to clean up demo templates.
+var seedInvoiceTemplateNames = []string{
+	"Consulting — Standard Rate",
+	"DevOps Retainer — Monthly",
+	"Travel & On-site Visit",
+}
+
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 func must(err error) {
@@ -2694,28 +2702,12 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	// ── 6a. Invoice templates ─────────────────────────────────────────────────
 	fmt.Println("→ Creating invoice templates…")
 
-	// templateLineItem holds the fields the frontend template form uses:
-	// quantity × unit_price, not minutes × hourly_rate.
-	type templateLineItem struct {
-		Description string  `json:"description"`
-		Quantity    float64 `json:"quantity,omitempty"`
-		UnitPrice   float64 `json:"unit_price,omitempty"`
-		Amount      float64 `json:"amount"`
-		Currency    string  `json:"currency"`
-		IsManual    bool    `json:"is_manual,omitempty"`
-		IsComment   bool    `json:"is_comment,omitempty"`
-	}
-	marshalTemplateItems := func(items []templateLineItem) string {
-		b, _ := json.Marshal(items)
-		return string(b)
-	}
-
 	type invoiceTemplateSpec struct {
-		name        string
-		vatRate     float64
-		currency    string
-		notes       string
-		lineItems   []templateLineItem
+		name      string
+		vatRate   float64
+		currency  string
+		notes     string
+		lineItems []models.InvoiceLineItem
 	}
 
 	invoiceTemplateSpecs := []invoiceTemplateSpec{
@@ -2724,7 +2716,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			vatRate:  21,
 			currency: "€",
 			notes:    "Standard consulting services at the agreed day rate.",
-			lineItems: []templateLineItem{
+			lineItems: []models.InvoiceLineItem{
 				{Description: "Consulting services — full day", Quantity: 8, UnitPrice: 110.0, Amount: 880.0, Currency: "€"},
 				{Description: "Consulting services — half day", Quantity: 4, UnitPrice: 110.0, Amount: 440.0, Currency: "€"},
 				{Description: "Travel to client site (outward)", Quantity: 50, UnitPrice: 0.23, Amount: 11.50, Currency: "€"},
@@ -2736,7 +2728,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			vatRate:  21,
 			currency: "€",
 			notes:    "Monthly managed DevOps retainer. Actual hours logged per task.",
-			lineItems: []templateLineItem{
+			lineItems: []models.InvoiceLineItem{
 				{Description: "Monitoring, alerting & ops", Quantity: 8, UnitPrice: 95.0, Amount: 760.0, Currency: "€"},
 				{Description: "Incident response & on-call", Quantity: 3, UnitPrice: 95.0, Amount: 285.0, Currency: "€"},
 				{Description: "Security hardening & patching", Quantity: 4, UnitPrice: 95.0, Amount: 380.0, Currency: "€"},
@@ -2749,7 +2741,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			vatRate:  21,
 			currency: "€",
 			notes:    "On-site visit: travel costs (km-based) plus time at the client location.",
-			lineItems: []templateLineItem{
+			lineItems: []models.InvoiceLineItem{
 				{Description: "Travel to client — outward journey", Quantity: 75, UnitPrice: 0.23, Amount: 17.25, Currency: "€"},
 				{Description: "On-site work — full day", Quantity: 8, UnitPrice: 110.0, Amount: 880.0, Currency: "€"},
 				{Description: "Travel from client — return journey", Quantity: 75, UnitPrice: 0.23, Amount: 17.25, Currency: "€"},
@@ -2757,23 +2749,21 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		},
 	}
 
-	templateIDByName := map[string]uint{}
 	totalTemplates := 0
 	for _, ts := range invoiceTemplateSpecs {
 		var existing models.InvoiceTemplate
 		if db.Where("name = ?", ts.name).First(&existing).Error == nil {
-			templateIDByName[ts.name] = existing.ID
 			continue
 		}
+		lineItemsJSON, _ := json.Marshal(ts.lineItems)
 		t := models.InvoiceTemplate{
 			Name:            ts.name,
-			LineItems:       marshalTemplateItems(ts.lineItems),
+			LineItems:       string(lineItemsJSON),
 			DefaultVATRate:  ts.vatRate,
 			DefaultCurrency: ts.currency,
 			Notes:           ts.notes,
 		}
 		must(db.Create(&t).Error)
-		templateIDByName[ts.name] = t.ID
 		totalTemplates++
 	}
 	fmt.Printf("   Created %d invoice templates\n", totalTemplates)
@@ -2781,22 +2771,9 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	// ── 6b. Invoices ─────────────────────────────────────────────────────────
 	fmt.Println("→ Creating invoices…")
 
-	type invLineItem struct {
-		Date        string  `json:"date"`
-		ProjectName string  `json:"project_name"`
-		Description string  `json:"description"`
-		Minutes     int     `json:"minutes,omitempty"`
-		HourlyRate  float64 `json:"hourly_rate,omitempty"`
-		Distance    float64 `json:"distance,omitempty"`
-		PricePerKm  float64 `json:"price_per_km,omitempty"`
-		Quantity    float64 `json:"quantity,omitempty"`
-		UnitPrice   float64 `json:"unit_price,omitempty"`
-		Amount      float64 `json:"amount"`
-		Currency    string  `json:"currency"`
-	}
-
 	type invSpec struct {
 		customerName string
+		number       string  // fixed invoice number, e.g. "INV-0001"
 		status       string  // draft / sent / paid
 		periodStart  int     // days ago
 		periodEnd    int     // days ago
@@ -2804,7 +2781,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		vatRate      float64
 		notes        string
 		templateName string // invoice template this was derived from, "" = ad-hoc
-		lineItems    []invLineItem
+		lineItems    []models.InvoiceLineItem
 	}
 
 	isoDay := func(daysAgo int) string {
@@ -2820,9 +2797,9 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		}
 		return invoiceTemplateSpec{}
 	}
-	// withDate converts a templateLineItem to a dated invLineItem for a specific invoice.
-	withDate := func(li templateLineItem, daysAgo int, project string) invLineItem {
-		return invLineItem{
+	// withDate stamps a template line item with a date and project for use in a derived invoice.
+	withDate := func(li models.InvoiceLineItem, daysAgo int, project string) models.InvoiceLineItem {
+		return models.InvoiceLineItem{
 			Date:        isoDay(daysAgo),
 			ProjectName: project,
 			Description: li.Description,
@@ -2836,13 +2813,14 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	invSpecs := []invSpec{
 		{
 			customerName: "Acme Corporation",
+			number:       "INV-0001",
 			status:       "paid",
 			periodStart:  90,
 			periodEnd:    60,
 			dueInDays:    30,
 			vatRate:      21,
 			notes:        "Thank you for your continued partnership.",
-			lineItems: []invLineItem{
+			lineItems: []models.InvoiceLineItem{
 				{Date: isoDay(88), ProjectName: "website-redesign", Description: "UX audit and wireframe review", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
 				{Date: isoDay(85), ProjectName: "website-redesign", Description: "Homepage redesign — initial concept", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
 				{Date: isoDay(81), ProjectName: "website-redesign", Description: "Component library setup (Storybook)", Minutes: 360, HourlyRate: 110.0, Amount: 660.0, Currency: "€"},
@@ -2856,13 +2834,14 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		},
 		{
 			customerName: "Acme Corporation",
+			number:       "INV-0002",
 			status:       "sent",
 			periodStart:  59,
 			periodEnd:    30,
 			dueInDays:    30,
 			vatRate:      21,
 			notes:        "Mobile app Phase 2 — sprint 1 & 2.",
-			lineItems: []invLineItem{
+			lineItems: []models.InvoiceLineItem{
 				{Date: isoDay(57), ProjectName: "mobile-app-v2", Description: "Project kick-off and architecture planning", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
 				{Date: isoDay(54), ProjectName: "mobile-app-v2", Description: "React Native project scaffold and CI setup", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
 				{Date: isoDay(50), ProjectName: "mobile-app-v2", Description: "Authentication flow (OAuth2 / biometric)", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
@@ -2875,6 +2854,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		},
 		{
 			customerName: "Globex Systems",
+			number:       "INV-0003",
 			status:       "draft",
 			periodStart:  45,
 			periodEnd:    15,
@@ -2882,7 +2862,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			vatRate:      21,
 			templateName: "DevOps Retainer — Monthly",
 			notes:        "Managed DevOps — monthly retainer April.",
-			lineItems: []invLineItem{
+			lineItems: []models.InvoiceLineItem{
 				{Date: isoDay(43), ProjectName: "devops-infra", Description: "Kubernetes cluster health audit", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
 				{Date: isoDay(40), ProjectName: "devops-infra", Description: "Prometheus / Grafana monitoring stack setup", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
 				{Date: isoDay(36), ProjectName: "devops-infra", Description: "Incident response — node memory leak", Minutes: 180, HourlyRate: 95.0, Amount: 285.0, Currency: "€"},
@@ -2896,6 +2876,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		// that both fields are rendered correctly in the invoice PDF and UI.
 		{
 			customerName: "Acme Corporation",
+			number:       "INV-0004",
 			status:       "draft",
 			periodStart:  14,
 			periodEnd:    1,
@@ -2903,7 +2884,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			vatRate:      21,
 			templateName: "Consulting — Standard Rate",
 			notes:        "Phase 1 + Phase 2 — current fortnight. Includes on-site travel.",
-			lineItems: []invLineItem{
+			lineItems: []models.InvoiceLineItem{
 				{Date: isoDay(14), ProjectName: "website-redesign", Description: "Sprint planning and backlog grooming", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
 				{Date: isoDay(13), ProjectName: "website-redesign", Description: "Architecture review and stakeholder call", Minutes: 390, HourlyRate: 110.0, Amount: 715.0, Currency: "€"},
 				// Travel to Acme site — minutes logged as travel time, distance in km
@@ -2920,6 +2901,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		// Globex draft — current fortnight, includes on-site travel with distance
 		{
 			customerName: "Globex Systems",
+			number:       "INV-0005",
 			status:       "draft",
 			periodStart:  14,
 			periodEnd:    1,
@@ -2927,7 +2909,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			vatRate:      21,
 			templateName: "Travel & On-site Visit",
 			notes:        "Managed DevOps 2025 — current fortnight. Includes on-site travel (67 km each way).",
-			lineItems: []invLineItem{
+			lineItems: []models.InvoiceLineItem{
 				{Date: isoDay(11), ProjectName: "devops-infra", Description: "Kubernetes migration kick-off", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
 				{Date: isoDay(10), ProjectName: "devops-infra", Description: "Infrastructure review and documentation", Minutes: 360, HourlyRate: 95.0, Amount: 570.0, Currency: "€"},
 				// On-site visit with travel
@@ -2946,6 +2928,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			t := tmplByName("Consulting — Standard Rate")
 			return invSpec{
 				customerName: "Acme Corporation",
+				number:       "INV-0006",
 				status:       "sent",
 				periodStart:  120,
 				periodEnd:    91,
@@ -2953,7 +2936,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				vatRate:      21,
 				templateName: "Consulting — Standard Rate",
 				notes:        "Phase 1 — on-site consulting days (2×full day + 1×half day + travel).",
-				lineItems: []invLineItem{
+				lineItems: []models.InvoiceLineItem{
 					withDate(t.lineItems[0], 118, "website-redesign"), // full day
 					withDate(t.lineItems[2], 115, "website-redesign"), // travel out
 					withDate(t.lineItems[0], 115, "website-redesign"), // full day (second visit)
@@ -2967,6 +2950,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			t := tmplByName("DevOps Retainer — Monthly")
 			return invSpec{
 				customerName: "Globex Systems",
+				number:       "INV-0007",
 				status:       "sent",
 				periodStart:  75,
 				periodEnd:    46,
@@ -2974,7 +2958,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				vatRate:      21,
 				templateName: "DevOps Retainer — Monthly",
 				notes:        "Managed DevOps — monthly retainer March.",
-				lineItems: []invLineItem{
+				lineItems: []models.InvoiceLineItem{
 					withDate(t.lineItems[0], 73, "devops-infra"),
 					withDate(t.lineItems[1], 70, "devops-infra"),
 					withDate(t.lineItems[2], 67, "devops-infra"),
@@ -2988,6 +2972,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			t := tmplByName("Travel & On-site Visit")
 			return invSpec{
 				customerName: "Acme Corporation",
+				number:       "INV-0008",
 				status:       "draft",
 				periodStart:  21,
 				periodEnd:    16,
@@ -2995,7 +2980,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				vatRate:      21,
 				templateName: "Travel & On-site Visit",
 				notes:        "On-site architecture review at Acme HQ — travel + full work day.",
-				lineItems: []invLineItem{
+				lineItems: []models.InvoiceLineItem{
 					withDate(t.lineItems[0], 20, "website-redesign"),
 					withDate(t.lineItems[1], 20, "website-redesign"),
 					withDate(t.lineItems[2], 20, "website-redesign"),
@@ -3005,7 +2990,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 
 	totalInvoices := 0
-	for i, is := range invSpecs {
+	for _, is := range invSpecs {
 		var invCust models.Customer
 		if db.Where("name = ?", is.customerName).First(&invCust).Error != nil {
 			continue
@@ -3026,7 +3011,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		total := subtotal + vatAmount
 
 		lineItemsJSON, _ := json.Marshal(is.lineItems)
-		invNumber := fmt.Sprintf("INV-%04d", i+1)
+		invNumber := is.number
 
 		notes := is.notes
 		if is.templateName != "" {
@@ -3055,6 +3040,11 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			}
 			must(db.Create(&inv).Error)
 			totalInvoices++
+		} else if is.templateName != "" {
+			// Ensure the template annotation is present on re-seed.
+			db.Model(&models.Invoice{}).
+				Where("invoice_number = ? AND notes NOT LIKE ?", invNumber, "%Template:%").
+				Update("notes", notes)
 		}
 	}
 	fmt.Printf("   Created %d invoices\n", totalInvoices)
@@ -5055,8 +5045,7 @@ func removeDemoData(db *gorm.DB) {
 	db.Unscoped().Where("name IN ?", demoSlaNames).Delete(&models.SlaPolicy{})
 	demoMacroNames := []string{"Acknowledge & Investigate", "Request More Information", "Escalate to Critical", "Resolved — Pending Close", "Close & Thank", "Mark as Duplicate"}
 	db.Unscoped().Where("name IN ?", demoMacroNames).Delete(&models.Macro{})
-	demoInvoiceTemplateNames := []string{"Consulting — Standard Rate", "DevOps Retainer — Monthly", "Travel & On-site Visit"}
-	db.Unscoped().Where("name IN ?", demoInvoiceTemplateNames).Delete(&models.InvoiceTemplate{})
+	db.Unscoped().Where("name IN ?", seedInvoiceTemplateNames).Delete(&models.InvoiceTemplate{})
 	demoChecklistNames := []string{"Offboarding"}
 	db.Unscoped().Where("name IN ?", demoChecklistNames).Delete(&models.TicketChecklistTemplate{})
 

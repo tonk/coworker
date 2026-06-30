@@ -60,7 +60,7 @@
           <span class="tmpl-item-meta">
             {{ t.default_currency || '€' }}
             <template v-if="t.default_vat_rate"> · {{ t.default_vat_rate }}% VAT</template>
-            <template v-if="lineCount(t)"> · {{ lineCount(t) }} {{ $t('invoice.line_items') }}</template>
+            <template v-if="lineCountMap[t.id]"> · {{ lineCountMap[t.id] }} {{ $t('invoice.line_items') }}</template>
           </span>
           <span v-if="t.notes" class="tmpl-item-notes">{{ t.notes }}</span>
         </div>
@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { customersApi } from '@/api/customers'
 import { useUIStore } from '@/stores/ui'
@@ -94,6 +94,12 @@ function emptyForm() {
 function lineCount(tmpl) {
   try { return JSON.parse(tmpl.line_items || '[]').length } catch { return 0 }
 }
+
+const lineCountMap = computed(() => {
+  const m = {}
+  for (const tmpl of templates.value) m[tmpl.id] = lineCount(tmpl)
+  return m
+})
 
 async function load() {
   loading.value = true
