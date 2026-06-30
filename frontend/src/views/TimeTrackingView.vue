@@ -1,5 +1,5 @@
 <template>
-  <div class="tt-view">
+  <div class="tt-view" :class="{ 'tt-dragging': isDragging }">
     <h1 class="sr-only">{{ $t('timeTracking.nav') }}</h1>
 
     <!-- ── Top bar ─────────────────────────────────────────────────────────── -->
@@ -236,7 +236,7 @@
                 </span>
               </td>
 
-              <td v-for="(d, di) in weekDays" :key="d.iso" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), isCellCopied(row, d.iso) ? 'c-day-copied' : '', d.isToday ? 'c-day-today' : '', isCellPopupOpen(row, d.iso) ? 'c-day-popup-open' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
+              <td v-for="(d, di) in weekDays" :key="d.iso" :data-ri="idx" :data-di="di" :class="['c-day', holidayDates.has(d.iso) ? 'c-day-holiday' : '', getEntry(row, d.iso)?.is_holiday ? 'c-day-holiday-cell' : '', cellSelectionClass(idx, di), isCellCopied(row, d.iso) ? 'c-day-copied' : '', d.isToday ? 'c-day-today' : '', isCellPopupOpen(row, d.iso) ? 'c-day-popup-open' : '']" :aria-selected="isCellSelected(idx, di) ? 'true' : 'false'">
                 <input
                   :key="'c' + cellRenderEpoch + '-' + row.key + '-' + d.iso"
                   :id="'tt-cell-' + idx + '-' + di"
@@ -2489,6 +2489,9 @@ const copiedBlock = ref(null) // { height, width, cells[][], sourceKeys[] }
 const selectionAnchor = ref(null) // { rowIdx, dayIdx }
 const selectionFocus = ref(null)  // { rowIdx, dayIdx }
 const selectionFromKeyboard = ref(false)
+const isDragging = ref(false)
+let dragStartX = 0
+let dragStartY = 0
 
 function clearCellSelection() {
   selectionAnchor.value = null
@@ -2584,6 +2587,40 @@ function onCellMouseDown(rowIdx, dayIdx, event) {
     selectionFocus.value = clampSelection(rowIdx, dayIdx)
     selectionFromKeyboard.value = true
     focusCellInput(selectionFocus.value.rowIdx, selectionFocus.value.dayIdx)
+    return
+  }
+  event.preventDefault()
+  selectionAnchor.value = { rowIdx, dayIdx }
+  selectionFocus.value = { rowIdx, dayIdx }
+  isDragging.value = true
+  dragStartX = event.clientX
+  dragStartY = event.clientY
+  document.addEventListener('pointermove', onPointerMove)
+  document.addEventListener('pointerup', onPointerUp)
+  document.addEventListener('pointercancel', onPointerUp)
+}
+
+function onPointerMove(event) {
+  if (!isDragging.value) return
+  event.preventDefault()
+  const td = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-ri]')
+  if (!td) return
+  const ri = parseInt(td.dataset.ri, 10)
+  const di = parseInt(td.dataset.di, 10)
+  if (isNaN(ri) || isNaN(di)) return
+  selectionFocus.value = clampSelection(ri, di)
+}
+
+function onPointerUp(event) {
+  if (!isDragging.value) return
+  isDragging.value = false
+  document.removeEventListener('pointermove', onPointerMove)
+  document.removeEventListener('pointerup', onPointerUp)
+  document.removeEventListener('pointercancel', onPointerUp)
+  const dx = event.clientX - dragStartX
+  const dy = event.clientY - dragStartY
+  if (Math.sqrt(dx * dx + dy * dy) < 4 && selectionAnchor.value) {
+    focusCellInput(selectionAnchor.value.rowIdx, selectionAnchor.value.dayIdx)
   }
 }
 
@@ -4487,6 +4524,9 @@ onUnmounted(() => {
   document.removeEventListener('mousedown', onWkPickerDocClick)
   document.removeEventListener('mousedown', onTimePopupDocClick)
   document.removeEventListener('mousedown', onDistPopupDocClick)
+  document.removeEventListener('pointermove', onPointerMove)
+  document.removeEventListener('pointerup', onPointerUp)
+  document.removeEventListener('pointercancel', onPointerUp)
   ui.setHelpContext(null)
 })
 
@@ -5144,6 +5184,10 @@ td.c-day-holiday-cell.c-day-selected {
     inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 55%, transparent);
 }
 td.c-day-selected .h-inp { background: transparent; }
+
+.tt-dragging { user-select: none; }
+.tt-dragging .c-day button { pointer-events: none; }
+.tt-dragging .h-inp { caret-color: transparent; }
 
 td.c-day.c-day-popup-open {
   box-shadow: inset 0 0 0 2px var(--color-primary);
