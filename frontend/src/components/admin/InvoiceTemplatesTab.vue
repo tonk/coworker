@@ -56,7 +56,7 @@
     <div v-else class="tmpl-list">
       <div v-for="t in templates" :key="t.id" class="tmpl-item">
         <div class="tmpl-item-info">
-          <span class="tmpl-item-name">{{ t.name }}</span>
+          <button class="tmpl-item-name" @click="startEdit(t)">{{ t.name }}</button>
           <span class="tmpl-item-meta">
             {{ t.default_currency || '€' }}
             <template v-if="t.default_vat_rate"> · {{ t.default_vat_rate }}% VAT</template>
@@ -198,7 +198,7 @@ onMounted(load)
 
 .tmpl-empty { color: var(--color-text-muted); font-size: 14px; padding: 32px 0; text-align: center; }
 
-.tmpl-list { display: flex; flex-direction: column; gap: 8px; }
+.tmpl-list { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
 .tmpl-item {
   display: flex;
   justify-content: space-between;
@@ -210,7 +210,17 @@ onMounted(load)
   padding: 12px 16px;
 }
 .tmpl-item-info { display: flex; flex-direction: column; gap: 2px; }
-.tmpl-item-name { font-weight: 600; font-size: 14px; }
+.tmpl-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-primary);
+  text-align: left;
+}
+.tmpl-item-name:hover { text-decoration: underline; }
 .tmpl-item-meta { font-size: 12px; color: var(--color-text-muted); }
 .tmpl-item-notes { font-size: 12px; color: var(--color-text-secondary); }
 .tmpl-item-actions { display: flex; gap: 8px; flex-shrink: 0; }

@@ -207,14 +207,14 @@ func main() {
 	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "login_branding_enabled").Update("value", "true"); r.RowsAffected == 0 {
 		must(db.Create(&models.SystemSetting{Key: "login_branding_enabled", Value: "true"}).Error)
 	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_address").Update("value", "Burgemeester Roelenweg 15"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_address", Value: "Burgemeester Roelenweg 15"}).Error)
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_address").Update("value", "Innovatielaan 42"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_address", Value: "Innovatielaan 42"}).Error)
 	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_city").Update("value", "Zwolle"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_city", Value: "Zwolle"}).Error)
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_city").Update("value", "Datastad"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_city", Value: "Datastad"}).Error)
 	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_postal_code").Update("value", "8021 EW"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_postal_code", Value: "8021 EW"}).Error)
+	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_postal_code").Update("value", "1234 WD"); r.RowsAffected == 0 {
+		must(db.Create(&models.SystemSetting{Key: "company_postal_code", Value: "1234 WD"}).Error)
 	}
 	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_country").Update("value", "Netherlands"); r.RowsAffected == 0 {
 		must(db.Create(&models.SystemSetting{Key: "company_country", Value: "Netherlands"}).Error)
@@ -2691,6 +2691,96 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	fmt.Printf("   Created %d customers with contracts\n", len(demoCustomers))
 
+	// ── 6a. Invoice templates ─────────────────────────────────────────────────
+	fmt.Println("→ Creating invoice templates…")
+
+	// templateLineItem mirrors InvoiceLineItem for JSON encoding.
+	type templateLineItem struct {
+		ProjectName string  `json:"project_name"`
+		Description string  `json:"description"`
+		Minutes     int     `json:"minutes,omitempty"`
+		HourlyRate  float64 `json:"hourly_rate,omitempty"`
+		Distance    float64 `json:"distance,omitempty"`
+		PricePerKm  float64 `json:"price_per_km,omitempty"`
+		Amount      float64 `json:"amount"`
+		Currency    string  `json:"currency"`
+		Quantity    float64 `json:"quantity,omitempty"`
+		UnitPrice   float64 `json:"unit_price,omitempty"`
+		IsComment   bool    `json:"is_comment,omitempty"`
+	}
+	marshalTemplateItems := func(items []templateLineItem) string {
+		b, _ := json.Marshal(items)
+		return string(b)
+	}
+
+	type invoiceTemplateSpec struct {
+		name        string
+		vatRate     float64
+		currency    string
+		notes       string
+		lineItems   []templateLineItem
+	}
+
+	invoiceTemplateSpecs := []invoiceTemplateSpec{
+		{
+			name:     "Consulting — Standard Rate",
+			vatRate:  21,
+			currency: "€",
+			notes:    "Standard consulting services at the agreed day rate.",
+			lineItems: []templateLineItem{
+				{Description: "Consulting services — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Description: "Consulting services — half day", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
+				{Description: "Travel to client site (outward)", Minutes: 90, Distance: 50, PricePerKm: 0.23, Amount: 11.50, Currency: "€"},
+				{Description: "Travel from client site (return)", Minutes: 90, Distance: 50, PricePerKm: 0.23, Amount: 11.50, Currency: "€"},
+			},
+		},
+		{
+			name:     "DevOps Retainer — Monthly",
+			vatRate:  21,
+			currency: "€",
+			notes:    "Monthly managed DevOps retainer. Actual hours logged per task.",
+			lineItems: []templateLineItem{
+				{Description: "Monitoring, alerting & ops", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
+				{Description: "Incident response & on-call", Minutes: 180, HourlyRate: 95.0, Amount: 285.0, Currency: "€"},
+				{Description: "Security hardening & patching", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
+				{Description: "CI/CD & infrastructure maintenance", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
+				{Description: "Monthly progress report & review call", Minutes: 120, HourlyRate: 95.0, Amount: 190.0, Currency: "€"},
+			},
+		},
+		{
+			name:     "Travel & On-site Visit",
+			vatRate:  21,
+			currency: "€",
+			notes:    "On-site visit: travel costs (km-based) plus time at the client location.",
+			lineItems: []templateLineItem{
+				{Description: "Travel to client — outward journey", Minutes: 90, Distance: 75, PricePerKm: 0.23, Amount: 17.25, Currency: "€"},
+				{Description: "On-site work — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Description: "Travel from client — return journey", Minutes: 90, Distance: 75, PricePerKm: 0.23, Amount: 17.25, Currency: "€"},
+			},
+		},
+	}
+
+	templateIDByName := map[string]uint{}
+	totalTemplates := 0
+	for _, ts := range invoiceTemplateSpecs {
+		var existing models.InvoiceTemplate
+		if db.Where("name = ?", ts.name).First(&existing).Error == nil {
+			templateIDByName[ts.name] = existing.ID
+			continue
+		}
+		t := models.InvoiceTemplate{
+			Name:            ts.name,
+			LineItems:       marshalTemplateItems(ts.lineItems),
+			DefaultVATRate:  ts.vatRate,
+			DefaultCurrency: ts.currency,
+			Notes:           ts.notes,
+		}
+		must(db.Create(&t).Error)
+		templateIDByName[ts.name] = t.ID
+		totalTemplates++
+	}
+	fmt.Printf("   Created %d invoice templates\n", totalTemplates)
+
 	// ── 6b. Invoices ─────────────────────────────────────────────────────────
 	fmt.Println("→ Creating invoices…")
 
@@ -2714,6 +2804,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		dueInDays    int     // days from periodEnd
 		vatRate      float64
 		notes        string
+		templateName string // invoice template this was derived from, "" = ad-hoc
 		lineItems    []invLineItem
 	}
 
@@ -2768,6 +2859,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			periodEnd:    15,
 			dueInDays:    30,
 			vatRate:      21,
+			templateName: "DevOps Retainer — Monthly",
 			notes:        "Managed DevOps — monthly retainer April.",
 			lineItems: []invLineItem{
 				{Date: isoDay(43), ProjectName: "devops-infra", Description: "Kubernetes cluster health audit", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
@@ -2777,6 +2869,107 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				{Date: isoDay(28), ProjectName: "devops-infra", Description: "Security hardening — CIS benchmark", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
 				{Date: isoDay(22), ProjectName: "devops-infra", Description: "CI/CD pipeline optimisation", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
 				{Date: isoDay(17), ProjectName: "devops-infra", Description: "On-call rotation handover and runbooks", Minutes: 180, HourlyRate: 95.0, Amount: 285.0, Currency: "€"},
+			},
+		},
+		// Invoice with explicit travel time + distance lines — used to verify
+		// that both fields are rendered correctly in the invoice PDF and UI.
+		{
+			customerName: "Acme Corporation",
+			status:       "draft",
+			periodStart:  14,
+			periodEnd:    1,
+			dueInDays:    30,
+			vatRate:      21,
+			templateName: "Consulting — Standard Rate",
+			notes:        "Phase 1 + Phase 2 — current fortnight. Includes on-site travel.",
+			lineItems: []invLineItem{
+				{Date: isoDay(14), ProjectName: "website-redesign", Description: "Sprint planning and backlog grooming", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
+				{Date: isoDay(13), ProjectName: "website-redesign", Description: "Architecture review and stakeholder call", Minutes: 390, HourlyRate: 110.0, Amount: 715.0, Currency: "€"},
+				// Travel to Acme site — minutes logged as travel time, distance in km
+				{Date: isoDay(8), ProjectName: "website-redesign", Description: "Travel to Acme — design review (outward)", Minutes: 90, Distance: 42.0, PricePerKm: 0.23, Amount: 9.66, Currency: "€"},
+				{Date: isoDay(8), ProjectName: "website-redesign", Description: "Travel to Acme — design review (return)", Minutes: 75, Distance: 42.0, PricePerKm: 0.23, Amount: 9.66, Currency: "€"},
+				{Date: isoDay(7), ProjectName: "website-redesign", Description: "Design system implementation — on-site", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(6), ProjectName: "mobile-app-v2", Description: "Mobile API review", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
+				// Travel to Acme for mobile kick-off
+				{Date: isoDay(3), ProjectName: "mobile-app-v2", Description: "Travel to Acme — mobile kick-off (outward)", Minutes: 90, Distance: 42.0, PricePerKm: 0.23, Amount: 9.66, Currency: "€"},
+				{Date: isoDay(3), ProjectName: "mobile-app-v2", Description: "Mobile app kick-off session — on-site", Minutes: 300, HourlyRate: 110.0, Amount: 550.0, Currency: "€"},
+				{Date: isoDay(2), ProjectName: "website-redesign", Description: "Sprint review and retrospective", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+			},
+		},
+		// Globex draft — current fortnight, includes on-site travel with distance
+		{
+			customerName: "Globex Systems",
+			status:       "draft",
+			periodStart:  14,
+			periodEnd:    1,
+			dueInDays:    30,
+			vatRate:      21,
+			templateName: "Travel & On-site Visit",
+			notes:        "Managed DevOps 2025 — current fortnight. Includes on-site travel (67 km each way).",
+			lineItems: []invLineItem{
+				{Date: isoDay(11), ProjectName: "devops-infra", Description: "Kubernetes migration kick-off", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
+				{Date: isoDay(10), ProjectName: "devops-infra", Description: "Infrastructure review and documentation", Minutes: 360, HourlyRate: 95.0, Amount: 570.0, Currency: "€"},
+				// On-site visit with travel
+				{Date: isoDay(6), ProjectName: "devops-infra", Description: "Travel to Globex — on-site infra audit (outward)", Minutes: 120, Distance: 67.0, PricePerKm: 0.28, Amount: 18.76, Currency: "€"},
+				{Date: isoDay(6), ProjectName: "devops-infra", Description: "On-site infra audit", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
+				{Date: isoDay(6), ProjectName: "devops-infra", Description: "Travel from Globex — on-site infra audit (return)", Minutes: 100, Distance: 67.0, PricePerKm: 0.28, Amount: 18.76, Currency: "€"},
+				{Date: isoDay(5), ProjectName: "devops-infra", Description: "CI/CD pipeline setup", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
+				{Date: isoDay(1), ProjectName: "devops-infra", Description: "On-call handover and monitoring setup", Minutes: 360, HourlyRate: 95.0, Amount: 570.0, Currency: "€"},
+			},
+		},
+		// ── Template-derived invoices ──────────────────────────────────────────────
+		// Each invoice below was generated from one of the seeded invoice templates.
+		// The templateName field records which template was used as the basis.
+		{
+			// From: "Consulting — Standard Rate"
+			customerName: "Acme Corporation",
+			status:       "sent",
+			periodStart:  120,
+			periodEnd:    91,
+			dueInDays:    30,
+			vatRate:      21,
+			templateName: "Consulting — Standard Rate",
+			notes:        "Phase 1 — on-site consulting days (2×full day + 1×half day + travel).",
+			lineItems: []invLineItem{
+				{Date: isoDay(118), ProjectName: "website-redesign", Description: "Consulting services — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(115), ProjectName: "website-redesign", Description: "Travel to client site (outward)", Minutes: 90, Distance: 50, PricePerKm: 0.23, Amount: 11.50, Currency: "€"},
+				{Date: isoDay(115), ProjectName: "website-redesign", Description: "Consulting services — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(115), ProjectName: "website-redesign", Description: "Travel from client site (return)", Minutes: 90, Distance: 50, PricePerKm: 0.23, Amount: 11.50, Currency: "€"},
+				{Date: isoDay(112), ProjectName: "website-redesign", Description: "Consulting services — half day", Minutes: 240, HourlyRate: 110.0, Amount: 440.0, Currency: "€"},
+			},
+		},
+		{
+			// From: "DevOps Retainer — Monthly"
+			customerName: "Globex Systems",
+			status:       "sent",
+			periodStart:  75,
+			periodEnd:    46,
+			dueInDays:    30,
+			vatRate:      21,
+			templateName: "DevOps Retainer — Monthly",
+			notes:        "Managed DevOps — monthly retainer March.",
+			lineItems: []invLineItem{
+				{Date: isoDay(73), ProjectName: "devops-infra", Description: "Monitoring, alerting & ops", Minutes: 480, HourlyRate: 95.0, Amount: 760.0, Currency: "€"},
+				{Date: isoDay(70), ProjectName: "devops-infra", Description: "Incident response & on-call", Minutes: 180, HourlyRate: 95.0, Amount: 285.0, Currency: "€"},
+				{Date: isoDay(67), ProjectName: "devops-infra", Description: "Security hardening & patching", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
+				{Date: isoDay(63), ProjectName: "devops-infra", Description: "CI/CD & infrastructure maintenance", Minutes: 240, HourlyRate: 95.0, Amount: 380.0, Currency: "€"},
+				{Date: isoDay(48), ProjectName: "devops-infra", Description: "Monthly progress report & review call", Minutes: 120, HourlyRate: 95.0, Amount: 190.0, Currency: "€"},
+			},
+		},
+		{
+			// From: "Travel & On-site Visit"
+			customerName: "Acme Corporation",
+			status:       "draft",
+			periodStart:  21,
+			periodEnd:    16,
+			dueInDays:    30,
+			vatRate:      21,
+			templateName: "Travel & On-site Visit",
+			notes:        "On-site architecture review at Acme HQ — travel + full work day.",
+			lineItems: []invLineItem{
+				{Date: isoDay(20), ProjectName: "website-redesign", Description: "Travel to client — outward journey", Minutes: 90, Distance: 75, PricePerKm: 0.23, Amount: 17.25, Currency: "€"},
+				{Date: isoDay(20), ProjectName: "website-redesign", Description: "On-site work — full day", Minutes: 480, HourlyRate: 110.0, Amount: 880.0, Currency: "€"},
+				{Date: isoDay(20), ProjectName: "website-redesign", Description: "Travel from client — return journey", Minutes: 90, Distance: 75, PricePerKm: 0.23, Amount: 17.25, Currency: "€"},
 			},
 		},
 	}
@@ -2805,6 +2998,13 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		lineItemsJSON, _ := json.Marshal(is.lineItems)
 		invNumber := fmt.Sprintf("INV-%04d", i+1)
 
+		notes := is.notes
+		if is.templateName != "" {
+			if notes != "" {
+				notes += "\n"
+			}
+			notes += "Template: " + is.templateName
+		}
 		var existingInv models.Invoice
 		if db.Where("invoice_number = ?", invNumber).First(&existingInv).Error != nil {
 			inv := models.Invoice{
@@ -2820,7 +3020,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				VATAmount:     vatAmount,
 				Total:         total,
 				DueDate:       &dueDate,
-				Notes:         is.notes,
+				Notes:         notes,
 				CreatedByID:   &tonk.ID,
 			}
 			must(db.Create(&inv).Error)
@@ -3665,6 +3865,68 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			}).Error)
 		}
 		fmt.Println("   Created 7 standby entries (Mon–Sun)")
+	}
+
+	// ── 10b2. Travel time entries with distance — linked to contracts ─────────
+	// These exist specifically to verify that travel time and distance flow
+	// through to invoice line items.
+	fmt.Println("→ Creating travel time entries with distance (contract-linked)…")
+	{
+		type travelSpec struct {
+			user         string
+			customerName string
+			projectSlug  string
+			contractName string
+			daysAgo      int
+			minutes      int
+			distance     float64
+			desc         string
+		}
+		travelEntries := []travelSpec{
+			// Ton — Acme Phase 1, on-site visit for design review
+			{"tonk", "Acme Corporation", "website-redesign", "Phase 1 — Marketing Site", 8, 90, 42.0, "Travel to Acme — design review"},
+			// Ton — Acme Phase 1, return trip same day
+			{"tonk", "Acme Corporation", "website-redesign", "Phase 1 — Marketing Site", 8, 75, 42.0, "Return travel from Acme — design review"},
+			// Ton — Acme Phase 2, kick-off on-site
+			{"tonk", "Acme Corporation", "mobile-app-v2", "Phase 2 — Mobile Apps", 3, 90, 42.0, "Travel to Acme — mobile kick-off"},
+			// Ton — Globex on-site infra audit
+			{"tonk", "Globex Systems", "devops-infra", "Managed DevOps 2025", 6, 120, 67.0, "Travel to Globex — on-site infra audit"},
+			{"tonk", "Globex Systems", "devops-infra", "Managed DevOps 2025", 6, 100, 67.0, "Return travel from Globex"},
+			// Marc — Acme Phase 2, push notification demo
+			{"marc", "Acme Corporation", "mobile-app-v2", "Phase 2 — Mobile Apps", 5, 90, 55.0, "Travel to Acme — push notification demo"},
+			{"marc", "Acme Corporation", "mobile-app-v2", "Phase 2 — Mobile Apps", 5, 80, 55.0, "Return travel from Acme"},
+		}
+		travelCount := 0
+		for _, t := range travelEntries {
+			u, ok := users[t.user]
+			if !ok {
+				continue
+			}
+			date := time.Now().UTC().AddDate(0, 0, -t.daysAgo).Truncate(24 * time.Hour)
+			entry := models.TimeEntry{
+				UserID:      u.ID,
+				Date:        date,
+				Minutes:     t.minutes,
+				Description: t.desc,
+				Distance:    ptr(t.distance),
+			}
+			if cid, ok := custIDByName[t.customerName]; ok {
+				entry.CustomerID = pUint(cid)
+			}
+			if t.projectSlug != "" {
+				if pd, ok := projects[t.projectSlug]; ok {
+					entry.ProjectID = pUint(pd.project.ID)
+				}
+			}
+			if t.contractName != "" {
+				if cid, ok := contractIDByName[t.contractName]; ok {
+					entry.ContractID = pUint(cid)
+				}
+			}
+			must(db.Create(&entry).Error)
+			travelCount++
+		}
+		fmt.Printf("   Created %d travel time entries with distance\n", travelCount)
 	}
 
 	// ── 10c. Personal TT-only projects and customers for tonk ─────────────────
@@ -4809,6 +5071,8 @@ func removeDemoData(db *gorm.DB) {
 	db.Unscoped().Where("name IN ?", demoSlaNames).Delete(&models.SlaPolicy{})
 	demoMacroNames := []string{"Acknowledge & Investigate", "Request More Information", "Escalate to Critical", "Resolved — Pending Close", "Close & Thank", "Mark as Duplicate"}
 	db.Unscoped().Where("name IN ?", demoMacroNames).Delete(&models.Macro{})
+	demoInvoiceTemplateNames := []string{"Consulting — Standard Rate", "DevOps Retainer — Monthly", "Travel & On-site Visit"}
+	db.Unscoped().Where("name IN ?", demoInvoiceTemplateNames).Delete(&models.InvoiceTemplate{})
 	demoChecklistNames := []string{"Offboarding"}
 	db.Unscoped().Where("name IN ?", demoChecklistNames).Delete(&models.TicketChecklistTemplate{})
 
