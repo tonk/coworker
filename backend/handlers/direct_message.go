@@ -12,7 +12,7 @@ import (
 
 // serviceAccountRoles are global roles that represent automated accounts with no
 // human behind them. They are excluded from DM user lists and cannot be messaged.
-var serviceAccountRoles = []string{"metrics", "backup"}
+var serviceAccountRoles = []string{middleware.RoleMetrics, middleware.RoleBackup}
 
 // ListDirectMessages returns messages between the current user and the given user.
 func ListDirectMessages(c *gin.Context) {
@@ -21,6 +21,18 @@ func ListDirectMessages(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
 		return
+	}
+
+	var other models.User
+	if err := database.DB.First(&other, otherID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+	for _, r := range serviceAccountRoles {
+		if other.GlobalRole == r {
+			c.JSON(http.StatusForbidden, gin.H{"error": "cannot message service accounts"})
+			return
+		}
 	}
 
 	var msgs []models.DirectMessage
@@ -140,6 +152,8 @@ func ListConversations(c *gin.Context) {
 type userSummary struct {
 	ID          uint   `json:"id"`
 	Username    string `json:"username"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
 	DisplayName string `json:"display_name"`
 	AvatarURL   string `json:"avatar_url"`
 	IsOnline    bool   `json:"is_online"`
@@ -151,6 +165,8 @@ func toUserSummaries(users []models.User) []userSummary {
 		out[i] = userSummary{
 			ID:          u.ID,
 			Username:    u.Username,
+			FirstName:   u.FirstName,
+			LastName:    u.LastName,
 			DisplayName: u.DisplayName,
 			AvatarURL:   u.AvatarURL,
 		}
@@ -172,7 +188,7 @@ func ListAllUsers(c *gin.Context) {
 	var users []models.User
 
 	if globalRole == "admin" {
-		database.DB.Where("is_active = ?", true).Find(&users)
+		database.DB.Where("is_active = ? AND global_role NOT IN ?", true, serviceAccountRoles).Find(&users)
 		c.JSON(http.StatusOK, users)
 		return
 	}

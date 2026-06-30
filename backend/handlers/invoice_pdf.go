@@ -296,7 +296,7 @@ func buildInvoicePDF(invoice models.Invoice, lang, fontFamily, distanceUnit stri
 		switch {
 		case li.HourlyRate > 0:
 			rateStr = fmt.Sprintf("%.2f", li.HourlyRate)
-		case li.PricePerKm > 0:
+		case li.PricePerKm > 0 && li.Distance > 0:
 			rateStr = fmt.Sprintf("%.2f", li.PricePerKm)
 		case li.UnitPrice > 0:
 			rateStr = fmt.Sprintf("%.2f", li.UnitPrice)

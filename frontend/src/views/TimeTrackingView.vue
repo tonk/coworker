@@ -1065,7 +1065,7 @@
                   <td>{{ li.description }}</td>
                   <td class="num">{{ fmtMinutesInv(li.minutes) || (li.quantity > 0 ? li.quantity : '') }}</td>
                   <td v-if="createInvHasDistance" class="num">{{ li.distance > 0 ? li.distance : '—' }}</td>
-                  <td class="num">{{ li.currency }} {{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : li.unit_price > 0 ? li.unit_price.toFixed(2) : '' }}</td>
+                  <td class="num">{{ li.currency }} {{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : li.price_per_km > 0 ? li.price_per_km.toFixed(2) : li.unit_price > 0 ? li.unit_price.toFixed(2) : '' }}</td>
                   <td class="num">{{ li.currency }} {{ li.amount.toFixed(2) }}</td>
                 </tr>
               </tbody>

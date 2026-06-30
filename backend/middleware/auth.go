@@ -16,6 +16,16 @@ const (
 	ContextGlobalRole = "global_role"
 )
 
+// Global role constants — canonical list; use these instead of bare string literals.
+const (
+	RoleAdmin    = "admin"
+	RoleUser     = "user"
+	RoleViewer   = "viewer"
+	RoleMetrics  = "metrics"
+	RoleBackup   = "backup"
+	RoleCustomer = "customer"
+)
+
 func Auth(authSvc *services.AuthService) gin.HandlerFunc {
 	apiKeyAuth := APIKeyAuth()
 	return func(c *gin.Context) {

@@ -62,6 +62,7 @@
         >{{ $t('customer.contacts') }}</button>
         <button
           v-if="auth.helpdeskEnabled"
+          id="tab-btn-tickets"
           role="tab"
           :aria-selected="false"
           :class="['tab']"
@@ -125,7 +126,7 @@
               class="project-mini-tile"
             >
               <img v-if="projectAvatar(p)" :src="projectAvatar(p)" class="proj-avatar" alt="" />
-              <span v-else class="proj-dot" :style="{ background: p.color || '#6366f1' }"></span>
+              <span v-else class="proj-dot" :style="{ background: p.color || 'var(--color-primary)' }"></span>
               <span>{{ p.name }}</span>
             </RouterLink>
           </div>
@@ -148,7 +149,7 @@
               class="project-mini-tile"
             >
               <img v-if="projectAvatar(p)" :src="projectAvatar(p)" class="proj-avatar" alt="" />
-              <span v-else class="proj-dot" :style="{ background: p.color || '#6366f1' }"></span>
+              <span v-else class="proj-dot" :style="{ background: p.color || 'var(--color-primary)' }"></span>
               <span>{{ p.name }}</span>
             </RouterLink>
           </div>
@@ -703,7 +704,7 @@
               <td>{{ li.description }}</td>
               <td class="num">{{ fmtMinutes(li.minutes) || (li.quantity > 0 ? li.quantity : '') }}</td>
               <td v-if="invoiceHasDistance" class="num">{{ li.distance > 0 ? li.distance.toFixed(1) : '' }}</td>
-              <td class="num">{{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : li.unit_price > 0 ? li.unit_price.toFixed(2) : '' }}</td>
+              <td class="num">{{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : li.price_per_km > 0 ? li.price_per_km.toFixed(2) : li.unit_price > 0 ? li.unit_price.toFixed(2) : '' }}</td>
               <td class="num">{{ li.currency }} {{ li.amount.toFixed(2) }}</td>
             </tr>
           </tbody>
@@ -1181,11 +1182,7 @@ const editLinesTotal = computed(() => editLineItems.value.reduce((s, li) => s + 
 
 function openEditLines(inv) {
   editingInvoice.value = inv
-  try {
-    editLineItems.value = parseLineItems(inv.line_items).map(li => ({ ...li }))
-  } catch {
-    editLineItems.value = []
-  }
+  editLineItems.value = parseLineItems(inv.line_items).map(li => ({ ...li }))
   showEditLines.value = true
 }
 
