@@ -118,6 +118,7 @@ func ListConversations(c *gin.Context) {
 			(dm.receiver_id = ? AND dm.sender_id = u.id)
 		)
 		WHERE u.deleted_at IS NULL
+		  AND u.global_role NOT IN ('metrics', 'backup')
 		ORDER BY u.username
 	`, currentUserID, currentUserID).Scan(&convs)
 
@@ -160,8 +161,10 @@ func ListAllUsers(c *gin.Context) {
 
 	var users []models.User
 
+	excludeRoles := []string{"metrics", "backup"}
+
 	if globalRole == "admin" {
-		database.DB.Where("is_active = ?", true).Find(&users)
+		database.DB.Where("is_active = ? AND global_role NOT IN ?", true, excludeRoles).Find(&users)
 		c.JSON(http.StatusOK, users)
 		return
 	}
@@ -170,7 +173,7 @@ func ListAllUsers(c *gin.Context) {
 	myRoles := getAccessibleCustomerRoles(userID)
 	if len(myRoles) == 0 {
 		// No explicit customer access rows → user sees all customers, so see all users.
-		database.DB.Where("is_active = ?", true).Find(&users)
+		database.DB.Where("is_active = ? AND global_role NOT IN ?", true, excludeRoles).Find(&users)
 		c.JSON(http.StatusOK, toUserSummaries(users))
 		return
 	}
@@ -208,6 +211,6 @@ func ListAllUsers(c *gin.Context) {
 		allIDs = append(allIDs, id)
 	}
 
-	database.DB.Where("is_active = ? AND id IN ?", true, allIDs).Find(&users)
+	database.DB.Where("is_active = ? AND id IN ? AND global_role NOT IN ?", true, allIDs, excludeRoles).Find(&users)
 	c.JSON(http.StatusOK, toUserSummaries(users))
 }
