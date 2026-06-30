@@ -56,7 +56,7 @@
     <div v-else class="tmpl-list">
       <div v-for="t in templates" :key="t.id" class="tmpl-item">
         <div class="tmpl-item-info">
-          <button class="tmpl-item-name" @click="startEdit(t)">{{ t.name }}</button>
+          <button class="tmpl-item-name" @click="startEdit(t)" :aria-label="$t('common.edit') + ' ' + t.name">{{ t.name }}</button>
           <span class="tmpl-item-meta">
             {{ t.default_currency || '€' }}
             <template v-if="t.default_vat_rate"> · {{ t.default_vat_rate }}% VAT</template>
@@ -65,8 +65,7 @@
           <span v-if="t.notes" class="tmpl-item-notes">{{ t.notes }}</span>
         </div>
         <div class="tmpl-item-actions">
-          <button class="btn btn-sm" @click="startEdit(t)">{{ $t('common.edit') }}</button>
-          <button class="btn btn-sm btn-danger" @click="deleteTemplate(t)">{{ $t('common.delete') }}</button>
+          <button class="btn btn-sm btn-danger" @click="deleteTemplate(t)" :aria-label="$t('common.delete') + ' ' + t.name">{{ $t('common.delete') }}</button>
         </div>
       </div>
     </div>
@@ -220,7 +219,9 @@ onMounted(load)
   color: var(--color-primary);
   text-align: left;
 }
-.tmpl-item-name:hover { text-decoration: underline; }
+.tmpl-item-name:hover,
+.tmpl-item-name:focus-visible { text-decoration: underline; }
+.tmpl-item-name:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .tmpl-item-meta { font-size: 12px; color: var(--color-text-muted); }
 .tmpl-item-notes { font-size: 12px; color: var(--color-text-secondary); }
 .tmpl-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
