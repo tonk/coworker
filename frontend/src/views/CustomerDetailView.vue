@@ -1023,6 +1023,7 @@ function invoicePdfUrl(invoiceId) {
 }
 
 function fmtMinutes(mins) {
+  if (!mins) return ''
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return m > 0 ? `${h}h ${m}m` : `${h}h`

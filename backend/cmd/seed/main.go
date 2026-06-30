@@ -2795,7 +2795,8 @@ Pagerduty schedules will be updated to match this by Friday.`,
 				return ts
 			}
 		}
-		return invoiceTemplateSpec{}
+		log.Fatalf("seed: invoice template %q not found in invoiceTemplateSpecs", name)
+		return invoiceTemplateSpec{} // unreachable
 	}
 	// withDate stamps a template line item with a date and project for use in a derived invoice.
 	withDate := func(li models.InvoiceLineItem, daysAgo int, project string) models.InvoiceLineItem {
@@ -3041,10 +3042,10 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			must(db.Create(&inv).Error)
 			totalInvoices++
 		} else if is.templateName != "" {
-			// Ensure the template annotation is present on re-seed.
-			db.Model(&models.Invoice{}).
-				Where("invoice_number = ? AND notes NOT LIKE ?", invNumber, "%Template:%").
-				Update("notes", notes)
+			// Ensure the template annotation is current on re-seed (name may have changed).
+			must(db.Model(&models.Invoice{}).
+				Where("invoice_number = ?", invNumber).
+				Update("notes", notes).Error)
 		}
 	}
 	fmt.Printf("   Created %d invoices\n", totalInvoices)

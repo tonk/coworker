@@ -4639,6 +4639,7 @@ const createInvTotal       = computed(() => createInvSubtotal.value + createInvV
 const createInvCurrency    = computed(() => createInvLineItems.value[0]?.currency || '€')
 
 function fmtMinutesInv(mins) {
+  if (!mins) return ''
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return m > 0 ? `${h}h ${m}m` : `${h}h`

@@ -272,7 +272,17 @@ func buildInvoicePDF(invoice models.Invoice, lang, fontFamily, distanceUnit stri
 		pdf.CellFormat(colDate, pdfRowH, li.Date, "", 0, "L", alt, 0, "")
 		pdf.CellFormat(colProj, pdfRowH, truncStr(li.ProjectName, 22), "", 0, "L", alt, 0, "")
 		pdf.CellFormat(descW, pdfRowH, truncStr(li.Description, 40), "", 0, "L", alt, 0, "")
-		pdf.CellFormat(colHours, pdfRowH, fmtMinutes(li.Minutes), "", 0, "R", alt, 0, "")
+		hoursStr := ""
+		if li.Minutes > 0 {
+			hoursStr = fmtMinutes(li.Minutes)
+		} else if li.Quantity > 0 {
+			if li.Quantity == float64(int(li.Quantity)) {
+				hoursStr = fmt.Sprintf("%d", int(li.Quantity))
+			} else {
+				hoursStr = fmt.Sprintf("%.2f", li.Quantity)
+			}
+		}
+		pdf.CellFormat(colHours, pdfRowH, hoursStr, "", 0, "R", alt, 0, "")
 		if hasDistance {
 			distStr := ""
 			if li.Distance > 0 {
@@ -285,6 +295,8 @@ func buildInvoicePDF(invoice models.Invoice, lang, fontFamily, distanceUnit stri
 			rateStr = fmt.Sprintf("%.2f", li.HourlyRate)
 		} else if li.Distance > 0 && li.PricePerKm > 0 {
 			rateStr = fmt.Sprintf("%.2f", li.PricePerKm)
+		} else if li.UnitPrice > 0 {
+			rateStr = fmt.Sprintf("%.2f", li.UnitPrice)
 		}
 		pdf.CellFormat(colRate, pdfRowH, rateStr, "", 0, "R", alt, 0, "")
 		amtStr := fmt.Sprintf("%s %.2f", invoice.Currency, li.Amount)
