@@ -2808,6 +2808,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			UnitPrice:   li.UnitPrice,
 			Amount:      li.Amount,
 			Currency:    li.Currency,
+			IsManual:    true,
 		}
 	}
 

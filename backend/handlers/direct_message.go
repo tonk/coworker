@@ -10,6 +10,10 @@ import (
 	"github.com/tonk/warmdesk/models"
 )
 
+// serviceAccountRoles are global roles that represent automated accounts with no
+// human behind them. They are excluded from DM user lists and cannot be messaged.
+var serviceAccountRoles = []string{"metrics", "backup"}
+
 // ListDirectMessages returns messages between the current user and the given user.
 func ListDirectMessages(c *gin.Context) {
 	currentUserID := middleware.GetUserID(c)
@@ -51,6 +55,12 @@ func SendDirectMessage(c *gin.Context) {
 	if err := database.DB.First(&other, otherID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
+	}
+	for _, r := range serviceAccountRoles {
+		if other.GlobalRole == r {
+			c.JSON(http.StatusForbidden, gin.H{"error": "cannot send messages to service accounts"})
+			return
+		}
 	}
 
 	var req struct {
@@ -118,9 +128,9 @@ func ListConversations(c *gin.Context) {
 			(dm.receiver_id = ? AND dm.sender_id = u.id)
 		)
 		WHERE u.deleted_at IS NULL
-		  AND u.global_role NOT IN ('metrics', 'backup')
+		  AND u.global_role NOT IN ?
 		ORDER BY u.username
-	`, currentUserID, currentUserID).Scan(&convs)
+	`, currentUserID, currentUserID, serviceAccountRoles).Scan(&convs)
 
 	c.JSON(http.StatusOK, convs)
 }
@@ -161,13 +171,13 @@ func ListAllUsers(c *gin.Context) {
 
 	var users []models.User
 
-	excludeRoles := []string{"metrics", "backup"}
-
 	if globalRole == "admin" {
-		database.DB.Where("is_active = ? AND global_role NOT IN ?", true, excludeRoles).Find(&users)
+		database.DB.Where("is_active = ?", true).Find(&users)
 		c.JSON(http.StatusOK, users)
 		return
 	}
+
+	excludeRoles := serviceAccountRoles
 
 	// Collect the customer IDs visible to the current user (direct + via groups).
 	myRoles := getAccessibleCustomerRoles(userID)

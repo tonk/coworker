@@ -701,9 +701,9 @@
               <td>{{ li.date ? formatDate(li.date) : '' }}</td>
               <td>{{ li.project_name }}</td>
               <td>{{ li.description }}</td>
-              <td class="num">{{ fmtMinutes(li.minutes) }}</td>
+              <td class="num">{{ fmtMinutes(li.minutes) || (li.quantity > 0 ? li.quantity : '') }}</td>
               <td v-if="invoiceHasDistance" class="num">{{ li.distance > 0 ? li.distance.toFixed(1) : '' }}</td>
-              <td class="num">{{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : '' }}</td>
+              <td class="num">{{ li.hourly_rate > 0 ? li.hourly_rate.toFixed(2) : li.unit_price > 0 ? li.unit_price.toFixed(2) : '' }}</td>
               <td class="num">{{ li.currency }} {{ li.amount.toFixed(2) }}</td>
             </tr>
           </tbody>
