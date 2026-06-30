@@ -77,6 +77,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { customersApi } from '@/api/customers'
 import { useUIStore } from '@/stores/ui'
+import { parseLineItems } from '@/utils/invoiceUtils'
 
 const { t } = useI18n()
 const ui = useUIStore()
@@ -92,7 +93,7 @@ function emptyForm() {
 }
 
 function lineCount(tmpl) {
-  try { return JSON.parse(tmpl.line_items || '[]').length } catch { return 0 }
+  return parseLineItems(tmpl.line_items).length
 }
 
 const lineCountMap = computed(() => {
@@ -127,7 +128,7 @@ function startEdit(tmpl) {
     default_currency: tmpl.default_currency || '€',
     notes: tmpl.notes || '',
   }
-  try { formLines.value = JSON.parse(tmpl.line_items || '[]') } catch { formLines.value = [] }
+  formLines.value = parseLineItems(tmpl.line_items)
 }
 
 function cancelEdit() {

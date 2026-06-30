@@ -290,12 +290,15 @@ func buildInvoicePDF(invoice models.Invoice, lang, fontFamily, distanceUnit stri
 			}
 			pdf.CellFormat(colDist, pdfRowH, distStr, "", 0, "R", alt, 0, "")
 		}
+		// Rate column: exactly one of these applies per line type.
+		// Precedence: hourly rate (time lines) → per-km rate (travel lines) → unit price (manual/template lines).
 		rateStr := ""
-		if li.HourlyRate > 0 {
+		switch {
+		case li.HourlyRate > 0:
 			rateStr = fmt.Sprintf("%.2f", li.HourlyRate)
-		} else if li.Distance > 0 && li.PricePerKm > 0 {
+		case li.PricePerKm > 0:
 			rateStr = fmt.Sprintf("%.2f", li.PricePerKm)
-		} else if li.UnitPrice > 0 {
+		case li.UnitPrice > 0:
 			rateStr = fmt.Sprintf("%.2f", li.UnitPrice)
 		}
 		pdf.CellFormat(colRate, pdfRowH, rateStr, "", 0, "R", alt, 0, "")

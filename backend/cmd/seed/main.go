@@ -3043,10 +3043,16 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			must(db.Create(&inv).Error)
 			totalInvoices++
 		} else if is.templateName != "" {
-			// Ensure the template annotation is current on re-seed (name may have changed).
+			// Refresh all spec-driven fields on re-seed so line item or template changes propagate.
 			must(db.Model(&models.Invoice{}).
 				Where("invoice_number = ?", invNumber).
-				Update("notes", notes).Error)
+				Updates(map[string]any{
+					"notes":      notes,
+					"line_items": string(lineItemsJSON),
+					"subtotal":   subtotal,
+					"vat_amount": vatAmount,
+					"total":      total,
+				}).Error)
 		}
 	}
 	fmt.Printf("   Created %d invoices\n", totalInvoices)
@@ -3337,34 +3343,34 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		createdBy := users[ts.createdByKey]
 		assignedTo := users[ts.assignedToKey]
 
-	createdAt := now.Add(-ts.createdAgo)
-	ticket := models.Ticket{
-		CustomerID:   &custID,
-		Title:        ts.subject,
-		Description:  ts.description,
-		Type:         ts.ticketType,
-		Status:       ts.status,
-		Priority:     ts.priority,
-		IsSpam:       ts.isSpam,
-		CreatedByID:  createdBy.ID,
-		AssignedToID: &assignedTo.ID,
-		CreatedAt:    createdAt,
-		UpdatedAt:    createdAt,
-	}
-	// Assign SLA policy matching the ticket's priority
-	if policy, ok := slaByPriority[ts.priority]; ok {
-		ticket.SlaPolicyID = &policy.ID
-		if policy.ResponseTimeMinutes > 0 {
-			d := createdAt.Add(time.Duration(policy.ResponseTimeMinutes) * time.Minute)
-			ticket.SlaResponseDeadline = &d
+		createdAt := now.Add(-ts.createdAgo)
+		ticket := models.Ticket{
+			CustomerID:   &custID,
+			Title:        ts.subject,
+			Description:  ts.description,
+			Type:         ts.ticketType,
+			Status:       ts.status,
+			Priority:     ts.priority,
+			IsSpam:       ts.isSpam,
+			CreatedByID:  createdBy.ID,
+			AssignedToID: &assignedTo.ID,
+			CreatedAt:    createdAt,
+			UpdatedAt:    createdAt,
 		}
-		if policy.ResolutionTimeMinutes > 0 {
-			d := createdAt.Add(time.Duration(policy.ResolutionTimeMinutes) * time.Minute)
-			ticket.SlaResolutionDeadline = &d
+		// Assign SLA policy matching the ticket's priority
+		if policy, ok := slaByPriority[ts.priority]; ok {
+			ticket.SlaPolicyID = &policy.ID
+			if policy.ResponseTimeMinutes > 0 {
+				d := createdAt.Add(time.Duration(policy.ResponseTimeMinutes) * time.Minute)
+				ticket.SlaResponseDeadline = &d
+			}
+			if policy.ResolutionTimeMinutes > 0 {
+				d := createdAt.Add(time.Duration(policy.ResolutionTimeMinutes) * time.Minute)
+				ticket.SlaResolutionDeadline = &d
+			}
 		}
-	}
-	must(db.Create(&ticket).Error)
-	createdTickets[ts.subject] = &ticket
+		must(db.Create(&ticket).Error)
+		createdTickets[ts.subject] = &ticket
 
 		var firstResponseAt *time.Time
 		for _, m := range ts.messages {

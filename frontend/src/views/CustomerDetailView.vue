@@ -942,6 +942,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import HelpIcon from '@/components/common/HelpIcon.vue'
 import { useDateFormat } from '@/composables/useDateFormat'
 import client from '@/api/client'
+import { parseLineItems } from '@/utils/invoiceUtils'
 import { buildSlotPreviewDays, slotPreviewReady as slotPreviewReadyFn, formatDayType } from '@/utils/contractSlotPreview'
 
 const { t } = useI18n()
@@ -1056,19 +1057,15 @@ function applyInvoiceTemplate(idStr) {
   if (!tmpl) return
   if (tmpl.default_vat_rate) invoiceForm.value.vat_rate = tmpl.default_vat_rate
   if (tmpl.notes) invoiceForm.value.notes = tmpl.notes
-  if (tmpl.line_items) {
-    try {
-      const lines = JSON.parse(tmpl.line_items)
-      if (lines.length) {
-        invoiceLineItems.value = lines.map(li => ({
-          ...li,
-          currency: li.currency || tmpl.default_currency || '€',
-          amount: (li.quantity || 0) * (li.unit_price || 0),
-          is_manual: true,
-        }))
-        invoiceStep.value = 2
-      }
-    } catch { /* ignore */ }
+  const lines = parseLineItems(tmpl.line_items)
+  if (lines.length) {
+    invoiceLineItems.value = lines.map(li => ({
+      ...li,
+      currency: li.currency || tmpl.default_currency || '€',
+      amount: (li.quantity || 0) * (li.unit_price || 0),
+      is_manual: true,
+    }))
+    invoiceStep.value = 2
   }
 }
 
@@ -1185,7 +1182,7 @@ const editLinesTotal = computed(() => editLineItems.value.reduce((s, li) => s + 
 function openEditLines(inv) {
   editingInvoice.value = inv
   try {
-    editLineItems.value = JSON.parse(inv.line_items || '[]').map(li => ({ ...li }))
+    editLineItems.value = parseLineItems(inv.line_items).map(li => ({ ...li }))
   } catch {
     editLineItems.value = []
   }
