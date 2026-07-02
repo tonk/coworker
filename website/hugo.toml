@@ -18,12 +18,12 @@ enableEmoji = true
   warmdesk_version = "v0.12.40"
   release_date     = "2026-07-02"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.12.35/"
+  release_blog     = "blog/release-0.12.40/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Synced macros** — libraries stored per user on the server; follow you across browsers and devices.",
-    "**Run popout** — bottom-bar ⚡ Macro picks macro + start day; top-bar ⚡ opens the editor.",
-    "**Full i18n** — macro UI and weekly-sheet row comments translated in all 12 languages.",
+    "**Custom report ranges** — pick any Start/End date for a time-tracking report instead of only week/month/year.",
+    "**Per-row billable time** — see distance and undeclarable minutes on every report entry, for every grouping.",
+    "**Desktop system tray** — tray icon with unread badge, close-to-tray, and a window show/hide toggle.",
   ]
 
 [markup]

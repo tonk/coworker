@@ -1,0 +1,47 @@
+---
+title: "v0.12.40: Custom report ranges, per-row billable time, and a system tray icon"
+date: "2026-07-02"
+author: "Ton Kersten"
+description: "Time-tracking reports gain a custom start/end date range and per-row distance and billable-time columns, and the desktop app adds a system tray icon with unread badges and close-to-tray."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` rounds out the time-tracking report with a custom date range and per-row billable detail, and gives the desktop app a proper system tray icon.
+
+== Report on any date range
+
+The Report tab's period selector was limited to Week, Month, or Year.
+`{warmdesk-version}` adds *Custom range*: pick it and a popup opens with *Start date* / *End date* pickers that follow your date format setting, just like every other date field in WarmDesk.
+
+Use it for anything that doesn't fit a calendar boundary — a two-week sprint, a customer's billing cycle, or a project that ran from the 14th to the 22nd.
+
+== See billable and unbillable time per entry
+
+Projects can carry an *undeclarable minutes* value (travel time, a lunch break, whatever shouldn't be billed).
+Until now the report only showed that deduction as a single line per group or at the grand total — and only when the report was grouped by customer.
+
+`{warmdesk-version}` changes both:
+
+* The undeclarable/billable breakdown now appears for *every* grouping — period, project, customer, or customer + project — not just customer.
+* Two new PDF export options, *Show distance* and *Show undeclarable per row*, add a column showing each entry's mileage and undeclarable minutes individually, so you can see exactly which line drove the deduction instead of just the total.
+
+Empty distance/undeclarable cells are left blank rather than showing a placeholder dash, and the undeclarable value itself is shown as a plain positive number — the "Undeclarable" label already tells you it is a deduction.
+
+== A system tray icon for the desktop app
+
+The Tauri desktop app now has a system tray icon:
+
+* An unread badge reflects unread cards, tickets, and chat messages.
+* The tray menu shows/hides the main window or quits the app.
+* Optional *close-to-tray*: closing the window minimises it instead of quitting.
+
+Both the tray icon and close-to-tray behavior are toggled from *Settings*.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+GORM AutoMigrate adds two columns (`tray_icon_enabled`, `close_to_tray_enabled`) to the `users` table on startup — no manual migration step.
