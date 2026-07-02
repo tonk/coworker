@@ -118,6 +118,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	showAbbr := c.Query("show_abbr") == "1"
 	showCosts := c.Query("show_costs") == "1"
 	showUndeclarable := c.DefaultQuery("show_undeclarable", "1") != "0"
+	showUndeclarableRow := c.Query("show_undeclarable_row") == "1"
 	showDistance := c.Query("show_distance") == "1"
 	distanceUnit := c.DefaultQuery("distance_unit", "km")
 
@@ -186,12 +187,13 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 	// of whether the language uses 2- or 3-character day abbreviations.
 	const colAbbr = 9.0 // wide enough for 3-char abbreviations in any language
 	var (
-		colDate = 25.0
-		colCust = 45.0
-		colProj = 45.0
-		colDesc = 50.0
-		colCost = 0.0
-		colDist = 0.0
+		colDate   = 25.0
+		colCust   = 45.0
+		colProj   = 45.0
+		colDesc   = 50.0
+		colCost   = 0.0
+		colDist   = 0.0
+		colUndecl = 0.0
 	)
 	if showCosts {
 		colDate = 22.0
@@ -204,21 +206,26 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		colDist = 16.0
 		colDesc -= 16.0
 	}
+	if showUndeclarableRow {
+		colUndecl = 16.0
+		colDesc -= 16.0
+	}
 	if showAbbr {
 		colDate = colAbbr + 25.0
 		if showCosts {
-			colDesc = 37.0 - colDist
+			colDesc = 37.0 - colDist - colUndecl
 		} else {
-			colDesc = 40.0 - colDist
+			colDesc = 40.0 - colDist - colUndecl
 		}
 	}
-	colHours := pdfBodyW - colDate - colCust - colProj - colDesc - colCost - colDist
-	nonHourW := colDate + colCust + colProj + colDesc + colCost + colDist
+	colHours := pdfBodyW - colDate - colCust - colProj - colDesc - colCost - colDist - colUndecl
+	nonHourW := colDate + colCust + colProj + colDesc + colCost + colDist + colUndecl
 
 	distHdr := tr.TotalDistance
 	if len(distHdr) > 8 {
 		distHdr = distanceUnit
 	}
+	undeclHdr := truncStr(tr.Undeclarable, 9)
 
 	// ── Table header ──────────────────────────────────────────────────────────
 	drawTableHeader := func() {
@@ -235,6 +242,9 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		}
 		if showDistance {
 			pdf.CellFormat(colDist, rowH, distHdr, "0", 0, "R", true, 0, "")
+		}
+		if showUndeclarableRow {
+			pdf.CellFormat(colUndecl, rowH, undeclHdr, "0", 0, "R", true, 0, "")
 		}
 		pdf.CellFormat(colHours, rowH, tr.Hours, "0", 1, "R", true, 0, "")
 		setTxt(pdf, clrText)
@@ -381,6 +391,15 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 				}
 				pdf.CellFormat(colDist, entryRowH, distStr, "B", 0, "R", true, 0, "")
 			}
+			if showUndeclarableRow {
+				undeclStr := ""
+				if u := projUndecl(e); u > 0 {
+					setTxt(pdf, rgb{180, 80, 80})
+					undeclStr = fmtDecimalH(u)
+				}
+				pdf.CellFormat(colUndecl, entryRowH, undeclStr, "B", 0, "R", true, 0, "")
+				setTxt(pdf, clrText)
+			}
 			pdf.CellFormat(colHours, entryRowH, fmtDecimalH(pdfEntryDeclarable(e)), "B", 1, "R", true, 0, "")
 
 			// ── Per-entry time-slot sub-rows ─────────────────────────────────
@@ -470,6 +489,9 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 							if showDistance {
 								pdf.CellFormat(colDist, subH, "", "B", 0, "R", true, 0, "")
 							}
+							if showUndeclarableRow {
+								pdf.CellFormat(colUndecl, subH, "", "B", 0, "R", true, 0, "")
+							}
 							pdf.CellFormat(colHours, subH, fmtDecimalH(sr.minutes), "B", 1, "R", true, 0, "")
 						}
 					}
@@ -496,7 +518,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		pdf.SetFont(fontFamily, "B", 8)
 		setTxt(pdf, clrMuted)
 		setFill(pdf, rgb{238, 242, 248})
-		pdf.CellFormat(nonHourW-colCost-colDist, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" - "+tr.Total, "0", 0, "R", true, 0, "")
+		pdf.CellFormat(nonHourW-colCost-colDist-colUndecl, rowH, "  "+pdfTranslateLabel(grp.Label, tr)+" - "+tr.Total, "0", 0, "R", true, 0, "")
 		if showCosts {
 			costStr := ""
 			if grpCost > 0 {
@@ -512,20 +534,27 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 			setTxt(pdf, clrMuted)
 			pdf.CellFormat(colDist, rowH, grpDistStr, "0", 0, "R", true, 0, "")
 		}
+		if showUndeclarableRow {
+			setTxt(pdf, clrMuted)
+			pdf.CellFormat(colUndecl, rowH, "", "0", 0, "R", true, 0, "")
+		}
 		setTxt(pdf, clrPrimary)
 		pdf.CellFormat(colHours, rowH, fmtDecimalH(grp.DeclarableMinutes), "0", 1, "R", true, 0, "")
 
-		// Per-group undeclarable line (customer grouping only)
-		if showUndeclarable && groupBy == "customer" && grp.UndeclarableMinutes > 0 {
+		// Per-group undeclarable line
+		if showUndeclarable && grp.UndeclarableMinutes > 0 {
 			setFill(pdf, rgb{252, 245, 245})
 			setTxt(pdf, clrMuted)
 			pdf.SetFont(fontFamily, "", 8)
-			pdf.CellFormat(nonHourW-colCost-colDist, rowH, "  "+tr.Undeclarable, "0", 0, "R", true, 0, "")
+			pdf.CellFormat(nonHourW-colCost-colDist-colUndecl, rowH, "  "+tr.Undeclarable, "0", 0, "R", true, 0, "")
 			if showCosts {
 				pdf.CellFormat(colCost, rowH, "", "0", 0, "R", true, 0, "")
 			}
 			if showDistance {
 				pdf.CellFormat(colDist, rowH, "", "0", 0, "R", true, 0, "")
+			}
+			if showUndeclarableRow {
+				pdf.CellFormat(colUndecl, rowH, "", "0", 0, "R", true, 0, "")
 			}
 			setTxt(pdf, rgb{180, 80, 80})
 			pdf.CellFormat(colHours, rowH, "-"+fmtDecimalH(grp.UndeclarableMinutes), "0", 1, "R", true, 0, "")
@@ -566,7 +595,7 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 		setFill(pdf, clrPrimary)
 		setTxt(pdf, rgb{255, 255, 255})
 		pdf.SetFont(fontFamily, "B", 9)
-		pdf.CellFormat(nonHourW-colCost-colDist, rowH+1, "  "+tr.Total, "0", 0, "L", true, 0, "")
+		pdf.CellFormat(nonHourW-colCost-colDist-colUndecl, rowH+1, "  "+tr.Total, "0", 0, "L", true, 0, "")
 		if showCosts {
 			costStr := ""
 			if totalCost > 0 {
@@ -581,18 +610,24 @@ func GetTimeEntryReportPDF(c *gin.Context) {
 			}
 			pdf.CellFormat(colDist, rowH+1, totalDistStr, "0", 0, "R", true, 0, "")
 		}
+		if showUndeclarableRow {
+			pdf.CellFormat(colUndecl, rowH+1, "", "0", 0, "R", true, 0, "")
+		}
 		pdf.CellFormat(colHours, rowH+1, fmtDecimalH(grandMinutes), "0", 1, "R", true, 0, "")
 
-		if showUndeclarable && groupBy == "customer" && report.UndeclarableMinutes > 0 {
+		if showUndeclarable && report.UndeclarableMinutes > 0 {
 			setFill(pdf, rgb{252, 245, 245})
 			setTxt(pdf, clrMuted)
 			pdf.SetFont(fontFamily, "", 8.5)
-			pdf.CellFormat(nonHourW-colCost-colDist, rowH, "  "+tr.Undeclarable, "0", 0, "L", true, 0, "")
+			pdf.CellFormat(nonHourW-colCost-colDist-colUndecl, rowH, "  "+tr.Undeclarable, "0", 0, "L", true, 0, "")
 			if showCosts {
 				pdf.CellFormat(colCost, rowH, "", "0", 0, "R", true, 0, "")
 			}
 			if showDistance {
 				pdf.CellFormat(colDist, rowH, "", "0", 0, "R", true, 0, "")
+			}
+			if showUndeclarableRow {
+				pdf.CellFormat(colUndecl, rowH, "", "0", 0, "R", true, 0, "")
 			}
 			setTxt(pdf, rgb{180, 80, 80})
 			pdf.CellFormat(colHours, rowH, "-"+fmtDecimalH(report.UndeclarableMinutes), "0", 1, "R", true, 0, "")

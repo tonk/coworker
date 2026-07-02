@@ -115,13 +115,13 @@ func CreateTimeEntry(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
 	var req struct {
-		CustomerID  *uint   `json:"customer_id"`
-		ProjectID   *uint   `json:"project_id"`
-		ContractID  *uint   `json:"contract_id"`
-		TicketID    *uint   `json:"ticket_id"`
-		Date        string  `json:"date"`
-		Minutes     int     `json:"minutes"`
-		Description string  `json:"description"`
+		CustomerID  *uint    `json:"customer_id"`
+		ProjectID   *uint    `json:"project_id"`
+		ContractID  *uint    `json:"contract_id"`
+		TicketID    *uint    `json:"ticket_id"`
+		Date        string   `json:"date"`
+		Minutes     int      `json:"minutes"`
+		Description string   `json:"description"`
 		IsHoliday   bool     `json:"is_holiday"`
 		StartTime   *string  `json:"start_time"`
 		EndTime     *string  `json:"end_time"`
@@ -330,6 +330,28 @@ func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryRepor
 		from = time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
 		to = from.AddDate(1, 0, 0)
 		periodLabel = strconv.Itoa(year)
+	case "custom":
+		var start, end time.Time
+		if sd := c.Query("start_date"); sd != "" {
+			if t, err := time.Parse("2006-01-02", sd); err == nil {
+				start = t
+			}
+		}
+		if ed := c.Query("end_date"); ed != "" {
+			if t, err := time.Parse("2006-01-02", ed); err == nil {
+				end = t
+			}
+		}
+		if start.IsZero() || end.IsZero() || end.Before(start) {
+			period = "month"
+			from = time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+			to = from.AddDate(0, 1, 0)
+			periodLabel = from.Format("January 2006")
+		} else {
+			from = start
+			to = end.AddDate(0, 0, 1)
+			periodLabel = from.Format("Jan 2, 2006") + " – " + end.Format("Jan 2, 2006")
+		}
 	default:
 		period = "month"
 		from = time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
@@ -429,7 +451,10 @@ func GetTimeEntryReport(c *gin.Context) {
 }
 
 func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) []timeEntryGroup {
-	type key struct{ label string; order int }
+	type key struct {
+		label string
+		order int
+	}
 
 	buckets := map[string]*timeEntryGroup{}
 	var order []string
@@ -570,14 +595,20 @@ func buildGroupsByCustomer(entries []models.TimeEntry) []timeEntryGroup {
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
-		if a == 0 { return false }
-		if b == 0 { return true }
+		if a == 0 {
+			return false
+		}
+		if b == 0 {
+			return true
+		}
 		return strings.ToLower(buckets[a].Label) < strings.ToLower(buckets[b].Label)
 	})
 	result := make([]timeEntryGroup, 0, len(order))
 	for _, k := range order {
 		b := buckets[k]
-		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
+		if b.Entries == nil {
+			b.Entries = []models.TimeEntry{}
+		}
 		result = append(result, *b)
 	}
 	return setDeclarable(result)
@@ -603,14 +634,20 @@ func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
 	}
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
-		if a == 0 { return false }
-		if b == 0 { return true }
+		if a == 0 {
+			return false
+		}
+		if b == 0 {
+			return true
+		}
 		return strings.ToLower(buckets[a].Label) < strings.ToLower(buckets[b].Label)
 	})
 	result := make([]timeEntryGroup, 0, len(order))
 	for _, k := range order {
 		b := buckets[k]
-		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
+		if b.Entries == nil {
+			b.Entries = []models.TimeEntry{}
+		}
 		result = append(result, *b)
 	}
 	return setDeclarable(result)
@@ -638,16 +675,26 @@ func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
 	sort.Slice(order, func(i, j int) bool {
 		a, b := order[i], order[j]
 		la, lb := buckets[a].Label, buckets[b].Label
-		if a.cid == 0 && b.cid != 0 { return false }
-		if b.cid == 0 && a.cid != 0 { return true }
-		if a.pid == 0 && b.pid != 0 { return false }
-		if b.pid == 0 && a.pid != 0 { return true }
+		if a.cid == 0 && b.cid != 0 {
+			return false
+		}
+		if b.cid == 0 && a.cid != 0 {
+			return true
+		}
+		if a.pid == 0 && b.pid != 0 {
+			return false
+		}
+		if b.pid == 0 && a.pid != 0 {
+			return true
+		}
 		return strings.ToLower(la) < strings.ToLower(lb)
 	})
 	result := make([]timeEntryGroup, 0, len(order))
 	for _, k := range order {
 		b := buckets[k]
-		if b.Entries == nil { b.Entries = []models.TimeEntry{} }
+		if b.Entries == nil {
+			b.Entries = []models.TimeEntry{}
+		}
 		result = append(result, *b)
 	}
 	return setDeclarable(result)

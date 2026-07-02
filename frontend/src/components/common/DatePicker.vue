@@ -8,7 +8,7 @@
       @keydown.space.prevent="toggle"
       role="button"
       tabindex="0"
-      :aria-label="modelValue ? displayed : placeholder"
+      :aria-label="ariaLabel"
     >{{ modelValue ? displayed : placeholder }}</span>
 
     <Teleport to="body">
@@ -64,6 +64,7 @@ import { applyFormat, dateOnlyFmt } from '@/composables/useDateFormat'
 
 const props = defineProps({
   modelValue: { type: String, default: null }, // YYYY-MM-DD or null
+  label: { type: String, default: '' }, // optional accessible name prefix, e.g. "Start date"
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -81,6 +82,10 @@ const dateFmt = computed(() => {
 
 const placeholder = computed(() => dateFmt.value)
 const displayed = computed(() => props.modelValue ? applyFormat(props.modelValue, dateFmt.value) : '')
+const ariaLabel = computed(() => {
+  const value = props.modelValue ? displayed.value : placeholder.value
+  return props.label ? `${props.label}: ${value}` : value
+})
 
 const weekStart = computed(() => auth.user?.week_start || 'monday')
 const weekdayLabels = computed(() => {

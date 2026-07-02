@@ -752,15 +752,37 @@
 
     <ContractRatesModal v-if="showRates" @close="showRates = false" />
 
+    <BaseModal
+      v-if="customRangeModalOpen"
+      :title="$t('timeTracking.custom_range_title')"
+      style="--modal-width: 420px"
+      @close="customRangeModalOpen = false"
+    >
+      <div class="form-group">
+        <span class="form-label" id="rpt-range-start-label">{{ $t('timeTracking.custom_range_start') }}</span>
+        <DatePicker :label="$t('timeTracking.custom_range_start')" v-model="customRangeForm.start" />
+      </div>
+      <div class="form-group">
+        <span class="form-label" id="rpt-range-end-label">{{ $t('timeTracking.custom_range_end') }}</span>
+        <DatePicker :label="$t('timeTracking.custom_range_end')" v-model="customRangeForm.end" />
+      </div>
+      <p v-if="customRangeError" class="field-error" role="alert">{{ customRangeError }}</p>
+      <template #footer>
+        <button class="btn" @click="customRangeModalOpen = false">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-primary" :disabled="!customRangeForm.start || !customRangeForm.end" @click="applyCustomRange">{{ $t('common.save') }}</button>
+      </template>
+    </BaseModal>
+
     <!-- ── Report ──────────────────────────────────────────────────────────── -->
     <div v-if="mode === 'report'" id="panel-report" role="tabpanel" aria-labelledby="tab-report" class="tt-report-outer">
       <div class="report-filters">
-        <select class="form-input fi-sm" v-model="rpt.period" @change="loadReport">
+        <select class="form-input fi-sm" v-model="rpt.period" @change="onReportPeriodChange">
           <option value="week">{{ $t('report.week') }}</option>
           <option value="month">{{ $t('report.month') }}</option>
           <option value="year">{{ $t('report.year') }}</option>
+          <option value="custom">{{ $t('report.period_custom') }}</option>
         </select>
-        <input type="number" class="form-input fi-sm fi-year"
+        <input v-if="rpt.period !== 'custom'" type="number" class="form-input fi-sm fi-year"
           v-model.number="rpt.year" min="2000" max="2100" @change="loadReport" />
         <select v-if="rpt.period === 'month'" class="form-input fi-sm"
           v-model.number="rpt.month" @change="loadReport">
@@ -772,6 +794,10 @@
             {{ $t('timeTracking.week') }} {{ w }}
           </option>
         </select>
+        <button v-if="rpt.period === 'custom'" type="button" class="btn btn-secondary fi-sm"
+          @click="openCustomRangeModal" :aria-label="$t('timeTracking.custom_range_pick')">
+          {{ customRangeButtonLabel }}
+        </button>
         <div class="rpt-filter-group">
           <label class="filter-label" for="rpt-group-by">{{ $t('timeTracking.group_by') }}<HelpIcon i18n-key="help.fields.report_group_by" :label="$t('timeTracking.group_by')" /></label>
           <select id="rpt-group-by" class="form-input fi-sm" v-model="rpt.group_by" @change="loadReport">
@@ -844,6 +870,10 @@
                 <input type="checkbox" v-model="pdfShowUndeclarable" />
                 {{ $t('timeTracking.pdf_show_undeclarable') }}
               </label>
+              <label v-if="report && report.undeclarable_minutes > 0" class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowUndeclarableRow)">
+                <input type="checkbox" v-model="pdfShowUndeclarableRow" />
+                {{ $t('timeTracking.pdf_show_undeclarable_row') }}
+              </label>
               <label v-if="report && report.total_distance > 0" class="pdf-option-item" role="menuitemcheckbox" :aria-checked="String(pdfShowDistance)">
                 <input type="checkbox" v-model="pdfShowDistance" />
                 {{ $t('timeTracking.pdf_show_distance') }}
@@ -887,6 +917,8 @@
               <col class="rpt-col-customer" />
               <col class="rpt-col-project" />
               <col class="rpt-col-activity" />
+              <col v-if="report.total_distance > 0" class="rpt-col-distance" />
+              <col v-if="report.undeclarable_minutes > 0" class="rpt-col-undeclarable" />
               <col class="rpt-col-time" />
             </colgroup>
             <thead>
@@ -895,6 +927,8 @@
                 <th>{{ $t('timeTracking.customer') }}</th>
                 <th>{{ $t('timeTracking.project') }}</th>
                 <th>{{ $t('timeTracking.activity') }}</th>
+                <th v-if="report.total_distance > 0" class="rpt-th-time">{{ $t('timeTracking.distance') }} ({{ distanceUnit }})</th>
+                <th v-if="report.undeclarable_minutes > 0" class="rpt-th-time">{{ $t('timeTracking.undeclarable') }}</th>
                 <th class="rpt-th-time">{{ $t('timeTracking.time') }}</th>
               </tr>
             </thead>
@@ -904,12 +938,14 @@
                 <td>{{ e.customer?.name || '—' }}</td>
                 <td>{{ e.project?.name || '—' }}</td>
                 <td>{{ e.description || '—' }}</td>
+                <td v-if="report.total_distance > 0" class="rpt-th-time">{{ e.distance ? fmtDistance(e.distance) : '' }}</td>
+                <td v-if="report.undeclarable_minutes > 0" class="rpt-th-time">{{ entryUndecl(e) > 0 ? fmtTime(entryUndecl(e)) : '' }}</td>
                 <td class="rpt-th-time">{{ fmtTime(reportEntryDeclarable(e)) }}</td>
               </tr>
             </tbody>
           </table>
           <div v-else class="rpt-grp-empty">{{ $t('timeTracking.no_entries_group') }}</div>
-          <div v-if="rpt.group_by === 'customer' && grp.undeclarable_minutes > 0" class="rpt-grp-undecl-line">
+          <div v-if="grp.undeclarable_minutes > 0" class="rpt-grp-undecl-line">
             <span>{{ $t('timeTracking.undeclarable') }}</span>
             <span>-{{ fmtTime(grp.undeclarable_minutes) }}</span>
           </div>
@@ -918,7 +954,7 @@
           <span>{{ $t('timeTracking.total') }}</span>
           <span>{{ fmtTime(report.undeclarable_minutes > 0 ? report.declarable_minutes : report.total_minutes) }}</span>
         </div>
-        <div v-if="rpt.group_by === 'customer' && report.undeclarable_minutes > 0" class="rpt-undeclarable">
+        <div v-if="report.undeclarable_minutes > 0" class="rpt-undeclarable">
           <span>{{ $t('timeTracking.undeclarable') }}</span>
           <span>-{{ fmtTime(report.undeclarable_minutes) }}</span>
         </div>
@@ -1240,6 +1276,7 @@ import { resolveAssetUrl, getServerUrl } from '@/api/serverConfig'
 import BaseModal from '@/components/common/BaseModal.vue'
 import HelpIcon from '@/components/common/HelpIcon.vue'
 import ContractRatesModal from '@/components/common/ContractRatesModal.vue'
+import DatePicker from '@/components/common/DatePicker.vue'
 const BoardReportPanel = defineAsyncComponent(() => import('@/components/reports/BoardReportPanel.vue'))
 import { useDateFormat } from '@/composables/useDateFormat'
 import {
@@ -1333,6 +1370,8 @@ const pdfShowPageNumbers = ref(localStorage.getItem('timeTracking.pdfShowPageNum
 watch(pdfShowPageNumbers, v => localStorage.setItem('timeTracking.pdfShowPageNumbers', v ? '1' : '0'))
 const pdfShowUndeclarable = ref(localStorage.getItem('timeTracking.pdfShowUndeclarable') !== '0')
 watch(pdfShowUndeclarable, v => localStorage.setItem('timeTracking.pdfShowUndeclarable', v ? '1' : '0'))
+const pdfShowUndeclarableRow = ref(localStorage.getItem('timeTracking.pdfShowUndeclarableRow') === '1')
+watch(pdfShowUndeclarableRow, v => localStorage.setItem('timeTracking.pdfShowUndeclarableRow', v ? '1' : '0'))
 const pdfShowDistance = ref(localStorage.getItem('timeTracking.pdfShowDistance') === '1')
 watch(pdfShowDistance, v => localStorage.setItem('timeTracking.pdfShowDistance', v ? '1' : '0'))
 const pdfOptionsOpen = ref(false)
@@ -4091,7 +4130,7 @@ async function copyPrevWeek() {
 
 // ── Report ────────────────────────────────────────────────────────────────
 const now  = new Date()
-const rpt  = ref({ period: 'month', year: now.getFullYear(), month: now.getMonth() + 1, week: currentISOWeek(), group_by: 'period' })
+const rpt  = ref({ period: 'month', year: now.getFullYear(), month: now.getMonth() + 1, week: currentISOWeek(), group_by: 'period', start_date: '', end_date: '' })
 const report       = ref(null)
 const loadingReport = ref(false)
 
@@ -4105,18 +4144,27 @@ function currentISOWeek() {
   return isoWeekNum(today, weekStartDay.value)
 }
 
+// Params shared by the report JSON load and both export endpoints.
+function reportBaseParams() {
+  const params = {
+    period:   rpt.value.period,
+    year:     rpt.value.year,
+    month:    rpt.value.month,
+    week:     rpt.value.week,
+    group_by: rpt.value.group_by,
+  }
+  if (rpt.value.period === 'custom') {
+    params.start_date = rpt.value.start_date
+    params.end_date = rpt.value.end_date
+  }
+  if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+  return params
+}
+
 async function loadReport() {
   loadingReport.value = true
   try {
-    const params = {
-      period:   rpt.value.period,
-      year:     rpt.value.year,
-      month:    rpt.value.month,
-      week:     rpt.value.week,
-      group_by: rpt.value.group_by,
-    }
-    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
-    const { data } = await timeEntriesApi.report(params)
+    const { data } = await timeEntriesApi.report(reportBaseParams())
     report.value = data
   } catch {
     ui.error(t('timeTracking.load_error'))
@@ -4124,6 +4172,45 @@ async function loadReport() {
     loadingReport.value = false
   }
 }
+
+// ── Custom date range picker ─────────────────────────────────────────────
+const customRangeModalOpen = ref(false)
+const customRangeForm = ref({ start: '', end: '' })
+const customRangeError = ref('')
+
+function onReportPeriodChange() {
+  if (rpt.value.period === 'custom') {
+    openCustomRangeModal()
+    return
+  }
+  loadReport()
+}
+
+function openCustomRangeModal() {
+  customRangeForm.value.start = rpt.value.start_date || ''
+  customRangeForm.value.end = rpt.value.end_date || ''
+  customRangeError.value = ''
+  customRangeModalOpen.value = true
+}
+
+function applyCustomRange() {
+  if (!customRangeForm.value.start || !customRangeForm.value.end) return
+  if (customRangeForm.value.end < customRangeForm.value.start) {
+    customRangeError.value = t('timeTracking.custom_range_invalid')
+    return
+  }
+  rpt.value.start_date = customRangeForm.value.start
+  rpt.value.end_date = customRangeForm.value.end
+  customRangeModalOpen.value = false
+  loadReport()
+}
+
+const customRangeButtonLabel = computed(() => {
+  if (rpt.value.start_date && rpt.value.end_date) {
+    return `${formatDate(rpt.value.start_date)} – ${formatDate(rpt.value.end_date)}`
+  }
+  return t('timeTracking.custom_range_pick')
+})
 
 // ── Distance unit ─────────────────────────────────────────────────────────
 const distanceUnit = computed(() => auth.user?.distance_unit || 'km')
@@ -4248,14 +4335,7 @@ async function exportGridPDF(gridType) {
 async function exportReportXLSX() {
   if (!report.value) return
   try {
-    const params = {
-      period:   rpt.value.period,
-      year:     rpt.value.year,
-      month:    rpt.value.month,
-      week:     rpt.value.week,
-      group_by: rpt.value.group_by,
-    }
-    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const params = reportBaseParams()
     params.distance_unit = distanceUnit.value
     const data = await timeEntriesApi.reportXLSX(params)
     const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
@@ -4270,21 +4350,15 @@ async function exportReportXLSX() {
 async function exportReportPDF() {
   if (!report.value) return
   try {
-    const params = {
-      period:   rpt.value.period,
-      year:     rpt.value.year,
-      month:    rpt.value.month,
-      week:     rpt.value.week,
-      group_by: rpt.value.group_by,
-      font:     pdfFont.value,
-      lang:     pdfLang.value,
-    }
-    if (canViewOtherUsers.value) params.user_id = selectedUserId.value
+    const params = reportBaseParams()
+    params.font = pdfFont.value
+    params.lang = pdfLang.value
     if (pdfShowAbbr.value) params.show_abbr = '1'
     if (pdfPageBreak.value && rpt.value.group_by === 'customer') params.page_break = 'customer'
     if (pdfShowCosts.value) params.show_costs = '1'
     params.show_page_numbers = pdfShowPageNumbers.value ? '1' : '0'
     params.show_undeclarable = pdfShowUndeclarable.value ? '1' : '0'
+    if (pdfShowUndeclarableRow.value) params.show_undeclarable_row = '1'
     if (pdfShowDistance.value) params.show_distance = '1'
     params.distance_unit = distanceUnit.value
     const data = await timeEntriesApi.reportPDF(params)
@@ -5048,6 +5122,12 @@ td.c-day:focus-within .cell-dist-toggle,
 }
 .standby-preset { margin-top: 4px; }
 
+.field-error {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-danger, #ef4444);
+}
+
 .date-input-row { display: flex; align-items: center; gap: 6px; }
 .date-input-row .form-input { flex: 1; }
 .picker-wrap { position: relative; display: inline-flex; flex-shrink: 0; cursor: pointer; }
@@ -5730,6 +5810,8 @@ td.c-day-holiday-cell.c-day-popup-open {
 .rpt-col-customer { width: 18%; }
 .rpt-col-project  { width: 18%; }
 .rpt-col-activity { /* fills remaining space */ }
+.rpt-col-distance { width: 90px; }
+.rpt-col-undeclarable { width: 90px; }
 .rpt-col-time     { width: 80px; }
 .rpt-table th,
 .rpt-table td {
