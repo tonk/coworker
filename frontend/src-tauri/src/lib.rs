@@ -61,6 +61,7 @@ struct ProfileInfo {
 
 const APP_ID: &str = "com.warmdesk.desktop";
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 fn platform_home() -> PathBuf {
     std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
