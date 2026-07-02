@@ -756,3 +756,7 @@ Create an application that has all these features and requirements
 - Add website release blog posts for v0.12.33 and v0.12.34
 - Sync time macro libraries per user on the server; separate run popout (bottom bar) from editor (top bar); macro i18n in all languages; fix row-comment and double-click-edit translations
 - Add website release blog post for v0.12.35
+- Add system tray icon to the Tauri desktop app with unread-notification badge (cards, tickets, chat), show/hide window menu item, and quit item; add close-to-tray behavior and Settings → Interface toggles for both
+- Add custom date range option to the time-tracking report period selector, opening a Start/End date picker instead of only week/month/year presets
+- Show distance and undeclarable (unbillable) time per row in the time-tracking report and its PDF export, in addition to group/grand totals; add matching PDF export options
+- Show the undeclarable/billable time breakdown for every report grouping, not only when grouped by customer

@@ -1,6 +1,6 @@
 = WarmDesk — User Guide
-:revnumber: v0.12.39
-:revdate: 2026-06-30
+:revnumber: v0.12.40
+:revdate: 2026-07-02
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -99,6 +99,12 @@ Profiles are stored in a `profiles.json` file in the platform config directory:
 |===
 
 Profile data (localStorage, login session) is stored under `<data dir>/profiles/<name>/` alongside the config directory.
+
+==== System tray
+
+The desktop app can show a system tray icon with an unread-notification badge (cards, tickets, chat).
+The tray menu lets you show/hide the main window or quit the app.
+Optionally, closing the window can be configured to minimise it to the tray instead of quitting — both are toggled in User Settings.
 
 '''
 
@@ -1139,6 +1145,63 @@ Projects and customers created by a *global admin* are labelled *Global (created
 Non-admin users see these global entries alongside their own, but cannot edit or delete them.
 Projects and customers you create yourself are private — only you see them unless another admin chooses to edit them.
 
+=== Report tab
+
+The *Report* tab shows your own logged time entries, filtered and grouped for review or export.
+
+[cols="1,3", options="header"]
+|===
+|Filter |Options
+
+|*Period*
+|Week / Month / Year / *Custom range* — Custom range opens a popup with Start date and End date pickers that respect your date format setting
+
+|*Group by*
+|Period, Customer, Project, or Customer + Project
+|===
+
+Click *Refresh* to reload the report after changing filters.
+
+==== Exporting
+
+Click *PDF export options* to expand the export settings before downloading:
+
+[cols="1,3", options="header"]
+|===
+|Option |Description
+
+|*PDF Font*
+|Font used in the PDF: Inter, Roboto, Open Sans, Source Code Pro, FreeSans, FreeSerif, or FreeMono
+
+|*PDF Language*
+|Language for all PDF labels. *Auto* follows your UI language.
+
+|*Show day of week before date*
+|Adds a weekday abbreviation column before the date
+
+|*New page per customer*
+|Only shown when grouping by Customer — each customer starts on a new page with the full document header repeated
+
+|*Show costs column*
+|Adds a per-entry cost column based on the project's contract rate
+
+|*Show page numbers*
+|Include page numbers in the PDF footer
+
+|*Show undeclarable time*
+|Include the undeclarable/billable breakdown — shown for every grouping, not only Customer
+
+|*Show undeclarable per row*
+|Show each entry's undeclarable minutes individually, not just group and grand totals
+
+|*Show distance*
+|Show each entry's logged distance individually, not just the total
+|===
+
+* *Export PDF* / *Export XLSX* — download the report using the selected filters and options.
+
+When grouped by customer, a group containing billable entries (time entries linked to a contract) shows a *Create Invoice* button — see the Invoices tab below.
+
 === Invoices tab
 
 The *Invoices* tab shows all invoices across every customer you have access to.
@@ -1362,6 +1425,12 @@ Open User Settings by clicking your display name in the header.
 
 |*Dashboard shows*
 |*Boards* (default) — open the dashboard on login; *Tickets* — redirect to your first starred customer's ticket list on login (requires helpdesk access)
+
+|*System tray* (desktop app only)
+|Show a tray icon with an unread-notification badge for cards, tickets, and chat; the tray menu can show/hide the window or quit the app
+
+|*Close to tray* (desktop app only)
+|Closing the window minimises it to the system tray instead of quitting
 
 |*Change password*
 |Enter your current password and a new one. Active password requirements (minimum length, character classes) are listed beneath the new-password field.

@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.12.40 — 2026-07-02
+
+### Added
+- **Desktop app — system tray** — the Tauri desktop app now shows a system tray icon with an unread-notification badge (cards, tickets, chat), a menu item to show/hide the window, and a quit item. Closing the window can be configured to minimise to tray instead of quitting. Both the tray icon and close-to-tray behavior are toggled from Settings → Interface.
+- **Time tracking report — custom date range** — the Report tab's period selector now includes a "Custom range" option that opens a Start date / End date picker (respecting the user's date format setting) instead of being limited to week/month/year presets.
+- **Time tracking report — distance and undeclarable time per row** — the on-screen report table and PDF export can now show distance and undeclarable minutes for each individual entry, not just group/grand totals; both are new PDF export options ("Show distance", "Show undeclarable per row").
+
+### Changed
+- **Time tracking report — undeclarable/billable breakdown for every grouping** — the undeclarable (unbillable) time breakdown, previously shown only when grouping by customer, now displays for every `group_by` mode (period, project, customer, customer+project) in both the on-screen report and the PDF export.
+- **Time tracking report — cleaner empty values** — per-row distance/undeclarable cells are left blank instead of showing "—" when there's nothing to report, and the undeclarable value no longer carries a redundant leading minus sign.
+- **`DatePicker`** — added an optional `label` prop so multiple date pickers shown together (e.g. a start/end date pair) get distinct accessible names.
+
 ## v0.12.39 — 2026-06-30
 
 ### Added

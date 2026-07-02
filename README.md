@@ -8,12 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.37)
+## Latest release (v0.12.40)
 
-- **Macro server sync** — libraries follow your account across browsers and devices; demo seed includes sample teaching/travel macros.
-- **Run vs edit** — bottom-bar *⚡ Macro* runs a macro on the current week (pick start day); top-bar *⚡* opens the editor.
-- **i18n** — macro UI and weekly-sheet row comments translated in all 12 languages.
-- **Website** — release blog post for v0.12.35.
+- **Desktop system tray** — tray icon with unread badge, close-to-tray, and a window show/hide toggle for the Tauri desktop app.
+- **Time tracking report — custom date range** — pick any Start/End date instead of only week/month/year presets.
+- **Time tracking report — per-row distance & undeclarable time** — see billable vs. unbillable time and mileage on every entry, not just totals.
 
 ## Experiment
 
@@ -366,8 +365,8 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Multiple assignees** — assign more than one user to a card
 - **Watchers** — subscribe to card activity
 - **Favourite people** — mark users for quick access
-- **Time reports** — generate a time overview filtered by period (all / year / month / week), project, and one or more assignees; export to server-generated PDF (selectable font and output language, company logo, per-project subtotal badges) or Excel (XLSX); time displayed as H:MM
-- **Time tracking PDF options** — the weekly timesheet export and the time-tracking report tab both offer the same PDF Font and PDF Language selects as the main report view; selections are persisted in localStorage; when the report is grouped by Customer a *New page per customer* checkbox appears — each customer is exported to its own page with the full document header repeated and no cross-customer grand total
+- **Time reports** — generate a time overview filtered by period (all / year / month / week / custom date range), project, and one or more assignees; export to server-generated PDF (selectable font and output language, company logo, per-project subtotal badges) or Excel (XLSX); time displayed as H:MM
+- **Time tracking PDF options** — the weekly timesheet export and the time-tracking report tab both offer the same PDF Font and PDF Language selects as the main report view; selections are persisted in localStorage; when the report is grouped by Customer a *New page per customer* checkbox appears — each customer is exported to its own page with the full document header repeated and no cross-customer grand total; optional per-row distance and undeclarable-time columns show billable vs. unbillable time and mileage on every entry, not just totals, and the undeclarable/billable breakdown is available for every grouping
 - **Company branding** — set a company name and separate light/dark logos (JPG, PNG, GIF, WebP, or SVG); light logo shown on the login screen's light theme, dark logo on dark theme; logos also appear on reports
 - **Configurable initial columns** — admin can define which columns are created when a new project is made (defaults to "Backlog")
 - **Ticket API** — create cards, add comments, and move cards via API key (for CI/CD pipelines and external integrations); API keys also work on all other authenticated endpoints
@@ -381,6 +380,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast
 - **App zoom** — `Ctrl +` / `Ctrl -` to zoom in/out; `Ctrl 0` to reset; level persisted across sessions
 - **Desktop app** — native Tauri app for Linux (AppImage, .deb, .rpm), macOS (DMG), and Windows (installer); server URL configurable from the login page at any time; supports `--help`, `--version`, `--maximized`, and runtime-only `--url=<http(s)://...>` CLI flags; **multi-profile** support (`--profile`, `--create-profile`, `--list-profiles`, `--set-default`, `--delete-profile`) for running separate isolated sessions against different servers
+- **System tray** — tray icon with an unread-notification badge (cards, tickets, chat), a menu item to show/hide the window, and optional close-to-tray behavior instead of quitting; toggled from Settings → Interface
 - **Project migration** — `warmdesk-export` and `warmdesk-import` standalone tools to migrate projects to/from Jira, Trello, OpenProject, or Ryver; column mapping via config file
 
 
