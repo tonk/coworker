@@ -1,0 +1,39 @@
+---
+title: "v0.12.41: Chart view for time-tracking reports"
+date: "2026-07-03"
+author: "Ton Kersten"
+description: "The time-tracking Report tab gains a Chart view with bar, pie, and stacked-bar charts, a declarable/total time basis switch, and a server-side chart PDF export."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` adds a chart view to the time-tracking report, so you can see the shape of your logged time at a glance instead of scanning table rows.
+
+== Table or Chart, your choice
+
+The Report tab now has a *Table* / *Chart* toggle right above the results.
+Switch to Chart and pick a chart type:
+
+* *Bar* — one bar per group, using whatever the report is currently grouped by (period, project, customer, or customer + project).
+* *Pie* — the same groups as a proportional breakdown.
+* *Stacked bar* — always broken down by period, regardless of the *Group by* filter, so you can see how each project or customer contributed to every week or month.
+
+A *Time basis* switch lets you choose whether the chart plots *Declarable* time (undeclarable minutes subtracted, matching the on-screen totals) or *Total* time (the raw logged minutes).
+
+== Export the chart, not just the table
+
+Click *Export chart PDF* to download the currently displayed chart — bar, pie, or stacked bar, with whichever time basis is selected — as a standalone PDF, generated server-side alongside the existing table PDF and XLSX exports.
+
+== Under the hood
+
+Date-range and period resolution for the report was previously duplicated across the JSON report endpoint and each export format. It now goes through a single `resolveReportEntries()` function shared by the JSON report, the table PDF/XLSX exports, and the new chart PDF export — one less place for the date math to drift.
+
+The custom date range picker also got a small polish pass: the Start date and End date pickers now sit side by side instead of stacked.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.

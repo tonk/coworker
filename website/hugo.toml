@@ -18,12 +18,12 @@ enableEmoji = true
   warmdesk_version = "v0.12.41"
   release_date     = "2026-07-03"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.12.40/"
+  release_blog     = "blog/release-0.12.41/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Custom report ranges** — pick any Start/End date for a time-tracking report instead of only week/month/year.",
-    "**Per-row billable time** — see distance and undeclarable minutes on every report entry, for every grouping.",
-    "**Desktop system tray** — tray icon with unread badge, close-to-tray, and a window show/hide toggle.",
+    "**Chart view for reports** — bar, pie, and stacked-bar charts for time-tracking reports, with a declarable/total basis switch.",
+    "**Chart PDF export** — download the currently displayed chart as a server-generated PDF.",
+    "**Tidier custom range picker** — Start/End date pickers now sit side by side.",
   ]
 
 [markup]
