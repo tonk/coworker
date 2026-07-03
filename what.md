@@ -760,3 +760,7 @@ Create an application that has all these features and requirements
 - Add custom date range option to the time-tracking report period selector, opening a Start/End date picker instead of only week/month/year presets
 - Show distance and undeclarable (unbillable) time per row in the time-tracking report and its PDF export, in addition to group/grand totals; add matching PDF export options
 - Show the undeclarable/billable time breakdown for every report grouping, not only when grouped by customer
+- Add Table/Chart toggle to the time-tracking report with bar, pie, and stacked-bar chart types, a declarable/total time basis switch, and a server-side chart PDF export
+- Extract report date-range resolution into a single resolveReportEntries() function shared by the JSON, table PDF/XLSX, and chart PDF exports
+- Place the custom date range modal's Start/End date pickers side by side instead of stacked
+- Fix dead-code warning on Windows builds for a helper only used on Linux/macOS

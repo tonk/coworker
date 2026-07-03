@@ -1,6 +1,6 @@
 = WarmDesk — User Guide
-:revnumber: v0.12.40
-:revdate: 2026-07-02
+:revnumber: v0.12.41
+:revdate: 2026-07-03
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -1161,6 +1161,23 @@ The *Report* tab shows your own logged time entries, filtered and grouped for re
 |===
 
 Click *Refresh* to reload the report after changing filters.
+
+==== Table / Chart view
+
+Use the *Table* / *Chart* toggle above the report to switch views.
+
+[cols="1,3", options="header"]
+|===
+|Option |Description
+
+|*Chart type*
+|Bar, Pie, or Stacked bar
+
+|*Time basis*
+|Declarable (undeclarable time subtracted) or Total (not subtracted)
+|===
+
+Stacked bar charts always break the data down by period, regardless of the *Group by* filter. Click *Export chart PDF* to download the currently displayed chart as a PDF.
 
 ==== Exporting
 

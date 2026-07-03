@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.12.41 — 2026-07-03
+
+### Added
+- **Time tracking report — chart view** — the Report tab now has a Table/Chart toggle. Chart view supports bar, pie, and stacked-bar chart types, a declarable/total time basis switch, and can be exported server-side as a PDF via a new "Export chart PDF" option.
+
+### Fixed
+- **Desktop app — Windows build warning** — silenced a dead-code warning on Windows builds for a helper function only used on Linux/macOS.
+
+### Changed
+- **Time tracking report — shared date-range resolution** — period/date-range resolution for the JSON report, table PDF/XLSX exports, and the new chart PDF export now goes through a single `resolveReportEntries()` function instead of duplicating the date math per export.
+- **Time tracking report — custom range modal** — the Start date / End date pickers are now shown side by side instead of stacked.
+
 ## v0.12.40 — 2026-07-02
 
 ### Added
