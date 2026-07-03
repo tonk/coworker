@@ -369,6 +369,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.DELETE("/time-entries/:id", middleware.RequireFeature("time_tracking_enabled"), handlers.DeleteTimeEntry)
 		protected.GET("/time-entries/report", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryReport)
 		protected.GET("/time-entries/report/pdf", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryReportPDF)
+		protected.GET("/time-entries/report/chart-pdf", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryReportChartPDF)
 		protected.GET("/time-entries/report/xlsx", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntryReportXLSX)
 		protected.GET("/time-entries/sheet/xlsx", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeEntrySheetXLSX)
 		protected.GET("/time-entries/grid/pdf", middleware.RequireFeature("time_tracking_enabled"), handlers.GetTimeSheetGridPDF)

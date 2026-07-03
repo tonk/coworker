@@ -300,10 +300,14 @@ type TimeEntryReportResponse struct {
 	CompanyLogo         string           `json:"company_logo"`
 }
 
-// assembleTimeEntryReport builds the report data from query parameters.
+// resolveReportEntries resolves the requested period into a [from, to) date
+// range and fetches the matching entries. Shared by the JSON report, the
+// table PDF/XLSX exports, and the chart PDF export so the date-range math
+// lives in exactly one place.
 // targetUserID == 0 means all users (admin/timetracking only).
-// Returns (report, httpStatus, errMsg) — status is 0 on success.
-func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryReportResponse, int, string) {
+// Returns (period, from, to, periodLabel, entries, httpStatus, errMsg) —
+// status is 0 on success.
+func resolveReportEntries(c *gin.Context, targetUserID uint) (string, time.Time, time.Time, string, []models.TimeEntry, int, string) {
 	now := time.Now()
 
 	period := c.DefaultQuery("period", "month")
@@ -369,7 +373,19 @@ func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryRepor
 		q = q.Where("user_id = ?", targetUserID)
 	}
 	if err := q.Find(&entries).Error; err != nil {
-		return nil, http.StatusInternalServerError, "internal error"
+		return "", time.Time{}, time.Time{}, "", nil, http.StatusInternalServerError, "internal error"
+	}
+
+	return period, from, to, periodLabel, entries, 0, ""
+}
+
+// assembleTimeEntryReport builds the report data from query parameters.
+// targetUserID == 0 means all users (admin/timetracking only).
+// Returns (report, httpStatus, errMsg) — status is 0 on success.
+func assembleTimeEntryReport(c *gin.Context, targetUserID uint) (*TimeEntryReportResponse, int, string) {
+	period, from, to, periodLabel, entries, status, msg := resolveReportEntries(c, targetUserID)
+	if status != 0 {
+		return nil, status, msg
 	}
 
 	groupBy := c.DefaultQuery("group_by", "period")
@@ -451,13 +467,22 @@ func GetTimeEntryReport(c *gin.Context) {
 }
 
 func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) []timeEntryGroup {
-	type key struct {
-		label string
-		order int
-	}
-
 	buckets := map[string]*timeEntryGroup{}
 	var order []string
+
+	addBucket := func(l string) {
+		if _, ok := buckets[l]; !ok {
+			buckets[l] = &timeEntryGroup{Label: l}
+			order = append(order, l)
+		}
+	}
+
+	weekLabel := func(d time.Time) string {
+		y, w := d.ISOWeek()
+		wStart := isoWeekStart(y, w)
+		wEnd := wStart.AddDate(0, 0, 6)
+		return "Week " + strconv.Itoa(w) + " (" + wStart.Format("Jan 2") + "–" + wEnd.Format("Jan 2") + ")"
+	}
 
 	label := func(e models.TimeEntry) string {
 		switch period {
@@ -466,19 +491,32 @@ func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) 
 		case "year":
 			return e.Date.Format("January 2006")
 		default: // month
-			y, w := e.Date.ISOWeek()
-			wStart := isoWeekStart(y, w)
-			wEnd := wStart.AddDate(0, 0, 6)
-			return "Week " + strconv.Itoa(w) + " (" + wStart.Format("Jan 2") + "–" + wEnd.Format("Jan 2") + ")"
+			return weekLabel(e.Date)
+		}
+	}
+
+	// Pre-populate every bucket in the range, in chronological order, so the
+	// report always shows the full period (e.g. every week of a month, even
+	// weeks with no entries) and bucket order never depends on which periods
+	// happen to have data.
+	switch period {
+	case "year":
+		for m := from; m.Before(to); m = m.AddDate(0, 1, 0) {
+			addBucket(m.Format("January 2006"))
+		}
+	case "week":
+		for d := from; d.Before(to); d = d.AddDate(0, 0, 1) {
+			addBucket(d.Format("Monday, January 2"))
+		}
+	default: // month
+		for d := from; d.Before(to); d = d.AddDate(0, 0, 1) {
+			addBucket(weekLabel(d))
 		}
 	}
 
 	for i := range entries {
 		l := label(entries[i])
-		if _, ok := buckets[l]; !ok {
-			buckets[l] = &timeEntryGroup{Label: l}
-			order = append(order, l)
-		}
+		addBucket(l)
 		b := buckets[l]
 		b.Entries = append(b.Entries, entries[i])
 		b.TotalMinutes += entries[i].Minutes
@@ -488,39 +526,8 @@ func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) 
 		}
 	}
 
-	// Fill empty buckets for periods with no entries so the report always
-	// shows the full range (e.g. all 12 months for a year report).
-	switch period {
-	case "year":
-		for m := from; m.Before(to); m = m.AddDate(0, 1, 0) {
-			l := m.Format("January 2006")
-			if _, ok := buckets[l]; !ok {
-				buckets[l] = &timeEntryGroup{Label: l}
-				order = append(order, l)
-			}
-		}
-	case "week":
-		for d := from; d.Before(to); d = d.AddDate(0, 0, 1) {
-			l := d.Format("Monday, January 2")
-			if _, ok := buckets[l]; !ok {
-				buckets[l] = &timeEntryGroup{Label: l}
-				order = append(order, l)
-			}
-		}
-	}
-
-	// Deduplicate order list while preserving first-seen ordering.
-	seen := map[string]bool{}
-	var deduped []string
+	result := make([]timeEntryGroup, 0, len(order))
 	for _, l := range order {
-		if !seen[l] {
-			seen[l] = true
-			deduped = append(deduped, l)
-		}
-	}
-
-	result := make([]timeEntryGroup, 0, len(deduped))
-	for _, l := range deduped {
 		b := buckets[l]
 		if b.Entries == nil {
 			b.Entries = []models.TimeEntry{}

@@ -7,6 +7,7 @@ export const timeEntriesApi = {
   remove: (id) => client.delete(`/time-entries/${id}`),
   report: (params) => client.get('/time-entries/report', { params }),
   reportPDF: (params) => fetchBinary('/time-entries/report/pdf', params),
+  reportChartPDF: (params) => fetchBinary('/time-entries/report/chart-pdf', params),
   reportXLSX: (params) => fetchBinary('/time-entries/report/xlsx', params),
   sheetXLSX: (params) => fetchBinary('/time-entries/sheet/xlsx', params),
   gridPDF: (params) => fetchBinary('/time-entries/grid/pdf', params),

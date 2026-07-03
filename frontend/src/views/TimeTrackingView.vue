@@ -758,13 +758,15 @@
       style="--modal-width: 420px"
       @close="customRangeModalOpen = false"
     >
-      <div class="form-group">
-        <span class="form-label" id="rpt-range-start-label">{{ $t('timeTracking.custom_range_start') }}</span>
-        <DatePicker :label="$t('timeTracking.custom_range_start')" v-model="customRangeForm.start" />
-      </div>
-      <div class="form-group">
-        <span class="form-label" id="rpt-range-end-label">{{ $t('timeTracking.custom_range_end') }}</span>
-        <DatePicker :label="$t('timeTracking.custom_range_end')" v-model="customRangeForm.end" />
+      <div class="form-row custom-range-row">
+        <div class="form-group">
+          <span class="form-label" id="rpt-range-start-label">{{ $t('timeTracking.custom_range_start') }}</span>
+          <DatePicker :label="$t('timeTracking.custom_range_start')" v-model="customRangeForm.start" />
+        </div>
+        <div class="form-group">
+          <span class="form-label" id="rpt-range-end-label">{{ $t('timeTracking.custom_range_end') }}</span>
+          <DatePicker :label="$t('timeTracking.custom_range_end')" v-model="customRangeForm.end" />
+        </div>
       </div>
       <p v-if="customRangeError" class="field-error" role="alert">{{ customRangeError }}</p>
       <template #footer>
@@ -808,7 +810,36 @@
           </select>
         </div>
         <button class="btn btn-secondary" @click="loadReport">{{ $t('timeTracking.refresh') }}</button>
-        <div class="tt-export-group" v-if="report && report.total_minutes > 0">
+        <div class="rpt-view-toggle" role="group" :aria-label="$t('timeTracking.view_table') + ' / ' + $t('timeTracking.view_chart')">
+          <button type="button" class="rpt-view-btn" :class="{ active: reportViewMode === 'table' }"
+            role="radio" :aria-checked="String(reportViewMode === 'table')" @click="reportViewMode = 'table'">
+            📋 {{ $t('timeTracking.view_table') }}
+          </button>
+          <button type="button" class="rpt-view-btn" :class="{ active: reportViewMode === 'chart' }"
+            role="radio" :aria-checked="String(reportViewMode === 'chart')" @click="reportViewMode = 'chart'">
+            📊 {{ $t('timeTracking.view_chart') }}
+          </button>
+        </div>
+        <div class="rpt-filter-group" v-if="reportViewMode === 'chart'">
+          <label class="filter-label" for="rpt-chart-type">{{ $t('timeTracking.chart_type') }}</label>
+          <select id="rpt-chart-type" class="form-input fi-sm" v-model="reportChartType">
+            <option value="bar">{{ $t('timeTracking.chart_bar') }}</option>
+            <option value="pie">{{ $t('timeTracking.chart_pie') }}</option>
+            <option value="stacked">{{ $t('timeTracking.chart_stacked_bar') }}</option>
+          </select>
+        </div>
+        <div class="rpt-filter-group" v-if="reportViewMode === 'chart'">
+          <label class="filter-label" for="rpt-chart-basis">{{ $t('timeTracking.time_basis') }}</label>
+          <select id="rpt-chart-basis" class="form-input fi-sm" v-model="reportChartBasis">
+            <option value="declarable">{{ $t('timeTracking.time_basis_declarable') }}</option>
+            <option value="total">{{ $t('timeTracking.time_basis_total') }}</option>
+          </select>
+        </div>
+        <div class="tt-export-group" v-if="report && report.total_minutes > 0 && reportViewMode === 'chart'">
+          <button class="btn btn-secondary" @click="exportReportChartPDF">{{ $t('timeTracking.export_pdf') }}</button>
+          <HelpIcon i18n-key="help.fields.report_export" :label="$t('timeTracking.export_pdf')" />
+        </div>
+        <div class="tt-export-group" v-if="report && report.total_minutes > 0 && reportViewMode === 'table'">
           <div class="pdf-options-wrapper" ref="pdfOptionsRef">
             <button
               class="pdf-options-btn"
@@ -901,54 +932,91 @@
           <div class="rpt-header-right"></div>
         </div>
         <div v-if="report.groups.length === 0" class="rpt-empty">{{ $t('timeTracking.no_entries') }}</div>
-        <div v-for="grp in report.groups" :key="grp.label" class="rpt-group">
-          <div class="rpt-group-hd">
-            <span>{{ grp.label }}</span>
-            <span class="rpt-grp-total">{{ fmtTime(grp.declarable_minutes) }}</span>
-            <button
-              v-if="rpt.group_by === 'customer' && grp.entries.some(e => e.contract_id)"
-              class="btn btn-sm rpt-invoice-btn"
-              @click="openCreateInvoiceFromGroup(grp)"
-            >{{ $t('timeTracking.create_invoice') }}</button>
+        <template v-else-if="reportViewMode === 'table'">
+          <div v-for="grp in report.groups" :key="grp.label" class="rpt-group">
+            <div class="rpt-group-hd">
+              <span>{{ grp.label }}</span>
+              <span class="rpt-grp-total">{{ fmtTime(grp.declarable_minutes) }}</span>
+              <button
+                v-if="rpt.group_by === 'customer' && grp.entries.some(e => e.contract_id)"
+                class="btn btn-sm rpt-invoice-btn"
+                @click="openCreateInvoiceFromGroup(grp)"
+              >{{ $t('timeTracking.create_invoice') }}</button>
+            </div>
+            <table v-if="grp.entries.length" class="rpt-table">
+              <colgroup>
+                <col class="rpt-col-date" />
+                <col class="rpt-col-customer" />
+                <col class="rpt-col-project" />
+                <col class="rpt-col-activity" />
+                <col v-if="report.total_distance > 0" class="rpt-col-distance" />
+                <col v-if="report.undeclarable_minutes > 0" class="rpt-col-undeclarable" />
+                <col class="rpt-col-time" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>{{ $t('timeTracking.date') }}</th>
+                  <th>{{ $t('timeTracking.customer') }}</th>
+                  <th>{{ $t('timeTracking.project') }}</th>
+                  <th>{{ $t('timeTracking.activity') }}</th>
+                  <th v-if="report.total_distance > 0" class="rpt-th-time">{{ $t('timeTracking.distance') }} ({{ distanceUnit }})</th>
+                  <th v-if="report.undeclarable_minutes > 0" class="rpt-th-time">{{ $t('timeTracking.undeclarable') }}</th>
+                  <th class="rpt-th-time">{{ $t('timeTracking.time') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="e in grp.entries" :key="e.id">
+                  <td>{{ formatDate(e.date) }}</td>
+                  <td>{{ e.customer?.name || '—' }}</td>
+                  <td>{{ e.project?.name || '—' }}</td>
+                  <td>{{ e.description || '—' }}</td>
+                  <td v-if="report.total_distance > 0" class="rpt-th-time">{{ e.distance ? fmtDistance(e.distance) : '' }}</td>
+                  <td v-if="report.undeclarable_minutes > 0" class="rpt-th-time">{{ entryUndecl(e) > 0 ? fmtTime(entryUndecl(e)) : '' }}</td>
+                  <td class="rpt-th-time">{{ fmtTime(reportEntryDeclarable(e)) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-else class="rpt-grp-empty">{{ $t('timeTracking.no_entries_group') }}</div>
+            <div v-if="grp.undeclarable_minutes > 0" class="rpt-grp-undecl-line">
+              <span>{{ $t('timeTracking.undeclarable') }}</span>
+              <span>-{{ fmtTime(grp.undeclarable_minutes) }}</span>
+            </div>
           </div>
-          <table v-if="grp.entries.length" class="rpt-table">
-            <colgroup>
-              <col class="rpt-col-date" />
-              <col class="rpt-col-customer" />
-              <col class="rpt-col-project" />
-              <col class="rpt-col-activity" />
-              <col v-if="report.total_distance > 0" class="rpt-col-distance" />
-              <col v-if="report.undeclarable_minutes > 0" class="rpt-col-undeclarable" />
-              <col class="rpt-col-time" />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>{{ $t('timeTracking.date') }}</th>
-                <th>{{ $t('timeTracking.customer') }}</th>
-                <th>{{ $t('timeTracking.project') }}</th>
-                <th>{{ $t('timeTracking.activity') }}</th>
-                <th v-if="report.total_distance > 0" class="rpt-th-time">{{ $t('timeTracking.distance') }} ({{ distanceUnit }})</th>
-                <th v-if="report.undeclarable_minutes > 0" class="rpt-th-time">{{ $t('timeTracking.undeclarable') }}</th>
-                <th class="rpt-th-time">{{ $t('timeTracking.time') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="e in grp.entries" :key="e.id">
-                <td>{{ formatDate(e.date) }}</td>
-                <td>{{ e.customer?.name || '—' }}</td>
-                <td>{{ e.project?.name || '—' }}</td>
-                <td>{{ e.description || '—' }}</td>
-                <td v-if="report.total_distance > 0" class="rpt-th-time">{{ e.distance ? fmtDistance(e.distance) : '' }}</td>
-                <td v-if="report.undeclarable_minutes > 0" class="rpt-th-time">{{ entryUndecl(e) > 0 ? fmtTime(entryUndecl(e)) : '' }}</td>
-                <td class="rpt-th-time">{{ fmtTime(reportEntryDeclarable(e)) }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div v-else class="rpt-grp-empty">{{ $t('timeTracking.no_entries_group') }}</div>
-          <div v-if="grp.undeclarable_minutes > 0" class="rpt-grp-undecl-line">
-            <span>{{ $t('timeTracking.undeclarable') }}</span>
-            <span>-{{ fmtTime(grp.undeclarable_minutes) }}</span>
-          </div>
+        </template>
+        <div v-else class="rpt-chart-panel">
+          <h3 class="rpt-chart-title">{{ $t('timeTracking.chart_by_activity') }}</h3>
+          <div v-if="reportChartType === 'stacked' && loadingReportChartPeriod" class="tt-loading">{{ $t('common.loading') }}</div>
+          <div v-else-if="!reportChartHasData" class="rpt-chart-empty">{{ $t('timeTracking.chart_no_data') }}</div>
+          <template v-else>
+            <div class="rpt-chart-wrap" :class="{ 'rpt-chart-wrap-pie': reportChartType === 'pie' }">
+              <canvas ref="reportChartCanvas"></canvas>
+            </div>
+            <table v-if="reportChartType !== 'stacked'" class="sr-only">
+              <caption>{{ $t('timeTracking.chart_by_activity') }}</caption>
+              <thead><tr><th>{{ $t('timeTracking.activity') }}</th><th>{{ $t('timeTracking.time') }}</th></tr></thead>
+              <tbody>
+                <tr v-for="a in reportActivityBreakdown" :key="a.label">
+                  <td>{{ a.label }}</td>
+                  <td>{{ fmtTime(a.minutes) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <table v-else class="sr-only">
+              <caption>{{ $t('timeTracking.chart_by_activity') }}</caption>
+              <thead>
+                <tr>
+                  <th>{{ $t('report.period') }}</th>
+                  <th v-for="s in reportStackedBreakdown.series" :key="s.label">{{ s.label }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(p, i) in reportStackedBreakdown.periods" :key="p">
+                  <td>{{ p }}</td>
+                  <td v-for="s in reportStackedBreakdown.series" :key="s.label">{{ fmtTime(Math.round(s.data[i] * 60)) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
         </div>
         <div class="rpt-grand-total">
           <span>{{ $t('timeTracking.total') }}</span>
@@ -1265,6 +1333,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted, defineAsyncComp
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Sortable from 'sortablejs'
+import { Chart, registerables } from 'chart.js'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { useSystemStore } from '@/stores/system'
@@ -1287,6 +1356,8 @@ import {
 import { entryUndeclMins, rowDeclarableMins } from '@/utils/timeTrackingUndecl'
 import { slotCoverageOnWeekday, slotDayTypeMatches } from '@/utils/contractSlotPreview'
 import { parseMacroTimeInput, parseTimeNotationMinutes } from '@/utils/timeMacroInput'
+
+Chart.register(...registerables)
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -4171,7 +4242,217 @@ async function loadReport() {
   } finally {
     loadingReport.value = false
   }
+  if (reportViewMode.value === 'chart') {
+    if (reportChartType.value === 'stacked') await ensureReportChartPeriodData()
+    await nextTick(); renderReportChart()
+  }
 }
+
+// ── Report chart ─────────────────────────────────────────────────────────
+const reportViewMode  = ref('table') // 'table' | 'chart'
+const reportChartType = ref('bar')   // 'bar' | 'pie' | 'stacked'
+const reportChartBasis = ref('declarable') // 'declarable' | 'total'
+const reportChartCanvas = ref(null)
+let reportChartInstance = null
+
+// The stacked-by-time chart always needs entries bucketed by period (year →
+// month, month → week, week → day — see backend's buildGroups). When the
+// table itself is grouped by period this is just `report`; otherwise it's
+// fetched separately so the stacked chart doesn't depend on the table's own
+// "Group by" choice.
+const reportChartPeriodReport = ref(null)
+const loadingReportChartPeriod = ref(false)
+
+async function ensureReportChartPeriodData() {
+  if (rpt.value.group_by === 'period') { reportChartPeriodReport.value = null; return }
+  loadingReportChartPeriod.value = true
+  try {
+    const { data } = await timeEntriesApi.report({ ...reportBaseParams(), group_by: 'period' })
+    reportChartPeriodReport.value = data
+  } catch {
+    reportChartPeriodReport.value = null
+    ui.error(t('timeTracking.load_error'))
+  } finally {
+    loadingReportChartPeriod.value = false
+  }
+}
+
+const REPORT_CHART_MAX_SLICES = 7
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
+// Aggregates every entry across all report groups by activity (description),
+// independent of the report's own group_by (period/customer/project), since
+// the chart's job is a single breakdown "by activity" regardless of grouping.
+const reportActivityBreakdown = computed(() => {
+  if (!report.value) return []
+  const totals = new Map()
+  for (const grp of report.value.groups) {
+    for (const e of grp.entries) {
+      const label = e.description?.trim() || t('timeTracking.no_activity')
+      const minutes = reportChartBasis.value === 'total' ? e.minutes : reportEntryDeclarable(e)
+      totals.set(label, (totals.get(label) || 0) + minutes)
+    }
+  }
+  const sorted = Array.from(totals, ([label, minutes]) => ({ label, minutes }))
+    .filter(a => a.minutes > 0)
+    .sort((a, b) => b.minutes - a.minutes)
+  if (sorted.length <= REPORT_CHART_MAX_SLICES + 1) return sorted
+  const top = sorted.slice(0, REPORT_CHART_MAX_SLICES)
+  const otherMinutes = sorted.slice(REPORT_CHART_MAX_SLICES).reduce((s, a) => s + a.minutes, 0)
+  top.push({ label: t('timeTracking.chart_other'), minutes: otherMinutes })
+  return top
+})
+
+function reportChartColorAt(index, isOther) {
+  return isOther ? cssVar('--chart-cat-other') : cssVar(`--chart-cat-${(index % REPORT_CHART_MAX_SLICES) + 1}`)
+}
+
+function reportChartColors(data) {
+  return data.map((a, i) => reportChartColorAt(i, a.label === t('timeTracking.chart_other')))
+}
+
+// Same "top N + Other" breakdown as reportActivityBreakdown, but one series
+// per period so activity totals can be stacked over time (year → month,
+// month → week, week → day — whatever the backend bucketed for period
+// grouping). Reads from the table's own `report` when it's already grouped
+// by period, otherwise from the separately-fetched `reportChartPeriodReport`
+// so the stacked chart works regardless of the table's "Group by" setting.
+const reportStackedBreakdown = computed(() => {
+  const source = rpt.value.group_by === 'period' ? report.value : reportChartPeriodReport.value
+  if (!source) return null
+  const periods = source.groups.map(g => g.label)
+  const grandTotals = new Map()
+  const perPeriodTotals = source.groups.map(grp => {
+    const totals = new Map()
+    for (const e of grp.entries) {
+      const label = e.description?.trim() || t('timeTracking.no_activity')
+      const minutes = reportChartBasis.value === 'total' ? e.minutes : reportEntryDeclarable(e)
+      if (minutes <= 0) continue
+      totals.set(label, (totals.get(label) || 0) + minutes)
+      grandTotals.set(label, (grandTotals.get(label) || 0) + minutes)
+    }
+    return totals
+  })
+  const ranked = Array.from(grandTotals, ([label, minutes]) => ({ label, minutes }))
+    .sort((a, b) => b.minutes - a.minutes)
+  const topLabels = new Set(ranked.slice(0, REPORT_CHART_MAX_SLICES).map(a => a.label))
+  const otherLabel = t('timeTracking.chart_other')
+  const seriesLabels = ranked.length > REPORT_CHART_MAX_SLICES
+    ? [...topLabels, otherLabel]
+    : [...topLabels]
+  const series = seriesLabels.map(label => ({
+    label,
+    isOther: label === otherLabel,
+    data: perPeriodTotals.map(totals => {
+      if (label === otherLabel) {
+        let sum = 0
+        for (const [actLabel, minutes] of totals) {
+          if (!topLabels.has(actLabel)) sum += minutes
+        }
+        return sum / 60
+      }
+      return (totals.get(label) || 0) / 60
+    }),
+  }))
+  return { periods, series }
+})
+
+const reportChartHasData = computed(() => {
+  if (reportChartType.value === 'stacked') {
+    const s = reportStackedBreakdown.value
+    return !!s && s.periods.length > 0 && s.series.length > 0
+  }
+  return reportActivityBreakdown.value.length > 0
+})
+
+function renderReportChart() {
+  if (!reportChartCanvas.value) return
+  reportChartInstance?.destroy()
+  reportChartInstance = null
+  const textColor = cssVar('--color-text')
+
+  if (reportChartType.value === 'stacked') {
+    const stacked = reportStackedBreakdown.value
+    if (!stacked || !stacked.series.length) return
+    const colors = stacked.series.map((s, i) => reportChartColorAt(i, s.isOther))
+    reportChartInstance = new Chart(reportChartCanvas.value, {
+      type: 'bar',
+      data: {
+        labels: stacked.periods,
+        datasets: stacked.series.map((s, i) => ({
+          label: s.label,
+          data: s.data,
+          backgroundColor: colors[i] + 'cc',
+          borderColor: colors[i],
+          borderWidth: 1,
+        })),
+      },
+      options: {
+        responsive: true,
+        color: textColor,
+        plugins: {
+          legend: { display: true, position: 'top', labels: { color: textColor } },
+          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${fmtTime(Math.round(ctx.parsed.y * 60))}` } },
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: textColor }, grid: { display: false } },
+          y: { stacked: true, beginAtZero: true, ticks: { color: textColor }, grid: { color: cssVar('--color-border') } },
+        },
+      },
+    })
+    return
+  }
+
+  const data = reportActivityBreakdown.value
+  if (!data.length) return
+  const colors = reportChartColors(data)
+  const isPie = reportChartType.value === 'pie'
+  reportChartInstance = new Chart(reportChartCanvas.value, {
+    type: isPie ? 'pie' : 'bar',
+    data: {
+      labels: data.map(a => a.label),
+      datasets: [{
+        data: data.map(a => a.minutes / 60),
+        backgroundColor: isPie ? colors : colors.map(c => c + 'cc'),
+        borderColor: isPie ? cssVar('--color-surface') : colors,
+        borderWidth: isPie ? 2 : 1,
+      }],
+    },
+    options: {
+      responsive: true,
+      color: textColor,
+      plugins: {
+        legend: { display: isPie, position: 'right', labels: { color: textColor } },
+        tooltip: { callbacks: { label: ctx => {
+          const hours = isPie ? ctx.parsed : ctx.parsed.y
+          return `${ctx.label}: ${fmtTime(Math.round(hours * 60))}`
+        } } },
+      },
+      scales: isPie ? undefined : {
+        x: { ticks: { color: textColor }, grid: { display: false } },
+        y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: cssVar('--color-border') } },
+      },
+    },
+  })
+}
+
+watch(reportChartType, async (type) => {
+  if (type === 'stacked') await ensureReportChartPeriodData()
+  await nextTick(); renderReportChart()
+})
+
+watch(reportChartBasis, async () => {
+  await nextTick(); renderReportChart()
+})
+
+watch(reportViewMode, async (mode) => {
+  if (mode !== 'chart') return
+  if (reportChartType.value === 'stacked') await ensureReportChartPeriodData()
+  await nextTick(); renderReportChart()
+})
 
 // ── Custom date range picker ─────────────────────────────────────────────
 const customRangeModalOpen = ref(false)
@@ -4366,6 +4647,24 @@ async function exportReportPDF() {
     await triggerDownload(data, `time-tracking-${slug}.pdf`, 'application/pdf')
   } catch (e) {
     console.error('[export] report PDF failed:', e)
+    ui.error(String(e?.message || e))
+  }
+}
+
+// Report tab → Chart PDF: renders the current chart type server-side.
+async function exportReportChartPDF() {
+  if (!report.value) return
+  try {
+    const params = reportBaseParams()
+    params.chart_type = reportChartType.value
+    params.chart_basis = reportChartBasis.value
+    params.font = pdfFont.value
+    params.lang = pdfLang.value
+    const data = await timeEntriesApi.reportChartPDF(params)
+    const slug = report.value.period_label.replace(/\s+/g, '-').toLowerCase()
+    await triggerDownload(data, `time-tracking-chart-${slug}.pdf`, 'application/pdf')
+  } catch (e) {
+    console.error('[export] report chart PDF failed:', e)
     ui.error(String(e?.message || e))
   }
 }
@@ -4587,6 +4886,8 @@ function initRowSortable() {
   })
 }
 onUnmounted(() => {
+  reportChartInstance?.destroy()
+  reportChartInstance = null
   rowSortable?.destroy()
   rowSortable = null
   window.removeEventListener('keydown', onWindowUndoCapture, true)
@@ -5753,6 +6054,36 @@ td.c-day-holiday-cell.c-day-popup-open {
 .fi-sm { min-width: 80px; width: auto; }
 .fi-year { width: 80px; }
 .rpt-filter-group { display: flex; flex-direction: column; gap: 4px; }
+
+.rpt-view-toggle { display: flex; border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
+.rpt-view-btn {
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  padding: 0 12px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.rpt-view-btn + .rpt-view-btn { border-left: 1px solid var(--color-border); }
+.rpt-view-btn:hover { background: var(--color-bg); }
+.rpt-view-btn.active { background: var(--color-primary); color: #fff; }
+.rpt-view-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+
+.rpt-chart-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.rpt-chart-title { font-size: 14px; font-weight: 600; margin: 0 0 16px; color: var(--color-text); }
+.rpt-chart-empty { padding: 48px; text-align: center; color: var(--color-text-muted); font-size: 14px; }
+.rpt-chart-wrap { max-width: 900px; margin: 0 auto; }
+.rpt-chart-wrap-pie { max-width: 420px; }
 
 /* Report header: logo + company name + period */
 .rpt-header {

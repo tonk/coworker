@@ -91,6 +91,14 @@ kbd {
   --radius-sm: 4px;
   --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
   --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  --chart-cat-1: #2a78d6;
+  --chart-cat-2: #1baf7a;
+  --chart-cat-3: #eda100;
+  --chart-cat-4: #008300;
+  --chart-cat-5: #4a3aa7;
+  --chart-cat-6: #e34948;
+  --chart-cat-7: #e87ba4;
+  --chart-cat-other: #94a3b8;
 }
 ::selection { background: #c7d2fe; color: #1e293b; }
 ::-moz-selection { background: #c7d2fe; color: #1e293b; }
@@ -119,6 +127,14 @@ kbd {
   --color-warning: #fbbf24;
   --shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
   --shadow-md: 0 4px 6px rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.2);
+  --chart-cat-1: #3987e5;
+  --chart-cat-2: #199e70;
+  --chart-cat-3: #c98500;
+  --chart-cat-4: #008300;
+  --chart-cat-5: #9085e9;
+  --chart-cat-6: #e66767;
+  --chart-cat-7: #d55181;
+  --chart-cat-other: #64748b;
 }
 [data-theme="dark"] ::selection { background: rgba(129, 140, 248, 0.45); color: #f1f5f9; }
 [data-theme="dark"] ::-moz-selection { background: rgba(129, 140, 248, 0.45); color: #f1f5f9; }
@@ -138,6 +154,14 @@ kbd {
   --color-warning: #fbbf24;
   --shadow: 0 1px 3px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.4);
   --shadow-md: 0 4px 6px rgba(0,0,0,.5), 0 2px 4px rgba(0,0,0,.4);
+  --chart-cat-1: #3987e5;
+  --chart-cat-2: #199e70;
+  --chart-cat-3: #c98500;
+  --chart-cat-4: #008300;
+  --chart-cat-5: #9085e9;
+  --chart-cat-6: #e66767;
+  --chart-cat-7: #d55181;
+  --chart-cat-other: #64748b;
 }
 [data-theme="black"] ::selection { background: rgba(129, 140, 248, 0.5); color: #f1f5f9; }
 [data-theme="black"] ::-moz-selection { background: rgba(129, 140, 248, 0.5); color: #f1f5f9; }
@@ -226,6 +250,8 @@ input, textarea, select {
 .page-header h1 { font-size: 22px; font-weight: 700; margin: 0; }
 
 .form-group { margin-bottom: 16px; }
+.form-row { display: flex; gap: 16px; }
+.form-row .form-group { flex: 1; min-width: 0; }
 .form-label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 13px; }
 .form-label-hint { font-weight: 400; font-size: 11px; color: var(--color-text-muted); }
 .form-input {
