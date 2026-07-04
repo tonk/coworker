@@ -4289,20 +4289,27 @@ function cssVar(name) {
 const reportActivityBreakdown = computed(() => {
   if (!report.value) return []
   const totals = new Map()
+  const customers = new Map()
   for (const grp of report.value.groups) {
     for (const e of grp.entries) {
       const label = e.description?.trim() || t('timeTracking.no_activity')
       const minutes = reportChartBasis.value === 'total' ? e.minutes : reportEntryDeclarable(e)
       totals.set(label, (totals.get(label) || 0) + minutes)
+      if (!customers.has(label)) customers.set(label, new Set())
+      customers.get(label).add(e.customer?.name || t('timeTracking.no_customer'))
     }
   }
-  const sorted = Array.from(totals, ([label, minutes]) => ({ label, minutes }))
+  const sorted = Array.from(totals, ([label, minutes]) => ({
+    label,
+    minutes,
+    customer: Array.from(customers.get(label) || []).join(', '),
+  }))
     .filter(a => a.minutes > 0)
     .sort((a, b) => b.minutes - a.minutes)
   if (sorted.length <= REPORT_CHART_MAX_SLICES + 1) return sorted
   const top = sorted.slice(0, REPORT_CHART_MAX_SLICES)
   const otherMinutes = sorted.slice(REPORT_CHART_MAX_SLICES).reduce((s, a) => s + a.minutes, 0)
-  top.push({ label: t('timeTracking.chart_other'), minutes: otherMinutes })
+  top.push({ label: t('timeTracking.chart_other'), minutes: otherMinutes, customer: '' })
   return top
 })
 
@@ -4325,6 +4332,7 @@ const reportStackedBreakdown = computed(() => {
   if (!source) return null
   const periods = source.groups.map(g => g.label)
   const grandTotals = new Map()
+  const customersByLabel = new Map()
   const perPeriodTotals = source.groups.map(grp => {
     const totals = new Map()
     for (const e of grp.entries) {
@@ -4333,6 +4341,8 @@ const reportStackedBreakdown = computed(() => {
       if (minutes <= 0) continue
       totals.set(label, (totals.get(label) || 0) + minutes)
       grandTotals.set(label, (grandTotals.get(label) || 0) + minutes)
+      if (!customersByLabel.has(label)) customersByLabel.set(label, new Set())
+      customersByLabel.get(label).add(e.customer?.name || t('timeTracking.no_customer'))
     }
     return totals
   })
@@ -4346,6 +4356,7 @@ const reportStackedBreakdown = computed(() => {
   const series = seriesLabels.map(label => ({
     label,
     isOther: label === otherLabel,
+    customer: label === otherLabel ? '' : Array.from(customersByLabel.get(label) || []).join(', '),
     data: perPeriodTotals.map(totals => {
       if (label === otherLabel) {
         let sum = 0
@@ -4395,7 +4406,10 @@ function renderReportChart() {
         color: textColor,
         plugins: {
           legend: { display: true, position: 'top', labels: { color: textColor } },
-          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${fmtTime(Math.round(ctx.parsed.y * 60))}` } },
+          tooltip: { callbacks: {
+            title: ctx => stacked.series[ctx[0]?.datasetIndex]?.customer || '',
+            label: ctx => `${ctx.dataset.label}: ${fmtTime(Math.round(ctx.parsed.y * 60))}`,
+          } },
         },
         scales: {
           x: { stacked: true, ticks: { color: textColor }, grid: { display: false } },
@@ -4426,10 +4440,13 @@ function renderReportChart() {
       color: textColor,
       plugins: {
         legend: { display: isPie, position: 'right', labels: { color: textColor } },
-        tooltip: { callbacks: { label: ctx => {
-          const hours = isPie ? ctx.parsed : ctx.parsed.y
-          return `${ctx.label}: ${fmtTime(Math.round(hours * 60))}`
-        } } },
+        tooltip: { callbacks: {
+          title: ctx => data[ctx[0]?.dataIndex]?.customer || '',
+          label: ctx => {
+            const hours = isPie ? ctx.parsed : ctx.parsed.y
+            return `${ctx.label}: ${fmtTime(Math.round(hours * 60))}`
+          },
+        } },
       },
       scales: isPie ? undefined : {
         x: { ticks: { color: textColor }, grid: { display: false } },
