@@ -21,12 +21,13 @@ Environment=DB_DSN=/opt/warmdesk/data/warmdesk.db
 Environment=JWT_SECRET=change-me-to-a-random-secret
 Environment=ALLOWED_ORIGINS=https://yourdomain.com
 Environment=WEB_DIR=/opt/warmdesk/web
+Environment=UPLOAD_DIR=/opt/warmdesk/uploads
 
 # Security hardening
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths=/opt/warmdesk/data
+ReadWritePaths=/opt/warmdesk/data /opt/warmdesk/uploads
 
 [Install]
 WantedBy=multi-user.target

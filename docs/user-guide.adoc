@@ -138,6 +138,9 @@ The collapsible sidebar on the left (or right — configurable in User Settings)
 
 |*Chats*
 |Your 8 most recent conversations with unread indicators
+
+|*Tickets*
+|Visible only when the Helpdesk feature is enabled for you — your inbox and one entry per accessible customer, each with an unread/total badge
 |===
 
 All sections are drag-to-reorder (grab the ⠿ handle on the section header).
@@ -145,7 +148,7 @@ Drag the inner edge of the sidebar to resize it — width and section order are 
 
 === Header
 
-The header has three zones:
+The header has four zones:
 
 [cols="1,3", options="header"]
 |===
@@ -157,11 +160,14 @@ The header has three zones:
 |*Center*
 |Global search bar
 
+|*Nav strip*
+|Quick links to Dashboard, News, Chats (with an unread indicator), and Time Tracking
+
 |*Right*
-|*?* help button, theme toggle (light / dark / system), language selector, user avatar
+|Online-user count, language selector, theme switcher (light / dark / black / system), *?* help button, user avatar
 |===
 
-Click the *avatar* to open a dropdown menu with links to the dashboard, settings, admin panel (admins only), chats, time reports, the user and admin guide PDFs under *Downloads*, and *Logout*.
+Click the *avatar* to open a dropdown menu with links to the dashboard, News, settings, admin panel (admins only), chats, time tracking, *Keyboard Shortcuts*, the user and admin guide PDFs under *Downloads*, *About*, and *Logout*.
 
 ==== Contextual help (?)
 
@@ -229,8 +235,8 @@ Displays the application name and version number on the left, and your full disp
 
 === Themes
 
-WarmDesk supports *Light*, *Dark*, and *System* (follows your OS preference) themes.
-Change the theme in User Settings at any time.
+WarmDesk supports *Light*, *Dark*, *Black* (an AMOLED-friendly true-black dark theme), and *System* (follows your OS preference) themes.
+Change the theme from the theme switcher in the header, or in User Settings, at any time.
 
 '''
 
@@ -269,6 +275,7 @@ The live preview next to the Card Prefix field shows what card references will l
 === Project members
 
 Open *Project Settings → Members* to invite team members.
+Any Member, Admin, or Owner can invite new members (as Viewer, Member, or Owner); changing an existing member's role or removing someone else requires the Owner role.
 Select a user from the dropdown and choose their role:
 
 [cols="1,3", options="header"]
@@ -330,7 +337,7 @@ Each tile shows the card title, labels, priority indicator, due date, assignee a
 
 Use the sort controls at the top of any column to order cards by:
 
-* *Date* (creation date) — ascending or descending
+* *Date* (due date) — ascending or descending
 * *Assignee* — alphabetical by display name
 * *Priority* — critical → high → medium → low → none
 
@@ -552,7 +559,7 @@ Fields:
 |Subscribe to receive mention notifications on this card
 
 |*Sub-cards*
-|Child tasks nested under this card (one level deep); each has its own card number, assignees, labels, and comments; a progress bar shows how many are closed
+|Child tasks nested under this card; each has its own card number, assignees, labels, and comments; a progress bar shows how many are closed. The UI presents sub-cards one level deep
 
 |*Linked cards*
 |Cards from any project linked as cross-references; shows reference, title, and current column
@@ -659,17 +666,11 @@ A *← [source card title]* link at the top of that modal returns you to the car
 
 The card detail can get busy.
 Click the *⋮* button in the top-right corner of the card to open the sections menu.
-Each of the seven optional sections can be toggled on or off:
+Each of the nine optional sections can be toggled on or off:
 
 [cols="1,1", options="header"]
 |===
 |Section |Hidden by default
-
-|Labels
-|Yes
-
-|Tags
-|Yes
 
 |Attachments
 |Yes
@@ -677,26 +678,39 @@ Each of the seven optional sections can be toggled on or off:
 |Checklist
 |Yes
 
-|Sub-cards
+|Git Issue
+|Yes
+
+|Labels
 |Yes
 
 |Linked Cards
+|Yes
+
+|Linked Tickets
+|Yes
+
+|Sub-cards
+|Yes
+
+|Tags
 |Yes
 
 |Watchers
 |Yes
 |===
 
-A section can only be turned off when it is *empty* — if a section contains data the toggle is disabled and the section stays visible.
-When data is added to a hidden section it becomes visible automatically.
+A section is only "hidden by default" in the sense that it starts collapsed from view until it has data — as soon as a section contains anything, it becomes visible automatically regardless of the toggle.
+The *⋮* toggle can only be turned off when a section is *empty*; if it already has data the toggle is disabled and the section stays visible.
 
 Your preferences are saved in the browser and apply to every card you open.
 
 === Copy card
 
 Click *Copy Card* in the card detail footer to duplicate the card in the same column.
-The copy gets a new card number.
-Labels, assignees, and checklist items are copied; comments and attachments are not.
+The copy gets a new card number and its title gets a "(copy)" suffix.
+Description, priority, due date, labels, and tags are copied.
+Checklist items, comments, and attachments are *not* copied, and only a single original assignee carries over — additional assignees are not.
 
 === Transfer card
 
@@ -751,9 +765,7 @@ Messages support:
 * *Emoji picker* — click the emoji button in the compose bar
 * *@mentions* — type `@` to see a dropdown of project members
 * *File and image attachments* — click the attachment button or drag files onto the compose area; paste an image directly from the clipboard (Ctrl+V / ⌘V) to attach it without saving to disk first
-* *Emoji reactions* — hover an incoming/group message to see quick reactions plus a `+` button for the full emoji picker; click an existing reaction badge to toggle
-
-Click any emoji reaction to toggle your own reaction.
+* *Emoji reactions* — hover a message to reveal a `+` button that opens the full emoji picker; click an existing reaction badge to toggle your own reaction
 
 === Direct messages
 
@@ -847,10 +859,10 @@ Go to *Time Tracking → Board* and choose:
 |Filter |Options
 
 |*Period*
-|Month / Year
+|All Time, Year, Month, or Week
 
-|*Year / Month*
-|Select the period to report on
+|*Year / Month / Week*
+|Shown only for the matching Period selection, to narrow it down further
 
 |*Project*
 |All projects or a specific one
@@ -860,12 +872,12 @@ Go to *Time Tracking → Board* and choose:
 |===
 
 Click *Generate Report*.
-The report shows a table of cards with time logged, grouped by project or customer.
+The report shows a table of cards with time logged, grouped by project — each project section lists its cards with time logged, followed by a project total.
 Totals are shown in H:MM format.
 
 === Exporting
 
-Click *PDF Options* to expand the export settings before downloading:
+Once a report is generated, a row of export controls appears above it:
 
 [cols="1,3", options="header"]
 |===
@@ -876,22 +888,10 @@ Click *PDF Options* to expand the export settings before downloading:
 
 |*PDF Language*
 |Language for all PDF labels. *Auto* follows your UI language.
-
-|*Show abbreviations*
-|Include the card reference prefix in the PDF
-
-|*Page break per customer*
-|When grouping by customer, each customer starts on a new page
-
-|*Show page numbers*
-|Include page numbers in the PDF footer
-
-|*Show undeclarable time*
-|Include the undeclarable breakdown rows
 |===
 
 * *Export PDF* — downloads a server-generated PDF including the company name and logo (if configured in Admin → Branding), per-project totals, and a grand total.
-* *Export XLSX* — downloads a `.xlsx` file with the same data.
+* *Export Excel* — downloads a `.xlsx` file with the same data.
 
 '''
 
@@ -920,6 +920,8 @@ If you are missing those features, check with your administrator whether the ser
 
 The gear button at the far right of the tab bar opens the time-tracking project and customer manager.
 
+If you are an administrator, or have the *Time Tracking Viewer* flag set on your account, an *Employee* dropdown appears at the top of the Log Time and Report tabs so you can view (and export) another user's time sheet or report, or select *All Employees*.
+
 === Weekly grid (Log Time tab)
 
 Each row represents a customer + project + activity combination.
@@ -930,6 +932,13 @@ The row total, day totals, and grand total update automatically.
 
 Use the week picker (left/right arrows or the week label) to navigate between weeks.
 An *Add holidays* dropdown in the navigation bar lets you insert public holidays for a country as 0-minute entries.
+
+==== Exporting the sheet
+
+The bottom bar of the Log Time tab has three export controls:
+
+* *Export XLSX* / *Export PDF* — download the currently displayed week as a spreadsheet or PDF.
+* *Grid PDF* — opens a panel to export a printable grid for a whole *Week*, *Month*, or *Year* instead of just the current week; pick the period and date range, then click *Grid PDF* again inside the panel to download.
 
 ==== Icons and indicators
 
@@ -1177,11 +1186,11 @@ Use the *Table* / *Chart* toggle above the report to switch views.
 |Declarable (undeclarable time subtracted) or Total (not subtracted)
 |===
 
-Stacked bar charts always break the data down by period, regardless of the *Group by* filter. Click *Export chart PDF* to download the currently displayed chart as a PDF.
+Stacked bar charts always break the data down by period, regardless of the *Group by* filter. Click *Export PDF* to download the currently displayed chart as a PDF.
 
 ==== Exporting
 
-Click *PDF export options* to expand the export settings before downloading:
+Click *Export options* to expand the export settings before downloading:
 
 [cols="1,3", options="header"]
 |===
@@ -1414,10 +1423,10 @@ Open User Settings by clicking your display name in the header.
 |Upload an image or use your Gravatar (via email address). Click *Clear* to remove a custom avatar and fall back to Gravatar.
 
 |*Language*
-|English (en), Dutch (nl), German (de), French (fr), Spanish (es)
+|English (en), Dutch (nl), German (de), French (fr), Spanish (es), Danish (da), Swedish (sv), Norwegian (nb), Finnish (fi), Icelandic (is), Portuguese (pt), Italian (it)
 
 |*Theme*
-|Light / Dark / System
+|Light / Dark / Black / System
 
 |*Accent colour*
 |Blue (default), Red, Green, or Orange — applied to buttons, active states, and highlights throughout the UI
@@ -1449,8 +1458,23 @@ Open User Settings by clicking your display name in the header.
 |*Close to tray* (desktop app only)
 |Closing the window minimises it to the system tray instead of quitting
 
-|*Change password*
+|*Working hours* (Profile tab, only when time tracking is enabled)
+|Set a start/end time per weekday and a lunch-break length; used to flag over-allotment in the time-tracking grid. A weekly total is calculated automatically.
+
+|*Change password* (Security tab)
 |Enter your current password and a new one. Active password requirements (minimum length, character classes) are listed beneath the new-password field.
+
+|*Two-factor authentication / MFA* (Security tab)
+|Enable TOTP by scanning the QR code with an authenticator app and confirming a 6-digit code. Once enabled you can disable it again by entering your password.
+
+|*Trusted devices* (Security tab, shown once MFA is enabled)
+|After a successful MFA challenge you may skip MFA on that device for 7 or 30 days, if your administrator allows it. Manage or revoke trusted devices from this list.
+
+|*Passkeys* (Security tab)
+|Register one or more passkeys (WebAuthn) for passwordless login; each is named and can be removed individually.
+
+|*API keys* (API Keys tab)
+|Generate personal API keys with full access as you, for use with the Ticket API or other automation. Keys are shown once at creation time and can be revoked here.
 |===
 
 '''
@@ -1544,10 +1568,12 @@ Global admins can do all of this regardless of their customer role.
 
 == Search
 
-The global search bar (magnifying glass icon in the header) searches across:
+The global search bar in the header searches across:
 
 * Card titles and descriptions
 * Card comments
-* Project names
+* Project chat messages
+* Direct message / group conversation messages (in conversations you belong to)
 
-Results are grouped by type and clicking one navigates directly to it.
+Queries must be at least 3 characters. Results are capped at 20 per type, grouped by type, and clicking one navigates directly to it.
+Search is scoped to projects you are a member of (or all projects, for global admins) — it does not search project names themselves.
