@@ -67,7 +67,7 @@ client.interceptors.response.use(
   response => response,
   async error => {
     const original = error.config
-    const isAuthEndpoint = original.url?.includes('/auth/login') || original.url?.includes('/auth/refresh') || original.url?.includes('/auth/mfa')
+    const isAuthEndpoint = original.url?.includes('/auth/login') || original.url?.includes('/auth/refresh') || original.url?.includes('/auth/mfa') || original.url?.includes('/auth/passkey/login')
     if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
