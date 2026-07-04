@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.12.42 — 2026-07-04
+
+### Added
+- **Admin — require password change on next login** — a new per-user checkbox in the New User and Edit User admin panels forces a password change on the next login (password, passkey, or MFA). The requirement clears automatically once the user changes their password.
+- **Admin — password generator** — the password field in the New User and Edit User forms now has Generate and Copy buttons, producing a 30+ character password with guaranteed uppercase/lowercase/digit/special-character coverage.
+
+### Fixed
+- **Time tracking report — chart tooltips** — hovering a chart segment showed the activity name twice (once bold, once with the time). The bold line now shows the associated customer(s) instead.
+- **Invoices — revenue summary totals** — crediting an invoice didn't reduce Total Invoiced, Outstanding, or Paid in the global invoice list; credit notes were excluded from the totals entirely. Credit notes now net against their original invoice.
+- **Deployment — systemd upload permissions** — the sample systemd unit's `ReadWritePaths` omitted the uploads directory, which could cause file upload failures in production under `ProtectSystem=strict`.
+- **Documentation — user and admin guides** — corrected numerous inaccuracies found in a full audit against the current codebase: outdated UI labels, wrong config defaults, incorrect login history event names, and an incorrect claim about credit note status changes.
+- **Localization — missing and untranslated strings** — backfilled 84 i18n keys that were missing entirely from all 11 non-English locales, and translated roughly 150-250 strings per locale that had been left in raw English since the features that introduced them were built.
+
 ## v0.12.41 — 2026-07-03
 
 ### Added

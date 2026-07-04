@@ -764,3 +764,10 @@ Create an application that has all these features and requirements
 - Extract report date-range resolution into a single resolveReportEntries() function shared by the JSON, table PDF/XLSX, and chart PDF exports
 - Place the custom date range modal's Start/End date pickers side by side instead of stacked
 - Fix dead-code warning on Windows builds for a helper only used on Linux/macOS
+- Show the customer instead of a duplicate activity name in the bold line of time-tracking chart tooltips
+- Audit the user and admin guides against the codebase and correct outdated labels, wrong defaults, missing features, and incorrect claims about login history, credit notes, and SLA matching
+- Fix systemd unit ReadWritePaths to include the uploads directory alongside data
+- Net credit notes into the invoice list's revenue summary totals instead of excluding them
+- Add a per-user "require password change on next login" flag, settable from the admin New User and Edit User forms, enforced across password/passkey/MFA login and cleared automatically on next password change
+- Add Generate/Copy password buttons to the admin New User and Edit User password fields
+- Backfill 84 i18n keys missing from all 11 non-English locales and translate remaining untranslated English strings across every locale

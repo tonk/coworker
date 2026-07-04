@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.41)
+## Latest release (v0.12.42)
 
-- **Time tracking report — chart view** — toggle the Report tab between Table and Chart, with bar, pie, and stacked-bar types and a declarable/total time basis switch, plus a server-side chart PDF export.
-- **Time tracking report — custom range modal** — Start/End date pickers now sit side by side instead of stacked.
+- **Admin — require password change on next login** — force a password reset on a user's next login, settable from the admin user forms, with a matching password generator (Generate/Copy buttons).
+- **Fixes** — chart tooltips no longer duplicate the activity name, credit notes now net correctly into invoice revenue totals, and a systemd deployment issue that could break file uploads is resolved.
+- **Localization** — all 11 non-English locales now have complete, translated coverage of the app (84 previously-missing keys backfilled, hundreds of leftover English strings translated).
 
 ## Experiment
 
@@ -19,7 +20,7 @@ This is an experiment, and a biggie :-)
 
 I (almost) haven't written a single line of code, I created and
 updated the `what.md` file and asked Claude Code and Cursor to generate the app.
-The result is a ~30,000 line Go backend and a ~30,000 line Vue 3 frontend that actually works.
+The result is a ~45,000 line Go backend and a ~45,000 line Vue 3 frontend that actually works.
 
 ## Screenshots
 
@@ -356,6 +357,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Passkey sign-in** — register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page; uses WebAuthn discoverable credentials so no username is required before the authenticator prompt; browser-only (Tauri desktop excluded)
 - **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
 - **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
+- **Require password change on next login** — admins can flag a user (from New User or Edit User) to be forced through a password change on their next login, via any auth method; a Generate/Copy password helper is available in both forms
 - **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); live search on Users, Groups, Customers, and Projects tabs; inactive users hidden by default with a "Show inactive" toggle; toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create and restore database backups; restrict API access to specific IPs or CIDR ranges
 - **SMTP email** — configurable from the admin panel without a server restart; username and password are optional for relay servers
 - **Session timeout** — configurable idle timeout (default 60 minutes); set to 0 to disable
