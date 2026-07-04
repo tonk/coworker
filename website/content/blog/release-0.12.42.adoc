@@ -1,0 +1,42 @@
+---
+title: "v0.12.42: Require password change on next login"
+date: "2026-07-04"
+author: "Ton Kersten"
+description: "Admins can now force a password change on a user's next login, with a built-in password generator. Plus a full localization pass brings all 11 non-English locales to complete, translated coverage."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` adds a way to force a password reset for a user, fixes a couple of reporting bugs, and closes a long-standing localization gap across every non-English language WarmDesk ships.
+
+== Require password change on next login
+
+Admin → Users → *New User* and *Edit User* now have a *Require password change on next login* checkbox.
+
+Once set, the user is walked straight to *Settings → Security* with a clear banner the next time they log in — whether that's with a password, a passkey, or after completing an MFA challenge — and can't dismiss it without actually changing their password. The flag clears itself automatically the moment that happens, through any of the three ways a password can change: self-service, forced, or an emailed reset link.
+
+Both password fields also gained two small buttons: 🎲 *Generate* fills the field with a 30+ character password guaranteed to include upper- and lowercase letters, a digit, and a special character, and 📋 *Copy* puts it on the clipboard.
+
+== Fixes
+
+* *Time-tracking chart tooltips* — hovering a chart segment showed the activity name twice, once in bold and once next to the time. The bold line now shows the customer instead.
+* *Invoice revenue totals* — crediting an invoice didn't reduce *Total Invoiced*, *Outstanding*, or *Paid* in the global invoice list; credit notes were left out of the sums entirely. They now net correctly against the invoice they credit.
+* *Systemd deployment* — the sample service file's `ReadWritePaths` was missing the uploads directory, which could cause upload failures in production under `ProtectSystem=strict`.
+
+== Full localization coverage, everywhere
+
+A full audit turned up two separate localization gaps: 84 keys that were missing entirely from all 11 non-English locale files (API key management, feature-access labels, SLA policies, most of the helpdesk ticket UI), and roughly 150–250 keys per locale that were present but still showing raw English text — carried over since whoever built those features never localized them.
+
+Both are fixed now. Every string in Dutch, German, French, Spanish, Danish, Swedish, Norwegian, Finnish, Icelandic, Portuguese, and Italian is either a real translation or a deliberate, correct loanword — not a leftover.
+
+== Documentation accuracy pass
+
+The user guide and admin guide PDFs were audited section by section against the current codebase. A number of things had drifted since they were written: outdated UI labels, a couple of wrong config defaults, incorrect login-history event names, and an inaccurate claim about what happens to an invoice's status when you issue a credit note against it. All corrected.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.
