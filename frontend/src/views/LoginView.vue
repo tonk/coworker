@@ -392,6 +392,10 @@ async function handleSubmit() {
       mfaRememberDays.value = 0
       return
     }
+    if (result.must_change_password) {
+      router.push('/settings?tab=security&mustchange=1')
+      return
+    }
     if (result.password_expired) {
       router.push('/settings?tab=security&expired=1')
       return
@@ -423,7 +427,11 @@ async function handleMFASubmit() {
     const rememberDays = showMfaRemember.value
       ? (mfaRememberAllowsMonth.value ? mfaRememberDays.value : (mfaRememberDays.value === 7 ? 7 : 0))
       : 0
-    await auth.verifyMFA(mfaCode.value, rememberDays)
+    const result = await auth.verifyMFA(mfaCode.value, rememberDays)
+    if (result.must_change_password) {
+      router.push('/settings?tab=security&mustchange=1')
+      return
+    }
     router.push('/')
   } catch (e) {
     const serverError = e.response?.data?.error

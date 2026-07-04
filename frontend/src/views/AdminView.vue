@@ -1157,7 +1157,17 @@
     </div>
     <div class="form-group">
       <label class="form-label" for="new-user-password">{{ $t('auth.password') }} *</label>
-      <input id="new-user-password" class="form-input" v-model="newUser.password" type="password" required minlength="8" />
+      <div style="display:flex;gap:8px">
+        <input id="new-user-password" class="form-input" style="flex:1;min-width:0" v-model="newUser.password" type="password" required minlength="8" />
+        <button type="button" class="btn btn-secondary" @click="newUser.password = generateStrongPassword()" :title="$t('admin.generate_password')" :aria-label="$t('admin.generate_password')">🎲</button>
+        <button type="button" class="btn btn-secondary" @click="copyPasswordToClipboard(newUser.password)" :title="$t('admin.copy_password')" :aria-label="$t('admin.copy_password')">📋</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input type="checkbox" v-model="newUser.must_change_password" />
+        {{ $t('admin.must_change_password') }}
+      </label>
     </div>
     <div class="form-group">
       <label class="form-label" for="new-user-role">{{ $t('admin.global_role') }}</label>
@@ -1272,7 +1282,17 @@
       </div>
       <div class="form-group">
         <label class="form-label" for="edit-user-password">{{ $t('auth.password') }} <span class="form-label-hint">(leave blank to keep current)</span></label>
-        <input id="edit-user-password" class="form-input" v-model="editUser._newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="New password…" />
+        <div style="display:flex;gap:8px">
+          <input id="edit-user-password" class="form-input" style="flex:1;min-width:0" v-model="editUser._newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="New password…" />
+          <button type="button" class="btn btn-secondary" @click="editUser._newPassword = generateStrongPassword()" :title="$t('admin.generate_password')" :aria-label="$t('admin.generate_password')">🎲</button>
+          <button type="button" class="btn btn-secondary" @click="copyPasswordToClipboard(editUser._newPassword)" :title="$t('admin.copy_password')" :aria-label="$t('admin.copy_password')">📋</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" v-model="editUser.must_change_password" />
+          {{ $t('admin.must_change_password') }}
+        </label>
       </div>
       <template v-if="editUser.global_role !== 'metrics' && editUser.global_role !== 'backup'">
         <div class="form-group">
@@ -2012,7 +2032,7 @@ function getAvatarColor(user) {
 watch(() => newProject.value.name, (name) => {
   if (!prefixTouched.value) newProject.value.key_prefix = autoPrefix(name)
 })
-const newUser = ref({ username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user' })
+const newUser = ref({ username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user', must_change_password: false })
 const userProjectIds = ref([])
 const userCustomerIds = ref([])
 const userCustomerAdminIds = ref([])
@@ -2983,7 +3003,7 @@ async function submitCreateUser() {
     await adminApi.setUserCustomers(data.id, userCustomerIds.value, customerRoles)
     users.value.push(data)
     showCreateUser.value = false
-    newUser.value = { username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user' }
+    newUser.value = { username: '', email: '', password: '', first_name: '', last_name: '', global_role: 'user', must_change_password: false }
     userProjectIds.value = []
     userCustomerIds.value = []
     userCustomerAdminIds.value = []
@@ -3147,6 +3167,39 @@ function copyApiKey(key) {
   ui.success(t('admin.api_key_copied'))
 }
 
+// Generates a random password that always includes at least one uppercase,
+// lowercase, digit, and special character. Ambiguous-looking characters
+// (0/O, 1/l/I) are excluded so a generated password can be typed by hand
+// if it's ever read off-screen instead of pasted.
+function generateStrongPassword() {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+  const lower = 'abcdefghijkmnopqrstuvwxyz'
+  const digits = '23456789'
+  const special = '!@#$%^&*()-_=+?'
+  const all = upper + lower + digits + special
+  const randomIndex = (max) => crypto.getRandomValues(new Uint32Array(1))[0] % max
+  const randomChar = (set) => set[randomIndex(set.length)]
+
+  const minLength = Number(systemSettings.value?.password_min_length) || 0
+  const length = Math.max(30, minLength)
+  const chars = [randomChar(upper), randomChar(lower), randomChar(digits), randomChar(special)]
+  while (chars.length < length) chars.push(randomChar(all))
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = randomIndex(i + 1)
+    ;[chars[i], chars[j]] = [chars[j], chars[i]]
+  }
+  return chars.join('')
+}
+
+function copyPasswordToClipboard(password) {
+  if (!password) {
+    ui.error(t('admin.no_password_to_copy'))
+    return
+  }
+  navigator.clipboard.writeText(password)
+  ui.success(t('admin.password_copied'))
+}
+
 async function saveEditUser() {
   try {
     const isServiceAccount = editUser.value.global_role === 'metrics' || editUser.value.global_role === 'backup'
@@ -3162,7 +3215,8 @@ async function saveEditUser() {
       time_tracking_enabled: isServiceAccount ? false : (editUser.value.time_tracking_enabled ?? false),
       board_enabled: isServiceAccount ? false : (editUser.value.board_enabled ?? true),
       chat_enabled: isServiceAccount ? false : (editUser.value.chat_enabled ?? true),
-      helpdesk_enabled: isServiceAccount ? false : (editUser.value.helpdesk_enabled ?? false)
+      helpdesk_enabled: isServiceAccount ? false : (editUser.value.helpdesk_enabled ?? false),
+      must_change_password: editUser.value.must_change_password ?? false
     }
     if (editUser.value._newPassword) {
       payload.password = editUser.value._newPassword

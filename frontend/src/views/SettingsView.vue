@@ -319,7 +319,10 @@
 
       <!-- Security tab -->
       <div v-show="tab === 'security'" role="tabpanel" id="tab-panel-security" aria-labelledby="tab-btn-security">
-        <div v-if="passwordExpired" class="auth-error" style="margin-bottom:16px;padding:12px 16px;border-radius:6px">
+        <div v-if="mustChangePassword" class="auth-error" style="margin-bottom:16px;padding:12px 16px;border-radius:6px">
+          {{ $t('auth.must_change_password') }}
+        </div>
+        <div v-else-if="passwordExpired" class="auth-error" style="margin-bottom:16px;padding:12px 16px;border-radius:6px">
           {{ $t('auth.password_expired') }}
         </div>
 
@@ -560,6 +563,7 @@ const ui = useUIStore()
 const systemStore = useSystemStore()
 const tab = ref('profile')
 const passwordExpired = ref(false)
+const mustChangePassword = ref(false)
 const settingsRootRef = ref(null)
 useHelpSectionObserver(settingsRootRef)
 const { setTheme, setAccentColor } = useTheme()
@@ -720,7 +724,10 @@ onMounted(async () => {
     if (data.password_policy) passwordPolicy.value = data.password_policy
     mfaRememberPolicy.value = data.mfa_remember_devices || 'week_month'
   } catch {}
-  if (route.query.expired === '1') {
+  if (route.query.mustchange === '1') {
+    mustChangePassword.value = true
+    tab.value = 'security'
+  } else if (route.query.expired === '1') {
     passwordExpired.value = true
     tab.value = 'security'
   }
@@ -913,6 +920,8 @@ async function savePassword() {
   try {
     await authApi.changePassword(pwForm.value)
     pwForm.value = { current_password: '', new_password: '' }
+    mustChangePassword.value = false
+    passwordExpired.value = false
     ui.success('Password changed')
   } catch (e) {
     ui.error(e.response?.data?.error || 'Failed to change password')

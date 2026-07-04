@@ -197,6 +197,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	if isPasswordExpired(user) {
 		resp["password_expired"] = true
 	}
+	if user.MustChangePassword {
+		resp["must_change_password"] = true
+	}
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -503,8 +506,9 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 
 	now := time.Now()
 	database.DB.Model(&user).Updates(map[string]interface{}{
-		"password_hash":       hash,
-		"password_changed_at": now,
+		"password_hash":        hash,
+		"password_changed_at":  now,
+		"must_change_password": false,
 	})
 	authLog(c, "password_changed", user.ID, user.Username, "")
 	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "password_changed", "")
@@ -584,6 +588,9 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 	}
 	if trustPlaintext != "" && isTauriClient(c) {
 		resp["mfa_trust_token"] = trustPlaintext
+	}
+	if user.MustChangePassword {
+		resp["must_change_password"] = true
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -799,6 +806,7 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 		"password_reset_token":  "",
 		"password_reset_expiry": nil,
 		"password_changed_at":   time.Now(),
+		"must_change_password":  false,
 	})
 
 	authLog(c, "password_reset_ok", user.ID, user.Username, "")

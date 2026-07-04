@@ -170,6 +170,7 @@ func AdminUpdateUser(c *gin.Context) {
 		SunWorkStart        string `json:"sun_work_start"`
 		SunWorkEnd          string `json:"sun_work_end"`
 		LunchBreakMinutes   int    `json:"lunch_break_minutes"`
+		MustChangePassword  *bool  `json:"must_change_password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -280,6 +281,9 @@ func AdminUpdateUser(c *gin.Context) {
 		updates["password_hash"] = string(hash)
 		updates["password_changed_at"] = time.Now()
 	}
+	if req.MustChangePassword != nil {
+		updates["must_change_password"] = *req.MustChangePassword
+	}
 
 	// Service-account roles must not have feature access — enforce regardless of
 	// what the request sent for the feature flags.
@@ -373,13 +377,14 @@ func AdminDeleteUser(c *gin.Context) {
 
 func AdminCreateUser(c *gin.Context) {
 	var req struct {
-		Email       string `json:"email" binding:"required,email"`
-		Username    string `json:"username" binding:"required,min=3,max=50"`
-		Password    string `json:"password" binding:"required,min=8"`
-		FirstName   string `json:"first_name"`
-		LastName    string `json:"last_name"`
-		DisplayName string `json:"display_name"`
-		GlobalRole  string `json:"global_role"`
+		Email              string `json:"email" binding:"required,email"`
+		Username           string `json:"username" binding:"required,min=3,max=50"`
+		Password           string `json:"password" binding:"required,min=8"`
+		FirstName          string `json:"first_name"`
+		LastName           string `json:"last_name"`
+		DisplayName        string `json:"display_name"`
+		GlobalRole         string `json:"global_role"`
+		MustChangePassword bool   `json:"must_change_password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -406,20 +411,21 @@ func AdminCreateUser(c *gin.Context) {
 
 	defs := GetGlobalDefaults()
 	user := models.User{
-		Email:          strings.ToLower(req.Email),
-		Username:       req.Username,
-		PasswordHash:   hash,
-		FirstName:      req.FirstName,
-		LastName:       req.LastName,
-		DisplayName:    displayName,
-		GlobalRole:     role,
-		Locale:         "en",
-		IsActive:       true,
-		DateTimeFormat: defs["date_time_format"],
-		Timezone:       defs["timezone"],
-		Theme:          defs["theme"],
-		Font:           defs["font"],
-		FontSize:       defs["font_size"],
+		Email:              strings.ToLower(req.Email),
+		Username:           req.Username,
+		PasswordHash:       hash,
+		FirstName:          req.FirstName,
+		LastName:           req.LastName,
+		DisplayName:        displayName,
+		GlobalRole:         role,
+		Locale:             "en",
+		IsActive:           true,
+		DateTimeFormat:     defs["date_time_format"],
+		Timezone:           defs["timezone"],
+		Theme:              defs["theme"],
+		Font:               defs["font"],
+		FontSize:           defs["font_size"],
+		MustChangePassword: req.MustChangePassword,
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {

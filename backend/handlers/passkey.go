@@ -372,6 +372,9 @@ func (h *PasskeyHandler) PasskeyLoginFinish(c *gin.Context) {
 	if IsMFARequired() {
 		resp["mfa_setup_required"] = true
 	}
+	if authenticatedUser.MustChangePassword {
+		resp["must_change_password"] = true
+	}
 	c.JSON(http.StatusOK, resp)
 }
 

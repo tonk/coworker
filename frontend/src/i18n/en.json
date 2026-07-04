@@ -51,6 +51,7 @@
     "change_password": "Change Password",
     "password_expired": "Your password has expired. Please change it in your account settings.",
     "password_expired_title": "Password Expired",
+    "must_change_password": "An administrator requires you to set a new password before continuing.",
     "remember_me": "Remember me"
   },
   "project": {
@@ -664,6 +665,7 @@
     "customer_role_hint": "Customer-role users can only view and comment on tickets for assigned customers.",
     "timetracking_viewer": "Time Tracking Viewer",
     "timetracking_viewer_hint": "Can view time tracking data for all users and customers",
+    "must_change_password": "Require password change on next login",
     "login_branding_enabled": "Show company branding on the login screen",
     "login_branding_hint": "Displays the company name and logo above the login card.",
     "allowed_ips_label": "API allowed IP addresses",
@@ -691,7 +693,11 @@
     "api_key_revoke_confirm": "Revoke this API key? Any services using it will stop working.",
     "api_key_shown_once": "Save this key — it will not be shown again.",
     "api_key_copy": "Copy",
-    "api_key_copied": "Copied to clipboard"
+    "api_key_copied": "Copied to clipboard",
+    "generate_password": "Generate a strong password",
+    "copy_password": "Copy password to clipboard",
+    "password_copied": "Password copied to clipboard",
+    "no_password_to_copy": "No password to copy"
   },
   "report": {
     "title": "Time Report",

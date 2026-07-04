@@ -70,6 +70,7 @@ type User struct {
 	PasswordResetToken  string         `gorm:"size:64;index" json:"-"`
 	PasswordResetExpiry *time.Time     `json:"-"`
 	PasswordChangedAt   *time.Time     `json:"password_changed_at"`
+	MustChangePassword  bool           `gorm:"default:false" json:"must_change_password"`
 
 	// Computed — not stored in DB
 	GravatarURL    string `gorm:"-" json:"gravatar_url"`

@@ -87,7 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
     setTokens(data.access_token, data.refresh_token)
     mfaSetupRequired.value = !!data.mfa_setup_required
     await fetchMe()
-    return {}
+    return { password_expired: !!data.password_expired, must_change_password: !!data.must_change_password }
   }
 
   async function verifyMFA(code, rememberDays = 0) {
@@ -96,6 +96,7 @@ export const useAuthStore = defineStore('auth', () => {
     setTokens(data.access_token, data.refresh_token)
     if (data.mfa_trust_token) setMfaTrustToken(data.mfa_trust_token)
     await fetchMe()
+    return { must_change_password: !!data.must_change_password }
   }
 
   async function register(payload) {
