@@ -363,6 +363,7 @@ func (h *PasskeyHandler) PasskeyLoginFinish(c *gin.Context) {
 		return
 	}
 	setAuthCookies(c, tokens)
+	middleware.ClearAuthRateLimit(c)
 	authLog(c, "passkey_login_ok", authenticatedUser.ID, authenticatedUser.Username, "")
 	recordEvent(c.ClientIP(), clientStr(c), authenticatedUser.ID, authenticatedUser.Username, "login_ok", "passkey")
 	resp := gin.H{

@@ -185,6 +185,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 	setAuthCookies(c, tokens)
+	middleware.ClearAuthRateLimit(c)
 	authLog(c, "login_ok", user.ID, user.Username, "")
 	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "login_ok", "")
 	resp := gin.H{
@@ -245,6 +246,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 	setAuthCookies(c, tokens)
+	middleware.ClearAuthRateLimit(c)
 	c.JSON(http.StatusOK, tokens)
 }
 
@@ -580,6 +582,7 @@ func (h *AuthHandler) MFAVerify(c *gin.Context) {
 		return
 	}
 	setAuthCookies(c, tokens)
+	middleware.ClearAuthRateLimit(c)
 	authLog(c, "mfa_verify_ok", user.ID, user.Username, "")
 	recordEvent(c.ClientIP(), clientStr(c), user.ID, user.Username, "mfa_ok", "")
 	resp := gin.H{

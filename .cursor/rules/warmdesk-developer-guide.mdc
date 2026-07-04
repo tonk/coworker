@@ -133,6 +133,8 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 - Auth endpoints (login, register, password reset)
 - Message-send endpoints: `POST /direct-messages/:userId` and `POST /conversations/:id/messages` (60 req/min per IP via `MessageRateLimit()`)
 
+`AuthRateLimit()` (10 requests / 15 min per IP) is shared across `/auth/login`, `/auth/refresh`, `/auth/mfa/verify`, and `/auth/passkey/login/{begin,finish}` — a single passkey login attempt costs 2 requests (begin + finish), 3 if MFA is also required. Every successful authentication (`Login`, `MFAVerify`, `PasskeyLoginFinish`, `Refresh`) calls `middleware.ClearAuthRateLimit(c)` to wipe that IP's bucket, so a legitimate correct login is never blocked by, or left stuck behind, its own earlier failed attempts. A brute-force attacker never reaches this call since it only fires after successful authentication, so this doesn't weaken the limit's effectiveness against guessing attacks.
+
 **Attachment access control** (`handlers/attachment.go`) — `DownloadAttachment` calls `checkAttachmentAccess` after loading the record. It walks the ownership chain (`card` → project membership, `card_comment` → card → project membership, `chat_message` → project membership, `conv_message` → conversation membership) and returns 403 if the requesting user has no access. Admins bypass all checks.
 
 **Sensitive data in logs** — the password-reset audit log entry includes only the first 8 characters of the token followed by `...`; the full token is never written to logs.

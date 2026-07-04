@@ -46,6 +46,15 @@ func (rl *rateLimiter) allow(key string) bool {
 	return true
 }
 
+// reset clears any recorded attempts for key, so a successful authentication
+// isn't penalized by — and doesn't leave the client stuck behind — earlier
+// failed attempts within the current window.
+func (rl *rateLimiter) reset(key string) {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+	delete(rl.entries, key)
+}
+
 func (rl *rateLimiter) cleanup() {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
@@ -85,7 +94,18 @@ func rateLimit(rl *rateLimiter) gin.HandlerFunc {
 	}
 }
 
-func AuthRateLimit() gin.HandlerFunc       { return rateLimit(authLimiter) }
+func AuthRateLimit() gin.HandlerFunc { return rateLimit(authLimiter) }
+
+// ClearAuthRateLimit resets the auth rate limit bucket for the requesting IP.
+// Call this once a login fully succeeds (correct credentials and, if
+// enabled, a correct MFA/passkey factor) so a legitimate user isn't left
+// stuck behind their own earlier failed attempts, or blocked on their next
+// login, for the rest of the 15-minute window. A brute-force attacker never
+// reaches this call, since it only fires after successful authentication.
+func ClearAuthRateLimit(c *gin.Context) {
+	authLimiter.reset(c.ClientIP())
+}
+
 func RegisterRateLimit() gin.HandlerFunc   { return rateLimit(registerLimiter) }
 func ResetRateLimit() gin.HandlerFunc      { return rateLimit(resetLimiter) }
 func MediaProxyRateLimit() gin.HandlerFunc { return rateLimit(mediaProxyLimiter) }
