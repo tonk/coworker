@@ -11,6 +11,7 @@
     "messages": "Chats",
     "about": "Über",
     "user_menu": "Benutzermenü",
+    "logged_in_as": "Angemeldet als {username} (ID: {id})",
     "keyboard_shortcuts": "Tastenkürzel",
     "news": "Neuigkeiten",
     "downloads": "Downloads",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Vorschau",
     "company_logo_dark": "Firmenlogo (dunkler Hintergrund)",
     "reset_mfa": "MFA zurücksetzen",
+    "revoke_passkeys": "Passkeys widerrufen",
+    "revoke_passkeys_confirm": "Alle Passkeys von {name} widerrufen? Es müssen neue registriert werden, um sich ohne Passwort anzumelden.",
+    "passkeys_revoked": "Passkeys von {name} widerrufen",
+    "revoke_passkeys_failed": "Widerrufen der Passkeys fehlgeschlagen",
     "password_policy_title": "Passwortrichtlinie",
     "password_policy_hint": "Legen Sie Anforderungen für Benutzerpasswörter fest. Gilt für alle neuen Passwörter und Resets.",
     "password_min_length": "Mindestlänge",
@@ -1406,7 +1411,9 @@
     "delete_error": "Entfernen fehlgeschlagen",
     "confirm": "Confirm",
     "confirm_delete": "Passkey „{name}\" entfernen?",
-    "delete_aria": "Passkey {name} entfernen"
+    "delete_aria": "Passkey {name} entfernen",
+    "count_registered": "{count} registriert",
+    "none_registered": "Keine registriert"
   },
   "sla": {
     "active": "Aktiv",

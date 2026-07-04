@@ -11,6 +11,7 @@
     "messages": "Chat",
     "about": "Sobre",
     "user_menu": "Menu do utilizador",
+    "logged_in_as": "Sessão iniciada como {username} (ID: {id})",
     "keyboard_shortcuts": "Atalhos de teclado",
     "news": "Notícias",
     "downloads": "Transferências",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Pré-visualização",
     "company_logo_dark": "Logótipo da empresa (fundo escuro)",
     "reset_mfa": "Repor MFA",
+    "revoke_passkeys": "Revogar chaves de acesso",
+    "revoke_passkeys_confirm": "Revogar todas as chaves de acesso de {name}? Terá de registar novas para iniciar sessão sem palavra-passe.",
+    "passkeys_revoked": "Chaves de acesso revogadas para {name}",
+    "revoke_passkeys_failed": "Falha ao revogar as chaves de acesso",
     "password_policy_title": "Política de palavras-passe",
     "password_policy_hint": "Defina requisitos para as palavras-passe dos utilizadores. Aplica-se a todas as novas palavras-passe e redefinições.",
     "password_min_length": "Comprimento mínimo",
@@ -1406,7 +1411,9 @@
     "delete_error": "Falha ao remover",
     "confirm": "Confirm",
     "confirm_delete": "Remover chave de acesso \"{name}\"?",
-    "delete_aria": "Remover chave de acesso {name}"
+    "delete_aria": "Remover chave de acesso {name}",
+    "count_registered": "{count} registada(s)",
+    "none_registered": "Nenhuma registada"
   },
   "sla": {
     "active": "Ativa",

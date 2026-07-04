@@ -1332,6 +1332,14 @@
         </div>
         <span v-else class="badge badge-inactive">{{ $t('mfa.disabled') }}</span>
       </div>
+      <div class="form-group">
+        <label class="form-label">{{ $t('passkey.title') }}</label>
+        <div v-if="editUserPasskeys.length > 0" style="display:flex;align-items:center;gap:12px">
+          <span class="badge badge-mfa">{{ $t('passkey.count_registered', { count: editUserPasskeys.length }) }}</span>
+          <button type="button" class="btn btn-danger btn-sm" @click="adminRevokePasskeys(editUser)">{{ $t('admin.revoke_passkeys') }}</button>
+        </div>
+        <span v-else class="badge badge-inactive">{{ $t('passkey.none_registered') }}</span>
+      </div>
       <template v-if="editUser.global_role !== 'metrics' && editUser.global_role !== 'backup'">
         <div class="form-group">
           <label class="form-label">{{ $t('groups.title') }}</label>
@@ -1990,6 +1998,7 @@ const showHiddenCustomers = ref(false)
 
 const editUser = ref(null)
 const editUserApiKeys = ref([])
+const editUserPasskeys = ref([])
 const loginHistoryUser = ref(null)
 const loginHistory = ref([])
 const loginHistoryLoading = ref(false)
@@ -3092,6 +3101,18 @@ async function adminResetMFA(user) {
   }
 }
 
+async function adminRevokePasskeys(user) {
+  const name = user.display_name || user.username
+  if (!await ui.confirm(t('admin.revoke_passkeys_confirm', { name }), { destructive: true })) return
+  try {
+    await adminApi.revokeUserPasskeys(user.id)
+    editUserPasskeys.value = []
+    ui.success(t('admin.passkeys_revoked', { name }))
+  } catch {
+    ui.error(t('admin.revoke_passkeys_failed'))
+  }
+}
+
 async function openLoginHistory(user) {
   loginHistoryUser.value = user
   loginHistory.value = []
@@ -3109,6 +3130,7 @@ async function openLoginHistory(user) {
 async function openEditUser(user) {
   editUser.value = { ...user, _newPassword: '' }
   editUserApiKeys.value = []
+  editUserPasskeys.value = []
   newApiKeyName.value = ''
   newApiKeyResult.value = null
   userProjectIds.value = []
@@ -3136,6 +3158,10 @@ async function openEditUser(user) {
       .map(([id]) => Number(id))
     userGroupIds.value = grpRes.data.group_ids || []
     if (keysRes) editUserApiKeys.value = keysRes.data || []
+  } catch {}
+  try {
+    const { data } = await adminApi.getUserPasskeys(user.id)
+    editUserPasskeys.value = data || []
   } catch {}
 }
 

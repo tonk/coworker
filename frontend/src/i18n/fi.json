@@ -11,6 +11,7 @@
     "messages": "Chatit",
     "about": "Tietoja",
     "user_menu": "Käyttäjävalikko",
+    "logged_in_as": "Kirjautuneena käyttäjänä {username} (ID: {id})",
     "news": "Uutiset",
     "keyboard_shortcuts": "Pikanäppäimet",
     "downloads": "Lataukset",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Esikatselu",
     "company_logo_dark": "Yrityksen logo (tumma tausta)",
     "reset_mfa": "Nollaa MFA",
+    "revoke_passkeys": "Peruuta salausavaimet",
+    "revoke_passkeys_confirm": "Peruutetaanko kaikki käyttäjän {name} salausavaimet? Hänen on rekisteröitävä uudet kirjautuakseen ilman salasanaa.",
+    "passkeys_revoked": "Käyttäjän {name} salausavaimet peruutettu",
+    "revoke_passkeys_failed": "Salausavainten peruuttaminen epäonnistui",
     "password_policy_title": "Salasanakäytäntö",
     "password_policy_hint": "Määritä käyttäjien salasanavaatimukset. Koskee kaikkia uusia salasanoja ja nollauksia.",
     "password_min_length": "Vähimmäispituus",
@@ -1406,7 +1411,9 @@
     "delete_error": "Poistaminen epäonnistui",
     "confirm": "Confirm",
     "confirm_delete": "Poistetaanko salausavain \"{name}\"?",
-    "delete_aria": "Poista salausavain {name}"
+    "delete_aria": "Poista salausavain {name}",
+    "count_registered": "{count} rekisteröity",
+    "none_registered": "Ei rekisteröityjä"
   },
   "sla": {
     "active": "Aktiivinen",

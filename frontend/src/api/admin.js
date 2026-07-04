@@ -36,6 +36,8 @@ export const adminApi = {
   downloadBackup: (filename) => fetchBinary(`/admin/system/backups/${encodeURIComponent(filename)}`),
   deleteBackup: (filename) => client.delete(`/admin/system/backups/${encodeURIComponent(filename)}`),
   disableUserMFA: (id) => client.post(`/admin/users/${id}/mfa/disable`),
+  getUserPasskeys: (id) => client.get(`/admin/users/${id}/passkeys`),
+  revokeUserPasskeys: (id) => client.delete(`/admin/users/${id}/passkeys`),
 
   getUserLoginHistory: (id) => client.get(`/admin/users/${id}/login-history`),
   listUserApiKeys: (id) => client.get(`/admin/users/${id}/api-keys`),

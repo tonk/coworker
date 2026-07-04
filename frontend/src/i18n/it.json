@@ -11,6 +11,7 @@
     "messages": "Chat",
     "about": "Informazioni",
     "user_menu": "Menu utente",
+    "logged_in_as": "Accesso effettuato come {username} (ID: {id})",
     "keyboard_shortcuts": "Scorciatoie da tastiera",
     "news": "Notizie",
     "downloads": "Download",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Anteprima",
     "company_logo_dark": "Logo aziendale (sfondo scuro)",
     "reset_mfa": "Reimposta MFA",
+    "revoke_passkeys": "Revoca passkey",
+    "revoke_passkeys_confirm": "Revocare tutte le passkey di {name}? Dovrà registrarne di nuove per accedere senza password.",
+    "passkeys_revoked": "Passkey revocate per {name}",
+    "revoke_passkeys_failed": "Impossibile revocare le passkey",
     "password_policy_title": "Policy password",
     "password_policy_hint": "Imposta i requisiti per le password degli utenti. Si applica a tutte le nuove password e reimpostazioni.",
     "password_min_length": "Lunghezza minima",
@@ -1406,7 +1411,9 @@
     "delete_error": "Rimozione non riuscita",
     "confirm": "Confirm",
     "confirm_delete": "Rimuovere la passkey \"{name}\"?",
-    "delete_aria": "Rimuovi passkey {name}"
+    "delete_aria": "Rimuovi passkey {name}",
+    "count_registered": "{count} registrate",
+    "none_registered": "Nessuna registrata"
   },
   "sla": {
     "active": "Attiva",

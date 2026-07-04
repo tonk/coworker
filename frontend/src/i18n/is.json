@@ -11,6 +11,7 @@
     "messages": "Spjall",
     "about": "Um",
     "user_menu": "Notendavalmynd",
+    "logged_in_as": "Skráð(ur) inn sem {username} (auðkenni: {id})",
     "keyboard_shortcuts": "Lyklaborðsflýtilyklar",
     "news": "Fréttir",
     "downloads": "Niðurhal",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Forskoðun",
     "company_logo_dark": "Lógó fyrirtækis (dökk bakgrunnur)",
     "reset_mfa": "Endurstilla MFA",
+    "revoke_passkeys": "Afturkalla aðgangslykla",
+    "revoke_passkeys_confirm": "Afturkalla alla aðgangslykla fyrir {name}? Viðkomandi þarf að skrá nýja til að skrá sig inn án lykilorðs.",
+    "passkeys_revoked": "Aðgangslyklar afturkallaðir fyrir {name}",
+    "revoke_passkeys_failed": "Ekki tókst að afturkalla aðgangslykla",
     "password_policy_title": "Lykilorðastefna",
     "password_policy_hint": "Settu kröfur fyrir lykilorð notenda. Gildir um öll ný lykilorð og endurstillingar.",
     "password_min_length": "Lágmarkslengd",
@@ -1406,7 +1411,9 @@
     "delete_error": "Fjarlæging mistókst",
     "confirm": "Confirm",
     "confirm_delete": "Fjarlægja aðgangslykil \"{name}\"?",
-    "delete_aria": "Fjarlægja aðgangslykil {name}"
+    "delete_aria": "Fjarlægja aðgangslykil {name}",
+    "count_registered": "{count} skráð(ir)",
+    "none_registered": "Ekkert skráð"
   },
   "sla": {
     "active": "Virkt",

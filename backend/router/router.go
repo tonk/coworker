@@ -106,6 +106,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.POST("/users/:id/restore", handlers.AdminRestoreUser)
 			admin.DELETE("/users/:id/purge", handlers.AdminPurgeUser)
 			admin.POST("/users/:id/mfa/disable", handlers.AdminDisableUserMFA)
+			admin.GET("/users/:id/passkeys", handlers.AdminListUserPasskeys)
+			admin.DELETE("/users/:id/passkeys", handlers.AdminRevokeUserPasskeys)
 			if !ttMode {
 				admin.GET("/users/:id/projects", handlers.AdminGetUserProjects)
 				admin.PUT("/users/:id/projects", handlers.AdminSetUserProjects)

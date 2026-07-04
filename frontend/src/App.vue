@@ -29,7 +29,7 @@
         <RouterView />
         <footer class="app-footer">
           <span class="footer-left">WarmDesk v{{ appVersion }}<span v-if="serverVersion" class="footer-server"> · server {{ serverVersion }}</span></span>
-          <span class="footer-right">{{ userFullName }}</span>
+          <span class="footer-right" :title="auth.user ? $t('nav.logged_in_as', { username: auth.user.username, id: auth.user.id }) : ''">{{ userFullName }}</span>
         </footer>
       </main>
     </div>

@@ -354,6 +354,35 @@ func AdminDisableUserMFA(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// AdminListUserPasskeys returns all registered passkeys for a user (admin only).
+func AdminListUserPasskeys(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	var creds []models.PasskeyCredential
+	database.DB.Where("user_id = ?", id).Order("created_at asc").Find(&creds)
+	c.JSON(http.StatusOK, creds)
+}
+
+// AdminRevokeUserPasskeys deletes all registered passkeys for a user (admin only).
+func AdminRevokeUserPasskeys(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	var user models.User
+	if err := database.DB.First(&user, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+	database.DB.Where("user_id = ?", id).Delete(&models.PasskeyCredential{})
+	recordAdminEvent(c, user.ID, user.Username, "admin_passkeys_revoked", "")
+	c.JSON(http.StatusOK, gin.H{"message": "passkeys revoked"})
+}
+
 func AdminDeleteUser(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

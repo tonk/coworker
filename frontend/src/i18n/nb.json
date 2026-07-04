@@ -11,6 +11,7 @@
     "messages": "Chatter",
     "about": "Om",
     "user_menu": "Brukermeny",
+    "logged_in_as": "Logget inn som {username} (ID: {id})",
     "keyboard_shortcuts": "Tastatursnarveier",
     "news": "Nyheter",
     "downloads": "Nedlastinger",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Forhåndsvisning",
     "company_logo_dark": "Firmalogo (mørk bakgrunn)",
     "reset_mfa": "Tilbakestill MFA",
+    "revoke_passkeys": "Tilbakekall passordnøkler",
+    "revoke_passkeys_confirm": "Tilbakekall alle passordnøkler for {name}? Vedkommende må registrere nye for å logge inn uten passord.",
+    "passkeys_revoked": "Passordnøkler tilbakekalt for {name}",
+    "revoke_passkeys_failed": "Kunne ikke tilbakekalle passordnøkler",
     "password_policy_title": "Passordsregler",
     "password_policy_hint": "Angi krav til brukerpassord. Gjelder alle nye passord og tilbakestillinger.",
     "password_min_length": "Minimumslengde",
@@ -1406,7 +1411,9 @@
     "delete_error": "Fjerning mislyktes",
     "confirm": "Confirm",
     "confirm_delete": "Fjern passordnøkkel \"{name}\"?",
-    "delete_aria": "Fjern passordnøkkel {name}"
+    "delete_aria": "Fjern passordnøkkel {name}",
+    "count_registered": "{count} registrert",
+    "none_registered": "Ingen registrert"
   },
   "sla": {
     "active": "Aktiv",

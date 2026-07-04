@@ -124,6 +124,7 @@
           :aria-expanded="menuOpen"
           aria-haspopup="menu"
           :aria-label="$t('nav.user_menu')"
+          :title="t('nav.logged_in_as', { username: auth.user.username, id: auth.user.id })"
         >
           <div class="avatar">
             <img v-if="userAvatar" :src="userAvatar" :alt="initials" class="avatar-img" @error="avatarErr = true" />

@@ -11,6 +11,7 @@
     "messages": "Chats",
     "about": "About",
     "user_menu": "User menu",
+    "logged_in_as": "Logged in as {username} (ID: {id})",
     "keyboard_shortcuts": "Keyboard Shortcuts",
     "news": "News",
     "downloads": "Downloads",
@@ -594,6 +595,10 @@
     "company_logo_preview": "Preview",
     "company_logo_dark": "Company Logo (dark background)",
     "reset_mfa": "Reset MFA",
+    "revoke_passkeys": "Revoke passkeys",
+    "revoke_passkeys_confirm": "Revoke all passkeys for {name}? They will need to register new ones to sign in without a password.",
+    "passkeys_revoked": "Passkeys revoked for {name}",
+    "revoke_passkeys_failed": "Failed to revoke passkeys",
     "password_policy_title": "Password Policy",
     "password_policy_hint": "Set requirements for user passwords. Applies to all new passwords and resets.",
     "password_min_length": "Minimum Length",
@@ -1522,7 +1527,9 @@
     "error": "Passkey operation failed",
     "delete_error": "Failed to remove passkey",
     "confirm_delete": "Remove passkey \"{name}\"?",
-    "delete_aria": "Remove passkey {name}"
+    "delete_aria": "Remove passkey {name}",
+    "count_registered": "{count} registered",
+    "none_registered": "None registered"
   },
   "sla": {
     "title": "SLA Policies",

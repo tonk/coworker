@@ -11,6 +11,7 @@
     "messages": "Discussions",
     "about": "À propos",
     "user_menu": "Menu utilisateur",
+    "logged_in_as": "Connecté en tant que {username} (ID : {id})",
     "keyboard_shortcuts": "Raccourcis clavier",
     "news": "Actualités",
     "downloads": "Téléchargements",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Aperçu",
     "company_logo_dark": "Logo de l'entreprise (fond sombre)",
     "reset_mfa": "Réinitialiser le MFA",
+    "revoke_passkeys": "Révoquer les clés d'accès",
+    "revoke_passkeys_confirm": "Révoquer toutes les clés d'accès de {name} ? De nouvelles clés devront être enregistrées pour se connecter sans mot de passe.",
+    "passkeys_revoked": "Clés d'accès révoquées pour {name}",
+    "revoke_passkeys_failed": "Échec de la révocation des clés d'accès",
     "password_policy_title": "Politique de mot de passe",
     "password_policy_hint": "Définissez les exigences pour les mots de passe des utilisateurs. S'applique à tous les nouveaux mots de passe et réinitialisations.",
     "password_min_length": "Longueur minimale",
@@ -1406,7 +1411,9 @@
     "delete_error": "Échec de la suppression",
     "confirm": "Confirm",
     "confirm_delete": "Supprimer la clé d'accès « {name} » ?",
-    "delete_aria": "Supprimer la clé d'accès {name}"
+    "delete_aria": "Supprimer la clé d'accès {name}",
+    "count_registered": "{count} enregistrée(s)",
+    "none_registered": "Aucune enregistrée"
   },
   "sla": {
     "active": "Actif",

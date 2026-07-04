@@ -11,6 +11,7 @@
     "messages": "Chats",
     "about": "Over",
     "user_menu": "Gebruikersmenu",
+    "logged_in_as": "Ingelogd als {username} (ID: {id})",
     "keyboard_shortcuts": "Sneltoetsen",
     "news": "Nieuws",
     "downloads": "Downloads",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Voorbeeld",
     "company_logo_dark": "Bedrijfslogo (donkere achtergrond)",
     "reset_mfa": "MFA resetten",
+    "revoke_passkeys": "Passkeys intrekken",
+    "revoke_passkeys_confirm": "Alle passkeys van {name} intrekken? Er moeten nieuwe worden geregistreerd om zonder wachtwoord in te loggen.",
+    "passkeys_revoked": "Passkeys van {name} ingetrokken",
+    "revoke_passkeys_failed": "Intrekken van passkeys mislukt",
     "password_policy_title": "Wachtwoordbeleid",
     "password_policy_hint": "Stel eisen voor gebruikerswachtwoorden in. Van toepassing op alle nieuwe wachtwoorden en resets.",
     "password_min_length": "Minimale lengte",
@@ -1406,7 +1411,9 @@
     "delete_error": "Verwijderen mislukt",
     "confirm": "Confirm",
     "confirm_delete": "Passkey \"{name}\" verwijderen?",
-    "delete_aria": "Passkey {name} verwijderen"
+    "delete_aria": "Passkey {name} verwijderen",
+    "count_registered": "{count} geregistreerd",
+    "none_registered": "Geen geregistreerd"
   },
   "sla": {
     "active": "Actief",

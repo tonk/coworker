@@ -11,6 +11,7 @@
     "messages": "Chattar",
     "about": "Om",
     "user_menu": "Användarmeny",
+    "logged_in_as": "Inloggad som {username} (ID: {id})",
     "keyboard_shortcuts": "Tangentbordsgenvägar",
     "news": "Nyheter",
     "downloads": "Nedladdningar",
@@ -555,6 +556,10 @@
     "company_logo_preview": "Förhandsvisning",
     "company_logo_dark": "Företagslogotyp (mörk bakgrund)",
     "reset_mfa": "Återställ MFA",
+    "revoke_passkeys": "Återkalla lösennycklar",
+    "revoke_passkeys_confirm": "Återkalla alla lösennycklar för {name}? Personen måste registrera nya för att logga in utan lösenord.",
+    "passkeys_revoked": "Lösennycklar återkallade för {name}",
+    "revoke_passkeys_failed": "Det gick inte att återkalla lösennycklar",
     "password_policy_title": "Lösenordspolicy",
     "password_policy_hint": "Ange krav för användarlösenord. Gäller alla nya lösenord och återställningar.",
     "password_min_length": "Minimilängd",
@@ -1406,7 +1411,9 @@
     "delete_error": "Borttagning misslyckades",
     "confirm": "Confirm",
     "confirm_delete": "Ta bort lösennyckeln \"{name}\"?",
-    "delete_aria": "Ta bort lösennyckel {name}"
+    "delete_aria": "Ta bort lösennyckel {name}",
+    "count_registered": "{count} registrerade",
+    "none_registered": "Inga registrerade"
   },
   "sla": {
     "active": "Aktiv",

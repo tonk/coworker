@@ -66,6 +66,10 @@
             <span class="info-label">{{ $t('settings.settings_updated_at') }}</span>
             <span class="info-value">{{ auth.user?.settings_updated_at ? formatDateTime(auth.user.settings_updated_at) : '-' }}</span>
           </div>
+          <div class="info-row" v-if="passkeySupported">
+            <span class="info-label">{{ $t('passkey.title') }}</span>
+            <span class="info-value">{{ passkeys.length > 0 ? $t('passkey.count_registered', { count: passkeys.length }) : $t('passkey.none_registered') }}</span>
+          </div>
         </div>
       </div>
 
