@@ -133,16 +133,28 @@ const primaryCurrency = computed(() => {
 })
 
 const summary = computed(() => {
+  // Credit notes carry a negative total and reference the invoice they credit
+  // via credited_invoice_id — fold that back into the original invoice's
+  // bucket instead of dropping it, so a credited invoice doesn't keep
+  // counting at its full original amount.
+  const creditByOriginal = new Map()
+  for (const inv of allInvoices.value) {
+    if (inv.status === 'credit_note' && inv.credited_invoice_id) {
+      creditByOriginal.set(inv.credited_invoice_id, (creditByOriginal.get(inv.credited_invoice_id) || 0) + inv.total)
+    }
+  }
+
   let totalInvoiced = 0, outstanding = 0, overdue = 0, paid = 0
   for (const inv of allInvoices.value) {
     if (inv.status === 'draft' || inv.status === 'credit_note') continue
+    const effectiveTotal = inv.total + (creditByOriginal.get(inv.id) || 0)
     if (inv.status === 'sent') {
-      totalInvoiced += inv.total
-      if (isOverdue(inv)) overdue += inv.total
-      else outstanding += inv.total
+      totalInvoiced += effectiveTotal
+      if (isOverdue(inv)) overdue += effectiveTotal
+      else outstanding += effectiveTotal
     } else if (inv.status === 'paid') {
-      totalInvoiced += inv.total
-      paid += inv.total
+      totalInvoiced += effectiveTotal
+      paid += effectiveTotal
     }
   }
   return { totalInvoiced, outstanding, overdue, paid }
