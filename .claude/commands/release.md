@@ -2,6 +2,23 @@ You are performing a WarmDesk release. The version to release is: $ARGUMENTS
 
 Follow these steps in order:
 
+## 0. Verify the version number follows semver
+
+WarmDesk follows real semver discipline as of v0.13.0 (see the "Versioning" section in CLAUDE.md). Before proceeding, classify every commit since the last tag (`git log --oneline $(git describe --tags --abbrev=0)..HEAD`) as one of:
+
+- **fix** — bug fix only, no new capability
+- **feat** — new backwards-compatible feature or additive surface (new endpoint, new config key with a default, new UI capability)
+- **breaking** — removed/renamed config or API surface, a DB change that isn't safely reversible, or a changed response shape
+
+Then confirm `$ARGUMENTS` matches what that classification requires, within the current `0.MINOR.PATCH` range:
+- All commits are **fix**-only → PATCH bump (e.g. `0.13.0` → `0.13.1`)
+- Any commit is **feat** → MINOR bump, PATCH resets to 0 (e.g. `0.13.4` → `0.14.0`)
+- Any commit is **breaking** → this needs a deliberate decision (MAJOR / the `1.0.0` milestone), not a routine bump — stop and confirm with the user rather than guessing
+
+If `$ARGUMENTS` doesn't match the required bump, say so and confirm the correct version before continuing — don't silently proceed with a mismatched number.
+
+Releases at or before v0.12.42 used a flat incrementing counter regardless of change type; don't use that range as a precedent for what kind of bump a given change "usually" gets.
+
 ## 1. Gather changes
 Run `git log --oneline $(git describe --tags --abbrev=0)..HEAD` to see all commits since the last tag. Use these to write the release notes.
 

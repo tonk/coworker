@@ -409,6 +409,20 @@ Both the `update_dismissed` key (which hides the banner) and the `update_check` 
 
 ---
 
+## Versioning
+
+As of **v0.13.0**, WarmDesk follows real semver discipline within the `0.MINOR.PATCH` range:
+
+- **PATCH** — bug fixes only. No new features, no additive config/API surface.
+- **MINOR** — new backwards-compatible features (new endpoint, new config key with a sane default, new UI capability). Resets PATCH to 0.
+- **MAJOR** — reserved for the eventual `1.0.0` stability milestone, or a genuine breaking change before then (removed/renamed config key or API field, a DB change that isn't safely reversible, a changed response shape).
+
+When preparing a release, classify every commit since the last tag as fix / feat / breaking first, then pick the version bump accordingly — don't just increment the last number. See `.claude/commands/release.md` for the full release checklist.
+
+Releases through **v0.12.42** used a flat incrementing counter on the last digit regardless of change type — that range is not semver-accurate, so don't infer change-type history from old tags.
+
+---
+
 ## Tests
 
 ### Running

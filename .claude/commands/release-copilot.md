@@ -4,6 +4,11 @@ This document converts the original release instructions into concise, runnable 
 
 Usage (manual):
 
+0. Verify the version number follows semver (see "Versioning" in CLAUDE.md, effective v0.13.0)
+   - Classify every commit since the last tag as fix / feat / breaking.
+   - All fixes → PATCH bump. Any feat → MINOR bump (PATCH resets to 0). Any breaking change → stop and confirm with the user; don't guess a MAJOR/1.0.0 bump on your own.
+   - Releases at or before v0.12.42 used a flat incrementing counter regardless of change type — don't treat that range as precedent.
+
 1. Gather changes
    git log --oneline $(git describe --tags --abbrev=0)..HEAD
    Use the output to write user-facing release notes.
