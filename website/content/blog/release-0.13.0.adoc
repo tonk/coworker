@@ -1,0 +1,36 @@
+---
+title: "v0.13.0: See who has passkeys registered"
+date: "2026-07-04"
+author: "Ton Kersten"
+description: "See whether your account (or any user's, as an admin) has passkeys registered, a hover tooltip confirming who you're logged in as, and admin controls to revoke a user's passkeys."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` closes a small but real gap: passkeys were only ever visible from inside the Security settings tab, with no quick way to confirm they were registered — and no way at all for an admin to check or manage another user's passkeys.
+
+== Passkey status, at a glance
+
+Settings → Profile now shows whether your account has any passkeys registered, right alongside your username and last-login info — no need to switch to the Security tab just to check.
+
+== "Who am I logged in as?"
+
+Hovering the avatar in the header, or your display name in the footer, now shows a tooltip: `Logged in as {username} (ID: {id})`. Handy if you're juggling multiple accounts or servers and want a quick confirmation of who's currently signed in.
+
+== Admin passkey management
+
+Admin → Users → Edit User has a new *Passkeys* field next to MFA. It shows a registered-count badge, or "None registered" if the user hasn't set any up. If someone loses their device, click *Revoke passkeys* to clear all of that user's passkeys at once — they'll register new ones the next time they want to sign in without a password.
+
+This is backed by two new endpoints, `GET`/`DELETE /admin/users/:id/passkeys`, since there was previously no admin-facing route into passkey data at all. Revoking is logged as an `admin_passkeys_revoked` event in the user's Login History.
+
+== Versioning changes
+
+Starting with this release, WarmDesk follows real semantic versioning: PATCH bumps for bug fixes, MINOR bumps for new backwards-compatible features (like this one), and MAJOR reserved for the eventual `1.0.0` stability milestone or a genuine breaking change. Releases through `v0.12.42` used a flat incrementing counter — don't read change-type history into those version numbers.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.

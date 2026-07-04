@@ -18,12 +18,12 @@ enableEmoji = true
   warmdesk_version = "v0.13.0"
   release_date     = "2026-07-04"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.12.42/"
+  release_blog     = "blog/release-0.13.0/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Require password change on next login** — admins can force a password reset, with a built-in password generator.",
-    "**Full localization coverage** — all 11 non-English locales now have complete, accurate translations everywhere in the app.",
-    "**Fixes** — chart tooltips, invoice revenue totals, and a systemd upload-permissions issue.",
+    "**Passkey visibility** — see whether your account has passkeys registered, right in Settings → Profile.",
+    "**Admin passkey management** — see and revoke any user's passkeys from Edit User.",
+    "**Logged-in-as tooltip** — hover the avatar or footer name to confirm who you're signed in as.",
   ]
 
 [markup]
