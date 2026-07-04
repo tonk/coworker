@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.12.42)
+## Latest release (v0.13.0)
 
-- **Admin — require password change on next login** — force a password reset on a user's next login, settable from the admin user forms, with a matching password generator (Generate/Copy buttons).
-- **Fixes** — chart tooltips no longer duplicate the activity name, credit notes now net correctly into invoice revenue totals, and a systemd deployment issue that could break file uploads is resolved.
-- **Localization** — all 11 non-English locales now have complete, translated coverage of the app (84 previously-missing keys backfilled, hundreds of leftover English strings translated).
+- **Passkey visibility** — see whether your account (or, for admins, any user's account) has passkeys registered, with a hover tooltip on the avatar/footer showing who you're logged in as.
+- **Admin — revoke a user's passkeys** — clear all of a user's passkeys at once from the Edit User panel, e.g. after a lost device.
 
 ## Experiment
 
@@ -354,7 +353,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français), Danish (Dansk), Swedish (Svenska), Norwegian (Norsk), Finnish (Suomi), Icelandic (Íslenska), Portuguese (Português), Italian (Italiano)
 - **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, time notation (decimal or HH:MM), password change
 - **Remember me** — optional checkbox on the login page saves the email/username to the browser's local storage and pre-fills it on the next visit
-- **Passkey sign-in** — register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page; uses WebAuthn discoverable credentials so no username is required before the authenticator prompt; browser-only (Tauri desktop excluded)
+- **Passkey sign-in** — register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page; uses WebAuthn discoverable credentials so no username is required before the authenticator prompt; browser-only (Tauri desktop excluded); your registered-passkey count is shown in Settings → Profile, and admins can see and revoke any user's passkeys from Edit User
 - **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
 - **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
 - **Require password change on next login** — admins can flag a user (from New User or Edit User) to be forced through a password change on their next login, via any auth method; a Generate/Copy password helper is available in both forms

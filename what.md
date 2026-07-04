@@ -771,3 +771,6 @@ Create an application that has all these features and requirements
 - Add a per-user "require password change on next login" flag, settable from the admin New User and Edit User forms, enforced across password/passkey/MFA login and cleared automatically on next password change
 - Add Generate/Copy password buttons to the admin New User and Edit User password fields
 - Backfill 84 i18n keys missing from all 11 non-English locales and translate remaining untranslated English strings across every locale
+- Show a passkey-registered indicator in Settings → Profile, and a "Logged in as {username} (ID: {id})" hover tooltip on the header avatar and footer display name
+- Add admin visibility and management for user passkeys: a registered-count badge and Revoke passkeys button in Edit User, backed by new GET/DELETE /admin/users/:id/passkeys endpoints
+- Adopt real semver (PATCH/MINOR/MAJOR) versioning discipline starting at v0.13.0, replacing the flat incrementing counter used through v0.12.42

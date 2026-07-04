@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.13.0 — 2026-07-04
+
+### Added
+- **Passkey visibility** — Settings → Profile now shows whether your account has any passkeys registered. Hovering the header avatar or the footer display name shows "Logged in as {username} (ID: {id})".
+- **Admin — passkey management** — Admin → Users → Edit User now has a Passkeys field next to MFA, showing a registered-count badge (or "None registered") with a Revoke passkeys button to clear all of a user's passkeys at once (e.g. after a lost device). There was previously no admin-facing way to see or manage another user's passkeys.
+
+### Changed
+- **Versioning** — WarmDesk now follows real semver (PATCH for fixes, MINOR for new backwards-compatible features, MAJOR reserved for the eventual 1.0.0 stability milestone or a genuine breaking change) instead of a flat incrementing counter.
+
 ## v0.12.42 — 2026-07-04
 
 ### Added
