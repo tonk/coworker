@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.14.1 — 2026-07-05
+
+### Fixed
+- **Charts — hover offset when the app is zoomed** — hovering a bar or stacked-bar chart (Report tab chart view, and the project Charts view) could highlight the wrong bar, worse the further from the chart's left edge, whenever the app was zoomed in or out (Ctrl+/Ctrl-). Chart canvases now render at a fixed size regardless of the app's zoom level, keeping their hover detection accurate at any zoom.
+
 ## v0.14.0 — 2026-07-05
 
 ### Added

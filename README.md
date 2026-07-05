@@ -8,11 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.14.0)
+## Latest release (v0.14.1)
 
-- **Time tracking report — undeclarable chart basis** — see how much unpaid/undeclarable time you've logged per week, month, or year, right alongside Total and Declarable in the Report tab's chart view.
-- **Admin — passkey column** — the Users table now shows at a glance which users have a passkey registered.
-- **Auth rate limiting** — a successful login now clears your rate-limit bucket, so a few earlier mistyped attempts no longer risk locking you out.
+- **Charts — fixed hover offset when zoomed** — hovering a bar or stacked-bar chart no longer highlights the wrong bar when the app is zoomed in or out.
 
 ## Experiment
 

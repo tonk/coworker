@@ -778,3 +778,4 @@ Create an application that has all these features and requirements
 - Add a Passkey column to the Admin Users table showing at a glance which users have a passkey registered; shorten "Last Password Change" to "Last PWD Change" to make room for it
 - Clear the auth rate limit bucket for an IP after a fully successful login (password, passkey, MFA, or refresh) so earlier failed attempts no longer risk locking out a user who just authenticated correctly
 - Fix passkey login errors being masked by a bogus token-refresh retry: the 401-retry interceptor now excludes /auth/passkey/login so the real failure reason is shown instead of a generic "missing refresh token" message
+- Fix bar and stacked-bar chart hover offset when the app is zoomed in or out: chart canvases now cancel the app-wide CSS zoom locally so Chart.js's hover hit-testing always operates in a consistent, unzoomed coordinate space
