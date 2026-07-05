@@ -360,6 +360,18 @@ const ZOOM_MAX = 2.0
 
 function applyZoom(level) {
   document.documentElement.style.zoom = level
+  // Exposed so Chart.js canvases can cancel the page zoom locally (see
+  // .rpt-chart-wrap / .chart-wrap). Under CSS `zoom`, Firefox diverges
+  // Element.clientWidth/ResizeObserver (unscaled) from getBoundingClientRect
+  // and real pointer coordinates (scaled) — Chart.js's own size/DPR
+  // measurement and its coordinate math both assume those always match, so
+  // canvases end up rendered at the wrong size and every hover position
+  // drifts off the actual bars, worse toward the far edge. Rather than
+  // fight that inside Chart.js, these charts opt out of app zoom entirely
+  // via `zoom: calc(1 / var(--app-zoom))`, which keeps them in a
+  // self-consistent, always-unzoomed environment Chart.js already handles
+  // correctly.
+  document.documentElement.style.setProperty('--app-zoom', level)
   localStorage.setItem(ZOOM_KEY, level)
 }
 

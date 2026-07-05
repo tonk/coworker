@@ -939,6 +939,13 @@ onBeforeUnmount(() => {
 .sprint-select { width: auto; min-width: 180px; font-size: 13px; padding: 6px 10px; }
 
 .chart-wrap {
+  /* Opt Chart.js canvases out of the app-wide zoom: Chart.js's own size/DPR
+     measurement and coordinate math assume "CSS pixel width" and "rendered
+     width" always match, which CSS `zoom` breaks (confirmed in Firefox) and
+     causes hover positions to drift off the actual bars. Canceling the
+     inherited zoom here keeps Chart.js in the self-consistent, unzoomed
+     environment it already handles correctly. */
+  zoom: calc(1 / var(--app-zoom, 1));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);

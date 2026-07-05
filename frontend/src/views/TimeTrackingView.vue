@@ -6104,7 +6104,13 @@ td.c-day-holiday-cell.c-day-popup-open {
 }
 .rpt-chart-title { font-size: 14px; font-weight: 600; margin: 0 0 16px; color: var(--color-text); }
 .rpt-chart-empty { padding: 48px; text-align: center; color: var(--color-text-muted); font-size: 14px; }
-.rpt-chart-wrap { max-width: 900px; margin: 0 auto; }
+/* Opt Chart.js canvases out of the app-wide zoom: Chart.js's own size/DPR
+   measurement and coordinate math assume "CSS pixel width" and "rendered
+   width" always match, which CSS `zoom` breaks (confirmed in Firefox) and
+   causes hover positions to drift off the actual bars. Canceling the
+   inherited zoom here keeps Chart.js in the self-consistent, unzoomed
+   environment it already handles correctly. */
+.rpt-chart-wrap { max-width: 900px; margin: 0 auto; zoom: calc(1 / var(--app-zoom, 1)); }
 .rpt-chart-wrap-pie { max-width: 420px; }
 
 /* Report header: logo + company name + period */
