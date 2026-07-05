@@ -662,6 +662,17 @@ func pdfEntryDeclarable(e models.TimeEntry) int {
 	return d
 }
 
+// pdfEntryUndecl returns the undeclarable minutes for a single entry.
+func pdfEntryUndecl(e models.TimeEntry) int {
+	if e.Project == nil || e.Project.UndeclarableMinutes <= 0 {
+		return 0
+	}
+	if e.Minutes < e.Project.UndeclarableMinutes {
+		return e.Minutes
+	}
+	return e.Project.UndeclarableMinutes
+}
+
 // fmtDecimalH formats minutes as decimal hours ("8.00", "7.50").
 func fmtDecimalH(minutes int) string {
 	if minutes == 0 {

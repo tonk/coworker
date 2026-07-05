@@ -833,6 +833,7 @@
           <select id="rpt-chart-basis" class="form-input fi-sm" v-model="reportChartBasis">
             <option value="declarable">{{ $t('timeTracking.time_basis_declarable') }}</option>
             <option value="total">{{ $t('timeTracking.time_basis_total') }}</option>
+            <option value="undeclarable">{{ $t('timeTracking.time_basis_undeclarable') }}</option>
           </select>
         </div>
         <div class="tt-export-group" v-if="report && report.total_minutes > 0 && reportViewMode === 'chart'">
@@ -4251,7 +4252,7 @@ async function loadReport() {
 // ── Report chart ─────────────────────────────────────────────────────────
 const reportViewMode  = ref('table') // 'table' | 'chart'
 const reportChartType = ref('bar')   // 'bar' | 'pie' | 'stacked'
-const reportChartBasis = ref('declarable') // 'declarable' | 'total'
+const reportChartBasis = ref('declarable') // 'declarable' | 'total' | 'undeclarable'
 const reportChartCanvas = ref(null)
 let reportChartInstance = null
 
@@ -4293,7 +4294,9 @@ const reportActivityBreakdown = computed(() => {
   for (const grp of report.value.groups) {
     for (const e of grp.entries) {
       const label = e.description?.trim() || t('timeTracking.no_activity')
-      const minutes = reportChartBasis.value === 'total' ? e.minutes : reportEntryDeclarable(e)
+      const minutes = reportChartBasis.value === 'total' ? e.minutes
+        : reportChartBasis.value === 'undeclarable' ? entryUndecl(e)
+        : reportEntryDeclarable(e)
       totals.set(label, (totals.get(label) || 0) + minutes)
       if (!customers.has(label)) customers.set(label, new Set())
       customers.get(label).add(e.customer?.name || t('timeTracking.no_customer'))
@@ -4337,7 +4340,9 @@ const reportStackedBreakdown = computed(() => {
     const totals = new Map()
     for (const e of grp.entries) {
       const label = e.description?.trim() || t('timeTracking.no_activity')
-      const minutes = reportChartBasis.value === 'total' ? e.minutes : reportEntryDeclarable(e)
+      const minutes = reportChartBasis.value === 'total' ? e.minutes
+        : reportChartBasis.value === 'undeclarable' ? entryUndecl(e)
+        : reportEntryDeclarable(e)
       if (minutes <= 0) continue
       totals.set(label, (totals.get(label) || 0) + minutes)
       grandTotals.set(label, (grandTotals.get(label) || 0) + minutes)

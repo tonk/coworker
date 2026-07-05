@@ -44,6 +44,7 @@
                 <th>{{ $t('admin.global_role') }}</th>
                 <th>{{ $t('admin.last_login') }}</th>
                 <th>{{ $t('admin.last_password_change') }}</th>
+                <th>{{ $t('admin.passkey') }}</th>
                 <th>{{ $t('admin.mfa_enabled') }}</th>
                 <th>{{ $t('common.status') }}</th>
                 <th>{{ $t('common.actions') }}</th>
@@ -78,6 +79,10 @@
                 </td>
                 <td>
                   <small>{{ user.password_changed_at ? formatDateTime(user.password_changed_at) : '-' }}</small>
+                </td>
+                <td>
+                  <span v-if="user.has_passkey" class="badge badge-mfa" :title="$t('passkey.title')">{{ $t('admin.passkey') }}</span>
+                  <span v-else class="text-muted">-</span>
                 </td>
                 <td>
                   <span v-if="user.totp_enabled" class="badge badge-mfa" :title="$t('mfa.title')">MFA</span>

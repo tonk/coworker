@@ -61,7 +61,12 @@ func activityBreakdown(entries []models.TimeEntry, basis, noActivityLabel, other
 			label = noActivityLabel
 		}
 		minutes := e.Minutes
-		if basis != "total" {
+		switch basis {
+		case "total":
+			// minutes already set to e.Minutes
+		case "undeclarable":
+			minutes = pdfEntryUndecl(e)
+		default:
 			minutes = pdfEntryDeclarable(e)
 		}
 		if minutes <= 0 {
@@ -119,7 +124,12 @@ func stackedBreakdown(groups []timeEntryGroup, basis, noActivityLabel, otherLabe
 				label = noActivityLabel
 			}
 			minutes := e.Minutes
-			if basis != "total" {
+			switch basis {
+			case "total":
+				// minutes already set to e.Minutes
+			case "undeclarable":
+				minutes = pdfEntryUndecl(e)
+			default:
 				minutes = pdfEntryDeclarable(e)
 			}
 			if minutes <= 0 {

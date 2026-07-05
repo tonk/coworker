@@ -20,7 +20,23 @@ func AdminListUsers(c *gin.Context) {
 	} else {
 		database.DB.Find(&users)
 	}
-	c.JSON(http.StatusOK, users)
+
+	var passkeyUserIDs []uint
+	database.DB.Model(&models.PasskeyCredential{}).Distinct().Pluck("user_id", &passkeyUserIDs)
+	hasPasskey := make(map[uint]bool, len(passkeyUserIDs))
+	for _, id := range passkeyUserIDs {
+		hasPasskey[id] = true
+	}
+
+	type adminUserResponse struct {
+		models.User
+		HasPasskey bool `json:"has_passkey"`
+	}
+	result := make([]adminUserResponse, len(users))
+	for i, u := range users {
+		result[i] = adminUserResponse{User: u, HasPasskey: hasPasskey[u.ID]}
+	}
+	c.JSON(http.StatusOK, result)
 }
 
 // AdminRestoreUser un-deletes a soft-deleted user.
