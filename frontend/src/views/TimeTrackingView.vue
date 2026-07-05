@@ -4443,6 +4443,7 @@ function renderReportChart() {
     options: {
       responsive: true,
       color: textColor,
+      aspectRatio: isPie ? 1.6 : undefined,
       plugins: {
         legend: { display: isPie, position: 'right', labels: { color: textColor } },
         tooltip: { callbacks: {
@@ -6111,7 +6112,7 @@ td.c-day-holiday-cell.c-day-popup-open {
    inherited zoom here keeps Chart.js in the self-consistent, unzoomed
    environment it already handles correctly. */
 .rpt-chart-wrap { max-width: 900px; margin: 0 auto; zoom: calc(1 / var(--app-zoom, 1)); }
-.rpt-chart-wrap-pie { max-width: 420px; }
+.rpt-chart-wrap-pie { max-width: 640px; }
 
 /* Report header: logo + company name + period */
 .rpt-header {
