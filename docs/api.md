@@ -111,14 +111,10 @@ curl -X POST http://localhost:8080/api/v1/auth/api-keys \
 The response includes the full key (prefixed `cwk_...`) — **it is only shown
 once**. Subsequent list calls only return the key prefix.
 
-Pass the key in one of two ways:
+Pass the key in the `X-API-Key` header:
 
 ```
 X-API-Key: <key>
-```
-or as a query parameter:
-```
-GET /api/v1/projects/my-project/cards/1?api_key=<key>
 ```
 
 API keys work on all authenticated endpoints, not just the Ticket API.
@@ -143,8 +139,7 @@ POST /api/v1/ticket/{projectSlug}/cards
 {
   "title":       "Deploy v1.2.3 to production",
   "description": "Automated deploy triggered by tag v1.2.3",
-  "column_id":   5,
-  "priority":    "high"
+  "column_id":   5
 }
 ```
 
@@ -152,20 +147,13 @@ POST /api/v1/ticket/{projectSlug}/cards
 |-------|------|----------|-------|
 | `title` | string | yes | Card title |
 | `description` | string | no | Markdown body |
-| `column_id` | number | no | Target column; defaults to first column |
-| `priority` | string | no | `none` / `low` / `medium` / `high` / `critical` |
+| `column_id` | number | yes | Target column ID (must belong to the project) |
 
-**Response** `201 Created`
+Note: `priority` is not accepted by this endpoint — new cards are created with
+the model default (`none`) regardless of what's sent.
 
-```json
-{
-  "id":          42,
-  "card_number": 17,
-  "title":       "Deploy v1.2.3 to production",
-  "column_id":   5,
-  "project_id":  3
-}
-```
+**Response** `201 Created` — the created `Card` object (id, card_number, title,
+description, column_id, project_id, position, priority, timestamps, etc.).
 
 ### Add a comment
 
@@ -203,11 +191,8 @@ PATCH /api/v1/ticket/{projectSlug}/cards/{cardId}/move
 | `column_id` | number | yes | Target column ID |
 | `position` | number | no | Sort order within the column; omit to append at the end |
 
-**Response** `200 OK`
-
-```json
-{ "ok": true }
-```
+**Response** `200 OK` — the updated `Card` object (with `CreatedBy`, `Assignee`,
+and `Labels` preloaded), not a bare `{ok:true}`.
 
 ### Example: full CI pipeline workflow
 
@@ -216,11 +201,11 @@ API_KEY="cwk_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6"
 BASE="https://warmdesk.example.com/api/v1/ticket"
 PROJECT="my-project"
 
-# 1. Create a deploy card
+# 1. Create a deploy card (column_id 3 = "Backlog" in this example)
 CARD=$(curl -s -X POST "$BASE/$PROJECT/cards" \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"title":"Deploy v1.2.3","priority":"high"}')
+  -d '{"title":"Deploy v1.2.3","column_id":3}')
 
 CARD_ID=$(echo $CARD | jq .id)
 
@@ -267,6 +252,7 @@ POST /api/v1/customers/{customerId}/tickets/{ticketId}/messages
 |-------|------|----------|-------|
 | `body` | string | yes | Message text; Markdown supported |
 | `is_private` | bool | no | Default `false`. When `true`, the message is an internal note: not emailed to the ticket's original sender and hidden from users with the `customer` global role. Users with the `customer` global role cannot set this field — it is silently reset to `false`. |
+| `parent_id` | number | no | ID of another message on the same ticket to reply to (threaded reply) |
 
 **Response** `201 Created` — the created message object.
 
@@ -424,7 +410,9 @@ POST /api/v1/github-webhook/{token}
    **Settings → Webhooks → Add webhook** and set:
    - Payload URL: `https://warmdesk.example.com/api/v1/github-webhook/{token}`
    - Content type: `application/json`
-   - Secret: leave empty (or enter any string — currently not validated)
+   - Secret: leave empty. If a signature header is present WarmDesk verifies it
+     against the webhook's own URL token — setting a different secret in
+     GitHub will make every delivery fail signature verification.
    - Events: choose **Let me select individual events** and enable at minimum:
      - Pushes
      - Pull requests
@@ -559,6 +547,7 @@ Common status codes:
 | `401` | Unauthorized — missing or invalid token / API key |
 | `403` | Forbidden — insufficient role |
 | `404` | Not found |
+| `429` | Too many requests — rate limit exceeded (auth, message-send, password-reset, and media-proxy endpoints) |
 | `500` | Internal server error |
 
 ### Dates
@@ -633,8 +622,8 @@ POST /api/v1/customers/{customerId}/invoices
   "currency":        "EUR",
   "notes":           "May services",
   "line_items": [
-    { "description": "Backend development", "quantity": 20, "unit_price": 95.00 },
-    { "description": "DevOps consulting",   "quantity": 4,  "unit_price": 110.00 }
+    { "description": "Backend development", "quantity": 20, "unit_price": 95.00, "amount": 1900.00 },
+    { "description": "DevOps consulting",   "quantity": 4,  "unit_price": 110.00, "amount": 440.00 }
   ]
 }
 ```
@@ -647,15 +636,19 @@ POST /api/v1/customers/{customerId}/invoices
 | `vat_rate` | float | no | Default 0 |
 | `currency` | string | no | ISO 4217 code, e.g. `EUR` |
 | `notes` | string | no | Free text; appears on the PDF |
-| `line_items` | array | no | See line item fields below |
+| `line_items` | array | yes | See line item fields below |
 
 **Line item fields**
 
 | Field | Type | Notes |
 |-------|------|-------|
 | `description` | string | Row label |
-| `quantity` | float | Number of units |
-| `unit_price` | float | Price per unit (exc. VAT) |
+| `amount` | float | **Required.** The billable amount for this row — this is what's summed into the invoice subtotal. |
+| `quantity` | float | Optional, display-only — not multiplied by `unit_price` server-side |
+| `unit_price` | float | Optional, display-only — not multiplied by `quantity` server-side |
+| `date` | string | Optional; shown per-row on the PDF |
+| `project_name` | string | Optional; shown per-row on the PDF |
+| `currency` | string | Optional. If the invoice-level `currency` field is omitted, the currency of the first line item that specifies one is used for the whole invoice. |
 
 The invoice is created in `draft` status.
 
@@ -667,16 +660,23 @@ The invoice is created in `draft` status.
 PUT /api/v1/customers/{customerId}/invoices/{invoiceId}
 ```
 
-Accepts the same body as create. All fields are optional (patch-style). Only
-`draft` invoices may be edited — attempting to modify a `sent` or `paid` invoice
-returns `403 Forbidden`.
-
-Additional field available on update:
+Accepts a patch-style body — all fields are optional, and only the fields you
+send are updated. There is **no status restriction**: `sent` and `paid`
+invoices can be edited the same as `draft` ones.
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `status` | string | `draft` / `sent` / `paid` / `credit_note` |
-| `payment_method` | string | `bank` / `card` / `cash` / `other` — recorded when marking as paid |
+| `status` | string | `draft` / `sent` / `paid` (setting `credit_note` here is rejected — use the credit-note endpoint below) |
+| `notes` | string | Replaces the notes text |
+| `due_date` | string (date) | `YYYY-MM-DD`; omit or send empty to clear it |
+| `vat_rate` | float | Recomputes `vat_amount` and `total` from the current subtotal |
+| `line_items` | array | Replaces all line items and recomputes `subtotal`/`vat_amount`/`total` |
+| `payment_method` | string | Free text, e.g. `bank` / `card` / `cash` / `other` |
+| `payment_date` | string (date) | `YYYY-MM-DD` |
+| `payment_amount` | float | Amount actually received |
+| `payment_reference` | string | e.g. a bank transaction ID |
+
+**Response** `200 OK` — the updated invoice object.
 
 ### Delete an invoice
 
@@ -684,7 +684,10 @@ Additional field available on update:
 DELETE /api/v1/customers/{customerId}/invoices/{invoiceId}
 ```
 
-Only `draft` invoices may be deleted. Returns `204 No Content` on success.
+Only `draft` invoices and credit notes may be deleted; any other status
+returns `400 Bad Request`.
+
+**Response** `200 OK` — `{ "message": "deleted" }` (not `204 No Content`).
 
 ### Send an invoice (mark as sent)
 
@@ -692,7 +695,26 @@ Only `draft` invoices may be deleted. Returns `204 No Content` on success.
 POST /api/v1/customers/{customerId}/invoices/{invoiceId}/send
 ```
 
-No body required. Changes the invoice status to `sent`.
+**Body**
+
+```json
+{
+  "to":      "billing@customer.example.com",
+  "subject": "Invoice INV-0001",
+  "body":    "Please find your invoice attached."
+}
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `to` | string | yes | Recipient email address |
+| `subject` | string | no | Defaults to `Invoice {invoice_number}` |
+| `body` | string | no | Plain-text body; defaults to a generic message |
+| `body_html` | string | no | Rendered HTML version (e.g. markdown→HTML from the frontend); defaults to `<p>{body}</p>` |
+
+Emails the invoice PDF as an attachment to `to`, and — only if the invoice is
+still in `draft` status — changes its status to `sent`. Returns
+`503 Service Unavailable` if SMTP is not configured.
 
 **Response** `200 OK` — the updated invoice object.
 
@@ -702,11 +724,15 @@ No body required. Changes the invoice status to `sent`.
 POST /api/v1/customers/{customerId}/invoices/{invoiceId}/credit-note
 ```
 
-Creates a new invoice that credits the original. The new invoice has:
+Creates a new invoice that credits the original. Returns `400 Bad Request`
+with `"cannot credit a draft invoice"` if the original invoice is still a
+draft. The new invoice has:
 - `status` set to `credit_note`
 - `credited_invoice_id` set to the original invoice's ID
-- Line items with negated amounts
-- The original invoice is marked void (status set to `credit_note` as well)
+- Line items, subtotal, VAT amount, and total all negated from the original
+
+The original invoice's own `status` is **not** changed — it keeps whatever
+status it had (e.g. `sent`) before the credit note was created.
 
 No body required.
 
@@ -753,8 +779,8 @@ settings that users can apply when creating a new invoice.
 GET /api/v1/invoice-templates
 ```
 
-Returns all active templates. No admin role required — any authenticated user
-may read templates.
+Returns all templates, ordered by name. No admin role required — any
+authenticated user may read templates.
 
 **Response** `200 OK`
 
@@ -786,17 +812,21 @@ POST /api/v1/admin/invoice-templates
 ```json
 {
   "name":              "Monthly Support",
-  "line_items":        [{ "description": "Monthly support", "quantity": 1, "unit_price": 500 }],
+  "line_items":        "[{\"description\":\"Monthly support\",\"quantity\":1,\"unit_price\":500,\"amount\":500}]",
   "default_vat_rate":  21.0,
   "default_currency":  "EUR",
   "notes":             "Monthly retainer — 8 h included"
 }
 ```
 
+Unlike an invoice's own `line_items` field, a template's `line_items` is a
+**plain JSON-encoded string**, not a JSON array — encode it client-side before
+sending (`JSON.stringify(...)`).
+
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | `name` | string | yes | Unique display name |
-| `line_items` | array | no | Pre-defined line items (same schema as invoice line items) |
+| `line_items` | string | no | JSON-encoded array of line items (same schema as invoice line items) |
 | `default_vat_rate` | float | no | Pre-fills the VAT rate field |
 | `default_currency` | string | no | Pre-fills the currency field |
 | `notes` | string | no | Default notes text for the invoice |
@@ -809,7 +839,8 @@ POST /api/v1/admin/invoice-templates
 PUT /api/v1/admin/invoice-templates/{id}
 ```
 
-Same body as create; all fields optional.
+Same body as create — `name` is still **required** on update, since it's a
+full replace, not a patch.
 
 **Response** `200 OK` — the updated template object.
 
@@ -819,7 +850,7 @@ Same body as create; all fields optional.
 DELETE /api/v1/admin/invoice-templates/{id}
 ```
 
-**Response** `204 No Content`
+**Response** `200 OK` — `{ "message": "deleted" }` (not `204 No Content`).
 
 ---
 
@@ -886,7 +917,8 @@ POST /api/v1/customers/{customerId}/contacts
 PUT /api/v1/customers/{customerId}/contacts/{contactId}
 ```
 
-Same body as create; all fields optional.
+Same body as create — `name` is still **required** on update, since it's a
+full replace, not a patch.
 
 **Response** `200 OK` — the updated contact object.
 
@@ -896,4 +928,4 @@ Same body as create; all fields optional.
 DELETE /api/v1/customers/{customerId}/contacts/{contactId}
 ```
 
-**Response** `204 No Content`
+**Response** `200 OK` — `{ "message": "deleted" }` (not `204 No Content`).

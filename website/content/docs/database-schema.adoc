@@ -16,29 +16,42 @@ You should never need to touch the database directly for routine upgrades.
 
 Supported engines: **SQLite** (default), **PostgreSQL**, and **MySQL**.
 
+As of this writing `autoMigrate()` (`backend/database/database.go`) migrates 64 model structs. GORM's default naming
+strategy pluralizes struct names to derive table names (e.g. `CardHistory` → `card_histories`, `SlaPolicy` → `sla_policies`),
+which is why some table names below look slightly different from their Go type name.
+
 ---
 
 == Design decisions
 
 === Fractional position ordering
 
-Columns and cards use a `position REAL` (float) column.
-Inserting between two items assigns the midpoint of the surrounding values.
+Columns, cards, epics, sprints, sprint-card links, and both card and ticket checklist items use a `position REAL` (float)
+column. Inserting between two items assigns the midpoint of the surrounding values.
 This avoids renumbering the entire list on every drag-and-drop.
 
 === Atomic card numbering
 
-Each project has a `card_counter INTEGER` column.
-The backend increments it atomically when creating a card and uses the result as the human-readable number (e.g. `PRJ-42`).
+Each project has a `card_counter INTEGER` column (not exposed via the API — its JSON tag is `"-"` — but it is a real,
+persisted column). The backend increments it atomically when creating a card and uses the result as the human-readable
+number (e.g. `PRJ-42`).
 
 === Polymorphic attachments
 
-The `attachments` table stores files for cards, card comments, chat messages, and direct messages through two columns: `owner_type` (string) and `owner_id` (integer).
-Valid owner types: `card`, `card_comment`, `chat_message`, `conv_message`.
+The `attachments` table stores files through two columns: `owner_type` (string) and `owner_id` (integer), rather than a
+separate table per owner kind. Valid owner types: `card`, `card_comment`, `chat_message`, `conv_message`, `ticket`,
+`ticket_message`. `checkAttachmentAccess` (`handlers/attachment.go`) walks the ownership chain for each type back to a
+project membership or conversation membership check before serving a download.
+
+`message_reactions` uses the same polymorphic pattern for emoji reactions, but is limited to `chat_message` and
+`conv_message`.
 
 === System settings
 
-Operational settings (SMTP, branding, locale defaults, session timeout, …) live in a `system_settings` key/value table and are read at request time so changes take effect without a restart.
+Operational settings (SMTP, branding, locale defaults, session timeout, …) live in a `system_settings` key/value table
+and are read at request time via `loadAllSettings()` so changes take effect without a restart. The table has only two
+columns — `key` (primary key) and `value` — with no surrogate `id` and no timestamps. All valid keys are defined as
+constants in `handlers/system.go`.
 
 ---
 
@@ -54,18 +67,56 @@ Operational settings (SMTP, branding, locale defaults, session timeout, …) liv
 |`created_at` |TIMESTAMP | |GORM auto-field
 |`updated_at` |TIMESTAMP | |GORM auto-field
 |`deleted_at` |TIMESTAMP |nullable, index |Soft-delete support
-|`email` |VARCHAR |unique, not null |Login identifier
-|`username` |VARCHAR |unique, not null |Display name
-|`password_hash` |VARCHAR |not null |bcrypt, cost 12
-|`global_role` |VARCHAR |default `user` |`user`, `admin`
-|`locale` |VARCHAR |default `en` |UI language preference
-|`theme` |VARCHAR |default `light` |`light`, `dark`
-|`avatar_url` |VARCHAR |nullable |Profile picture path
+|`email` |VARCHAR(255) |unique, not null |Login identifier
+|`username` |VARCHAR(100) |unique, not null |Display/login name
+|`password_hash` |VARCHAR |not null |bcrypt, cost 12; never serialized (`json:"-"`)
+|`first_name` |VARCHAR(100) |nullable |
+|`last_name` |VARCHAR(100) |nullable |
+|`display_name` |VARCHAR(150) |nullable |Overrides first/last name in the UI when set
+|`avatar_url` |VARCHAR(500) |nullable |Profile picture path
+|`global_role` |VARCHAR |not null, default `user` |`admin`, `user`, `viewer`, `metrics`, `backup`, `customer`
+|`locale` |VARCHAR(10) |default `en` |UI language preference
+|`theme` |VARCHAR(20) |default `system` |`light`, `dark`, `system`
+|`date_time_format` |VARCHAR(50) |default `YYYY-MM-DD HH:mm` |Drives every date/time rendering via `useDateFormat()`
+|`timezone` |VARCHAR(100) |default `UTC` |
+|`font` |VARCHAR(100) |default `system` |
+|`font_size` |VARCHAR(10) |default `14` |
+|`sidebar_position` |VARCHAR(10) |default `left` |
+|`show_breadcrumbs` |BOOLEAN |default true |
+|`accent_color` |VARCHAR(20) |default `blue` |`blue`, `red`, `green`, `orange`
+|`last_login_at` |TIMESTAMP |nullable |
+|`settings_updated_at` |TIMESTAMP |nullable |
+|`is_active` |BOOLEAN |default true |Account enabled
+|`email_notifications` |BOOLEAN |default true |
+|`time_tracking_enabled` |BOOLEAN |default false |
+|`time_tracking_viewer` |BOOLEAN |default false |Read-only access to others' time reports
+|`board_enabled` |BOOLEAN |default true |
+|`chat_enabled` |BOOLEAN |default true |
+|`helpdesk_enabled` |BOOLEAN |default false |Gates the ticketing module (`middleware.RequireFeature`)
+|`time_notation` |VARCHAR(10) |default `decimal` |`decimal`, `hhmm`
+|`week_start` |VARCHAR(10) |default `monday` |`monday`, `sunday`
+|`distance_unit` |VARCHAR(10) |default `km` |`km`, `miles`
+|`dashboard_default` |VARCHAR(10) |default `boards` |`boards`, `tickets`
+|`tray_icon_enabled` |BOOLEAN |default true |Desktop (Tauri) setting
+|`close_to_tray_enabled` |BOOLEAN |default true |Desktop (Tauri) setting
+|`mon_work_start` / `mon_work_end` |VARCHAR(5) |default `08:00` / `17:00` |Wall-clock `HH:MM`
+|`tue_work_start` / `tue_work_end` |VARCHAR(5) |default `08:00` / `17:00` |
+|`wed_work_start` / `wed_work_end` |VARCHAR(5) |default `08:00` / `17:00` |
+|`thu_work_start` / `thu_work_end` |VARCHAR(5) |default `08:00` / `17:00` |
+|`fri_work_start` / `fri_work_end` |VARCHAR(5) |default `08:00` / `17:00` |
+|`sat_work_start` / `sat_work_end` |VARCHAR(5) |nullable, no default |Empty = non-working day
+|`sun_work_start` / `sun_work_end` |VARCHAR(5) |nullable, no default |Empty = non-working day
+|`lunch_break_minutes` |INTEGER |default 30 |
+|`totp_secret` |VARCHAR(64) |nullable |Never serialized (`json:"-"`)
 |`totp_enabled` |BOOLEAN |default false |MFA active flag
-|`totp_secret` |VARCHAR |nullable |Encrypted TOTP secret
-|`active` |BOOLEAN |default true |Account enabled
+|`password_reset_token` |VARCHAR(64) |nullable, index |Never serialized (`json:"-"`)
+|`password_reset_expiry` |TIMESTAMP |nullable |Never serialized (`json:"-"`)
+|`password_changed_at` |TIMESTAMP |nullable |
 |`must_change_password` |BOOLEAN |default false |Force password reset on next login
 |===
+
+`gravatar_url` and `can_view_reports` are computed at read time (`gorm:"-"`) and never persisted — the former in
+`User.AfterFind`, the latter by handlers that check report permissions.
 
 === projects
 
@@ -77,15 +128,22 @@ Operational settings (SMTP, branding, locale defaults, session timeout, …) liv
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
 |`deleted_at` |TIMESTAMP |nullable, index |
-|`name` |VARCHAR |not null |Display name
-|`slug` |VARCHAR |unique, not null |URL-safe identifier used in all API routes
+|`name` |VARCHAR(200) |not null |Display name
 |`description` |TEXT |nullable |
-|`key_prefix` |VARCHAR |not null |Prefix for card numbers (e.g. `PRJ`)
-|`card_counter` |INTEGER |default 0 |Atomic counter, incremented per card
-|`board_type` |VARCHAR |default `kanban` |`kanban`, `scrum`
-|`customer_id` |BIGINT |FK → customers, nullable |Owning customer
-|`color` |VARCHAR |nullable |Hex accent colour for the project card
+|`slug` |VARCHAR(100) |unique, not null |URL-safe identifier used in all API routes
+|`color` |VARCHAR(7) |nullable |Hex accent colour for the project card
+|`avatar` |VARCHAR(500) |nullable |
 |`is_archived` |BOOLEAN |default false |
+|`is_closed` |BOOLEAN |default false |Hidden from sidebar/listing; see "Project closed state"
+|`key_prefix` |VARCHAR(10) |unique, not null, default `''` |Prefix for card numbers (e.g. `PRJ`)
+|`position` |INTEGER |default 0 |Sidebar/list display order
+|`card_counter` |INTEGER |default 0 |Atomic counter, incremented per card; `json:"-"` — not API-exposed but a real column
+|`customer_id` |BIGINT |FK → customers, nullable, index |Owning customer
+|`contract_id` |BIGINT |FK → contracts, nullable, index |
+|`board_type` |VARCHAR(20) |default `kanban` |`kanban`, `scrum`
+|`time_tracking_only` |BOOLEAN |default false |Project exists only to log undeclarable/travel time, no board
+|`undeclarable_minutes` |INTEGER |default 0 |Minutes subtracted from every logged entry before it counts as billable
+|`created_by_id` |BIGINT |FK → users, not null |
 |===
 
 === project_members
@@ -95,14 +153,39 @@ Operational settings (SMTP, branding, locale defaults, session timeout, …) liv
 |Column |Type |Constraints |Notes
 
 |`id` |BIGINT |PK, auto |
-|`project_id` |BIGINT |FK → projects |
-|`user_id` |BIGINT |FK → users |
-|`role` |VARCHAR |default `member` |`viewer`, `member`, `owner`; admins bypass all role checks
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`project_id` |BIGINT |FK → projects, not null, uniqueIndex(`idx_proj_user`) |
+|`user_id` |BIGINT |FK → users, not null, uniqueIndex(`idx_proj_user`) |
+|`role` |VARCHAR |not null, default `member` |`viewer`, `member`, `owner`; admins bypass all role checks
+|`invited_by` |BIGINT | |User ID of the inviter
 |===
 
 ---
 
 == Board tables
+
+=== epics
+
+Top-level grouping for cards, independent of Scrum sprints — usable on both kanban and scrum boards.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`project_id` |BIGINT |FK → projects, not null, index |
+|`name` |VARCHAR(200) |not null |
+|`description` |TEXT |nullable |
+|`color` |VARCHAR(7) |default `#6366f1` |
+|`status` |VARCHAR(20) |default `open` |
+|`position` |REAL |default 0 |Fractional ordering
+|===
+
+`card_count` and `done_count` are computed per request (`gorm:"-"`), not stored.
 
 === columns
 
@@ -113,11 +196,12 @@ Operational settings (SMTP, branding, locale defaults, session timeout, …) liv
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`project_id` |BIGINT |FK → projects |
-|`name` |VARCHAR |not null |
-|`position` |REAL |not null |Fractional ordering
-|`wip_limit` |INTEGER |default 0 |0 = unlimited
-|`color` |VARCHAR |nullable |Column header accent
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`project_id` |BIGINT |FK → projects, not null, index |
+|`name` |VARCHAR(200) |not null |
+|`position` |REAL |not null, default 0 |Fractional ordering
+|`color` |VARCHAR(7) |nullable |Column header accent
+|`wip_limit` |INTEGER |nullable |`nil`/absent = unlimited; column physically named `wip_limit` (GORM's default naming would have produced `w_ip_limit` — `migrateLegacyColumnWIPLimitName` renames it on startup for pre-existing databases)
 |===
 
 === cards
@@ -130,30 +214,48 @@ Operational settings (SMTP, branding, locale defaults, session timeout, …) liv
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
 |`deleted_at` |TIMESTAMP |nullable, index |
-|`column_id` |BIGINT |FK → columns |Current column
-|`project_id` |BIGINT |FK → projects |
-|`title` |VARCHAR |not null |
+|`column_id` |BIGINT |FK → columns, not null, index |Current column
+|`project_id` |BIGINT |FK → projects, not null, index |
+|`title` |VARCHAR(500) |not null |
 |`description` |TEXT |nullable |Markdown body
-|`position` |REAL |not null |Fractional ordering within column
-|`priority` |VARCHAR |default `medium` |`low`, `medium`, `high`, `critical`
-|`status` |VARCHAR |default `open` |`open`, `closed`
-|`due_date` |DATE |nullable |
-|`estimated_hours` |REAL |default 0 |
-|`card_number` |INTEGER |not null |Human-readable number (PRJ-N)
-|`story_points` |INTEGER |default 0 |Scrum only
-|`parent_card_id` |BIGINT |FK → cards, nullable |Sub-card relationship
-|`reporter_id` |BIGINT |FK → users, nullable |Who created the card
+|`position` |REAL |not null, default 0 |Fractional ordering within column
+|`start_date` |TIMESTAMP |nullable |
+|`due_date` |TIMESTAMP |nullable |
+|`priority` |VARCHAR(20) |default `none` |`none`, `low`, `medium`, `high`, `critical`
+|`assignee_id` |BIGINT |FK → users, nullable |Primary assignee (see also many-to-many `assignees` below)
+|`created_by_id` |BIGINT |FK → users, not null |Who created the card
+|`card_number` |INTEGER |default 0 |Human-readable number (`PRJ-N`)
+|`time_spent_minutes` |INTEGER |default 0 |Aggregated from linked time entries / comments
+|`story_points` |INTEGER |nullable |Scrum only
+|`closed` |BOOLEAN |default false |
+|`closed_at` |TIMESTAMP |nullable |
+|`external_issue_url` |VARCHAR(2000) |nullable |Link to an external tracker issue
+|`external_issue_ref` |VARCHAR(200) |nullable |External tracker's issue key/number
+|`epic_id` |BIGINT |FK → epics, nullable, index |
+|`parent_card_id` |BIGINT |FK → cards, nullable, index |Sub-card relationship
 |===
 
+Two many-to-many relationships are declared only via GORM tags on `Card` (no dedicated struct beyond the explicit join
+tables listed elsewhere in this document, or — for watchers — no struct at all):
+
+* `Card.Labels []Label `gorm:"many2many:card_labels"`` — see `card_labels` below, which *does* have an explicit model.
+* `Card.Assignees []User `gorm:"many2many:card_assignees"`` — see `card_assignees` below, which *does* have an explicit model.
+* `Card.Watchers []User `gorm:"many2many:card_watchers"`` — **no Go struct at all**; GORM auto-creates a bare
+  `card_watchers` join table with just `card_id` and `user_id` columns (composite PK, FK constraints to `cards` and
+  `users`). There is intentionally no `===` subsection for it below.
+
+`sub_card_count` and `sub_cards_done` are computed per request (`gorm:"-"`), not stored.
+
 === card_assignees
+
+Join table for multiple card assignees. Composite primary key — no surrogate `id` column.
 
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
-|`id` |BIGINT |PK, auto |
-|`card_id` |BIGINT |FK → cards |
-|`user_id` |BIGINT |FK → users |
+|`card_id` |BIGINT |PK, FK → cards |
+|`user_id` |BIGINT |PK, FK → users |
 |===
 
 === card_checklist_items
@@ -165,10 +267,10 @@ Operational settings (SMTP, branding, locale defaults, session timeout, …) liv
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`card_id` |BIGINT |FK → cards |
-|`text` |VARCHAR |not null |
-|`checked` |BOOLEAN |default false |
-|`position` |REAL |not null |Fractional ordering
+|`card_id` |BIGINT |FK → cards, not null, index |
+|`body` |TEXT |not null |
+|`is_completed` |BOOLEAN |default false |
+|`position` |REAL |default 0 |Fractional ordering
 |===
 
 === card_comments
@@ -181,9 +283,12 @@ Operational settings (SMTP, branding, locale defaults, session timeout, …) liv
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
 |`deleted_at` |TIMESTAMP |nullable, index |
-|`card_id` |BIGINT |FK → cards |
-|`user_id` |BIGINT |FK → users |
+|`card_id` |BIGINT |FK → cards, not null, index |
+|`user_id` |BIGINT |not null |
 |`body` |TEXT |not null |Markdown
+|`is_edited` |BOOLEAN |default false |
+|`time_spent_minutes` |INTEGER |default 0 |Time logged alongside this comment
+|`time_entry_id` |BIGINT |FK → time_entries, nullable, index |Linked time entry, if the comment created one
 |===
 
 === labels
@@ -193,39 +298,46 @@ Operational settings (SMTP, branding, locale defaults, session timeout, …) liv
 |Column |Type |Constraints |Notes
 
 |`id` |BIGINT |PK, auto |
-|`project_id` |BIGINT |FK → projects |
-|`name` |VARCHAR |not null |
-|`color` |VARCHAR |not null |Hex colour
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`project_id` |BIGINT |FK → projects, not null, index |
+|`name` |VARCHAR(100) |not null |
+|`color` |VARCHAR(7) |not null |Hex colour
 |===
 
 === card_labels
 
+Explicit join table backing `Card.Labels` / `Label.Cards` (`many2many:card_labels`).
+
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
-|`id` |BIGINT |PK, auto |
-|`card_id` |BIGINT |FK → cards |
-|`label_id` |BIGINT |FK → labels |
+|`card_id` |BIGINT |PK, FK → cards |
+|`label_id` |BIGINT |PK, FK → labels |
+|`created_at` |TIMESTAMP | |
 |===
 
 === card_references
 
-Cross-references between cards (e.g. "blocks", "is blocked by", "relates to").
+Bidirectional "relates to" link between two cards. The link is stored once (source → target); both sides are shown
+when listing. There is **no** `ref_type` column — every row means the same generic "relates to" relationship.
 
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
 |`id` |BIGINT |PK, auto |
-|`card_id` |BIGINT |FK → cards |Source card
-|`target_card_id` |BIGINT |FK → cards |Referenced card
-|`ref_type` |VARCHAR |not null |`blocks`, `blocked_by`, `relates_to`, `duplicates`
+|`source_card_id` |BIGINT |FK → cards, not null, index, uniqueIndex(`idx_card_ref_pair`) |
+|`target_card_id` |BIGINT |FK → cards, not null, index, uniqueIndex(`idx_card_ref_pair`) |
+|`created_at` |TIMESTAMP | |
 |===
 
-=== card_history
+=== card_histories
 
-Audit log for card changes.
+Audit log for card activity (creation, column moves, field changes, etc.). Table name is `card_histories` (GORM
+pluralizes `History` → `Histories`), not `card_history`.
 
 [cols="2,2,1,4",options="header"]
 |===
@@ -233,16 +345,31 @@ Audit log for card changes.
 
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
-|`card_id` |BIGINT |FK → cards |
-|`user_id` |BIGINT |FK → users |
-|`field` |VARCHAR |not null |Changed field name
-|`old_value` |TEXT |nullable |
-|`new_value` |TEXT |nullable |
+|`card_id` |BIGINT |not null, index |
+|`user_id` |BIGINT |not null |Actor
+|`event_type` |VARCHAR(50) |default `column_move` |Event kind, e.g. `column_move`, `create`, `update`
+|`detail` |VARCHAR(500) |nullable |Free-text description of what changed
+|`from_column_id` |BIGINT |FK → columns |Only meaningful for `column_move` events
+|`to_column_id` |BIGINT |FK → columns |Only meaningful for `column_move` events
+|===
+
+=== card_tags
+
+Free-text tags on a card (distinct from `labels`, which are project-scoped and colour-coded).
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`card_id` |BIGINT |not null, uniqueIndex(`idx_card_tag`) |
+|`name` |VARCHAR(100) |not null, uniqueIndex(`idx_card_tag`) |Composite unique with `card_id` — no duplicate tag names per card
 |===
 
 ---
 
-== Customer & contract tables
+== Customer, contract & invoicing tables
 
 === customers
 
@@ -257,8 +384,15 @@ Audit log for card changes.
 |`description` |TEXT |nullable |
 |`logo_url` |VARCHAR(500) |nullable |Path to uploaded logo
 |`position` |INTEGER |default 0 |Display order in the customer list
+|`is_hidden` |BOOLEAN |default false |Hides the customer from non-admin pickers while keeping it usable
 |`time_tracking_only` |BOOLEAN |default false |Hides from helpdesk/board views; visible in time-tracking only
 |`created_by_id` |BIGINT |FK → users, nullable, index |User who created the record (nil = system / seeded)
+|`billing_street` |VARCHAR(300) |nullable |
+|`billing_city` |VARCHAR(200) |nullable |
+|`billing_postal_code` |VARCHAR(20) |nullable |
+|`billing_country` |VARCHAR(100) |nullable |
+|`vat_number` |VARCHAR(50) |nullable |
+|`po_reference` |VARCHAR(100) |nullable |Default purchase-order reference for invoices
 |===
 
 === contracts
@@ -276,13 +410,15 @@ Audit log for card changes.
 |`start_date` |TIMESTAMP |nullable |
 |`end_date` |TIMESTAMP |nullable |
 |`price_per_hour` |REAL |nullable |Base hourly rate
+|`price_per_km` |REAL |nullable |Base per-kilometre travel rate
 |`currency` |VARCHAR(3) |default `€` |Displayed alongside monetary values
 |===
 
 === contract_time_slots
 
 Defines an alternative rate window on a contract — for example a standby/on-call surcharge outside regular hours.
-When `end_time` < `start_time` the slot crosses midnight; `end_day_offset` says how many calendar days later the end time falls (1 = next morning, 3 = Monday morning for a Friday–Monday weekend slot).
+When `end_time` < `start_time` the slot crosses midnight; `end_day_offset` says how many calendar days later the end
+time falls (1 = next morning, 3 = Monday morning for a Friday–Monday weekend slot).
 
 [cols="2,2,1,4",options="header"]
 |===
@@ -293,7 +429,7 @@ When `end_time` < `start_time` the slot crosses midnight; `end_day_offset` says 
 |`label` |VARCHAR(100) |nullable |Free-text name, e.g. `Standby - week`
 |`start_time` |VARCHAR(5) |not null |Wall-clock `HH:MM`
 |`end_time` |VARCHAR(5) |not null |Wall-clock `HH:MM`; if < `start_time` the slot is overnight
-|`day_type` |VARCHAR(10) |default `all` |`all`, `weekdays`, `weekends`, `monday` … `sunday`
+|`day_type` |VARCHAR(100) |default `all` |`all`, `weekdays`, `weekends`, or a comma-separated day list (`monday,tuesday,…`)
 |`end_day_offset` |INTEGER |default 0 |Calendar days after anchor day when `end_time` applies (overnight slots)
 |`multiplication_factor` |REAL |nullable |Multiplier on `price_per_hour` (e.g. `1.5` = 150 %)
 |`hourly_rate` |REAL |nullable |Flat rate override; multiplied by `multiplication_factor` if both are set
@@ -311,9 +447,10 @@ Composite primary key — no surrogate `id` column.
 |`customer_id` |BIGINT |PK, FK → customers |
 |===
 
-=== customer_access
+=== customer_accesses
 
-Grants a non-admin user explicit visibility of a customer.
+Grants a non-admin user explicit visibility of a customer. Table name is `customer_accesses` (GORM pluralizes
+`Access` → `Accesses`).
 Non-admin users with no row (direct or via group) cannot see the customer at all.
 Admins always see all customers regardless of this table.
 
@@ -324,6 +461,80 @@ Admins always see all customers regardless of this table.
 |`user_id` |BIGINT |PK, FK → users |
 |`customer_id` |BIGINT |PK, FK → customers |
 |`role` |VARCHAR |default `member` |`member` = read; `admin` = read + manage contracts and members
+|===
+
+=== customer_contacts
+
+A named contact person at a customer (used as the "reply to" party on invoices/tickets).
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`customer_id` |BIGINT |not null, index |
+|`name` |VARCHAR(200) |nullable |
+|`department` |VARCHAR(200) |nullable |
+|`phone` |VARCHAR(100) |nullable |
+|`email` |VARCHAR(200) |nullable |
+|`is_primary` |BOOLEAN |default false |
+|===
+
+=== invoices
+
+Billable document generated from time entries for a customer.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`invoice_number` |VARCHAR(50) |unique |
+|`customer_id` |BIGINT |FK → customers, not null, index |
+|`period_start` |TIMESTAMP | |
+|`period_end` |TIMESTAMP | |
+|`status` |VARCHAR(20) |default `draft` |`draft`, `sent`, `paid`, `credit_note`
+|`currency` |VARCHAR(10) |default `€` |
+|`line_items` |TEXT | |JSON-encoded array of line items (see note below) — not a separate table
+|`subtotal` |REAL | |
+|`vat_rate` |REAL |default 0 |
+|`vat_amount` |REAL | |
+|`total` |REAL | |
+|`due_date` |TIMESTAMP |nullable |
+|`notes` |TEXT |nullable |
+|`payment_date` |TIMESTAMP |nullable |
+|`payment_amount` |REAL |nullable |
+|`payment_reference` |VARCHAR(200) |nullable |
+|`payment_method` |VARCHAR(50) |nullable |
+|`credited_invoice_id` |BIGINT |FK → invoices, nullable, index |Set on a `credit_note` row, pointing back to the invoice it credits
+|`created_by_id` |BIGINT |FK → users, nullable, index |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|===
+
+NOTE: `line_items` is a JSON-encoded `[]InvoiceLineItem` (date, project name, description, minutes, hourly rate,
+distance, price per km, amount, currency, quantity, unit price, manual/comment flags). `InvoiceLineItem` has no
+corresponding database table — it only ever exists serialized inside `invoices.line_items` or
+`invoice_templates.line_items`.
+
+=== invoice_templates
+
+Reusable set of line items for quickly creating invoices.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`name` |VARCHAR(200) |not null |
+|`line_items` |TEXT | |JSON-encoded `[]InvoiceLineItem`, same shape as `invoices.line_items`
+|`default_vat_rate` |REAL |default 0 |
+|`default_currency` |VARCHAR(10) |default `€` |
+|`notes` |TEXT |nullable |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
 |===
 
 ---
@@ -337,50 +548,55 @@ Admins always see all customers regardless of this table.
 |Column |Type |Constraints |Notes
 
 |`id` |BIGINT |PK, auto |
+|`name` |VARCHAR(200) |unique, not null |
+|`description` |TEXT |nullable |
+|`avatar` |VARCHAR(500) |nullable |
+|`conversation_id` |BIGINT |FK → conversations, nullable, index |Linked group-chat conversation; auto-created for groups that predate this feature by `migrateGroupConversations()`
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`name` |VARCHAR |not null |
-|`description` |TEXT |nullable |
 |===
 
 === group_members
 
-[cols="2,2,1,4",options="header"]
-|===
-|Column |Type |Constraints |Notes
-
-|`id` |BIGINT |PK, auto |
-|`group_id` |BIGINT |FK → user_groups |
-|`user_id` |BIGINT |FK → users |
-|===
-
-=== group_project_access
+Composite primary key — no surrogate `id` column.
 
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
-|`id` |BIGINT |PK, auto |
-|`group_id` |BIGINT |FK → user_groups |
-|`project_id` |BIGINT |FK → projects |
-|`role` |VARCHAR |default `member` |`viewer`, `member`, `owner`
+|`group_id` |BIGINT |PK, FK → user_groups |
+|`user_id` |BIGINT |PK, FK → users |
 |===
 
-=== group_customer_access
+=== group_project_accesses
+
+Composite primary key — no surrogate `id` column. Table name is `group_project_accesses`.
 
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
-|`id` |BIGINT |PK, auto |
-|`group_id` |BIGINT |FK → user_groups |
-|`customer_id` |BIGINT |FK → customers |
-|`role` |VARCHAR |default `member` |`viewer`, `member`, `owner`
+|`group_id` |BIGINT |PK, FK → user_groups |
+|`project_id` |BIGINT |PK, FK → projects |
+|`role` |VARCHAR |not null, default `member` |`viewer`, `member`, `owner`
+|===
+
+=== group_customer_accesses
+
+Composite primary key — no surrogate `id` column. Table name is `group_customer_accesses`.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`group_id` |BIGINT |PK, FK → user_groups |
+|`customer_id` |BIGINT |PK, FK → customers |
+|`role` |VARCHAR |not null, default `member` |`viewer`, `member`, `owner`
 |===
 
 ---
 
-== Scrum tables
+== Scrum & release planning tables
 
 === sprints
 
@@ -391,23 +607,62 @@ Admins always see all customers regardless of this table.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`project_id` |BIGINT |FK → projects |
-|`name` |VARCHAR |not null |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`project_id` |BIGINT |FK → projects, not null, index |
+|`name` |VARCHAR(200) |not null |
 |`goal` |TEXT |nullable |Sprint goal description
-|`start_date` |DATE |nullable |
-|`end_date` |DATE |nullable |
-|`status` |VARCHAR |default `planned` |`planned`, `active`, `completed`
+|`position` |REAL |default 0 |Fractional ordering among sprints
+|`status` |VARCHAR(20) |default `planning` |`planning`, `active`, `completed`
+|`start_date` |TIMESTAMP |nullable |
+|`end_date` |TIMESTAMP |nullable |
 |===
 
+`total_points`, `completed_points`, `card_count`, and `card_ids` are computed per request (`gorm:"-"`), not stored.
+
 === sprint_cards
+
+Join table linking cards to sprints. Composite primary key, hard deletes only.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`sprint_id` |BIGINT |PK, FK → sprints |
+|`card_id` |BIGINT |PK, FK → cards |
+|`position` |REAL |default 0 |Fractional ordering of the card within the sprint backlog
+|`created_at` |TIMESTAMP | |
+|===
+
+=== releases
+
+A named milestone that groups one or more sprints toward a shared target date.
 
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
 |`id` |BIGINT |PK, auto |
-|`sprint_id` |BIGINT |FK → sprints |
-|`card_id` |BIGINT |FK → cards |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`project_id` |BIGINT |FK → projects, not null, index |
+|`name` |VARCHAR(200) |not null |
+|`goal` |TEXT |nullable |
+|`target_date` |TIMESTAMP |nullable |
+|===
+
+`sprints` is populated at query time (`gorm:"-"`) from `release_sprints`, not stored on the row itself.
+
+=== release_sprints
+
+Join table linking releases to sprints. Composite primary key, no timestamps.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`release_id` |BIGINT |PK, FK → releases |
+|`sprint_id` |BIGINT |PK, FK → sprints |
 |===
 
 ---
@@ -423,14 +678,61 @@ Admins always see all customers regardless of this table.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`user_id` |BIGINT |FK → users |
-|`customer_id` |BIGINT |FK → customers, nullable |
-|`project_id` |BIGINT |FK → projects, nullable |
-|`card_id` |BIGINT |FK → cards, nullable |
-|`contract_id` |BIGINT |FK → contracts, nullable |
-|`date` |DATE |not null |
+|`user_id` |BIGINT |FK → users, not null, index |
+|`customer_id` |BIGINT |FK → customers, nullable, index |
+|`project_id` |BIGINT |FK → projects, nullable, index |
+|`contract_id` |BIGINT |FK → contracts, nullable, index |
+|`ticket_id` |BIGINT |FK → tickets, nullable, index |Entry logged against a helpdesk ticket instead of a project/card
+|`date` |TIMESTAMP |not null, index |
 |`minutes` |INTEGER |not null |Duration in minutes
 |`description` |TEXT |nullable |
+|`is_holiday` |BOOLEAN |default false |
+|`start_time` |VARCHAR(5) |nullable |Wall-clock `HH:MM`
+|`end_time` |VARCHAR(5) |nullable |Wall-clock `HH:MM`
+|`distance` |REAL |nullable |Travel distance, used with `contracts.price_per_km`
+|===
+
+NOTE: There is no `card_id` column on `time_entries` — time is linked to a project/customer/contract/ticket, not
+directly to a card (a card-level comment can separately create a linked entry via `card_comments.time_entry_id`).
+
+=== time_entry_row_orders
+
+Persists the user's custom row ordering for the time-tracking grid. One row per user.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`user_id` |BIGINT |PK |
+|`ordered_keys` |TEXT | |JSON array of row-key strings
+|===
+
+=== time_entry_week_row_orders
+
+Persists row-key order for a specific ISO week, including empty rows, plus per-row comments.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`user_id` |BIGINT |PK |
+|`year` |INTEGER |PK |
+|`week` |INTEGER |PK |ISO week number
+|`ordered_keys` |TEXT | |JSON array of row-key strings
+|`comments` |TEXT | |JSON object mapping row key → comment text
+|===
+
+=== time_macro_libraries
+
+Stores a user's time-tracking macro templates as JSON (mirrors the frontend's `timeTracking.macroTemplates.v2`
+localStorage value, persisted server-side for cross-device sync).
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`user_id` |BIGINT |PK |
+|`payload` |TEXT |not null |JSON blob
 |===
 
 ---
@@ -447,13 +749,16 @@ Admins always see all customers regardless of this table.
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
 |`deleted_at` |TIMESTAMP |nullable, index |
-|`project_id` |BIGINT |FK → projects |
-|`user_id` |BIGINT |FK → users |Author
-|`title` |VARCHAR |not null |
-|`body` |TEXT |not null |Markdown
+|`project_id` |BIGINT |FK → projects, not null, index |
+|`user_id` |BIGINT |not null |Author
+|`title` |VARCHAR(500) |not null |
+|`body` |TEXT |nullable |Markdown
 |`is_pinned` |BOOLEAN |default false |
-|`is_locked` |BOOLEAN |default false |No new replies when locked
+|`is_edited` |BOOLEAN |default false |
 |===
+
+`reply_count` is computed per request (`gorm:"-"`), not stored. There is **no** `is_locked` column — topics never
+prevent new replies at the data-model level.
 
 === topic_replies
 
@@ -465,9 +770,10 @@ Admins always see all customers regardless of this table.
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
 |`deleted_at` |TIMESTAMP |nullable, index |
-|`topic_id` |BIGINT |FK → topics |
-|`user_id` |BIGINT |FK → users |
+|`topic_id` |BIGINT |FK → topics, not null, index |
+|`user_id` |BIGINT |not null |
 |`body` |TEXT |not null |Markdown
+|`is_edited` |BOOLEAN |default false |
 |===
 
 ---
@@ -485,11 +791,13 @@ Project-level channel messages.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`deleted_at` |TIMESTAMP |nullable, index |
-|`project_id` |BIGINT |FK → projects |
-|`user_id` |BIGINT |FK → users |
+|`project_id` |BIGINT |FK → projects, not null, index |
+|`user_id` |BIGINT |default 0 |0 for system/bot-authored rows
 |`body` |TEXT |not null |Markdown
+|`is_edited` |BOOLEAN |default false |
+|`is_deleted` |BOOLEAN |default false |Soft-hidden in the UI; row is kept for thread integrity
 |`is_bot` |BOOLEAN |default false |Messages from webhook/CI integrations
+|`bot_name` |VARCHAR(100) |nullable |Display name shown for bot-authored messages
 |===
 
 === conversations
@@ -503,19 +811,23 @@ Direct messages and group DMs.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`name` |VARCHAR |nullable |Set for group conversations
+|`name` |VARCHAR(200) |nullable |Set for group conversations
+|`avatar` |VARCHAR(500) |nullable |
 |`is_group` |BOOLEAN |default false |
+|`created_by_id` |BIGINT |not null, index |
 |===
 
 === conversation_members
+
+Composite primary key — no surrogate `id` column.
 
 [cols="2,2,1,4",options="header"]
 |===
 |Column |Type |Constraints |Notes
 
-|`id` |BIGINT |PK, auto |
-|`conversation_id` |BIGINT |FK → conversations |
-|`user_id` |BIGINT |FK → users |
+|`conversation_id` |BIGINT |PK, FK → conversations |
+|`user_id` |BIGINT |PK, FK → users |
+|`joined_at` |TIMESTAMP | |
 |===
 
 === conversation_messages
@@ -527,10 +839,46 @@ Direct messages and group DMs.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`deleted_at` |TIMESTAMP |nullable, index |
-|`conversation_id` |BIGINT |FK → conversations |
-|`user_id` |BIGINT |FK → users |
+|`conversation_id` |BIGINT |FK → conversations, not null, index |
+|`sender_id` |BIGINT |FK → users, not null, index |Column is `sender_id`, **not** `user_id`
 |`body` |TEXT |not null |Markdown
+|`is_edited` |BOOLEAN |default false |
+|`is_deleted` |BOOLEAN |default false |
+|===
+
+=== direct_messages
+
+Legacy/simple 1:1 message table, distinct from the `conversations` model.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`sender_id` |BIGINT |FK → users, not null, index |
+|`receiver_id` |BIGINT |FK → users, not null, index |
+|`body` |TEXT |not null |Markdown
+|`is_edited` |BOOLEAN |default false |
+|`is_deleted` |BOOLEAN |default false |
+|===
+
+=== message_reactions
+
+Polymorphic emoji reaction on either a chat message or a conversation message (see "Polymorphic attachments" above
+for the pattern).
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`owner_type` |VARCHAR(50) |not null, uniqueIndex(`idx_react_unique`) |`chat_message`, `conv_message`
+|`owner_id` |BIGINT |not null, uniqueIndex(`idx_react_unique`) |
+|`user_id` |BIGINT |not null, uniqueIndex(`idx_react_unique`) |
+|`emoji` |VARCHAR(10) |not null, uniqueIndex(`idx_react_unique`) |The four columns together form a unique constraint — one reaction per emoji per user per message
 |===
 
 ---
@@ -547,13 +895,13 @@ Polymorphic file table — one row per uploaded file, regardless of where it is 
 
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
-|`owner_type` |VARCHAR |not null |`card`, `card_comment`, `chat_message`, `conv_message`
-|`owner_id` |BIGINT |not null |PK of the owning row
-|`filename` |VARCHAR |not null |Stored filename (randomised hex)
-|`original_name` |VARCHAR |not null |Original filename as uploaded
-|`mime_type` |VARCHAR |not null |Detected server-side from file content
-|`size` |BIGINT |not null |Bytes
-|`uploader_id` |BIGINT |FK → users |
+|`owner_type` |VARCHAR(50) |not null, index(`idx_attach_owner`) |`card`, `card_comment`, `chat_message`, `conv_message`, `ticket`, `ticket_message`
+|`owner_id` |BIGINT |not null, index(`idx_attach_owner`) |PK of the owning row
+|`uploader_id` |BIGINT |not null |
+|`filename` |VARCHAR(255) |not null |Original filename as uploaded
+|`stored_name` |VARCHAR(255) |not null |Randomised hex name on disk; never serialized (`json:"-"`) — there is no separate `original_name` column, `filename` already holds it
+|`mime_type` |VARCHAR(100) |nullable |Detected server-side from file content
+|`size_bytes` |BIGINT | |Bytes; column is `size_bytes`, not `size`
 |===
 
 NOTE: MIME type is detected from the first 512 bytes of the file using `net/http.DetectContentType`.
@@ -565,25 +913,8 @@ The `Content-Type` header sent by the client is ignored.
 
 === card_links
 
-Git commit and pull-request links attached to cards.
-
-[cols="2,2,1,4",options="header"]
-|===
-|Column |Type |Constraints |Notes
-
-|`id` |BIGINT |PK, auto |
-|`created_at` |TIMESTAMP | |
-|`card_id` |BIGINT |FK → cards |
-|`platform` |VARCHAR |not null |`github`, `gitlab`, `gitea`
-|`link_type` |VARCHAR |not null |`commit`, `pull_request`
-|`url` |VARCHAR |not null |
-|`title` |VARCHAR |nullable |PR/commit title
-|`status` |VARCHAR |nullable |PR state (e.g. `open`, `merged`)
-|===
-
-=== project_webhooks
-
-Inbound webhooks that push events from external systems into WarmDesk.
+Git commit, PR, and issue links attached to cards — created automatically when a webhook payload references a card
+number like `PRJ-42`.
 
 [cols="2,2,1,4",options="header"]
 |===
@@ -592,11 +923,37 @@ Inbound webhooks that push events from external systems into WarmDesk.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`project_id` |BIGINT |FK → projects |
-|`token` |VARCHAR |not null |Secret used to verify the request
-|`type` |VARCHAR |not null |`github`, `gitlab`, `gitea`
-|`active` |BOOLEAN |default true |
+|`card_id` |BIGINT |not null, index |
+|`platform` |VARCHAR(20) |not null |`github`, `gitlab`, `gitea`, `forgejo`
+|`link_type` |VARCHAR(20) |not null |`commit`, `pr`, `issue` — **not** `pull_request`
+|`title` |VARCHAR(500) |nullable |PR/commit/issue title
+|`url` |VARCHAR(2000) |nullable |
+|`reference` |VARCHAR(200) |nullable |Commit SHA, or PR/issue number
+|`author` |VARCHAR(200) |nullable |
+|`status` |VARCHAR(20) |nullable |e.g. `open`, `closed`, `merged`
+|`repo_name` |VARCHAR(300) |nullable |
 |===
+
+=== project_webhooks
+
+Inbound webhooks that push events from external systems into a project's chat.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`project_id` |BIGINT |not null, index |
+|`name` |VARCHAR(100) |nullable |
+|`token` |VARCHAR(64) |nullable |Legacy plaintext token column, kept only for migrating pre-existing webhooks; never serialized (`json:"-"`); new code writes `token_hash` instead
+|`token_hash` |VARCHAR(64) |unique |SHA-256(token); used for request authentication; never serialized (`json:"-"`)
+|`token_hint` |VARCHAR(8) |nullable |Short fragment shown in the UI so admins can recognise a key
+|`type` |VARCHAR(20) |not null, default `generic` |`generic`, `gitea`, `github`, or `gitlab`; any other client-supplied value falls back to `generic`
+|`created_by_id` |BIGINT |not null |
+|===
+
+There is **no** `active` boolean column — a webhook is either present (active) or deleted.
 
 === api_keys
 
@@ -608,21 +965,165 @@ Long-lived API keys, primarily for CI/CD automation via the Ticket API.
 
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
-|`updated_at` |TIMESTAMP | |
-|`user_id` |BIGINT |FK → users |Owning user
-|`project_id` |BIGINT |FK → projects, nullable |Scope-limited to one project if set
-|`name` |VARCHAR |not null |Human label
-|`key_hash` |VARCHAR |not null |SHA-256 of the raw key
-|`key_prefix` |VARCHAR |not null |First 8 chars, shown in the UI
 |`last_used_at` |TIMESTAMP |nullable |
-|`expires_at` |TIMESTAMP |nullable |Null = no expiry
+|`user_id` |BIGINT |FK → users, not null, index |Owning user
+|`project_id` |BIGINT |FK → projects, nullable, index |`nil` = personal key; set = scoped to that project
+|`name` |VARCHAR(100) |not null |Human label
+|`key_hash` |VARCHAR(64) |not null, unique |SHA-256 of the raw key; never serialized (`json:"-"`)
+|`key_prefix` |VARCHAR(12) |not null |First 12 characters of the raw key, shown in the UI (e.g. `cwk_abc123de`)
 |===
+
+There is no `expires_at` column in the current model — keys do not expire on their own.
 
 ---
 
-== System settings
+== Helpdesk & ticketing tables
 
-=== system_settings
+=== tickets
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`customer_id` |BIGINT |FK → customers, nullable, index |
+|`title` |VARCHAR(500) |not null |
+|`description` |TEXT |nullable |
+|`type` |VARCHAR(30) |not null, default `incident` |`incident`, `problem`, `service_request`, `change_request`
+|`status` |VARCHAR(20) |not null, default `new` |`new`, `open`, `pending`, `pending_close`, `closed`
+|`priority` |VARCHAR(20) |not null, default `medium` |`low`, `medium`, `high`, `critical`
+|`created_by_id` |BIGINT |not null |
+|`assigned_to_id` |BIGINT |FK → users, nullable, index |
+|`owner_id` |BIGINT |FK → users, nullable, index |
+|`group_id` |BIGINT |FK → user_groups, nullable, index |Ticket assigned to a whole team/group
+|`sla_policy_id` |BIGINT |FK → sla_policies, nullable, index |
+|`first_response_at` |TIMESTAMP |nullable |
+|`sla_response_deadline` |TIMESTAMP |nullable |Computed by `ComputeSlaDeadlines` at creation
+|`sla_resolution_deadline` |TIMESTAMP |nullable |
+|`sla_response_breached` |BOOLEAN | |Refreshed on every `GetTicket`/`ListTickets` by `refreshSlaBreachStatus`
+|`sla_resolution_breached` |BOOLEAN | |
+|`reminder_at` |TIMESTAMP |nullable |Used for `pending` status; due reminders sort to the top of the list
+|`close_at` |TIMESTAMP |nullable |Used for `pending_close` status; `autoClosePendingTickets()` closes it once past
+|`is_spam` |BOOLEAN |default false |Excluded from default listing unless `?include_spam=true`
+|`checklist_template_id` |BIGINT |FK → ticket_checklist_templates, nullable, index |
+|`email_message_id` |VARCHAR(998) |unique, nullable |RFC 5322 `Message-ID` of the originating email, dedupes IMAP polling
+|`from_email` |VARCHAR(254) |nullable |
+|`from_name` |VARCHAR(150) |nullable |
+|`raw_email` |TEXT |nullable |Full raw source of the originating email, if created via IMAP
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|===
+
+=== ticket_messages
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`ticket_id` |BIGINT |FK → tickets, not null, index |
+|`user_id` |BIGINT |not null |
+|`body` |TEXT |not null |
+|`from_name` |VARCHAR(150) |nullable |Sender display name for inbound emails
+|`email_sent` |BOOLEAN |default false |Whether this reply was emailed to the ticket's originator
+|`is_private` |BOOLEAN |default false |Internal note — not emailed, hidden from `customer`-role users
+|`parent_id` |BIGINT |FK → ticket_messages, nullable, index |Threaded reply support
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|===
+
+=== ticket_views
+
+Records the last time each user viewed a ticket (drives unread indicators).
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`ticket_id` |BIGINT |not null, uniqueIndex(`idx_ticket_view`) |
+|`user_id` |BIGINT |not null, uniqueIndex(`idx_ticket_view`) |
+|`viewed_at` |TIMESTAMP | |
+|===
+
+=== ticket_histories
+
+Audit log for ticket activity. Table name is `ticket_histories`, not `ticket_history`.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`ticket_id` |BIGINT |not null, index |
+|`user_id` |BIGINT |not null |
+|`event_type` |VARCHAR(50) |not null |
+|`detail` |VARCHAR(500) |nullable |
+|===
+
+=== ticket_tags
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`ticket_id` |BIGINT |not null, uniqueIndex(`idx_ticket_tag`) |
+|`name` |VARCHAR(100) |not null, uniqueIndex(`idx_ticket_tag`) |
+|===
+
+=== ticket_links
+
+Cross-reference between two tickets, mirroring `card_references`.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`source_ticket_id` |BIGINT |not null, index, uniqueIndex(`idx_ticket_link_pair`) |
+|`target_ticket_id` |BIGINT |not null, index, uniqueIndex(`idx_ticket_link_pair`) |
+|`created_at` |TIMESTAMP | |
+|===
+
+=== ticket_card_links
+
+Links a helpdesk ticket to a board card (e.g. "this incident is tracked by PRJ-42").
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`ticket_id` |BIGINT |not null, index, uniqueIndex(`idx_ticket_card_pair`) |
+|`card_id` |BIGINT |not null, index, uniqueIndex(`idx_ticket_card_pair`) |
+|`created_by_id` |BIGINT | |
+|`created_at` |TIMESTAMP | |
+|===
+
+=== ticket_checklist_templates
+
+Admin-managed named checklist that can be applied to a ticket.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`name` |VARCHAR(200) |not null |
+|`description` |VARCHAR(500) |nullable |
+|`items` |TEXT | |JSON-encoded array of item-body strings; expanded into `ticket_checklist_items` rows when applied
+|`is_active` |BOOLEAN |not null, default true |
+|`sort_order` |INTEGER |not null, default 0 |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|===
+
+=== ticket_checklist_items
+
+Actual checklist items on a specific ticket (post-instantiation from a template, or added ad hoc).
 
 [cols="2,2,1,4",options="header"]
 |===
@@ -631,12 +1132,178 @@ Long-lived API keys, primarily for CI/CD automation via the Ticket API.
 |`id` |BIGINT |PK, auto |
 |`created_at` |TIMESTAMP | |
 |`updated_at` |TIMESTAMP | |
-|`key` |VARCHAR |unique, not null |Setting identifier
-|`value` |TEXT |not null |String value
+|`ticket_id` |BIGINT |not null, index |
+|`body` |TEXT |not null |
+|`is_completed` |BOOLEAN |default false |
+|`position` |REAL |default 0 |Fractional ordering
+|===
+
+=== sla_policies
+
+Admin-managed response/resolution time targets, matched to tickets by priority.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`name` |VARCHAR(200) |not null |
+|`response_time_minutes` |INTEGER |not null, default 0 |
+|`resolution_time_minutes` |INTEGER |not null, default 0 |
+|`priority_filter` |VARCHAR(200) |nullable |Comma-separated priorities this policy applies to; empty = catch-all
+|`is_active` |BOOLEAN |not null, default true |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|===
+
+=== macros
+
+Reusable, admin-managed sequences of ticket actions (`set_status`, `set_priority`, `set_type`, `add_tag`,
+`add_message`) applied by agents in one click.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`name` |VARCHAR(200) |not null |
+|`description` |VARCHAR(500) |nullable |
+|`actions` |TEXT | |JSON-encoded array of `{type, value}` objects — no separate table
+|`is_active` |BOOLEAN |not null, default true |
+|`sort_order` |INTEGER |not null, default 0 |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|===
+
+---
+
+== Auth & security tables
+
+=== passkey_credentials
+
+WebAuthn/FIDO2 passkey registered by a user.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`user_id` |BIGINT |not null, index |Never serialized (`json:"-"`)
+|`name` |VARCHAR(100) |nullable |User-supplied label for the passkey
+|`credential_id` |BLOB |not null, unique |WebAuthn credential ID; never serialized (`json:"-"`)
+|`public_key` |BLOB |not null |COSE public key; never serialized (`json:"-"`)
+|`aaguid` |BLOB |nullable |Authenticator model identifier; never serialized (`json:"-"`)
+|`sign_count` |INTEGER |uint32 |Anti-cloning replay counter; never serialized (`json:"-"`)
+|`transports` |VARCHAR(200) |nullable |JSON-encoded transport hints (`usb`, `nfc`, `internal`, …); never serialized (`json:"-"`)
+|`created_at` |TIMESTAMP | |
+|`last_used_at` |TIMESTAMP |nullable |
+|===
+
+=== mfa_trusted_devices
+
+A device that has completed an MFA challenge and elected to be remembered for 7 or 30 days
+(per the admin `mfa_remember_devices` policy).
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`user_id` |BIGINT |not null, index |Never serialized (`json:"-"`)
+|`token_hash` |VARCHAR(64) |not null, unique |SHA-256 of the trust token; never serialized (`json:"-"`) — the plaintext lives only in the browser's httpOnly `mfa_trust` cookie or Tauri `localStorage`
+|`device_name` |VARCHAR(200) |nullable |
+|`last_used_at` |TIMESTAMP | |
+|`expires_at` |TIMESTAMP | |Tightening the admin trust-device policy revokes incompatible rows
+|`created_at` |TIMESTAMP | |
+|===
+
+=== login_histories
+
+Security audit trail of authentication-related events. Table name is `login_histories`, not `login_history`.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`user_id` |BIGINT |index |Subject of the event; `0` = unknown/not-yet-resolved
+|`username` |VARCHAR(100) |nullable |Subject's username at the time
+|`actor_id` |BIGINT |index |Who performed the action (equals `user_id` for self-service actions, e.g. a user logging in themselves)
+|`actor_username` |VARCHAR(100) |nullable |
+|`event` |VARCHAR(64) |not null |e.g. `login_success`, `login_failed`, `password_reset_requested`, `mfa_enabled`
+|`detail` |VARCHAR(128) |nullable |Free-text context; password-reset tokens are truncated to the first 8 characters
+|`ip` |VARCHAR(64) |nullable |
+|`client` |VARCHAR(128) |nullable |User-Agent or Tauri client identifier
+|`created_at` |TIMESTAMP | |
+|===
+
+---
+
+== System settings & miscellany
+
+=== system_settings
+
+Only two columns — no surrogate `id`, no timestamps.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`key` |VARCHAR(100) |PK |Setting identifier
+|`value` |TEXT | |String value
 |===
 
 Settings are read at request time so changes take effect without restarting the server.
 All valid keys are defined as constants in `handlers/system.go`.
+
+=== news_items
+
+Admin-authored dashboard announcements.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`id` |BIGINT |PK, auto |
+|`created_at` |TIMESTAMP | |
+|`updated_at` |TIMESTAMP | |
+|`deleted_at` |TIMESTAMP |nullable, index |
+|`title` |VARCHAR(200) |not null |
+|`text` |TEXT |not null |
+|`start_date` |TIMESTAMP |nullable |
+|`end_date` |TIMESTAMP |nullable |
+|`active` |BOOLEAN |not null, default true |
+|`sidebar_color` |VARCHAR(20) |nullable |
+|`show_on_login` |BOOLEAN |not null, default false |Shown as a modal on next login instead of only in the sidebar feed
+|===
+
+Dismissed news IDs are tracked client-side only, in `localStorage` (`dashboard_news_dismissed_ids`) — there is no
+per-user "read" column on this table.
+
+=== starred_projects
+
+Composite primary key — no surrogate `id` column.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`user_id` |BIGINT |PK, index |
+|`project_id` |BIGINT |PK, index |
+|`created_at` |TIMESTAMP | |
+|===
+
+=== favorite_users
+
+A user marking another user as a quick-access favourite (e.g. for chat). Composite primary key.
+
+[cols="2,2,1,4",options="header"]
+|===
+|Column |Type |Constraints |Notes
+
+|`user_id` |BIGINT |PK |
+|`favorite_user_id` |BIGINT |PK |
+|===
 
 ---
 
@@ -644,26 +1311,42 @@ All valid keys are defined as constants in `handlers/system.go`.
 
 [source,text]
 ----
-users ────────────────── project_members ──── projects
-  │                                               │
-  │                                           columns
-  │                                               │
-  ├── group_members ── user_groups               cards
-  │                        │                      │
-  │              group_project_access ─────────── │
-  │              group_customer_access ──── customers
-  │                                               │
-  └── time_entries ──────────────────────    contracts
+users ────────────────── project_members ──── projects ── epics
+  │                                               │           │
+  │                                           columns       cards
+  │                                               │           │
+  ├── group_members ── user_groups              cards ───────┘
+  │        │                │
+  │   tickets ──────  group_project_accesses
+  │        │          group_customer_accesses ──── customers ── contracts
+  │   ticket_messages                                  │            │
+  │   sla_policies                                 contacts    time_slots
+  │   ticket_checklist_templates                       │
+  │                                                 invoices
+  │
+  └── time_entries ──────────────────────────
         │
-        ├── projects
-        ├── customers
-        └── cards
+        ├── projects / customers / contracts / tickets
+
+sprints ── sprint_cards ── cards        releases ── release_sprints ── sprints
 ----
 
 Key relationships:
 
-* A **project** belongs to a **customer** (optional) and has many **columns** and **cards**.
-* **project_members** is the direct user↔project join table; **group_project_access** grants access to all group members at once.
-* **cards** belong to a **column** and a **project**; they can have a `parent_card_id` for sub-cards.
-* **attachments** are polymorphic: `owner_type` + `owner_id` point to any of `card`, `card_comment`, `chat_message`, or `conv_message`.
-* **time_entries** link a user to any combination of customer, project, card, and contract.
+* A **project** belongs to a **customer** (optional) and a **contract** (optional), and has many **columns**,
+  **cards**, and **epics**.
+* **project_members** is the direct user↔project join table; **group_project_accesses** grants access to all group
+  members at once, and **group_customer_accesses** does the same for customers.
+* **cards** belong to a **column** and a **project**; they can have a `parent_card_id` for sub-cards, an `epic_id`
+  for grouping, and many-to-many **assignees**/**watchers**/**labels**.
+* **sprints** and **releases** are project-scoped Scrum-extension entities: `sprint_cards` links cards into a sprint's
+  backlog, and `release_sprints` groups sprints under a release milestone.
+* **tickets** belong to a **customer** and can be linked to a **card** (`ticket_card_links`), to each other
+  (`ticket_links`), assigned to a **user** or a **user_group**, and matched against an **sla_policy**.
+* **invoices** and **invoice_templates** belong to a **customer** and store their line items as JSON rather than a
+  child table; **customer_contacts** gives a customer named contact people.
+* **attachments** and **message_reactions** are polymorphic: `owner_type` + `owner_id` point at any of several owner
+  tables (see "Polymorphic attachments" above) rather than using a foreign key.
+* **time_entries** link a user to any combination of customer, project, contract, and ticket.
+* **passkey_credentials**, **mfa_trusted_devices**, and **login_histories** all extend `users` with authentication
+  and security-audit data, but live in their own tables rather than as columns on `users`.
