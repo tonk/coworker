@@ -48,6 +48,8 @@ The result is a ~45,000 line Go backend and a ~45,000 line Vue 3 frontend that a
 | *Helpdesk ticket list with SLA status* | *Ticket detail — status, priority, assignee, SLA card, and messages* |
 | ![Ticket inbox](screenshots/23-ticket-inbox.png) | ![Time tracking undeclarable](screenshots/24-time-tracking-undeclarable.png) |
 | *Ticket inbox — all unassigned tickets grouped by status with SLA indicators* | *Weekly timesheet — declarable totals with aligned undeclarable deductions* |
+| ![Time tracking macro editor](screenshots/25-time-tracking-macro-editor.png) | ![Run macro popout](screenshots/26-time-tracking-macro-run.png) |
+| *Macro editor — alternating Pattern A/B day template* | *Run macro popout — apply a saved macro to the current week* |
 
 ## Quick Start
 

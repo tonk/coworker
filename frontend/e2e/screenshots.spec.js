@@ -395,4 +395,40 @@ test.describe('screenshots', () => {
     await page.screenshot(ss('23-ticket-inbox'))
     await context.close()
   })
+
+  // ── 25: Time tracking — macro editor (alternating A/B pattern) ────
+  // Logs in as tonk, whose seeded "Workshop (2 days)" macro is the only
+  // demo macro with alternating: true, so it's the one that actually
+  // renders the Pattern A / Pattern B grid columns instead of the flat
+  // per-day layout.
+  test('25-time-tracking-macro-editor', async ({ browser }) => {
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    await loginAs(page, 'tonk', 'demo1234')
+    await page.goto(`${BASE_URL}/time-tracking`)
+    await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
+    await page.locator('.tt-macro-edit-btn').click()
+    await page.waitForSelector('#macro-select')
+    await page.locator('#macro-select').selectOption({ label: 'Workshop (2 days)' })
+    await page.waitForTimeout(500)
+    await page.screenshot(ss('25-time-tracking-macro-editor'))
+    await context.close()
+  })
+
+  // ── 26: Time tracking — run macro popout ───────────────────────────
+  test('26-time-tracking-macro-run', async ({ browser }) => {
+    const context = await browser.newContext({ storageState: AUTH_FILE })
+    const page = await context.newPage()
+    await page.goto(`${BASE_URL}/time-tracking`)
+    await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
+    await page.locator('[aria-label="Run time macro"]').click()
+    await page.waitForSelector('#macro-run-panel')
+    await page.waitForTimeout(300)
+    await page.locator('#macro-run-panel').screenshot({
+      path: path.join(SS, '26-time-tracking-macro-run.png'),
+    })
+    await context.close()
+  })
 })
