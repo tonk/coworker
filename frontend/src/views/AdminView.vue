@@ -366,499 +366,506 @@
 
         <!-- Settings tab -->
         <div v-show="tab === 'settings'" role="tabpanel" id="tab-panel-settings" aria-labelledby="tab-btn-settings">
-          <div class="settings-section">
-            <h2>{{ $t('admin.system_settings') }}</h2>
+          <div class="settings-grid">
 
-            <div class="form-group" style="max-width:400px">
-              <label class="toggle-row">
-                <span>{{ $t('admin.registration_enabled') }}<HelpIcon i18n-key="admin.registration_hint" :label="$t('admin.registration_enabled')" /></span>
-                <input type="checkbox" v-model="systemSettings.registration_enabled" @change="saveGeneralSettings" />
-              </label>
-            </div>
-
-            <div class="mfa-settings-group">
-              <h3 class="mfa-settings-heading">{{ $t('mfa.admin_group_title') }}</h3>
-              <p class="form-hint mfa-settings-hint">{{ $t('mfa.admin_group_hint') }}</p>
+            <div class="card settings-card">
+              <h2>{{ $t('admin.system_settings') }}</h2>
 
               <div class="form-group" style="max-width:400px">
                 <label class="toggle-row">
-                  <span>{{ $t('mfa.enforce_label') }}<HelpIcon i18n-key="mfa.enforce_hint" :label="$t('mfa.enforce_label')" /></span>
-                  <input type="checkbox" v-model="systemSettings.mfa_required" @change="saveMFASettings" />
+                  <span>{{ $t('admin.registration_enabled') }}<HelpIcon i18n-key="admin.registration_hint" :label="$t('admin.registration_enabled')" /></span>
+                  <input type="checkbox" v-model="systemSettings.registration_enabled" @change="saveGeneralSettings" />
+                </label>
+              </div>
+
+              <div class="mfa-settings-group">
+                <h3 class="mfa-settings-heading">{{ $t('mfa.admin_group_title') }}</h3>
+                <p class="form-hint mfa-settings-hint">{{ $t('mfa.admin_group_hint') }}</p>
+
+                <div class="form-group" style="max-width:400px">
+                  <label class="toggle-row">
+                    <span>{{ $t('mfa.enforce_label') }}<HelpIcon i18n-key="mfa.enforce_hint" :label="$t('mfa.enforce_label')" /></span>
+                    <input type="checkbox" v-model="systemSettings.mfa_required" @change="saveMFASettings" />
+                  </label>
+                </div>
+
+                <div class="form-group" style="max-width:400px">
+                  <label class="form-label" for="sys-mfa-remember-devices">
+                    {{ $t('mfa.remember_devices_label') }}
+                    <HelpIcon i18n-key="mfa.remember_devices_hint" :label="$t('mfa.remember_devices_label')" />
+                  </label>
+                  <select id="sys-mfa-remember-devices" class="form-input" v-model="systemSettings.mfa_remember_devices" @change="onMfaRememberDevicesChange">
+                    <option value="disabled">{{ $t('mfa.remember_devices_disabled') }}</option>
+                    <option value="week">{{ $t('mfa.remember_devices_week') }}</option>
+                    <option value="week_month">{{ $t('mfa.remember_devices_week_month') }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-allowed-ips">
+                  {{ $t('admin.allowed_ips_label') }}
+                  <HelpIcon i18n-key="admin.allowed_ips_hint" :label="$t('admin.allowed_ips_label')" />
+                </label>
+                <input id="sys-allowed-ips" class="form-input" v-model="systemSettings.allowed_ips"
+                  :placeholder="$t('admin.allowed_ips_placeholder')"
+                  spellcheck="false" autocorrect="off" autocapitalize="off"
+                  @change="saveSecuritySettings" />
+              </div>
+
+              <div v-if="!systemStore.isTimetrackingMode" class="form-group" style="max-width:400px">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.scrum_storypoints_enabled') }}<HelpIcon i18n-key="admin.scrum_storypoints_hint" :label="$t('admin.scrum_storypoints_enabled')" /></span>
+                  <input type="checkbox" v-model="systemSettings.scrum_storypoints_enabled" @change="saveGeneralSettings" />
                 </label>
               </div>
 
               <div class="form-group" style="max-width:400px">
-                <label class="form-label" for="sys-mfa-remember-devices">
-                  {{ $t('mfa.remember_devices_label') }}
-                  <HelpIcon i18n-key="mfa.remember_devices_hint" :label="$t('mfa.remember_devices_label')" />
+                <label class="toggle-row">
+                  <span>{{ $t('admin.gravatar_enabled') }}<HelpIcon i18n-key="admin.gravatar_hint" :label="$t('admin.gravatar_enabled')" /></span>
+                  <input type="checkbox" v-model="systemSettings.gravatar_enabled" @change="saveGeneralSettings" />
                 </label>
-                <select id="sys-mfa-remember-devices" class="form-input" v-model="systemSettings.mfa_remember_devices" @change="onMfaRememberDevicesChange">
-                  <option value="disabled">{{ $t('mfa.remember_devices_disabled') }}</option>
-                  <option value="week">{{ $t('mfa.remember_devices_week') }}</option>
-                  <option value="week_month">{{ $t('mfa.remember_devices_week_month') }}</option>
-                </select>
               </div>
-            </div>
 
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-allowed-ips">
-                {{ $t('admin.allowed_ips_label') }}
-                <HelpIcon i18n-key="admin.allowed_ips_hint" :label="$t('admin.allowed_ips_label')" />
-              </label>
-              <input id="sys-allowed-ips" class="form-input" v-model="systemSettings.allowed_ips"
-                :placeholder="$t('admin.allowed_ips_placeholder')"
-                spellcheck="false" autocorrect="off" autocapitalize="off"
-                @change="saveSecuritySettings" />
-            </div>
-
-            <div v-if="!systemStore.isTimetrackingMode" class="form-group" style="max-width:400px">
-              <label class="toggle-row">
-                <span>{{ $t('admin.scrum_storypoints_enabled') }}<HelpIcon i18n-key="admin.scrum_storypoints_hint" :label="$t('admin.scrum_storypoints_enabled')" /></span>
-                <input type="checkbox" v-model="systemSettings.scrum_storypoints_enabled" @change="saveGeneralSettings" />
-              </label>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="toggle-row">
-                <span>{{ $t('admin.gravatar_enabled') }}<HelpIcon i18n-key="admin.gravatar_hint" :label="$t('admin.gravatar_enabled')" /></span>
-                <input type="checkbox" v-model="systemSettings.gravatar_enabled" @change="saveGeneralSettings" />
-              </label>
-            </div>
-
-            <div v-if="!systemStore.isTimetrackingMode" class="form-group" style="max-width:400px">
-              <label class="toggle-row">
-                <span>{{ $t('admin.external_image_proxy_enabled') }}<HelpIcon i18n-key="admin.external_image_proxy_hint" :label="$t('admin.external_image_proxy_enabled')" /></span>
-                <input type="checkbox" v-model="systemSettings.external_image_proxy_enabled" @change="saveGeneralSettings" />
-              </label>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-session-timeout">
-                {{ $t('admin.session_timeout') }}
-                <HelpIcon i18n-key="admin.session_timeout_hint" :label="$t('admin.session_timeout')" />
-              </label>
-              <div class="form-row" style="align-items:center;gap:8px">
-                <input id="sys-session-timeout" class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:120px" />
-                <span class="form-hint" style="margin:0">{{ $t('admin.session_timeout_unit') }}</span>
+              <div v-if="!systemStore.isTimetrackingMode" class="form-group" style="max-width:400px">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.external_image_proxy_enabled') }}<HelpIcon i18n-key="admin.external_image_proxy_hint" :label="$t('admin.external_image_proxy_enabled')" /></span>
+                  <input type="checkbox" v-model="systemSettings.external_image_proxy_enabled" @change="saveGeneralSettings" />
+                </label>
               </div>
-            </div>
 
-            <h3 class="settings-subsection">
-              {{ $t('admin.global_defaults_title') }}
-              <HelpIcon i18n-key="admin.global_defaults_hint" :label="$t('admin.global_defaults_title')" />
-            </h3>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-datetime-format">{{ $t('settings.date_time_format') }}</label>
-              <select id="sys-datetime-format" class="form-input" v-model="systemSettings.default_date_time_format" @change="saveGeneralSettings">
-                <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm (ISO)</option>
-                <option value="DD/MM/YYYY HH:mm">DD/MM/YYYY HH:mm</option>
-                <option value="MM/DD/YYYY hh:mm a">MM/DD/YYYY hh:mm a</option>
-                <option value="DD-MM-YYYY HH:mm">DD-MM-YYYY HH:mm</option>
-                <option value="DD.MM.YYYY HH:mm">DD.MM.YYYY HH:mm</option>
-              </select>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-timezone">{{ $t('settings.timezone') }}</label>
-              <select id="sys-timezone" class="form-input" v-model="systemSettings.default_timezone" @change="saveGeneralSettings">
-                <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
-              </select>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-theme">{{ $t('settings.theme') }}</label>
-              <select id="sys-theme" class="form-input" v-model="systemSettings.default_theme" @change="saveGeneralSettings">
-                <option value="light">{{ $t('settings.theme_light') }}</option>
-                <option value="dark">{{ $t('settings.theme_dark') }}</option>
-                <option value="system">{{ $t('settings.theme_system') }}</option>
-              </select>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-font">{{ $t('settings.font') }}</label>
-              <select id="sys-font" class="form-input" v-model="systemSettings.default_font" @change="saveGeneralSettings">
-                <option value="system">{{ $t('settings.font_system') }}</option>
-                <option value="Inter, sans-serif">Inter</option>
-                <option value="'Roboto', sans-serif">Roboto</option>
-                <option value="'Open Sans', sans-serif">Open Sans</option>
-                <option value="'Source Code Pro', monospace">Source Code Pro (monospace)</option>
-                <option value="Georgia, serif">Georgia (serif)</option>
-              </select>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-font-size">{{ $t('settings.font_size') }}</label>
-              <select id="sys-font-size" class="form-input" v-model="systemSettings.default_font_size" @change="saveGeneralSettings">
-                <option value="12">12px</option>
-                <option value="13">13px</option>
-                <option value="14">14px</option>
-                <option value="15">15px</option>
-                <option value="16">16px</option>
-                <option value="18">18px</option>
-              </select>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-locale">{{ $t('common.language') }}</label>
-              <select id="sys-locale" class="form-input" v-model="systemSettings.default_locale" @change="saveGeneralSettings">
-                <option value="en">English</option>
-                <option value="nl">Nederlands</option>
-                <option value="de">Deutsch</option>
-                <option value="fr">Français</option>
-                <option value="es">Español</option>
-                <option value="da">Dansk</option>
-                <option value="sv">Svenska</option>
-                <option value="nb">Norsk</option>
-                <option value="fi">Suomi</option>
-                <option value="is">Íslenska</option>
-                <option value="pt">Português</option>
-                <option value="it">Italiano</option>
-              </select>
-            </div>
-
-            <template v-if="!systemStore.isTimetrackingMode">
-            <h3 class="settings-subsection">
-              {{ $t('admin.project_defaults_title') }}
-              <HelpIcon i18n-key="admin.default_columns_hint" :label="$t('admin.project_defaults_title')" />
-            </h3>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-default-columns">
-                {{ $t('admin.default_columns') }}
-                <HelpIcon i18n-key="admin.default_columns_each_line" :label="$t('admin.default_columns')" />
-              </label>
-              <textarea id="sys-default-columns" class="form-input" v-model="systemSettings.default_columns" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Backlog\nIn Progress\nDone'"></textarea>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-default-labels">{{ $t('admin.default_labels') }}</label>
-              <textarea id="sys-default-labels" class="form-input" v-model="systemSettings.default_labels" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Bug\nFeature\nDesign\nContent'"></textarea>
-              <p class="form-hint">{{ $t('admin.default_labels_each_line') }}</p>
-            </div>
-
-            <div style="max-width:400px;margin-top:8px">
-              <button class="btn btn-primary btn-sm" @click="saveGeneralSettings">{{ $t('common.save') }}</button>
-            </div>
-            </template>
-
-            <template v-if="!systemStore.isTimetrackingMode">
-            <h3 class="settings-subsection">
-              {{ $t('admin.smtp_title') }}
-              <HelpIcon i18n-key="admin.smtp_hint" :label="$t('admin.smtp_title')" />
-            </h3>
-
-            <div class="form-row" style="max-width:500px">
-              <div class="form-group" style="flex:3">
-                <label class="form-label" for="sys-smtp-host">{{ $t('admin.smtp_host') }}</label>
-                <input id="sys-smtp-host" class="form-input" v-model="systemSettings.smtp_host" :placeholder="$t('admin.smtp_host_placeholder')" />
-              </div>
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-smtp-port">{{ $t('admin.smtp_port') }}</label>
-                <input id="sys-smtp-port" class="form-input" v-model="systemSettings.smtp_port" type="number" placeholder="587" />
-              </div>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-smtp-from">{{ $t('admin.smtp_from') }}</label>
-              <input id="sys-smtp-from" class="form-input" v-model="systemSettings.smtp_from" type="text" placeholder="WarmDesk &lt;noreply@example.com&gt;" />
-            </div>
-
-            <div class="form-row" style="max-width:500px">
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-smtp-username">{{ $t('admin.smtp_username') }}</label>
-                <input id="sys-smtp-username" class="form-input" v-model="systemSettings.smtp_username" autocomplete="off" />
-              </div>
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-smtp-password">{{ $t('admin.smtp_password') }}</label>
-                <input id="sys-smtp-password" class="form-input" v-model="systemSettings.smtp_password" type="password" autocomplete="new-password" :placeholder="smtpPasswordPlaceholder" />
-              </div>
-            </div>
-
-            <div class="form-actions" style="max-width:500px">
-              <button class="btn btn-primary" @click="saveSmtpSettings">{{ $t('common.save') }}</button>
-            </div>
-
-            <div class="form-group" style="max-width:500px;margin-top:16px">
-              <label class="form-label" for="sys-smtp-test">{{ $t('admin.smtp_test_title') }}</label>
-              <div style="display:flex;gap:8px">
-                <input id="sys-smtp-test" class="form-input" v-model="smtpTestEmail" type="email" :placeholder="$t('admin.smtp_test_placeholder')" style="flex:1" />
-                <button class="btn btn-secondary" :disabled="smtpTestSending || !smtpTestEmail" @click="sendSmtpTest">
-                  {{ smtpTestSending ? $t('admin.smtp_test_sending') : $t('admin.smtp_test_send') }}
-                </button>
-              </div>
-            </div>
-
-            </template>
-
-            <template v-if="!systemStore.isTimetrackingMode">
-            <h3 class="settings-subsection">
-              {{ $t('admin.imap_title') }}
-              <HelpIcon i18n-key="admin.imap_hint" :label="$t('admin.imap_title')" />
-            </h3>
-
-            <div class="form-group">
-              <label class="toggle-row">
-                <span>{{ $t('admin.imap_enabled') }}</span>
-                <input type="checkbox" v-model="systemSettings.imap_enabled" />
-              </label>
-            </div>
-
-            <div class="form-row" style="max-width:500px">
-              <div class="form-group" style="flex:3">
-                <label class="form-label" for="sys-imap-host">{{ $t('admin.imap_host') }}</label>
-                <input id="sys-imap-host" class="form-input" v-model="systemSettings.imap_host" :placeholder="$t('admin.imap_host_placeholder')" />
-              </div>
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-imap-port">{{ $t('admin.imap_port') }}</label>
-                <input id="sys-imap-port" class="form-input" v-model="systemSettings.imap_port" type="number" placeholder="993" />
-              </div>
-            </div>
-
-            <div class="form-row" style="max-width:500px">
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-imap-username">{{ $t('admin.imap_username') }}</label>
-                <input id="sys-imap-username" class="form-input" v-model="systemSettings.imap_username" autocomplete="off" />
-              </div>
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-imap-password">{{ $t('admin.imap_password') }}</label>
-                <input id="sys-imap-password" class="form-input" v-model="systemSettings.imap_password" type="password" autocomplete="new-password" :placeholder="imapPasswordPlaceholder" :disabled="systemSettings.imap_auth_mechanism === 'oauth2'" />
-              </div>
-            </div>
-
-            <div class="form-row" style="max-width:500px">
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-imap-auth">{{ $t('admin.imap_auth_mechanism') }}<HelpIcon i18n-key="help.fields.imap_auth_mechanism" :label="$t('admin.imap_auth_mechanism')" /></label>
-                <select id="sys-imap-auth" class="form-input" v-model="systemSettings.imap_auth_mechanism">
-                  <option value="plain">{{ $t('admin.imap_auth_plain') }}</option>
-                  <option value="oauth2">{{ $t('admin.imap_auth_oauth2') }}</option>
-                </select>
-              </div>
-              <div class="form-group" style="flex:1" v-if="systemSettings.imap_auth_mechanism === 'oauth2'">
-                <label class="form-label" for="sys-imap-oauth2-provider">{{ $t('admin.imap_oauth2_provider') }}<HelpIcon i18n-key="help.fields.imap_oauth2_provider" :label="$t('admin.imap_oauth2_provider')" /></label>
-                <select id="sys-imap-oauth2-provider" class="form-input" v-model="systemSettings.imap_oauth2_provider">
-                  <option value="">{{ $t('common.select') }}</option>
-                  <option value="google">{{ $t('admin.imap_oauth2_google') }}</option>
-                  <option value="office365">{{ $t('admin.imap_oauth2_office365') }}</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group" v-if="systemSettings.imap_auth_mechanism === 'oauth2'" style="max-width:500px">
-              <template v-if="imapOAuth2Connected">
-                <span class="badge badge-success" style="margin-right:8px">{{ $t('admin.imap_oauth2_connected') }}</span>
-                <button class="btn btn-secondary btn-sm" @click="disconnectImapOAuth2">{{ $t('admin.imap_oauth2_revoke') }}</button>
-              </template>
-              <template v-else>
-                <button class="btn btn-secondary btn-sm" @click="authorizeImapOAuth2" :disabled="imapOAuth2Connecting || !systemSettings.imap_oauth2_provider">
-                  {{ imapOAuth2Connecting ? $t('common.loading') : $t('admin.imap_oauth2_authorize') }}
-                </button>
-              </template>
-            </div>
-
-            <div class="form-row" style="max-width:500px">
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-imap-mailbox">{{ $t('admin.imap_mailbox') }}</label>
-                <input id="sys-imap-mailbox" class="form-input" v-model="systemSettings.imap_mailbox" placeholder="INBOX" />
-              </div>
-              <div class="form-group" style="flex:1">
-                <label class="form-label" for="sys-imap-poll">{{ $t('admin.imap_poll_interval') }}<HelpIcon i18n-key="help.fields.imap_poll_interval" :label="$t('admin.imap_poll_interval')" /></label>
-                <input id="sys-imap-poll" class="form-input" v-model="systemSettings.imap_poll_interval" type="number" placeholder="60" />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="toggle-row">
-                <span>{{ $t('admin.imap_use_tls') }}</span>
-                <input type="checkbox" v-model="systemSettings.imap_use_tls" />
-              </label>
-              <p class="form-hint">{{ $t('admin.imap_use_tls_hint') }}</p>
-            </div>
-
-            <div class="form-actions" style="max-width:500px">
-              <button class="btn btn-primary" @click="saveImapSettings">{{ $t('common.save') }}</button>
-              <button class="btn btn-secondary btn-sm" @click="testImap" :disabled="imapTesting">{{ imapTesting ? $t('common.loading') : $t('admin.imap_test') }}</button>
-              <button class="btn btn-secondary btn-sm" @click="pollImap" :disabled="imapPolling">{{ imapPolling ? $t('common.loading') : $t('admin.imap_poll') }}</button>
-            </div>
-
-            </template>
-
-            <h3 class="settings-subsection">
-              {{ $t('admin.branding_title') }}
-              <HelpIcon i18n-key="admin.branding_hint" :label="$t('admin.branding_title')" />
-            </h3>
-
-            <div class="form-group">
-              <label class="toggle-row">
-                <span>{{ $t('admin.login_branding_enabled') }}<HelpIcon i18n-key="admin.login_branding_hint" :label="$t('admin.login_branding_enabled')" /></span>
-                <input type="checkbox" v-model="systemSettings.login_branding_enabled" />
-              </label>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-company-name">{{ $t('admin.company_name') }}</label>
-              <input id="sys-company-name" class="form-input" v-model="systemSettings.company_name" :placeholder="$t('admin.company_name_placeholder')" />
-            </div>
-
-            <h4 class="settings-subsection" style="margin-top:16px">{{ $t('admin.billing_section') }}</h4>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-company-address">{{ $t('admin.company_address') }}</label>
-              <input id="sys-company-address" class="form-input" v-model="systemSettings.company_address" />
-            </div>
-            <div class="detail-row" style="max-width:400px">
-              <div class="form-group half">
-                <label class="form-label" for="sys-company-postal">{{ $t('admin.company_postal_code') }}</label>
-                <input id="sys-company-postal" class="form-input" v-model="systemSettings.company_postal_code" />
-              </div>
-              <div class="form-group half">
-                <label class="form-label" for="sys-company-city">{{ $t('admin.company_city') }}</label>
-                <input id="sys-company-city" class="form-input" v-model="systemSettings.company_city" />
-              </div>
-            </div>
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-company-country">{{ $t('admin.company_country') }}</label>
-              <input id="sys-company-country" class="form-input" v-model="systemSettings.company_country" />
-            </div>
-            <div class="detail-row" style="max-width:400px">
-              <div class="form-group half">
-                <label class="form-label" for="sys-company-vat">{{ $t('admin.company_vat_number') }}</label>
-                <input id="sys-company-vat" class="form-input" v-model="systemSettings.company_vat_number" />
-              </div>
-              <div class="form-group half">
-                <label class="form-label" for="sys-company-coc">{{ $t('admin.company_coc_number') }}</label>
-                <input id="sys-company-coc" class="form-input" v-model="systemSettings.company_coc_number" />
-              </div>
-            </div>
-            <div class="detail-row" style="max-width:400px">
-              <div class="form-group half">
-                <label class="form-label" for="sys-company-iban">{{ $t('admin.company_iban') }}</label>
-                <input id="sys-company-iban" class="form-input" v-model="systemSettings.company_iban" />
-              </div>
-              <div class="form-group half">
-                <label class="form-label" for="sys-company-bic">{{ $t('admin.company_bic') }}</label>
-                <input id="sys-company-bic" class="form-input" v-model="systemSettings.company_bic" />
-              </div>
-            </div>
-            <div class="detail-row" style="max-width:400px">
-              <div class="form-group half">
-                <label class="form-label" for="sys-payment-terms">{{ $t('admin.company_payment_terms') }}</label>
-                <input id="sys-payment-terms" class="form-input" type="number" min="0" v-model="systemSettings.company_payment_terms" />
-              </div>
-              <div class="form-group half">
-                <label class="form-label" for="sys-vat-rate">{{ $t('admin.default_vat_rate') }}</label>
-                <input id="sys-vat-rate" class="form-input" type="number" min="0" max="100" step="0.1" v-model="systemSettings.default_vat_rate" />
-              </div>
-            </div>
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-invoice-prefix">{{ $t('admin.invoice_number_prefix') }}</label>
-              <input id="sys-invoice-prefix" class="form-input" v-model="systemSettings.invoice_number_prefix" :placeholder="$t('admin.invoice_number_prefix_placeholder')" />
-            </div>
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label">{{ $t('admin.invoice_vat_exempt') }}</label>
-              <label class="toggle-label" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
-                <input type="checkbox" v-model="systemSettings.invoice_vat_exempt" style="margin-top:2px;flex-shrink:0" />
-                <span>{{ $t('admin.invoice_vat_exempt_hint') }}</span>
-              </label>
-            </div>
-
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-company-logo">{{ $t('admin.company_logo') }}</label>
-              <input id="sys-company-logo" class="form-input" v-model="systemSettings.company_logo" :placeholder="'https://...'" style="margin-bottom:8px" />
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                <button class="btn btn-secondary btn-sm" @click="$refs.logoFileInput.click()">{{ $t('admin.company_logo_upload') }}</button>
-                <button v-if="systemSettings.company_logo" class="btn btn-danger btn-sm" @click="clearCompanyLogo">{{ $t('common.clear') }}</button>
-                <span class="form-hint" style="margin:0">{{ $t('admin.company_logo_hint') }}</span>
-              </div>
-              <input ref="logoFileInput" type="file" accept="image/*" style="display:none" @change="onLogoFileSelected" />
-              <div v-if="systemSettings.company_logo" style="margin-top:8px">
-                <span class="form-hint">{{ $t('admin.company_logo_preview') }}</span>
-                <div style="margin-top:6px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius);display:inline-block;background:var(--color-bg)">
-                  <img :src="resolveAssetUrl(systemSettings.company_logo)" alt="Logo preview" style="max-height:60px;max-width:200px;object-fit:contain" @error="systemSettings.company_logo=''" />
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-session-timeout">
+                  {{ $t('admin.session_timeout') }}
+                  <HelpIcon i18n-key="admin.session_timeout_hint" :label="$t('admin.session_timeout')" />
+                </label>
+                <div class="form-row" style="align-items:center;gap:8px">
+                  <input id="sys-session-timeout" class="form-input" type="number" min="0" v-model.number="systemSettings.session_timeout_minutes" @change="saveGeneralSettings" style="width:120px" />
+                  <span class="form-hint" style="margin:0">{{ $t('admin.session_timeout_unit') }}</span>
                 </div>
               </div>
             </div>
 
-            <div class="form-group" style="max-width:400px">
-              <label class="form-label" for="sys-company-logo-dark">{{ $t('admin.company_logo_dark') }}</label>
-              <input id="sys-company-logo-dark" class="form-input" v-model="systemSettings.company_logo_dark" :placeholder="'https://...'" style="margin-bottom:8px" />
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                <button class="btn btn-secondary btn-sm" @click="$refs.logoDarkFileInput.click()">{{ $t('admin.company_logo_upload') }}</button>
-                <button v-if="systemSettings.company_logo_dark" class="btn btn-danger btn-sm" @click="clearCompanyLogoDark">{{ $t('common.clear') }}</button>
-                <span class="form-hint" style="margin:0">{{ $t('admin.company_logo_hint') }}</span>
+            <div class="card settings-card">
+              <h3 class="settings-subsection">
+                {{ $t('admin.global_defaults_title') }}
+                <HelpIcon i18n-key="admin.global_defaults_hint" :label="$t('admin.global_defaults_title')" />
+              </h3>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-datetime-format">{{ $t('settings.date_time_format') }}</label>
+                <select id="sys-datetime-format" class="form-input" v-model="systemSettings.default_date_time_format" @change="saveGeneralSettings">
+                  <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm (ISO)</option>
+                  <option value="DD/MM/YYYY HH:mm">DD/MM/YYYY HH:mm</option>
+                  <option value="MM/DD/YYYY hh:mm a">MM/DD/YYYY hh:mm a</option>
+                  <option value="DD-MM-YYYY HH:mm">DD-MM-YYYY HH:mm</option>
+                  <option value="DD.MM.YYYY HH:mm">DD.MM.YYYY HH:mm</option>
+                </select>
               </div>
-              <input ref="logoDarkFileInput" type="file" accept="image/*" style="display:none" @change="onLogoDarkFileSelected" />
-              <div v-if="systemSettings.company_logo_dark" style="margin-top:8px">
-                <span class="form-hint">{{ $t('admin.company_logo_preview') }}</span>
-                <div style="margin-top:6px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius);display:inline-block;background:var(--color-surface)">
-                  <img :src="resolveAssetUrl(systemSettings.company_logo_dark)" alt="Logo dark preview" style="max-height:60px;max-width:200px;object-fit:contain" @error="systemSettings.company_logo_dark=''" />
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-timezone">{{ $t('settings.timezone') }}</label>
+                <select id="sys-timezone" class="form-input" v-model="systemSettings.default_timezone" @change="saveGeneralSettings">
+                  <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-theme">{{ $t('settings.theme') }}</label>
+                <select id="sys-theme" class="form-input" v-model="systemSettings.default_theme" @change="saveGeneralSettings">
+                  <option value="light">{{ $t('settings.theme_light') }}</option>
+                  <option value="dark">{{ $t('settings.theme_dark') }}</option>
+                  <option value="system">{{ $t('settings.theme_system') }}</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-font">{{ $t('settings.font') }}</label>
+                <select id="sys-font" class="form-input" v-model="systemSettings.default_font" @change="saveGeneralSettings">
+                  <option value="system">{{ $t('settings.font_system') }}</option>
+                  <option value="Inter, sans-serif">Inter</option>
+                  <option value="'Roboto', sans-serif">Roboto</option>
+                  <option value="'Open Sans', sans-serif">Open Sans</option>
+                  <option value="'Source Code Pro', monospace">Source Code Pro (monospace)</option>
+                  <option value="Georgia, serif">Georgia (serif)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-font-size">{{ $t('settings.font_size') }}</label>
+                <select id="sys-font-size" class="form-input" v-model="systemSettings.default_font_size" @change="saveGeneralSettings">
+                  <option value="12">12px</option>
+                  <option value="13">13px</option>
+                  <option value="14">14px</option>
+                  <option value="15">15px</option>
+                  <option value="16">16px</option>
+                  <option value="18">18px</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-locale">{{ $t('common.language') }}</label>
+                <select id="sys-locale" class="form-input" v-model="systemSettings.default_locale" @change="saveGeneralSettings">
+                  <option value="en">English</option>
+                  <option value="nl">Nederlands</option>
+                  <option value="de">Deutsch</option>
+                  <option value="fr">Français</option>
+                  <option value="es">Español</option>
+                  <option value="da">Dansk</option>
+                  <option value="sv">Svenska</option>
+                  <option value="nb">Norsk</option>
+                  <option value="fi">Suomi</option>
+                  <option value="is">Íslenska</option>
+                  <option value="pt">Português</option>
+                  <option value="it">Italiano</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card settings-card" v-if="!systemStore.isTimetrackingMode">
+              <h3 class="settings-subsection">
+                {{ $t('admin.project_defaults_title') }}
+                <HelpIcon i18n-key="admin.default_columns_hint" :label="$t('admin.project_defaults_title')" />
+              </h3>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-default-columns">
+                  {{ $t('admin.default_columns') }}
+                  <HelpIcon i18n-key="admin.default_columns_each_line" :label="$t('admin.default_columns')" />
+                </label>
+                <textarea id="sys-default-columns" class="form-input" v-model="systemSettings.default_columns" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Backlog\nIn Progress\nDone'"></textarea>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-default-labels">{{ $t('admin.default_labels') }}</label>
+                <textarea id="sys-default-labels" class="form-input" v-model="systemSettings.default_labels" rows="4" style="font-family:monospace;resize:vertical" :placeholder="'Bug\nFeature\nDesign\nContent'"></textarea>
+                <p class="form-hint">{{ $t('admin.default_labels_each_line') }}</p>
+              </div>
+
+              <div style="max-width:400px;margin-top:8px">
+                <button class="btn btn-primary btn-sm" @click="saveGeneralSettings">{{ $t('common.save') }}</button>
+              </div>
+            </div>
+
+            <div class="card settings-card" v-if="!systemStore.isTimetrackingMode">
+              <h3 class="settings-subsection">
+                {{ $t('admin.smtp_title') }}
+                <HelpIcon i18n-key="admin.smtp_hint" :label="$t('admin.smtp_title')" />
+              </h3>
+
+              <div class="form-row" style="max-width:500px">
+                <div class="form-group" style="flex:3">
+                  <label class="form-label" for="sys-smtp-host">{{ $t('admin.smtp_host') }}</label>
+                  <input id="sys-smtp-host" class="form-input" v-model="systemSettings.smtp_host" :placeholder="$t('admin.smtp_host_placeholder')" />
+                </div>
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-smtp-port">{{ $t('admin.smtp_port') }}</label>
+                  <input id="sys-smtp-port" class="form-input" v-model="systemSettings.smtp_port" type="number" placeholder="587" />
+                </div>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-smtp-from">{{ $t('admin.smtp_from') }}</label>
+                <input id="sys-smtp-from" class="form-input" v-model="systemSettings.smtp_from" type="text" placeholder="WarmDesk &lt;noreply@example.com&gt;" />
+              </div>
+
+              <div class="form-row" style="max-width:500px">
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-smtp-username">{{ $t('admin.smtp_username') }}</label>
+                  <input id="sys-smtp-username" class="form-input" v-model="systemSettings.smtp_username" autocomplete="off" />
+                </div>
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-smtp-password">{{ $t('admin.smtp_password') }}</label>
+                  <input id="sys-smtp-password" class="form-input" v-model="systemSettings.smtp_password" type="password" autocomplete="new-password" :placeholder="smtpPasswordPlaceholder" />
+                </div>
+              </div>
+
+              <div class="form-actions" style="max-width:500px">
+                <button class="btn btn-primary" @click="saveSmtpSettings">{{ $t('common.save') }}</button>
+              </div>
+
+              <div class="form-group" style="max-width:500px;margin-top:16px">
+                <label class="form-label" for="sys-smtp-test">{{ $t('admin.smtp_test_title') }}</label>
+                <div style="display:flex;gap:8px">
+                  <input id="sys-smtp-test" class="form-input" v-model="smtpTestEmail" type="email" :placeholder="$t('admin.smtp_test_placeholder')" style="flex:1" />
+                  <button class="btn btn-secondary" :disabled="smtpTestSending || !smtpTestEmail" @click="sendSmtpTest">
+                    {{ smtpTestSending ? $t('admin.smtp_test_sending') : $t('admin.smtp_test_send') }}
+                  </button>
                 </div>
               </div>
             </div>
 
-            <div class="form-actions" style="max-width:400px">
-              <button class="btn btn-primary" @click="saveBrandingSettings">{{ $t('common.save') }}</button>
-            </div>
+            <div class="card settings-card" v-if="!systemStore.isTimetrackingMode">
+              <h3 class="settings-subsection">
+                {{ $t('admin.imap_title') }}
+                <HelpIcon i18n-key="admin.imap_hint" :label="$t('admin.imap_title')" />
+              </h3>
 
-            <h3 class="settings-subsection">
-              {{ $t('admin.password_policy_title') }}
-              <HelpIcon i18n-key="admin.password_policy_hint" :label="$t('admin.password_policy_title')" />
-            </h3>
-
-            <div class="form-group" style="max-width:240px">
-              <label class="form-label" for="sys-pwd-min-len">{{ $t('admin.password_min_length') }}<HelpIcon i18n-key="help.fields.password_min_length" :label="$t('admin.password_min_length')" /></label>
-              <input id="sys-pwd-min-len" class="form-input" type="number" min="8" max="128" v-model.number="systemSettings.password_min_length" style="width:100px" />
-            </div>
-
-            <div class="form-group">
-              <label class="toggle-row">
-                <span>{{ $t('admin.password_require_upper') }}</span>
-                <input type="checkbox" v-model="systemSettings.password_require_upper" />
-              </label>
-            </div>
-            <div class="form-group">
-              <label class="toggle-row">
-                <span>{{ $t('admin.password_require_lower') }}</span>
-                <input type="checkbox" v-model="systemSettings.password_require_lower" />
-              </label>
-            </div>
-            <div class="form-group">
-              <label class="toggle-row">
-                <span>{{ $t('admin.password_require_digit') }}</span>
-                <input type="checkbox" v-model="systemSettings.password_require_digit" />
-              </label>
-            </div>
-            <div class="form-group">
-              <label class="toggle-row">
-                <span>{{ $t('admin.password_require_special') }}</span>
-                <input type="checkbox" v-model="systemSettings.password_require_special" />
-              </label>
-            </div>
-
-            <div class="form-group" style="max-width:400px;margin-top:8px">
-              <label class="form-label" for="sys-pwd-change-period">{{ $t('admin.password_change_period') }}</label>
-              <div class="form-row" style="align-items:center;gap:8px">
-                <input id="sys-pwd-change-period" class="form-input" type="number" min="0" max="3650" v-model.number="systemSettings.password_change_period_days" style="width:100px" />
-                <span class="form-hint" style="margin:0">{{ $t('admin.password_change_period_unit') }}</span>
+              <div class="form-group">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.imap_enabled') }}</span>
+                  <input type="checkbox" v-model="systemSettings.imap_enabled" />
+                </label>
               </div>
-              <p class="form-hint">{{ $t('admin.password_change_period_hint') }}</p>
+
+              <div class="form-row" style="max-width:500px">
+                <div class="form-group" style="flex:3">
+                  <label class="form-label" for="sys-imap-host">{{ $t('admin.imap_host') }}</label>
+                  <input id="sys-imap-host" class="form-input" v-model="systemSettings.imap_host" :placeholder="$t('admin.imap_host_placeholder')" />
+                </div>
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-imap-port">{{ $t('admin.imap_port') }}</label>
+                  <input id="sys-imap-port" class="form-input" v-model="systemSettings.imap_port" type="number" placeholder="993" />
+                </div>
+              </div>
+
+              <div class="form-row" style="max-width:500px">
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-imap-username">{{ $t('admin.imap_username') }}</label>
+                  <input id="sys-imap-username" class="form-input" v-model="systemSettings.imap_username" autocomplete="off" />
+                </div>
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-imap-password">{{ $t('admin.imap_password') }}</label>
+                  <input id="sys-imap-password" class="form-input" v-model="systemSettings.imap_password" type="password" autocomplete="new-password" :placeholder="imapPasswordPlaceholder" :disabled="systemSettings.imap_auth_mechanism === 'oauth2'" />
+                </div>
+              </div>
+
+              <div class="form-row" style="max-width:500px">
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-imap-auth">{{ $t('admin.imap_auth_mechanism') }}<HelpIcon i18n-key="help.fields.imap_auth_mechanism" :label="$t('admin.imap_auth_mechanism')" /></label>
+                  <select id="sys-imap-auth" class="form-input" v-model="systemSettings.imap_auth_mechanism">
+                    <option value="plain">{{ $t('admin.imap_auth_plain') }}</option>
+                    <option value="oauth2">{{ $t('admin.imap_auth_oauth2') }}</option>
+                  </select>
+                </div>
+                <div class="form-group" style="flex:1" v-if="systemSettings.imap_auth_mechanism === 'oauth2'">
+                  <label class="form-label" for="sys-imap-oauth2-provider">{{ $t('admin.imap_oauth2_provider') }}<HelpIcon i18n-key="help.fields.imap_oauth2_provider" :label="$t('admin.imap_oauth2_provider')" /></label>
+                  <select id="sys-imap-oauth2-provider" class="form-input" v-model="systemSettings.imap_oauth2_provider">
+                    <option value="">{{ $t('common.select') }}</option>
+                    <option value="google">{{ $t('admin.imap_oauth2_google') }}</option>
+                    <option value="office365">{{ $t('admin.imap_oauth2_office365') }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group" v-if="systemSettings.imap_auth_mechanism === 'oauth2'" style="max-width:500px">
+                <template v-if="imapOAuth2Connected">
+                  <span class="badge badge-success" style="margin-right:8px">{{ $t('admin.imap_oauth2_connected') }}</span>
+                  <button class="btn btn-secondary btn-sm" @click="disconnectImapOAuth2">{{ $t('admin.imap_oauth2_revoke') }}</button>
+                </template>
+                <template v-else>
+                  <button class="btn btn-secondary btn-sm" @click="authorizeImapOAuth2" :disabled="imapOAuth2Connecting || !systemSettings.imap_oauth2_provider">
+                    {{ imapOAuth2Connecting ? $t('common.loading') : $t('admin.imap_oauth2_authorize') }}
+                  </button>
+                </template>
+              </div>
+
+              <div class="form-row" style="max-width:500px">
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-imap-mailbox">{{ $t('admin.imap_mailbox') }}</label>
+                  <input id="sys-imap-mailbox" class="form-input" v-model="systemSettings.imap_mailbox" placeholder="INBOX" />
+                </div>
+                <div class="form-group" style="flex:1">
+                  <label class="form-label" for="sys-imap-poll">{{ $t('admin.imap_poll_interval') }}<HelpIcon i18n-key="help.fields.imap_poll_interval" :label="$t('admin.imap_poll_interval')" /></label>
+                  <input id="sys-imap-poll" class="form-input" v-model="systemSettings.imap_poll_interval" type="number" placeholder="60" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.imap_use_tls') }}</span>
+                  <input type="checkbox" v-model="systemSettings.imap_use_tls" />
+                </label>
+                <p class="form-hint">{{ $t('admin.imap_use_tls_hint') }}</p>
+              </div>
+
+              <div class="form-actions" style="max-width:500px">
+                <button class="btn btn-primary" @click="saveImapSettings">{{ $t('common.save') }}</button>
+                <button class="btn btn-secondary btn-sm" @click="testImap" :disabled="imapTesting">{{ imapTesting ? $t('common.loading') : $t('admin.imap_test') }}</button>
+                <button class="btn btn-secondary btn-sm" @click="pollImap" :disabled="imapPolling">{{ imapPolling ? $t('common.loading') : $t('admin.imap_poll') }}</button>
+              </div>
             </div>
 
-            <div style="max-width:400px;margin-top:8px">
-              <button class="btn btn-primary btn-sm" @click="savePasswordPolicy">{{ $t('common.save') }}</button>
+            <div class="card settings-card settings-card-wide">
+              <h3 class="settings-subsection">
+                {{ $t('admin.branding_title') }}
+                <HelpIcon i18n-key="admin.branding_hint" :label="$t('admin.branding_title')" />
+              </h3>
+
+              <div class="form-group">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.login_branding_enabled') }}<HelpIcon i18n-key="admin.login_branding_hint" :label="$t('admin.login_branding_enabled')" /></span>
+                  <input type="checkbox" v-model="systemSettings.login_branding_enabled" />
+                </label>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-company-name">{{ $t('admin.company_name') }}</label>
+                <input id="sys-company-name" class="form-input" v-model="systemSettings.company_name" :placeholder="$t('admin.company_name_placeholder')" />
+              </div>
+
+              <h4 class="settings-subsection" style="margin-top:16px">{{ $t('admin.billing_section') }}</h4>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-company-address">{{ $t('admin.company_address') }}</label>
+                <input id="sys-company-address" class="form-input" v-model="systemSettings.company_address" />
+              </div>
+              <div class="detail-row" style="max-width:400px">
+                <div class="form-group half">
+                  <label class="form-label" for="sys-company-postal">{{ $t('admin.company_postal_code') }}</label>
+                  <input id="sys-company-postal" class="form-input" v-model="systemSettings.company_postal_code" />
+                </div>
+                <div class="form-group half">
+                  <label class="form-label" for="sys-company-city">{{ $t('admin.company_city') }}</label>
+                  <input id="sys-company-city" class="form-input" v-model="systemSettings.company_city" />
+                </div>
+              </div>
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-company-country">{{ $t('admin.company_country') }}</label>
+                <input id="sys-company-country" class="form-input" v-model="systemSettings.company_country" />
+              </div>
+              <div class="detail-row" style="max-width:400px">
+                <div class="form-group half">
+                  <label class="form-label" for="sys-company-vat">{{ $t('admin.company_vat_number') }}</label>
+                  <input id="sys-company-vat" class="form-input" v-model="systemSettings.company_vat_number" />
+                </div>
+                <div class="form-group half">
+                  <label class="form-label" for="sys-company-coc">{{ $t('admin.company_coc_number') }}</label>
+                  <input id="sys-company-coc" class="form-input" v-model="systemSettings.company_coc_number" />
+                </div>
+              </div>
+              <div class="detail-row" style="max-width:400px">
+                <div class="form-group half">
+                  <label class="form-label" for="sys-company-iban">{{ $t('admin.company_iban') }}</label>
+                  <input id="sys-company-iban" class="form-input" v-model="systemSettings.company_iban" />
+                </div>
+                <div class="form-group half">
+                  <label class="form-label" for="sys-company-bic">{{ $t('admin.company_bic') }}</label>
+                  <input id="sys-company-bic" class="form-input" v-model="systemSettings.company_bic" />
+                </div>
+              </div>
+              <div class="detail-row" style="max-width:400px">
+                <div class="form-group half">
+                  <label class="form-label" for="sys-payment-terms">{{ $t('admin.company_payment_terms') }}</label>
+                  <input id="sys-payment-terms" class="form-input" type="number" min="0" v-model="systemSettings.company_payment_terms" />
+                </div>
+                <div class="form-group half">
+                  <label class="form-label" for="sys-vat-rate">{{ $t('admin.default_vat_rate') }}</label>
+                  <input id="sys-vat-rate" class="form-input" type="number" min="0" max="100" step="0.1" v-model="systemSettings.default_vat_rate" />
+                </div>
+              </div>
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-invoice-prefix">{{ $t('admin.invoice_number_prefix') }}</label>
+                <input id="sys-invoice-prefix" class="form-input" v-model="systemSettings.invoice_number_prefix" :placeholder="$t('admin.invoice_number_prefix_placeholder')" />
+              </div>
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label">{{ $t('admin.invoice_vat_exempt') }}</label>
+                <label class="toggle-label" style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
+                  <input type="checkbox" v-model="systemSettings.invoice_vat_exempt" style="margin-top:2px;flex-shrink:0" />
+                  <span>{{ $t('admin.invoice_vat_exempt_hint') }}</span>
+                </label>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-company-logo">{{ $t('admin.company_logo') }}</label>
+                <input id="sys-company-logo" class="form-input" v-model="systemSettings.company_logo" :placeholder="'https://...'" style="margin-bottom:8px" />
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <button class="btn btn-secondary btn-sm" @click="$refs.logoFileInput.click()">{{ $t('admin.company_logo_upload') }}</button>
+                  <button v-if="systemSettings.company_logo" class="btn btn-danger btn-sm" @click="clearCompanyLogo">{{ $t('common.clear') }}</button>
+                  <span class="form-hint" style="margin:0">{{ $t('admin.company_logo_hint') }}</span>
+                </div>
+                <input ref="logoFileInput" type="file" accept="image/*" style="display:none" @change="onLogoFileSelected" />
+                <div v-if="systemSettings.company_logo" style="margin-top:8px">
+                  <span class="form-hint">{{ $t('admin.company_logo_preview') }}</span>
+                  <div style="margin-top:6px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius);display:inline-block;background:var(--color-bg)">
+                    <img :src="resolveAssetUrl(systemSettings.company_logo)" alt="Logo preview" style="max-height:60px;max-width:200px;object-fit:contain" @error="systemSettings.company_logo=''" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group" style="max-width:400px">
+                <label class="form-label" for="sys-company-logo-dark">{{ $t('admin.company_logo_dark') }}</label>
+                <input id="sys-company-logo-dark" class="form-input" v-model="systemSettings.company_logo_dark" :placeholder="'https://...'" style="margin-bottom:8px" />
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                  <button class="btn btn-secondary btn-sm" @click="$refs.logoDarkFileInput.click()">{{ $t('admin.company_logo_upload') }}</button>
+                  <button v-if="systemSettings.company_logo_dark" class="btn btn-danger btn-sm" @click="clearCompanyLogoDark">{{ $t('common.clear') }}</button>
+                  <span class="form-hint" style="margin:0">{{ $t('admin.company_logo_hint') }}</span>
+                </div>
+                <input ref="logoDarkFileInput" type="file" accept="image/*" style="display:none" @change="onLogoDarkFileSelected" />
+                <div v-if="systemSettings.company_logo_dark" style="margin-top:8px">
+                  <span class="form-hint">{{ $t('admin.company_logo_preview') }}</span>
+                  <div style="margin-top:6px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius);display:inline-block;background:var(--color-surface)">
+                    <img :src="resolveAssetUrl(systemSettings.company_logo_dark)" alt="Logo dark preview" style="max-height:60px;max-width:200px;object-fit:contain" @error="systemSettings.company_logo_dark=''" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions" style="max-width:400px">
+                <button class="btn btn-primary" @click="saveBrandingSettings">{{ $t('common.save') }}</button>
+              </div>
             </div>
+
+            <div class="card settings-card">
+              <h3 class="settings-subsection">
+                {{ $t('admin.password_policy_title') }}
+                <HelpIcon i18n-key="admin.password_policy_hint" :label="$t('admin.password_policy_title')" />
+              </h3>
+
+              <div class="form-group" style="max-width:240px">
+                <label class="form-label" for="sys-pwd-min-len">{{ $t('admin.password_min_length') }}<HelpIcon i18n-key="help.fields.password_min_length" :label="$t('admin.password_min_length')" /></label>
+                <input id="sys-pwd-min-len" class="form-input" type="number" min="8" max="128" v-model.number="systemSettings.password_min_length" style="width:100px" />
+              </div>
+
+              <div class="form-group">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.password_require_upper') }}</span>
+                  <input type="checkbox" v-model="systemSettings.password_require_upper" />
+                </label>
+              </div>
+              <div class="form-group">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.password_require_lower') }}</span>
+                  <input type="checkbox" v-model="systemSettings.password_require_lower" />
+                </label>
+              </div>
+              <div class="form-group">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.password_require_digit') }}</span>
+                  <input type="checkbox" v-model="systemSettings.password_require_digit" />
+                </label>
+              </div>
+              <div class="form-group">
+                <label class="toggle-row">
+                  <span>{{ $t('admin.password_require_special') }}</span>
+                  <input type="checkbox" v-model="systemSettings.password_require_special" />
+                </label>
+              </div>
+
+              <div class="form-group" style="max-width:400px;margin-top:8px">
+                <label class="form-label" for="sys-pwd-change-period">{{ $t('admin.password_change_period') }}</label>
+                <div class="form-row" style="align-items:center;gap:8px">
+                  <input id="sys-pwd-change-period" class="form-input" type="number" min="0" max="3650" v-model.number="systemSettings.password_change_period_days" style="width:100px" />
+                  <span class="form-hint" style="margin:0">{{ $t('admin.password_change_period_unit') }}</span>
+                </div>
+                <p class="form-hint">{{ $t('admin.password_change_period_hint') }}</p>
+              </div>
+
+              <div style="max-width:400px;margin-top:8px">
+                <button class="btn btn-primary btn-sm" @click="savePasswordPolicy">{{ $t('common.save') }}</button>
+              </div>
+            </div>
+
+            <!-- Metrics access log -->
+            <div class="card settings-card">
+              <h3 class="form-section-title" style="margin-top:0">{{ $t('admin.metrics_access_title') }}</h3>
+              <div v-if="systemSettings.metrics_last_access" style="font-size:13px;color:var(--color-text-muted);display:flex;flex-direction:column;gap:4px">
+                <span>{{ $t('admin.metrics_last_access') }}: <strong>{{ formatDateTime(systemSettings.metrics_last_access) }}</strong></span>
+                <span>{{ $t('admin.metrics_last_access_result') }}: <strong :style="{ color: systemSettings.metrics_last_access_success === 'true' ? 'var(--color-success)' : 'var(--color-danger)' }">{{ systemSettings.metrics_last_access_success === 'true' ? $t('admin.metrics_access_success') : $t('admin.metrics_access_failed') }}</strong></span>
+              </div>
+              <span v-else style="font-size:13px;color:var(--color-text-muted)">{{ $t('admin.metrics_never_accessed') }}</span>
+            </div>
+
           </div>
-
-          <!-- Metrics access log -->
-          <div style="margin-top:32px">
-            <h3 class="form-section-title">{{ $t('admin.metrics_access_title') }}</h3>
-            <div v-if="systemSettings.metrics_last_access" style="font-size:13px;color:var(--color-text-muted);display:flex;flex-direction:column;gap:4px">
-              <span>{{ $t('admin.metrics_last_access') }}: <strong>{{ formatDateTime(systemSettings.metrics_last_access) }}</strong></span>
-              <span>{{ $t('admin.metrics_last_access_result') }}: <strong :style="{ color: systemSettings.metrics_last_access_success === 'true' ? 'var(--color-success)' : 'var(--color-danger)' }">{{ systemSettings.metrics_last_access_success === 'true' ? $t('admin.metrics_access_success') : $t('admin.metrics_access_failed') }}</strong></span>
-            </div>
-            <span v-else style="font-size:13px;color:var(--color-text-muted)">{{ $t('admin.metrics_never_accessed') }}</span>
-          </div>
-
         </div>
 
         <!-- News tab -->
@@ -3707,11 +3714,20 @@ h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }
 
 .loading-state { display: flex; justify-content: center; padding: 60px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.detail-row { display: flex; gap: 16px; }
+.detail-row .form-group.half { flex: 1; min-width: 0; }
 .tab-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .admin-search { width: 260px; margin-left: auto; }
-.settings-section { max-width: 560px; }
-.settings-section h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
-.settings-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.settings-card { max-width: 100%; }
+.settings-card-wide { grid-column: 1 / -1; }
+.settings-card h2 { font-size: 16px; font-weight: 600; margin: 0 0 16px; }
+.settings-card h3:first-child, .settings-card h2:first-child { margin-top: 0; }
 .mfa-settings-group {
   max-width: 400px;
   margin-bottom: 20px;
