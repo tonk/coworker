@@ -1,6 +1,6 @@
 = WarmDesk — User Guide
-:revnumber: v0.13.0
-:revdate: 2026-07-04
+:revnumber: v0.14.0
+:revdate: 2026-07-05
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -1183,7 +1183,7 @@ Use the *Table* / *Chart* toggle above the report to switch views.
 |Bar, Pie, or Stacked bar
 
 |*Time basis*
-|Declarable (undeclarable time subtracted) or Total (not subtracted)
+|Declarable (undeclarable time subtracted), Total (not subtracted), or Undeclarable (only the deducted minutes)
 |===
 
 Stacked bar charts always break the data down by period, regardless of the *Group by* filter. Click *Export PDF* to download the currently displayed chart as a PDF.

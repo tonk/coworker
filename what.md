@@ -774,3 +774,7 @@ Create an application that has all these features and requirements
 - Show a passkey-registered indicator in Settings → Profile, and a "Logged in as {username} (ID: {id})" hover tooltip on the header avatar and footer display name
 - Add admin visibility and management for user passkeys: a registered-count badge and Revoke passkeys button in Edit User, backed by new GET/DELETE /admin/users/:id/passkeys endpoints
 - Adopt real semver (PATCH/MINOR/MAJOR) versioning discipline starting at v0.13.0, replacing the flat incrementing counter used through v0.12.42
+- Add an "Undeclarable" time basis option to the time-tracking report chart view, alongside the existing Declarable and Total options, in both the on-screen chart and the chart PDF export
+- Add a Passkey column to the Admin Users table showing at a glance which users have a passkey registered; shorten "Last Password Change" to "Last PWD Change" to make room for it
+- Clear the auth rate limit bucket for an IP after a fully successful login (password, passkey, MFA, or refresh) so earlier failed attempts no longer risk locking out a user who just authenticated correctly
+- Fix passkey login errors being masked by a bogus token-refresh retry: the 401-retry interceptor now excludes /auth/passkey/login so the real failure reason is shown instead of a generic "missing refresh token" message

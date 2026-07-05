@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.13.0)
+## Latest release (v0.14.0)
 
-- **Passkey visibility** — see whether your account (or, for admins, any user's account) has passkeys registered, with a hover tooltip on the avatar/footer showing who you're logged in as.
-- **Admin — revoke a user's passkeys** — clear all of a user's passkeys at once from the Edit User panel, e.g. after a lost device.
+- **Time tracking report — undeclarable chart basis** — see how much unpaid/undeclarable time you've logged per week, month, or year, right alongside Total and Declarable in the Report tab's chart view.
+- **Admin — passkey column** — the Users table now shows at a glance which users have a passkey registered.
+- **Auth rate limiting** — a successful login now clears your rate-limit bucket, so a few earlier mistyped attempts no longer risk locking you out.
 
 ## Experiment
 
@@ -353,7 +354,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Multi-language** — English, Dutch (Nederlands), German (Deutsch), Spanish (Español), French (Français), Danish (Dansk), Swedish (Svenska), Norwegian (Norsk), Finnish (Suomi), Icelandic (Íslenska), Portuguese (Português), Italian (Italiano)
 - **User settings** — display name, avatar (upload or Gravatar), email, locale, theme, accent colour, date/time format, timezone, font, time notation (decimal or HH:MM), password change
 - **Remember me** — optional checkbox on the login page saves the email/username to the browser's local storage and pre-fills it on the next visit
-- **Passkey sign-in** — register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page; uses WebAuthn discoverable credentials so no username is required before the authenticator prompt; browser-only (Tauri desktop excluded); your registered-passkey count is shown in Settings → Profile, and admins can see and revoke any user's passkeys from Edit User
+- **Passkey sign-in** — register passkeys (Touch ID, Windows Hello, hardware security keys) in User Settings and sign in passwordlessly from the login page; uses WebAuthn discoverable credentials so no username is required before the authenticator prompt; browser-only (Tauri desktop excluded); your registered-passkey count is shown in Settings → Profile; the admin Users table has a Passkey column showing who has one registered, and admins can see and revoke any user's passkeys from Edit User
 - **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
 - **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
 - **Require password change on next login** — admins can flag a user (from New User or Edit User) to be forced through a password change on their next login, via any auth method; a Generate/Copy password helper is available in both forms
@@ -366,7 +367,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Watchers** — subscribe to card activity
 - **Favourite people** — mark users for quick access
 - **Time reports** — generate a time overview filtered by period (all / year / month / week / custom date range), project, and one or more assignees; export to server-generated PDF (selectable font and output language, company logo, per-project subtotal badges) or Excel (XLSX); time displayed as H:MM
-- **Time report chart view** — toggle the Report tab between Table and Chart; chart types are bar, pie, and stacked bar, with a declarable/total time basis switch; export the chart as a server-generated PDF
+- **Time report chart view** — toggle the Report tab between Table and Chart; chart types are bar, pie, and stacked bar, with a declarable/total/undeclarable time basis switch; export the chart as a server-generated PDF
 - **Time tracking PDF options** — the weekly timesheet export and the time-tracking report tab both offer the same PDF Font and PDF Language selects as the main report view; selections are persisted in localStorage; when the report is grouped by Customer a *New page per customer* checkbox appears — each customer is exported to its own page with the full document header repeated and no cross-customer grand total; optional per-row distance and undeclarable-time columns show billable vs. unbillable time and mileage on every entry, not just totals, and the undeclarable/billable breakdown is available for every grouping
 - **Company branding** — set a company name and separate light/dark logos (JPG, PNG, GIF, WebP, or SVG); light logo shown on the login screen's light theme, dark logo on dark theme; logos also appear on reports
 - **Configurable initial columns** — admin can define which columns are created when a new project is made (defaults to "Backlog")

@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.14.0 — 2026-07-05
+
+### Added
+- **Time tracking report — undeclarable chart basis** — the Report tab's chart "Time basis" selector now has an "Undeclarable" option alongside Declarable and Total, showing just the unpaid/undeclarable minutes per activity and period (week/month/year) in the on-screen charts and the chart PDF export.
+- **Admin — passkey column** — the Admin → Users table now shows a Passkey indicator column, so admins can see at a glance which users have a passkey registered without opening Edit User.
+
+### Fixed
+- **Passkey login — masked error messages** — a failed passkey login was incorrectly treated as an expired session by the 401-retry interceptor, which silently retried a token refresh and replaced the real error ("passkey authentication failed") with a generic "missing refresh token" message.
+
+### Changed
+- **Auth rate limiting — reset on successful login** — the shared login/refresh/MFA/passkey rate limiter (10 requests/15 min per IP) is now cleared after a fully successful authentication, so a user who mistyped their password a few times — or whose passkey/MFA flow costs multiple requests — isn't locked out for the rest of the window after finally logging in correctly. Brute-force attempts are unaffected since the reset only fires on success.
+- **Admin — Users table column label** — "Last Password Change" shortened to "Last PWD Change" to make room for the new Passkey column.
+
 ## v0.13.0 — 2026-07-04
 
 ### Added

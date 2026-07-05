@@ -1,6 +1,6 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.13.0
-:revdate: 2026-07-04
+:revnumber: v0.14.0
+:revdate: 2026-07-05
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -450,7 +450,7 @@ Access the admin panel via the *Admin* link in the navigation (visible to admin 
 |Admin → Users → Create User or Edit → *Require password change on next login* checkbox — available whether or not you also set a password. The flag is automatically cleared as soon as the user successfully changes their password (self-service change, forced change, or email reset).
 
 |Check if a user has passkeys registered, or revoke them
-|Admin → Users → Edit → *Passkeys* field, next to MFA — shows a count badge when the user has one or more passkeys, or "None registered" otherwise. Click *Revoke passkeys* to delete all of a user's passkeys at once (e.g. after a lost device); they'll need to register new ones to sign in without a password.
+|The Users table has a *Passkey* column showing at a glance who has one registered. For details or to revoke them, go to Admin → Users → Edit → *Passkeys* field, next to MFA — shows a count badge when the user has one or more passkeys, or "None registered" otherwise. Click *Revoke passkeys* to delete all of a user's passkeys at once (e.g. after a lost device); they'll need to register new ones to sign in without a password.
 
 |Disable / enable
 |Admin → Users → Edit → Enabled toggle
