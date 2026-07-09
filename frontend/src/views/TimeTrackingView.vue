@@ -4279,9 +4279,22 @@ async function ensureReportChartPeriodData() {
 }
 
 // Must match the number of --chart-cat-N colors defined per theme in
-// styles/main.css — raising this without adding more palette colors makes
-// reportChartColorAt() wrap around and reuse colors within the same chart.
-const REPORT_CHART_MAX_SLICES = 7
+// styles/main.css (currently 10). reportChartColorAt() reads
+// `--chart-cat-${index + 1}` for each of the top-N slices — raising this
+// constant without adding matching --chart-cat-N entries to *all three*
+// themes (:root, [data-theme="dark"], [data-theme="black"]) leaves those
+// custom properties undefined, so the extra slices render with an invalid
+// (blank) color instead of a real one.
+//
+// The 10 colors here aren't picked by eye: each was chosen so adjacent
+// slices clear the colorblind-safety floor (protanopia/deuteranopia CVD
+// separation), the same check the original 7 were validated against — see
+// the dataviz skill's validate_palette.js. 15 was evaluated and rejected:
+// past ~10-12 slots, colorblind-safe hues run out and adjacent slices
+// become visually indistinguishable, so anything beyond this count should
+// keep folding into the "Other" bucket rather than growing the palette
+// further.
+const REPORT_CHART_MAX_SLICES = 10
 
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
