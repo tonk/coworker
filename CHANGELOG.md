@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.14.2 — 2026-07-09
+
+### Fixed
+- **Time-tracking report charts — "Other" bucket inflated by near-duplicate activity names** — the pie, bar, and stacked-bar report charts grouped activities by their exact description text, so entries differing only by case or spacing/punctuation (e.g. "Bug fix", "bug fix", "Bugfix") were each treated as a separate activity and competed for a top-slice slot, needlessly padding out "Other". Activities are now grouped by a normalized key, displaying whichever raw spelling has the most logged minutes.
+- **Time-tracking report charts — more categories before falling into "Other"** — the charts showed at most 7 individual activities before lumping the rest together; raised to 10, with 3 new colorblind-safe colors added to the chart palette (light, dark, and black themes).
+- **Time-tracking report — pie chart sizing** — the pie chart's canvas was capped to a 420px square, leaving unused space in the chart panel; it now uses a wider 1.6:1 aspect ratio and a 640px-wide wrapper so the circle and legend both grow to fill the available space.
+- **Admin — Settings tab width** — the Settings tab was hard-capped at a much narrower width than every other admin tab (Users, Projects, Backup, ...); it's now restructured into a responsive grid of cards that uses the full available width. Also fixes paired fields (Postal Code + City, VAT + CoC number) stacking vertically instead of side-by-side, in both admin Settings and the Customer edit modal.
+
 ## v0.14.1 — 2026-07-05
 
 ### Fixed

@@ -8,9 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.14.1)
+## Latest release (v0.14.2)
 
-- **Charts — fixed hover offset when zoomed** — hovering a bar or stacked-bar chart no longer highlights the wrong bar when the app is zoomed in or out.
+- **Time-tracking report charts** — near-duplicate activity names (case/spacing variants) no longer inflate the "Other" bucket, and up to 10 activities now get their own chart color instead of 7.
+- **Time-tracking report — larger pie chart** and **Admin — wider Settings tab**, matching the width of the other admin pages.
 
 ## Experiment
 
