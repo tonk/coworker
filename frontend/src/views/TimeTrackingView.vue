@@ -4278,10 +4278,31 @@ async function ensureReportChartPeriodData() {
   }
 }
 
+// Must match the number of --chart-cat-N colors defined per theme in
+// styles/main.css — raising this without adding more palette colors makes
+// reportChartColorAt() wrap around and reuse colors within the same chart.
 const REPORT_CHART_MAX_SLICES = 7
 
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
+// Case- and punctuation/spacing-insensitive grouping key so near-duplicate
+// activity descriptions ("Bug fix", "bug fix", "Bugfix") land in the same
+// chart bucket instead of each competing for a top-N slice.
+function activityKey(label) {
+  return label.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '')
+}
+
+// Picks the most-used raw spelling for a bucket (by minutes) so the chart
+// label reads naturally instead of whichever variant happened to appear first.
+function bestLabelVariant(variants) {
+  let best = null
+  let bestMinutes = -1
+  for (const [label, minutes] of variants) {
+    if (minutes > bestMinutes) { best = label; bestMinutes = minutes }
+  }
+  return best
 }
 
 // Aggregates every entry across all report groups by activity (description),
@@ -4291,22 +4312,24 @@ const reportActivityBreakdown = computed(() => {
   if (!report.value) return []
   const totals = new Map()
   const customers = new Map()
-  const displayLabels = new Map()
+  const labelVariants = new Map()
   for (const grp of report.value.groups) {
     for (const e of grp.entries) {
       const rawLabel = e.description?.trim() || t('timeTracking.no_activity')
-      const key = rawLabel.toLowerCase()
-      if (!displayLabels.has(key)) displayLabels.set(key, rawLabel)
+      const key = activityKey(rawLabel)
       const minutes = reportChartBasis.value === 'total' ? e.minutes
         : reportChartBasis.value === 'undeclarable' ? entryUndecl(e)
         : reportEntryDeclarable(e)
       totals.set(key, (totals.get(key) || 0) + minutes)
       if (!customers.has(key)) customers.set(key, new Set())
       customers.get(key).add(e.customer?.name || t('timeTracking.no_customer'))
+      if (!labelVariants.has(key)) labelVariants.set(key, new Map())
+      const variants = labelVariants.get(key)
+      variants.set(rawLabel, (variants.get(rawLabel) || 0) + minutes)
     }
   }
   const sorted = Array.from(totals, ([key, minutes]) => ({
-    label: displayLabels.get(key),
+    label: bestLabelVariant(labelVariants.get(key)),
     minutes,
     customer: Array.from(customers.get(key) || []).join(', '),
   }))
@@ -4339,13 +4362,12 @@ const reportStackedBreakdown = computed(() => {
   const periods = source.groups.map(g => g.label)
   const grandTotals = new Map()
   const customersByLabel = new Map()
-  const displayLabels = new Map()
+  const labelVariants = new Map()
   const perPeriodTotals = source.groups.map(grp => {
     const totals = new Map()
     for (const e of grp.entries) {
       const rawLabel = e.description?.trim() || t('timeTracking.no_activity')
-      const key = rawLabel.toLowerCase()
-      if (!displayLabels.has(key)) displayLabels.set(key, rawLabel)
+      const key = activityKey(rawLabel)
       const minutes = reportChartBasis.value === 'total' ? e.minutes
         : reportChartBasis.value === 'undeclarable' ? entryUndecl(e)
         : reportEntryDeclarable(e)
@@ -4354,6 +4376,9 @@ const reportStackedBreakdown = computed(() => {
       grandTotals.set(key, (grandTotals.get(key) || 0) + minutes)
       if (!customersByLabel.has(key)) customersByLabel.set(key, new Set())
       customersByLabel.get(key).add(e.customer?.name || t('timeTracking.no_customer'))
+      if (!labelVariants.has(key)) labelVariants.set(key, new Map())
+      const variants = labelVariants.get(key)
+      variants.set(rawLabel, (variants.get(rawLabel) || 0) + minutes)
     }
     return totals
   })
@@ -4367,7 +4392,7 @@ const reportStackedBreakdown = computed(() => {
   const series = seriesKeys.map(key => {
     const isOther = key === '__other__'
     return {
-      label: isOther ? otherLabel : displayLabels.get(key),
+      label: isOther ? otherLabel : bestLabelVariant(labelVariants.get(key)),
       isOther,
       customer: isOther ? '' : Array.from(customersByLabel.get(key) || []).join(', '),
       data: perPeriodTotals.map(totals => {
