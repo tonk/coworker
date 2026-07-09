@@ -4291,21 +4291,24 @@ const reportActivityBreakdown = computed(() => {
   if (!report.value) return []
   const totals = new Map()
   const customers = new Map()
+  const displayLabels = new Map()
   for (const grp of report.value.groups) {
     for (const e of grp.entries) {
-      const label = e.description?.trim() || t('timeTracking.no_activity')
+      const rawLabel = e.description?.trim() || t('timeTracking.no_activity')
+      const key = rawLabel.toLowerCase()
+      if (!displayLabels.has(key)) displayLabels.set(key, rawLabel)
       const minutes = reportChartBasis.value === 'total' ? e.minutes
         : reportChartBasis.value === 'undeclarable' ? entryUndecl(e)
         : reportEntryDeclarable(e)
-      totals.set(label, (totals.get(label) || 0) + minutes)
-      if (!customers.has(label)) customers.set(label, new Set())
-      customers.get(label).add(e.customer?.name || t('timeTracking.no_customer'))
+      totals.set(key, (totals.get(key) || 0) + minutes)
+      if (!customers.has(key)) customers.set(key, new Set())
+      customers.get(key).add(e.customer?.name || t('timeTracking.no_customer'))
     }
   }
-  const sorted = Array.from(totals, ([label, minutes]) => ({
-    label,
+  const sorted = Array.from(totals, ([key, minutes]) => ({
+    label: displayLabels.get(key),
     minutes,
-    customer: Array.from(customers.get(label) || []).join(', '),
+    customer: Array.from(customers.get(key) || []).join(', '),
   }))
     .filter(a => a.minutes > 0)
     .sort((a, b) => b.minutes - a.minutes)
@@ -4336,43 +4339,49 @@ const reportStackedBreakdown = computed(() => {
   const periods = source.groups.map(g => g.label)
   const grandTotals = new Map()
   const customersByLabel = new Map()
+  const displayLabels = new Map()
   const perPeriodTotals = source.groups.map(grp => {
     const totals = new Map()
     for (const e of grp.entries) {
-      const label = e.description?.trim() || t('timeTracking.no_activity')
+      const rawLabel = e.description?.trim() || t('timeTracking.no_activity')
+      const key = rawLabel.toLowerCase()
+      if (!displayLabels.has(key)) displayLabels.set(key, rawLabel)
       const minutes = reportChartBasis.value === 'total' ? e.minutes
         : reportChartBasis.value === 'undeclarable' ? entryUndecl(e)
         : reportEntryDeclarable(e)
       if (minutes <= 0) continue
-      totals.set(label, (totals.get(label) || 0) + minutes)
-      grandTotals.set(label, (grandTotals.get(label) || 0) + minutes)
-      if (!customersByLabel.has(label)) customersByLabel.set(label, new Set())
-      customersByLabel.get(label).add(e.customer?.name || t('timeTracking.no_customer'))
+      totals.set(key, (totals.get(key) || 0) + minutes)
+      grandTotals.set(key, (grandTotals.get(key) || 0) + minutes)
+      if (!customersByLabel.has(key)) customersByLabel.set(key, new Set())
+      customersByLabel.get(key).add(e.customer?.name || t('timeTracking.no_customer'))
     }
     return totals
   })
-  const ranked = Array.from(grandTotals, ([label, minutes]) => ({ label, minutes }))
+  const ranked = Array.from(grandTotals, ([key, minutes]) => ({ key, minutes }))
     .sort((a, b) => b.minutes - a.minutes)
-  const topLabels = new Set(ranked.slice(0, REPORT_CHART_MAX_SLICES).map(a => a.label))
+  const topKeys = new Set(ranked.slice(0, REPORT_CHART_MAX_SLICES).map(a => a.key))
   const otherLabel = t('timeTracking.chart_other')
-  const seriesLabels = ranked.length > REPORT_CHART_MAX_SLICES
-    ? [...topLabels, otherLabel]
-    : [...topLabels]
-  const series = seriesLabels.map(label => ({
-    label,
-    isOther: label === otherLabel,
-    customer: label === otherLabel ? '' : Array.from(customersByLabel.get(label) || []).join(', '),
-    data: perPeriodTotals.map(totals => {
-      if (label === otherLabel) {
-        let sum = 0
-        for (const [actLabel, minutes] of totals) {
-          if (!topLabels.has(actLabel)) sum += minutes
+  const seriesKeys = ranked.length > REPORT_CHART_MAX_SLICES
+    ? [...topKeys, '__other__']
+    : [...topKeys]
+  const series = seriesKeys.map(key => {
+    const isOther = key === '__other__'
+    return {
+      label: isOther ? otherLabel : displayLabels.get(key),
+      isOther,
+      customer: isOther ? '' : Array.from(customersByLabel.get(key) || []).join(', '),
+      data: perPeriodTotals.map(totals => {
+        if (isOther) {
+          let sum = 0
+          for (const [actKey, minutes] of totals) {
+            if (!topKeys.has(actKey)) sum += minutes
+          }
+          return sum / 60
         }
-        return sum / 60
-      }
-      return (totals.get(label) || 0) / 60
-    }),
-  }))
+        return (totals.get(key) || 0) / 60
+      }),
+    }
+  })
   return { periods, series }
 })
 
