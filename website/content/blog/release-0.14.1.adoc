@@ -1,0 +1,28 @@
+---
+title: "v0.14.1: Fix chart hover position when the app is zoomed"
+date: "2026-07-05"
+author: "Ton Kersten"
+description: "Bar and stacked-bar chart tooltips could highlight the wrong bar whenever the app was zoomed in or out. Chart canvases now render at a fixed size regardless of zoom, so hover detection stays accurate."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+A quick follow-up patch in WarmDesk `v0.14.1` fixes a chart hover bug that got worse the more you'd zoomed the app.
+
+== The bug
+
+Hovering a bar or stacked-bar chart — in the time-tracking Report tab's chart view, or a project's Charts view — could highlight the wrong bar whenever the app was zoomed in or out with kbd:[Ctrl +] / kbd:[Ctrl -]. The further a bar sat from the chart's left edge, the more the highlighted bar drifted from the one actually under the cursor.
+
+The cause: the app-wide CSS zoom was scaling the chart canvas along with everything else, but Chart.js's own hover hit-testing doesn't know about that zoom and does its math in unzoomed pixels — so the two coordinate systems drifted apart the further you zoomed and the further right you hovered.
+
+== The fix
+
+Chart canvases now cancel the app-wide zoom locally, so Chart.js always does its hover hit-testing in a consistent, unzoomed coordinate space regardless of what zoom level the rest of the app is at.
+
+== Upgrade
+
+Download `v0.14.1` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.

@@ -1,0 +1,34 @@
+---
+title: "v0.14.2: Cleaner time-tracking charts and a wider admin Settings tab"
+date: "2026-07-09"
+author: "Ton Kersten"
+description: "Report charts no longer let near-duplicate activity names pad out \"Other\", ten activities now get their own color instead of seven, the pie chart finally uses the space it's given, and the admin Settings tab is as wide as every other admin page."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `v0.14.2` is a cleanup release for the time-tracking report charts, plus a layout fix for the admin panel.
+
+== Fewer near-duplicate activities crowding "Other"
+
+The pie, bar, and stacked-bar report charts grouped activities by their *exact* description text — so "Bug fix", "bug fix", and "Bugfix" were each counted as a separate activity, competing for one of the limited top-slice spots and needlessly padding out the "Other" bucket. Activities are now grouped by a normalized key instead, so those variants are combined into one, displayed under whichever raw spelling has the most logged minutes.
+
+== More room before things get lumped together
+
+While looking at that, the chart category limit itself felt a bit tight: it's raised from 7 individual activities to 10 before the rest fall into "Other". Three new colorblind-safe colors were added to the chart palette to cover the extra slots, in all three themes (light, dark, and black), validated so adjacent slices stay distinguishable under protanopia/deuteranopia simulation.
+
+== A pie chart that uses its space
+
+The pie chart's canvas was hard-capped to a 420px square, leaving a lot of unused space in the chart panel on anything but a narrow screen. It now uses a wider 1.6:1 aspect ratio inside a 640px-wide wrapper, so both the circle and its legend grow to fill the space actually available.
+
+== Admin Settings, finally as wide as everything else
+
+The admin Settings tab was hard-capped at a noticeably narrower width than every other admin page (Users, Projects, Backup, ...). It's now restructured into a responsive grid of cards that uses the full available width. As part of the same fix, paired fields — Postal Code + City, VAT + CoC number — now sit side by side instead of stacking vertically, in both admin Settings and the Customer edit modal.
+
+== Upgrade
+
+Download `v0.14.2` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.

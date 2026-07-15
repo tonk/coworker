@@ -1,0 +1,33 @@
+---
+title: "v0.14.0: Undeclarable time in charts, and passkey visibility for admins"
+date: "2026-07-05"
+author: "Ton Kersten"
+description: "The time-tracking report chart gains an Undeclarable time basis, admins can see passkey status right in the Users table, and a couple of auth rough edges around passkey errors and rate limiting are smoothed out."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `v0.14.0` rounds out the time-tracking chart view with a third way to look at your logged time, gives admins a faster way to check passkey status, and fixes a couple of rough edges in the authentication flow.
+
+== A third way to look at your time: Undeclarable
+
+The Report tab's chart *Time basis* selector already let you switch between *Declarable* and *Total* minutes. It now has a third option: *Undeclarable* — showing just the unpaid/unbillable minutes per activity and period (week, month, or year), in both the on-screen chart and the chart PDF export. Useful for seeing exactly how much travel time, holidays, or other non-billable time is eating into a given period, without having to do the subtraction yourself.
+
+== See who has a passkey, at a glance
+
+Admin → Users now has a Passkey column, so you can tell which users have a passkey registered without opening Edit User for each one individually. To make room for it, "Last Password Change" was shortened to "Last PWD Change" in the same table.
+
+== Auth fixes
+
+Two smaller but worthwhile fixes landed alongside the above:
+
+* **Honest passkey error messages** — a failed passkey login was being treated as an expired session by the automatic token-refresh retry logic, which silently tried to refresh and replaced the real error ("passkey authentication failed") with a generic, confusing "missing refresh token" message. You'll now see the actual reason a passkey login failed.
+* **Fairer rate limiting** — the shared login/refresh/MFA/passkey rate limiter (10 requests per 15 minutes per IP) is now cleared the moment a login fully succeeds. A passkey or MFA login costs more than one request per attempt, so a few legitimate retries while typing a password or picking the right passkey could previously eat into that budget and lock you out right after you finally got it right. Brute-force attempts are unaffected, since the reset only ever fires on a successful login.
+
+== Upgrade
+
+Download `v0.14.0` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.
