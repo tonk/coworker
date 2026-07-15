@@ -1830,12 +1830,18 @@ const _serverOrder = ref(null)
 let _saveOrderTimer = null
 function _scheduleSaveOrder(keys) {
   clearTimeout(_saveOrderTimer)
+  // Snapshot the target week and comments now, at schedule time — not inside
+  // the timeout. weekOrderParams()/rowComments are live reactive state; if the
+  // user switches weeks before the 600ms debounce fires, reading them inside
+  // the timeout would save this week's keys under whatever week is current by
+  // then, silently overwriting that other week's saved row order.
+  const targetParams = weekOrderParams()
+  const comments = { ...rowComments.value }
+  for (const k of Object.keys(comments)) {
+    if (!comments[k]) delete comments[k]
+  }
   _saveOrderTimer = setTimeout(() => {
-    const comments = { ...rowComments.value }
-    for (const k of Object.keys(comments)) {
-      if (!comments[k]) delete comments[k]
-    }
-    timeEntriesApi.setRowOrder(keys, comments, weekOrderParams()).catch(() => {})
+    timeEntriesApi.setRowOrder(keys, comments, targetParams).catch(() => {})
   }, 600)
 }
 
@@ -2058,10 +2064,16 @@ async function loadWeek() {
     )]
     contractCustomerIds.forEach(id => loadContractsForCustomer(id))
     rowComments.value = orderRes.data?.comments || {}
+    // Reset unconditionally — otherwise a week with no saved order of its own
+    // (most weeks) would keep the previous week's _keyOrder/_serverOrder, and
+    // the allRows watcher below would blend that leftover state into this
+    // week's row order and schedule a save that writes it back to whichever
+    // week the debounce timer happens to fire on.
+    _serverOrder.value = null
+    _keyOrder.value = null
     const keys = orderRes.data?.keys
     if (keys?.length) {
       _serverOrder.value = keys
-      _keyOrder.value = null
       restoreEmptyRowsFromOrder(keys)
     }
   } catch {
@@ -5005,10 +5017,6 @@ onMounted(async () => {
     allUsers.value = results[4].data
     selectedUserId.value = auth.user?.id ?? null
   }
-  try {
-    const { data } = await timeEntriesApi.getRowOrder()
-    if (data.keys?.length) _serverOrder.value = data.keys
-  } catch {}
   await loadMacroLibraryFromServer()
   await loadWeek()
   await nextTick()
