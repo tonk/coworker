@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.14.4 — 2026-07-15
+
+### Fixed
+- **Time tracking — previous week's rows carried into a fresh week** — switching to a week you hadn't individually rearranged rows in before would show the full row set from whatever week you'd last edited, with no matching time entries. The row-layout lookup now only returns rows actually saved for that specific week, instead of falling back to your most recently used week's layout.
+
 ## v0.14.3 — 2026-07-15
 
 ### Fixed
