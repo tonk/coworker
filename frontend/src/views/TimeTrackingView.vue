@@ -2026,7 +2026,16 @@ const weekDistanceTotal = computed(() =>
 )
 
 // ── Load week ─────────────────────────────────────────────────────────────
+// Guards against out-of-order responses: if the user switches weeks again
+// before an in-flight loadWeek() resolves, an older request can land after a
+// newer one and overwrite the correct week's entries with the previous
+// week's — the rows stick around (they're derived from customer/project/
+// activity keys, not dates) but every cell reads empty since the stale
+// entries' dates no longer match the displayed week's columns.
+let loadWeekToken = 0
+
 async function loadWeek() {
+  const myToken = ++loadWeekToken
   localRows.value = []
   timePopupKey.value = ''
   distPopupKey.value = ''
@@ -2040,6 +2049,7 @@ async function loadWeek() {
       timeEntriesApi.list(params),
       timeEntriesApi.getRowOrder(weekOrderParams()).catch(() => ({ data: { keys: [] } })),
     ])
+    if (myToken !== loadWeekToken) return // a newer loadWeek() has since started
     rawEntries.value = data
     // Eagerly load contracts for all customers that appear in this week's entries
     // so the rate column is populated without waiting for a row interaction.
@@ -2055,9 +2065,9 @@ async function loadWeek() {
       restoreEmptyRowsFromOrder(keys)
     }
   } catch {
-    ui.error(t('timeTracking.load_error'))
+    if (myToken === loadWeekToken) ui.error(t('timeTracking.load_error'))
   } finally {
-    loading.value = false
+    if (myToken === loadWeekToken) loading.value = false
   }
 }
 
