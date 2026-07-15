@@ -1828,21 +1828,41 @@ const _keyOrder = ref(null)
 const _serverOrder = ref(null)
 
 let _saveOrderTimer = null
+let _pendingSave = null
 function _scheduleSaveOrder(keys) {
-  clearTimeout(_saveOrderTimer)
+  const targetParams = weekOrderParams()
+  // If a save is already pending for a *different* week, flush it now
+  // instead of discarding it. Plain clearTimeout() would silently drop it:
+  // switching weeks fires this same watcher for the new week, so deleting a
+  // row and immediately navigating away used to cancel the delete's own save
+  // before it ever reached the server, and the deleted row would reappear on
+  // return. A pending save for the *same* week is still replaced outright —
+  // that's the normal debounce coalescing rapid edits into one request.
+  if (_pendingSave && (_pendingSave.targetParams.year !== targetParams.year || _pendingSave.targetParams.week !== targetParams.week)) {
+    _flushSaveOrder()
+  } else {
+    clearTimeout(_saveOrderTimer)
+  }
   // Snapshot the target week and comments now, at schedule time — not inside
   // the timeout. weekOrderParams()/rowComments are live reactive state; if the
   // user switches weeks before the 600ms debounce fires, reading them inside
   // the timeout would save this week's keys under whatever week is current by
   // then, silently overwriting that other week's saved row order.
-  const targetParams = weekOrderParams()
   const comments = { ...rowComments.value }
   for (const k of Object.keys(comments)) {
     if (!comments[k]) delete comments[k]
   }
-  _saveOrderTimer = setTimeout(() => {
-    timeEntriesApi.setRowOrder(keys, comments, targetParams).catch(() => {})
-  }, 600)
+  _pendingSave = { keys, comments, targetParams }
+  _saveOrderTimer = setTimeout(_flushSaveOrder, 600)
+}
+
+function _flushSaveOrder() {
+  clearTimeout(_saveOrderTimer)
+  _saveOrderTimer = null
+  if (!_pendingSave) return
+  const { keys, comments, targetParams } = _pendingSave
+  _pendingSave = null
+  timeEntriesApi.setRowOrder(keys, comments, targetParams).catch(() => {})
 }
 
 watch(allRows, (rows) => {
@@ -4995,6 +5015,9 @@ onUnmounted(() => {
   document.removeEventListener('pointerup', onPointerUp)
   document.removeEventListener('pointercancel', onPointerUp)
   ui.setHelpContext(null)
+  // Leaving the page entirely must not silently drop a still-pending row-order
+  // save — flush it now instead of letting the timer die with the component.
+  _flushSaveOrder()
 })
 
 // ── Init ──────────────────────────────────────────────────────────────────

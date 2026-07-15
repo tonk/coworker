@@ -1127,13 +1127,13 @@
               </thead>
               <tbody>
                 <tr v-for="b in backups" :key="b.filename">
-                  <td>{{ formatDateTime(b.created_at) }}</td>
+                  <td>{{ formatDateTime(b.modified_at) }}</td>
                   <td><code>{{ b.filename }}</code></td>
                   <td>{{ formatBytes(b.size) }}</td>
                   <td>
                     <div class="actions-cell">
                       <button class="btn btn-secondary btn-sm" @click="downloadBackup(b.filename)">{{ $t('admin.backup_download') }}</button>
-                      <button class="btn btn-secondary btn-sm" @click="confirmRestoreBackup(b.filename)">{{ $t('admin.backup_restore') }}</button>
+                      <button class="btn btn-secondary btn-sm" @click="restoreBackup(b)">{{ $t('admin.backup_restore') }}</button>
                       <button class="btn btn-danger btn-sm" @click="deleteBackup(b)">{{ $t('common.delete') }}</button>
                     </div>
                   </td>
@@ -2758,10 +2758,10 @@ async function restoreBackup(b) {
   }
 }
 
-async function downloadBackup(b) {
+async function downloadBackup(filename) {
   try {
-    const data = await adminApi.downloadBackup(b.filename)
-    await triggerDownload(data, b.filename, 'application/octet-stream')
+    const data = await adminApi.downloadBackup(filename)
+    await triggerDownload(data, filename, 'application/octet-stream')
   } catch {
     ui.error('Failed to download backup')
   }
