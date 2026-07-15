@@ -18,10 +18,10 @@ enableEmoji = true
   warmdesk_version = "v0.14.4"
   release_date     = "2026-07-15"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.14.3/"
+  release_blog     = "blog/release-0.14.4/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Fix — stale week data in time tracking** — rapid week switching could show the previous week's rows with no time entries; fixed with a request-ordering guard.",
+    "**Fix — fresh time-tracking weeks inheriting old rows** — a week you hadn't customized before could show the full row set from whatever week you'd last edited; the row-layout lookup is now strictly scoped per week.",
   ]
 
 [markup]

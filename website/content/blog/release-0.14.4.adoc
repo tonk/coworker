@@ -1,0 +1,28 @@
+---
+title: "v0.14.4: A fresh time-tracking week no longer inherits last week's rows"
+date: "2026-07-15"
+author: "Ton Kersten"
+description: "Switching to a time-tracking week you hadn't customized before could show the full row set from whatever week you last edited, with no matching entries. Fixed by scoping the row-layout lookup strictly to each week."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `v0.14.4` is a same-day follow-up to yesterday's week-switching fix, closing a second, unrelated bug behind the same symptom.
+
+== Same symptom, different bug
+
+`v0.14.3` fixed a race condition where switching weeks quickly could let a stale, out-of-order response overwrite a newer one. Some of you kept seeing the same thing afterward — a fresh week showing rows from a previous week, all empty — even with slow, deliberate single clicks, which meant it couldn't be that race.
+
+The real cause: each week's row layout (which customer/project/activity rows appear, including empty ones you haven't logged anything against yet) is supposed to be saved and looked up per specific week. But when a week had no layout of its own — true for any week you hadn't personally rearranged rows in — the lookup silently fell back to a *global*, non-week-specific saved layout: whatever week you'd most recently worked in. So switching to any "fresh" week would deterministically show you the full row set from wherever you'd last been, with entries whose dates obviously didn't match the new week's columns.
+
+== The fix
+
+A week with no saved layout of its own now returns empty, rather than falling back to your last-used week. You'll only see rows for entries that actually exist in the week you're looking at, unless you've explicitly arranged that specific week's rows yourself.
+
+== Upgrade
+
+Download `v0.14.4` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.
