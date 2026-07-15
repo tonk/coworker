@@ -761,15 +761,24 @@ func UpdateTimeEntryRowOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
+// loadTimeEntryRowOrderKeys returns the saved row-key order for a user.
+// When year+week are given, only that ISO week's own saved layout is
+// returned — a week that has never been individually saved comes back
+// empty rather than falling back to whatever week was last edited, so
+// switching to a fresh week doesn't drag in unrelated rows from wherever
+// the user happened to work last.
+// The global (non-week-specific) TimeEntryRowOrder is only consulted when
+// no year/week is given at all, for callers that don't ask for a specific
+// week.
 func loadTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string) ([]string, map[string]string) {
 	if yearStr != "" && weekStr != "" {
 		year, yErr := strconv.Atoi(yearStr)
 		week, wErr := strconv.Atoi(weekStr)
 		if yErr == nil && wErr == nil && week >= 1 && week <= 53 {
 			var weekOrder models.TimeEntryWeekRowOrder
+			keys := []string{}
+			comments := map[string]string{}
 			if err := database.DB.Where("user_id = ? AND year = ? AND week = ?", userID, year, week).First(&weekOrder).Error; err == nil {
-				var keys []string
-				comments := map[string]string{}
 				if weekOrder.OrderedKeys != "" {
 					json.Unmarshal([]byte(weekOrder.OrderedKeys), &keys)
 				}
@@ -779,8 +788,8 @@ func loadTimeEntryRowOrderKeys(userID uint, yearStr, weekStr string) ([]string, 
 				if keys == nil {
 					keys = []string{}
 				}
-				return keys, comments
 			}
+			return keys, comments
 		}
 	}
 
