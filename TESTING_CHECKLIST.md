@@ -83,9 +83,9 @@ For **each** of the 11 locales, switch the UI language and spot-check:
 - [ ] Confirm `website/hugo.toml`'s `warmdesk-version` attribute matches the actual release tag once cut
 - [ ] Update banner (`useUpdateCheck.js`) — use the DevTools sessionStorage injection trick from `CLAUDE.md` to confirm the banner still triggers correctly against the new version number
 
-## 8a. Time tracking — week-switching row stability (v0.14.3–v0.14.6)
+## 8a. Time tracking — week-switching row stability (v0.14.3–v0.14.7)
 
-Area: `frontend/src/views/TimeTrackingView.vue` (`loadWeek()`, `_scheduleSaveOrder`/`_flushSaveOrder`, `loadTimeEntryRowOrderKeys` in `backend/handlers/time_entry.go`).
+Area: `frontend/src/views/TimeTrackingView.vue` (`loadWeek()`, `shiftWeek()`/`goToToday()`/`goToDate()`, `_scheduleSaveOrder`/`_flushSaveOrder`, `loadTimeEntryRowOrderKeys` in `backend/handlers/time_entry.go`).
 
 - [ ] Rapidly click the week next/prev arrows several times in a row — no week ever shows rows/entries left over from a different week, and every cell's date matches the displayed week
 - [ ] Visit a week you've never customized the row order for — it starts with only its own actual logged entries, not the row layout from whatever week you used last
@@ -94,6 +94,18 @@ Area: `frontend/src/views/TimeTrackingView.vue` (`loadWeek()`, `_scheduleSaveOrd
 - [ ] Delete a row, then immediately navigate away from Time Tracking entirely (e.g. to the Boards view) before returning — confirm the deletion still persisted (tests the `onUnmounted` flush)
 - [ ] Add/edit a row-level comment, switch weeks quickly a few times, come back — comment is preserved on the correct week only
 - [ ] If you have older data from before v0.14.5: any week previously affected by stray/duplicated rows should now show only rows with real logged time (verify against the cleanup SQL applied to production, if relevant to your data)
+- [ ] **v0.14.7 specific**: on a slower/throttled connection (DevTools Network → Slow 3G), switch weeks several times in quick succession — no stray/empty rows appear in the destination week (this was the deeper race condition still reproducible after v0.14.6's fix, caused by a reactive watcher firing mid-switch with the new week's identity but the old week's still-loaded data)
+
+## 8c. Auth — passkey login (v0.14.8)
+
+Area: `backend/models/passkey.go`, `backend/handlers/passkey.go`.
+
+- [ ] Log in with an **existing** passkey registered before upgrading to v0.14.8 — first login attempt succeeds (self-heals the missing Backup Eligible/Backup State flags) and every login after that keeps working
+- [ ] Register a **brand-new** passkey on v0.14.8, then log out and log back in with it — succeeds on the first attempt (flags recorded correctly at registration, no self-heal needed)
+- [ ] Test with at least one **platform/synced passkey** (Windows Hello, iCloud Keychain/Touch ID, Google Password Manager, or a password manager like Bitwarden/1Password) — this is the case that was completely broken before the fix
+- [ ] If you have access to a **hardware security key** (YubiKey or similar, non-syncing) — confirm login still works; this case was likely unaffected by the original bug but worth confirming no regression
+- [ ] Passkey + MFA combination still completes correctly (MFA challenge appears after passkey verification succeeds, per the existing `issueMFAChallengeOrSkip` flow)
+- [ ] Admin → Edit User → passkey count/revoke still reflects the correct registered passkeys after the above logins
 
 ## 8b. Admin — backup list, download, restore
 
