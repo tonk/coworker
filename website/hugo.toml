@@ -15,13 +15,14 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.14.5"
+  warmdesk_version = "v0.14.6"
   release_date     = "2026-07-15"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.14.5/"
+  release_blog     = "blog/release-0.14.6/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Fix — the actual root cause of the time-tracking row bug** — a debounced background save could write a week's row layout into the wrong week if you switched weeks within its 600ms delay; the save now always targets the week it was scheduled for.",
+    "**Fix — deleted time-tracking rows now stay deleted** — a still-pending background save for the week you were leaving was being cancelled instead of flushed when you switched weeks, silently dropping the delete before it reached the server.",
+    "**Fix — admin backup list/download/restore** — the backup date column, download button, and restore button were all broken by mismatched field/argument names; all three now work.",
   ]
 
 [markup]
@@ -40,7 +41,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.14.5"
+      "warmdesk-version" = "v0.14.6"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.14.6 — 2026-07-15
+
+### Fixed
+- **Time tracking — deleted row reappeared after switching weeks** — the debounced row-layout save cancelled (instead of flushing) any save still pending for the week you were leaving whenever you switched to another week, so deleting a stray row and quickly navigating away silently dropped that delete before it ever reached the server. The save is now flushed rather than discarded when it targets a different week, and is also flushed if you navigate away from time tracking entirely while a save is pending.
+- **Admin — backup list showed no date** — the backup list read a field the backend doesn't send; it now reads the actual last-modified timestamp.
+- **Admin — backup download always failed** — downloading a backup passed the filename to the wrong place internally, so every download request was sent for a backup named "undefined" and was rejected.
+- **Admin — restore backup button did nothing** — the button called a function that didn't exist, so clicking Restore silently failed in the browser with no visible error.
+
 ## v0.14.5 — 2026-07-15
 
 ### Fixed

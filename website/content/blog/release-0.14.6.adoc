@@ -1,0 +1,36 @@
+---
+title: "v0.14.6: Deleted rows stay deleted, admin backups fixed"
+date: "2026-07-15"
+author: "Ton Kersten"
+description: "A deleted time-tracking row could reappear after switching weeks, because a pending background save for the old week was cancelled instead of flushed. Also fixes the admin backup list's missing date, broken download, and broken restore button."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `v0.14.6` closes out the time-tracking row-order saga from the last few releases, and fixes three broken buttons in the admin backup panel.
+
+== Deleted rows staying deleted
+
+`v0.14.5` fixed the actual root cause of rows from one week bleeding into another: a debounced autosave that could write the wrong week's row layout if you switched weeks within its 600ms delay. But one more wrinkle was left: deleting a stray row and then quickly switching to another week could make the deletion itself disappear.
+
+The reason: the debounce timer was *cancelled*, not flushed, every time it ran again — including when switching weeks re-triggered the same watcher for the new week. So a delete's own pending save for the week you were leaving got wiped out before it ever reached the server, and the "deleted" row would quietly come back the next time you visited that week.
+
+The save is now flushed instead of discarded whenever it's about to be replaced by a save for a *different* week, and it's also flushed if you navigate away from time tracking entirely while a save is still pending. Rapid edits within the same week still debounce normally.
+
+== Admin backup panel
+
+Three separate bugs in the admin Backup tab, all from mismatched field and argument names introduced in earlier refactors:
+
+- The backup list's date column was always blank — it read a field the backend never sends.
+- Downloading a backup always failed with "Failed to download backup" — the download request was silently sent for a backup literally named `undefined`.
+- The Restore button did nothing — it called a function that didn't exist anywhere in the codebase.
+
+All three are fixed and working now.
+
+== Upgrade
+
+Download `v0.14.6` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.
