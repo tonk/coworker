@@ -1523,6 +1523,16 @@ function shiftWeek(delta) {
   const d = new Date(anchor.value)
   d.setDate(d.getDate() + delta * 7)
   anchor.value = d
+  // Null these out *before* localRows clears, in the same synchronous tick as
+  // the anchor change. Otherwise the allRows watcher fires once — reactively,
+  // before loadWeek()'s fetch resolves — with the *new* week's anchor but the
+  // *old* week's still-unrefreshed entries, and (since _keyOrder was non-null)
+  // takes the "already initialized" branch, which schedules a save of the old
+  // week's real row keys tagged with the new week's target. Forcing the
+  // "first load" branch here instead skips scheduling any save at all during
+  // this transient mismatch.
+  _keyOrder.value = null
+  _serverOrder.value = null
   localRows.value = []
   editingRow.value = null
   deletingRow.value = null
@@ -1553,6 +1563,10 @@ const isCurrentWeek = computed(() => {
 
 function goToToday() {
   anchor.value = new Date()
+  // See the comment in shiftWeek() — must be reset before the transitional
+  // allRows watcher fire, not just inside loadWeek() after the fetch resolves.
+  _keyOrder.value = null
+  _serverOrder.value = null
   localRows.value = []
   editingRow.value = null
   deletingRow.value = null
@@ -1630,6 +1644,10 @@ const calCells = computed(() => {
 function goToDate(date) {
   anchor.value = new Date(date)
   wkPickerOpen.value = false
+  // See the comment in shiftWeek() — must be reset before the transitional
+  // allRows watcher fire, not just inside loadWeek() after the fetch resolves.
+  _keyOrder.value = null
+  _serverOrder.value = null
   localRows.value = []
   editingRow.value = null
   deletingRow.value = null
