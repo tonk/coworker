@@ -1,0 +1,28 @@
+---
+title: "v0.14.3: Fix stale data when switching weeks quickly"
+date: "2026-07-15"
+author: "Ton Kersten"
+description: "A rapid-week-switching race condition in time tracking could leave a week's rows visible with no matching time entries. Fixed with a request-ordering guard."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `{warmdesk-version}` is a small patch release fixing a time-tracking bug some of you may have run into without quite being able to pin down.
+
+== The bug
+
+Clicking the week prev/next arrows in time tracking a couple of times in quick succession could occasionally leave the sheet showing the *previous* week's rows — but every cell empty, as if none of that time had ever been logged.
+
+Nothing was actually lost. The cause was a classic race condition: switching weeks kicks off two requests (time entries + row order) for the new week, but nothing stopped an older, slower request from resolving *after* a newer one and overwriting it. Since rows are keyed by customer/project/activity rather than by date, the stale rows still rendered fine — but their entries carried the *previous* week's dates, which no longer lined up with the columns actually on screen. The result looked like missing data, when really it was just the wrong week's data displayed under the wrong headers.
+
+== The fix
+
+Each week-load now carries a request token. If a newer load has started by the time an older one's response comes back, that older response is silently discarded instead of applied. Switching weeks as fast as you like now always ends up showing the week you actually landed on.
+
+== Upgrade
+
+Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.
