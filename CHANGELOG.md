@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.14.3 — 2026-07-15
+
+### Fixed
+- **Time tracking — stale data after rapid week switching** — clicking the week prev/next arrows quickly could let an older, slower "load week" request resolve after a newer one and overwrite it. Rows are keyed by customer/project/activity rather than by date, so the stale rows still rendered — but their entries' dates no longer matched the displayed week's columns, so every cell read empty. Switching weeks now discards any in-flight request that's been superseded by a newer one.
+
 ## v0.14.2 — 2026-07-09
 
 ### Fixed

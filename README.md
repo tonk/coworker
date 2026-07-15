@@ -8,10 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.14.2)
+## Latest release (v0.14.3)
 
-- **Time-tracking report charts** — near-duplicate activity names (case/spacing variants) no longer inflate the "Other" bucket, and up to 10 activities now get their own chart color instead of 7.
-- **Time-tracking report — larger pie chart** and **Admin — wider Settings tab**, matching the width of the other admin pages.
+- **Fix** — switching weeks quickly in time tracking could show the previous week's rows with no time entries, caused by a stale request overwriting a newer one; fixed with a request-ordering guard.
 
 ## Experiment
 
