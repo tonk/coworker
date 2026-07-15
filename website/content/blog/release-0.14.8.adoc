@@ -1,0 +1,30 @@
+---
+title: "v0.14.8: Passkey login fixed for real-world synced passkeys"
+date: "2026-07-15"
+author: "Ton Kersten"
+description: "Passkey login was failing for essentially every modern synced passkey — Windows Hello, iCloud Keychain, Google/Bitwarden/1Password — because a security flag was never persisted at registration. Existing passkeys self-heal automatically."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `v0.14.8` fixes a passkey login bug that's been present since the feature was first introduced — and likely affected almost everyone using a modern, OS-managed passkey rather than a standalone hardware security key.
+
+== The prompt succeeds, then the server says no
+
+If you registered a passkey and it worked fine, but logging in with it consistently failed right after your fingerprint, Face ID, Windows Hello, or password-manager prompt completed successfully — this was why.
+
+WebAuthn credentials carry two flags, "Backup Eligible" and "Backup State", that record whether a passkey is a synced, backed-up credential (as opposed to a single hardware-bound key). As an anti-cloning safeguard, login verification checks that these flags haven't changed since registration. The trouble: registration never actually saved these flags anywhere. Every stored passkey was reconstructed at login time with them defaulted to "not eligible" — a hard mismatch against what real synced passkeys report (virtually all of them report "eligible"), so the verification step rejected the login every time, with a generic "passkey authentication failed" message that gave no hint the browser side had already succeeded.
+
+Hardware security keys that don't support backup/sync were the rare case unaffected by this, which is likely why it went unnoticed for as long as it did.
+
+== The fix
+
+Registration now correctly records these flags. For passkeys registered before this fix — which never had them recorded at all — login self-heals automatically: the first successful login after upgrading adopts the real flags from your device and stores them, and every login after that is verified normally. No need to delete and re-register your passkey.
+
+== Upgrade
+
+Download `v0.14.8` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release — the new columns are added automatically on first startup, as with every WarmDesk release.

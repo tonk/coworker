@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.14.8 — 2026-07-15
+
+### Fixed
+- **Passkey login failing for every modern synced passkey** — WebAuthn's login validation checks that a credential's Backup Eligible/Backup State flags (set by virtually every platform/synced passkey — Windows Hello, iCloud Keychain, Google/Bitwarden/1Password, etc.) match what was recorded at registration. Registration never actually persisted these flags, so every login reconstructed the stored credential with them defaulted to false — a hard mismatch against what real passkeys report, rejecting the login right after the browser's fingerprint/Face ID/security-key prompt had already succeeded. Registration now records these flags correctly, and existing passkeys that never had them recorded self-heal automatically on their next successful login — no re-registration needed.
+
 ## v0.14.7 — 2026-07-15
 
 ### Fixed

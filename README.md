@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.14.7)
+## Latest release (v0.14.8)
 
-- **Fix** — stray empty rows could still appear in time tracking after switching weeks, caused by a reactive watcher briefly seeing the new week's identity paired with the old week's data mid-switch. The row-order tracking state now resets synchronously the instant you switch weeks, closing that window for good.
+- **Fix** — passkey login was failing for essentially every modern synced passkey (Windows Hello, iCloud Keychain, Google/Bitwarden/1Password, etc.) because a security flag recorded at registration was never actually persisted. Existing passkeys self-heal automatically on their next login — no re-registration needed.
 
 ## Experiment
 
