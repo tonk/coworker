@@ -1,0 +1,32 @@
+---
+title: "v0.14.5: The actual root cause of the time-tracking row bug"
+date: "2026-07-15"
+author: "Ton Kersten"
+description: "A debounced background save in time tracking could write the wrong week's row layout into a different week, corrupting its saved data. This is the third and final fix in the same week-switching saga."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `v0.14.5` is the third release this week chasing the same symptom in time tracking — and this one finally gets at the actual root cause.
+
+== Three bugs, one symptom
+
+`v0.14.3` fixed a race condition where a stale, out-of-order response could overwrite a freshly-loaded week. `v0.14.4` fixed a fresh week silently falling back to whatever week's row layout you'd last used. Both were real, both were fixed — but some of you kept seeing rows from another week reappear anyway.
+
+The reason: a *third*, independent bug was quietly corrupting the data both earlier fixes were reading. Time tracking auto-saves your row layout in the background whenever it changes, debounced by 600ms so it doesn't fire on every keystroke. That debounce read *which week to save to* and *which comments to save* at the moment the timer fired — not at the moment the save was scheduled. If you switched weeks again within that 600ms window, which is completely normal when you're just browsing through weeks, the save fired using whatever week had become current by then. The result: the row layout from the week you were *leaving* got silently written into the saved data for the week you'd *moved to*.
+
+That's why v0.14.4 didn't fully fix it: it correctly stopped the read side from falling back to the wrong data, but by then some weeks' own saved records had already been overwritten with someone else's rows by this write-side bug. The read side was doing exactly what it should — faithfully returning data that had genuinely (if wrongly) been saved for that week.
+
+== The fix
+
+The debounced save now snapshots its target week and comments the instant it's scheduled, not when it eventually fires. A late-arriving save can no longer land on the wrong week no matter how quickly you switch away.
+
+If you'd already run into this before v0.14.4, a small number of weeks may still have a stray, incorrect row saved from this bug. It only affects which empty placeholder rows show up — your actual logged hours were never at risk. Deleting an unwanted row once should stick permanently now.
+
+== Upgrade
+
+Download `v0.14.5` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.
