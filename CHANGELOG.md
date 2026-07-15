@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.14.7 — 2026-07-15
+
+### Fixed
+- **Time tracking — stray empty rows reappearing after switching weeks, for real this time** — switching weeks updated the current week and cleared the row list synchronously, then fetched the new week's entries asynchronously. In between those two steps, a reactive watcher could fire with the new week's identity but the old week's still-unrefreshed entries, and treat that contradictory, transient snapshot as a real edit — scheduling a save that tagged the old week's real rows onto the new week. This was normally overwritten before it reached the server once the real data loaded, but on a slow connection or when navigating through weeks quickly it could win the race and plant stray rows in the new week. This was a distinct, deeper bug from the one fixed in v0.14.3–v0.14.6; the row-order tracking state is now reset synchronously the instant you switch weeks, closing the window entirely.
+
 ## v0.14.6 — 2026-07-15
 
 ### Fixed

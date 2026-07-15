@@ -1,0 +1,32 @@
+---
+title: "v0.14.7: The real, final fix for stray empty rows"
+date: "2026-07-15"
+author: "Ton Kersten"
+description: "A reactive watcher could fire mid-week-switch with the new week's identity paired with the old week's still-unrefreshed data, occasionally saving the old week's rows into the new week. This closes the window for good."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `v0.14.7` is the fifth release in a row chasing the same time-tracking symptom — stray rows appearing in the wrong week — and this one finds a genuinely different bug from all the previous ones.
+
+== A different kind of race
+
+`v0.14.3` through `v0.14.6` each fixed a real, distinct bug in the debounced background save that keeps your row layout in sync: a stale out-of-order response, a bad fallback to another week's layout, a save that read its target reactively instead of at schedule time, and a save that got cancelled instead of flushed when you switched weeks mid-edit. All of those were genuine fixes for genuine bugs.
+
+But some of you kept seeing it happen anyway, and it turned out there was one more, deeper issue hiding underneath all of them.
+
+Switching weeks updates which week is "current" and clears the visible row list *synchronously* — then fetches the new week's actual time entries *asynchronously*, over the network. In the brief window between those two steps, Vue's reactivity system could fire a watcher that reacts to row-list changes. At that exact instant, the app already believed it was looking at the new week, but the entries it had loaded were still the *old* week's, because the fetch hadn't come back yet. That contradictory, half-updated snapshot got treated like a real edit, and scheduled a background save — one that tagged the old week's real rows onto the new week's slot.
+
+Normally this got silently overwritten a moment later once the real fetch resolved, well within the 600ms save delay. But on a slower connection, or if you flipped through several weeks quickly, it could win that race and reach the server first — planting a stray, empty-looking row in a week that never should have had it.
+
+== The fix
+
+The row-order tracking state is now reset the instant you switch weeks, in the same synchronous step as the week change itself — not afterward, once the new week's data has loaded. That closes the window completely: there's no longer a moment where the app can mistake "new week, old data" for a real edit worth saving.
+
+== Upgrade
+
+Download `v0.14.7` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release.

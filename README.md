@@ -8,10 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.14.6)
+## Latest release (v0.14.7)
 
-- **Fix** — a deleted time-tracking row could reappear after switching weeks, because a still-pending background save for the week you left was cancelled instead of flushed.
-- **Fix** — the admin backup list showed no date, backup download always failed, and the restore button did nothing.
+- **Fix** — stray empty rows could still appear in time tracking after switching weeks, caused by a reactive watcher briefly seeing the new week's identity paired with the old week's data mid-switch. The row-order tracking state now resets synchronously the instant you switch weeks, closing that window for good.
 
 ## Experiment
 
