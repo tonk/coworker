@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` ships a significant set of billing improvements alongside a redesigned customer detail page that organises contracts, invoices, contacts, and helpdesk tickets into separate tabs.
+WarmDesk `v0.12.22` ships a significant set of billing improvements alongside a redesigned customer detail page that organises contracts, invoices, contacts, and helpdesk tickets into separate tabs.
 
 == Invoicing suite
 
@@ -81,6 +81,6 @@ The helpdesk ticket list page shows the same tab bar so navigation between secti
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.22` from the link:../download[download page] or pull the latest release tag.
 Run the new version in-place — no manual database migration is required.
 AutoMigrate adds the new `customer_contacts` table and the new columns on `invoices` and `invoice_line_items` on first boot.

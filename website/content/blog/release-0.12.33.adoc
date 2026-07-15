@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` makes the weekly time sheet feel more like a spreadsheet: reusable *time macros* for recurring work patterns, richer copy/cut/paste, and quicker row editing.
+WarmDesk `v0.12.33` makes the weekly time sheet feel more like a spreadsheet: reusable *time macros* for recurring work patterns, richer copy/cut/paste, and quicker row editing.
 This post focuses on macros — the feature most users asked for when the same customer/project/activity lines come back every week.
 
 == Why time macros?
@@ -117,12 +117,12 @@ Breadcrumb labels for tickets, inbox, epics, charts, and time tracking were also
 
 == Documentation
 
-The *User Guide* PDF shipped with `{warmdesk-version}` documents macros, copy/cut/paste, and row editing on the Log Time tab.
+The *User Guide* PDF shipped with `v0.12.33` documents macros, copy/cut/paste, and row editing on the Log Time tab.
 Guide PDFs are available from the avatar menu → *Downloads* in the app; the link:/docs/user-guide/[online user guide] covers time tracking at a high level.
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.33` from the link:../download[download page] or pull the latest release tag.
 
 No manual database changes are required.
 Macros you create after upgrading are stored locally in the browser — export them once if you rely on a specific template.

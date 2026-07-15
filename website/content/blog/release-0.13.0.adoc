@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` closes a small but real gap: passkeys were only ever visible from inside the Security settings tab, with no quick way to confirm they were registered — and no way at all for an admin to check or manage another user's passkeys.
+WarmDesk `v0.13.0` closes a small but real gap: passkeys were only ever visible from inside the Security settings tab, with no quick way to confirm they were registered — and no way at all for an admin to check or manage another user's passkeys.
 
 == Passkey status, at a glance
 
@@ -31,6 +31,6 @@ Starting with this release, WarmDesk follows real semantic versioning: PATCH bum
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.13.0` from the link:../download[download page] or pull the latest release tag.
 
 No database migration is required for this release.

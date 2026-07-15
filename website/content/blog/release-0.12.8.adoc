@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` rounds out the multi-instance story introduced in v0.12.7.
+WarmDesk `v0.12.8` rounds out the multi-instance story introduced in v0.12.7.
 
 == `--port` CLI flag
 
@@ -49,5 +49,5 @@ The mode is now fetched immediately after saving the new server URL, and again w
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.8` from the link:../download[download page] or pull the latest release tag.
 No database or configuration changes are required for existing deployments.

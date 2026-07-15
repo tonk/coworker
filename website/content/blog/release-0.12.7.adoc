@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` brings two improvements to the contracts and deployment story.
+WarmDesk `v0.12.7` brings two improvements to the contracts and deployment story.
 
 == Multi-day contract time slot selection
 
@@ -67,5 +67,5 @@ All user management, customer and contract management, time entries, and report 
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.7` from the link:../download[download page] or pull the latest release tag.
 No database or configuration changes are required for existing deployments.

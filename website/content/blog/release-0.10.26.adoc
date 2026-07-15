@@ -131,7 +131,7 @@ Tickets already assigned to a customer can be moved to a different customer usin
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.10.26` from the link:../download[download page] or pull the latest release tag.
 
 No manual database changes are required.
 New columns are added automatically on first boot via GORM AutoMigrate.

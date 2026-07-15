@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` adds a Contract Rates Overview so you can see every standby and after-hours rate across all accessible customers in one place, along with a corrected database schema reference.
+WarmDesk `v0.12.5` adds a Contract Rates Overview so you can see every standby and after-hours rate across all accessible customers in one place, along with a corrected database schema reference.
 
 == Contract Rates Overview
 
@@ -100,6 +100,6 @@ The link:../api[REST API reference] gained a *Customers and contracts* section l
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.5` from the link:../download[download page] or pull the latest release tag.
 
 No database changes are required — the new endpoint reads existing data.

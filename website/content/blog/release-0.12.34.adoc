@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` simplifies the time macro editor so the common case — the same travel → prepare → teach → travel home block every weekday — is obvious at a glance.
+WarmDesk `v0.12.34` simplifies the time macro editor so the common case — the same travel → prepare → teach → travel home block every weekday — is obvious at a glance.
 
 == Same values each day (default)
 
@@ -38,7 +38,7 @@ Both *Apply to days* and the alternating toggle are saved with each macro.
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.34` from the link:../download[download page] or pull the latest release tag.
 
 No database changes are required.
 Existing macros load with alternating off and five apply days unless you had already saved different settings.

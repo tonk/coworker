@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` polishes confirmation dialogs, guide downloads, and the release workflow.
+WarmDesk `v0.12.15` polishes confirmation dialogs, guide downloads, and the release workflow.
 
 == Destructive confirm dialogs
 
@@ -32,5 +32,5 @@ The user guide icons table now documents Copy Previous Week confirmation, undo, 
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.15` from the link:../download[download page] or pull the latest release tag.
 Run the new version in-place — no database migration required.

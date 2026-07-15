@@ -133,7 +133,7 @@ Clicking Cancel clears the draft and any pending attachments and resets the edit
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.10.27` from the link:../download[download page] or pull the latest release tag.
 
 No manual database changes are required.
 The `is_spam` column is added automatically on first boot via GORM AutoMigrate.

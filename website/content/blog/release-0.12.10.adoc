@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` brings two quality-of-life improvements to contract-based time tracking.
+WarmDesk `v0.12.10` brings two quality-of-life improvements to contract-based time tracking.
 
 == Contract selection in the time grid
 
@@ -34,6 +34,6 @@ The summary updates live as you adjust start time, end time, overnight offset, o
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.10` from the link:../download[download page] or pull the latest release tag.
 Run the new version in-place — AutoMigrate adds the `contract_id` column to `time_entries` on first startup.
 No other configuration changes are required.

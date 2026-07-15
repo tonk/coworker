@@ -37,4 +37,4 @@ The PDF font and language selectors have moved from the main filter bar into the
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:download.adoc[download page] or upgrade your existing installation — no database schema changes in this release.
+Download `v0.10.25` from the link:download.adoc[download page] or upgrade your existing installation — no database schema changes in this release.

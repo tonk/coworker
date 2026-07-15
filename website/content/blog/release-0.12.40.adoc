@@ -9,12 +9,12 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` rounds out the time-tracking report with a custom date range and per-row billable detail, and gives the desktop app a proper system tray icon.
+WarmDesk `v0.12.40` rounds out the time-tracking report with a custom date range and per-row billable detail, and gives the desktop app a proper system tray icon.
 
 == Report on any date range
 
 The Report tab's period selector was limited to Week, Month, or Year.
-`{warmdesk-version}` adds *Custom range*: pick it and a popup opens with *Start date* / *End date* pickers that follow your date format setting, just like every other date field in WarmDesk.
+`v0.12.40` adds *Custom range*: pick it and a popup opens with *Start date* / *End date* pickers that follow your date format setting, just like every other date field in WarmDesk.
 
 Use it for anything that doesn't fit a calendar boundary — a two-week sprint, a customer's billing cycle, or a project that ran from the 14th to the 22nd.
 
@@ -23,7 +23,7 @@ Use it for anything that doesn't fit a calendar boundary — a two-week sprint, 
 Projects can carry an *undeclarable minutes* value (travel time, a lunch break, whatever shouldn't be billed).
 Until now the report only showed that deduction as a single line per group or at the grand total — and only when the report was grouped by customer.
 
-`{warmdesk-version}` changes both:
+`v0.12.40` changes both:
 
 * The undeclarable/billable breakdown now appears for *every* grouping — period, project, customer, or customer + project — not just customer.
 * Two new PDF export options, *Show distance* and *Show undeclarable per row*, add a column showing each entry's mileage and undeclarable minutes individually, so you can see exactly which line drove the deduction instead of just the total.
@@ -42,6 +42,6 @@ Both the tray icon and close-to-tray behavior are toggled from *Settings*.
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.40` from the link:../download[download page] or pull the latest release tag.
 
 GORM AutoMigrate adds two columns (`tray_icon_enabled`, `close_to_tray_enabled`) to the `users` table on startup — no manual migration step.

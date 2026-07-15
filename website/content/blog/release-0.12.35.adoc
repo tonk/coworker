@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` polishes the time macro workflow introduced in v0.12.33–v0.12.34: libraries sync server-side, running a macro is a one-step popout, and the UI speaks your language.
+WarmDesk `v0.12.35` polishes the time macro workflow introduced in v0.12.33–v0.12.34: libraries sync server-side, running a macro is a one-step popout, and the UI speaks your language.
 
 == Macros follow your account
 
@@ -37,6 +37,6 @@ Macro JSON export works in the Tauri desktop app on Linux, and `HH:MM` values in
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.35` from the link:../download[download page] or pull the latest release tag.
 
 GORM AutoMigrate adds the `time_macro_libraries` table on startup — no manual migration step.

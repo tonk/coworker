@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` adds a chart view to the time-tracking report, so you can see the shape of your logged time at a glance instead of scanning table rows.
+WarmDesk `v0.12.41` adds a chart view to the time-tracking report, so you can see the shape of your logged time at a glance instead of scanning table rows.
 
 == Table or Chart, your choice
 
@@ -34,6 +34,6 @@ The custom date range picker also got a small polish pass: the Start date and En
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.41` from the link:../download[download page] or pull the latest release tag.
 
 No database migration is required for this release.

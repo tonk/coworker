@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` rounds out the MFA trusted-devices feature with an admin policy, polishes the undeclarable-time weekly sheet, and fixes auth cookies so login works behind a reverse proxy on plain HTTP.
+WarmDesk `v0.12.1` rounds out the MFA trusted-devices feature with an admin policy, polishes the undeclarable-time weekly sheet, and fixes auth cookies so login works behind a reverse proxy on plain HTTP.
 
 This post covers both v0.12.0 and v0.12.1 — the patch release landed the same day and tightens up items introduced in the minor release.
 
@@ -110,7 +110,7 @@ The nginx and Apache templates in the `deploy/` directory include this header, a
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.1` from the link:../download[download page] or pull the latest release tag.
 
 No manual database changes are required.
 New columns and settings are applied automatically on first boot via GORM AutoMigrate and the system-settings loader.

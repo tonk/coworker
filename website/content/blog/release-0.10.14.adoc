@@ -60,4 +60,4 @@ A `dateOnlyFmt` bug was fixed during testing: 12-hour formats with trailing ` a`
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:download.adoc[download page] or upgrade your existing installation — database schema is unchanged in this release.
+Download `v0.10.14` from the link:download.adoc[download page] or upgrade your existing installation — database schema is unchanged in this release.

@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` adds a way to force a password reset for a user, fixes a couple of reporting bugs, and closes a long-standing localization gap across every non-English language WarmDesk ships.
+WarmDesk `v0.12.42` adds a way to force a password reset for a user, fixes a couple of reporting bugs, and closes a long-standing localization gap across every non-English language WarmDesk ships.
 
 == Require password change on next login
 
@@ -37,6 +37,6 @@ The user guide and admin guide PDFs were audited section by section against the 
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.42` from the link:../download[download page] or pull the latest release tag.
 
 No database migration is required for this release.

@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` ships a dedicated logo set for the time-tracking module and wires it into the `--mode=timetracking` deployment option so every surface — web UI, login screen, and PDF exports — reflects the right branding automatically.
+WarmDesk `v0.12.16` ships a dedicated logo set for the time-tracking module and wires it into the `--mode=timetracking` deployment option so every surface — web UI, login screen, and PDF exports — reflects the right branding automatically.
 
 == The time-tracking logo
 
@@ -65,5 +65,5 @@ The user guide Time Tracking section now includes a note explaining that boards,
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.16` from the link:../download[download page] or pull the latest release tag.
 Run the new version in-place — no database migration required.

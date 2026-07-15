@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` adds a per-user audit trail to the admin panel, closes three security gaps, ships Ansible collection v0.5.0 with three new modules, and makes dialogs resizable to any width.
+WarmDesk `v0.12.4` adds a per-user audit trail to the admin panel, closes three security gaps, ships Ansible collection v0.5.0 with three new modules, and makes dialogs resizable to any width.
 
 == Per-user audit trail
 
@@ -179,7 +179,7 @@ This prop is available to custom integrations and themes that embed WarmDesk mod
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.4` from the link:../download[download page] or pull the latest release tag.
 
 No manual database changes are required.
 New columns and settings are applied automatically on first boot via GORM AutoMigrate.

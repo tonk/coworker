@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` contains a set of small refinements to the `--mode=timetracking` experience introduced in v0.12.7.
+WarmDesk `v0.12.9` contains a set of small refinements to the `--mode=timetracking` experience introduced in v0.12.7.
 
 == Board report tab hidden in timetracking mode
 
@@ -23,5 +23,5 @@ The `●` unread notification prefix still works correctly when combined with th
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.9` from the link:../download[download page] or pull the latest release tag.
 No database or configuration changes are required.

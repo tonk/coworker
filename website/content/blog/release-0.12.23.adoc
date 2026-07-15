@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` is a single-fix patch on top of v0.12.22.
+WarmDesk `v0.12.23` is a single-fix patch on top of v0.12.22.
 
 == Fix: contact persons could not be saved
 
@@ -20,5 +20,5 @@ The model is now registered correctly; the table is created automatically on fir
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.23` from the link:../download[download page] or pull the latest release tag.
 No other changes — run the new binary in-place and the table will appear on startup.

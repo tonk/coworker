@@ -57,4 +57,4 @@ Re-seed with `go run ./cmd/seed --reset` to load the Acme Corporation demo contr
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:download.adoc[download page] or upgrade your existing installation — database schema changes are applied automatically on startup (new `end_day_offset` column on contract time slots).
+Download `v0.10.13` from the link:download.adoc[download page] or upgrade your existing installation — database schema changes are applied automatically on startup (new `end_day_offset` column on contract time slots).

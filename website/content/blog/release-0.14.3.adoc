@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` is a small patch release fixing a time-tracking bug some of you may have run into without quite being able to pin down.
+WarmDesk `v0.14.3` is a small patch release fixing a time-tracking bug some of you may have run into without quite being able to pin down.
 
 == The bug
 
@@ -23,6 +23,6 @@ Each week-load now carries a request token. If a newer load has started by the t
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.14.3` from the link:../download[download page] or pull the latest release tag.
 
 No database migration is required for this release.

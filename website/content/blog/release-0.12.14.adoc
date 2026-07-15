@@ -9,7 +9,7 @@ draft: false
 :doctype: article
 :icons!:
 
-WarmDesk `{warmdesk-version}` ships documentation with the server, tightens a few time-tracking workflows, and refreshes confirm-dialog behaviour.
+WarmDesk `v0.12.14` ships documentation with the server, tightens a few time-tracking workflows, and refreshes confirm-dialog behaviour.
 
 == Guide PDF downloads
 
@@ -38,6 +38,6 @@ Other confirmations default to a primary *Yes* label — for example the copy-pr
 
 == Upgrade
 
-Download `{warmdesk-version}` from the link:../download[download page] or pull the latest release tag.
+Download `v0.12.14` from the link:../download[download page] or pull the latest release tag.
 Run the new version in-place — no database migration beyond the usual AutoMigrate on startup.
 Open the avatar menu → *Downloads* to save the updated guides locally.
