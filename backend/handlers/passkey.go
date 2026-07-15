@@ -95,6 +95,12 @@ func dbCredsToWebAuthn(creds []models.PasskeyCredential) []wa.Credential {
 			},
 			Transport: transports,
 		}
+		if c.BackupEligible != nil {
+			result[i].Flags = wa.CredentialFlags{
+				BackupEligible: *c.BackupEligible,
+				BackupState:    c.BackupState != nil && *c.BackupState,
+			}
+		}
 	}
 	return result
 }
@@ -213,6 +219,8 @@ func (h *PasskeyHandler) PasskeyRegisterFinish(c *gin.Context) {
 	}
 
 	now := time.Now()
+	backupEligible := cred.Flags.BackupEligible
+	backupState := cred.Flags.BackupState
 	dbCred := models.PasskeyCredential{
 		UserID:       userID,
 		Name:         name,
@@ -221,6 +229,8 @@ func (h *PasskeyHandler) PasskeyRegisterFinish(c *gin.Context) {
 		AAGUID:       cred.Authenticator.AAGUID,
 		SignCount:     cred.Authenticator.SignCount,
 		Transports:   strings.Join(transports, ","),
+		BackupEligible: &backupEligible,
+		BackupState:    &backupState,
 		LastUsedAt:   &now,
 	}
 	if err := database.DB.Create(&dbCred).Error; err != nil {
@@ -325,14 +335,24 @@ func (h *PasskeyHandler) PasskeyLoginFinish(c *gin.Context) {
 		}
 		var dbCreds []models.PasskeyCredential
 		database.DB.Where("user_id = ?", u.ID).Find(&dbCreds)
+		creds := dbCredsToWebAuthn(dbCreds)
 		for i := range dbCreds {
 			if bytes.Equal(dbCreds[i].CredentialID, rawID) {
 				matchedCred = &dbCreds[i]
+				// Passkeys registered before flag persistence existed have no
+				// recorded BackupEligible/BackupState — there's no historical
+				// value to legitimately check against, so adopt whatever this
+				// live assertion reports instead of failing the login. It gets
+				// persisted below once validation succeeds, so subsequent
+				// logins are checked against a real recorded value.
+				if dbCreds[i].BackupEligible == nil {
+					creds[i].Flags = wa.NewCredentialFlags(parsedResp.Response.AuthenticatorData.Flags)
+				}
 				break
 			}
 		}
 		authenticatedUser = u
-		return &passkeyUser{user: u, credentials: dbCredsToWebAuthn(dbCreds)}, nil
+		return &passkeyUser{user: u, credentials: creds}, nil
 	}
 
 	cred, err := wAuth.ValidateDiscoverableLogin(handler, session, parsedResp)
@@ -345,9 +365,13 @@ func (h *PasskeyHandler) PasskeyLoginFinish(c *gin.Context) {
 
 	now := time.Now()
 	if matchedCred != nil {
+		backupEligible := cred.Flags.BackupEligible
+		backupState := cred.Flags.BackupState
 		database.DB.Model(matchedCred).Updates(map[string]interface{}{
-			"sign_count":   cred.Authenticator.SignCount,
-			"last_used_at": now,
+			"sign_count":      cred.Authenticator.SignCount,
+			"last_used_at":    now,
+			"backup_eligible": &backupEligible,
+			"backup_state":    &backupState,
 		})
 	}
 	database.DB.Model(&authenticatedUser).Update("last_login_at", now)
