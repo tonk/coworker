@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.14.5 — 2026-07-15
+
+### Fixed
+- **Time tracking — row layout corruption from rapid week switching** — a debounced background save could write the previous week's row layout into the *new* week's saved data if you switched weeks again within its 600ms delay, since it read the target week reactively instead of at the moment the save was scheduled. This was the root cause behind rows from another week persistently reappearing even after the v0.14.4 fix — that fix corrected the read side, but some weeks' own saved data had already been corrupted by this write-side bug. The save now always targets the week it was scheduled for.
+
 ## v0.14.4 — 2026-07-15
 
 ### Fixed

@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.14.4)
+## Latest release (v0.14.5)
 
-- **Fix** — switching to a time-tracking week you hadn't customized before could show the full row set from whatever week you'd last edited, with no matching time entries; the row-layout lookup is now strictly scoped to each specific week.
+- **Fix** — a debounced background save in time tracking could write the wrong week's row layout into a different week if you switched weeks again within its 600ms delay, corrupting that week's saved data. The save now always targets the week it was scheduled for.
 
 ## Experiment
 
