@@ -15,6 +15,16 @@ auth:bearer {
 }
 
 docs {
-  Creates a timestamped backup in the ./backups/ directory.
+  Creates a timestamped backup in the ./backups/ directory: a tar.gz bundling
+  the database dump with the upload directory (attachments, avatars, logos),
+  unless disabled via the backup_include_uploads system setting.
   Also accessible via POST /api/v1/backup with a backup-role API key.
+
+  A backup file downloaded from another WarmDesk server can be added to this
+  list via POST /api/v1/admin/system/backups/upload (multipart "file" field,
+  accepts .tar.gz/.db/.sql). POST /api/v1/admin/system/backups/restore then
+  takes { "filename": "...", "mode": "replace" | "merge" } — "replace" (the
+  default) wipes and restores everything; "merge" adds the backup's uploaded
+  files and (SQLite only) database rows whose ID doesn't already exist here,
+  without touching or overwriting current data.
 }

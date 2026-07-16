@@ -103,6 +103,17 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 - Supported drivers: `sqlite`, `postgres`, `mysql`. The driver string goes in `db_driver`, the DSN in `db_dsn`.
 - Card numbering (`PRJ-1`, `PRJ-2`, …) is maintained by an atomic `card_counter` increment on the `projects` table.
 
+### Backup / restore
+`handlers/backup.go` creates backups as a `warmdesk_backup_<timestamp>_<hex>.tar.gz` in `./backups/`, bundling the database dump (SQLite `VACUUM INTO`, `pg_dump`, or `mysqldump` depending on `db_driver`) together with a copy of `upload_dir` (attachments, avatars, customer logos, company branding) under a `db/` and `uploads/` path inside the archive. Bundling the upload directory can be disabled via the `backup_include_uploads` system setting (default `true`) for deployments with very large upload directories.
+
+`POST /api/v1/admin/system/backups/upload` (`AdminUploadBackup`) accepts a `.tar.gz`/`.db`/`.sql` file — e.g. one downloaded from a different WarmDesk server — and saves it into `./backups/` under a normalised name (`validateBackupArchive`/`validateSQLiteFile` do a light content sanity check) so it's listed and restorable alongside locally created backups.
+
+`AdminRestoreBackup` takes a `mode`: `"replace"` (default) or `"merge"`.
+- **replace** extracts the archive to a temp dir, restores the database, then replaces `upload_dir` wholesale with the archived copy (`replaceDir` — removes existing contents first). Backups created before archive-bundling was added (`warmdesk_db_<timestamp>_<hex>.db`/`.sql`, database only) are still listable, downloadable, and restorable — `isBackupFile`/`backupSortKey` handle both filename formats so old and new backups sort chronologically together in the admin UI and during pruning (`backup_keep`).
+- **merge** adds the backup's data to what's already there instead of wiping it: uploaded files are copied in without deleting existing ones (`mergeDir` — collision-free since filenames are random hex), and (SQLite only) `mergeSQLiteDatabase` `ATTACH`es the backup's database file and runs `INSERT OR IGNORE` per common table/column, so rows are added only when their primary key doesn't already exist locally. This is a genuine limitation for cross-server merges: two independently-run servers have no shared ID space, so a row whose ID collides with an unrelated existing row is silently skipped, never overwritten. Postgres/MySQL report `db_merge_unsupported` for the database portion but still merge uploads.
+
+Triggered manually via `POST /api/v1/admin/system/backup` (admin) or `POST /api/v1/backup` (admin or `backup`-role API key, for CI/CD automation — see `middleware.BackupAuth()`), or automatically by `StartBackupScheduler()` per the `backup_schedule`/`backup_start_time` settings.
+
 ### Authentication
 - **JWT access token**: 15 min expiry, HS256. Claims: `UserID`, `Username`, `GlobalRole`.
 - **JWT refresh token**: 7 day expiry. Auto-refreshes silently on 401.

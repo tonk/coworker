@@ -1092,6 +1092,10 @@
 
             <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;max-width:450px">
               <label class="toggle-row">
+                <span>{{ $t('admin.backup_include_uploads') }}</span>
+                <input type="checkbox" v-model="systemSettings.backup_include_uploads" />
+              </label>
+              <label class="toggle-row">
                 <span>{{ $t('admin.backup_email_enabled') }}</span>
                 <input type="checkbox" v-model="systemSettings.backup_email_enabled" />
               </label>
@@ -1107,11 +1111,16 @@
           <div style="margin-bottom:24px">
             <h3 class="form-section-title">{{ $t('admin.backup_title') }}</h3>
             <p class="form-hint">{{ $t('admin.backup_description') }}</p>
-            <button class="btn btn-primary btn-sm" @click="createBackup" :disabled="backupCreating">
-              {{ backupCreating ? $t('admin.backup_creating') : $t('admin.backup_button') }}
-            </button>
-            <span v-if="backupSuccess" style="margin-left:12px;color:var(--color-success);font-size:13px">{{ $t('admin.backup_success', { filename: backupSuccess }) }}</span>
-            <span v-if="backupError" style="margin-left:12px;color:var(--color-danger);font-size:13px">{{ $t('admin.backup_failed') }}</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <button class="btn btn-primary btn-sm" @click="createBackup" :disabled="backingUp">
+                {{ backingUp ? $t('admin.backup_creating') : $t('admin.backup_button') }}
+              </button>
+              <button class="btn btn-secondary btn-sm" @click="backupFileInput.click()" :disabled="importingBackup">
+                {{ importingBackup ? $t('admin.backup_importing') : $t('admin.backup_import_button') }}
+              </button>
+              <input ref="backupFileInput" type="file" accept=".tar.gz,.db,.sql" style="display:none" @change="onImportBackupFileSelected" />
+            </div>
+            <p class="form-hint" style="margin-top:4px">{{ $t('admin.backup_import_hint') }}</p>
           </div>
 
           <!-- Backup list -->
@@ -1133,7 +1142,7 @@
                   <td>
                     <div class="actions-cell">
                       <button class="btn btn-secondary btn-sm" @click="downloadBackup(b.filename)">{{ $t('admin.backup_download') }}</button>
-                      <button class="btn btn-secondary btn-sm" @click="restoreBackup(b)">{{ $t('admin.backup_restore') }}</button>
+                      <button class="btn btn-secondary btn-sm" @click="openRestoreModal(b)">{{ $t('admin.backup_restore') }}</button>
                       <button class="btn btn-danger btn-sm" @click="deleteBackup(b)">{{ $t('common.delete') }}</button>
                     </div>
                   </td>
@@ -1146,6 +1155,36 @@
       </div>
 
   </main>
+
+  <!-- Restore Backup Modal -->
+  <BaseModal v-if="restoreModalBackup" :title="$t('admin.backup_restore_title')" @close="restoreModalBackup = null">
+    <p class="form-hint" style="margin-top:0"><code>{{ restoreModalBackup.filename }}</code></p>
+    <fieldset style="border:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px">
+      <legend class="form-label" style="padding:0;margin-bottom:8px">{{ $t('admin.backup_restore_mode_label') }}</legend>
+      <label class="toggle-row" style="align-items:flex-start;gap:10px">
+        <input type="radio" name="restore-mode" value="replace" v-model="restoreMode" style="margin-top:3px" />
+        <span>
+          <strong>{{ $t('admin.backup_restore_mode_replace') }}</strong>
+          <br />
+          <span class="form-hint">{{ $t('admin.backup_restore_mode_replace_hint') }}</span>
+        </span>
+      </label>
+      <label class="toggle-row" style="align-items:flex-start;gap:10px">
+        <input type="radio" name="restore-mode" value="merge" v-model="restoreMode" style="margin-top:3px" />
+        <span>
+          <strong>{{ $t('admin.backup_restore_mode_merge') }}</strong>
+          <br />
+          <span class="form-hint">{{ $t('admin.backup_restore_mode_merge_hint') }}</span>
+        </span>
+      </label>
+    </fieldset>
+    <template #footer>
+      <button class="btn btn-secondary btn-sm" @click="restoreModalBackup = null">{{ $t('common.cancel') }}</button>
+      <button class="btn btn-danger btn-sm" @click="confirmRestoreBackup" :disabled="restoringBackup">
+        {{ restoringBackup ? $t('admin.backup_restoring') : $t('admin.backup_restore') }}
+      </button>
+    </template>
+  </BaseModal>
 
   <!-- Create User Modal -->
   <BaseModal v-if="showCreateUser" :title="$t('admin.new_user')" @close="showCreateUser = false" :resizable="true">
@@ -2404,6 +2443,7 @@ const systemSettings = ref({
   backup_last_run: '',
   backup_email_enabled: false,
   backup_email_address: '',
+  backup_include_uploads: true,
   metrics_last_access: '',
   metrics_last_access_success: '',
 })
@@ -2551,6 +2591,7 @@ async function loadSettings() {
     systemSettings.value.backup_last_run           = data.backup_last_run || ''
     systemSettings.value.backup_email_enabled       = data.backup_email_enabled === 'true'
     systemSettings.value.backup_email_address       = data.backup_email_address || ''
+    systemSettings.value.backup_include_uploads     = data.backup_include_uploads !== 'false'
     systemSettings.value.allowed_ips                = data.allowed_ips || ''
     systemSettings.value.metrics_last_access        = data.metrics_last_access || ''
     systemSettings.value.metrics_last_access_success = data.metrics_last_access_success || ''
@@ -2624,6 +2665,10 @@ async function saveBrandingSettings() {
 const backingUp = ref(false)
 const backups = ref([])
 const restoringBackup = ref(null)
+const backupFileInput = ref(null)
+const importingBackup = ref(false)
+const restoreModalBackup = ref(null)
+const restoreMode = ref('replace')
 const backupStartTimeDisplay = ref('')
 
 const prefers12HourTime = computed(() => {
@@ -2716,6 +2761,7 @@ async function saveBackupSchedule() {
       backup_keep: systemSettings.value.backup_keep,
       backup_email_enabled: systemSettings.value.backup_email_enabled,
       backup_email_address: systemSettings.value.backup_email_address,
+      backup_include_uploads: systemSettings.value.backup_include_uploads,
     })
     ui.success('Backup schedule saved')
   } catch {
@@ -2745,17 +2791,58 @@ async function createBackup() {
   }
 }
 
-async function restoreBackup(b) {
-  if (!await ui.confirm(`Replace the current database with "${b.filename}"? All changes since this backup will be lost.`, { destructive: true })) return
+async function onImportBackupFileSelected(e) {
+  const file = e.target.files[0]
+  e.target.value = ''
+  if (!file) return
+  importingBackup.value = true
+  try {
+    const { data } = await adminApi.uploadBackup(file)
+    await loadBackups()
+    const imported = backups.value.find(b => b.filename === data.filename) || { filename: data.filename }
+    openRestoreModal(imported)
+  } catch (err) {
+    ui.error(err.response?.data?.error || 'Backup import failed')
+  } finally {
+    importingBackup.value = false
+  }
+}
+
+function openRestoreModal(b) {
+  restoreMode.value = 'replace'
+  restoreModalBackup.value = b
+}
+
+async function confirmRestoreBackup() {
+  const b = restoreModalBackup.value
+  if (!b) return
+  const mode = restoreMode.value
+  const confirmMsg = mode === 'merge'
+    ? `Add the data from "${b.filename}" to what's already here? Existing records are kept as-is.`
+    : `Replace the current database and uploaded files with "${b.filename}"? All changes since this backup will be lost.`
+  if (!await ui.confirm(confirmMsg, { destructive: true })) return
+
   restoringBackup.value = b.filename
   try {
-    await adminApi.restoreBackup(b.filename)
-    ui.success(`Database restored from ${b.filename}`)
-  } catch {
-    ui.error('Restore failed')
+    const { data } = await adminApi.restoreBackup(b.filename, mode)
+    restoreModalBackup.value = null
+    ui.success(restoreResultMessage(b.filename, data))
+  } catch (err) {
+    ui.error(err.response?.data?.error || 'Restore failed')
   } finally {
     restoringBackup.value = null
   }
+}
+
+function restoreResultMessage(filename, data) {
+  if (data.mode !== 'merge') {
+    return data.uploads_restored ? `Database and uploaded files restored from ${filename}` : `Database restored from ${filename}`
+  }
+  const parts = []
+  if (data.uploads_merged) parts.push('uploaded files merged')
+  if (data.db_merged) parts.push(`${data.rows_merged} row(s) added across ${data.tables_merged} table(s)`)
+  if (data.db_merge_unsupported) parts.push('database merge not supported for this database driver')
+  return parts.length ? `Merged from ${filename}: ${parts.join(', ')}` : `Nothing to merge from ${filename}`
 }
 
 async function downloadBackup(filename) {

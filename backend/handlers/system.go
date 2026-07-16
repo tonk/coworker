@@ -53,6 +53,7 @@ const (
 	settingBackupEmailEnabled        = "backup_email_enabled"
 	settingBackupEmailAddress        = "backup_email_address"
 	settingBackupLastSuccess         = "backup_last_success"
+	settingBackupIncludeUploads      = "backup_include_uploads"
 	settingScrumStorypointsEnabled   = "scrum_storypoints_enabled"
 	settingGravatarEnabled           = "gravatar_enabled"
 	settingExternalImageProxyEnabled = "external_image_proxy_enabled"
@@ -171,6 +172,7 @@ var systemSettingDefaults = map[string]string{
 	settingBackupEmailEnabled:        "false",
 	settingBackupEmailAddress:        "",
 	settingBackupLastSuccess:         "",
+	settingBackupIncludeUploads:      "true",
 	settingScrumStorypointsEnabled:   "false",
 	settingGravatarEnabled:           "true",
 	settingExternalImageProxyEnabled: "true",
@@ -463,6 +465,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		BackupKeep                *int        `json:"backup_keep"`
 		BackupEmailEnabled        *bool       `json:"backup_email_enabled"`
 		BackupEmailAddress        *string     `json:"backup_email_address"`
+		BackupIncludeUploads      *bool       `json:"backup_include_uploads"`
 		ScrumStorypointsEnabled   *bool       `json:"scrum_storypoints_enabled"`
 		GravatarEnabled           *bool       `json:"gravatar_enabled"`
 		ExternalImageProxyEnabled *bool       `json:"external_image_proxy_enabled"`
@@ -672,6 +675,7 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 	if req.BackupEmailAddress != nil {
 		saveSetting(settingBackupEmailAddress, *req.BackupEmailAddress)
 	}
+	boolSetting(req.BackupIncludeUploads, settingBackupIncludeUploads)
 	boolSetting(req.ScrumStorypointsEnabled, settingScrumStorypointsEnabled)
 	boolSetting(req.GravatarEnabled, settingGravatarEnabled)
 	boolSetting(req.ExternalImageProxyEnabled, settingExternalImageProxyEnabled)

@@ -132,6 +132,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			admin.PUT("/system", handlers.AdminUpdateSystemSettings)
 			admin.POST("/system/test-email", handlers.AdminSendTestEmail)
 			admin.POST("/system/backup", handlers.AdminBackupDatabase)
+			admin.POST("/system/backups/upload", handlers.AdminUploadBackup)
 			admin.GET("/system/backups", handlers.AdminListBackups)
 			admin.POST("/system/backups/restore", handlers.AdminRestoreBackup)
 			admin.GET("/system/backups/:filename", handlers.AdminDownloadBackup)

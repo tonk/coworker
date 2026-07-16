@@ -31,8 +31,13 @@ export const adminApi = {
   updateSystemSettings: (data) => client.put('/admin/system', data),
   sendTestEmail: (to) => client.post('/admin/system/test-email', { to }),
   backupDatabase: () => client.post('/admin/system/backup'),
+  uploadBackup: (file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return client.post('/admin/system/backups/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
   listBackups: () => client.get('/admin/system/backups'),
-  restoreBackup: (filename) => client.post('/admin/system/backups/restore', { filename }),
+  restoreBackup: (filename, mode = 'replace') => client.post('/admin/system/backups/restore', { filename, mode }),
   downloadBackup: (filename) => fetchBinary(`/admin/system/backups/${encodeURIComponent(filename)}`),
   deleteBackup: (filename) => client.delete(`/admin/system/backups/${encodeURIComponent(filename)}`),
   disableUserMFA: (id) => client.post(`/admin/users/${id}/mfa/disable`),

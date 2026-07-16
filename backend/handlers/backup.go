@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"log"
@@ -25,18 +27,46 @@ var backupCfg *config.Config
 
 const backupsDir = "./backups"
 
+// backupArchivePrefix is the filename prefix for the current backup format: a
+// tar.gz bundling the database dump with the upload directory (attachments,
+// avatars, logos). legacyBackupPrefix identifies pre-bundling backups (a bare
+// .db/.sql file, database only) which are still listable/downloadable/restorable.
+const (
+	backupArchivePrefix = "warmdesk_backup_"
+	legacyBackupPrefix  = "warmdesk_db_"
+)
+
 // InitBackup stores the config reference for the backup handler.
 func InitBackup(cfg *config.Config) {
 	backupCfg = cfg
 }
 
-// AdminBackupDatabase creates a database backup and returns the filename and path.
-// For SQLite: uses VACUUM INTO for an atomic online backup.
-// For PostgreSQL: runs pg_dump.
-// For MySQL: runs mysqldump.
+// isBackupFile reports whether name looks like a backup file in either the
+// current (tar.gz) or legacy (bare DB dump) format.
+func isBackupFile(name string) bool {
+	return strings.HasPrefix(name, backupArchivePrefix) || strings.HasPrefix(name, legacyBackupPrefix)
+}
+
+// backupSortKey extracts the "<timestamp>_<hex>[.ext]" portion of a backup
+// filename so current and legacy formats sort chronologically together
+// regardless of their differing prefixes.
+func backupSortKey(name string) string {
+	switch {
+	case strings.HasPrefix(name, backupArchivePrefix):
+		return strings.TrimPrefix(name, backupArchivePrefix)
+	case strings.HasPrefix(name, legacyBackupPrefix):
+		return strings.TrimPrefix(name, legacyBackupPrefix)
+	default:
+		return name
+	}
+}
+
+// AdminBackupDatabase creates a backup and returns the filename and path. The
+// backup is a tar.gz containing the database dump (SQLite VACUUM INTO,
+// pg_dump, or mysqldump depending on driver) and, unless disabled via the
+// backup_include_uploads setting, a copy of the upload directory (attachments,
+// avatars, logos, company branding).
 func AdminBackupDatabase(c *gin.Context) {
-	ts := time.Now().Format("20060102_1504")
-	filename := "warmdesk_db_" + ts + "_" + randomHex(4)
 	now := time.Now().UTC()
 
 	if err := os.MkdirAll(backupsDir, 0755); err != nil {
@@ -46,20 +76,14 @@ func AdminBackupDatabase(c *gin.Context) {
 		return
 	}
 
-	var finalFilename string
-	var backupErr error
 	switch backupCfg.DBDriver {
-	case "sqlite", "sqlite3", "":
-		finalFilename, backupErr = doBackupSQLite(filename)
-	case "postgres", "postgresql":
-		finalFilename, backupErr = doBackupPostgres(filename)
-	case "mysql":
-		finalFilename, backupErr = doBackupMySQL(filename)
+	case "sqlite", "sqlite3", "", "postgres", "postgresql", "mysql":
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported database driver: " + backupCfg.DBDriver})
 		return
 	}
 
+	finalFilename, backupErr := performBackup()
 	if backupErr != nil {
 		log.Printf("backup: failed (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), backupErr)
 		recordBackupResult(false, now)
@@ -75,6 +99,116 @@ func AdminBackupDatabase(c *gin.Context) {
 		"message":  "backup created",
 		"filename": finalFilename,
 		"path":     filepath.Join(backupsDir, finalFilename),
+	})
+}
+
+// performBackup creates the database dump, bundles it (and the upload
+// directory, unless disabled) into a tar.gz under backupsDir, and returns the
+// archive's filename.
+func performBackup() (string, error) {
+	ts := time.Now().Format("20060102_1504")
+	base := backupArchivePrefix + ts + "_" + randomHex(4)
+
+	var dbFilename string
+	var err error
+	switch backupCfg.DBDriver {
+	case "sqlite", "sqlite3", "":
+		dbFilename, err = doBackupSQLite(base)
+	case "postgres", "postgresql":
+		dbFilename, err = doBackupPostgres(base)
+	case "mysql":
+		dbFilename, err = doBackupMySQL(base)
+	default:
+		return "", fmt.Errorf("unsupported database driver: %s", backupCfg.DBDriver)
+	}
+	if err != nil {
+		return "", err
+	}
+	dbPath := filepath.Join(backupsDir, dbFilename)
+	defer os.Remove(dbPath)
+
+	includeUploads := loadAllSettings()[settingBackupIncludeUploads] != "false"
+	var uploadDir string
+	if includeUploads && backupCfg.UploadDir != "" {
+		uploadDir = backupCfg.UploadDir
+	}
+
+	archiveName := base + ".tar.gz"
+	if err := writeBackupArchive(filepath.Join(backupsDir, archiveName), dbPath, dbFilename, uploadDir); err != nil {
+		return "", err
+	}
+	return archiveName, nil
+}
+
+// writeBackupArchive writes a tar.gz to archivePath containing the database
+// dump at dbPath (stored under "db/<dbNameInArchive>") and, if uploadDir is
+// non-empty, every regular file under uploadDir (stored under "uploads/...").
+func writeBackupArchive(archivePath, dbPath, dbNameInArchive, uploadDir string) error {
+	out, err := os.Create(archivePath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	gw := gzip.NewWriter(out)
+	defer gw.Close()
+	tw := tar.NewWriter(gw)
+	defer tw.Close()
+
+	if err := addFileToTar(tw, dbPath, "db/"+dbNameInArchive); err != nil {
+		return err
+	}
+
+	if uploadDir != "" {
+		if err := addDirToTar(tw, uploadDir, "uploads"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func addFileToTar(tw *tar.Writer, srcPath, nameInArchive string) error {
+	f, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	hdr := &tar.Header{
+		Name:    filepath.ToSlash(nameInArchive),
+		Mode:    0644,
+		Size:    info.Size(),
+		ModTime: info.ModTime(),
+	}
+	if err := tw.WriteHeader(hdr); err != nil {
+		return err
+	}
+	_, err = io.Copy(tw, f)
+	return err
+}
+
+func addDirToTar(tw *tar.Writer, srcDir, nameInArchive string) error {
+	if _, err := os.Stat(srcDir); os.IsNotExist(err) {
+		return nil
+	}
+	return filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(srcDir, path)
+		if err != nil {
+			return err
+		}
+		return addFileToTar(tw, path, filepath.Join(nameInArchive, rel))
 	})
 }
 
@@ -99,7 +233,7 @@ func AdminListBackups(c *gin.Context) {
 
 	var result []BackupInfo
 	for _, e := range entries {
-		if e.IsDir() || !strings.HasPrefix(e.Name(), "warmdesk_db_") {
+		if e.IsDir() || !isBackupFile(e.Name()) {
 			continue
 		}
 		info, err := e.Info()
@@ -115,7 +249,7 @@ func AdminListBackups(c *gin.Context) {
 
 	// Newest first
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].Filename > result[j].Filename
+		return backupSortKey(result[i].Filename) > backupSortKey(result[j].Filename)
 	})
 
 	if result == nil {
@@ -124,19 +258,25 @@ func AdminListBackups(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// AdminRestoreBackup replaces the active database with a named backup.
+// AdminRestoreBackup replaces the active database (and, for archives that
+// bundle one, the upload directory) with a named backup.
 func AdminRestoreBackup(c *gin.Context) {
 	var body struct {
 		Filename string `json:"filename"`
+		Mode     string `json:"mode"` // "replace" (default, full wipe) or "merge" (add to current data)
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || body.Filename == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "filename required"})
 		return
 	}
+	mode := "replace"
+	if body.Mode == "merge" {
+		mode = "merge"
+	}
 
 	// Sanitise: strip any path components to prevent traversal
 	filename := filepath.Base(body.Filename)
-	if !strings.HasPrefix(filename, "warmdesk_db_") {
+	if !isBackupFile(filename) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid backup filename"})
 		return
 	}
@@ -147,22 +287,334 @@ func AdminRestoreBackup(c *gin.Context) {
 		return
 	}
 
+	if strings.HasPrefix(filename, backupArchivePrefix) {
+		restoreFromArchive(c, backupPath, filename, mode)
+		return
+	}
+
+	// Legacy pre-bundling format: a bare database dump, no uploads to restore.
+	if mode == "merge" {
+		mergeLegacyBackup(c, backupPath, filename)
+		return
+	}
+	if err := restoreDatabase(backupPath); err != nil {
+		log.Printf("backup: restore failed (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	log.Printf("backup: restored %s (user=%d, ip=%s)", filename, middleware.GetUserID(c), c.ClientIP())
+	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filename, "mode": "replace"})
+}
+
+// restoreFromArchive extracts a bundled backup (database dump plus, if
+// present, the upload directory) and restores or merges both depending on mode.
+func restoreFromArchive(c *gin.Context, archivePath, filename, mode string) {
+	tmpDir, err := os.MkdirTemp("", "warmdesk_restore_*")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create temp dir: " + err.Error()})
+		return
+	}
+	defer os.RemoveAll(tmpDir)
+
+	dbPath, uploadsPath, err := extractBackupArchive(archivePath, tmpDir)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "extract failed: " + err.Error()})
+		return
+	}
+	if dbPath == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "backup archive has no database dump"})
+		return
+	}
+
+	if mode == "merge" {
+		mergeArchiveBackup(c, filename, dbPath, uploadsPath)
+		return
+	}
+
+	if err := restoreDatabase(dbPath); err != nil {
+		log.Printf("backup: restore failed (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	restoredUploads := false
+	if uploadsPath != "" && backupCfg != nil && backupCfg.UploadDir != "" {
+		if err := replaceDir(uploadsPath, backupCfg.UploadDir); err != nil {
+			log.Printf("backup: uploads restore failed (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "database restored, but uploads restore failed: " + err.Error()})
+			return
+		}
+		restoredUploads = true
+	}
+
+	log.Printf("backup: restored %s (uploads=%t, user=%d, ip=%s)", filename, restoredUploads, middleware.GetUserID(c), c.ClientIP())
+	c.JSON(http.StatusOK, gin.H{
+		"message":          "database restored from " + filename,
+		"mode":             "replace",
+		"uploads_restored": restoredUploads,
+	})
+}
+
+// mergeArchiveBackup adds the contents of an extracted archive backup (which
+// may have come from a different WarmDesk server) to the current data instead
+// of replacing it: uploaded files are copied in alongside existing ones, and
+// (SQLite only) database rows whose primary key doesn't already exist locally
+// are inserted. Rows whose ID already exists are left untouched — a genuine
+// cross-server merge would need ID remapping, which this does not attempt.
+func mergeArchiveBackup(c *gin.Context, filename, dbPath, uploadsPath string) {
+	result := gin.H{"message": "merged data from " + filename, "mode": "merge"}
+
+	uploadsMerged := false
+	if uploadsPath != "" && backupCfg != nil && backupCfg.UploadDir != "" {
+		if err := mergeDir(uploadsPath, backupCfg.UploadDir); err != nil {
+			log.Printf("backup: uploads merge failed (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "uploads merge failed: " + err.Error()})
+			return
+		}
+		uploadsMerged = true
+	}
+	result["uploads_merged"] = uploadsMerged
+
 	switch backupCfg.DBDriver {
 	case "sqlite", "sqlite3", "":
-		adminRestoreSQLite(c, backupPath)
-	case "postgres", "postgresql":
-		adminRestorePostgres(c, backupPath)
-	case "mysql":
-		adminRestoreMySQL(c, backupPath)
+		tables, rows, err := mergeSQLiteDatabase(dbPath)
+		if err != nil {
+			log.Printf("backup: db merge failed (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "database merge failed: " + err.Error()})
+			return
+		}
+		result["db_merged"] = true
+		result["tables_merged"] = tables
+		result["rows_merged"] = rows
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported database driver: " + backupCfg.DBDriver})
+		result["db_merged"] = false
+		result["db_merge_unsupported"] = true
 	}
+
+	log.Printf("backup: merged %s (uploads=%t, user=%d, ip=%s)", filename, uploadsMerged, middleware.GetUserID(c), c.ClientIP())
+	c.JSON(http.StatusOK, result)
+}
+
+// mergeLegacyBackup merges a legacy (pre-bundling) bare database dump — no
+// uploads are involved since that format never bundled them.
+func mergeLegacyBackup(c *gin.Context, backupPath, filename string) {
+	switch backupCfg.DBDriver {
+	case "sqlite", "sqlite3", "":
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "merge mode is only supported for SQLite databases"})
+		return
+	}
+
+	tables, rows, err := mergeSQLiteDatabase(backupPath)
+	if err != nil {
+		log.Printf("backup: db merge failed (user=%d, ip=%s): %v", middleware.GetUserID(c), c.ClientIP(), err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database merge failed: " + err.Error()})
+		return
+	}
+
+	log.Printf("backup: merged %s (legacy, user=%d, ip=%s)", filename, middleware.GetUserID(c), c.ClientIP())
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "merged data from " + filename,
+		"mode":          "merge",
+		"db_merged":     true,
+		"tables_merged": tables,
+		"rows_merged":   rows,
+	})
+}
+
+// extractBackupArchive extracts a backup tar.gz into destDir and returns the
+// path to the extracted database dump and, if the archive bundled one, the
+// path to the extracted uploads directory.
+func extractBackupArchive(archivePath, destDir string) (dbPath, uploadsDir string, err error) {
+	f, err := os.Open(archivePath)
+	if err != nil {
+		return "", "", err
+	}
+	defer f.Close()
+
+	gr, err := gzip.NewReader(f)
+	if err != nil {
+		return "", "", err
+	}
+	defer gr.Close()
+
+	cleanDest := filepath.Clean(destDir)
+	tr := tar.NewReader(gr)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return "", "", err
+		}
+		if hdr.Typeflag != tar.TypeReg {
+			continue
+		}
+
+		target := filepath.Join(destDir, filepath.FromSlash(hdr.Name))
+		if !strings.HasPrefix(target, cleanDest+string(os.PathSeparator)) {
+			return "", "", fmt.Errorf("invalid entry path in archive: %s", hdr.Name)
+		}
+
+		if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+			return "", "", err
+		}
+		out, err := os.Create(target)
+		if err != nil {
+			return "", "", err
+		}
+		_, copyErr := io.Copy(out, tr)
+		out.Close()
+		if copyErr != nil {
+			return "", "", copyErr
+		}
+
+		switch {
+		case strings.HasPrefix(hdr.Name, "db/"):
+			dbPath = target
+		case strings.HasPrefix(hdr.Name, "uploads/"):
+			uploadsDir = filepath.Join(destDir, "uploads")
+		}
+	}
+	return dbPath, uploadsDir, nil
+}
+
+// replaceDir removes dst's contents and repopulates it from src. Used to
+// restore the upload directory from an extracted backup archive.
+func replaceDir(src, dst string) error {
+	if err := os.RemoveAll(dst); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dst, 0755); err != nil {
+		return err
+	}
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(dst, rel)
+		if info.IsDir() {
+			return os.MkdirAll(target, 0755)
+		}
+		return copyFile(path, target)
+	})
+}
+
+// mergeDir copies every file under src into dst without removing anything
+// already there. Used to merge an archive's uploads into the live upload
+// directory — safe because upload filenames are random hex, so collisions
+// with existing files are effectively impossible.
+func mergeDir(src, dst string) error {
+	if err := os.MkdirAll(dst, 0755); err != nil {
+		return err
+	}
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(dst, rel)
+		if info.IsDir() {
+			return os.MkdirAll(target, 0755)
+		}
+		return copyFile(path, target)
+	})
+}
+
+// mergeSQLiteDatabase attaches otherDBPath (a SQLite file — either extracted
+// from an archive or a legacy raw dump) to the live database connection and,
+// for every table that exists in both schemas, inserts rows from otherDBPath
+// whose primary key doesn't already exist locally. It never updates or
+// deletes existing rows, so current data can't be overwritten — but rows
+// whose ID collides with an unrelated existing row are skipped, not merged,
+// since two independently-run servers have no shared ID space to reconcile.
+func mergeSQLiteDatabase(otherDBPath string) (tablesMerged int, rowsMerged int64, err error) {
+	absPath, err := filepath.Abs(otherDBPath)
+	if err != nil {
+		return 0, 0, err
+	}
+	// ATTACH DATABASE has no parameterized form for the path literal.
+	escaped := strings.ReplaceAll(absPath, "'", "''")
+	attachSQL := fmt.Sprintf("ATTACH DATABASE '%s' AS backup_src", escaped) // nosemgrep: go.lang.security.audit.database.string-formatted-query.string-formatted-query -- server-generated temp path, SQLite ATTACH has no parameter binding for the path
+	if err := database.DB.Exec(attachSQL).Error; err != nil {
+		return 0, 0, fmt.Errorf("attach failed: %w", err)
+	}
+	defer database.DB.Exec("DETACH DATABASE backup_src")
+
+	var tableNames []string
+	if err := database.DB.Raw("SELECT name FROM backup_src.sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").Scan(&tableNames).Error; err != nil {
+		return 0, 0, fmt.Errorf("listing backup tables failed: %w", err)
+	}
+
+	for _, table := range tableNames {
+		var mainCols, backupCols []string
+		if err := database.DB.Raw("SELECT name FROM pragma_table_info(?, 'main')", table).Scan(&mainCols).Error; err != nil || len(mainCols) == 0 {
+			continue // table doesn't exist in the current schema — nothing to merge into
+		}
+		if err := database.DB.Raw("SELECT name FROM pragma_table_info(?, 'backup_src')", table).Scan(&backupCols).Error; err != nil {
+			continue
+		}
+
+		common := intersectColumnNames(mainCols, backupCols)
+		if len(common) == 0 {
+			continue
+		}
+
+		quotedTable := quoteSQLIdent(table)
+		quotedCols := make([]string, len(common))
+		for i, col := range common {
+			quotedCols[i] = quoteSQLIdent(col)
+		}
+		colList := strings.Join(quotedCols, ", ")
+		// Table/column names come from sqlite_master/pragma_table_info of the
+		// attached schema, not directly from user input, and are quoted as
+		// SQLite identifiers below; they cannot carry SQL beyond their own name.
+		mergeSQL := fmt.Sprintf("INSERT OR IGNORE INTO main.%s (%s) SELECT %s FROM backup_src.%s", quotedTable, colList, colList, quotedTable) // nosemgrep: go.lang.security.audit.database.string-formatted-query.string-formatted-query -- identifiers from schema introspection, quoted via quoteSQLIdent
+		res := database.DB.Exec(mergeSQL)
+		if res.Error != nil {
+			log.Printf("backup merge: table %s skipped: %v", table, res.Error)
+			continue
+		}
+		tablesMerged++
+		rowsMerged += res.RowsAffected
+	}
+	return tablesMerged, rowsMerged, nil
+}
+
+// quoteSQLIdent quotes name as a SQLite identifier, doubling any embedded
+// double quotes so it can't break out of the quoted identifier.
+func quoteSQLIdent(name string) string {
+	return `"` + strings.ReplaceAll(name, `"`, `""`) + `"`
+}
+
+// intersectColumnNames returns the column names present in both a and b,
+// preserving a's order.
+func intersectColumnNames(a, b []string) []string {
+	bSet := make(map[string]bool, len(b))
+	for _, c := range b {
+		bSet[c] = true
+	}
+	var out []string
+	for _, c := range a {
+		if bSet[c] {
+			out = append(out, c)
+		}
+	}
+	return out
 }
 
 // AdminDownloadBackup streams a backup file as an attachment.
 func AdminDownloadBackup(c *gin.Context) {
 	filename := filepath.Base(c.Param("filename"))
-	if !strings.HasPrefix(filename, "warmdesk_db_") {
+	if !isBackupFile(filename) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid backup filename"})
 		return
 	}
@@ -178,7 +630,7 @@ func AdminDownloadBackup(c *gin.Context) {
 // AdminDeleteBackup removes a backup file.
 func AdminDeleteBackup(c *gin.Context) {
 	filename := filepath.Base(c.Param("filename"))
-	if !strings.HasPrefix(filename, "warmdesk_db_") {
+	if !isBackupFile(filename) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid backup filename"})
 		return
 	}
@@ -193,6 +645,123 @@ func AdminDeleteBackup(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
+}
+
+// maxBackupUploadBytes caps how large an uploaded backup file may be. Backups
+// can be much larger than the images handled by the generic upload endpoint,
+// so this is a separate, more generous limit.
+const maxBackupUploadBytes = 2 << 30 // 2 GiB
+
+// AdminUploadBackup accepts a backup file — either one downloaded from
+// another WarmDesk server, or a local copy of a previous backup — and stores
+// it in the backups directory under a normalised name so it can be listed,
+// downloaded, and restored/merged like any locally created backup.
+func AdminUploadBackup(c *gin.Context) {
+	fh, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "no file provided"})
+		return
+	}
+	if fh.Size > maxBackupUploadBytes {
+		c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "backup file too large (max 2 GB)"})
+		return
+	}
+
+	lowerName := strings.ToLower(fh.Filename)
+	ts := time.Now().Format("20060102_1504")
+	var destName string
+	switch {
+	case strings.HasSuffix(lowerName, ".tar.gz"):
+		destName = backupArchivePrefix + ts + "_" + randomHex(4) + ".tar.gz"
+	case strings.HasSuffix(lowerName, ".db"):
+		destName = legacyBackupPrefix + ts + "_" + randomHex(4) + ".db"
+	case strings.HasSuffix(lowerName, ".sql"):
+		destName = legacyBackupPrefix + ts + "_" + randomHex(4) + ".sql"
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported backup file type (expected .tar.gz, .db, or .sql)"})
+		return
+	}
+
+	if err := os.MkdirAll(backupsDir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot create backups directory"})
+		return
+	}
+	dest := filepath.Join(backupsDir, destName)
+	if err := c.SaveUploadedFile(fh, dest); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save file"})
+		return
+	}
+
+	if err := validateBackupFile(dest); err != nil {
+		os.Remove(dest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid backup file: " + err.Error()})
+		return
+	}
+
+	log.Printf("backup: uploaded %s as %s (user=%d, ip=%s)", fh.Filename, destName, middleware.GetUserID(c), c.ClientIP())
+	c.JSON(http.StatusOK, gin.H{"message": "backup uploaded", "filename": destName})
+}
+
+// validateBackupFile does a light sanity check on an uploaded backup so
+// unrelated files don't sit undetected in the backups directory until
+// restore time.
+func validateBackupFile(path string) error {
+	switch {
+	case strings.HasSuffix(path, ".tar.gz"):
+		return validateBackupArchive(path)
+	case strings.HasSuffix(path, ".db"):
+		return validateSQLiteFile(path)
+	default:
+		return nil // .sql: a plain-text dump, no reliable content check beyond the extension
+	}
+}
+
+// validateBackupArchive confirms path is a readable gzip+tar archive that
+// contains a database dump under "db/".
+func validateBackupArchive(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gr, err := gzip.NewReader(f)
+	if err != nil {
+		return fmt.Errorf("not a valid gzip file")
+	}
+	defer gr.Close()
+
+	tr := tar.NewReader(gr)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			return fmt.Errorf("archive does not contain a database dump (no db/ entry)")
+		}
+		if err != nil {
+			return fmt.Errorf("not a valid tar archive")
+		}
+		if hdr.Typeflag == tar.TypeReg && strings.HasPrefix(hdr.Name, "db/") {
+			return nil
+		}
+	}
+}
+
+// validateSQLiteFile confirms path starts with the SQLite file magic header.
+func validateSQLiteFile(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	header := make([]byte, 16)
+	if _, err := io.ReadFull(f, header); err != nil {
+		return fmt.Errorf("file too small to be a SQLite database")
+	}
+	if string(header) != "SQLite format 3\x00" {
+		return fmt.Errorf("not a valid SQLite database file")
+	}
+	return nil
 }
 
 // ---- backup helpers ----
@@ -275,7 +844,7 @@ func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
 	var backupFiles []BackupInfo
 	if entries, err := os.ReadDir(backupsDir); err == nil {
 		for _, e := range entries {
-			if e.IsDir() || !strings.HasPrefix(e.Name(), "warmdesk_db_") {
+			if e.IsDir() || !isBackupFile(e.Name()) {
 				continue
 			}
 			info, _ := e.Info()
@@ -287,7 +856,7 @@ func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
 			backupFiles = append(backupFiles, bi)
 		}
 		sort.Slice(backupFiles, func(i, j int) bool {
-			return backupFiles[i].Filename > backupFiles[j].Filename
+			return backupSortKey(backupFiles[i].Filename) > backupSortKey(backupFiles[j].Filename)
 		})
 	}
 
@@ -422,7 +991,23 @@ func formatEmailBytes(b int64) string {
 
 // ---- restore helpers ----
 
-func adminRestoreSQLite(c *gin.Context, backupPath string) {
+// restoreDatabase restores the database from backupPath (a raw dump file: a
+// SQLite file, or a .sql script for Postgres/MySQL) using the driver
+// configured in backupCfg.
+func restoreDatabase(backupPath string) error {
+	switch backupCfg.DBDriver {
+	case "sqlite", "sqlite3", "":
+		return restoreSQLite(backupPath)
+	case "postgres", "postgresql":
+		return restorePostgres(backupPath)
+	case "mysql":
+		return restoreMySQL(backupPath)
+	default:
+		return fmt.Errorf("unsupported database driver: %s", backupCfg.DBDriver)
+	}
+}
+
+func restoreSQLite(backupPath string) error {
 	dsn := backupCfg.DBDSN
 	if idx := strings.Index(dsn, "?"); idx >= 0 {
 		dsn = dsn[:idx]
@@ -431,34 +1016,27 @@ func adminRestoreSQLite(c *gin.Context, backupPath string) {
 	// Close all connections before overwriting the file.
 	sqlDB, err := database.DB.DB()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot get DB handle: " + err.Error()})
-		return
+		return fmt.Errorf("cannot get DB handle: %w", err)
 	}
 	if err := sqlDB.Close(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot close DB: " + err.Error()})
-		return
+		return fmt.Errorf("cannot close DB: %w", err)
 	}
 
 	if err := copyFile(backupPath, dsn); err != nil {
 		// Attempt to reconnect even on failure so the server stays up.
 		_ = database.Init(backupCfg)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "copy failed: " + err.Error()})
-		return
+		return fmt.Errorf("copy failed: %w", err)
 	}
 
 	if err := database.Init(backupCfg); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "DB reinit failed after restore: " + err.Error()})
-		return
+		return fmt.Errorf("DB reinit failed after restore: %w", err)
 	}
-
-	log.Printf("backup: restored %s (sqlite, user=%d, ip=%s)", filepath.Base(backupPath), middleware.GetUserID(c), c.ClientIP())
-	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
+	return nil
 }
 
-func adminRestorePostgres(c *gin.Context, backupPath string) {
+func restorePostgres(backupPath string) error {
 	if _, err := exec.LookPath("psql"); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "psql not found in PATH"})
-		return
+		return fmt.Errorf("psql not found in PATH")
 	}
 
 	safeDSN, pgpw := pgCredentials(backupCfg.DBDSN)
@@ -467,19 +1045,15 @@ func adminRestorePostgres(c *gin.Context, backupPath string) {
 		cmd.Env = append(os.Environ(), "PGPASSWORD="+pgpw)
 	}
 	if out, err := cmd.CombinedOutput(); err != nil {
-		log.Printf("backup: psql restore failed (user=%d, ip=%s): %s", middleware.GetUserID(c), c.ClientIP(), out)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "database restore failed"})
-		return
+		log.Printf("backup: psql restore failed: %s", out)
+		return fmt.Errorf("database restore failed")
 	}
-
-	log.Printf("backup: restored %s (postgres, user=%d, ip=%s)", filepath.Base(backupPath), middleware.GetUserID(c), c.ClientIP())
-	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
+	return nil
 }
 
-func adminRestoreMySQL(c *gin.Context, backupPath string) {
+func restoreMySQL(backupPath string) error {
 	if _, err := exec.LookPath("mysql"); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "mysql not found in PATH"})
-		return
+		return fmt.Errorf("mysql not found in PATH")
 	}
 
 	args, mysqlpw := mysqlSafeArgsAndPw(backupCfg.DBDSN)
@@ -489,20 +1063,16 @@ func adminRestoreMySQL(c *gin.Context, backupPath string) {
 	}
 	f, err := os.Open(backupPath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot open backup"})
-		return
+		return fmt.Errorf("cannot open backup")
 	}
 	defer f.Close()
 	cmd.Stdin = f
 
 	if out, err := cmd.CombinedOutput(); err != nil {
-		log.Printf("backup: mysql restore failed (user=%d, ip=%s): %s", middleware.GetUserID(c), c.ClientIP(), out)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "database restore failed"})
-		return
+		log.Printf("backup: mysql restore failed: %s", out)
+		return fmt.Errorf("database restore failed")
 	}
-
-	log.Printf("backup: restored %s (mysql, user=%d, ip=%s)", filepath.Base(backupPath), middleware.GetUserID(c), c.ClientIP())
-	c.JSON(http.StatusOK, gin.H{"message": "database restored from " + filepath.Base(backupPath)})
+	return nil
 }
 
 // ---- utilities ----
@@ -674,8 +1244,6 @@ func performScheduledBackup() {
 	if backupCfg == nil {
 		return
 	}
-	ts := time.Now().Format("20060102_1504")
-	filename := "warmdesk_db_" + ts + "_" + randomHex(4)
 	now := time.Now().UTC()
 
 	if err := os.MkdirAll(backupsDir, 0755); err != nil {
@@ -685,20 +1253,7 @@ func performScheduledBackup() {
 		return
 	}
 
-	var finalFilename string
-	var backupErr error
-	switch backupCfg.DBDriver {
-	case "sqlite", "sqlite3", "":
-		finalFilename, backupErr = doBackupSQLite(filename)
-	case "postgres", "postgresql":
-		finalFilename, backupErr = doBackupPostgres(filename)
-	case "mysql":
-		finalFilename, backupErr = doBackupMySQL(filename)
-	default:
-		log.Printf("backup scheduler: unsupported driver %s", backupCfg.DBDriver)
-		return
-	}
-
+	finalFilename, backupErr := performBackup()
 	if backupErr != nil {
 		log.Printf("backup scheduler: backup failed: %v", backupErr)
 		recordBackupResult(false, now)
@@ -723,11 +1278,13 @@ func pruneOldBackups() {
 	}
 	var files []string
 	for _, e := range entries {
-		if !e.IsDir() && strings.HasPrefix(e.Name(), "warmdesk_db_") {
+		if !e.IsDir() && isBackupFile(e.Name()) {
 			files = append(files, e.Name())
 		}
 	}
-	sort.Strings(files) // oldest first (timestamp in filename)
+	sort.Slice(files, func(i, j int) bool {
+		return backupSortKey(files[i]) < backupSortKey(files[j])
+	}) // oldest first
 	for len(files) > keep {
 		if err := os.Remove(filepath.Join(backupsDir, files[0])); err == nil {
 			log.Printf("backup scheduler: pruned %s", files[0])
