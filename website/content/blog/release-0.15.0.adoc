@@ -1,0 +1,33 @@
+---
+title: "v0.15.0: Backups now include your files, and can be merged in from another server"
+date: "2026-07-16"
+author: "Ton Kersten"
+description: "Backups previously covered only the database, silently leaving out every attachment, avatar, and logo. Backups now bundle the upload directory too, and can be imported from another WarmDesk server and merged in without wiping existing data."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk `v0.15.0` closes a gap in the backup feature that only became obvious once you actually needed a restore: a backup covered the database, but not a single uploaded file.
+
+== A backup that didn't back up everything
+
+Every ticket attachment, chat file, user avatar, customer logo, and company branding image lives on disk in the upload directory, tracked by database rows that only make sense alongside the files they point to. The backup feature, however, only ever dumped the database — restoring from a backup silently produced a database full of references to attachments, avatars, and logos that were never actually saved anywhere.
+
+A backup is now a single `.tar.gz` archive bundling the database dump together with the full upload directory. Restoring one brings back everything, not just rows. If your upload directory is very large and you'd rather keep backups database-only, a new *Include uploaded files* toggle in the scheduled-backup settings opts back out. Backups created before this release remain fully listable, downloadable, and restorable alongside the new format — nothing old is left behind.
+
+== Bringing data in from another WarmDesk server
+
+The admin Backup / Restore tab has a new *Import Backup* button that accepts a backup file downloaded from this or another WarmDesk installation. Right after importing, you're asked how to apply it:
+
+* *Completely restart* — replaces the current database and uploaded files entirely with the backup's contents, same as a normal restore.
+* *Add to current data* — merges the backup in instead. Uploaded files are always copied in safely alongside existing ones. Database rows are inserted only when their ID doesn't already exist locally — existing data is never overwritten. Since two independently run servers have no shared ID space to reconcile, a row whose ID happens to collide with unrelated existing data is skipped rather than merged; the response tells you how many tables and rows actually came across. Database merging is SQLite-only for now — PostgreSQL and MySQL installs still get the uploaded-files half of the merge.
+
+This is the tool for consolidating a second WarmDesk instance's projects and tickets into an existing one, or recovering an old server's data into a fresh install, without starting from a blank database.
+
+== Upgrade
+
+Download `v0.15.0` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release — the new setting is added automatically on first startup, as with every WarmDesk release.

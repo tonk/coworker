@@ -8,9 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.14.8)
+## Latest release (v0.15.0)
 
-- **Fix** — passkey login was failing for essentially every modern synced passkey (Windows Hello, iCloud Keychain, Google/Bitwarden/1Password, etc.) because a security flag recorded at registration was never actually persisted. Existing passkeys self-heal automatically on their next login — no re-registration needed.
+- **Feature** — backups now bundle the upload directory (attachments, avatars, logos, branding) alongside the database, so a restore brings everything back, not just rows.
+- **Feature** — admins can import a backup downloaded from another WarmDesk server and choose to completely replace the current data or merge it in without overwriting what's already there.
 
 ## Experiment
 
@@ -358,7 +359,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Forgotten password** — users can request a password-reset link by email; link is valid for one hour; requires SMTP to be configured
 - **Password policy** — admin-configurable minimum length, uppercase, lowercase, digit, and special-character requirements; enforced on registration, password change, and reset
 - **Require password change on next login** — admins can flag a user (from New User or Edit User) to be forced through a password change on their next login, via any auth method; a Generate/Copy password helper is available in both forms
-- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); live search on Users, Groups, Customers, and Projects tabs; inactive users hidden by default with a "Show inactive" toggle; toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create and restore database backups; restrict API access to specific IPs or CIDR ranges
+- **Admin panel** — manage all users (create, edit, assign projects, disable, delete) and all projects (including restoring deleted ones); live search on Users, Groups, Customers, and Projects tabs; inactive users hidden by default with a "Show inactive" toggle; toggle public registration on/off; configure global defaults (theme, locale, date format, timezone, font); configure SMTP email; set company name and logo; create, import, and restore backups (bundling the database with uploaded files, mergeable with a backup from another WarmDesk server); restrict API access to specific IPs or CIDR ranges
 - **SMTP email** — configurable from the admin panel without a server restart; username and password are optional for relay servers
 - **Session timeout** — configurable idle timeout (default 60 minutes); set to 0 to disable
 - **Topics** — threaded discussions per project with markdown support and replies

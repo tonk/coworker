@@ -260,14 +260,14 @@ Users can override these in their own settings.
 === Via the admin panel
 
 Go to *Admin → Backup / Restore*.
-Click *Create backup* to generate a ZIP containing the database dump and uploaded files.
-Download the ZIP for off-site storage.
-To restore, upload the ZIP and click *Restore*.
+Click *Create Backup* to generate a `.tar.gz` archive in `./backups/` containing the database dump and, by default, the upload directory (attachments, avatars, customer logos, company branding) — uncheck *Include uploaded files* in the scheduled-backup settings for database-only backups.
+Download it for off-site storage.
 
-The *Scheduled Backups* section on the same tab lets you configure automatic backups: set the interval (hourly, daily, weekly), the retention count, and an optional download URL for off-site storage.
-Scheduled backups run server-side — no external cron job needed.
+To bring a backup file from another WarmDesk server into this one, click *Import Backup*, choose the file, then pick *Completely restart* (replace everything) or *Add to current data* (merge — uploaded files are always merged safely; database rows are added only when their ID doesn't already exist locally, SQLite only).
 
-WARNING: Restoring from backup replaces all current data. Take a fresh backup before restoring.
+The scheduling section on the same tab lets you configure automatic backups: interval (every 6/8/12/24 hours), an optional time-of-day anchor, and the retention count. Scheduled backups run server-side — no external cron job needed.
+
+WARNING: *Completely restart* replaces all current data with the backup's contents. *Add to current data* never overwrites existing rows, but a row whose ID collides with unrelated existing data is skipped rather than merged.
 
 === Via the API (automation)
 
@@ -276,20 +276,21 @@ Use a personal API key with the `backup` role:
 [source,bash]
 ----
 # Create a backup and download it
+curl -H "X-API-Key: your-key" -X POST \
+     https://warmdesk.example.com/api/v1/backup
+
 curl -H "X-API-Key: your-key" \
-     https://warmdesk.example.com/api/v1/admin/backup \
-     -o backup-$(date +%Y%m%d).zip
+     https://warmdesk.example.com/api/v1/admin/system/backups/<filename> \
+     -o backup-$(date +%Y%m%d).tar.gz
 ----
 
-To schedule automatic backups, add a cron job (`crontab -e`):
+To schedule automatic backups outside WarmDesk's own scheduler, add a cron job (`crontab -e`):
 
 [source,cron]
 ----
-# Every night at 02:00 — keep the last 30 days of backups
-0 2 * * * curl -sS -H "X-API-Key: your-key" \
-               https://warmdesk.example.com/api/v1/admin/backup \
-               -o /backup/warmdesk-$(date +\%Y\%m\%d).zip && \
-           find /backup -name 'warmdesk-*.zip' -mtime +30 -delete
+# Every night at 02:00
+0 2 * * * curl -sS -X POST -H "X-API-Key: your-key" \
+               https://warmdesk.example.com/api/v1/backup
 ----
 
 === SQLite — manual backup

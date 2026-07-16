@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.15.0 — 2026-07-16
+
+### Added
+- **Backups now include uploaded files** — a backup previously covered only the database, silently leaving out every attachment, avatar, customer logo, and company branding image. Backups are now a `.tar.gz` bundling the database dump together with the upload directory, so a restore brings everything back, not just rows. Bundling the uploads can be turned off (database-only, faster/smaller backups) via a new **Include uploaded files** toggle in Admin → Backup / Restore.
+- **Admin — import a backup from another WarmDesk server** — a new **Import Backup** button in Admin → Backup / Restore accepts a backup file (`.tar.gz`, `.db`, or `.sql`) downloaded from this or another WarmDesk installation. Right after importing, you're asked whether to **completely restart** (replace the current database and files entirely) or **add to current data** — a merge that copies in the backup's uploaded files and inserts database rows whose ID doesn't already exist locally, without ever overwriting what's already here. Database merging is only supported for SQLite; other databases still get the uploaded-files merge.
+- Backups created before this release (database-only) remain listable, downloadable, and restorable alongside the new bundled format.
+
 ## v0.14.8 — 2026-07-15
 
 ### Fixed

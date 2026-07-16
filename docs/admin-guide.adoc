@@ -1,6 +1,6 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.14.8
-:revdate: 2026-07-15
+:revnumber: v0.15.0
+:revdate: 2026-07-16
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -1679,18 +1679,16 @@ No manual migration step is needed.
 |===
 |Item |Location |Frequency
 
-|Database
-|`./backups/` (via admin panel) or raw DB file
-|Daily or more
-
-|Uploads
-|`upload_dir` (default `./uploads/`)
+|Database + uploads
+|`./backups/` (via admin panel — bundles both by default)
 |Daily or more
 
 |Config
 |`warmdesk.yaml`
 |On change
 |===
+
+A backup created via the admin panel (or the `POST /api/v1/backup` endpoint) bundles the database dump together with `upload_dir` (attachments, avatars, customer logos, company branding) into a single archive, so restoring one brings everything back. Uncheck *Include uploaded files* in the scheduled-backup settings to go back to database-only backups if your upload directory is very large.
 
 === Via the Admin panel
 
@@ -1712,6 +1710,9 @@ At the top of the tab you can configure automatic backups:
 
 |*Keep last (backups)*
 |Maximum number of backup files to retain on disk. Oldest files are pruned automatically after each scheduled run. Default: 10.
+
+|*Include uploaded files*
+|When enabled (default), each backup bundles the upload directory (attachments, avatars, customer logos, company branding) together with the database. Disable this if your upload directory is very large and you only need database-only backups.
 |===
 
 The scheduler runs server-side — no cron job or external tool needed.
@@ -1723,30 +1724,39 @@ TIP: Set the start time to an off-peak hour (e.g. `02:00`) to ensure backups nev
 *Create a manual backup*
 
 Click *Create Backup*.
-WarmDesk creates a timestamped file in `./backups/` next to the server binary:
+WarmDesk creates a timestamped archive in `./backups/` next to the server binary:
 
 [source]
 ----
-./backups/warmdesk_db_20260416_1430_a3f9.db   ← SQLite
-./backups/warmdesk_db_20260416_1430_a3f9.sql  ← PostgreSQL / MySQL
+./backups/warmdesk_backup_20260416_1430_a3f9.tar.gz
 ----
 
-The filename format is `warmdesk_db_YYYYMMDD_HHMM_<4-hex>.db/.sql`.
+The filename format is `warmdesk_backup_YYYYMMDD_HHMM_<4-hex>.tar.gz`.
 The four-character hex suffix is random and exists solely to prevent collisions when two backups are triggered within the same minute.
+The archive contains the database dump under `db/` and, unless *Include uploaded files* is disabled, a copy of the upload directory under `uploads/`.
 
 For SQLite, `VACUUM INTO` is used — an atomic online copy that requires no downtime.
 For PostgreSQL, `pg_dump --clean --if-exists` is used.
 For MySQL, `mysqldump` is used.
 
-*List, restore, and delete backups*
+Backups created before this bundling was introduced (`warmdesk_db_YYYYMMDD_HHMM_<4-hex>.db`/`.sql`, database only) remain listable, downloadable, and restorable alongside the new format.
+
+*List, restore, delete, and import backups*
 
 All files in `./backups/` are listed in the tab with filename, size, and creation date, newest first.
 
-* *Restore* — replaces the live database with the selected backup. SQLite restores are live (the connection pool is closed, the file is replaced, and the connection is reopened — no server restart needed). A confirmation prompt is shown before proceeding.
+* *Restore* — opens a dialog asking how to apply the backup:
+** *Completely restart* — replaces the current database and uploaded files entirely with the backup's contents. All data added since the backup was made is lost. SQLite restores are live (the connection pool is closed, the file is replaced, and the connection is reopened — no server restart needed).
+** *Add to current data* — merges the backup in instead of replacing anything. Uploaded files are copied in alongside existing ones (always safe — filenames are random and never collide). Database rows are inserted only when their ID doesn't already exist locally, and existing rows are never overwritten — SQLite only; for PostgreSQL/MySQL only the uploaded files are merged.
++
+A confirmation prompt is shown before either option proceeds.
 * *Download* — downloads the backup file directly to your browser. Useful for offsite storage or transferring backups to another server.
 * *Delete* — removes the backup file from disk after confirmation.
+* *Import Backup* — uploads a backup file from your computer (e.g. downloaded from another WarmDesk server) into `./backups/` so it can be restored or merged like any locally created backup. Accepts `.tar.gz`, `.db`, or `.sql`. Immediately after a successful import you're asked the same Completely restart / Add to current data question as above.
 
-Every backup and restore operation is logged to the server log with the filename, database driver, user ID, and client IP.
+Every backup, restore, merge, and import operation is logged to the server log with the filename, database driver, user ID, and client IP.
+
+TIP: *Add to current data* is the safe choice for bringing another team's or another server's data into an existing WarmDesk instance without wiping what's already there. Because two independently run servers have no shared ID space, a row whose ID happens to collide with an unrelated existing row is skipped rather than merged — check the response summary (tables/rows merged) after a merge to see what came across.
 
 === Automated backups (cron / CI)
 
