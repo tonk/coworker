@@ -476,12 +476,17 @@ pub fn run() {
     // ------------------------------------------------------------------
     // Build and run Tauri
     // ------------------------------------------------------------------
+    // DIAGNOSTIC: all five plugins temporarily disabled to bisect which one
+    // (if any) is responsible for the ~100s freeze on the very first invoke()
+    // of the session. Re-enable one at a time once the freeze reappears with
+    // one specific plugin restored — that pinpoints the culprit. Remove this
+    // comment block and restore all five once the investigation concludes.
     tauri::Builder::default()
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_http::init())
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_notification::init())
+        // .plugin(tauri_plugin_dialog::init())
+        // .plugin(tauri_plugin_fs::init())
+        // .plugin(tauri_plugin_http::init())
+        // .plugin(tauri_plugin_opener::init())
+        // .plugin(tauri_plugin_notification::init())
         .manage(RuntimeSettings {
             runtime_server_url: runtime_server_url_override.clone(),
             profile_name: active_profile.name.clone(),
