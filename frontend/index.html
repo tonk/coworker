@@ -22,11 +22,20 @@
           // Only route actual HTTP/HTTPS requests through tauri-plugin-http.
           // Requests to tauri:// or other schemes (internal WebKit resource
           // loads) must use the native fetch or WebKit will hang/blank.
+          //
+          // Tauri's own internal IPC/asset transport uses http(s)://ipc.localhost
+          // and http(s)://asset.localhost — purely local, loopback-handled by
+          // WebView2/WebKit itself, never meant to hit real DNS/proxy resolution.
+          // Routing these through the native Rust HTTP client instead forces a
+          // real (and on Windows, very slow — WPAD-style) network resolution
+          // attempt for a hostname that was never supposed to leave the WebView,
+          // stalling every invoke() call for the better part of a minute or more.
           if (window.__tauriFetch) {
             var url = typeof input === 'string'
               ? input
               : (input && input.url) ? input.url : String(input)
-            if (url.startsWith('http://') || url.startsWith('https://')) {
+            var isTauriInternal = /^https?:\/\/(ipc|asset)\.localhost(\/|$)/.test(url)
+            if (!isTauriInternal && (url.startsWith('http://') || url.startsWith('https://'))) {
               // tauri-plugin-http expects (url, init). Some libraries (Axios
               // fetch adapter) pass a Request object, which we normalize here.
               if (input instanceof Request) {
