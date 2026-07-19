@@ -378,7 +378,8 @@ pub fn run() {
 
     let active_profile_for_page_load = active_profile.clone();
     let active_profile_for_setup = active_profile.clone();
-    let profile_data_dir_for_setup = profile_data_dir;
+    // DIAGNOSTIC: unused while .data_directory() is temporarily disabled below.
+    let _profile_data_dir_for_setup = profile_data_dir;
 
     // ------------------------------------------------------------------
     // Linux environment tweaks (unchanged from original)
@@ -529,8 +530,14 @@ pub fn run() {
             )
             .title(&title)
             .inner_size(1280.0, 800.0)
-            .min_inner_size(900.0, 600.0)
-            .data_directory(profile_data_dir_for_setup);
+            .min_inner_size(900.0, 600.0);
+            // DIAGNOSTIC: .data_directory() temporarily removed to test whether
+            // our custom per-profile WebView2 user-data folder (vs. WebView2's
+            // own default location, which vanilla Tauri apps use unmodified) is
+            // responsible for the startup freeze. Restore
+            // `.data_directory(profile_data_dir_for_setup)` once concluded —
+            // needed for the multi-profile feature to keep working.
+            // let mut win_builder = win_builder.data_directory(profile_data_dir_for_setup);
             // WebView2's own content process does its own WPAD proxy
             // auto-detection independent of reqwest's — bypass it here too
             // (see the NO_PROXY comment above `tauri::Builder::default()`).
