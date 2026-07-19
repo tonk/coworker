@@ -216,7 +216,40 @@ fn build_init_js(server_url: Option<&str>, profile: &Profile) -> String {
 // ---------------------------------------------------------------------------
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+// ---------------------------------------------------------------------------
+// DIAGNOSTIC: startup timing log
+//
+// Truncated at the start of every run, then appended to with HH:MM:SS.mmm
+// timestamps at key points in the native startup sequence. Read it after
+// reproducing a slow/blank-screen launch to see which stage the delay is in.
+// Windows: %APPDATA%\com.warmdesk.desktop\warmdesk-startup.log
+// Remove once the Windows startup-delay investigation concludes.
+// ---------------------------------------------------------------------------
+
+fn startup_log(msg: &str) {
+    use std::io::Write as _;
+    let dir = warmdesk_data_dir();
+    let _ = std::fs::create_dir_all(&dir);
+    if let Ok(mut f) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(dir.join("warmdesk-startup.log"))
+    {
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default();
+        let h = (now.as_secs() % 86400) / 3600;
+        let m = (now.as_secs() % 3600) / 60;
+        let s = now.as_secs() % 60;
+        let ms = now.subsec_millis();
+        let _ = writeln!(f, "{h:02}:{m:02}:{s:02}.{ms:03} | {msg}");
+    }
+}
+
 pub fn run() {
+    let _ = std::fs::write(warmdesk_data_dir().join("warmdesk-startup.log"), "");
+    startup_log("run() started — Rust entry point reached");
+
     let args: Vec<String> = std::env::args().collect();
 
     if args.iter().any(|a| a == "--help" || a == "-h") {
@@ -456,6 +489,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             runtime_server_url,
+            client_log,
             installation_method,
             fetch_binary_b64,
             current_profile,
@@ -467,6 +501,7 @@ pub fn run() {
             set_tray_unread,
         ])
         .on_page_load(move |window, _payload| {
+            startup_log("on_page_load fired — WebView2 has loaded the HTML page");
             let js = build_init_js(
                 runtime_server_url_for_page_load.as_deref(),
                 &active_profile_for_page_load,
@@ -494,7 +529,9 @@ pub fn run() {
             {
                 win_builder = win_builder.additional_browser_args("--no-proxy-server");
             }
+            startup_log("WebviewWindowBuilder::build() — calling now");
             let win = win_builder.build()?;
+            startup_log("WebviewWindowBuilder::build() — returned (window visible)");
 
             // Inject before the first on_page_load fires (best-effort).
             let js = build_init_js(
@@ -555,18 +592,25 @@ pub fn run() {
             // disabling both eliminates that round-trip and removes the
             // typing lag on the login screen.
             #[cfg(target_os = "windows")]
-            win.with_webview(|wv| {
-                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings4;
-                use windows::core::Interface;
-                unsafe {
-                    let Ok(core) = wv.controller().CoreWebView2() else { return };
-                    let Ok(settings) = core.Settings() else { return };
-                    if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
-                        let _ = s4.SetIsGeneralAutofillEnabled(false);
-                        let _ = s4.SetIsPasswordAutosaveEnabled(false);
+            {
+                startup_log("with_webview() — calling now (waiting for WebView2 controller)");
+                win.with_webview(|wv| {
+                    startup_log("with_webview() — callback entered (controller ready)");
+                    use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings4;
+                    use windows::core::Interface;
+                    unsafe {
+                        let Ok(core) = wv.controller().CoreWebView2() else { return };
+                        let Ok(settings) = core.Settings() else { return };
+                        if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
+                            let _ = s4.SetIsGeneralAutofillEnabled(false);
+                            let _ = s4.SetIsPasswordAutosaveEnabled(false);
+                        }
                     }
-                }
-            })?;
+                    startup_log("with_webview() — callback done");
+                })?;
+                startup_log("with_webview() — returned");
+            }
+            startup_log("setup() reaching end — Rust side complete");
 
             // ── System tray icon ────────────────────────────────────────────
             let tray_icon = png_to_image(include_bytes!("../icons/tray-icon.png"))
@@ -630,6 +674,14 @@ struct RuntimeSettings {
 #[tauri::command]
 fn runtime_server_url(state: tauri::State<'_, RuntimeSettings>) -> Option<String> {
     state.runtime_server_url.clone()
+}
+
+// DIAGNOSTIC: lets main.js append its own timing laps to warmdesk-startup.log
+// so JS-side and native-side timestamps land in one unified timeline. Remove
+// once the Windows startup-delay investigation concludes.
+#[tauri::command]
+fn client_log(msg: String) {
+    startup_log(&format!("[js] {msg}"));
 }
 
 #[tauri::command]
