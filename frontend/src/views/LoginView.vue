@@ -253,7 +253,10 @@ const loading = ref(false)
 const registrationEnabled = ref(true)
 const branding = ref({ enabled: false, name: '', logo: '', logoDark: '' })
 const isTauri = !!window.__TAURI_INTERNALS__
-const passkeySupported = !!window.PublicKeyCredential
+// Platform authenticator support is too inconsistent across Linux/macOS/Windows
+// WebViews, so passkey login is browser-only despite WebView2/WebKitGTK exposing
+// window.PublicKeyCredential.
+const passkeySupported = !isTauri && !!window.PublicKeyCredential
 const currentServer = getServerUrl()
 const serverReachabilityError = ref('')
 
