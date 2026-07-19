@@ -532,8 +532,13 @@ pub fn run() {
             // must be included explicitly here or it's silently lost.
             #[cfg(target_os = "windows")]
             {
+                // DIAGNOSTIC: --disable-gpu tests whether the WebView2 renderer
+                // crash reported as "Out of Memory" is actually a GPU/graphics
+                // driver crash (Chromium's crash page mislabels many renderer
+                // crashes this way). Remove once the startup-delay/crash
+                // investigation concludes either way.
                 win_builder = win_builder.additional_browser_args(
-                    "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --no-proxy-server",
+                    "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --no-proxy-server --disable-gpu",
                 );
             }
             startup_log("WebviewWindowBuilder::build() — calling now");
