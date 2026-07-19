@@ -216,40 +216,7 @@ fn build_init_js(server_url: Option<&str>, profile: &Profile) -> String {
 // ---------------------------------------------------------------------------
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-// ---------------------------------------------------------------------------
-// DIAGNOSTIC: startup timing log
-//
-// Truncated at the start of every run, then appended to with HH:MM:SS.mmm
-// timestamps at key points in the native startup sequence. Read it after
-// reproducing a slow/blank-screen launch to see which stage the delay is in.
-// Windows: %APPDATA%\com.warmdesk.desktop\warmdesk-startup.log
-// Remove once the Windows startup-delay investigation concludes.
-// ---------------------------------------------------------------------------
-
-fn startup_log(msg: &str) {
-    use std::io::Write as _;
-    let dir = warmdesk_data_dir();
-    let _ = std::fs::create_dir_all(&dir);
-    if let Ok(mut f) = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(dir.join("warmdesk-startup.log"))
-    {
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default();
-        let h = (now.as_secs() % 86400) / 3600;
-        let m = (now.as_secs() % 3600) / 60;
-        let s = now.as_secs() % 60;
-        let ms = now.subsec_millis();
-        let _ = writeln!(f, "{h:02}:{m:02}:{s:02}.{ms:03} | {msg}");
-    }
-}
-
 pub fn run() {
-    let _ = std::fs::write(warmdesk_data_dir().join("warmdesk-startup.log"), "");
-    startup_log("run() started — Rust entry point reached");
-
     let args: Vec<String> = std::env::args().collect();
 
     if args.iter().any(|a| a == "--help" || a == "-h") {
@@ -358,16 +325,9 @@ pub fn run() {
         }
     };
 
-    // DIAGNOSTIC: forced onto a brand-new subfolder name so WebView2 cannot
-    // possibly reuse a browser process/environment from an earlier test run
-    // with different additional_browser_args. WebView2 only honors
-    // additionalBrowserArguments for the *first* instance that starts the
-    // shared browser process for a given user-data folder — every prior test
-    // of --disable-gpu/--no-proxy-server may have silently been ignored this
-    // way. Revert to plain `.join(&active_profile.name)` once concluded.
     let profile_data_dir = warmdesk_data_dir()
         .join("profiles")
-        .join(format!("{}-diag3", active_profile.name));
+        .join(&active_profile.name);
     if let Err(e) = std::fs::create_dir_all(&profile_data_dir) {
         eprintln!(
             "warning: could not create profile data directory {}: {}",
@@ -378,8 +338,7 @@ pub fn run() {
 
     let active_profile_for_page_load = active_profile.clone();
     let active_profile_for_setup = active_profile.clone();
-    // DIAGNOSTIC: unused while .data_directory() is temporarily disabled below.
-    let _profile_data_dir_for_setup = profile_data_dir;
+    let profile_data_dir_for_setup = profile_data_dir;
 
     // ------------------------------------------------------------------
     // Linux environment tweaks (unchanged from original)
@@ -462,30 +421,9 @@ pub fn run() {
         }
     }
 
-    // On Windows, reqwest (used by tauri-plugin-http) performs Windows Proxy
-    // Auto-Detection (WPAD) the first time it builds an HTTP client, which
-    // blocks the Tokio thread pool handling Tauri's IPC channel for 30-70+
-    // seconds on networks where the WPAD endpoint is unreachable (i.e. most
-    // networks without a corporate proxy) — this is what makes the app look
-    // hung with a blank window on startup. Setting NO_PROXY=* makes reqwest
-    // skip proxy detection entirely. Must be set before any HTTP client is
-    // built, so this happens before the Tauri runtime (and its plugins) start.
-    // SAFETY: single-threaded at this point, before the Tauri runtime starts.
-    #[cfg(target_os = "windows")]
-    {
-        if std::env::var("NO_PROXY").is_err() {
-            unsafe { std::env::set_var("NO_PROXY", "*") };
-        }
-        if std::env::var("no_proxy").is_err() {
-            unsafe { std::env::set_var("no_proxy", "*") };
-        }
-    }
-
     // ------------------------------------------------------------------
     // Build and run Tauri
     // ------------------------------------------------------------------
-    // Ruled out: disabling all five plugins made no difference to the
-    // freeze/crash, so they're restored — the cause is elsewhere.
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -499,7 +437,6 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             runtime_server_url,
-            client_log,
             installation_method,
             fetch_binary_b64,
             current_profile,
@@ -511,7 +448,6 @@ pub fn run() {
             set_tray_unread,
         ])
         .on_page_load(move |window, _payload| {
-            startup_log("on_page_load fired — WebView2 has loaded the HTML page");
             let js = build_init_js(
                 runtime_server_url_for_page_load.as_deref(),
                 &active_profile_for_page_load,
@@ -521,34 +457,127 @@ pub fn run() {
             }
         })
         .setup(move |app| {
-            // DIAGNOSTIC: setup() stripped to the bare minimum — just create a
-            // plain window, nothing else — to test whether *any* manual/
-            // imperative window creation inside .setup() is the trigger for
-            // the startup freeze, versus Tauri's normal declarative window
-            // creation (tauri.conf.json `app.windows`) that vanilla Tauri apps
-            // use and which does NOT freeze on this machine. Everything below
-            // (custom profile data_directory, additional_browser_args, the
-            // build_init_js eval injection, close-to-tray window-event
-            // handler, Linux hardware-acceleration workaround, Windows
-            // autofill-disable, and the system tray icon) is temporarily
-            // removed. Restore all of it from git history (see commit history
-            // around 996d95b and earlier) once the investigation concludes —
-            // none of it is optional for a real release.
-            let _ = &active_profile_for_setup;
-            let _ = &runtime_server_url_override;
-            let _ = maximized;
-            startup_log("WebviewWindowBuilder::build() — calling now");
-            let _win = tauri::WebviewWindowBuilder::new(
+            let title = profile_window_title(&active_profile_for_setup);
+            let win = tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
                 tauri::WebviewUrl::App("index.html".into()),
             )
-            .title("WarmDesk")
+            .title(&title)
             .inner_size(1280.0, 800.0)
             .min_inner_size(900.0, 600.0)
+            .data_directory(profile_data_dir_for_setup)
             .build()?;
-            startup_log("WebviewWindowBuilder::build() — returned (window visible)");
-            startup_log("setup() reaching end — Rust side complete");
+
+            // Inject before the first on_page_load fires (best-effort).
+            let js = build_init_js(
+                runtime_server_url_override.as_deref(),
+                &active_profile_for_setup,
+            );
+            if !js.is_empty() {
+                let _ = win.eval(&js);
+            }
+
+            if maximized {
+                win.maximize()?;
+            }
+
+            // Close-to-tray: hide instead of quit when enabled, so the tray stays active.
+            let win_hide = win.clone();
+            win.on_window_event(move |event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    if !CLOSE_TO_TRAY_ENABLED.load(Ordering::Relaxed) {
+                        return;
+                    }
+                    api.prevent_close();
+                    let _ = win_hide.hide();
+                }
+            });
+
+            // Disable WebKit hardware acceleration on Linux to work around
+            // a COLRv1 font rendering crash in webkit2gtk/Skia (Fedora 43,
+            // webkit2gtk 2.50.x). Forces software compositing.
+            #[cfg(target_os = "linux")]
+            win.with_webview(|webview| {
+                use webkit2gtk::{
+                    HardwareAccelerationPolicy, PermissionRequestExt, SettingsExt, WebViewExt,
+                };
+                if let Some(settings) = WebViewExt::settings(&webview.inner()) {
+                    settings.set_hardware_acceleration_policy(
+                        HardwareAccelerationPolicy::Never,
+                    );
+                    // webkit2gtk disables getUserMedia by default (false).
+                    // Must be enabled explicitly or navigator.mediaDevices
+                    // returns no devices at all.
+                    settings.set_enable_media_stream(true);
+                }
+                // webkit2gtk denies all getUserMedia requests by default.
+                // Allow them so the device-selection dropdown and call
+                // previews can access the microphone and camera.
+                webview.inner().connect_permission_request(|_view, request| {
+                    request.allow();
+                    true
+                });
+            })?;
+
+            // On Windows, WebView2's autofill/credential service sends a
+            // synchronous IPC message to its browser process on every
+            // keystroke in any field it classifies as a password field.
+            // ICoreWebView2Settings4 (WebView2 SDK 1.0.992+) exposes
+            // IsPasswordAutosaveEnabled and IsGeneralAutofillEnabled —
+            // disabling both eliminates that round-trip and removes the
+            // typing lag on the login screen.
+            #[cfg(target_os = "windows")]
+            win.with_webview(|wv| {
+                use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings4;
+                use windows::core::Interface;
+                unsafe {
+                    let Ok(core) = wv.controller().CoreWebView2() else { return };
+                    let Ok(settings) = core.Settings() else { return };
+                    if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
+                        let _ = s4.SetIsGeneralAutofillEnabled(false);
+                        let _ = s4.SetIsPasswordAutosaveEnabled(false);
+                    }
+                }
+            })?;
+
+            // ── System tray icon ────────────────────────────────────────────
+            let tray_icon = png_to_image(include_bytes!("../icons/tray-icon.png"))
+                .expect("failed to load tray icon");
+            let show_item = MenuItemBuilder::with_id("show", "WarmDesk")
+                .build(app)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
+                .build(app)?;
+            let tray_menu = MenuBuilder::new(app)
+                .item(&show_item)
+                .separator()
+                .item(&quit_item)
+                .build()?;
+            TrayIconBuilder::new()
+                .icon(tray_icon)
+                .title("WarmDesk")
+                .tooltip("WarmDesk")
+                .menu(&tray_menu)
+                .on_menu_event(|app, event| {
+                    match event.id.as_ref() {
+                        "show" => {
+                            if let Some(w) = app.get_webview_window("main") {
+                                let visible = w.is_visible().unwrap_or(true);
+                                if visible {
+                                    let _ = w.hide();
+                                } else {
+                                    let _ = w.show();
+                                    let _ = w.set_focus();
+                                }
+                            }
+                        }
+                        "quit" => {
+                            app.exit(0);
+                        }
+                        _ => {}
+                    }
+                })
+                .build(app)?;
 
             Ok(())
         })
@@ -574,14 +603,6 @@ struct RuntimeSettings {
 #[tauri::command]
 fn runtime_server_url(state: tauri::State<'_, RuntimeSettings>) -> Option<String> {
     state.runtime_server_url.clone()
-}
-
-// DIAGNOSTIC: lets main.js append its own timing laps to warmdesk-startup.log
-// so JS-side and native-side timestamps land in one unified timeline. Remove
-// once the Windows startup-delay investigation concludes.
-#[tauri::command]
-fn client_log(msg: String) {
-    startup_log(&format!("[js] {msg}"));
 }
 
 #[tauri::command]
