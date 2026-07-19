@@ -77,6 +77,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    watch: {
+      // src-tauri/target churns constantly during `cargo build`/`tauri dev`.
+      // On Windows, cargo holds an exclusive lock on .dll/.rlib files while
+      // writing them, and Vite's fs watcher trying to watch a locked file
+      // crashes the dev server outright (EBUSY). Never watch Rust build output.
+      ignored: ['**/src-tauri/target/**']
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
