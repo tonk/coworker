@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.15.1 — 2026-07-19
+
+### Fixed
+- **Windows desktop app — blank screen for up to ~2 minutes on startup** — the fetch proxy installed in `index.html` (needed so requests to the real WarmDesk server bypass WebView2's mixed-content blocking) had no exclusion for Tauri's own internal `ipc.localhost`/`asset.localhost` requests, so every single `invoke()` call the app made — even a trivial one — was being forced out through the native HTTP client instead of handled locally by the WebView. On Windows this triggers a real, slow network-level resolution attempt for a hostname that was never supposed to leave the WebView, stalling the entire startup sequence behind every one of these calls. The proxy now leaves Tauri's own internal requests alone.
+- **Desktop app — passkey button showing again in the Windows/Linux/macOS client** — passkey login is browser-only (platform authenticator support is too inconsistent across the WebViews the desktop app runs in), but a change several releases back had accidentally re-enabled the button there.
+- **Desktop app — Vite dev server crashing on Windows during development** — Vite had no watch exclusion for `src-tauri/target`, so its file watcher tried to track Rust's build output alongside frontend source; Windows locks build artifacts while `cargo` writes them, and the watcher crashing on a locked file took the whole dev server down with it. Doesn't affect production builds, only local development.
+
+### Changed
+- **Desktop app — Windows now uses the native TLS stack (schannel) instead of bundled rustls** for its HTTP requests. Some server/proxy configurations expect mid-handshake TLS renegotiation, which rustls deliberately refuses to support (a legacy, security-sensitive TLS feature left unimplemented by design); schannel handles it the same way a browser would. Linux and macOS are unaffected.
+
 ## v0.15.0 — 2026-07-16
 
 ### Added

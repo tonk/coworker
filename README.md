@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.15.0)
+## Latest release (v0.15.1)
 
-- **Feature** — backups now bundle the upload directory (attachments, avatars, logos, branding) alongside the database, so a restore brings everything back, not just rows.
-- **Feature** — admins can import a backup downloaded from another WarmDesk server and choose to completely replace the current data or merge it in without overwriting what's already there.
+- **Fix** — the Windows desktop app no longer blanks out for up to two minutes on startup; a fetch-proxy bug was forcing every internal Tauri call out over the network instead of handling it locally.
+- **Fix** — the passkey login button, meant to be browser-only, was showing up in the desktop app again.
+- **Fix** — the Windows desktop app now uses the native TLS stack, avoiding connection issues with server/proxy setups that expect TLS renegotiation.
 
 ## Experiment
 
