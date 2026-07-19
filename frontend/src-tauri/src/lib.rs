@@ -421,6 +421,25 @@ pub fn run() {
         }
     }
 
+    // On Windows, reqwest (used by tauri-plugin-http) performs Windows Proxy
+    // Auto-Detection (WPAD) the first time it builds an HTTP client, which
+    // blocks the Tokio thread pool handling Tauri's IPC channel for 30-70+
+    // seconds on networks where the WPAD endpoint is unreachable (i.e. most
+    // networks without a corporate proxy) — this is what makes the app look
+    // hung with a blank window on startup. Setting NO_PROXY=* makes reqwest
+    // skip proxy detection entirely. Must be set before any HTTP client is
+    // built, so this happens before the Tauri runtime (and its plugins) start.
+    // SAFETY: single-threaded at this point, before the Tauri runtime starts.
+    #[cfg(target_os = "windows")]
+    {
+        if std::env::var("NO_PROXY").is_err() {
+            unsafe { std::env::set_var("NO_PROXY", "*") };
+        }
+        if std::env::var("no_proxy").is_err() {
+            unsafe { std::env::set_var("no_proxy", "*") };
+        }
+    }
+
     // ------------------------------------------------------------------
     // Build and run Tauri
     // ------------------------------------------------------------------
@@ -458,7 +477,8 @@ pub fn run() {
         })
         .setup(move |app| {
             let title = profile_window_title(&active_profile_for_setup);
-            let win = tauri::WebviewWindowBuilder::new(
+            #[cfg_attr(not(target_os = "windows"), allow(unused_mut))]
+            let mut win_builder = tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
                 tauri::WebviewUrl::App("index.html".into()),
@@ -466,8 +486,15 @@ pub fn run() {
             .title(&title)
             .inner_size(1280.0, 800.0)
             .min_inner_size(900.0, 600.0)
-            .data_directory(profile_data_dir_for_setup)
-            .build()?;
+            .data_directory(profile_data_dir_for_setup);
+            // WebView2's own content process does its own WPAD proxy
+            // auto-detection independent of reqwest's — bypass it here too
+            // (see the NO_PROXY comment above `tauri::Builder::default()`).
+            #[cfg(target_os = "windows")]
+            {
+                win_builder = win_builder.additional_browser_args("--no-proxy-server");
+            }
+            let win = win_builder.build()?;
 
             // Inject before the first on_page_load fires (best-effort).
             let js = build_init_js(
