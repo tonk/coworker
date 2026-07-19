@@ -521,162 +521,34 @@ pub fn run() {
             }
         })
         .setup(move |app| {
-            let title = profile_window_title(&active_profile_for_setup);
-            #[cfg_attr(not(target_os = "windows"), allow(unused_mut))]
-            let mut win_builder = tauri::WebviewWindowBuilder::new(
+            // DIAGNOSTIC: setup() stripped to the bare minimum — just create a
+            // plain window, nothing else — to test whether *any* manual/
+            // imperative window creation inside .setup() is the trigger for
+            // the startup freeze, versus Tauri's normal declarative window
+            // creation (tauri.conf.json `app.windows`) that vanilla Tauri apps
+            // use and which does NOT freeze on this machine. Everything below
+            // (custom profile data_directory, additional_browser_args, the
+            // build_init_js eval injection, close-to-tray window-event
+            // handler, Linux hardware-acceleration workaround, Windows
+            // autofill-disable, and the system tray icon) is temporarily
+            // removed. Restore all of it from git history (see commit history
+            // around 996d95b and earlier) once the investigation concludes —
+            // none of it is optional for a real release.
+            let _ = &active_profile_for_setup;
+            let _ = &runtime_server_url_override;
+            let _ = maximized;
+            startup_log("WebviewWindowBuilder::build() — calling now");
+            let _win = tauri::WebviewWindowBuilder::new(
                 app,
                 "main",
                 tauri::WebviewUrl::App("index.html".into()),
             )
-            .title(&title)
+            .title("WarmDesk")
             .inner_size(1280.0, 800.0)
-            .min_inner_size(900.0, 600.0);
-            // DIAGNOSTIC: .data_directory() temporarily removed to test whether
-            // our custom per-profile WebView2 user-data folder (vs. WebView2's
-            // own default location, which vanilla Tauri apps use unmodified) is
-            // responsible for the startup freeze. Restore
-            // `.data_directory(profile_data_dir_for_setup)` once concluded —
-            // needed for the multi-profile feature to keep working.
-            // let mut win_builder = win_builder.data_directory(profile_data_dir_for_setup);
-            // WebView2's own content process does its own WPAD proxy
-            // auto-detection independent of reqwest's — bypass it here too
-            // (see the NO_PROXY comment above `tauri::Builder::default()`).
-            //
-            // additional_browser_args() REPLACES wry's default args rather than
-            // appending to them, so the default set (which works around a stray
-            // WebView2 mini-menu and a SmartScreen issue — see wry's webview2/mod.rs)
-            // must be included explicitly here or it's silently lost.
-            #[cfg(target_os = "windows")]
-            {
-                // DIAGNOSTIC: --disable-gpu tests whether the WebView2 renderer
-                // crash reported as "Out of Memory" is actually a GPU/graphics
-                // driver crash (Chromium's crash page mislabels many renderer
-                // crashes this way). Remove once the startup-delay/crash
-                // investigation concludes either way.
-                win_builder = win_builder.additional_browser_args(
-                    "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --no-proxy-server --disable-gpu",
-                );
-            }
-            startup_log("WebviewWindowBuilder::build() — calling now");
-            let win = win_builder.build()?;
+            .min_inner_size(900.0, 600.0)
+            .build()?;
             startup_log("WebviewWindowBuilder::build() — returned (window visible)");
-
-            // Inject before the first on_page_load fires (best-effort).
-            let js = build_init_js(
-                runtime_server_url_override.as_deref(),
-                &active_profile_for_setup,
-            );
-            if !js.is_empty() {
-                let _ = win.eval(&js);
-            }
-
-            if maximized {
-                win.maximize()?;
-            }
-
-            // Close-to-tray: hide instead of quit when enabled, so the tray stays active.
-            let win_hide = win.clone();
-            win.on_window_event(move |event| {
-                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                    if !CLOSE_TO_TRAY_ENABLED.load(Ordering::Relaxed) {
-                        return;
-                    }
-                    api.prevent_close();
-                    let _ = win_hide.hide();
-                }
-            });
-
-            // Disable WebKit hardware acceleration on Linux to work around
-            // a COLRv1 font rendering crash in webkit2gtk/Skia (Fedora 43,
-            // webkit2gtk 2.50.x). Forces software compositing.
-            #[cfg(target_os = "linux")]
-            win.with_webview(|webview| {
-                use webkit2gtk::{
-                    HardwareAccelerationPolicy, PermissionRequestExt, SettingsExt, WebViewExt,
-                };
-                if let Some(settings) = WebViewExt::settings(&webview.inner()) {
-                    settings.set_hardware_acceleration_policy(
-                        HardwareAccelerationPolicy::Never,
-                    );
-                    // webkit2gtk disables getUserMedia by default (false).
-                    // Must be enabled explicitly or navigator.mediaDevices
-                    // returns no devices at all.
-                    settings.set_enable_media_stream(true);
-                }
-                // webkit2gtk denies all getUserMedia requests by default.
-                // Allow them so the device-selection dropdown and call
-                // previews can access the microphone and camera.
-                webview.inner().connect_permission_request(|_view, request| {
-                    request.allow();
-                    true
-                });
-            })?;
-
-            // On Windows, WebView2's autofill/credential service sends a
-            // synchronous IPC message to its browser process on every
-            // keystroke in any field it classifies as a password field.
-            // ICoreWebView2Settings4 (WebView2 SDK 1.0.992+) exposes
-            // IsPasswordAutosaveEnabled and IsGeneralAutofillEnabled —
-            // disabling both eliminates that round-trip and removes the
-            // typing lag on the login screen.
-            #[cfg(target_os = "windows")]
-            {
-                startup_log("with_webview() — calling now (waiting for WebView2 controller)");
-                win.with_webview(|wv| {
-                    startup_log("with_webview() — callback entered (controller ready)");
-                    use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings4;
-                    use windows::core::Interface;
-                    unsafe {
-                        let Ok(core) = wv.controller().CoreWebView2() else { return };
-                        let Ok(settings) = core.Settings() else { return };
-                        if let Ok(s4) = settings.cast::<ICoreWebView2Settings4>() {
-                            let _ = s4.SetIsGeneralAutofillEnabled(false);
-                            let _ = s4.SetIsPasswordAutosaveEnabled(false);
-                        }
-                    }
-                    startup_log("with_webview() — callback done");
-                })?;
-                startup_log("with_webview() — returned");
-            }
             startup_log("setup() reaching end — Rust side complete");
-
-            // ── System tray icon ────────────────────────────────────────────
-            let tray_icon = png_to_image(include_bytes!("../icons/tray-icon.png"))
-                .expect("failed to load tray icon");
-            let show_item = MenuItemBuilder::with_id("show", "WarmDesk")
-                .build(app)?;
-            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
-                .build(app)?;
-            let tray_menu = MenuBuilder::new(app)
-                .item(&show_item)
-                .separator()
-                .item(&quit_item)
-                .build()?;
-            TrayIconBuilder::new()
-                .icon(tray_icon)
-                .title("WarmDesk")
-                .tooltip("WarmDesk")
-                .menu(&tray_menu)
-                .on_menu_event(|app, event| {
-                    match event.id.as_ref() {
-                        "show" => {
-                            if let Some(w) = app.get_webview_window("main") {
-                                let visible = w.is_visible().unwrap_or(true);
-                                if visible {
-                                    let _ = w.hide();
-                                } else {
-                                    let _ = w.show();
-                                    let _ = w.set_focus();
-                                }
-                            }
-                        }
-                        "quit" => {
-                            app.exit(0);
-                        }
-                        _ => {}
-                    }
-                })
-                .build(app)?;
 
             Ok(())
         })
