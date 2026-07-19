@@ -69,6 +69,10 @@ async function connect() {
     // Tauri mode) so the request bypasses CORS restrictions.
     const res = await globalThis.fetch(`${url}/api/v1/system/settings`, {
       signal: AbortSignal.timeout(8000),
+      // Some WAFs/reverse proxies block the non-browser reqwest User-Agent
+      // on requests that don't go through client.js's Axios instance
+      // (which sets this same header) — see src/api/client.js.
+      headers: { 'User-Agent': navigator.userAgent },
     })
     if (res.ok || res.status === 401 || res.status === 403) {
       // Got a real response from a WarmDesk server

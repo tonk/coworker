@@ -315,7 +315,10 @@ onMounted(async () => {
       try {
         const res = await window.__tauriFetch(`${currentServer}/api/v1/version`, {
           method: 'GET',
-          headers: { Accept: 'application/json' },
+          // Some WAFs/reverse proxies block the non-browser reqwest User-Agent
+          // on requests that don't go through client.js's Axios instance
+          // (which sets this same header) — see src/api/client.js.
+          headers: { Accept: 'application/json', 'User-Agent': navigator.userAgent },
         })
         if (!res.ok) {
           serverReachabilityError.value = `Could not reach server (${res.status}). Check the URL and try again.`
