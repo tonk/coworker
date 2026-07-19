@@ -525,9 +525,16 @@ pub fn run() {
             // WebView2's own content process does its own WPAD proxy
             // auto-detection independent of reqwest's — bypass it here too
             // (see the NO_PROXY comment above `tauri::Builder::default()`).
+            //
+            // additional_browser_args() REPLACES wry's default args rather than
+            // appending to them, so the default set (which works around a stray
+            // WebView2 mini-menu and a SmartScreen issue — see wry's webview2/mod.rs)
+            // must be included explicitly here or it's silently lost.
             #[cfg(target_os = "windows")]
             {
-                win_builder = win_builder.additional_browser_args("--no-proxy-server");
+                win_builder = win_builder.additional_browser_args(
+                    "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --no-proxy-server",
+                );
             }
             startup_log("WebviewWindowBuilder::build() — calling now");
             let win = win_builder.build()?;
