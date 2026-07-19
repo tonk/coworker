@@ -358,9 +358,16 @@ pub fn run() {
         }
     };
 
+    // DIAGNOSTIC: forced onto a brand-new subfolder name so WebView2 cannot
+    // possibly reuse a browser process/environment from an earlier test run
+    // with different additional_browser_args. WebView2 only honors
+    // additionalBrowserArguments for the *first* instance that starts the
+    // shared browser process for a given user-data folder — every prior test
+    // of --disable-gpu/--no-proxy-server may have silently been ignored this
+    // way. Revert to plain `.join(&active_profile.name)` once concluded.
     let profile_data_dir = warmdesk_data_dir()
         .join("profiles")
-        .join(&active_profile.name);
+        .join(format!("{}-diag3", active_profile.name));
     if let Err(e) = std::fs::create_dir_all(&profile_data_dir) {
         eprintln!(
             "warning: could not create profile data directory {}: {}",
@@ -476,17 +483,14 @@ pub fn run() {
     // ------------------------------------------------------------------
     // Build and run Tauri
     // ------------------------------------------------------------------
-    // DIAGNOSTIC: all five plugins temporarily disabled to bisect which one
-    // (if any) is responsible for the ~100s freeze on the very first invoke()
-    // of the session. Re-enable one at a time once the freeze reappears with
-    // one specific plugin restored — that pinpoints the culprit. Remove this
-    // comment block and restore all five once the investigation concludes.
+    // Ruled out: disabling all five plugins made no difference to the
+    // freeze/crash, so they're restored — the cause is elsewhere.
     tauri::Builder::default()
-        // .plugin(tauri_plugin_dialog::init())
-        // .plugin(tauri_plugin_fs::init())
-        // .plugin(tauri_plugin_http::init())
-        // .plugin(tauri_plugin_opener::init())
-        // .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .manage(RuntimeSettings {
             runtime_server_url: runtime_server_url_override.clone(),
             profile_name: active_profile.name.clone(),
