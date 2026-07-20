@@ -245,6 +245,20 @@ Symptoms of this happening:
 
 **Fix:** run `make` targets from a **Git Bash** terminal instead — search "Git Bash" in the Start menu, or right-click the repo folder → **Git Bash Here**. Git for Windows ships its own `sh.exe`; once `make` is launched from a shell where that's on `PATH`, it correctly interprets the Makefile's Unix syntax and `git describe` produces a real version string.
 
+#### Git Bash startup/config files
+
+Git Bash launches as a **login shell**, so its startup lookup is:
+
+1. System-wide first: `C:\Program Files\Git\etc\profile`, which sources anything in `C:\Program Files\Git\etc\profile.d\*.sh`
+2. Then the first per-user file found (only one is read): `~/.bash_profile`, else `~/.bash_login`, else `~/.profile` — `~` is `C:\Users\<you>` (via `HOME`)
+
+It does **not** automatically read `~/.bashrc` the way a non-login interactive bash would. Put aliases/functions directly in `~/.bash_profile`, or chain to `.bashrc` by adding this line to `~/.bash_profile`:
+```bash
+[ -f ~/.bashrc ] && . ~/.bashrc
+```
+
+PATH entries added via Windows' System Properties → Environment Variables (e.g. the GnuWin32 `make` fix above) don't need to be duplicated here — Git Bash's MSYS2 layer converts the Windows PATH into POSIX form automatically on startup.
+
 ### Go
 
 ```powershell
