@@ -141,6 +141,14 @@ sudo dnf -y install \
 
 ## macOS
 
+### Don't have a Mac?
+
+Apple's license only permits virtualizing macOS on top of genuine Apple hardware, so a QEMU/KVM-style VM (like the one described for Windows above) isn't an option here without breaking that license.
+
+Since this repo is public, GitHub gives unlimited free minutes on macOS runners — real Apple hardware, at no cost. `.github/workflows/macos-dev-shell.yml` turns that into an on-demand interactive session instead of just automated CI: trigger it manually (`gh workflow run macos-dev-shell.yml`, or **Actions → macOS dev shell (manual) → Run workflow**), then grab the SSH connection string tmate prints in the job log. You land in a shell with the repo checked out and Rust/Node already set up, ready for `npm run tauri:dev` inside `frontend/`. It only ever runs when triggered by hand, and the SSH session is restricted to whoever's GitHub account triggered it.
+
+Tradeoffs: ephemeral (nothing persists between runs) and capped at 6 hours per job (GitHub's hard limit for hosted runners). If you need persistent, always-on access instead, the cheapest paid fallback is a rented Mac mini (e.g. Scaleway's Mac mini M-series, billed per hour with no minimum commitment).
+
 [Homebrew](https://brew.sh) is the recommended package manager. Install it first if you don't have it:
 
 ```bash

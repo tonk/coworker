@@ -1,0 +1,73 @@
+# On-demand interactive shell on a real macOS runner, for manual testing only.
+#
+# GitHub gives unlimited free macOS runner minutes on public repos, which
+# satisfies Apple's license (macOS may only be virtualized on genuine Apple
+# hardware) without owning or renting a Mac. This workflow only ever runs
+# when triggered by hand (workflow_dispatch) — there is no push/pull_request
+# trigger, so it never fires automatically.
+#
+# Security: Actions logs on a public repo are publicly visible, which would
+# normally leak the tmate SSH connection string to anyone watching the run.
+# `limit-access-to-actor: true` restricts the SSH session to the GitHub
+# account that triggered the workflow, matched against their public keys
+# registered at https://github.com/settings/keys.
+
+name: macOS dev shell (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to check out'
+        required: false
+        default: 'main'
+        type: string
+      minutes:
+        description: 'Session length in minutes (max 360, GitHub Actions hard cap)'
+        required: false
+        default: 60
+        type: number
+
+permissions:
+  contents: read
+
+jobs:
+  shell:
+    name: Interactive macOS debug session
+    runs-on: macos-14
+    timeout-minutes: ${{ inputs.minutes }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add universal targets
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: Cache Rust build artifacts
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: frontend/src-tauri -> target
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      # Everything above just gets the environment ready so the session is
+      # immediately useful. Nothing builds or runs automatically past here —
+      # drive `npm run tauri:dev` / `tauri:build` yourself once connected.
+      - name: Start interactive debug session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
