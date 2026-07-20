@@ -10,6 +10,9 @@
 ### Changed
 - **Desktop app — Windows now uses the native TLS stack (schannel) instead of bundled rustls** for its HTTP requests. Some server/proxy configurations expect mid-handshake TLS renegotiation, which rustls deliberately refuses to support (a legacy, security-sensitive TLS feature left unimplemented by design); schannel handles it the same way a browser would. Linux and macOS are unaffected.
 
+### Verified
+- **Windows desktop app** — manually tested end-to-end on a real Windows 11 VM: `make windows-installer` and `make windows-portable` both build and run correctly, confirming the startup blank-screen fix, the IPC-routing fix, and the schannel TLS switch above all hold up outside CI.
+
 ## v0.15.0 — 2026-07-16
 
 ### Added
