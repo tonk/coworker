@@ -47,6 +47,16 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 ```
 
+### sccache (recommended for desktop builds)
+
+`frontend/src-tauri/.cargo/config.toml` wraps every Rust compile with `sccache` to cache compiled objects between builds. Only needed when building the Tauri desktop client locally (`make appimage`, `npm run tauri:dev`/`tauri:build`) — not for the backend/frontend web dev loop. CI runners suppress this wrapper (`RUSTC_WRAPPER=""`) since they don't have it installed; local builds should install it so rebuilds are actually fast:
+
+```bash
+cargo install sccache --locked
+```
+
+If you'd rather skip it for a one-off build: `RUSTC_WRAPPER= cargo build` (matches what CI does).
+
 ### AppImage build dependencies
 
 Only needed when building the Linux desktop package (`make appimage`):
@@ -98,6 +108,18 @@ sudo dnf -y install nodejs
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 ```
+
+### sccache (recommended for desktop builds)
+
+`frontend/src-tauri/.cargo/config.toml` wraps every Rust compile with `sccache` to cache compiled objects between builds. Only needed when building the Tauri desktop client locally (`make appimage`, `npm run tauri:dev`/`tauri:build`) — not for the backend/frontend web dev loop.
+
+```bash
+sudo dnf -y install sccache
+# or, to build the latest release from source:
+cargo install sccache --locked
+```
+
+If you'd rather skip it for a one-off build: `RUSTC_WRAPPER= cargo build` (matches what CI does).
 
 ### AppImage build dependencies
 
@@ -154,6 +176,18 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 ```
 
+### sccache (recommended for desktop builds)
+
+`frontend/src-tauri/.cargo/config.toml` wraps every Rust compile with `sccache` to cache compiled objects between builds. Only needed when building the Tauri desktop client locally (`make dmg`, `npm run tauri:dev`/`tauri:build`) — not for the backend/frontend web dev loop.
+
+```bash
+brew install sccache
+# or, to build the latest release from source:
+cargo install sccache --locked
+```
+
+If you'd rather skip it for a one-off build: `RUSTC_WRAPPER= cargo build` (matches what CI does).
+
 No extra system libraries are needed for `make dmg` on macOS.
 
 ---
@@ -161,6 +195,20 @@ No extra system libraries are needed for `make dmg` on macOS.
 ## Windows
 
 [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/) is included with Windows 11 and recent Windows 10 builds. Run the commands below in **PowerShell** or **Windows Terminal**.
+
+### Getting a Windows machine (VM)
+
+If you don't have native Windows hardware, run a VM:
+
+- **Linux host** — prefer QEMU/KVM over VirtualBox; it uses hardware virtualization directly and is noticeably faster. On Fedora/RHEL:
+  ```bash
+  sudo dnf install -y qemu-kvm libvirt virt-manager
+  sudo systemctl enable --now libvirtd
+  ```
+  On Debian/Ubuntu: `sudo apt install -y qemu-kvm libvirt-daemon-system virt-manager`, then enable/start `libvirtd` the same way. Open `virt-manager`, create a new VM (use the Q35 chipset with UEFI + TPM 2.0 enabled — Windows 11 setup requires both) from a Windows ISO, or import Microsoft's free prebuilt [Windows 11 dev environment VM](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/) (90-day evaluation license, no product key needed).
+- **macOS/Windows host** — VMware Fusion/Workstation, Parallels, or VirtualBox all work; import the same Microsoft dev VM image, or install from an ISO.
+
+Once Windows is booted, install the toolchain below inside the VM.
 
 ### make
 
@@ -195,6 +243,49 @@ winget install --id Rustlang.Rustup
 ```
 
 Follow the on-screen prompts, then open a new terminal.
+
+Rust on Windows links with MSVC by default, which Tauri requires. `rustup-init` detects if the MSVC linker is missing and offers to install it; you can also install it up front:
+
+```powershell
+winget install --id Microsoft.VisualStudio.2022.BuildTools --override "--wait --add Microsoft.VisualStudio.Workload.VCTools"
+```
+
+This installs the "Desktop development with C++" workload (several GB download) — required to link any Rust/Tauri binary.
+
+#### Troubleshooting: `link.exe not found`
+
+This means `rustc` can't locate the MSVC linker — usually the C++ workload isn't actually installed, even if the Build Tools installer itself ran (the silent `winget --override` can fail quietly, e.g. on a network hiccup).
+
+1. Check whether the workload is really present:
+   ```powershell
+   & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+   ```
+   Empty output = the workload isn't installed.
+2. Open the **Visual Studio Installer** GUI (Start menu) → **Modify** on Build Tools 2022 → check **Desktop development with C++** → confirm "MSVC v143 build tools" and a **Windows 10/11 SDK** are both selected under it → Modify/Install.
+3. Open a brand-new terminal (or reboot) afterwards — `rustc` locates `link.exe` via the registry at process start, so an existing terminal won't pick up a fresh install.
+4. Re-check with `cargo build --target x86_64-pc-windows-msvc -v` — `-v` shows the exact linker invocation if it still fails.
+
+If `vswhere` still comes back empty after a Modify + reboot, add the Windows SDK component explicitly — the C++ workload can install without one in some minimal-override scenarios.
+
+### sccache (recommended for desktop builds)
+
+`frontend/src-tauri/.cargo/config.toml` wraps every Rust compile with `sccache` to cache compiled objects between builds — this applies to the Windows target too, so a local `npm run tauri:dev`/`tauri:build` (or `make windows-installer`) will fail to find it unless it's installed. Only needed for the desktop client, not the backend/frontend web dev loop:
+
+```powershell
+cargo install sccache --locked
+# or
+winget install --id Mozilla.sccache
+```
+
+If you'd rather skip it for a one-off build, clear the wrapper first: `$env:RUSTC_WRAPPER=""` (matches what CI does).
+
+### WebView2 Runtime (desktop app testing)
+
+Required to run the Tauri desktop app (`npm run tauri:dev`, or a built installer/portable zip). Pre-installed on Windows 11 and on Windows 10 builds from 2018 onward, so most VMs need nothing here. On a stripped-down or older image:
+
+```powershell
+winget install --id Microsoft.EdgeWebView2Runtime
+```
 
 ### NSIS (Windows installer builds only)
 

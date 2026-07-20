@@ -61,6 +61,15 @@ cd dist
 WEB_DIR=./web ./warmdesk
 ```
 
+### Testing on Windows
+
+Full per-OS toolchain install steps live in `docs/dev-setup.md`. Notes specific to standing up a Windows test environment:
+
+- **VM**: on Fedora/RHEL, `qemu-kvm` + `virt-manager` (native KVM) outperforms VirtualBox — `sudo dnf install qemu-kvm libvirt virt-manager && sudo systemctl enable --now libvirtd`, then create a VM from a Windows ISO or import Microsoft's free [Windows 11 dev environment VM](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/) (90-day eval, no product key needed).
+- **Rust/Tauri builds require the MSVC C++ Build Tools** (`Microsoft.VisualStudio.2022.BuildTools` with the `VCTools` workload) — `rustup` offers to install this automatically if it's missing.
+- **WebView2** is required to run the desktop app (`npm run tauri:dev` or a built installer) — pre-installed on Windows 11 and modern Windows 10; otherwise `winget install Microsoft.EdgeWebView2Runtime`.
+- `make` isn't native to Windows — see `docs/dev-setup.md` for GnuWin32/WSL options, or run the underlying `go` / `npm` / `cargo tauri` commands directly in PowerShell.
+
 ---
 
 ## Configuration
