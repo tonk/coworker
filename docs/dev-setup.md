@@ -230,6 +230,21 @@ Then add `C:\Program Files (x86)\GnuWin32\bin` to your `PATH` in **System Proper
 
 Alternatively, use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) (Windows Subsystem for Linux) and follow the Debian/Ubuntu instructions above — this is the recommended approach for a full Linux-compatible build environment on Windows.
 
+#### Important: run `make` from Git Bash, not PowerShell/cmd
+
+The Makefile's recipes use Unix shell syntax (`||`, `2>/dev/null`, single-quoted globs) — for example, the version stamp:
+```make
+VERSION = $(shell git describe --tags --always --match 'v*' 2>/dev/null || echo "dev")
+```
+GnuWin32 `make` needs a real POSIX `sh` on `PATH` to execute this correctly. If it can't find one (which is the case in a plain PowerShell or cmd session, even with Git for Windows installed), it silently falls back to interpreting recipes with `cmd.exe` instead — which mangles this line, `git describe` doesn't run as intended, and `VERSION` collapses to the literal string `"dev"`.
+
+Symptoms of this happening:
+- `The system cannot find the path specified.` printed near the very start of the build (`cmd` trying to treat `/dev/null` as a literal folder)
+- `Stamped desktop version: dev`
+- Tauri then fails with `` failed to parse config: `tauri.conf.json > version` must be a semver string `` — because `"dev"` isn't valid semver
+
+**Fix:** run `make` targets from a **Git Bash** terminal instead — search "Git Bash" in the Start menu, or right-click the repo folder → **Git Bash Here**. Git for Windows ships its own `sh.exe`; once `make` is launched from a shell where that's on `PATH`, it correctly interprets the Makefile's Unix syntax and `git describe` produces a real version string.
+
 ### Go
 
 ```powershell
