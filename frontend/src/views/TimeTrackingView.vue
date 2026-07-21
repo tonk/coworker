@@ -113,6 +113,14 @@
       </div>
       <button class="tt-mode-btn tt-rates-btn" @click="showRates = true" :title="$t('contract.rates_overview')" :aria-label="$t('contract.rates_overview')">₡</button>
       <button
+        v-if="auth.timeTrackingEnabled && mode === 'sheet'"
+        class="tt-mode-btn tt-cal-toggle-btn"
+        :aria-pressed="logTimeView === 'calendar'"
+        :title="$t('timeTracking.toggle_calendar_view')"
+        :aria-label="$t('timeTracking.toggle_calendar_view')"
+        @click="logTimeView = logTimeView === 'table' ? 'calendar' : 'table'"
+      >📅</button>
+      <button
         v-if="auth.timeTrackingEnabled"
         class="tt-mode-btn tt-macro-edit-btn"
         @click="openMacroEditor"
@@ -123,7 +131,7 @@
     </div>
 
     <!-- ── Weekly timesheet ────────────────────────────────────────────────── -->
-    <div v-show="mode === 'sheet'" id="panel-sheet" role="tabpanel" aria-labelledby="tab-sheet" class="tt-sheet-outer">
+    <div v-show="mode === 'sheet' && logTimeView === 'table'" id="panel-sheet" role="tabpanel" aria-labelledby="tab-sheet" class="tt-sheet-outer">
       <div v-if="loading" class="tt-loading">{{ $t('common.loading') }}</div>
       <div v-else class="tt-scroll">
         <table class="tt-table">
@@ -581,6 +589,29 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div
+      v-show="mode === 'sheet' && logTimeView === 'calendar'"
+      id="panel-sheet-calendar"
+      role="tabpanel"
+      aria-labelledby="tab-sheet"
+      class="tt-calendar-outer"
+    >
+      <TimeTrackingCalendar
+        :entries="rawEntries"
+        :week-days="weekDays"
+        :all-customers="allCustomers"
+        :all-projects="allProjects"
+        :tt-customers="ttCustomers"
+        :tt-projects="ttProjects"
+        :projects="projects"
+        :read-only="viewingOther"
+        @save-entry="saveCalendarEntry"
+        @delete-entry="deleteCalendarEntry"
+        @move-entry="applyCalendarEntryTimes"
+        @resize-entry="applyCalendarEntryTimes"
+      />
     </div>
 
     <BaseModal
@@ -1347,6 +1378,7 @@ import BaseModal from '@/components/common/BaseModal.vue'
 import HelpIcon from '@/components/common/HelpIcon.vue'
 import ContractRatesModal from '@/components/common/ContractRatesModal.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
+import TimeTrackingCalendar from '@/components/timetracking/TimeTrackingCalendar.vue'
 const BoardReportPanel = defineAsyncComponent(() => import('@/components/reports/BoardReportPanel.vue'))
 import { useDateFormat } from '@/composables/useDateFormat'
 import {
@@ -1357,6 +1389,7 @@ import {
 import { entryUndeclMins, rowDeclarableMins } from '@/utils/timeTrackingUndecl'
 import { slotCoverageOnWeekday, slotDayTypeMatches } from '@/utils/contractSlotPreview'
 import { parseMacroTimeInput, parseTimeNotationMinutes } from '@/utils/timeMacroInput'
+import { filterProjectsForCustomer } from '@/utils/projectFilter'
 
 Chart.register(...registerables)
 
@@ -1474,6 +1507,8 @@ const _initialMode = (() => {
   return 'sheet'
 })()
 const mode = ref(_initialMode)
+// 'table' | 'calendar' — which renderer the "Log Time" tab shows, defaulting to the user's saved preference
+const logTimeView = ref(auth.user?.time_tracking_view_default === 'calendar' ? 'calendar' : 'table')
 
 watch(mode, (activeMode) => {
   ui.setHelpContext(`timeTracking.${activeMode}`)
@@ -3353,6 +3388,67 @@ async function clearTimePopup(row, dateISO) {
   }
 }
 
+// ── Calendar view ─────────────────────────────────────────────────────────
+async function saveCalendarEntry(payload) {
+  try {
+    const body = {
+      customer_id: payload.customer_id,
+      project_id: payload.project_id,
+      contract_id: payload.contract_id ?? null,
+      date: payload.date,
+      minutes: payload.minutes,
+      description: payload.description,
+      is_holiday: payload.is_holiday || false,
+      start_time: payload.start_time,
+      end_time: payload.end_time,
+      distance: payload.distance,
+    }
+    if (payload.id) {
+      const { data } = await timeEntriesApi.update(payload.id, body)
+      const idx = rawEntries.value.findIndex(e => e.id === payload.id)
+      if (idx >= 0) rawEntries.value[idx] = data
+    } else {
+      const { data } = await timeEntriesApi.create(body)
+      rawEntries.value.push(data)
+    }
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  }
+}
+
+async function deleteCalendarEntry(entry) {
+  if (!window.confirm(t('timeTracking.confirm_delete'))) return
+  try {
+    await timeEntriesApi.remove(entry.id)
+    rawEntries.value = rawEntries.value.filter(e => e.id !== entry.id)
+  } catch {
+    ui.error(t('timeTracking.delete_error'))
+  }
+}
+
+// Shared handler for both drag-move and drag-resize — both send a full PUT since
+// UpdateTimeEntry never derives minutes from start/end itself.
+async function applyCalendarEntryTimes({ entry, newDate, newStartTime, newEndTime, newMinutes }) {
+  try {
+    const { data } = await timeEntriesApi.update(entry.id, {
+      customer_id: entry.customer_id,
+      project_id: entry.project_id,
+      contract_id: entry.contract_id,
+      date: newDate,
+      minutes: newMinutes,
+      description: entry.description,
+      is_holiday: entry.is_holiday,
+      start_time: newStartTime,
+      end_time: newEndTime,
+      distance: entry.distance,
+    })
+    const idx = rawEntries.value.findIndex(e => e.id === entry.id)
+    if (idx >= 0) rawEntries.value[idx] = data
+  } catch {
+    ui.error(t('timeTracking.save_error'))
+  }
+}
+
 // ── Standby shift (multi-day) ─────────────────────────────────────────────
 const standbyRow = ref(null)
 const savingStandby = ref(false)
@@ -3746,17 +3842,14 @@ const newRowContracts = computed(() => {
   return contractsByCustomer.value[id] || []
 })
 
-const newRowProjects = computed(() => {
-  if (!newRow.value.customer_id) return allProjects.value
-  if (ttCustomers.value.some(c => c.id === newRow.value.customer_id))
-    return ttProjects.value
-  return [...projects.value.filter(p => p.customer_id === newRow.value.customer_id), ...ttProjects.value]
-})
+const newRowProjects = computed(() => filterProjectsForCustomer(newRow.value.customer_id, {
+  allProjects: allProjects.value, ttCustomers: ttCustomers.value, ttProjects: ttProjects.value, projects: projects.value,
+}))
 
 function macroProjectsForRow(row) {
-  if (!row.customer_id) return allProjects.value
-  if (ttCustomers.value.some(c => c.id === row.customer_id)) return ttProjects.value
-  return [...projects.value.filter(p => p.customer_id === row.customer_id), ...ttProjects.value]
+  return filterProjectsForCustomer(row.customer_id, {
+    allProjects: allProjects.value, ttCustomers: ttCustomers.value, ttProjects: ttProjects.value, projects: projects.value,
+  })
 }
 
 function onMacroCustomerChange(row) {
@@ -5729,7 +5822,8 @@ td.c-day-holiday-cell.c-day-popup-open {
   cursor: pointer;
   font-size: 12px;
 }
-.tt-mode-btn.active {
+.tt-mode-btn.active,
+.tt-cal-toggle-btn[aria-pressed="true"] {
   background: #fff;
   color: var(--color-primary);
   font-weight: 600;
@@ -5742,6 +5836,14 @@ td.c-day-holiday-cell.c-day-popup-open {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+}
+
+.tt-calendar-outer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  padding: 8px 0;
 }
 .tt-scroll {
   flex: 1;

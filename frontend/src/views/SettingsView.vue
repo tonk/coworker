@@ -245,6 +245,13 @@
                 <option value="tickets">{{ $t('settings.dashboard_default_tickets') }}</option>
               </select>
             </div>
+            <div v-if="auth.timeTrackingEnabled" class="form-group">
+              <label class="form-label" for="tt-view-default-select">{{ $t('settings.time_tracking_view_default') }}</label>
+              <select id="tt-view-default-select" class="form-input" v-model="form.time_tracking_view_default">
+                <option value="table">{{ $t('settings.time_tracking_view_default_table') }}</option>
+                <option value="calendar">{{ $t('settings.time_tracking_view_default_calendar') }}</option>
+              </select>
+            </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="savingProfile">
                 {{ savingProfile ? $t('common.loading') : $t('common.save') }}
@@ -610,6 +617,7 @@ const form = ref({
   distance_unit: 'km',
   week_start: 'monday',
   dashboard_default: 'boards',
+  time_tracking_view_default: 'table',
   tray_icon_enabled: true,
   close_to_tray_enabled: true,
   mon_work_start: '08:00',
@@ -758,6 +766,7 @@ onMounted(async () => {
       distance_unit: u.distance_unit || 'km',
       week_start: u.week_start || 'monday',
       dashboard_default: u.dashboard_default || 'boards',
+      time_tracking_view_default: u.time_tracking_view_default || 'table',
       tray_icon_enabled: u.tray_icon_enabled !== undefined ? u.tray_icon_enabled : true,
       close_to_tray_enabled: u.close_to_tray_enabled !== undefined ? u.close_to_tray_enabled : true,
       mon_work_start: u.mon_work_start ?? '08:00',
@@ -808,6 +817,7 @@ async function saveProfile() {
       distance_unit: form.value.distance_unit,
       week_start: form.value.week_start,
       dashboard_default: form.value.dashboard_default,
+      time_tracking_view_default: form.value.time_tracking_view_default,
       tray_icon_enabled: form.value.tray_icon_enabled,
       close_to_tray_enabled: form.value.close_to_tray_enabled,
       mon_work_start: form.value.mon_work_start,

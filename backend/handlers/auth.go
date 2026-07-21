@@ -295,45 +295,46 @@ func userCanViewReports(userID uint, globalRole string, timeTrackingViewer bool)
 func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	var req struct {
-		FirstName          string  `json:"first_name"`
-		LastName           string  `json:"last_name"`
-		DisplayName        string  `json:"display_name"`
-		Email              string  `json:"email"`
-		AvatarURL          *string `json:"avatar_url"`
-		Locale             string  `json:"locale"`
-		Theme              string  `json:"theme"`
-		DateTimeFormat     string  `json:"date_time_format"`
-		Timezone           string  `json:"timezone"`
-		Font               string  `json:"font"`
-		FontSize           string  `json:"font_size"`
-		SidebarPosition    string  `json:"sidebar_position"`
-		ShowBreadcrumbs    *bool   `json:"show_breadcrumbs"`
-		AccentColor        string  `json:"accent_color"`
-		EmailNotifications  *bool   `json:"email_notifications"`
-		TimeTrackingEnabled *bool   `json:"time_tracking_enabled"`
-		BoardEnabled         *bool   `json:"board_enabled"`
-		ChatEnabled          *bool   `json:"chat_enabled"`
-		TimeNotation         string  `json:"time_notation"`
-		WeekStart            string  `json:"week_start"`
-		DistanceUnit         string  `json:"distance_unit"`
-		DashboardDefault     string  `json:"dashboard_default"`
-		MonWorkStart         string  `json:"mon_work_start"`
-		MonWorkEnd           string  `json:"mon_work_end"`
-		TueWorkStart         string  `json:"tue_work_start"`
-		TueWorkEnd           string  `json:"tue_work_end"`
-		WedWorkStart         string  `json:"wed_work_start"`
-		WedWorkEnd           string  `json:"wed_work_end"`
-		ThuWorkStart         string  `json:"thu_work_start"`
-		ThuWorkEnd           string  `json:"thu_work_end"`
-		FriWorkStart         string  `json:"fri_work_start"`
-		FriWorkEnd           string  `json:"fri_work_end"`
-		SatWorkStart         string  `json:"sat_work_start"`
-		SatWorkEnd           string  `json:"sat_work_end"`
-		SunWorkStart         string  `json:"sun_work_start"`
-		SunWorkEnd           string  `json:"sun_work_end"`
-		LunchBreakMinutes    int     `json:"lunch_break_minutes"`
-		TrayIconEnabled     *bool   `json:"tray_icon_enabled"`
-		CloseToTrayEnabled   *bool   `json:"close_to_tray_enabled"`
+		FirstName               string  `json:"first_name"`
+		LastName                string  `json:"last_name"`
+		DisplayName             string  `json:"display_name"`
+		Email                   string  `json:"email"`
+		AvatarURL               *string `json:"avatar_url"`
+		Locale                  string  `json:"locale"`
+		Theme                   string  `json:"theme"`
+		DateTimeFormat          string  `json:"date_time_format"`
+		Timezone                string  `json:"timezone"`
+		Font                    string  `json:"font"`
+		FontSize                string  `json:"font_size"`
+		SidebarPosition         string  `json:"sidebar_position"`
+		ShowBreadcrumbs         *bool   `json:"show_breadcrumbs"`
+		AccentColor             string  `json:"accent_color"`
+		EmailNotifications      *bool   `json:"email_notifications"`
+		TimeTrackingEnabled     *bool   `json:"time_tracking_enabled"`
+		BoardEnabled            *bool   `json:"board_enabled"`
+		ChatEnabled             *bool   `json:"chat_enabled"`
+		TimeNotation            string  `json:"time_notation"`
+		WeekStart               string  `json:"week_start"`
+		DistanceUnit            string  `json:"distance_unit"`
+		DashboardDefault        string  `json:"dashboard_default"`
+		TimeTrackingViewDefault string  `json:"time_tracking_view_default"`
+		MonWorkStart            string  `json:"mon_work_start"`
+		MonWorkEnd              string  `json:"mon_work_end"`
+		TueWorkStart            string  `json:"tue_work_start"`
+		TueWorkEnd              string  `json:"tue_work_end"`
+		WedWorkStart            string  `json:"wed_work_start"`
+		WedWorkEnd              string  `json:"wed_work_end"`
+		ThuWorkStart            string  `json:"thu_work_start"`
+		ThuWorkEnd              string  `json:"thu_work_end"`
+		FriWorkStart            string  `json:"fri_work_start"`
+		FriWorkEnd              string  `json:"fri_work_end"`
+		SatWorkStart            string  `json:"sat_work_start"`
+		SatWorkEnd              string  `json:"sat_work_end"`
+		SunWorkStart            string  `json:"sun_work_start"`
+		SunWorkEnd              string  `json:"sun_work_end"`
+		LunchBreakMinutes       int     `json:"lunch_break_minutes"`
+		TrayIconEnabled         *bool   `json:"tray_icon_enabled"`
+		CloseToTrayEnabled      *bool   `json:"close_to_tray_enabled"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -428,6 +429,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.DashboardDefault == "boards" || req.DashboardDefault == "tickets" {
 		updates["dashboard_default"] = req.DashboardDefault
+	}
+	if req.TimeTrackingViewDefault == "table" || req.TimeTrackingViewDefault == "calendar" {
+		updates["time_tracking_view_default"] = req.TimeTrackingViewDefault
 	}
 	updates["mon_work_start"] = req.MonWorkStart
 	updates["mon_work_end"] = req.MonWorkEnd
