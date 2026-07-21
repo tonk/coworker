@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.16.1)
+## Latest release (v0.16.2)
 
-- **Fix** — resizing a time-tracking calendar entry by dragging its top or bottom edge always failed with a server error; it now works, and the resize handles are visible on hover.
+- **Fix** — a hidden customer's time-tracking calendar entries always showed generic gray blocks regardless of the customer's actual color, because the calendar's customer list silently excluded hidden customers.
 
 ## Experiment
 

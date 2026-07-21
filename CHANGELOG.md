@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.16.2 — 2026-07-21
+
+### Fixed
+- **Time tracking calendar — hidden customers always showed as generic gray** — the customer list request behind the calendar's color-coding excluded hidden customers by default, so a hidden customer's blocks always fell back to the "no customer" color no matter what color was actually set on it. Also fixes that same customer's name not resolving correctly in the classic weekly table's row selector.
+
 ## v0.16.1 — 2026-07-21
 
 ### Fixed
