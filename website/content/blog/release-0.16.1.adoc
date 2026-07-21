@@ -1,0 +1,43 @@
+---
+title: "v0.16.1: A drag-and-drop calendar for time tracking"
+date: "2026-07-21"
+author: "Ton Kersten"
+description: "Time tracking now has a full drag-and-drop calendar view alongside the weekly grid — move entries between days, resize by dragging an edge, right-click or click-drag to create, color-coded by customer. v0.16.1 fixes a bug that made resizing fail."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+:experimental:
+
+The Log Time tab has always been a weekly grid — rows of customer/project/activity, columns of days, hours typed into cells. It's precise, but it doesn't give you a feel for *when* in the day your time actually went. `v0.16.0` added a second way to see and edit the same data: a calendar.
+
+== A calendar for Log Time
+
+Click the new 📅 button in the Log Time toolbar, right next to the macro editor, and the weekly grid switches to a day-by-day calendar. Every logged entry with a start and end time shows up as a block positioned at the actual time of day it happened; anything without a time sits in a small *Unscheduled* strip above the grid instead of disappearing.
+
+From there it behaves like a calendar app should:
+
+* *Drag a block* to move it to a different day or time — the duration is preserved.
+* *Drag its top or bottom edge* to resize it, changing the start or end time independently.
+* *Right-click* a block for an Edit/Delete menu, or right-click an empty slot to create a new entry there.
+* *Click and drag across an empty range* to create a new entry pre-filled with exactly that start and end time — a plain click falls back to a default one-hour entry.
+* *Zoom in or out* with the `−`/`+` buttons to control how much of the day is visible at once; your zoom level is remembered per browser.
+
+Every drag also has a keyboard-operable equivalent: tab to a block and press kbd:[Enter] to open the same edit form, with date, start time, end time, customer, project, activity, and distance all editable directly — no dragging required.
+
+A new *Log Time view* setting (User Settings) lets you pick whether the tab opens in table or calendar mode by default, so this is entirely opt-in.
+
+== Customers get a color
+
+To make a calendar full of blocks actually readable, customers — both regular CRM customers and the lightweight time-tracking-only kind — can now be given a color, set from the customer edit forms and the "manage time tracking customers" tab, the same color picker already used for time-tracking projects. That color drives the block color in the calendar. Leave it unset and WarmDesk picks one for you automatically, choosing a color no other customer is already using rather than a random one that might collide.
+
+== What v0.16.1 fixes
+
+Shortly after `v0.16.0` shipped, dragging a block's *edge* to resize it turned out to always fail — the request silently sent the entry's raw timestamp instead of a plain date, which the server rejected. Moving a block was never affected, only resizing. `v0.16.1` fixes the date it sends and, while in there, makes the resize handles themselves visible on hover instead of an invisible strip you had to find by feel.
+
+== Upgrade
+
+Download `v0.16.1` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release — the new fields are added automatically on first startup, as with every WarmDesk release.

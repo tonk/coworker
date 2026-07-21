@@ -18,11 +18,12 @@ enableEmoji = true
   warmdesk_version = "v0.16.1"
   release_date     = "2026-07-21"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.15.0/"
+  release_blog     = "blog/release-0.16.1/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Feature — backups now bundle uploaded files** (attachments, avatars, logos, branding) alongside the database, so a restore brings everything back, not just rows.",
-    "**Feature — import and merge a backup from another WarmDesk server** — bring in another server's data without wiping what's already here, or fully replace it if you prefer.",
+    "**Feature — drag-and-drop calendar view for time tracking** — move entries between days, resize by dragging an edge, right-click or click-drag to create, zoomable, color-coded by customer.",
+    "**Feature — customers can now be given a color**, used to color-code the calendar view; customers left without one are assigned a color automatically.",
+    "**Fix — resizing a calendar entry by dragging an edge always failed** due to a bad date format sent to the server; now fixed, and the resize handles are visible on hover.",
   ]
 
 [markup]
