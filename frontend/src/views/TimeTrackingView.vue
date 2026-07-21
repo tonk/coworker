@@ -5140,7 +5140,9 @@ onUnmounted(() => {
 // ── Init ──────────────────────────────────────────────────────────────────
 onMounted(async () => {
   const fetches = [
-    customersApi.list().catch(() => ({ data: [] })),
+    // include_hidden: a customer hidden from the main Customers list can still
+    // own historical time entries, which need their real name/color here.
+    customersApi.list({ include_hidden: true }).catch(() => ({ data: [] })),
     customersApi.listTimeTracking().catch(() => ({ data: [] })),
     projectsApi.list().catch(() => ({ data: [] })),
     projectsApi.listTimeTracking().catch(() => ({ data: [] })),
