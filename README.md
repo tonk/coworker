@@ -8,11 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.16.0)
+## Latest release (v0.16.1)
 
-- **New** — a drag-and-drop calendar view for time tracking: move entries between days/times, resize to change duration, right-click or click-drag an empty slot to create a new entry, zoomable grid, color-coded by customer.
-- **New** — customers can now be given a color (full CRM customers and time-tracking-only ones alike), used to color-code the calendar view.
-- **New** — a "Log Time view" setting to default the time-tracking tab to table or calendar.
+- **Fix** — resizing a time-tracking calendar entry by dragging its top or bottom edge always failed with a server error; it now works, and the resize handles are visible on hover.
 
 ## Experiment
 

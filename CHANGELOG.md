@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.16.1 — 2026-07-21
+
+### Fixed
+- **Time tracking calendar — resizing a block by its bottom edge always failed** — the drag sent the entry's raw timestamp (e.g. `2026-07-20T00:00:00Z`) as the date instead of a plain `YYYY-MM-DD`, which the backend rejected; dragging the top edge had the same bug. Moving an entry between days/times was unaffected and continues to work as before. The resize handles are also now visible on hover, matching the style used elsewhere in the app, so the drag-to-resize zone is easier to find.
+
+### Changed
+- **Seed data — customer colors and entry times** — every demo customer (including time-tracking-only ones) is now seeded with a color, and every seeded time entry gets a start and end time instead of just a duration, so a freshly seeded instance immediately shows a populated, non-overlapping calendar view.
+
 ## v0.16.0 — 2026-07-21
 
 ### Added
