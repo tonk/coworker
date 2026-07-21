@@ -1327,10 +1327,13 @@
               <template v-if="editingTTCustomer && editingTTCustomer.id === c.id">
                 <label class="sr-only" :for="'ttp-cust-name-' + c.id">{{ $t('timeTracking.tt_customer_name') }}</label>
                 <input :id="'ttp-cust-name-' + c.id" class="ttp-name-input" v-model="editingTTCustomer.name" @keydown.enter="saveTTCustomer" @keydown.escape="cancelEditTTCustomer" />
+                <label class="sr-only" :for="'ttp-cust-color-' + c.id">{{ $t('customer.color') }}</label>
+                <input :id="'ttp-cust-color-' + c.id" type="color" class="ttp-color-input" v-model="editingTTCustomer.color" :aria-label="$t('customer.color')" />
                 <button class="act-btn act-ok ttp-act" @click="saveTTCustomer" :aria-label="$t('common.save')">✓</button>
                 <button class="act-btn act-no ttp-act" @click="cancelEditTTCustomer" :aria-label="$t('common.cancel')">✕</button>
               </template>
               <template v-else>
+                <span class="ttp-dot" :aria-hidden="true" :style="c.color ? { background: c.color } : {}"></span>
                 <span class="ttp-name">{{ c.name }}</span>
                 <span v-if="isGlobalTTCustomer(c)" class="ttp-badge">{{ $t('timeTracking.tt_customer_global') }}</span>
                 <template v-if="canEditTTCustomer(c)">
@@ -1351,6 +1354,8 @@
               @keydown.escape="addingTTCustomer = false"
               ref="newTTCustomerNameRef"
             />
+            <label class="sr-only" for="ttp-new-cust-color">{{ $t('customer.color') }}</label>
+            <input id="ttp-new-cust-color" type="color" class="ttp-color-input" v-model="newTTCustomer.color" :aria-label="$t('customer.color')" />
             <button class="btn btn-primary btn-sm" @click="confirmAddTTCustomer">{{ $t('timeTracking.tt_customer_save') }}</button>
             <button class="btn btn-secondary btn-sm" @click="addingTTCustomer = false">{{ $t('timeTracking.tt_customer_cancel') }}</button>
           </div>
@@ -4906,7 +4911,7 @@ const newTTNameRef         = ref(null)
 
 // Customers
 const addingTTCustomer     = ref(false)
-const newTTCustomer        = ref({ name: '' })
+const newTTCustomer        = ref({ name: '', color: '#6366f1' })
 const editingTTCustomer    = ref(null)
 const newTTCustomerNameRef = ref(null)
 
@@ -4925,6 +4930,7 @@ function closeManageProjects() {
   newTTProject.value = { name: '', color: '#6366f1', undeclStr: '' }
   addingTTCustomer.value = false
   editingTTCustomer.value = null
+  newTTCustomer.value = { name: '', color: '#6366f1' }
 }
 
 watch(addingTTProject, (v) => {
@@ -5018,9 +5024,9 @@ async function confirmAddTTCustomer() {
   const name = newTTCustomer.value.name.trim()
   if (!name) return
   try {
-    const { data } = await customersApi.createTimeTracking({ name })
+    const { data } = await customersApi.createTimeTracking({ name, color: newTTCustomer.value.color })
     ttCustomers.value.push(data)
-    newTTCustomer.value = { name: '' }
+    newTTCustomer.value = { name: '', color: '#6366f1' }
     addingTTCustomer.value = false
   } catch {
     ui.error(t('timeTracking.tt_customer_save_error'))
@@ -5028,7 +5034,7 @@ async function confirmAddTTCustomer() {
 }
 
 function startEditTTCustomer(c) {
-  editingTTCustomer.value = { id: c.id, name: c.name }
+  editingTTCustomer.value = { id: c.id, name: c.name, color: c.color || '#6366f1' }
 }
 
 function cancelEditTTCustomer() {
@@ -5039,7 +5045,7 @@ async function saveTTCustomer() {
   const e = editingTTCustomer.value
   if (!e || !e.name.trim()) return
   try {
-    const { data } = await customersApi.updateTimeTracking(e.id, { name: e.name.trim() })
+    const { data } = await customersApi.updateTimeTracking(e.id, { name: e.name.trim(), color: e.color })
     const idx = ttCustomers.value.findIndex(c => c.id === e.id)
     if (idx >= 0) ttCustomers.value[idx] = data
     editingTTCustomer.value = null

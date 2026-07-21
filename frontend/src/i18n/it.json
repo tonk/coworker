@@ -94,6 +94,7 @@
     "name": "Nome cliente",
     "description": "Descrizione",
     "logo_url": "URL logo",
+    "color": "Colore",
     "upload_logo": "Carica logo",
     "no_customers": "Nessun cliente ancora. Crea il tuo primo cliente!",
     "star": "Aggiungi cliente ai preferiti",

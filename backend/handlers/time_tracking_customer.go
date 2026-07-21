@@ -41,7 +41,8 @@ func CreateTimeTrackingCustomer(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 
 	var req struct {
-		Name string `json:"name"`
+		Name  string `json:"name"`
+		Color string `json:"color"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -59,6 +60,7 @@ func CreateTimeTrackingCustomer(c *gin.Context) {
 
 	customer := models.Customer{
 		Name:             name,
+		Color:            req.Color,
 		TimeTrackingOnly: true,
 		CreatedByID:      &userID,
 	}
@@ -93,7 +95,8 @@ func UpdateTimeTrackingCustomer(c *gin.Context) {
 	}
 
 	var req struct {
-		Name string `json:"name"`
+		Name  string `json:"name"`
+		Color string `json:"color"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -110,6 +113,7 @@ func UpdateTimeTrackingCustomer(c *gin.Context) {
 	}
 
 	customer.Name = name
+	customer.Color = req.Color
 	if err := database.DB.Save(&customer).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return

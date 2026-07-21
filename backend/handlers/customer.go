@@ -239,6 +239,7 @@ func CreateCustomer(c *gin.Context) {
 		Name              string `json:"name" binding:"required,min=1,max=200"`
 		Description       string `json:"description"`
 		LogoURL           string `json:"logo_url"`
+		Color             string `json:"color"`
 		BillingStreet     string `json:"billing_street"`
 		BillingCity       string `json:"billing_city"`
 		BillingPostalCode string `json:"billing_postal_code"`
@@ -258,6 +259,7 @@ func CreateCustomer(c *gin.Context) {
 		Name:              req.Name,
 		Description:       req.Description,
 		LogoURL:           req.LogoURL,
+		Color:             req.Color,
 		BillingStreet:     req.BillingStreet,
 		BillingCity:       req.BillingCity,
 		BillingPostalCode: req.BillingPostalCode,
@@ -293,6 +295,7 @@ func UpdateCustomer(c *gin.Context) {
 		Name              string `json:"name"`
 		Description       string `json:"description"`
 		LogoURL           string `json:"logo_url"`
+		Color             string `json:"color"`
 		BillingStreet     string `json:"billing_street"`
 		BillingCity       string `json:"billing_city"`
 		BillingPostalCode string `json:"billing_postal_code"`
@@ -308,6 +311,7 @@ func UpdateCustomer(c *gin.Context) {
 	updates := map[string]interface{}{
 		"description":         req.Description,
 		"logo_url":            req.LogoURL,
+		"color":               req.Color,
 		"billing_street":      req.BillingStreet,
 		"billing_city":        req.BillingCity,
 		"billing_postal_code": req.BillingPostalCode,

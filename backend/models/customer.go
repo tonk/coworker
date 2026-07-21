@@ -8,6 +8,7 @@ type Customer struct {
 	Name             string    `gorm:"not null;size:200" json:"name"`
 	Description      string    `gorm:"type:text" json:"description"`
 	LogoURL          string    `gorm:"size:500" json:"logo_url"`
+	Color            string    `gorm:"size:7" json:"color"`
 	Position         int       `gorm:"default:0" json:"position"`
 	IsHidden         bool      `gorm:"default:false" json:"is_hidden"`
 	TimeTrackingOnly bool      `gorm:"default:false" json:"time_tracking_only"`

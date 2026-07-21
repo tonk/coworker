@@ -16,7 +16,7 @@
           :key="e.entry.id"
           type="button"
           class="cal-unscheduled-chip"
-          :style="{ borderLeftColor: colorForCustomer(e.entry.customer_id) }"
+          :style="{ borderLeftColor: e.color }"
           @click="$emit('block-open', e.entry)"
           @contextmenu.prevent="$emit('block-contextmenu', { x: $event.clientX, y: $event.clientY, entry: e.entry })"
         >{{ e.customerName || e.entry.description || $t('timeTracking.no_customer') }}</button>
@@ -58,7 +58,6 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import TimeTrackingCalendarDay from './TimeTrackingCalendarDay.vue'
 import { topOffsetPx, heightPx, PX_PER_HOUR } from '@/utils/calendarLayout'
-import { colorForCustomer } from '@/utils/calendarColors'
 import { useDateFormat } from '@/composables/useDateFormat'
 
 const { formatTime } = useDateFormat()
@@ -69,6 +68,7 @@ const props = defineProps({
   pxPerHour: { type: Number, default: PX_PER_HOUR },
   customerName: { type: Function, required: true }, // (entry) => string
   projectName: { type: Function, required: true },  // (entry) => string
+  customerColor: { type: Function, required: true }, // (entry) => hex color string
   readOnly: { type: Boolean, default: false },
 })
 defineEmits(['slot-click', 'slot-contextmenu', 'block-contextmenu', 'block-open', 'block-move', 'block-resize'])
@@ -112,6 +112,7 @@ const scheduledByDay = computed(() => {
         height: heightPx(e.start_time, e.end_time, props.pxPerHour),
         customerName: props.customerName(e),
         projectName: props.projectName(e),
+        color: props.customerColor(e),
       }))
   }
   return result
@@ -122,7 +123,7 @@ const unscheduledByDay = computed(() => {
   for (const d of props.weekDays) {
     const list = (entriesByDay.value[d.iso] || [])
       .filter((e) => !e.start_time || !e.end_time)
-      .map((e) => ({ entry: e, customerName: props.customerName(e), projectName: props.projectName(e) }))
+      .map((e) => ({ entry: e, customerName: props.customerName(e), projectName: props.projectName(e), color: props.customerColor(e) }))
     if (list.length) result[d.iso] = list
   }
   return result

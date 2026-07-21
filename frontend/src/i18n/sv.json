@@ -94,6 +94,7 @@
     "name": "Kundnamn",
     "description": "Beskrivning",
     "logo_url": "Logotyp-URL",
+    "color": "Färg",
     "upload_logo": "Ladda upp logotyp",
     "no_customers": "Inga kunder ännu. Skapa din första kund!",
     "star": "Stjärnmärk kund",

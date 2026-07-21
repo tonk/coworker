@@ -39,7 +39,7 @@ import { useI18n } from 'vue-i18n'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { pxToWallClock, dayColumnIndexFromX, MIN_BLOCK_HEIGHT_PX, DEFAULT_SNAP_MINUTES } from '@/utils/calendarLayout'
 import { parseWallClock, fmtWallClock, wallClockSpanMinutes } from '@/utils/shiftTimeEntries'
-import { colorForCustomer } from '@/utils/calendarColors'
+import { NO_CUSTOMER_COLOR } from '@/utils/calendarColors'
 
 const props = defineProps({
   entry: { type: Object, required: true },
@@ -51,6 +51,7 @@ const props = defineProps({
   getColumnRects: { type: Function, required: true }, // () => DOMRect[] of day columns, measured live for cross-day drag
   customerName: { type: String, default: '' },
   projectName: { type: String, default: '' },
+  color: { type: String, default: NO_CUSTOMER_COLOR }, // resolved by the parent (own customer color, or the assigned fallback)
   readOnly: { type: Boolean, default: false },
   dense: { type: Boolean, default: false },
 })
@@ -66,10 +67,8 @@ let suppressNextClick = false
 
 const CLICK_THRESHOLD_PX = 4
 
-const blockColor = computed(() => colorForCustomer(props.entry.customer_id))
-
 const blockStyle = computed(() => {
-  const style = { top: `${props.top}px`, height: `${props.height}px`, background: blockColor.value }
+  const style = { top: `${props.top}px`, height: `${props.height}px`, background: props.color }
   if (drag.value) {
     if (drag.value.kind === 'move') {
       style.transform = `translate(${drag.value.dx}px, ${drag.value.dy}px)`

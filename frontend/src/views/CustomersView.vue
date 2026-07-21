@@ -58,6 +58,10 @@
         <label class="form-label" for="new-cust-logo">{{ $t('customer.logo_url') }}</label>
         <input id="new-cust-logo" class="form-input" v-model="form.logo_url" placeholder="https://..." />
       </div>
+      <div class="form-group">
+        <label class="form-label" for="new-cust-color">{{ $t('customer.color') }}</label>
+        <input id="new-cust-color" type="color" class="cust-color-input" v-model="form.color" :aria-label="$t('customer.color')" />
+      </div>
       <template #footer>
         <button class="btn" @click="showCreate = false">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" @click="doCreate" :disabled="!form.name.trim()">
@@ -87,7 +91,7 @@ const ui = useUIStore()
 const loading = ref(true)
 const showCreate = ref(false)
 const showRates = ref(false)
-const form = ref({ name: '', description: '', logo_url: '' })
+const form = ref({ name: '', description: '', logo_url: '', color: '' })
 
 const customers = computed(() => custStore.customers)
 
@@ -109,10 +113,11 @@ async function doCreate() {
       name: form.value.name.trim(),
       description: form.value.description,
       logo_url: form.value.logo_url,
+      color: form.value.color,
     })
     await custStore.fetchCustomers()
     showCreate.value = false
-    form.value = { name: '', description: '', logo_url: '' }
+    form.value = { name: '', description: '', logo_url: '', color: '' }
     ui.success('Customer created')
   } catch (e) {
     ui.error(e?.response?.data?.error || 'Failed to create customer')
@@ -121,6 +126,16 @@ async function doCreate() {
 </script>
 
 <style scoped>
+.cust-color-input {
+  width: 32px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  cursor: pointer;
+  background: none;
+}
+
 .customers-page {
   padding: 24px;
   max-width: 1100px;

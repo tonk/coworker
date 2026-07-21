@@ -94,6 +94,7 @@
     "name": "Kundenavn",
     "description": "Beskrivelse",
     "logo_url": "Logo-URL",
+    "color": "Farge",
     "upload_logo": "Last opp logo",
     "no_customers": "Ingen kunder ennå. Opprett din første kunde!",
     "star": "Merk kunde",

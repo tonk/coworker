@@ -94,6 +94,7 @@
     "name": "Nome do cliente",
     "description": "Descrição",
     "logo_url": "URL do logótipo",
+    "color": "Cor",
     "upload_logo": "Carregar logótipo",
     "no_customers": "Ainda não há clientes. Crie o seu primeiro cliente!",
     "star": "Marcar cliente",

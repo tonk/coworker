@@ -94,6 +94,7 @@
     "name": "Kundenname",
     "description": "Beschreibung",
     "logo_url": "Logo-URL",
+    "color": "Farbe",
     "upload_logo": "Logo hochladen",
     "no_customers": "Noch keine Kunden. Erstellen Sie Ihren ersten Kunden!",
     "star": "Kunde markieren",

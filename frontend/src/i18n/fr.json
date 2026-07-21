@@ -94,6 +94,7 @@
     "name": "Nom du client",
     "description": "Description",
     "logo_url": "URL du logo",
+    "color": "Couleur",
     "upload_logo": "Téléverser un logo",
     "no_customers": "Aucun client pour l'instant. Créez votre premier client !",
     "star": "Marquer le client",

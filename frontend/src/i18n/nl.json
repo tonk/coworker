@@ -94,6 +94,7 @@
     "name": "Klantnaam",
     "description": "Omschrijving",
     "logo_url": "Logo-URL",
+    "color": "Kleur",
     "upload_logo": "Logo uploaden",
     "no_customers": "Nog geen klanten. Maak uw eerste klant aan!",
     "star": "Klant markeren",

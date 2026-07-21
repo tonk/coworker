@@ -94,6 +94,7 @@
     "name": "Nafn viðskiptavinar",
     "description": "Lýsing",
     "logo_url": "Logo-URL",
+    "color": "Litur",
     "upload_logo": "Hlaða upp lógói",
     "no_customers": "Engir viðskiptavinir enn. Stofnaðu fyrsta viðskiptavininn þinn!",
     "star": "Stjörnumerkja viðskiptavin",

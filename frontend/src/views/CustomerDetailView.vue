@@ -381,6 +381,10 @@
         </div>
         <input ref="logoFileInput" type="file" accept="image/*" style="display:none" @change="onLogoFileSelected" />
       </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-cust-color">{{ $t('customer.color') }}</label>
+        <input id="edit-cust-color" type="color" class="cust-color-input" v-model="editForm.color" :aria-label="$t('customer.color')" />
+      </div>
       <h4 class="form-section-title">{{ $t('customer.billing_section') }}</h4>
       <div class="form-group">
         <label class="form-label" for="edit-cust-street">{{ $t('customer.billing_street') }}</label>
@@ -963,7 +967,7 @@ const VALID_TABS = ['overview', 'invoices', 'contacts']
 const activeTab = ref(VALID_TABS.includes(route.query.tab) ? route.query.tab : 'overview')
 
 const showEdit = ref(false)
-const editForm = ref({ name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
+const editForm = ref({ name: '', description: '', logo_url: '', color: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
 
 const { formatDate, dateOnlyFormat } = useDateFormat()
 
@@ -1797,7 +1801,7 @@ async function saveNameEdit() {
 function openEdit() {
   const c = detail.value.customer
   editForm.value = {
-    name: c.name, description: c.description || '', logo_url: c.logo_url || '',
+    name: c.name, description: c.description || '', logo_url: c.logo_url || '', color: c.color || '',
     billing_street: c.billing_street || '', billing_city: c.billing_city || '',
     billing_postal_code: c.billing_postal_code || '', billing_country: c.billing_country || '',
     vat_number: c.vat_number || '', po_reference: c.po_reference || '',
@@ -1927,6 +1931,16 @@ async function deleteContract(grp) {
 </script>
 
 <style scoped>
+.cust-color-input {
+  width: 32px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  cursor: pointer;
+  background: none;
+}
+
 .customer-detail-page {
   padding: 24px;
   max-width: 900px;

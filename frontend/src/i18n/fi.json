@@ -94,6 +94,7 @@
     "name": "Asiakkaan nimi",
     "description": "Kuvaus",
     "logo_url": "Logo-URL",
+    "color": "Väri",
     "upload_logo": "Lataa logo",
     "no_customers": "Ei asiakkaita vielä. Luo ensimmäinen asiakkaasi!",
     "star": "Tähdistä asiakas",

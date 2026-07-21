@@ -20,6 +20,7 @@
       :get-column-rects="getColumnRects"
       :customer-name="item.customerName"
       :project-name="item.projectName"
+      :color="item.color"
       :read-only="readOnly"
       :dense="item.height < 40"
       @open="$emit('block-open', $event)"

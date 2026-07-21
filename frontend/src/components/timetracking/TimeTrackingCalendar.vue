@@ -26,6 +26,7 @@
       :px-per-hour="pxPerHour"
       :customer-name="customerNameFor"
       :project-name="projectNameFor"
+      :customer-color="customerColorFor"
       :read-only="readOnly"
       @slot-click="onSlotClick"
       @slot-contextmenu="onSlotContextMenu"
@@ -70,6 +71,7 @@ import TimeTrackingCalendarWeekGrid from './TimeTrackingCalendarWeekGrid.vue'
 import ContextMenu from '@/components/common/ContextMenu.vue'
 import TimeEntryModal from './TimeEntryModal.vue'
 import { parseWallClock, fmtWallClock } from '@/utils/shiftTimeEntries'
+import { assignCustomerColors, NO_CUSTOMER_COLOR } from '@/utils/calendarColors'
 
 const ZOOM_STORAGE_KEY = 'tt_calendar_zoom'
 const ZOOM_LEVELS = [20, 30, 45, 60, 90, 120, 160] // px per hour
@@ -119,6 +121,13 @@ function customerNameFor(entry) {
 
 function projectNameFor(entry) {
   return entry.project?.name || ''
+}
+
+const customerColorMap = computed(() => assignCustomerColors(props.allCustomers))
+
+function customerColorFor(entry) {
+  if (entry.customer_id == null) return NO_CUSTOMER_COLOR
+  return customerColorMap.value.get(entry.customer_id) || NO_CUSTOMER_COLOR
 }
 
 function onSlotClick({ date, startTime, endTime }) {
