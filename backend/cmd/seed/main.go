@@ -57,6 +57,37 @@ func hashPassword(plain string) string {
 
 func ptr[T any](v T) *T { return &v }
 
+// dayTimeCursor hands out sequential, non-overlapping start/end wall-clock times
+// for time entries sharing the same user+date, starting at 09:00 and advancing by
+// each entry's duration — so demo entries never stack on top of each other in the
+// time-tracking calendar view.
+type dayTimeCursor struct {
+	offsets map[string]int // "userID|YYYY-MM-DD" -> minutes already allocated since 09:00
+}
+
+func newDayTimeCursor() *dayTimeCursor {
+	return &dayTimeCursor{offsets: map[string]int{}}
+}
+
+const dayTimeCursorStartMinute = 9 * 60 // 09:00
+
+func minutesToClock(m int) string {
+	if m > 23*60+59 {
+		m = 23*60 + 59
+	}
+	return fmt.Sprintf("%02d:%02d", m/60, m%60)
+}
+
+// next returns start/end wall-clock strings for a minutes-long entry on the given
+// user+date, placed right after any entry already allocated for the same user+date.
+func (c *dayTimeCursor) next(userID uint, date time.Time, minutes int) (start, end string) {
+	key := fmt.Sprintf("%d|%s", userID, date.Format("2006-01-02"))
+	startMin := dayTimeCursorStartMinute + c.offsets[key]
+	endMin := startMin + minutes
+	c.offsets[key] += minutes
+	return minutesToClock(startMin), minutesToClock(endMin)
+}
+
 func days(n int) *time.Time {
 	t := time.Now().UTC().AddDate(0, 0, n).Truncate(24 * time.Hour)
 	return &t
@@ -2534,6 +2565,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		name              string
 		desc              string
 		logoURL           string
+		color             string
 		contracts         []contractSpec
 		projects          []string // unassigned projects (no contract)
 		billingStreet     string
@@ -2554,6 +2586,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	demoCustomers := []customerSpec{
 		{
 			name:    "Acme Corporation",
+			color:   "#2563eb",
 			desc:    "Long-running client delivering internal tooling and web platforms.",
 			logoURL: "https://api.dicebear.com/9.x/shapes/svg?seed=Acme-Corp&backgroundColor=ecfeff,bfdbfe,e9d5ff",
 			contracts: []contractSpec{
@@ -2586,6 +2619,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		},
 		{
 			name:    "Globex Systems",
+			color:   "#059669",
 			desc:    "Infrastructure-heavy client focused on cloud reliability and security.",
 			logoURL: "https://api.dicebear.com/9.x/shapes/svg?seed=Globex-Systems&backgroundColor=fef3c7,fde68a,fee2e2",
 			contracts: []contractSpec{
@@ -2606,6 +2640,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		},
 		{
 			name:              "Initech Ltd",
+			color:             "#dc2626",
 			desc:              "Prospective client — evaluation phase, no active contract yet.",
 			logoURL:           "https://api.dicebear.com/9.x/shapes/svg?seed=Initech-Ltd&backgroundColor=d1fae5,ddd6fe,fce7f3",
 			projects:          []string{}, // no projects yet
@@ -2625,6 +2660,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			Name:              cs.name,
 			Description:       cs.desc,
 			LogoURL:           cs.logoURL,
+			Color:             cs.color,
 			BillingStreet:     cs.billingStreet,
 			BillingCity:       cs.billingCity,
 			BillingPostalCode: cs.billingPostalCode,
@@ -3827,6 +3863,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		{user: "marc", customer: "Acme Corporation", project: "mobile-app-v2", contractName: "Phase 2 — Mobile Apps", daysAgo: 5, minutes: 80, distance: 55.0, desc: "Return travel from Acme"},
 	}
 
+	dayTimes := newDayTimeCursor()
 	totalTimeEntries := 0
 	for _, s := range teSpecs {
 		u, ok := users[s.user]
@@ -3834,11 +3871,14 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			continue
 		}
 		date := time.Now().UTC().AddDate(0, 0, -s.daysAgo).Truncate(24 * time.Hour)
+		startTime, endTime := dayTimes.next(u.ID, date, s.minutes)
 		entry := models.TimeEntry{
 			UserID:      u.ID,
 			Date:        date,
 			Minutes:     s.minutes,
 			Description: s.desc,
+			StartTime:   ptr(startTime),
+			EndTime:     ptr(endTime),
 		}
 		if s.distance > 0 {
 			entry.Distance = ptr(s.distance)
@@ -3916,12 +3956,13 @@ Pagerduty schedules will be updated to match this by Friday.`,
 
 	// TT-only customers owned by tonk
 	type ttCustomerSpec struct {
-		name string
-		desc string
+		name  string
+		desc  string
+		color string
 	}
 	ttCustomers := []ttCustomerSpec{
-		{name: "Smart Owl Consulting", desc: "Internal employer — used for travel, holidays, and internal hours."},
-		{name: "Personal", desc: "Purely personal time: study, training, and other non-billable activities."},
+		{name: "Smart Owl Consulting", desc: "Internal employer — used for travel, holidays, and internal hours.", color: "#7c3aed"},
+		{name: "Personal", desc: "Purely personal time: study, training, and other non-billable activities.", color: "#0891b2"},
 	}
 	ttCustIDByName := map[string]uint{}
 	for _, cs := range ttCustomers {
@@ -3930,6 +3971,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			cust = models.Customer{
 				Name:             cs.name,
 				Description:      cs.desc,
+				Color:            cs.color,
 				TimeTrackingOnly: true,
 				CreatedByID:      &tonk.ID,
 			}
@@ -4002,11 +4044,14 @@ Pagerduty schedules will be updated to match this by Friday.`,
 	}
 	for _, te := range ttEntries {
 		date := time.Now().UTC().AddDate(0, 0, -te.daysAgo).Truncate(24 * time.Hour)
+		startTime, endTime := dayTimes.next(tonk.ID, date, te.minutes)
 		entry := models.TimeEntry{
 			UserID:      tonk.ID,
 			Date:        date,
 			Minutes:     te.minutes,
 			Description: te.desc,
+			StartTime:   ptr(startTime),
+			EndTime:     ptr(endTime),
 		}
 		if te.distance > 0 {
 			entry.Distance = ptr(te.distance)
