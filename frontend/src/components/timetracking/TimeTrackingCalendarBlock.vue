@@ -189,7 +189,7 @@ function onResizePointerUp(e) {
     const newStartM = Math.min(endM - DEFAULT_SNAP_MINUTES, parseWallClock(newStartTime))
     emit('resize', {
       entry: props.entry,
-      newDate: props.entry.date,
+      newDate: props.entry.date.slice(0, 10),
       newStartTime: fmtWallClock(newStartM),
       newEndTime: props.entry.end_time,
       newMinutes: endM - newStartM,
@@ -200,7 +200,7 @@ function onResizePointerUp(e) {
     const newEndM = Math.max(startM + DEFAULT_SNAP_MINUTES, parseWallClock(newEndTime))
     emit('resize', {
       entry: props.entry,
-      newDate: props.entry.date,
+      newDate: props.entry.date.slice(0, 10),
       newStartTime: props.entry.start_time,
       newEndTime: fmtWallClock(newEndM),
       newMinutes: newEndM - startM,
@@ -239,9 +239,27 @@ function onResizePointerUp(e) {
   position: absolute;
   left: 0;
   right: 0;
-  height: 6px;
+  height: 8px;
   cursor: ns-resize;
+  z-index: 1;
 }
+
+.cal-resize-handle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  max-width: 60%;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+.cal-resize-handle:hover::after { opacity: 1; }
 
 .cal-resize-top { top: 0; }
 .cal-resize-bottom { bottom: 0; }
