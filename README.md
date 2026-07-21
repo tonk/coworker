@@ -8,11 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.15.1)
+## Latest release (v0.16.0)
 
-- **Fix** — the Windows desktop app no longer blanks out for up to two minutes on startup; a fetch-proxy bug was forcing every internal Tauri call out over the network instead of handling it locally.
-- **Fix** — the passkey login button, meant to be browser-only, was showing up in the desktop app again.
-- **Fix** — the Windows desktop app now uses the native TLS stack, avoiding connection issues with server/proxy setups that expect TLS renegotiation.
+- **New** — a drag-and-drop calendar view for time tracking: move entries between days/times, resize to change duration, right-click or click-drag an empty slot to create a new entry, zoomable grid, color-coded by customer.
+- **New** — customers can now be given a color (full CRM customers and time-tracking-only ones alike), used to color-code the calendar view.
+- **New** — a "Log Time view" setting to default the time-tracking tab to table or calendar.
 
 ## Experiment
 
@@ -328,7 +328,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 
 ## Features
 
-- **Customer / Contract / Project hierarchy** — customers are top-level entities; contracts sit under a customer; projects can be linked to a customer and optionally to a contract; manage from the Customers page or from Project Settings
+- **Customer / Contract / Project hierarchy** — customers are top-level entities; contracts sit under a customer; projects can be linked to a customer and optionally to a contract; manage from the Customers page or from Project Settings; customers (including time-tracking-only ones) can be given a color, used to color-code the time-tracking calendar view
 - **Customers sidebar** — starred customers listed in the sidebar with star/unstar toggle; dedicated Customers page (`/customers`) with grid view and full Customer detail page
 - **Sub-cards** — add child cards (one level deep) inside a parent card's detail view; hidden from the board; parent card shows a done/total progress pill; each sub-card has its own card number, assignees, labels, and comments; opening a sub-card shows a ← back link to return to the parent
 - **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, start date, due dates, assignees, watchers, markdown descriptions and comments; configurable card prefix set at creation time (e.g. `PRJ`, `SHOP`, `API`) used in all card references like `PRJ-42`; primary and extra assignee avatars shown on card tiles
@@ -343,6 +343,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Linked cards (cross-references)** — link any two cards across projects; linked cards appear in the card detail with their reference, title, current column, and open/closed status; opening a linked card shows a ← back link to return to the originating card; remove a link at any time
 - **Comment replies** — reply to any comment; replies are visually indented
 - **Time tracking** — log hours and minutes spent directly on a card; the weekly timesheet also supports time-tracking-only projects and customers (lightweight entries that don't create a board or CRM record), managed via the ⚙ button in the time-tracking view; each time-tracking project can carry an *undeclarable minutes* value (travel time, holidays, etc.) that is automatically subtracted from totals in the sheet, report, PDF, and XLSX export
+- **Time tracking calendar view** — toggle the Log Time tab between the weekly table and a drag-and-drop calendar: entries render as blocks positioned by start/end time, draggable to move between days/times and resizable to change duration; right-click or click-drag an empty slot to create a new entry; zoomable grid density (remembered per browser); blocks color-coded per customer; a "Log Time view" user setting picks which one opens by default
 - **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
 - **Role-based access** — global roles (admin / user / viewer / metrics / backup / customer) and per-project roles (owner / admin / member / viewer); project admins can manage columns; the `customer` role gives end-customers a read/comment-only ticket portal
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket

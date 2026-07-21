@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.16.0 — 2026-07-21
+
+### Added
+- **Time tracking — calendar view** — the Log Time tab can now be switched, via a new toggle button next to the macro editor, between the existing weekly table and a drag-and-drop calendar. Entries render as time blocks positioned by start/end time: drag a block to move it to another day/time, drag its top/bottom edge to resize the duration, right-click for an edit/delete menu, or click-and-drag an empty slot to create a new entry for exactly that range (a plain click uses a default 1-hour duration). The grid is zoomable (remembered per browser) and blocks are color-coded per customer. A new **Log Time view** setting (Settings → General) lets you default the tab to table or calendar.
+- **Customers — color** — customers (both full CRM customers and time-tracking-only ones) can now be given a color, editable from the customer edit/create forms and the "manage time tracking customers" tab, using the same color picker already used for time-tracking projects. This color drives the calendar view's block coloring; customers left without one are automatically assigned a color not already used by another customer.
+
 ## v0.15.1 — 2026-07-19
 
 ### Fixed

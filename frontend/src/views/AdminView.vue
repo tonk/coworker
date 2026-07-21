@@ -998,6 +998,7 @@
                     <div class="tt-admin-add-row">
                       <label class="sr-only" for="adm-tt-cust-name">{{ $t('timeTracking.tt_customer_name') }}</label>
                       <input id="adm-tt-cust-name" class="form-input" v-model="newTTCustomer.name" :placeholder="$t('timeTracking.tt_customer_name')" @keydown.enter="confirmAddTTCustomer" @keydown.escape="addingTTCustomer = false" ref="newTTCustRef" style="flex:1" />
+                      <input type="color" class="tt-admin-color" v-model="newTTCustomer.color" :aria-label="$t('customer.color')" />
                       <button class="btn btn-primary btn-sm" @click="confirmAddTTCustomer">{{ $t('common.create') }}</button>
                       <button class="btn btn-secondary btn-sm" @click="addingTTCustomer = false">{{ $t('common.cancel') }}</button>
                     </div>
@@ -1008,6 +1009,7 @@
                     <td colspan="3" style="padding:8px">
                       <div class="tt-admin-add-row">
                         <input class="form-input" v-model="editingTTCustomer.name" @keydown.enter="saveEditTTCustomer" @keydown.escape="editingTTCustomer = null" style="flex:1" />
+                        <input type="color" class="tt-admin-color" v-model="editingTTCustomer.color" :aria-label="$t('customer.color')" />
                         <button class="btn btn-primary btn-sm" @click="saveEditTTCustomer">{{ $t('common.save') }}</button>
                         <button class="btn btn-secondary btn-sm" @click="editingTTCustomer = null">{{ $t('common.cancel') }}</button>
                       </div>
@@ -1015,6 +1017,7 @@
                   </template>
                   <template v-else>
                     <td>
+                      <span class="tt-admin-dot" :style="{ background: c.color || '#6366f1' }"></span>
                       <button type="button" class="name-link" @click="startEditTTCustomer(c)">{{ c.name }}</button>
                       <span v-if="isGlobalTTEntity(c)" class="ttp-badge">{{ $t('timeTracking.tt_customer_global') }}</span>
                     </td>
@@ -1752,6 +1755,10 @@
       <label class="form-label" for="admin-cust-logo">{{ $t('customer.logo_url') }}</label>
       <input id="admin-cust-logo" class="form-input" v-model="customerForm.logo_url" placeholder="https://..." />
     </div>
+    <div class="form-group">
+      <label class="form-label" for="admin-cust-color">{{ $t('customer.color') }}</label>
+      <input id="admin-cust-color" type="color" class="cust-color-input" v-model="customerForm.color" :aria-label="$t('customer.color')" />
+    </div>
     <h4 class="form-section-title">{{ $t('customer.billing_section') }}</h4>
     <div class="form-group">
       <label class="form-label" for="admin-cust-street">{{ $t('customer.billing_street') }}</label>
@@ -2198,7 +2205,7 @@ const sortedProjects = computed(() => {
   )
 })
 const editingCustomer = ref(null)
-const customerForm = ref({ name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
+const customerForm = ref({ name: '', description: '', logo_url: '', color: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' })
 let adminCustomersLoaded = false
 
 async function loadGroups() {
@@ -3500,6 +3507,7 @@ async function submitCreateCustomer() {
       name: customerForm.value.name.trim(),
       description: customerForm.value.description,
       logo_url: customerForm.value.logo_url,
+      color: customerForm.value.color,
       billing_street: customerForm.value.billing_street,
       billing_city: customerForm.value.billing_city,
       billing_postal_code: customerForm.value.billing_postal_code,
@@ -3509,7 +3517,7 @@ async function submitCreateCustomer() {
     })
     adminCustomers.value.push(data)
     showCreateCustomer.value = false
-    customerForm.value = { name: '', description: '', logo_url: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' }
+    customerForm.value = { name: '', description: '', logo_url: '', color: '', billing_street: '', billing_city: '', billing_postal_code: '', billing_country: '', vat_number: '', po_reference: '' }
     ui.success('Customer created')
   } catch (e) {
     ui.error(e?.response?.data?.error || 'Failed to create customer')
@@ -3519,7 +3527,7 @@ async function submitCreateCustomer() {
 function openEditCustomer(c) {
   editingCustomer.value = { ...c }
   customerForm.value = {
-    name: c.name, description: c.description || '', logo_url: c.logo_url || '',
+    name: c.name, description: c.description || '', logo_url: c.logo_url || '', color: c.color || '',
     billing_street: c.billing_street || '', billing_city: c.billing_city || '',
     billing_postal_code: c.billing_postal_code || '', billing_country: c.billing_country || '',
     vat_number: c.vat_number || '', po_reference: c.po_reference || '',
@@ -3569,7 +3577,7 @@ const loadingTTCustomers = ref(false)
 const addingTTProject    = ref(false)
 const addingTTCustomer   = ref(false)
 const newTTProject       = ref({ name: '', color: '#6366f1', undeclStr: '' })
-const newTTCustomer      = ref({ name: '' })
+const newTTCustomer      = ref({ name: '', color: '#6366f1' })
 const editingTTProject   = ref(null)
 const editingTTCustomer  = ref(null)
 const newTTProjRef       = ref(null)
@@ -3641,9 +3649,9 @@ async function confirmAddTTCustomer() {
   const name = newTTCustomer.value.name.trim()
   if (!name) return
   try {
-    const { data } = await customersApi.createTimeTracking({ name })
+    const { data } = await customersApi.createTimeTracking({ name, color: newTTCustomer.value.color })
     adminTTCustomers.value.push(data)
-    newTTCustomer.value = { name: '' }
+    newTTCustomer.value = { name: '', color: '#6366f1' }
     addingTTCustomer.value = false
   } catch {
     ui.error(t('timeTracking.tt_customer_save_error'))
@@ -3683,14 +3691,14 @@ async function deleteTTProject(p) {
 }
 
 function startEditTTCustomer(c) {
-  editingTTCustomer.value = { id: c.id, name: c.name }
+  editingTTCustomer.value = { id: c.id, name: c.name, color: c.color || '#6366f1' }
 }
 
 async function saveEditTTCustomer() {
   const e = editingTTCustomer.value
   if (!e || !e.name.trim()) return
   try {
-    const { data } = await customersApi.updateTimeTracking(e.id, { name: e.name.trim() })
+    const { data } = await customersApi.updateTimeTracking(e.id, { name: e.name.trim(), color: e.color })
     const idx = adminTTCustomers.value.findIndex(c => c.id === e.id)
     if (idx >= 0) adminTTCustomers.value[idx] = data
     editingTTCustomer.value = null
@@ -3711,6 +3719,16 @@ async function deleteTTCustomer(c) {
 </script>
 
 <style scoped>
+.cust-color-input {
+  width: 32px;
+  height: 28px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  cursor: pointer;
+  background: none;
+}
+
 .admin-main { flex: 1; padding: 32px 24px; }
 .admin-container { max-width: 1100px; margin: 0 auto; }
 h1 { font-size: 22px; font-weight: 700; margin-bottom: 24px; }

@@ -382,11 +382,25 @@ Tokens are stored in `system_settings`. Access tokens are masked in admin API re
 
 All reporting lives in **`TimeTrackingView.vue`** under `/time-tracking`, which has three tabs:
 
-- **Log Time** — weekly time sheet (requires `time_tracking_enabled`).
+- **Log Time** — weekly time sheet (requires `time_tracking_enabled`). Has two sub-views, `logTimeView` ref: `'table'` (the weekly grid) or `'calendar'` (see Calendar view below), toggled via a button next to the macro editor. Defaults to `User.TimeTrackingViewDefault` (`"table"` | `"calendar"`, settable in Settings → General, same pattern as `DashboardDefault`).
 - **Report** — personal time-tracking report. Uses `/api/v1/time-entries/*` endpoints (requires `time_tracking_enabled`).
 - **Board** — project-board time report extracted into `BoardReportPanel.vue`. `GET /api/v1/reports/time` returns JSON; the table is rendered in Vue. Exports call the backend PDF/XLSX endpoints (requires `can_view_reports`).
 
 The `/reports` route redirects to `/time-tracking?tab=board-report`. `ReportView.vue` is no longer a standalone route.
+
+### Calendar view
+
+An alternate renderer for the Log Time tab's data — no new backend endpoints, it reuses the existing `/time-entries` CRUD. Components live in `frontend/src/components/timetracking/`:
+
+- **`TimeTrackingCalendar.vue`** — owns the `ContextMenu` and `TimeEntryModal` instances, zoom state (`pxPerHour`, persisted in `localStorage` under `tt_calendar_zoom`), and per-customer color assignment (`assignCustomerColors`, `frontend/src/utils/calendarColors.js`).
+- **`TimeTrackingCalendarWeekGrid.vue`** / **`TimeTrackingCalendarDay.vue`** / **`TimeTrackingCalendarBlock.vue`** — the week grid, one day column each, and the draggable/resizable time blocks. Pixel/time conversions are in `frontend/src/utils/calendarLayout.js` (`topOffsetPx`, `heightPx`, `pxToWallClock`).
+- Drag-move and drag-resize use native Pointer Events with `setPointerCapture`, not SortableJS (SortableJS is list-reorder only; the calendar needs free 2D positioning + resize, which it has no concept of). Day-column boundaries for cross-day drag detection are measured **live** via `getColumnRects()` at drop time, not cached — the calendar panel is `display:none` when the table view is active (`v-show`), so a cached measurement taken at mount would freeze every column at a zero-size rect.
+- Every drag/resize has a keyboard-operable equivalent: `TimeEntryModal.vue` (reachable via Tab + Enter on a block) exposes date/start/end time directly, mirroring `CardDetail.vue`'s "Transfer card" panel pattern (a separate explicit affordance instead of trying to make the drag gesture itself keyboard-operable).
+- Click-and-drag on an empty slot opens the create modal pre-filled with the dragged range (a plain click defaults to a 1-hour span); right-click gives an edit/delete (existing entry) or create (empty slot) menu via `frontend/src/components/common/ContextMenu.vue` (generic, reusable elsewhere).
+
+### Customer colors
+
+`Customer.Color` (`backend/models/customer.go`, `gorm:"size:7"`, same convention as `Project.Color`) is optional and editable from three places that must be kept in sync: `CustomersView.vue`/`CustomerDetailView.vue` (regular customers), `AdminView.vue`'s Customers tab and its separate Time Tracking tab (both regular and time-tracking-only customers), and `TimeTrackingView.vue`'s manage-projects modal (time-tracking-only customers only). `assignCustomerColors()` (`frontend/src/utils/calendarColors.js`) resolves the calendar's per-block color: a customer's own `Color` wins; customers without one get the first palette color not already used by another customer (explicit or auto-assigned), falling back to a hash once the 10-color palette is exhausted.
 
 ### Undeclarable time
 

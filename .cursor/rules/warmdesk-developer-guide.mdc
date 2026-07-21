@@ -98,6 +98,7 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 | `default_locale` | `DEFAULT_LOCALE` | `en` |
 | `api_log` | `API_LOG` | `true` |
 | `gin_mode` | `GIN_MODE` | `release` — set to `debug` for local development |
+| `app_mode` | `APP_MODE` | *(empty — full WarmDesk); set to `timetracking` to run as a time-tracking-only server: boards, chat, and helpdesk routes are disabled, and the time-tracking logos replace the default WarmDesk logos everywhere (web UI, PDFs). Also available as `--mode=timetracking` CLI flag.* |
 | `smtp.host` / `.port` / `.from` / `.username` / `.password` / `.use_tls` | — | port `587`, rest empty (overridable via system settings) |
 | `livekit_url` / `livekit_api_key` / `livekit_api_secret` / `livekit_room_prefix` | `LIVEKIT_*` | *(empty — required for voice/video calls)* |
 | `oauth2.google_client_id` / `.google_client_secret` / `.office_client_id` / `.office_client_secret` | — | *(empty — required for IMAP OAuth2 auth)* |
@@ -186,6 +187,13 @@ project, err := services.GetProjectBySlug(slug)   // 404 if not found
 services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "member")
 // role levels: "viewer" < "member" < "owner" (admins bypass all checks)
 ```
+
+### Project closed state
+Projects have an `IsClosed` field (`is_closed` in JSON). A closed board is hidden from the sidebar (both "All Projects" and "Starred") and excluded from `GET /api/v1/projects` by default. It remains accessible via direct URL and can be reopened from **Project Settings → General → Danger Zone** or the **Admin Panel → Projects** table. Only project owners/admins and global admins can close/reopen a project.
+
+- `ListProjects` (`handlers/project.go`) adds `WHERE is_closed = false` unless `?include_closed=true`.
+- `ListStarredProjects` (`handlers/starred.go`) filters out closed projects.
+- `AdminListProjects` (`handlers/admin_project.go`) supports `?closed=true` (only closed) and `?closed=hide` (only open).
 
 ### Adding a new route
 1. Add handler function to the appropriate `handlers/*.go` file (or a new file).
@@ -374,11 +382,25 @@ Tokens are stored in `system_settings`. Access tokens are masked in admin API re
 
 All reporting lives in **`TimeTrackingView.vue`** under `/time-tracking`, which has three tabs:
 
-- **Log Time** — weekly time sheet (requires `time_tracking_enabled`).
+- **Log Time** — weekly time sheet (requires `time_tracking_enabled`). Has two sub-views, `logTimeView` ref: `'table'` (the weekly grid) or `'calendar'` (see Calendar view below), toggled via a button next to the macro editor. Defaults to `User.TimeTrackingViewDefault` (`"table"` | `"calendar"`, settable in Settings → General, same pattern as `DashboardDefault`).
 - **Report** — personal time-tracking report. Uses `/api/v1/time-entries/*` endpoints (requires `time_tracking_enabled`).
 - **Board** — project-board time report extracted into `BoardReportPanel.vue`. `GET /api/v1/reports/time` returns JSON; the table is rendered in Vue. Exports call the backend PDF/XLSX endpoints (requires `can_view_reports`).
 
 The `/reports` route redirects to `/time-tracking?tab=board-report`. `ReportView.vue` is no longer a standalone route.
+
+### Calendar view
+
+An alternate renderer for the Log Time tab's data — no new backend endpoints, it reuses the existing `/time-entries` CRUD. Components live in `frontend/src/components/timetracking/`:
+
+- **`TimeTrackingCalendar.vue`** — owns the `ContextMenu` and `TimeEntryModal` instances, zoom state (`pxPerHour`, persisted in `localStorage` under `tt_calendar_zoom`), and per-customer color assignment (`assignCustomerColors`, `frontend/src/utils/calendarColors.js`).
+- **`TimeTrackingCalendarWeekGrid.vue`** / **`TimeTrackingCalendarDay.vue`** / **`TimeTrackingCalendarBlock.vue`** — the week grid, one day column each, and the draggable/resizable time blocks. Pixel/time conversions are in `frontend/src/utils/calendarLayout.js` (`topOffsetPx`, `heightPx`, `pxToWallClock`).
+- Drag-move and drag-resize use native Pointer Events with `setPointerCapture`, not SortableJS (SortableJS is list-reorder only; the calendar needs free 2D positioning + resize, which it has no concept of). Day-column boundaries for cross-day drag detection are measured **live** via `getColumnRects()` at drop time, not cached — the calendar panel is `display:none` when the table view is active (`v-show`), so a cached measurement taken at mount would freeze every column at a zero-size rect.
+- Every drag/resize has a keyboard-operable equivalent: `TimeEntryModal.vue` (reachable via Tab + Enter on a block) exposes date/start/end time directly, mirroring `CardDetail.vue`'s "Transfer card" panel pattern (a separate explicit affordance instead of trying to make the drag gesture itself keyboard-operable).
+- Click-and-drag on an empty slot opens the create modal pre-filled with the dragged range (a plain click defaults to a 1-hour span); right-click gives an edit/delete (existing entry) or create (empty slot) menu via `frontend/src/components/common/ContextMenu.vue` (generic, reusable elsewhere).
+
+### Customer colors
+
+`Customer.Color` (`backend/models/customer.go`, `gorm:"size:7"`, same convention as `Project.Color`) is optional and editable from three places that must be kept in sync: `CustomersView.vue`/`CustomerDetailView.vue` (regular customers), `AdminView.vue`'s Customers tab and its separate Time Tracking tab (both regular and time-tracking-only customers), and `TimeTrackingView.vue`'s manage-projects modal (time-tracking-only customers only). `assignCustomerColors()` (`frontend/src/utils/calendarColors.js`) resolves the calendar's per-block color: a customer's own `Color` wins; customers without one get the first palette color not already used by another customer (explicit or auto-assigned), falling back to a hash once the 10-color palette is exhausted.
 
 ### Undeclarable time
 
