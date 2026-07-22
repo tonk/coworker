@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.16.3 — 2026-07-22
+
+### Added
+- **Time tracking calendar — color by customer or project** — a new **Calendar block color** setting (Settings → General) lets you switch the calendar view's block coloring between the existing per-customer colors and a new per-project scheme. Projects without an explicit color are automatically assigned one, using the same non-repeating palette logic already used for customers.
+
 ## v0.16.2 — 2026-07-21
 
 ### Fixed

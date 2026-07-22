@@ -1101,7 +1101,7 @@ Click the 📅 button in the top bar (next to *Edit macros*) to switch the Log T
 Switch back to the grid at any time with the same button; your choice for new sessions can be set as a default in <<user-settings,User Settings>>.
 
 Each logged entry with a start and end time appears as a coloured block positioned by time of day; entries with no start/end time are listed in a small *Unscheduled* strip above the grid instead of being hidden.
-Blocks are coloured by customer — see <<customers,Customers>> for setting a customer's colour.
+Blocks are coloured by customer by default, or by project if you switch the *Calendar block color* setting in <<user-settings,User Settings>> — see <<customers,Customers>> for setting a customer's colour, or Project Settings for a project's colour.
 
 [cols="1,3", options="header"]
 |===
@@ -1498,6 +1498,9 @@ Open User Settings by clicking your display name in the header.
 
 |*Log Time view* (only when time tracking is enabled)
 |*Table* (default) or *Calendar* — which view the Log Time tab opens in; see <<calendar-view,Calendar view>>
+
+|*Calendar block color* (only when time tracking is enabled)
+|*By customer* (default) or *By project* — which entity's colour is used for blocks in the <<calendar-view,Calendar view>>
 
 |*System tray* (desktop app only)
 |Show a tray icon with an unread-notification badge for cards, tickets, and chat; the tray menu can show/hide the window or quit the app
