@@ -602,9 +602,11 @@ func AdminUpdateSystemSettings(c *gin.Context) {
 		saveSetting(settingCompanyName, *req.CompanyName)
 	}
 	if req.CompanyLogo != nil {
+		deleteOldUpload(loadAllSettings()[settingCompanyLogo], *req.CompanyLogo)
 		saveSetting(settingCompanyLogo, *req.CompanyLogo)
 	}
 	if req.CompanyLogoDark != nil {
+		deleteOldUpload(loadAllSettings()[settingCompanyLogoDark], *req.CompanyLogoDark)
 		saveSetting(settingCompanyLogoDark, *req.CompanyLogoDark)
 	}
 	if req.CompanyAddress != nil {

@@ -326,7 +326,9 @@ func UpdateCustomer(c *gin.Context) {
 	if req.IsHidden != nil && middleware.GetGlobalRole(c) == "admin" {
 		updates["is_hidden"] = *req.IsHidden
 	}
+	oldLogoURL := cust.LogoURL
 	database.DB.Model(&cust).Updates(updates)
+	deleteOldUpload(oldLogoURL, req.LogoURL)
 	database.DB.First(&cust, id)
 	c.JSON(http.StatusOK, cust)
 }

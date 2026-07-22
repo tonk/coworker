@@ -127,7 +127,9 @@ func AdminUpdateProject(c *gin.Context) {
 	if req.Color != "" {
 		updates["color"] = req.Color
 	}
+	var oldAvatar string
 	if req.Avatar != nil {
+		database.DB.Model(&models.Project{}).Where("id = ?", id).Pluck("avatar", &oldAvatar)
 		updates["avatar"] = *req.Avatar
 	}
 	if req.IsArchived != nil {
@@ -140,6 +142,9 @@ func AdminUpdateProject(c *gin.Context) {
 	if err := database.DB.Model(&models.Project{}).Where("id = ?", id).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
+	}
+	if req.Avatar != nil {
+		deleteOldUpload(oldAvatar, *req.Avatar)
 	}
 
 	var project models.Project

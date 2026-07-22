@@ -201,6 +201,8 @@ func AdminUpdateGroup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
+	oldAvatar := g.Avatar
+
 	updates := map[string]any{"description": req.Description}
 	if req.Name != "" {
 		updates["name"] = req.Name
@@ -209,6 +211,9 @@ func AdminUpdateGroup(c *gin.Context) {
 		updates["avatar"] = *req.Avatar
 	}
 	database.DB.Model(&g).Updates(updates)
+	if req.Avatar != nil {
+		deleteOldUpload(oldAvatar, *req.Avatar)
+	}
 	database.DB.First(&g, groupID)
 	if g.ConversationID != nil {
 		convUpdates := map[string]any{}

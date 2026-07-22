@@ -355,6 +355,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	if req.Email != "" {
 		updates["email"] = strings.ToLower(req.Email)
 	}
+	var oldAvatarURL string
 	if req.AvatarURL != nil {
 		av := *req.AvatarURL
 		if av != "" {
@@ -366,6 +367,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 				return
 			}
 		}
+		database.DB.Model(&models.User{}).Where("id = ?", userID).Pluck("avatar_url", &oldAvatarURL)
 		updates["avatar_url"] = av
 	}
 	validLocales := map[string]bool{
@@ -459,6 +461,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	if err := database.DB.Model(&models.User{}).Where("id = ?", userID).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
+	}
+	if req.AvatarURL != nil {
+		deleteOldUpload(oldAvatarURL, *req.AvatarURL)
 	}
 
 	var user models.User

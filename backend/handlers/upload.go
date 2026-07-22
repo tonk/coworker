@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
@@ -87,4 +88,20 @@ func UploadImage(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"url": "/uploads/" + storedName})
+}
+
+// deleteOldUpload removes the file behind a previous /uploads/... URL when it's
+// being replaced by a different one (or cleared), so avatars/logos don't pile up
+// as orphaned files every time they're changed. No-op for empty, unchanged, or
+// non-local (external) URLs.
+func deleteOldUpload(oldURL, newURL string) {
+	if oldURL == "" || oldURL == newURL || !strings.HasPrefix(oldURL, "/uploads/") {
+		return
+	}
+	uploadDir := "./uploads"
+	if attachmentCfg != nil && attachmentCfg.UploadDir != "" {
+		uploadDir = attachmentCfg.UploadDir
+	}
+	name := filepath.Base(oldURL)
+	_ = os.Remove(filepath.Join(uploadDir, name))
 }

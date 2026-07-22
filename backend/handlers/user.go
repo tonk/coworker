@@ -235,7 +235,9 @@ func AdminUpdateUser(c *gin.Context) {
 	if req.DisplayName != "" {
 		updates["display_name"] = req.DisplayName
 	}
+	var oldAvatarURL string
 	if req.AvatarURL != "" {
+		database.DB.Model(&models.User{}).Where("id = ?", id).Pluck("avatar_url", &oldAvatarURL)
 		updates["avatar_url"] = req.AvatarURL
 	}
 	if req.Email != "" {
@@ -324,6 +326,9 @@ func AdminUpdateUser(c *gin.Context) {
 	if err := database.DB.Model(&models.User{}).Where("id = ?", id).Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
+	}
+	if req.AvatarURL != "" {
+		deleteOldUpload(oldAvatarURL, req.AvatarURL)
 	}
 
 	var user models.User

@@ -380,6 +380,8 @@ func UpdateProject(c *gin.Context) {
 		return
 	}
 
+	oldAvatar := project.Avatar
+
 	updates := map[string]interface{}{}
 	if req.Name != "" {
 		updates["name"] = req.Name
@@ -408,6 +410,9 @@ func UpdateProject(c *gin.Context) {
 	}
 
 	database.DB.Model(project).Updates(updates)
+	if req.Avatar != nil {
+		deleteOldUpload(oldAvatar, *req.Avatar)
+	}
 	database.DB.First(project, project.ID)
 	c.JSON(http.StatusOK, project)
 }
