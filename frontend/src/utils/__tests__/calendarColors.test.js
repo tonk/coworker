@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { colorForCustomer, assignCustomerColors } from '../calendarColors'
+import { colorForCustomer, assignCustomerColors, assignProjectColors } from '../calendarColors'
 
 describe('colorForCustomer', () => {
   it('returns a stable color for the same customer id', () => {
@@ -46,5 +46,19 @@ describe('assignCustomerColors', () => {
     const first = assignCustomerColors(customers)
     const second = assignCustomerColors(customers)
     for (const c of customers) expect(first.get(c.id)).toBe(second.get(c.id))
+  })
+})
+
+describe('assignProjectColors', () => {
+  it("keeps a project's own explicit color", () => {
+    const map = assignProjectColors([{ id: 1, color: '#123456' }])
+    expect(map.get(1)).toBe('#123456')
+  })
+
+  it('never assigns the same auto-picked color to two different colorless projects (while the palette lasts)', () => {
+    const projects = Array.from({ length: 5 }, (_, i) => ({ id: i + 1, color: '' }))
+    const map = assignProjectColors(projects)
+    const colors = projects.map((p) => map.get(p.id))
+    expect(new Set(colors).size).toBe(colors.length)
   })
 })

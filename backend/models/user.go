@@ -49,6 +49,7 @@ type User struct {
 	DistanceUnit            string         `gorm:"size:10;default:'km'" json:"distance_unit"`                 // "km" | "miles"
 	DashboardDefault        string         `gorm:"size:10;default:'boards'" json:"dashboard_default"`         // "boards" | "tickets"
 	TimeTrackingViewDefault string         `gorm:"size:10;default:'table'" json:"time_tracking_view_default"` // "table" | "calendar"
+	CalendarColorMode       string         `gorm:"size:10;default:'customer'" json:"calendar_color_mode"`     // "customer" | "project"
 	TrayIconEnabled         bool           `gorm:"default:true" json:"tray_icon_enabled"`
 	CloseToTrayEnabled      bool           `gorm:"default:true" json:"close_to_tray_enabled"`
 	MonWorkStart            string         `gorm:"size:5;default:'08:00'" json:"mon_work_start"`

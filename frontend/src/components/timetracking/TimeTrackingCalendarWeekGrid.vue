@@ -68,7 +68,7 @@ const props = defineProps({
   pxPerHour: { type: Number, default: PX_PER_HOUR },
   customerName: { type: Function, required: true }, // (entry) => string
   projectName: { type: Function, required: true },  // (entry) => string
-  customerColor: { type: Function, required: true }, // (entry) => hex color string
+  entryColor: { type: Function, required: true }, // (entry) => hex color string (customer or project, per user setting)
   readOnly: { type: Boolean, default: false },
 })
 defineEmits(['slot-click', 'slot-contextmenu', 'block-contextmenu', 'block-open', 'block-move', 'block-resize'])
@@ -112,7 +112,7 @@ const scheduledByDay = computed(() => {
         height: heightPx(e.start_time, e.end_time, props.pxPerHour),
         customerName: props.customerName(e),
         projectName: props.projectName(e),
-        color: props.customerColor(e),
+        color: props.entryColor(e),
       }))
   }
   return result
@@ -123,7 +123,7 @@ const unscheduledByDay = computed(() => {
   for (const d of props.weekDays) {
     const list = (entriesByDay.value[d.iso] || [])
       .filter((e) => !e.start_time || !e.end_time)
-      .map((e) => ({ entry: e, customerName: props.customerName(e), projectName: props.projectName(e), color: props.customerColor(e) }))
+      .map((e) => ({ entry: e, customerName: props.customerName(e), projectName: props.projectName(e), color: props.entryColor(e) }))
     if (list.length) result[d.iso] = list
   }
   return result

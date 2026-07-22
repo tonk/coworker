@@ -318,6 +318,7 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 		DistanceUnit            string  `json:"distance_unit"`
 		DashboardDefault        string  `json:"dashboard_default"`
 		TimeTrackingViewDefault string  `json:"time_tracking_view_default"`
+		CalendarColorMode       string  `json:"calendar_color_mode"`
 		MonWorkStart            string  `json:"mon_work_start"`
 		MonWorkEnd              string  `json:"mon_work_end"`
 		TueWorkStart            string  `json:"tue_work_start"`
@@ -432,6 +433,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	}
 	if req.TimeTrackingViewDefault == "table" || req.TimeTrackingViewDefault == "calendar" {
 		updates["time_tracking_view_default"] = req.TimeTrackingViewDefault
+	}
+	if req.CalendarColorMode == "customer" || req.CalendarColorMode == "project" {
+		updates["calendar_color_mode"] = req.CalendarColorMode
 	}
 	updates["mon_work_start"] = req.MonWorkStart
 	updates["mon_work_end"] = req.MonWorkEnd

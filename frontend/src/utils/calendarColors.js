@@ -31,33 +31,41 @@ export function colorForCustomer(customerId) {
 }
 
 /**
- * Builds a Map<customerId, color> for a list of customers: customers with an
- * explicit `.color` keep it; the rest are assigned the first palette color not
+ * Builds a Map<id, color> for a list of items (customers or projects): items with
+ * an explicit `.color` keep it; the rest are assigned the first palette color not
  * already taken (by an explicit color or an earlier auto-assignment), processed
- * in id order so the result is stable across re-renders for the same customer set.
+ * in id order so the result is stable across re-renders for the same item set.
  */
-export function assignCustomerColors(customers) {
+function assignColors(items) {
   const map = new Map()
   const used = new Set()
 
   const withColor = []
   const withoutColor = []
-  for (const c of customers || []) {
-    if (c.color) withColor.push(c)
-    else withoutColor.push(c)
+  for (const item of items || []) {
+    if (item.color) withColor.push(item)
+    else withoutColor.push(item)
   }
 
-  for (const c of withColor) {
-    map.set(c.id, c.color)
-    used.add(c.color)
+  for (const item of withColor) {
+    map.set(item.id, item.color)
+    used.add(item.color)
   }
 
-  for (const c of [...withoutColor].sort((a, b) => a.id - b.id)) {
+  for (const item of [...withoutColor].sort((a, b) => a.id - b.id)) {
     const next = PALETTE.find((color) => !used.has(color))
-    const color = next || hashColor(c.id)
-    map.set(c.id, color)
+    const color = next || hashColor(item.id)
+    map.set(item.id, color)
     used.add(color)
   }
 
   return map
+}
+
+export function assignCustomerColors(customers) {
+  return assignColors(customers)
+}
+
+export function assignProjectColors(projects) {
+  return assignColors(projects)
 }

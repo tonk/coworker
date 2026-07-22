@@ -26,7 +26,7 @@
       :px-per-hour="pxPerHour"
       :customer-name="customerNameFor"
       :project-name="projectNameFor"
-      :customer-color="customerColorFor"
+      :entry-color="entryColorFor"
       :read-only="readOnly"
       @slot-click="onSlotClick"
       @slot-contextmenu="onSlotContextMenu"
@@ -71,7 +71,8 @@ import TimeTrackingCalendarWeekGrid from './TimeTrackingCalendarWeekGrid.vue'
 import ContextMenu from '@/components/common/ContextMenu.vue'
 import TimeEntryModal from './TimeEntryModal.vue'
 import { parseWallClock, fmtWallClock } from '@/utils/shiftTimeEntries'
-import { assignCustomerColors, NO_CUSTOMER_COLOR } from '@/utils/calendarColors'
+import { assignCustomerColors, assignProjectColors, NO_CUSTOMER_COLOR } from '@/utils/calendarColors'
+import { useAuthStore } from '@/stores/auth'
 
 const ZOOM_STORAGE_KEY = 'tt_calendar_zoom'
 const ZOOM_LEVELS = [20, 30, 45, 60, 90, 120, 160] // px per hour
@@ -96,6 +97,7 @@ const props = defineProps({
 const emit = defineEmits(['save-entry', 'delete-entry', 'move-entry', 'resize-entry'])
 
 const { t } = useI18n()
+const auth = useAuthStore()
 
 const ctxMenu = ref(null)
 const modalState = ref(null) // { entry } | { prefill }
@@ -124,8 +126,13 @@ function projectNameFor(entry) {
 }
 
 const customerColorMap = computed(() => assignCustomerColors(props.allCustomers))
+const projectColorMap = computed(() => assignProjectColors(props.allProjects))
 
-function customerColorFor(entry) {
+function entryColorFor(entry) {
+  if (auth.user?.calendar_color_mode === 'project') {
+    if (entry.project_id == null) return NO_CUSTOMER_COLOR
+    return projectColorMap.value.get(entry.project_id) || NO_CUSTOMER_COLOR
+  }
   if (entry.customer_id == null) return NO_CUSTOMER_COLOR
   return customerColorMap.value.get(entry.customer_id) || NO_CUSTOMER_COLOR
 }
