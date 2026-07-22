@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.16.4 — 2026-07-22
+
+### Fixed
+- **Image upload — SVG logos always rejected, PNGs sometimes rejected** — uploading a customer logo, company logo, or avatar failed with "Failed to upload image" for SVG files unconditionally (SVG was never in the server's allowed-image-type list), and for PNG/JPEG/GIF/WebP files whenever the browser sent no (or an empty) content type for the upload — the server checked that client-supplied header before ever looking at the actual file. Acceptance is now based solely on the file's real content; the size limit also now honors the configured upload limit (default 25 MB) instead of a hardcoded 10 MB. The upload error toast now shows the actual reason instead of a generic message.
+- **Uploaded avatars and logos accumulated forever on disk** — replacing a user avatar, customer logo, company logo (light or dark), project avatar, or group avatar never deleted the file it replaced, so every change left an orphaned file under `uploads/` permanently. The previous file is now removed whenever one of these is changed or cleared.
+
 ## v0.16.3 — 2026-07-22
 
 ### Added
