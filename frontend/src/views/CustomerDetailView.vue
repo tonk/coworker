@@ -1816,8 +1816,8 @@ async function onLogoFileSelected(e) {
   try {
     const { data } = await attachmentsApi.uploadImage(file)
     editForm.value.logo_url = data.url
-  } catch {
-    ui.error('Failed to upload image')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to upload image')
   }
 }
 

@@ -716,8 +716,8 @@ async function onAvatarFileSelected(e) {
     const { data } = await attachmentsApi.uploadImage(file)
     form.value.avatar_url = data.url
     avatarError.value = false
-  } catch {
-    ui.error('Failed to upload image')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to upload image')
   }
 }
 

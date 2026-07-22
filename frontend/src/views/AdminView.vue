@@ -2616,8 +2616,8 @@ async function onLogoFileSelected(e) {
   try {
     const { data } = await attachmentsApi.uploadImage(file)
     systemSettings.value.company_logo = data.url
-  } catch {
-    ui.error('Failed to upload image')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to upload image')
   }
 }
 
@@ -2633,8 +2633,8 @@ async function onLogoDarkFileSelected(e) {
   try {
     const { data } = await attachmentsApi.uploadImage(file)
     systemSettings.value.company_logo_dark = data.url
-  } catch {
-    ui.error('Failed to upload image')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to upload image')
   }
 }
 
@@ -3421,8 +3421,8 @@ async function onNewProjectAvatarSelected(e) {
   try {
     const { data } = await attachmentsApi.uploadImage(file)
     newProject.value.avatar = data.url
-  } catch {
-    ui.error('Failed to upload avatar')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to upload avatar')
   }
 }
 
@@ -3433,8 +3433,8 @@ async function onEditProjectAvatarSelected(e) {
   try {
     const { data } = await attachmentsApi.uploadImage(file)
     editProject.value.avatar = data.url
-  } catch {
-    ui.error('Failed to upload avatar')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to upload avatar')
   }
 }
 
@@ -3445,8 +3445,8 @@ async function onGroupAvatarSelected(e) {
   try {
     const { data } = await attachmentsApi.uploadImage(file)
     groupForm.value.avatar = data.url
-  } catch {
-    ui.error('Failed to upload avatar')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to upload avatar')
   }
 }
 

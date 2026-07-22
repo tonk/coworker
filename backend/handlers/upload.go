@@ -1,20 +1,21 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 )
 
 var allowedImageTypes = map[string]bool{
-	"image/jpeg": true,
-	"image/png":  true,
-	"image/gif":  true,
-	"image/webp": true,
+	"image/jpeg":    true,
+	"image/png":     true,
+	"image/gif":     true,
+	"image/webp":    true,
+	"image/svg+xml": true,
 }
 
 // UploadImage POST /api/v1/upload/image
@@ -27,21 +28,8 @@ func UploadImage(c *gin.Context) {
 		return
 	}
 
-	mimeType := fh.Header.Get("Content-Type")
-	if mimeType == "" {
-		mimeType = "application/octet-stream"
-	}
-	// Strip parameters like "; charset=..."
-	if idx := strings.Index(mimeType, ";"); idx != -1 {
-		mimeType = strings.TrimSpace(mimeType[:idx])
-	}
-	if !allowedImageTypes[mimeType] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image (jpeg, png, gif, webp)"})
-		return
-	}
-
-	// Validate file content against magic bytes — rejects files that lie about
-	// their Content-Type header.
+	// Validate file content against magic bytes — the client-supplied Content-Type
+	// header is ignored, matching the convention used for attachments.
 	f, err := fh.Open()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to read file"})
@@ -50,14 +38,18 @@ func UploadImage(c *gin.Context) {
 	detected, err := mimetype.DetectReader(f)
 	f.Close()
 	if err != nil || !allowedImageTypes[detected.String()] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "file content does not match a valid image type"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image (jpeg, png, gif, webp, svg)"})
 		return
 	}
+	mimeType := detected.String()
 
-	maxMB := int64(10)
+	maxMB := int64(25)
+	if attachmentCfg != nil && attachmentCfg.MaxUploadMB > 0 {
+		maxMB = attachmentCfg.MaxUploadMB
+	}
 
 	if fh.Size > maxMB*1024*1024 {
-		c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "image too large (max 10 MB)"})
+		c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": fmt.Sprintf("image too large (max %d MB)", maxMB)})
 		return
 	}
 
@@ -82,6 +74,8 @@ func UploadImage(c *gin.Context) {
 			ext = ".gif"
 		case "image/webp":
 			ext = ".webp"
+		case "image/svg+xml":
+			ext = ".svg"
 		}
 	}
 
