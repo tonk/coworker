@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.16.5 — 2026-07-23
+
+### Fixed
+- **Time tracking calendar — dead space below the grid, and the page footer scrolling with it** — the Log Time calendar panel was capped at a fixed 70% of viewport height instead of filling the space available below it, leaving a blank gap down to the version-string footer; the calendar now stretches to fill that space, and a missing layout constraint that let the whole page scroll (dragging the footer along with it) instead of just the calendar's own grid has been fixed too.
+- **Time tracking calendar — overnight entries (e.g. a 19:00 → 07:00 standby shift) rendered and edited incorrectly** — an entry that continues past midnight showed as a ~15-minute sliver instead of spanning to midnight; it now renders as two linked blocks split at midnight. Dragging to resize such an entry also collapsed its duration down to 15 minutes, because the drag math assumed the end time always came after the start time on the same day — it's now aware of the overnight case. The "Edit Entry" dialog previously refused to save any end time earlier than the start time at all (with a confusing, unrelated error message); overnight ranges are now accepted, with a correct validation message.
+- **Tools — orphaned avatar/logo files from before the previous release** — see the new `gc-uploads` tool below, added to reclaim files left behind by the upload-cleanup bug fixed in v0.16.4.
+
+### Added
+- **`gc-uploads` maintenance tool** — a new one-off backend CLI (`cmd/gc-uploads`) that finds upload files no longer referenced by any user, customer, project, group, system setting, or attachment, and lists them (dry run by default) or removes them with `--delete`. Useful for reclaiming disk space left behind by the pre-v0.16.4 avatar/logo replacement bug without hand-editing the database.
+
 ## v0.16.4 — 2026-07-22
 
 ### Fixed

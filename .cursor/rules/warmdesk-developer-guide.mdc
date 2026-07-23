@@ -231,6 +231,8 @@ Files are stored in `upload_dir` (default `./uploads`) with randomised hex names
 
 `DownloadAttachment` verifies project membership or conversation participation before serving the file (see Security hardening above). The `Content-Disposition` filename is escaped to prevent header injection.
 
+Avatars, customer/company logos, and project/group avatars are not `attachments` rows — they're plain files referenced directly by a URL column on their owning record (`User.AvatarURL`, `Customer.LogoURL`, etc.). `backend/cmd/gc-uploads` is a standalone CLI that scans `upload_dir` for files no longer referenced by any user/customer/project/group/system-setting/attachment row and lists them (dry run by default) or deletes them with `--delete` — useful for reclaiming orphans left behind by replace-without-delete bugs in earlier releases (fixed in v0.16.4 for new replacements going forward).
+
 ---
 
 ## Helpdesk (ticketing)

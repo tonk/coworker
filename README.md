@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.16.4)
+## Latest release (v0.16.5)
 
-- **Fix** — uploading an SVG logo, or a PNG/JPEG/GIF/WebP from certain browsers, could fail with "Failed to upload image"; the upload endpoint now validates images by their actual content instead of a client-supplied header.
-- **Fix** — replacing a user avatar, customer logo, company logo, project avatar, or group avatar no longer leaves the old file behind — the previous upload is now deleted.
+- **Fix** — the time tracking calendar view no longer leaves dead space below the grid, and scrolling it no longer drags the page footer along with it.
+- **Fix** — overnight time entries (e.g. a 19:00 → 07:00 standby shift) now render, drag-resize, and save correctly instead of collapsing to a 15-minute sliver or being rejected outright.
+- **Added** — a new `gc-uploads` CLI tool for reclaiming orphaned avatar/logo files left behind by upload bugs fixed in earlier releases.
 
 ## Experiment
 
