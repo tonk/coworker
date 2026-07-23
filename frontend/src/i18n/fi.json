@@ -1193,6 +1193,7 @@
     "end_time": "Päättymisaika",
     "set_time_range": "Aseta aikaväli",
     "time_ends_next_day": "Päättyy seuraavana aamuna",
+    "time_range_equal_invalid": "Alku- ja loppuaika eivät voi olla samat",
     "standby_shift": "Kirjaa valmiusvuoro",
     "standby_shift_title": "Kirjaa valmiusvuoro",
     "standby_start_date": "Alkupäivä",

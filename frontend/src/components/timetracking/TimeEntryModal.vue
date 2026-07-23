@@ -68,7 +68,7 @@ import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/common/BaseModal.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
 import { filterProjectsForCustomer } from '@/utils/projectFilter'
-import { parseWallClock, fmtWallClock } from '@/utils/shiftTimeEntries'
+import { parseWallClock, fmtWallClock, wallClockSpanMinutes } from '@/utils/shiftTimeEntries'
 
 const { t } = useI18n()
 
@@ -110,16 +110,19 @@ function onTimeInput(field, event) {
 
 const startMinutes = computed(() => parseWallClock(form.start_time))
 const endMinutes = computed(() => parseWallClock(form.end_time))
+// Overnight entries (e.g. 19:00 → 07:00) are valid — an end time earlier than or
+// equal to the start time means the shift continues past midnight, not an error.
+const spanMinutes = computed(() => wallClockSpanMinutes(startMinutes.value, endMinutes.value))
 
 const timeError = computed(() => {
   if (!form.start_time || !form.end_time) return ''
   if (startMinutes.value < 0 || endMinutes.value < 0) return ''
-  if (endMinutes.value <= startMinutes.value) return t('timeTracking.custom_range_invalid')
+  if (spanMinutes.value == null) return t('timeTracking.time_range_equal_invalid')
   return ''
 })
 
 const formValid = computed(() =>
-  !!form.date && startMinutes.value >= 0 && endMinutes.value >= 0 && endMinutes.value > startMinutes.value,
+  !!form.date && startMinutes.value >= 0 && endMinutes.value >= 0 && spanMinutes.value != null,
 )
 
 function onSave() {
@@ -130,7 +133,7 @@ function onSave() {
     project_id: form.project_id || null,
     contract_id: props.entry?.contract_id ?? null,
     date: form.date,
-    minutes: endMinutes.value - startMinutes.value,
+    minutes: spanMinutes.value,
     description: form.description,
     is_holiday: props.entry?.is_holiday || false,
     start_time: fmtWallClock(startMinutes.value),

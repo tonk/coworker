@@ -1193,6 +1193,7 @@
     "end_time": "Lokatími",
     "set_time_range": "Stilla tímabil",
     "time_ends_next_day": "Lýkur næsta morgun",
+    "time_range_equal_invalid": "Upphafs- og lokatími mega ekki vera eins",
     "standby_shift": "Skrá vakt",
     "standby_shift_title": "Skrá vakt",
     "standby_start_date": "Upphafsdagur",

@@ -1333,6 +1333,7 @@
     "end_time": "End time",
     "set_time_range": "Set Time Range",
     "time_ends_next_day": "Ends the next morning",
+    "time_range_equal_invalid": "Start and end time cannot be the same",
     "contract": "Contract",
     "no_contract": "No contract",
     "fill_from_slots": "Fill from slots",

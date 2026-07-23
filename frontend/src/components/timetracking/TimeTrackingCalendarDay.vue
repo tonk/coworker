@@ -10,10 +10,11 @@
     <div v-if="dragSelect" class="cal-drag-selection" :style="selectionStyle" aria-hidden="true" />
     <TimeTrackingCalendarBlock
       v-for="item in entries"
-      :key="item.entry.id"
+      :key="`${item.entry.id}-${item.segment}`"
       :entry="item.entry"
       :top="item.top"
       :height="item.height"
+      :segment="item.segment"
       :px-per-hour="pxPerHour"
       :day-index="dayIndex"
       :week-days="weekDays"

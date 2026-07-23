@@ -1193,6 +1193,7 @@
     "end_time": "Heure de fin",
     "set_time_range": "Définir la plage horaire",
     "time_ends_next_day": "Se termine le lendemain matin",
+    "time_range_equal_invalid": "L'heure de début et de fin ne peuvent pas être identiques",
     "standby_shift": "Enregistrer une garde",
     "standby_shift_title": "Enregistrer une garde",
     "standby_start_date": "Date de début",

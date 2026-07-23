@@ -4,7 +4,12 @@
     role="button"
     :tabindex="readOnly ? -1 : 0"
     class="cal-block"
-    :class="{ 'cal-block-dragging': !!drag, 'cal-block-readonly': readOnly }"
+    :class="{
+      'cal-block-dragging': !!drag,
+      'cal-block-readonly': readOnly,
+      'cal-block-overnight-start': segment === 'start',
+      'cal-block-overnight-continuation': segment === 'continuation',
+    }"
     :style="blockStyle"
     :aria-label="accessibleLabel"
     @pointerdown="onMovePointerDown"
@@ -19,13 +24,13 @@
       <div v-if="!dense && entry.description" class="cal-block-activity">{{ entry.description }}</div>
     </div>
     <div
-      v-if="!readOnly"
+      v-if="!readOnly && segment !== 'continuation'"
       class="cal-resize-handle cal-resize-top"
       aria-hidden="true"
       @pointerdown.stop="onResizePointerDown('top', $event)"
     />
     <div
-      v-if="!readOnly"
+      v-if="!readOnly && segment !== 'start'"
       class="cal-resize-handle cal-resize-bottom"
       aria-hidden="true"
       @pointerdown.stop="onResizePointerDown('bottom', $event)"
@@ -54,6 +59,10 @@ const props = defineProps({
   color: { type: String, default: NO_CUSTOMER_COLOR }, // resolved by the parent (own customer color, or the assigned fallback)
   readOnly: { type: Boolean, default: false },
   dense: { type: Boolean, default: false },
+  // 'full': a same-day entry. 'start'/'continuation': the two visual halves of an
+  // overnight entry split across midnight — each has one edge (bottom/top respectively)
+  // that is the midnight boundary, not a real entry edge, so it can't be dragged/resized.
+  segment: { type: String, default: 'full' },
 })
 const emit = defineEmits(['open', 'contextmenu', 'move', 'resize'])
 
@@ -110,7 +119,9 @@ function onClick() {
 }
 
 function onMovePointerDown(e) {
-  if (props.readOnly || e.button !== 0) return
+  // Split overnight segments have no single well-defined "day" to move to — edit
+  // them via the modal (opened by a plain click) instead of free-dragging.
+  if (props.readOnly || props.segment !== 'full' || e.button !== 0) return
   e.preventDefault()
   const el = blockEl.value
   el.setPointerCapture(e.pointerId)
@@ -182,28 +193,36 @@ function onResizePointerUp(e) {
 
   const startM = parseWallClock(props.entry.start_time)
   const endM = parseWallClock(props.entry.end_time)
+  const newDate = props.entry.date.slice(0, 10)
 
   if (d.edge === 'top') {
     const clampedDy = Math.min(d.dy, props.height - MIN_BLOCK_HEIGHT_PX)
     const newStartTime = pxToWallClock(props.top + clampedDy, props.pxPerHour, DEFAULT_SNAP_MINUTES)
-    const newStartM = Math.min(endM - DEFAULT_SNAP_MINUTES, parseWallClock(newStartTime))
+    let newStartM = parseWallClock(newStartTime)
+    // Only a same-day ('full') entry needs its new start clamped below the
+    // (unchanged) end time — an overnight 'start' segment's end lives on the
+    // next day, so that comparison would be meaningless here.
+    if (props.segment === 'full') newStartM = Math.min(endM - DEFAULT_SNAP_MINUTES, newStartM)
+    const newMinutes = wallClockSpanMinutes(newStartM, endM) ?? DEFAULT_SNAP_MINUTES
     emit('resize', {
       entry: props.entry,
-      newDate: props.entry.date.slice(0, 10),
+      newDate,
       newStartTime: fmtWallClock(newStartM),
       newEndTime: props.entry.end_time,
-      newMinutes: endM - newStartM,
+      newMinutes,
     })
   } else {
     const clampedDy = Math.max(d.dy, MIN_BLOCK_HEIGHT_PX - props.height)
     const newEndTime = pxToWallClock(props.top + props.height + clampedDy, props.pxPerHour, DEFAULT_SNAP_MINUTES)
-    const newEndM = Math.max(startM + DEFAULT_SNAP_MINUTES, parseWallClock(newEndTime))
+    let newEndM = parseWallClock(newEndTime)
+    if (props.segment === 'full') newEndM = Math.max(startM + DEFAULT_SNAP_MINUTES, newEndM)
+    const newMinutes = wallClockSpanMinutes(startM, newEndM) ?? DEFAULT_SNAP_MINUTES
     emit('resize', {
       entry: props.entry,
-      newDate: props.entry.date.slice(0, 10),
+      newDate,
       newStartTime: props.entry.start_time,
       newEndTime: fmtWallClock(newEndM),
-      newMinutes: newEndM - startM,
+      newMinutes,
     })
   }
 }
@@ -230,6 +249,16 @@ function onResizePointerUp(e) {
 
 .cal-block-dragging { cursor: grabbing; opacity: 0.9; }
 .cal-block-readonly { cursor: default; }
+
+/* Overnight entries split across midnight: the midnight-adjoining edge is dashed
+   to show it's a continuation, not the entry's real start/end. Not draggable as
+   a whole (see onMovePointerDown), so use a plain pointer cursor. */
+.cal-block-overnight-start,
+.cal-block-overnight-continuation {
+  cursor: pointer;
+}
+.cal-block-overnight-start { border-bottom: 2px dashed rgba(255, 255, 255, 0.6); }
+.cal-block-overnight-continuation { border-top: 2px dashed rgba(255, 255, 255, 0.6); }
 
 .cal-block-body { padding: 2px 6px; pointer-events: none; }
 .cal-block-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -1193,6 +1193,7 @@
     "end_time": "Ora di fine",
     "set_time_range": "Imposta intervallo di tempo",
     "time_ends_next_day": "Termina la mattina successiva",
+    "time_range_equal_invalid": "L'ora di inizio e fine non possono essere uguali",
     "standby_shift": "Registra turno di reperibilità",
     "standby_shift_title": "Registra turno di reperibilità",
     "standby_start_date": "Data inizio",

@@ -57,7 +57,8 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import TimeTrackingCalendarDay from './TimeTrackingCalendarDay.vue'
-import { topOffsetPx, heightPx, PX_PER_HOUR } from '@/utils/calendarLayout'
+import { topOffsetPx, heightPx, PX_PER_HOUR, MIN_BLOCK_HEIGHT_PX } from '@/utils/calendarLayout'
+import { parseWallClock, addDaysISO } from '@/utils/shiftTimeEntries'
 import { useDateFormat } from '@/composables/useDateFormat'
 
 const { formatTime } = useDateFormat()
@@ -103,17 +104,59 @@ const entriesByDay = computed(() => {
 
 const scheduledByDay = computed(() => {
   const result = {}
+  for (const d of props.weekDays) result[d.iso] = []
+
   for (const d of props.weekDays) {
-    result[d.iso] = (entriesByDay.value[d.iso] || [])
-      .filter((e) => e.start_time && e.end_time)
-      .map((e) => ({
+    for (const e of (entriesByDay.value[d.iso] || [])) {
+      if (!e.start_time || !e.end_time) continue
+      const startM = parseWallClock(e.start_time)
+      const endM = parseWallClock(e.end_time)
+      if (startM < 0 || endM < 0) continue
+
+      const base = {
         entry: e,
-        top: topOffsetPx(e.start_time, props.pxPerHour),
-        height: heightPx(e.start_time, e.end_time, props.pxPerHour),
         customerName: props.customerName(e),
         projectName: props.projectName(e),
         color: props.entryColor(e),
-      }))
+      }
+
+      if (endM === startM) {
+        // Equal start/end (e.g. 00:00–00:00) is the whole-day convention — a single
+        // full-height block, not a zero-length or overnight-wrapping one.
+        result[d.iso].push({ ...base, top: 0, height: 24 * props.pxPerHour, segment: 'full' })
+        continue
+      }
+
+      if (endM > startM) {
+        result[d.iso].push({
+          ...base,
+          top: topOffsetPx(e.start_time, props.pxPerHour),
+          height: heightPx(e.start_time, e.end_time, props.pxPerHour),
+          segment: 'full',
+        })
+        continue
+      }
+
+      // endM < startM: a genuine overnight entry (e.g. 19:00 → 07:00 next day).
+      // Render as two segments: start_time→midnight on this day, and
+      // midnight→end_time on the next day (only if that day is in view).
+      result[d.iso].push({
+        ...base,
+        top: topOffsetPx(e.start_time, props.pxPerHour),
+        height: Math.max(MIN_BLOCK_HEIGHT_PX, ((24 * 60 - startM) / 60) * props.pxPerHour),
+        segment: 'start',
+      })
+
+      const nextIso = addDaysISO(d.iso, 1)
+      if (result[nextIso]) {
+        result[nextIso].push({
+          ...base,
+          top: 0,
+          height: heightPx('00:00', e.end_time, props.pxPerHour),
+          segment: 'continuation',
+        })
+      }
+    }
   }
   return result
 })

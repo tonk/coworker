@@ -1193,6 +1193,7 @@
     "end_time": "Endzeit",
     "set_time_range": "Zeitbereich festlegen",
     "time_ends_next_day": "Endet am nächsten Morgen",
+    "time_range_equal_invalid": "Start- und Endzeit dürfen nicht gleich sein",
     "standby_shift": "Bereitschaftsdienst erfassen",
     "standby_shift_title": "Bereitschaftsdienst erfassen",
     "standby_start_date": "Startdatum",

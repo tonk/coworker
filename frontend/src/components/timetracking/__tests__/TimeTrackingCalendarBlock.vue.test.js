@@ -40,6 +40,11 @@ function mountBlock(props = {}) {
 
 beforeEach(() => {
   setActivePinia(createPinia())
+  // jsdom doesn't implement the Pointer Events capture API used by the drag/resize handlers.
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = () => {}
+    Element.prototype.releasePointerCapture = () => {}
+  }
 })
 
 describe('TimeTrackingCalendarBlock', () => {
@@ -80,5 +85,59 @@ describe('TimeTrackingCalendarBlock', () => {
     const wrapper = mountBlock({ readOnly: true })
     expect(wrapper.get('.cal-block').attributes('tabindex')).toBe('-1')
     expect(wrapper.findAll('.cal-resize-handle').length).toBe(0)
+  })
+
+  it('hides the bottom handle on a split "start" segment (its bottom edge is midnight, not the real end)', () => {
+    const wrapper = mountBlock({ segment: 'start' })
+    expect(wrapper.find('.cal-resize-top').exists()).toBe(true)
+    expect(wrapper.find('.cal-resize-bottom').exists()).toBe(false)
+  })
+
+  it('hides the top handle on a split "continuation" segment (its top edge is midnight, not the real start)', () => {
+    const wrapper = mountBlock({ segment: 'continuation' })
+    expect(wrapper.find('.cal-resize-top').exists()).toBe(false)
+    expect(wrapper.find('.cal-resize-bottom').exists()).toBe(true)
+  })
+
+  function firePointer(el, type, opts) {
+    el.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, ...opts }))
+  }
+
+  it('computes overnight-aware minutes when resizing the top handle of a split "start" segment', () => {
+    // 19:00 -> 07:00 (next day), rendered as a 'start' segment from 19:00 to midnight.
+    const overnightEntry = { id: 2, date: '2026-07-21T00:00:00Z', start_time: '19:00', end_time: '07:00', description: 'Standby' }
+    const wrapper = mountBlock({ entry: overnightEntry, top: 19 * 60, height: 5 * 60, segment: 'start' })
+    const blockEl = wrapper.get('.cal-block').element
+    const topHandle = wrapper.get('.cal-resize-top').element
+
+    // Drag the start edge up by one hour (60px at pxPerHour=60): 19:00 -> 18:00.
+    firePointer(topHandle, 'pointerdown', { clientY: 19 * 60, pointerId: 1 })
+    firePointer(blockEl, 'pointermove', { clientY: 18 * 60, pointerId: 1 })
+    firePointer(blockEl, 'pointerup', { clientY: 18 * 60, pointerId: 1 })
+
+    const payload = wrapper.emitted('resize')[0][0]
+    expect(payload.newStartTime).toBe('18:00')
+    expect(payload.newEndTime).toBe('07:00')
+    // 18:00 -> 07:00 next day = 13 hours, NOT the ~15 minutes a same-day-only
+    // calculation would (wrongly) produce.
+    expect(payload.newMinutes).toBe(13 * 60)
+  })
+
+  it('computes overnight-aware minutes when resizing the bottom handle of a split "continuation" segment', () => {
+    // Same entry, rendered as the 'continuation' segment from midnight to 07:00.
+    const overnightEntry = { id: 2, date: '2026-07-21T00:00:00Z', start_time: '19:00', end_time: '07:00', description: 'Standby' }
+    const wrapper = mountBlock({ entry: overnightEntry, top: 0, height: 7 * 60, segment: 'continuation' })
+    const blockEl = wrapper.get('.cal-block').element
+    const bottomHandle = wrapper.get('.cal-resize-bottom').element
+
+    // Drag the end edge down by one hour: 07:00 -> 08:00.
+    firePointer(bottomHandle, 'pointerdown', { clientY: 7 * 60, pointerId: 1 })
+    firePointer(blockEl, 'pointermove', { clientY: 8 * 60, pointerId: 1 })
+    firePointer(blockEl, 'pointerup', { clientY: 8 * 60, pointerId: 1 })
+
+    const payload = wrapper.emitted('resize')[0][0]
+    expect(payload.newStartTime).toBe('19:00')
+    expect(payload.newEndTime).toBe('08:00')
+    expect(payload.newMinutes).toBe(13 * 60)
   })
 })

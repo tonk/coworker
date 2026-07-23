@@ -1193,6 +1193,7 @@
     "end_time": "Sluttid",
     "set_time_range": "Ange tidsintervall",
     "time_ends_next_day": "Slutar nästa morgon",
+    "time_range_equal_invalid": "Start- och sluttid kan inte vara samma",
     "standby_shift": "Logga standbypass",
     "standby_shift_title": "Logga standbypass",
     "standby_start_date": "Startdatum",

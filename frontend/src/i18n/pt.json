@@ -1193,6 +1193,7 @@
     "end_time": "Hora de fim",
     "set_time_range": "Definir intervalo de tempo",
     "time_ends_next_day": "Termina na manhã seguinte",
+    "time_range_equal_invalid": "A hora de início e de fim não podem ser iguais",
     "standby_shift": "Registar turno de prontidão",
     "standby_shift_title": "Registar turno de prontidão",
     "standby_start_date": "Data de início",

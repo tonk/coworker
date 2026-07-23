@@ -53,10 +53,19 @@ describe('TimeEntryModal', () => {
     expect(labels).toContain('Internal')
   })
 
-  it('disables Save when end time is not after start time', async () => {
-    const wrapper = mountModal({ prefill: { date: '2026-07-21', start_time: '10:00', end_time: '09:00' } })
+  it('disables Save when start and end time are equal', async () => {
+    const wrapper = mountModal({ prefill: { date: '2026-07-21', start_time: '09:00', end_time: '09:00' } })
     const saveBtn = wrapper.findAll('button').find((b) => b.text() === 'Save')
     expect(saveBtn.attributes('disabled')).toBeDefined()
+  })
+
+  it('allows an overnight range (end time earlier than start time)', async () => {
+    const wrapper = mountModal({ prefill: { date: '2026-07-21', start_time: '19:00', end_time: '07:00' } })
+    const saveBtn = wrapper.findAll('button').find((b) => b.text() === 'Save')
+    expect(saveBtn.attributes('disabled')).toBeUndefined()
+    await saveBtn.trigger('click')
+    const payload = wrapper.emitted('save')[0][0]
+    expect(payload).toMatchObject({ start_time: '19:00', end_time: '07:00', minutes: 720 })
   })
 
   it('emits a save payload shaped for the time-entries API', async () => {

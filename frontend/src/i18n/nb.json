@@ -1193,6 +1193,7 @@
     "end_time": "Sluttidspunkt",
     "set_time_range": "Angi tidsintervall",
     "time_ends_next_day": "Slutter neste morgen",
+    "time_range_equal_invalid": "Start- og sluttidspunkt kan ikke være like",
     "standby_shift": "Logg standbyvakt",
     "standby_shift_title": "Logg standbyvakt",
     "standby_start_date": "Startdato",

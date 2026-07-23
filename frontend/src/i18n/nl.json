@@ -1193,6 +1193,7 @@
     "end_time": "Eindtijd",
     "set_time_range": "Tijdsbereik instellen",
     "time_ends_next_day": "Eindigt de volgende ochtend",
+    "time_range_equal_invalid": "Begin- en eindtijd mogen niet gelijk zijn",
     "standby_shift": "Standby-dienst loggen",
     "standby_shift_title": "Standby-dienst loggen",
     "standby_start_date": "Startdatum",

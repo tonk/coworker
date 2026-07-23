@@ -197,7 +197,7 @@ function onModalDelete(entry) {
 .tt-calendar {
   display: flex;
   flex-direction: column;
-  height: 70vh;
+  flex: 1;
   min-height: 420px;
 }
 
