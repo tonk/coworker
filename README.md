@@ -51,6 +51,8 @@ The result is a ~45,000 line Go backend and a ~45,000 line Vue 3 frontend that a
 | *Ticket inbox — all unassigned tickets grouped by status with SLA indicators* | *Weekly timesheet — declarable totals with aligned undeclarable deductions* |
 | ![Time tracking macro editor](screenshots/25-time-tracking-macro-editor.png) | ![Run macro popout](screenshots/26-time-tracking-macro-run.png) |
 | *Macro editor — alternating Pattern A/B day template* | *Run macro popout — apply a saved macro to the current week* |
+| ![Time tracking calendar](screenshots/27-time-tracking-calendar.png) | |
+| *Calendar view — drag-and-drop weekly grid, including overnight standby shifts* | |
 
 ## Quick Start
 

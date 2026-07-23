@@ -431,4 +431,23 @@ test.describe('screenshots', () => {
     })
     await context.close()
   })
+
+  // ── 27: Time tracking — calendar view ──────────────────────────────
+  // Logs in as tonk, whose seeded Acme Phase 1 standby entries (Mon–Fri
+  // 19:00→07:00 overnight, Sat–Sun full-day) show the split-at-midnight
+  // overnight block rendering in the current week.
+  test('27-time-tracking-calendar', async ({ browser }) => {
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    await loginAs(page, 'tonk', 'demo1234')
+    await page.goto(`${BASE_URL}/time-tracking`)
+    await page.waitForLoadState('networkidle')
+    await dismissWelcome(page)
+    await page.locator('.tt-cal-toggle-btn').click()
+    await page.waitForSelector('.cal-week')
+    await page.locator('.cal-scroll').evaluate((el) => { el.scrollTop = 900 })
+    await page.waitForTimeout(400)
+    await page.screenshot(ss('27-time-tracking-calendar'))
+    await context.close()
+  })
 })
