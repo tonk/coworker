@@ -1,0 +1,66 @@
+# WarmDesk configuration for a multi-instance (horizontally scaled) deployment.
+#
+# This EXACT file is deployed identically to every app instance (warmdesk-1,
+# warmdesk-2, warmdesk-3, ...). There is no per-instance config in this setup —
+# all three instances are interchangeable and any of them can serve any request.
+# Fill in the placeholders, then copy this file to /etc/warmdesk/warmdesk.yaml
+# on each instance (see ../multi-instance/README.md for the full walkthrough).
+
+port: "8080"
+
+# --- Shared database: PostgreSQL or MySQL, never SQLite -------------------
+# SQLite is a single-writer file database and cannot be shared by multiple
+# instances. Point every instance at the SAME PostgreSQL or MySQL server.
+db_driver: postgres
+db_dsn: "host=db.internal user=warmdesk password=CHANGE_ME dbname=warmdesk port=5432 sslmode=disable"
+# MySQL/MariaDB equivalent:
+# db_driver: mysql
+# db_dsn: "warmdesk:CHANGE_ME@tcp(db.internal:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local"
+
+# The database is almost certainly not on the same host as the app instances
+# in this topology, so encrypt the connection and verify the server identity.
+# Leave sslmode=disable in the DSN above — TLS is handled here instead.
+db_tls_mode: "verify-full"
+db_tls_ca_cert: "/etc/warmdesk/db-ca.pem"
+# db_tls_cert / db_tls_key only if the database requires client-cert (mTLS) auth.
+
+# --- Shared Redis: required for cross-instance WebSocket delivery ---------
+# Without this, a board/chat update made on the instance one user is connected
+# to never reaches a teammate connected to a different instance — each
+# instance's WebSocket hub is in-process memory only. This is not optional
+# in a multi-instance deployment.
+redis_url: "redis://redis.internal:6379/0"
+
+# --- Shared upload storage --------------------------------------------------
+# Attachments, avatars, and logos are plain files referenced by path — they
+# are NOT stored in the database. upload_dir must resolve to the SAME shared
+# storage (NFS export, shared block volume, etc.) on every instance, mounted
+# at this identical path. A file uploaded via instance 2 must be readable at
+# this same path from instances 1 and 3, or downloads will 404 depending on
+# which instance happens to serve the request.
+# See fstab.example in this directory for a sample NFS mount.
+upload_dir: "/mnt/warmdesk-uploads"
+
+# --- Auth — MUST be byte-identical across all instances --------------------
+# A token issued by instance 1 must validate on instances 2 and 3. Generate
+# ONE secret and distribute it to every instance; never let instances diverge.
+#   openssl rand -hex 32
+jwt_secret: "CHANGE_ME_TO_ONE_SHARED_RANDOM_SECRET"
+
+# Public hostname of the load balancer / reverse proxy in front of all instances,
+# not any individual instance.
+base_url: "https://desk.example.com"
+allowed_origins: "https://desk.example.com"
+
+# The load balancer's own address(es), so WarmDesk reads the real client IP
+# from X-Forwarded-For instead of logging/rate-limiting the LB's IP for every
+# request. Adjust to your LB's actual address or internal subnet.
+trusted_proxies: "10.0.0.10"
+
+gin_mode: release
+db_log: warn
+
+# web_dir left unset — every instance serves the embedded frontend build.
+# This matters here specifically: if you ever DO override web_dir, all
+# instances must serve the exact same frontend build, or users will see
+# inconsistent versions depending on which instance a request lands on.

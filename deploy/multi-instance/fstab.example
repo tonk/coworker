@@ -1,0 +1,17 @@
+# Example /etc/fstab entry for mounting shared upload storage identically on
+# every WarmDesk app instance. Add one line like this to each instance's
+# /etc/fstab (adjust the NFS server address and export path to your own),
+# then run `mkdir -p /mnt/warmdesk-uploads && mount /mnt/warmdesk-uploads`.
+#
+# The mount path (/mnt/warmdesk-uploads) must match upload_dir in warmdesk.yaml
+# and ReadWritePaths in warmdesk.service exactly.
+
+nfs-server.internal:/export/warmdesk-uploads  /mnt/warmdesk-uploads  nfs  defaults,_netdev,noatime  0  0
+
+# After mounting, make sure the warmdesk user/group can write to it, e.g.:
+#   chown warmdesk:warmdesk /mnt/warmdesk-uploads
+#
+# Any shared filesystem works here — NFS is the simplest to set up on-prem;
+# a shared block volume (e.g. a cloud provider's multi-attach disk with a
+# cluster filesystem) or a FUSE-mounted object store both work equally well
+# as long as all instances see the same files at the same path.

@@ -1,0 +1,33 @@
+[Unit]
+Description=WarmDesk Kanban (multi-instance node)
+Documentation=https://github.com/tonk/warmdesk
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=warmdesk
+Group=warmdesk
+WorkingDirectory=/opt/warmdesk
+
+# Identical on every instance — all config lives in the shared warmdesk.yaml
+# (see warmdesk.yaml.example in this directory), not in per-instance
+# Environment= lines. This is what keeps the 3 nodes interchangeable.
+Environment=CONFIG_FILE=/etc/warmdesk/warmdesk.yaml
+
+ExecStart=/opt/warmdesk/warmdesk
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+# /mnt/warmdesk-uploads is the shared NFS/block mount referenced by upload_dir
+# in warmdesk.yaml — it must be mounted at this same path before this unit
+# starts (see fstab.example), and must be writable by the warmdesk user/group.
+ReadWritePaths=/mnt/warmdesk-uploads
+
+[Install]
+WantedBy=multi-user.target
