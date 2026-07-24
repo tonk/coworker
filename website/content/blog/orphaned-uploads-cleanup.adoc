@@ -1,0 +1,52 @@
+---
+title: "Fixing Rejected Logo Uploads and Cleaning Up the Mess They Left Behind"
+date: "2026-07-23"
+author: "Ton Kersten"
+description: "v0.16.4 fixed SVG logos being rejected outright and PNGs sometimes rejected for no reason, plus a bug that left every replaced avatar or logo behind on disk forever. v0.16.5 adds a gc-uploads CLI to reclaim the files that bug left orphaned."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+Two releases, one story: `v0.16.4` fixed why image uploads kept failing and why old ones never got cleaned up, and `v0.16.5` adds a tool to clean up what was already left behind.
+
+== Why SVG logos always failed, and PNGs sometimes did
+
+Uploading a customer logo, company logo, or avatar could fail with a generic "Failed to upload image" error — and for SVG files, it *always* failed. The server's allowed-image-type check never included SVG at all, so no SVG upload could ever succeed, logo or otherwise.
+
+PNG, JPEG, GIF, and WebP uploads were supposed to work, but failed intermittently too. The cause: the server checked the *client-supplied* `Content-Type` header before ever looking at the file itself, and some browsers send an empty or missing content type for certain uploads. A perfectly valid image would get rejected because of what the browser said about it, not what it actually was.
+
+`v0.16.4` drops the client-supplied header entirely. Acceptance is now based solely on the file's real content, detected server-side — SVGs are accepted, and PNG/JPEG/GIF/WebP uploads no longer depend on the browser guessing correctly. The size limit was also hardcoded at 10 MB regardless of your configured `max_upload_mb`; it now honors whatever limit you've actually set. And when an upload is rejected for a real reason (too large, wrong type), the toast now shows that reason instead of a generic message.
+
+== The other bug: replacements never got cleaned up
+
+Separately — and unrelated to the rejection bug — replacing a user avatar, customer logo, company logo (light or dark), project avatar, or group avatar never deleted the file it replaced. Every single change left the previous file behind under `uploads/`, permanently. Change your avatar ten times, and nine orphaned files sit on disk forever, never referenced by anything, never cleaned up.
+
+`v0.16.4` fixes this going forward: the previous file is now removed whenever one of these is changed or cleared. But it only stops the leak from that point on — it does nothing about whatever had already piled up before you upgraded.
+
+== `gc-uploads`: cleaning up what was already there
+
+That's what `v0.16.5` adds: `gc-uploads`, a one-off backend CLI (`cmd/gc-uploads`) that scans your `upload_dir` for files no longer referenced by any user, customer, project, group, system setting, or attachment row, and reports them.
+
+By default it's a dry run — it lists what it found without touching anything:
+
+[source,bash]
+----
+./gc-uploads
+----
+
+Once you've reviewed the list, add `--delete` to actually remove them:
+
+[source,bash]
+----
+./gc-uploads --delete
+----
+
+This is a one-time cleanup tool for reclaiming disk space left behind by the pre-`v0.16.4` bug — there's no need to run it on a regular schedule, since new orphans shouldn't accumulate anymore.
+
+== Upgrade
+
+Download `v0.16.5` from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for this release — as with every WarmDesk release, any new fields are added automatically on first startup.

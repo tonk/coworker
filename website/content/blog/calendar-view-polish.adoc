@@ -1,0 +1,40 @@
+---
+title: "Time Tracking Calendar: Project Colors, Overnight Shifts, and Layout Fixes"
+date: "2026-07-23"
+author: "Ton Kersten"
+description: "Three releases of polish for the time-tracking calendar view introduced in v0.16.0: a fixed color bug for hidden customers, a new color-by-project option, a calendar that fills the available height, and correct handling of overnight entries."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+The drag-and-drop calendar view for Log Time (introduced in `v0.16.0`, resize bug fixed in `v0.16.1`) got three more rounds of polish in `v0.16.2`, `v0.16.3`, and `v0.16.5` — better color coding, a layout fix, and correct handling of shifts that cross midnight.
+
+== Hidden customers showed up gray
+
+`v0.16.2` fixes a color bug specific to hidden customers. The request that fetches customer colors for the calendar's color-coding excluded hidden customers by default, so a hidden customer's own color was ignored and its blocks always fell back to the generic gray "no customer" appearance — even if you'd deliberately set a color for it. The same underlying lookup also affected the classic weekly table, where that customer's name failed to resolve correctly in the row selector. Both are fixed by including hidden customers in the lookup.
+
+== Color by project, not just by customer
+
+`v0.16.3` adds a new **Calendar block color** setting (Settings → General) that lets you switch how the calendar colors its blocks: the existing per-customer scheme, or a new per-project scheme. This matters if your work is organized more by project than by customer — travel, internal admin, or multiple projects for the same client all get their own distinct color instead of blending into one customer color.
+
+Projects without an explicit color get one assigned automatically, using the same non-repeating palette logic already used for customers — so two projects never end up looking alike unless the palette is genuinely exhausted.
+
+== A calendar that fills the screen
+
+`v0.16.5` fixes a layout bug where the calendar panel was capped at a fixed 70% of the viewport height instead of filling the space actually available below it, leaving a blank gap down to the footer. It also fixes a missing layout constraint that let the *whole page* scroll — dragging the footer along with it — instead of scrolling just the calendar's own grid. The calendar now fills the available height and scrolls independently, the way a calendar view should.
+
+== Overnight entries no longer collapse
+
+Also in `v0.16.5`: entries that cross midnight — a 19:00 → 07:00 standby shift, for example — previously rendered as a misleading ~15-minute sliver instead of spanning to midnight and continuing the next day. They now render as two linked blocks split at midnight, one on each affected day.
+
+Dragging to resize such an entry had the same problem: the drag math assumed the end time always came after the start time on the *same* day, so resizing an overnight entry collapsed its duration down to 15 minutes. The drag math is now aware of the overnight case. The "Edit Entry" dialog also used to reject any end time earlier than the start time outright, with an error message that had nothing to do with the actual problem; overnight ranges are now accepted, with a validation message that actually describes what went wrong when one truly is invalid.
+
+Moving an overnight entry between days or times was never affected by any of this and continued to work throughout.
+
+== Upgrade
+
+Download the latest release from the link:../download[download page] or pull the latest release tag.
+
+No database migration is required for any of these releases — as with every WarmDesk release, any new fields are added automatically on first startup.
