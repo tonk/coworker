@@ -39,6 +39,11 @@ Append any new features or changes as bullet points at the end of the file, matc
 ## 5. Update documentation
 - If any changes where made, that need an update on the documentation,
   update the documentation
+- If a change touches anything a multi-instance deployment depends on —
+  shared config keys (`db_driver`/`db_dsn`, `redis_url`, `upload_dir`,
+  `jwt_secret`, `trusted_proxies`), the WebSocket/Redis pub-sub layer, the
+  auth rate limiter, or the backup scheduler — update
+  `deploy/multi-instance/README.md` (and its templates) to match.
 
 ## 6. Update website version
 In `website/hugo.toml`, update three values:

@@ -10,8 +10,9 @@ Releases are cut from the `main` branch. Every release:
 4. Bumps version strings in `website/hugo.toml` (and the AsciiDoc attribute).
 5. Runs `make sync-doc-revisions` so `docs/*.adoc` `:revnumber:` / `:revdate:` match `CHANGELOG.md`.
 6. Bumps `ansible/galaxy.yml` version if anything under `ansible/` changed since the last tag.
-7. Commits with message `chore: release vX.Y.Z — CHANGELOG, README, what.md`.
-8. Creates an annotated tag `vX.Y.Z` and pushes branch + tag.
+7. If the change touches multi-instance-relevant subsystems (shared config keys, WebSocket/Redis pub-sub, the auth rate limiter, or the backup scheduler), updates `deploy/multi-instance/README.md` and its templates to match.
+8. Commits with message `chore: release vX.Y.Z — CHANGELOG, README, what.md`.
+9. Creates an annotated tag `vX.Y.Z` and pushes branch + tag.
 
 The **Git tag** drives the build: `make` and CI use
 `git describe --tags --match 'v*'` to embed the version string in the Go
@@ -118,6 +119,7 @@ Ensure `CHANGELOG.md` and `README.md` are committed **before** pushing the tag.
 - [ ] `make docs-pdf-guides` — user/admin guide PDFs (included in `make build`; `make docs-pdf` is the same)
 - [ ] Avatar menu → **Downloads** — verify user and admin guide PDFs download in browser and Tauri
 - [ ] `ansible/galaxy.yml` — version bumped (if Ansible files changed)
+- [ ] `deploy/multi-instance/README.md` — updated (if config keys, WebSocket/Redis, rate limiting, or backups changed)
 - [ ] Commit message: `chore: release vX.Y.Z — CHANGELOG, README, what.md`
 - [ ] Annotated tag `vX.Y.Z` on `main`
 - [ ] Branch and tag pushed; CI workflow succeeds
