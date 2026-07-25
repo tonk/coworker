@@ -6428,7 +6428,8 @@ td.c-day-holiday-cell.c-day-popup-open {
   white-space: nowrap;
 }
 .rpt-table th { color: var(--color-text-muted); font-weight: 500; background: var(--color-surface); }
-.rpt-th-time { text-align: right; }
+.rpt-table th.rpt-th-time,
+.rpt-table td.rpt-th-time { text-align: right; }
 
 .rpt-grand-total {
   display: flex;
