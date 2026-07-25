@@ -16,6 +16,9 @@ db_dsn: "./warmdesk.db"
 # db_dsn: "host=localhost user=warmdesk password=secret dbname=warmdesk port=5432 sslmode=disable"
 
 # MySQL / MariaDB example:
+# parseTime=True is REQUIRED — the server refuses to start without it (without
+# it, DATETIME columns fail to scan into Go's time.Time, and every read of a
+# row with a timestamp column silently fails).
 # db_driver: mysql
 # db_dsn: "warmdesk:secret@tcp(localhost:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local"
 

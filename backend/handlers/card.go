@@ -531,8 +531,8 @@ func MoveCard(c *gin.Context) {
 		database.DB.Create(&models.CardHistory{
 			CardID:       card.ID,
 			UserID:       userID,
-			FromColumnID: oldColumnID,
-			ToColumnID:   req.ColumnID,
+			FromColumnID: &oldColumnID,
+			ToColumnID:   &req.ColumnID,
 		})
 	}
 

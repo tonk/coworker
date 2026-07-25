@@ -19,6 +19,7 @@ import (
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/models"
 	"github.com/tonk/warmdesk/services"
+	"gorm.io/gorm/clause"
 )
 
 const (
@@ -68,7 +69,7 @@ const (
 	settingIMAPPassword              = "imap_password"
 	settingIMAPUseTLS                = "imap_use_tls"
 	settingIMAPMailbox               = "imap_mailbox"
-	settingIMAPProcessedMailbox       = "imap_processed_mailbox"
+	settingIMAPProcessedMailbox      = "imap_processed_mailbox"
 	settingIMAPPollInterval          = "imap_poll_interval"
 	settingIMAPAuthMechanism         = "imap_auth_mechanism"
 	settingIMAPOAuth2Provider        = "imap_oauth2_provider"
@@ -78,18 +79,18 @@ const (
 	settingMetricsLastAccess         = "metrics_last_access"
 	settingMetricsLastSuccess        = "metrics_last_access_success"
 	// Billing / invoice settings
-	settingCompanyAddress     = "company_address"
-	settingCompanyCity        = "company_city"
-	settingCompanyPostalCode  = "company_postal_code"
-	settingCompanyCountry     = "company_country"
-	settingCompanyVATNumber   = "company_vat_number"
-	settingCompanyCOCNumber   = "company_coc_number"
-	settingCompanyIBAN        = "company_iban"
-	settingCompanyBIC         = "company_bic"
+	settingCompanyAddress      = "company_address"
+	settingCompanyCity         = "company_city"
+	settingCompanyPostalCode   = "company_postal_code"
+	settingCompanyCountry      = "company_country"
+	settingCompanyVATNumber    = "company_vat_number"
+	settingCompanyCOCNumber    = "company_coc_number"
+	settingCompanyIBAN         = "company_iban"
+	settingCompanyBIC          = "company_bic"
 	settingCompanyPaymentTerms = "company_payment_terms"
 	settingInvoiceNumberPrefix = "invoice_number_prefix"
-	settingDefaultVATRate     = "default_vat_rate"
-	settingInvoiceVATExempt   = "invoice_vat_exempt"
+	settingDefaultVATRate      = "default_vat_rate"
+	settingInvoiceVATExempt    = "invoice_vat_exempt"
 )
 
 func init() {
@@ -184,7 +185,7 @@ var systemSettingDefaults = map[string]string{
 	settingIMAPPassword:              "",
 	settingIMAPUseTLS:                "true",
 	settingIMAPMailbox:               "INBOX",
-	settingIMAPProcessedMailbox:       "Processed",
+	settingIMAPProcessedMailbox:      "Processed",
 	settingIMAPPollInterval:          "60",
 	settingIMAPAuthMechanism:         "plain",
 	settingIMAPOAuth2Provider:        "",
@@ -407,71 +408,105 @@ func AdminGetSystemSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, all)
 }
 
+// flexNumber accepts a JSON number, a numeric string, an empty string, or
+// null, and stores the raw text. Unlike json.Number — which rejects "" with
+// "invalid number literal", failing the unmarshal of the entire surrounding
+// struct — flexNumber treats "" (and null) as "leave this field unset",
+// matching the *string/​*bool/​*int fields elsewhere in this request: one
+// optional field with nothing typed into it must never abort saving every
+// other field sent alongside it.
+type flexNumber string
+
+func (n *flexNumber) UnmarshalJSON(data []byte) error {
+	var raw interface{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	switch v := raw.(type) {
+	case nil:
+		*n = ""
+	case float64:
+		*n = flexNumber(strconv.FormatFloat(v, 'f', -1, 64))
+	case string:
+		if v != "" {
+			if _, err := json.Number(v).Float64(); err != nil {
+				return fmt.Errorf("invalid number %q", v)
+			}
+		}
+		*n = flexNumber(v)
+	default:
+		return fmt.Errorf("invalid number")
+	}
+	return nil
+}
+
+func (n flexNumber) String() string { return string(n) }
+
 // AdminUpdateSystemSettings updates system settings.
 func AdminUpdateSystemSettings(c *gin.Context) {
 	var req struct {
-		MFARequired               *bool       `json:"mfa_required"`
-		MFARememberDevices        *string     `json:"mfa_remember_devices"`
-		RegistrationEnabled       *bool       `json:"registration_enabled"`
-		DefaultDateTimeFormat     string      `json:"default_date_time_format"`
-		DefaultTimezone           string      `json:"default_timezone"`
-		DefaultTheme              string      `json:"default_theme"`
-		DefaultFont               string      `json:"default_font"`
-		DefaultFontSize           string      `json:"default_font_size"`
-		DefaultLocale             string      `json:"default_locale"`
-		PasswordMinLength         *int        `json:"password_min_length"`
-		PasswordRequireUpper      *bool       `json:"password_require_upper"`
-		PasswordRequireLower      *bool       `json:"password_require_lower"`
-		PasswordRequireDigit      *bool       `json:"password_require_digit"`
-		PasswordRequireSpecial    *bool       `json:"password_require_special"`
-		SMTPHost                  *string     `json:"smtp_host"`
-		SMTPPort                  json.Number `json:"smtp_port"` // accepts "587" or 587
-		SMTPFrom                  *string     `json:"smtp_from"`
-		SMTPUsername              *string     `json:"smtp_username"` // pointer so empty string clears it
-		SMTPPassword              *string     `json:"smtp_password"` // pointer so empty string clears it
-		IMAPEnabled               *bool       `json:"imap_enabled"`
-		IMAPHost                  *string     `json:"imap_host"`
-		IMAPPort                  json.Number `json:"imap_port"`
-		IMAPUsername              *string     `json:"imap_username"`
-		IMAPPassword              *string     `json:"imap_password"`
-		IMAPUseTLS                *bool       `json:"imap_use_tls"`
-		IMAPMailbox               *string     `json:"imap_mailbox"`
-		IMAPProcessedMailbox      *string     `json:"imap_processed_mailbox"`
-		IMAPPollInterval          json.Number `json:"imap_poll_interval"`
-		IMAPAuthMechanism         *string     `json:"imap_auth_mechanism"`
-		IMAPOAuth2Provider        *string     `json:"imap_oauth2_provider"`
-		IMAPAccessToken           *string     `json:"imap_access_token"`
-		IMAPRefreshToken          *string     `json:"imap_refresh_token"`
-		SessionTimeoutMinutes     *int        `json:"session_timeout_minutes"`
-		CompanyName               *string     `json:"company_name"`
-		CompanyLogo               *string     `json:"company_logo"`
-		CompanyLogoDark           *string     `json:"company_logo_dark"`
-		CompanyAddress            *string     `json:"company_address"`
-		CompanyCity               *string     `json:"company_city"`
-		CompanyPostalCode         *string     `json:"company_postal_code"`
-		CompanyCountry            *string     `json:"company_country"`
-		CompanyVATNumber          *string     `json:"company_vat_number"`
-		CompanyCOCNumber          *string     `json:"company_coc_number"`
-		CompanyIBAN               *string     `json:"company_iban"`
-		CompanyBIC                *string     `json:"company_bic"`
-		CompanyPaymentTerms       json.Number `json:"company_payment_terms"` // accepts "30" or 30
-		InvoiceNumberPrefix       *string     `json:"invoice_number_prefix"`
-		DefaultVATRate            json.Number `json:"default_vat_rate"` // accepts "21.5" or 21.5
-		InvoiceVATExempt          *bool       `json:"invoice_vat_exempt"`
-		DefaultColumns            *string     `json:"default_columns"`
-		DefaultLabels             *string     `json:"default_labels"`
-		BackupSchedule            *string     `json:"backup_schedule"`
-		BackupStartTime           *string     `json:"backup_start_time"`
-		BackupKeep                *int        `json:"backup_keep"`
-		BackupEmailEnabled        *bool       `json:"backup_email_enabled"`
-		BackupEmailAddress        *string     `json:"backup_email_address"`
-		BackupIncludeUploads      *bool       `json:"backup_include_uploads"`
-		ScrumStorypointsEnabled   *bool       `json:"scrum_storypoints_enabled"`
-		GravatarEnabled           *bool       `json:"gravatar_enabled"`
-		ExternalImageProxyEnabled *bool       `json:"external_image_proxy_enabled"`
-		LoginBrandingEnabled      *bool       `json:"login_branding_enabled"`
-		AllowedIPs                *string     `json:"allowed_ips"`
-		PasswordChangePeriodDays  *int        `json:"password_change_period_days"`
+		MFARequired               *bool      `json:"mfa_required"`
+		MFARememberDevices        *string    `json:"mfa_remember_devices"`
+		RegistrationEnabled       *bool      `json:"registration_enabled"`
+		DefaultDateTimeFormat     string     `json:"default_date_time_format"`
+		DefaultTimezone           string     `json:"default_timezone"`
+		DefaultTheme              string     `json:"default_theme"`
+		DefaultFont               string     `json:"default_font"`
+		DefaultFontSize           string     `json:"default_font_size"`
+		DefaultLocale             string     `json:"default_locale"`
+		PasswordMinLength         *int       `json:"password_min_length"`
+		PasswordRequireUpper      *bool      `json:"password_require_upper"`
+		PasswordRequireLower      *bool      `json:"password_require_lower"`
+		PasswordRequireDigit      *bool      `json:"password_require_digit"`
+		PasswordRequireSpecial    *bool      `json:"password_require_special"`
+		SMTPHost                  *string    `json:"smtp_host"`
+		SMTPPort                  flexNumber `json:"smtp_port"` // accepts "587" or 587
+		SMTPFrom                  *string    `json:"smtp_from"`
+		SMTPUsername              *string    `json:"smtp_username"` // pointer so empty string clears it
+		SMTPPassword              *string    `json:"smtp_password"` // pointer so empty string clears it
+		IMAPEnabled               *bool      `json:"imap_enabled"`
+		IMAPHost                  *string    `json:"imap_host"`
+		IMAPPort                  flexNumber `json:"imap_port"`
+		IMAPUsername              *string    `json:"imap_username"`
+		IMAPPassword              *string    `json:"imap_password"`
+		IMAPUseTLS                *bool      `json:"imap_use_tls"`
+		IMAPMailbox               *string    `json:"imap_mailbox"`
+		IMAPProcessedMailbox      *string    `json:"imap_processed_mailbox"`
+		IMAPPollInterval          flexNumber `json:"imap_poll_interval"`
+		IMAPAuthMechanism         *string    `json:"imap_auth_mechanism"`
+		IMAPOAuth2Provider        *string    `json:"imap_oauth2_provider"`
+		IMAPAccessToken           *string    `json:"imap_access_token"`
+		IMAPRefreshToken          *string    `json:"imap_refresh_token"`
+		SessionTimeoutMinutes     *int       `json:"session_timeout_minutes"`
+		CompanyName               *string    `json:"company_name"`
+		CompanyLogo               *string    `json:"company_logo"`
+		CompanyLogoDark           *string    `json:"company_logo_dark"`
+		CompanyAddress            *string    `json:"company_address"`
+		CompanyCity               *string    `json:"company_city"`
+		CompanyPostalCode         *string    `json:"company_postal_code"`
+		CompanyCountry            *string    `json:"company_country"`
+		CompanyVATNumber          *string    `json:"company_vat_number"`
+		CompanyCOCNumber          *string    `json:"company_coc_number"`
+		CompanyIBAN               *string    `json:"company_iban"`
+		CompanyBIC                *string    `json:"company_bic"`
+		CompanyPaymentTerms       flexNumber `json:"company_payment_terms"` // accepts "30" or 30
+		InvoiceNumberPrefix       *string    `json:"invoice_number_prefix"`
+		DefaultVATRate            flexNumber `json:"default_vat_rate"` // accepts "21.5" or 21.5
+		InvoiceVATExempt          *bool      `json:"invoice_vat_exempt"`
+		DefaultColumns            *string    `json:"default_columns"`
+		DefaultLabels             *string    `json:"default_labels"`
+		BackupSchedule            *string    `json:"backup_schedule"`
+		BackupStartTime           *string    `json:"backup_start_time"`
+		BackupKeep                *int       `json:"backup_keep"`
+		BackupEmailEnabled        *bool      `json:"backup_email_enabled"`
+		BackupEmailAddress        *string    `json:"backup_email_address"`
+		BackupIncludeUploads      *bool      `json:"backup_include_uploads"`
+		ScrumStorypointsEnabled   *bool      `json:"scrum_storypoints_enabled"`
+		GravatarEnabled           *bool      `json:"gravatar_enabled"`
+		ExternalImageProxyEnabled *bool      `json:"external_image_proxy_enabled"`
+		LoginBrandingEnabled      *bool      `json:"login_branding_enabled"`
+		AllowedIPs                *string    `json:"allowed_ips"`
+		PasswordChangePeriodDays  *int       `json:"password_change_period_days"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -873,11 +908,29 @@ func GetGlobalDefaults() map[string]string {
 }
 
 // saveSetting upserts a system setting by key.
-// Uses update-or-create to work reliably with all DB drivers and SQLite versions.
+//
+// Uses a single atomic INSERT ... ON CONFLICT DO UPDATE (GORM translates
+// this to each driver's native upsert syntax) rather than "try an Update,
+// then Create if nothing happened". That older pattern had two bugs on
+// MySQL/MariaDB:
+//   - A raw string Where("key = ?", ...) condition bypasses GORM's
+//     per-dialect identifier quoting; "key" is a reserved word there, so the
+//     Update failed with a SQL syntax error on every call, silently, since
+//     the error was never checked.
+//   - Even after quoting the column correctly, MySQL's UPDATE reports
+//     RowsAffected as rows *changed*, not rows *matched* — re-saving a
+//     setting with the same value it already had reports 0 rows affected
+//     even though the row exists, so "RowsAffected == 0" was wrongly taken
+//     to mean "no such row" and the fallback Create then failed on a
+//     duplicate primary key. SQLite and PostgreSQL both report rows
+//     *matched*, which is why this never surfaced against SQLite.
 func saveSetting(key, value string) {
-	result := database.DB.Model(&models.SystemSetting{}).Where("key = ?", key).Update("value", value)
-	if result.RowsAffected == 0 {
-		database.DB.Create(&models.SystemSetting{Key: key, Value: value})
+	err := database.DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "key"}},
+		DoUpdates: clause.AssignmentColumns([]string{"value"}),
+	}).Create(&models.SystemSetting{Key: key, Value: value}).Error
+	if err != nil {
+		log.Printf("system settings: failed to save %q: %v", key, err)
 	}
 }
 

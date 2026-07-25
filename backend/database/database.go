@@ -17,6 +17,7 @@ import (
 	"gorm.io/driver/postgres"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
 )
 
@@ -27,6 +28,13 @@ func Init(cfg *config.Config) error {
 
 	switch cfg.DBDriver {
 	case "mysql":
+		mcfg, err := mysqldriver.ParseDSN(cfg.DBDSN)
+		if err != nil {
+			return fmt.Errorf("invalid mysql db_dsn: %w", err)
+		}
+		if !mcfg.ParseTime {
+			return fmt.Errorf(`mysql db_dsn must include parseTime=true, e.g. "user:pass@tcp(host:port)/dbname?charset=utf8mb4&parseTime=True&loc=Local" — without it, DATETIME columns fail to scan into Go's time.Time and reads silently fail (inserts still succeed, masking the problem as "invalid credentials" / "user not found" instead of a database error)`)
+		}
 		dsn, err := applyMySQLTLS(cfg)
 		if err != nil {
 			return err
@@ -492,9 +500,26 @@ func clearServiceAccountFeatures(db *gorm.DB) error {
 
 // SaveSetting upserts a system_setting row. Available to both handlers and
 // middleware packages to avoid circular imports.
+//
+// Uses a single atomic INSERT ... ON CONFLICT DO UPDATE (GORM translates this
+// to each driver's native upsert syntax) rather than "try an Update, then
+// Create if nothing happened". That older pattern had two bugs on MySQL/
+// MariaDB: a raw string Where("key = ?", ...) condition bypasses GORM's
+// per-dialect identifier quoting ("key" is a reserved word there, so the
+// Update failed with a SQL syntax error on every call, silently); and even
+// once that's quoted correctly, MySQL's UPDATE reports RowsAffected as rows
+// *changed*, not rows *matched* — re-saving a setting with the value it
+// already had reports 0 rows affected despite the row existing, so
+// "RowsAffected == 0" was wrongly taken to mean "no such row" and the
+// fallback Create then failed on a duplicate primary key. SQLite and
+// PostgreSQL both report rows *matched*, which is why this never surfaced
+// against SQLite.
 func SaveSetting(key, value string) {
-	result := DB.Model(&models.SystemSetting{}).Where("key = ?", key).Update("value", value)
-	if result.RowsAffected == 0 {
-		DB.Create(&models.SystemSetting{Key: key, Value: value})
+	err := DB.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "key"}},
+		DoUpdates: clause.AssignmentColumns([]string{"value"}),
+	}).Create(&models.SystemSetting{Key: key, Value: value}).Error
+	if err != nil {
+		log.Printf("system settings: failed to save %q: %v", key, err)
 	}
 }

@@ -237,9 +237,10 @@ mysql -u root -p -e \
 [source,yaml]
 ----
 db_driver: mysql
-db_dsn: "warmdesk:secret@tcp(localhost:3306)/warmdesk"
-# ?charset=utf8mb4&parseTime=True&loc=Local
+db_dsn: "warmdesk:secret@tcp(localhost:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local"
 ----
+
+IMPORTANT: `parseTime=True` is required — the server refuses to start without it. Without it, `DATETIME` columns fail to scan into Go's `time.Time`, so every read of a row with a timestamp column (which is nearly every table) silently fails, while writes keep working — this can surface as confusing, intermittent-looking "invalid credentials" or "not found" errors that have nothing to do with the actual data.
 
 === Database TLS
 

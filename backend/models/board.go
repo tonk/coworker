@@ -142,8 +142,12 @@ type CardHistory struct {
 	User         User      `json:"user"`
 	EventType    string    `gorm:"size:50;default:'column_move'" json:"event_type"`
 	Detail       string    `gorm:"size:500" json:"detail"`
-	FromColumnID uint      `json:"from_column_id"`
-	FromColumn   Column    `gorm:"foreignKey:FromColumnID" json:"from_column"`
-	ToColumnID   uint      `json:"to_column_id"`
-	ToColumn     Column    `gorm:"foreignKey:ToColumnID" json:"to_column"`
+	// Nullable: a "created" event has no from/to column transition, and 0 is
+	// not a valid column id — inserting it violates the from/to foreign key
+	// constraints on any database that actually enforces them (MySQL,
+	// PostgreSQL; SQLite does not by default, which let this go unnoticed).
+	FromColumnID *uint  `json:"from_column_id"`
+	FromColumn   Column `gorm:"foreignKey:FromColumnID" json:"from_column"`
+	ToColumnID   *uint  `json:"to_column_id"`
+	ToColumn     Column `gorm:"foreignKey:ToColumnID" json:"to_column"`
 }

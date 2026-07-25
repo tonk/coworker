@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
 	"github.com/tonk/warmdesk/services"
+	"gorm.io/gorm"
 )
 
 type AuthHandler struct {
@@ -24,6 +26,18 @@ type AuthHandler struct {
 
 func NewAuthHandler(authSvc *services.AuthService) *AuthHandler {
 	return &AuthHandler{authSvc: authSvc}
+}
+
+// dbLookupError logs and responds to a user-lookup error that is NOT a plain
+// "no such row" (gorm.ErrRecordNotFound). Any other error means the database
+// itself malfunctioned (bad connection, a column that failed to scan, etc.)
+// and must never be reported to the client as invalid credentials or a
+// missing user — that would silently mask a real server-side problem behind
+// a misleading auth failure. Callers should check errors.Is(err,
+// gorm.ErrRecordNotFound) themselves and only call this for the else branch.
+func dbLookupError(c *gin.Context, context string, err error) {
+	log.Printf("auth: database error during %s: %v", context, err)
+	c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 }
 
 type registerRequest struct {
@@ -152,6 +166,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	var user models.User
 	login := strings.ToLower(req.Login)
 	if err := database.DB.Where("email = ? OR username = ?", login, req.Login).First(&user).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			authLog(c, "login_failed", 0, "", "login="+req.Login+" reason=db_error")
+			dbLookupError(c, "login", err)
+			return
+		}
 		authLog(c, "login_failed", 0, "", "login="+req.Login+" reason=unknown_user")
 		recordEvent(c.ClientIP(), clientStr(c), 0, req.Login, "login_failed", "unknown_user")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
@@ -236,6 +255,10 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 
 	var user models.User
 	if err := database.DB.First(&user, claims.UserID).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			dbLookupError(c, "refresh", err)
+			return
+		}
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
 		return
 	}
@@ -262,6 +285,10 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	userID := middleware.GetUserID(c)
 	var user models.User
 	if err := database.DB.First(&user, userID).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			dbLookupError(c, "me", err)
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}

@@ -2664,8 +2664,8 @@ async function saveBrandingSettings() {
       invoice_vat_exempt:       systemSettings.value.invoice_vat_exempt,
     })
     ui.success('Settings saved')
-  } catch {
-    ui.error('Failed to save settings')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to save settings')
   }
 }
 
@@ -2889,8 +2889,8 @@ async function savePasswordPolicy() {
       password_change_period_days:   systemSettings.value.password_change_period_days ?? 0,
     })
     ui.success('Settings saved')
-  } catch {
-    ui.error('Failed to save settings')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to save settings')
   }
 }
 
@@ -2914,8 +2914,8 @@ async function saveGeneralSettings() {
     await adminApi.updateSystemSettings(payload)
     await systemStore.fetchSettings()
     ui.success('Settings saved')
-  } catch {
-    ui.error('Failed to save settings')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to save settings')
   }
 }
 
@@ -2936,8 +2936,8 @@ async function saveMFASettings() {
       mfa_remember_devices: systemSettings.value.mfa_remember_devices,
     })
     ui.success('Settings saved')
-  } catch {
-    ui.error('Failed to save settings')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to save settings')
   }
 }
 
@@ -2945,8 +2945,8 @@ async function saveSecuritySettings() {
   try {
     await adminApi.updateSystemSettings({ allowed_ips: systemSettings.value.allowed_ips })
     ui.success('Settings saved')
-  } catch {
-    ui.error('Failed to save settings')
+  } catch (e) {
+    ui.error(e.response?.data?.error || 'Failed to save settings')
   }
 }
 

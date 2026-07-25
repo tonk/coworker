@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,13 +34,18 @@ func ListTickets(c *gin.Context) {
 	if c.Query("include_spam") != "true" {
 		q = q.Where("is_spam = false OR is_spam IS NULL")
 	}
+	// datetime('now') is SQLite-specific — MySQL/PostgreSQL have no such
+	// function. GORM's Order() takes a raw string with no parameter binding,
+	// so the current time is formatted here instead, as a portable ISO-ish
+	// literal every supported driver compares against a DATETIME column correctly.
+	nowLiteral := time.Now().UTC().Format("2006-01-02 15:04:05")
 	q.Preload("CreatedBy").
 		Preload("AssignedTo").
 		Preload("Owner").
 		Preload("Group").
 		Preload("Tags").
 		Preload("SlaPolicy").
-		Order("CASE WHEN status = 'pending' AND reminder_at IS NOT NULL AND reminder_at <= datetime('now') THEN 0 ELSE 1 END, created_at desc").
+		Order(fmt.Sprintf("CASE WHEN status = 'pending' AND reminder_at IS NOT NULL AND reminder_at <= '%s' THEN 0 ELSE 1 END, created_at desc", nowLiteral)).
 		Find(&tickets)
 	if tickets == nil {
 		tickets = []models.Ticket{}
@@ -736,8 +742,11 @@ func GetTicketHistory(c *gin.Context) {
 
 // autoCloseTickets closes any pending_close tickets whose close_at has passed.
 func autoCloseTickets() {
+	// datetime('now') is SQLite-specific — MySQL/PostgreSQL have no such
+	// function. Passing time.Now() as a bound parameter compares correctly
+	// against the close_at column on every supported driver.
 	var tickets []models.Ticket
-	database.DB.Where("status = 'pending_close' AND close_at IS NOT NULL AND close_at <= datetime('now')").Find(&tickets)
+	database.DB.Where("status = 'pending_close' AND close_at IS NOT NULL AND close_at <= ?", time.Now()).Find(&tickets)
 	for _, t := range tickets {
 		if ticketChecklistBlocksClose(t.ID) {
 			continue

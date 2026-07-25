@@ -143,6 +143,7 @@ Triggered manually via `POST /api/v1/admin/system/backup` (admin) or `POST /api/
 - `jwt_secret` is still `"change-me-in-production"` (the default).
 - `jwt_secret` is shorter than 32 characters.
 - `gin_mode` is `"release"` and `allowed_origins` contains `"*"`.
+- `db_driver` is `"mysql"` and `db_dsn` doesn't include `parseTime=true` (checked via `go-sql-driver/mysql`'s `ParseDSN` in `database.Init`) — without it, `DATETIME` columns fail to scan into Go's `time.Time`, so every read of a row with a timestamp column silently fails while writes keep succeeding, which otherwise surfaces as confusing "invalid credentials" / "user not found" errors that have nothing to do with the actual data.
 
 **Response headers** (`middleware/security_headers.go`) — every response includes:
 - `Strict-Transport-Security: max-age=31536000; includeSubDomains`

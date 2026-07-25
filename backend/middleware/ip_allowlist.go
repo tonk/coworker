@@ -24,8 +24,13 @@ func IPAllowlist() gin.HandlerFunc {
 			return
 		}
 
+		// A raw string Where("key = ?", ...) would bypass GORM's per-dialect
+		// identifier quoting; "key" is a reserved word in MySQL/MariaDB, and an
+		// unquoted reference is a SQL syntax error there, which would silently
+		// disable this allowlist entirely (falling through to c.Next() on any
+		// query error) instead of enforcing it.
 		var row models.SystemSetting
-		if err := database.DB.Where("key = ?", "allowed_ips").First(&row).Error; err != nil || strings.TrimSpace(row.Value) == "" {
+		if err := database.DB.Where(map[string]interface{}{"key": "allowed_ips"}).First(&row).Error; err != nil || strings.TrimSpace(row.Value) == "" {
 			c.Next()
 			return
 		}

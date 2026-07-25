@@ -216,8 +216,8 @@ func TicketMove(c *gin.Context) {
 			CardID:       card.ID,
 			UserID:       userID,
 			EventType:    "column_move",
-			FromColumnID: oldColumnID,
-			ToColumnID:   col.ID,
+			FromColumnID: &oldColumnID,
+			ToColumnID:   &col.ID,
 		})
 	}
 

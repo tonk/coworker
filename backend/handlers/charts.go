@@ -272,8 +272,8 @@ func GetCFDChart(c *gin.Context) {
 
 	type histRow struct {
 		CardID       uint
-		FromColumnID uint
-		ToColumnID   uint
+		FromColumnID *uint
+		ToColumnID   *uint
 		CreatedAt    time.Time
 	}
 	var history []histRow
@@ -295,8 +295,8 @@ func GetCFDChart(c *gin.Context) {
 	cardInfoMap := make(map[uint]cardInfo, len(cards))
 	for _, card := range cards {
 		initialCol := card.ColumnID
-		if hist := histByCard[card.ID]; len(hist) > 0 {
-			initialCol = hist[0].FromColumnID
+		if hist := histByCard[card.ID]; len(hist) > 0 && hist[0].FromColumnID != nil {
+			initialCol = *hist[0].FromColumnID
 		}
 		cardInfoMap[card.ID] = cardInfo{InitialColumn: initialCol, CreatedAt: card.CreatedAt}
 	}
@@ -347,7 +347,9 @@ func GetCFDChart(c *gin.Context) {
 			colID := info.InitialColumn
 			for _, h := range hist {
 				if !h.CreatedAt.UTC().Truncate(24 * time.Hour).After(day) {
-					colID = h.ToColumnID
+					if h.ToColumnID != nil {
+						colID = *h.ToColumnID
+					}
 				} else {
 					break
 				}
