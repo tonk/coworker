@@ -34,12 +34,20 @@
         "desktopTemplate": "warmdesk.desktop",
         "files": {
           "/usr/share/applications/warmdesk-timetracking.desktop": "warmdesk-timetracking.desktop",
+          "/usr/share/applications/warmdesk-test.desktop": "warmdesk-test.desktop",
+          "/usr/share/applications/warmdesk-timetracking-test.desktop": "warmdesk-timetracking-test.desktop",
           "/usr/share/icons/hicolor/scalable/apps/warmdesk.svg": "icons/warmdesk.svg",
           "/usr/share/icons/hicolor/scalable/apps/warmdesk-timetracking.svg": "icons/timetracking.svg",
+          "/usr/share/icons/hicolor/scalable/apps/warmdesk-test.svg": "icons/warmdesk-test.svg",
+          "/usr/share/icons/hicolor/scalable/apps/warmdesk-timetracking-test.svg": "icons/timetracking-test.svg",
           "/usr/share/icons/hicolor/32x32/apps/warmdesk-timetracking.png": "icons/timetracking-32.png",
           "/usr/share/icons/hicolor/128x128/apps/warmdesk-timetracking.png": "icons/timetracking-128.png",
           "/usr/share/icons/hicolor/256x256/apps/warmdesk-timetracking.png": "icons/timetracking-256.png",
-          "/usr/share/icons/hicolor/512x512/apps/warmdesk-timetracking.png": "icons/timetracking-512.png"
+          "/usr/share/icons/hicolor/512x512/apps/warmdesk-timetracking.png": "icons/timetracking-512.png",
+          "/usr/share/icons/hicolor/32x32/apps/warmdesk-timetracking-test.png": "icons/timetracking-test-32.png",
+          "/usr/share/icons/hicolor/128x128/apps/warmdesk-timetracking-test.png": "icons/timetracking-test-128.png",
+          "/usr/share/icons/hicolor/256x256/apps/warmdesk-timetracking-test.png": "icons/timetracking-test-256.png",
+          "/usr/share/icons/hicolor/512x512/apps/warmdesk-timetracking-test.png": "icons/timetracking-test-512.png"
         }
       },
       "rpm": {
@@ -47,12 +55,20 @@
         "desktopTemplate": "warmdesk.desktop",
         "files": {
           "/usr/share/applications/warmdesk-timetracking.desktop": "warmdesk-timetracking.desktop",
+          "/usr/share/applications/warmdesk-test.desktop": "warmdesk-test.desktop",
+          "/usr/share/applications/warmdesk-timetracking-test.desktop": "warmdesk-timetracking-test.desktop",
           "/usr/share/icons/hicolor/scalable/apps/warmdesk.svg": "icons/warmdesk.svg",
           "/usr/share/icons/hicolor/scalable/apps/warmdesk-timetracking.svg": "icons/timetracking.svg",
+          "/usr/share/icons/hicolor/scalable/apps/warmdesk-test.svg": "icons/warmdesk-test.svg",
+          "/usr/share/icons/hicolor/scalable/apps/warmdesk-timetracking-test.svg": "icons/timetracking-test.svg",
           "/usr/share/icons/hicolor/32x32/apps/warmdesk-timetracking.png": "icons/timetracking-32.png",
           "/usr/share/icons/hicolor/128x128/apps/warmdesk-timetracking.png": "icons/timetracking-128.png",
           "/usr/share/icons/hicolor/256x256/apps/warmdesk-timetracking.png": "icons/timetracking-256.png",
-          "/usr/share/icons/hicolor/512x512/apps/warmdesk-timetracking.png": "icons/timetracking-512.png"
+          "/usr/share/icons/hicolor/512x512/apps/warmdesk-timetracking.png": "icons/timetracking-512.png",
+          "/usr/share/icons/hicolor/32x32/apps/warmdesk-timetracking-test.png": "icons/timetracking-test-32.png",
+          "/usr/share/icons/hicolor/128x128/apps/warmdesk-timetracking-test.png": "icons/timetracking-test-128.png",
+          "/usr/share/icons/hicolor/256x256/apps/warmdesk-timetracking-test.png": "icons/timetracking-test-256.png",
+          "/usr/share/icons/hicolor/512x512/apps/warmdesk-timetracking-test.png": "icons/timetracking-test-512.png"
         }
       }
     }

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=WarmDesk (Test)
+GenericName=Project Management
+Comment=Self-hosted Kanban and Scrum boards, team chat, and time tracking — test instance
+Exec=/usr/bin/warmdesk
+Icon=warmdesk-test
+Categories=Office;ProjectManagement;
+Keywords=kanban;scrum;project;management;tasks;board;chat;test;
+StartupWMClass=WarmDesk
+StartupNotify=true
+Terminal=false
