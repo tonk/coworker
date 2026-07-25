@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.17.2)
+## Latest release (v0.17.3)
 
-- **Fix** — a broad WCAG 2.1 AA accessibility remediation pass: keyboard-reachable dashboard cards, proper dialog semantics and focus management across modals and popovers, accessible names on previously unlabeled form fields, and consistent ARIA wiring on tabs and toggle groups.
-- **Changed** — removed dead code identified by a `deadcode`/`knip` audit (no user-facing effect).
+- **Added** — the desktop app's system tray icon now turns orange (with a "(TEST)" title/tooltip) when connected to a test-instance server, matching the existing web UI and PDF branding.
+- **Fix** — the desktop system tray icon never actually updated at all (badge counts, timetracking icon, title) due to two compounding bugs: a tray lookup by an id that was never assigned, and a GTK call made off the main thread that hung indefinitely. Both are fixed.
 
 ## Experiment
 
@@ -386,7 +386,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast
 - **App zoom** — `Ctrl +` / `Ctrl -` to zoom in/out; `Ctrl 0` to reset; level persisted across sessions
 - **Desktop app** — native Tauri app for Linux (AppImage, .deb, .rpm), macOS (DMG), and Windows (installer); server URL configurable from the login page at any time; supports `--help`, `--version`, `--maximized`, and runtime-only `--url=<http(s)://...>` CLI flags; **multi-profile** support (`--profile`, `--create-profile`, `--list-profiles`, `--set-default`, `--delete-profile`) for running separate isolated sessions against different servers
-- **System tray** — tray icon with an unread-notification badge (cards, tickets, chat), a menu item to show/hide the window, and optional close-to-tray behavior instead of quitting; toggled from Settings → Interface
+- **System tray** — tray icon with an unread-notification badge (cards, tickets, chat), a menu item to show/hide the window, and optional close-to-tray behavior instead of quitting; toggled from Settings → Interface; turns orange with a "(TEST)" title when connected to a test-instance server
 - **Project migration** — `warmdesk-export` and `warmdesk-import` standalone tools to migrate projects to/from Jira, Trello, OpenProject, or Ryver; column mapping via config file
 
 

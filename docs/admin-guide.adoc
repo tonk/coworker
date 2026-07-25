@@ -173,6 +173,7 @@ Effects:
 * The logo variants switch to an orange palette with a "TEST" corner ribbon everywhere: the web interface, the login screen, and exported PDFs (when no custom company logo is configured in Admin → Branding).
 * Combines independently with `app_mode` — a `timetracking` instance with `instance_mode: "test"` serves the orange time-tracking logo, not the orange full-WarmDesk logo.
 * The `/api/v1/version` endpoint returns `"instance_mode": "test"` so clients can detect the mode.
+* The desktop app's system tray icon also turns orange, with "(TEST)" appended to its title/tooltip, whenever it is connected to a test-instance server.
 
 The CLI flag takes precedence over the YAML key, which takes precedence over the environment variable.
 

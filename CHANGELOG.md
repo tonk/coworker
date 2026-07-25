@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.17.3 — 2026-07-25
+
+### Added
+- **Desktop system tray icon now reflects test-instance branding** — connecting the Tauri desktop client to a server with `instance_mode: test` now turns the tray icon orange and appends "(TEST)" to its title/tooltip, matching the orange branding already used in the web UI and exported PDFs.
+
+### Fixed
+- **Desktop system tray icon never actually updated — badge counts, the timetracking-mode icon, and title never changed, regardless of app state.** Two compounding bugs: `set_tray_unread` looked up the tray by an id (`"main"`) that was never actually assigned to it, so every update silently failed before touching the icon; once that was fixed, the icon-setting call still hung indefinitely because it touched GTK (via libayatana-appindicator) from a background thread instead of the main thread, where Tauri commands run by default. Both are now fixed — the tray icon, title, and tooltip update correctly.
+
 ## v0.17.2 — 2026-07-25
 
 ### Fixed

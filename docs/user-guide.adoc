@@ -106,6 +106,7 @@ Profile data (localStorage, login session) is stored under `<data dir>/profiles/
 The desktop app can show a system tray icon with an unread-notification badge (cards, tickets, chat).
 The tray menu lets you show/hide the main window or quit the app.
 Optionally, closing the window can be configured to minimise it to the tray instead of quitting — both are toggled in User Settings.
+When connected to a test/staging server, the tray icon turns orange and its title gets a "(TEST)" suffix, so it's never mistaken for a production connection.
 
 '''
 
