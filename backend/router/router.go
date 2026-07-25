@@ -14,8 +14,9 @@ import (
 	"github.com/tonk/warmdesk/services"
 )
 
-func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, apiLog bool, uploadDir string, trustedProxies []string, appMode string) *gin.Engine {
+func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, apiLog bool, uploadDir string, trustedProxies []string, appMode string, instanceMode string) *gin.Engine {
 	ttMode := appMode == "timetracking"
+	testMode := instanceMode == "test"
 	r := gin.New()
 	r.SetTrustedProxies(trustedProxies) //nolint
 	r.Use(gin.Recovery())
@@ -624,6 +625,20 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 					path = "timetracking.svg"
 				case "logo-full.svg":
 					path = "timetracking-full.svg"
+				}
+			}
+			// In test instance mode, serve the orange "TEST"-ribboned logo variants
+			// so a test instance is never visually mistaken for production.
+			if testMode {
+				switch path {
+				case "logo.svg":
+					path = "logo-test.svg"
+				case "logo-full.svg":
+					path = "logo-full-test.svg"
+				case "timetracking.svg":
+					path = "timetracking-test.svg"
+				case "timetracking-full.svg":
+					path = "timetracking-full-test.svg"
 				}
 			}
 			if path != "" {

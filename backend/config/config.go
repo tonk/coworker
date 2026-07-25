@@ -27,6 +27,7 @@ type Config struct {
 	GinMode        string `yaml:"gin_mode"`   // debug | release (default: release)
 	DBLog          string `yaml:"db_log"`     // silent | error | warn | info (default: info)
 	AppMode        string `yaml:"app_mode"`   // "" (full) | "timetracking"
+	InstanceMode   string `yaml:"instance_mode"` // "" (production) | "test"
 	APILog         bool   `yaml:"api_log"`  // log HTTP requests (default: true)
 	UploadDir      string `yaml:"upload_dir"`    // directory for uploaded files (default: ./uploads)
 	MaxUploadMB    int64  `yaml:"max_upload_mb"` // max upload size in MB (default: 25)
@@ -171,6 +172,9 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv("APP_MODE"); v != "" {
 		cfg.AppMode = v
+	}
+	if v := os.Getenv("INSTANCE_MODE"); v != "" {
+		cfg.InstanceMode = v
 	}
 	if v := os.Getenv("DB_LOG"); v != "" {
 		cfg.DBLog = v

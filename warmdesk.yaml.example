@@ -178,6 +178,18 @@ oauth2:
 # Can also be set via the APP_MODE environment variable.
 # app_mode: "timetracking"
 
+# Instance mode. Defaults to "" (production).
+# Set to "test" to mark this server as a test/staging instance:
+#   - The logo variants swap to an orange palette with a "TEST" corner ribbon
+#     (logo-test.svg / logo-full-test.svg, or timetracking-test.svg /
+#     timetracking-full-test.svg when app_mode is "timetracking") in the web UI
+#     and in exported PDFs (when no custom company logo is set).
+#   - Combines independently with app_mode — e.g. app_mode: "timetracking" +
+#     instance_mode: "test" serves the orange time-tracking logos.
+# Can also be passed as the --instance-mode=test CLI flag (takes precedence over this setting).
+# Can also be set via the INSTANCE_MODE environment variable.
+# instance_mode: "test"
+
 # Gin framework mode: debug | release. Defaults to "release".
 # Set to "debug" during development to enable verbose request logging and detailed errors.
 # Can also be set via the GIN_MODE environment variable.

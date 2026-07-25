@@ -10,9 +10,17 @@ export const useSystemStore = defineStore('system', () => {
   const externalImageProxyEnabled = ref(true)
   const sessionTimeoutMinutes = ref(60)
   const appMode = ref('')
+  const instanceMode = ref('')
   const isTimetrackingMode = computed(() => appMode.value === 'timetracking')
-  const logoSrc     = computed(() => isTimetrackingMode.value ? '/timetracking.svg'      : '/logo.svg')
-  const logoFullSrc = computed(() => isTimetrackingMode.value ? '/timetracking-full.svg' : '/logo-full.svg')
+  const isTestInstance = computed(() => instanceMode.value === 'test')
+  const logoSrc = computed(() => {
+    const base = isTimetrackingMode.value ? '/timetracking' : '/logo'
+    return isTestInstance.value ? `${base}-test.svg` : `${base}.svg`
+  })
+  const logoFullSrc = computed(() => {
+    const base = isTimetrackingMode.value ? '/timetracking-full' : '/logo-full'
+    return isTestInstance.value ? `${base}-test.svg` : `${base}.svg`
+  })
   const defaults = ref({
     date_time_format: 'YYYY-MM-DD HH:mm',
     timezone: 'UTC',
@@ -26,6 +34,7 @@ export const useSystemStore = defineStore('system', () => {
     try {
       const { data } = await systemApi.getVersion()
       appMode.value = data.app_mode || ''
+      instanceMode.value = data.instance_mode || ''
     } catch {}
   }
 
@@ -50,5 +59,5 @@ export const useSystemStore = defineStore('system', () => {
     } catch {}
   }
 
-  return { registrationEnabled, scrumStorypointsEnabled, externalImageProxyEnabled, sessionTimeoutMinutes, appMode, isTimetrackingMode, logoSrc, logoFullSrc, defaults, fetchAppMode, fetchSettings }
+  return { registrationEnabled, scrumStorypointsEnabled, externalImageProxyEnabled, sessionTimeoutMinutes, appMode, isTimetrackingMode, instanceMode, isTestInstance, logoSrc, logoFullSrc, defaults, fetchAppMode, fetchSettings }
 })

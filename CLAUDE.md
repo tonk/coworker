@@ -99,6 +99,7 @@ Key settings (`warmdesk.yaml.example` has full documentation):
 | `api_log` | `API_LOG` | `true` |
 | `gin_mode` | `GIN_MODE` | `release` — set to `debug` for local development |
 | `app_mode` | `APP_MODE` | *(empty — full WarmDesk); set to `timetracking` to run as a time-tracking-only server: boards, chat, and helpdesk routes are disabled, and the time-tracking logos replace the default WarmDesk logos everywhere (web UI, PDFs). Also available as `--mode=timetracking` CLI flag.* |
+| `instance_mode` | `INSTANCE_MODE` | *(empty — production); set to `test` to serve the orange, "TEST"-ribboned logo variants everywhere (web UI, PDFs) instead of the default green ones, so a test/staging instance is never mistaken for production. Combines independently with `app_mode` — e.g. `timetracking` + `test` serves the orange time-tracking logo. Also available as `--instance-mode=test` CLI flag.* |
 | `smtp.host` / `.port` / `.from` / `.username` / `.password` / `.use_tls` | — | port `587`, rest empty (overridable via system settings) |
 | `livekit_url` / `livekit_api_key` / `livekit_api_secret` / `livekit_room_prefix` | `LIVEKIT_*` | *(empty — required for voice/video calls)* |
 | `oauth2.google_client_id` / `.google_client_secret` / `.office_client_id` / `.office_client_secret` | — | *(empty — required for IMAP OAuth2 auth)* |

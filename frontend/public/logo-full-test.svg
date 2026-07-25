@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="361.0481"
+   height="172.84502"
+   viewBox="0 0 361.0481 172.84502"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .desk-top { fill: #FFE0A3; }
+      .desk-body { fill: #F5A93F; }
+      .desk-leg { fill: #C97A1D; }
+      .steam { stroke: #FFE0A3; }
+      .cup-body { fill: #C97A1D; }
+      .cup-rim { fill: #8A5010; }
+      .cup-handle { stroke: #FFE0A3; }
+      .wordmark-warm { fill: #FFE0A3; }
+      .wordmark-desk { fill: #F1EFE8; }
+      .tagline { fill: #B4B2A9; }
+      .ribbon { fill: #8A5010; }
+      .ribbon-text { fill: #FFFFFF; font-family: FreeSans, 'Liberation Sans', Arial, Helvetica, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 2px; }
+    </style>
+  </defs>
+  <!-- Desk legs -->
+  <rect class="desk-leg" x="26" y="108.5" width="13" height="62" rx="3"/>
+  <rect class="desk-leg" x="145" y="108.5" width="13" height="62" rx="3"/>
+  <!-- Desk surface -->
+  <rect class="desk-body" x="10" y="90.5" width="162" height="24" rx="5"/>
+  <rect class="desk-top" x="0" y="78.5" width="182" height="16" rx="4"/>
+  <!-- Cup body -->
+  <rect class="cup-body" x="54" y="40.5" width="52" height="42" rx="5"/>
+  <!-- Cup rim -->
+  <rect class="cup-rim" x="48" y="34.5" width="64" height="10" rx="4"/>
+  <!-- Cup handle -->
+  <path d="m 106,51.5 q 20,0 20,10 0,10 -20,10" fill="none" class="cup-handle" stroke-width="5" stroke-linecap="round"/>
+  <!-- Steam -->
+  <path class="steam" d="m 66,30.5 q -4,-12 0,-24" fill="none" stroke-width="3" stroke-linecap="round"/>
+  <path class="steam" d="m 80,27.5 q -4,-13 0,-26" fill="none" stroke-width="3" stroke-linecap="round"/>
+  <path class="steam" d="m 94,30.5 q -4,-12 0,-24" fill="none" stroke-width="3" stroke-linecap="round"/>
+  <!-- Wordmark -->
+  <text x="202" y="91.5" font-family="FreeSans, 'Liberation Sans', Arial, Helvetica, sans-serif" font-size="64px" font-weight="500" class="wordmark-warm" letter-spacing="-1">Warm</text>
+  <text x="202" y="146.5" font-family="FreeSans, 'Liberation Sans', Arial, Helvetica, sans-serif" font-size="64px" font-weight="500" class="wordmark-desk" letter-spacing="-1"><tspan style="fill:#ffd18a">Desk</tspan></text>
+  <!-- Tagline -->
+  <text x="204" y="172.5" font-family="FreeSans, 'Liberation Sans', Arial, Helvetica, sans-serif" font-size="15px" font-weight="400" class="tagline" letter-spacing="2">test instance</text>
+  <!-- TEST corner ribbon -->
+  <g transform="translate(295,22) rotate(28)">
+    <rect class="ribbon" x="-100" y="-14" width="200" height="28" rx="3"/>
+    <text class="ribbon-text" x="0" y="6" text-anchor="middle">TEST</text>
+  </g>
+</svg>

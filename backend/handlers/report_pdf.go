@@ -74,6 +74,20 @@ func resolveLogoBytes(logoURL string) ([]byte, string, bool) {
 			rel, ext = "timetracking-full.svg", ".svg"
 		}
 	}
+	// In test instance mode, substitute the orange "TEST"-ribboned logo variants
+	// so exported PDFs from a test instance are visibly distinguishable from production.
+	if serverInstanceMode == "test" {
+		switch rel {
+		case "logo.svg":
+			rel, ext = "logo-test.svg", ".svg"
+		case "logo-full.svg":
+			rel, ext = "logo-full-test.svg", ".svg"
+		case "timetracking.svg":
+			rel, ext = "timetracking-test.svg", ".svg"
+		case "timetracking-full.svg":
+			rel, ext = "timetracking-full-test.svg", ".svg"
+		}
+	}
 	// Try WebDir on disk first
 	if reportCfg != nil && reportCfg.WebDir != "" {
 		if data, err := os.ReadFile(filepath.Join(reportCfg.WebDir, rel)); err == nil {

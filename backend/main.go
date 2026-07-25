@@ -81,6 +81,7 @@ func main() {
 	configFile  := flag.String("config", "", "path to config file (overrides CONFIG_FILE env var)")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	appMode     := flag.String("mode", "", "application mode: '' (full) or 'timetracking'")
+	instanceMode := flag.String("instance-mode", "", "instance mode: '' (production) or 'test'")
 	portFlag    := flag.String("port", "", "port to listen on (overrides config file and PORT env var)")
 	flag.Parse()
 
@@ -95,17 +96,26 @@ func main() {
 	if *appMode != "" {
 		cfg.AppMode = *appMode
 	}
+	if *instanceMode != "" {
+		cfg.InstanceMode = *instanceMode
+	}
 	if *portFlag != "" {
 		cfg.Port = *portFlag
 	}
 	if cfg.AppMode != "" && cfg.AppMode != "timetracking" {
 		log.Fatalf("invalid --mode %q: valid values are '' (full) and 'timetracking'", cfg.AppMode)
 	}
+	if cfg.InstanceMode != "" && cfg.InstanceMode != "test" {
+		log.Fatalf("invalid --instance-mode %q: valid values are '' (production) and 'test'", cfg.InstanceMode)
+	}
 	if cfg.AppMode == "timetracking" {
 		log.Printf("Starting WarmDesk - Time Tracking %s", version)
 		log.Println("Running in time-tracking-only mode: boards, chat, and helpdesk routes are disabled")
 	} else {
 		log.Printf("Starting WarmDesk %s", version)
+	}
+	if cfg.InstanceMode == "test" {
+		log.Println("Running in TEST instance mode: test-branded (orange) logos will be served")
 	}
 
 	if cfg.JWTSecret == "change-me-in-production" {
@@ -133,6 +143,7 @@ func main() {
 
 	handlers.SetVersion(version)
 	handlers.SetAppMode(cfg.AppMode)
+	handlers.SetInstanceMode(cfg.InstanceMode)
 	handlers.InitSystemDefaults(cfg)
 	handlers.InitAttachments(cfg)
 	handlers.SetOAuth2Config(&cfg.OAuth2)
@@ -206,7 +217,7 @@ func main() {
 	}
 	handlers.InitReport(cfg, webFS)
 	handlers.InitDocs(cfg, webFS)
-	r := router.Setup(authSvc, cfg.AllowedOrigins, webFS, cfg.APILog, cfg.UploadDir, trustedProxies, cfg.AppMode)
+	r := router.Setup(authSvc, cfg.AllowedOrigins, webFS, cfg.APILog, cfg.UploadDir, trustedProxies, cfg.AppMode, cfg.InstanceMode)
 
 	addr := ":" + cfg.Port
 	if cfg.TLSCert != "" && cfg.TLSKey != "" {
