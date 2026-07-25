@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.17.1 — 2026-07-25
+
+### Fixed
+- **MySQL/MariaDB — server refused to start with a misleading "invalid credentials" / "user not found" failure on every login** — a `db_dsn` missing `parseTime=true` caused every read of a row with a timestamp column to fail silently (writes kept working, masking the problem), while `Login`/`Me`/`Refresh` collapsed any database error into a generic auth failure. The server now refuses to start at all if `db_driver: mysql` and `parseTime=true` is missing from `db_dsn`, with a clear error explaining why; genuine database errors during login now return a real `500` instead of a misleading auth failure.
+- **MySQL/MariaDB — every setting on the admin Branding & Billing tab failed to save once billing fields were left blank** — `company_payment_terms`/`default_vat_rate` (and `smtp_port`/`imap_port`/`imap_poll_interval`) rejected an empty value outright, aborting the save of every other field submitted alongside them.
+- **MySQL/MariaDB — settings could be saved once but never updated again, and the IP allowlist security restriction was silently non-functional** — `key` is a reserved word there; an unquoted reference in a raw SQL condition is a syntax error, which broke the settings save-or-create logic (masked as "works the first time, then never again") and made the API-key IP allowlist check always fail open, letting requests through from any IP regardless of the configured restriction.
+- **MySQL/PostgreSQL — creating a card could fail entirely** — the "card created" history event never set a from/to column (there isn't one on creation), and those columns weren't nullable; inserting the resulting invalid value violates a foreign key constraint on any database that enforces one (SQLite does not, by default, which hid this everywhere until now). Also fixes the time-tracking cumulative-flow chart silently dropping affected cards for the days before their first real column move.
+- **MySQL/PostgreSQL — the ticket list and auto-close housekeeping could fail entirely** — both used a SQLite-only date function with no equivalent on those databases.
+- **MySQL/MariaDB — re-saving a setting with the same value it already had could fail** — MySQL's `UPDATE` reports rows *changed*, not rows *matched*, so a no-op save was misread as "no such row," triggering a duplicate-key error on the fallback insert. Every settings save now uses a single atomic upsert instead.
+- **`warmdesk-seed --reset` always crashed against MySQL/MariaDB** — a chain of issues (card history left behind before deleting cards, a soft-deleted comment never actually removed, users deleted before the tickets/customers/groups that reference them, and missing cleanup of a couple of billing-related tables) meant every `--reset` left demo data behind, silently accumulating duplicates and eventually crashing on the next run. Verified stable across repeated `--reset` cycles.
+
 ## v0.17.0 — 2026-07-25
 
 ### Added

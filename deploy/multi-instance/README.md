@@ -31,7 +31,10 @@ if one app node goes down.
 - **Shared PostgreSQL or MySQL, not SQLite.** SQLite is a single-writer file
   database and cannot be shared across processes/hosts. All 3 instances point
   at the same `db_dsn`. GORM's `AutoMigrate` (which runs on every startup) is
-  idempotent, so 3 instances starting up against the same schema is safe.
+  idempotent, so 3 instances starting up against the same schema is safe. If
+  `db_driver` is `mysql`, `db_dsn` **must** include `parseTime=true` (as shown
+  in `warmdesk.yaml.example` below) — the server refuses to start otherwise,
+  since without it timestamp columns fail to scan on every read.
 - **`redis_url` set on every instance.** Each instance's WebSocket hub is
   in-process memory only. Without Redis, a board/chat/presence update made by
   a user connected to instance 2 never reaches a teammate connected to

@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.17.0)
+## Latest release (v0.17.1)
 
-- **Added** — a new `instance_mode` setting serves orange, "TEST"-ribboned logo variants across the web UI and PDFs so a test/staging instance is never mistaken for production.
-- **Added** — ready-made multi-instance deployment templates (`deploy/multi-instance/`) for running WarmDesk behind a load balancer with shared database, Redis, and uploads.
+- **Fix** — a batch of MySQL/MariaDB and PostgreSQL compatibility fixes: startup validation for a `parseTime`-less MySQL DSN, card creation and the ticket list no longer fail outright, admin settings save correctly (including re-saving an unchanged value), and the IP allowlist security restriction no longer silently fails open.
+- **Fix** — `warmdesk-seed --reset` no longer crashes or leaves duplicate demo data behind on MySQL/MariaDB.
 
 ## Experiment
 
