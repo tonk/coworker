@@ -18,12 +18,12 @@ enableEmoji = true
   warmdesk_version = "v0.17.1"
   release_date     = "2026-07-25"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/release-0.16.1/"
+  release_blog     = "blog/mysql-compatibility-bug-hunt/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Feature — drag-and-drop calendar view for time tracking** — move entries between days, resize by dragging an edge, right-click or click-drag to create, zoomable, color-coded by customer.",
-    "**Feature — customers can now be given a color**, used to color-code the calendar view; customers left without one are assigned a color automatically.",
-    "**Fix — resizing a calendar entry by dragging an edge always failed** due to a bad date format sent to the server; now fixed, and the resize handles are visible on hover.",
+    "**Fix — a chain of MySQL/MariaDB compatibility bugs invisible against SQLite** — startup validation for a parseTime-less DSN, real database errors no longer masked as invalid-credentials, reserved-word quoting (which also silently disabled the IP allowlist), non-nullable card-history columns breaking card creation, and settings saves that could never persist an unchanged value.",
+    "**Fix — `warmdesk-seed --reset` no longer crashes or leaves duplicate demo data behind** on MySQL/MariaDB; verified stable across repeated reset cycles.",
+    "**Feature — `instance_mode` setting** serves orange, \"TEST\"-ribboned logo variants across the web UI and PDFs so a test/staging instance is never mistaken for production, plus ready-made multi-instance deployment templates.",
   ]
 
 [markup]

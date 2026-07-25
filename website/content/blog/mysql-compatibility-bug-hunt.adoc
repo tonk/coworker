@@ -1,0 +1,48 @@
+---
+title: "What Testing Against Real MySQL Uncovered"
+date: "2026-07-25"
+author: "Ton Kersten"
+description: "Spinning up a throwaway MySQL-backed test instance surfaced a chain of bugs — startup validation, auth errors masking real database failures, reserved-word quoting, non-nullable card-history columns, SQLite-only SQL syntax, and a --reset that never actually cleaned up — every one of them invisible against SQLite. v0.17.0 also adds a test-instance branding mode and multi-instance deployment templates."
+draft: false
+---
+:imagesdir: ../../images
+:doctype: article
+:icons!:
+
+WarmDesk's default database is SQLite, and that's also what every local dev environment and the test suite run against. It's great for that — until you point a fresh instance at MySQL for the first time and discover just how much SQLite has been quietly letting slide.
+
+That's what happened today. What started as "I can't log in to my test server" turned into an afternoon of pulling on one thread after another, each one unraveling into the next. Here's the whole chain, in the order it actually happened.
+
+== It started with a login that silently didn't work
+
+A brand new instance, freshly seeded, `POST /auth/register` returning `201` — and then every subsequent request acting as if the account didn't exist. `Login`, `Me`, and `Refresh` were all collapsing *any* database error into a generic "invalid credentials" or "user not found", so there was no clue in the response, and nothing in the logs either, since those errors were never even checked.
+
+The real cause: the MySQL DSN was missing `parseTime=true`. Without it, the driver hands back raw bytes for `DATETIME` columns instead of parsed times, and `User.CreatedAt`/`UpdatedAt` are `time.Time` fields — so *every* read of a user row failed to scan, while the `INSERT` during registration never needed to read a timestamp back and worked fine. First win: `Login`/`Me`/`Refresh` now distinguish a genuine "no such row" from an actual database error and return a real `500` instead of a misleading auth failure, and the server now refuses to start at all if `db_driver: mysql` and `parseTime=true` isn't set, with an error that says exactly why.
+
+== Then the admin settings page stopped saving anything
+
+With login fixed, the next attempt was turning on the login-page branding logo. The save button did nothing useful — no error, no logo. The cause turned out to be unrelated to branding entirely: two of the billing fields on that same settings tab (`company_payment_terms`, `default_vat_rate`) were typed as Go's `json.Number`, which rejects an empty string outright. Since the form always submits every field on the tab together, leaving Billing blank silently failed the *whole* save, including the toggle you actually wanted to change.
+
+Fixing that revealed the deeper issue underneath: the settings save-or-create logic built its `WHERE` clause as a raw string, `key = ?`. `key` is a reserved word in MySQL/MariaDB — SQLite and PostgreSQL don't care, but MySQL treats it as a syntax error. The very first save of a setting looked like it worked (the broken update always reports zero rows affected, so it falls back to a `Create`, which succeeds), but every save after that failed on a duplicate primary key, silently, since that error wasn't checked either. The exact same unquoted pattern turned up in two more places — one of them, buried in the IP allowlist middleware, meant that security restriction had been silently failing open on MySQL the entire time, letting API-key requests through from any IP regardless of what was configured.
+
+Fixing the quoting *still* wasn't quite enough. MySQL's `UPDATE` reports rows *changed*, not rows *matched* — so re-saving a setting with the exact value it already had reported zero rows affected despite the row existing, misread once again as "no such row," triggering a duplicate-key error on the very next `--reset` of the seed data. Every settings save now goes through a single atomic `INSERT ... ON CONFLICT DO UPDATE` instead, which has neither problem by construction.
+
+== Card creation and the ticket list weren't spared either
+
+Two more, found while re-testing: creating a card logs a "card created" history event with no from/to column (there isn't one yet) — but those columns weren't nullable, and `0` isn't a valid column id. SQLite doesn't enforce foreign keys by default, so this went unnoticed everywhere; MySQL and PostgreSQL both enforce them, and card creation failed outright. And the ticket list's default sort order used `datetime('now')` — SQLite-only syntax with no MySQL or PostgreSQL equivalent, breaking every ticket list request for a customer.
+
+== `warmdesk-seed --reset` never actually reset anything
+
+By this point the pattern was obvious enough to go looking for it deliberately in the seed tool, since `--reset` is exactly the kind of "delete everything, recreate everything" operation that stress-tests foreign keys hardest. Sure enough: card history was never cleaned up before deleting cards, a soft-deleted comment was never actually removed (so its foreign keys stayed physically in place), demo users were deleted *before* the tickets, customers, and groups that reference them, and cleanup was missing entirely for a couple of billing-related tables. Every `--reset` had been silently leaving projects, cards, comments, users, and customers behind, accumulating duplicates run after run until it eventually crashed.
+
+All fixed now, and verified the only way that means anything: four consecutive `--reset` cycles against a live MySQL database, producing the exact same record counts every single time.
+
+== Also in this release
+
+Not everything today was firefighting. `v0.17.0` shipped earlier the same day with two additions: an `instance_mode` setting that swaps in orange, "TEST"-ribboned logo variants across the web UI and PDFs, so a test or staging instance is never visually mistaken for production — which is, unsurprisingly, exactly what today's test instance was running. And ready-made templates under `deploy/multi-instance/` for running WarmDesk behind a load balancer with a shared database, Redis, and upload volume.
+
+== Upgrade
+
+Download `v0.17.1` from the link:../download[download page] or pull the latest release tag. If you're running MySQL or MariaDB, double-check your `db_dsn` includes `parseTime=true` — the server will now tell you plainly at startup if it doesn't.
+
+No database migration is required — as with every WarmDesk release, any new or changed fields are handled automatically on first startup.
