@@ -97,16 +97,6 @@ func jsDateOnlyToGoLayout(jsFormat string) string {
 	return layout
 }
 
-// ── gridFmt formats minutes as decimal hours, or blank for zero ──────────────
-// Build functions shadow this with a notation-aware local closure.
-
-func gridFmt(minutes int) string {
-	if minutes == 0 {
-		return ""
-	}
-	return fmtDecimalH(minutes)
-}
-
 // makeGridFmt returns a gridFmt function that respects the user's time notation.
 func makeGridFmt(notation string) func(int) string {
 	return func(minutes int) string {

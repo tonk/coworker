@@ -19,6 +19,7 @@
     "@fontsource/open-sans": "^5.2.7",
     "@fontsource/roboto": "^5.2.10",
     "@fontsource/source-code-pro": "^5.2.7",
+    "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "@tauri-apps/plugin-fs": "^2.0.0",
     "@tauri-apps/plugin-http": "^2.5.9",
@@ -26,7 +27,6 @@
     "axios": "^1.16.1",
     "chart.js": "^4.5.1",
     "dompurify": "^3.4.5",
-    "easymde": "^2.21.0",
     "frappe-gantt": "^1.2.2",
     "gemoji": "^8.1.0",
     "highlight.js": "^11.11.1",
@@ -43,7 +43,6 @@
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@tauri-apps/cli": "^2.11.2",
-    "@types/dompurify": "^3.0.5",
     "@types/sortablejs": "^1.15.8",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/test-utils": "^2.4.10",

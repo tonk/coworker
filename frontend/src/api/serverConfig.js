@@ -17,10 +17,6 @@ export function setServerUrl(url) {
   localStorage.setItem(KEY, url.replace(/\/+$/, ''))
 }
 
-export function clearServerUrl() {
-  localStorage.removeItem(KEY)
-}
-
 export function setRuntimeServerUrl(url) {
   const normalized = (url || '').trim().replace(/\/+$/, '')
   if (!normalized) return

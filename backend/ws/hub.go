@@ -143,15 +143,6 @@ func (h *Hub) Register(client *Client) {
 	h.register <- client
 }
 
-// Broadcast sends a message to all clients in this hub.
-func (h *Hub) Broadcast(msg Message) {
-	data, err := json.Marshal(msg)
-	if err != nil {
-		return
-	}
-	h.broadcast <- data
-}
-
 // BroadcastToProject sends a message to all clients of a project.
 // In memory mode, delivery is direct. In Redis mode, the message is
 // published to the shared channel and delivered via the subscriber.

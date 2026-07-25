@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -143,18 +142,3 @@ func isPrivateHostname(host string) bool {
 	return false
 }
 
-func isPrivateIP(ip net.IP) bool {
-	if ip == nil {
-		return false
-	}
-	for _, cidr := range []string{
-		"127.0.0.0/8", "10.0.0.0/8", "172.16.0.0/12",
-		"192.168.0.0/16", "169.254.0.0/16", "::1/128", "fc00::/7",
-	} {
-		_, network, err := net.ParseCIDR(cidr)
-		if err == nil && network.Contains(ip) {
-			return true
-		}
-	}
-	return false
-}
