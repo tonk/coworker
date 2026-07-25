@@ -25,7 +25,7 @@ export function useTrayUnread() {
       () => systemStore.isTestInstance,
     ],
     async () => {
-      if (!isTauri || !auth.isLoggedIn) return
+      if (!isTauri) return
       const enabled = auth.user?.tray_icon_enabled !== false
       const closeToTray = auth.user?.close_to_tray_enabled !== false
       const convUnread = notificationsStore.hasUnread ? 1 : 0

@@ -553,7 +553,7 @@ pub fn run() {
                 .separator()
                 .item(&quit_item)
                 .build()?;
-            TrayIconBuilder::new()
+            TrayIconBuilder::with_id("main")
                 .icon(tray_icon)
                 .title("WarmDesk")
                 .tooltip("WarmDesk")
@@ -696,7 +696,6 @@ fn set_tray_unread(
 ) -> Result<(), String> {
     CLOSE_TO_TRAY_ENABLED.store(close_to_tray, Ordering::Relaxed);
 
-    let tray = app.tray_by_id("main").ok_or("tray not found")?;
     let (normal_icon, badge_icon) = match (is_timetracking, is_test) {
         (true, true) => (
             include_bytes!("../icons/timetracking-tray-icon-test.png") as &[u8],
@@ -722,28 +721,57 @@ fn set_tray_unread(
         (false, true) => "WarmDesk (TEST)",
         (false, false) => "WarmDesk",
     };
-    tray.set_title(Some(title)).map_err(|e| e.to_string())?;
 
-    if !enabled {
-        let icon = png_to_image(normal_icon)?;
-        tray.set_icon(Some(icon)).map_err(|e| e.to_string())?;
-        tray.set_tooltip(Some(title)).map_err(|e| e.to_string())?;
-        return Ok(());
-    }
+    // Tray/icon mutation touches GTK (via libayatana-appindicator on Linux) and
+    // must run on the main thread — Tauri commands execute on a background
+    // thread pool by default, and calling GTK-backed tray APIs off the main
+    // thread silently hangs rather than erroring.
+    let app_handle = app.clone();
+    app.run_on_main_thread(move || {
+        let Some(tray) = app_handle.tray_by_id("main") else {
+            eprintln!("[tray] set_tray_unread: tray not found");
+            return;
+        };
 
-    let icon = if count > 0 {
-        png_to_image(badge_icon)?
-    } else {
-        png_to_image(normal_icon)?
-    };
-    tray.set_icon(Some(icon)).map_err(|e| e.to_string())?;
+        if let Err(e) = tray.set_title(Some(title)) {
+            eprintln!("[tray] set_title failed: {e}");
+        }
 
-    let tooltip = if count > 0 {
-        format!("{} — {} unread", title, count)
-    } else {
-        title.to_string()
-    };
-    tray.set_tooltip(Some(&tooltip)).map_err(|e| e.to_string())?;
+        if !enabled {
+            match png_to_image(normal_icon) {
+                Ok(icon) => {
+                    if let Err(e) = tray.set_icon(Some(icon)) {
+                        eprintln!("[tray] set_icon failed: {e}");
+                    }
+                    if let Err(e) = tray.set_tooltip(Some(title)) {
+                        eprintln!("[tray] set_tooltip failed: {e}");
+                    }
+                }
+                Err(e) => eprintln!("[tray] decode icon failed: {e}"),
+            }
+            return;
+        }
+
+        let icon_bytes = if count > 0 { badge_icon } else { normal_icon };
+        match png_to_image(icon_bytes) {
+            Ok(icon) => {
+                if let Err(e) = tray.set_icon(Some(icon)) {
+                    eprintln!("[tray] set_icon failed: {e}");
+                }
+            }
+            Err(e) => eprintln!("[tray] decode icon failed: {e}"),
+        }
+
+        let tooltip = if count > 0 {
+            format!("{title} — {count} unread")
+        } else {
+            title.to_string()
+        };
+        if let Err(e) = tray.set_tooltip(Some(&tooltip)) {
+            eprintln!("[tray] set_tooltip failed: {e}");
+        }
+    })
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
