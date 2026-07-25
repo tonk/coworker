@@ -15,15 +15,14 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.17.1"
+  warmdesk_version = "v0.17.2"
   release_date     = "2026-07-25"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
   release_blog     = "blog/mysql-compatibility-bug-hunt/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Fix — a chain of MySQL/MariaDB compatibility bugs invisible against SQLite** — startup validation for a parseTime-less DSN, real database errors no longer masked as invalid-credentials, reserved-word quoting (which also silently disabled the IP allowlist), non-nullable card-history columns breaking card creation, and settings saves that could never persist an unchanged value.",
-    "**Fix — `warmdesk-seed --reset` no longer crashes or leaves duplicate demo data behind** on MySQL/MariaDB; verified stable across repeated reset cycles.",
-    "**Feature — `instance_mode` setting** serves orange, \"TEST\"-ribboned logo variants across the web UI and PDFs so a test/staging instance is never mistaken for production, plus ready-made multi-instance deployment templates.",
+    "**Fix — a broad WCAG 2.1 AA accessibility remediation pass** — keyboard-reachable dashboard cards, proper dialog semantics and focus management across modals and popovers, accessible names on previously unlabeled form fields, and consistent ARIA wiring on tabs and toggle groups.",
+    "**Changed — removed dead code** identified by a `deadcode`/`knip` audit (no user-facing effect).",
   ]
 
 [markup]
@@ -42,7 +41,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.17.1"
+      "warmdesk-version" = "v0.17.2"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]

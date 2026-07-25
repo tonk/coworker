@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.17.1)
+## Latest release (v0.17.2)
 
-- **Fix** — a batch of MySQL/MariaDB and PostgreSQL compatibility fixes: startup validation for a `parseTime`-less MySQL DSN, card creation and the ticket list no longer fail outright, admin settings save correctly (including re-saving an unchanged value), and the IP allowlist security restriction no longer silently fails open.
-- **Fix** — `warmdesk-seed --reset` no longer crashes or leaves duplicate demo data behind on MySQL/MariaDB.
+- **Fix** — a broad WCAG 2.1 AA accessibility remediation pass: keyboard-reachable dashboard cards, proper dialog semantics and focus management across modals and popovers, accessible names on previously unlabeled form fields, and consistent ARIA wiring on tabs and toggle groups.
+- **Changed** — removed dead code identified by a `deadcode`/`knip` audit (no user-facing effect).
 
 ## Experiment
 

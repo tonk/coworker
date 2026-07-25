@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.17.2 — 2026-07-25
+
+### Fixed
+- **Accessibility (WCAG 2.1 AA) — a broad remediation pass across the app.** Fixes include: a dashboard project card that was completely unreachable by keyboard; an "Invite to Call" picker with no dialog semantics and no Escape-to-close; five modals/popovers (call settings, About, news welcome, accessibility status, several time-tracking dialogs) that never moved focus in on open; eight ticket-detail form fields, the new-ticket dialog's five fields, and three admin settings fields with no accessible name; three color inputs and six ticket-detail/admin inputs missing a paired label; decorative icons across login, call, and customer-detail screens missing `aria-hidden`; a reaction tooltip only reachable by mouse hover, not keyboard focus; and several custom tab/toggle groups (ticket view switcher, customer-detail email editor) with incomplete ARIA wiring. Also fixes a global focus-management bug uncovered while verifying these: navigating to a page could silently steal focus back from a dialog that opened on load (e.g. the news welcome modal right after login), undoing its own focus-on-open logic.
+
+### Changed
+- **Removed dead code found by a `deadcode`/`knip` audit** — no user-facing effect. Cleaned up several backend functions and files with zero remaining callers (superseded email-sending variants, a duplicated position-rebalancing helper, an already-shadowed PDF formatting function, a superseded WebSocket broadcast method), four unused frontend files (including one already documented as retired but never deleted), three one-off migration scripts, and two unnecessary/misresolved npm dependencies.
+
 ## v0.17.1 — 2026-07-25
 
 ### Fixed
