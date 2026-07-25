@@ -50,6 +50,7 @@ else
 		port: "8080"
 		db_driver: sqlite
 		db_dsn: "./warmdesk.db"
+		instance_mode: "test"
 
 		smtp:
 		  host: "master.tonkersten.com"
