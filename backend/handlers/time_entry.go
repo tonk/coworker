@@ -527,13 +527,7 @@ func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) 
 	}
 
 	for _, b := range buckets {
-		sort.SliceStable(b.Entries, func(i, j int) bool {
-			ei, ej := b.Entries[i], b.Entries[j]
-			if !ei.Date.Equal(ej.Date) {
-				return ei.Date.Before(ej.Date)
-			}
-			return entrySortKey(ei) < entrySortKey(ej)
-		})
+		sortGroupEntries(b.Entries)
 	}
 
 	result := make([]timeEntryGroup, 0, len(order))
@@ -587,6 +581,18 @@ func entrySortKey(e models.TimeEntry) string {
 	return e.Description
 }
 
+// sortGroupEntries orders a group's entries by date, then by entrySortKey
+// for entries sharing the same date.
+func sortGroupEntries(entries []models.TimeEntry) {
+	sort.SliceStable(entries, func(i, j int) bool {
+		ei, ej := entries[i], entries[j]
+		if !ei.Date.Equal(ej.Date) {
+			return ei.Date.Before(ej.Date)
+		}
+		return entrySortKey(ei) < entrySortKey(ej)
+	})
+}
+
 func custLabel(e models.TimeEntry) string {
 	if e.Customer != nil && e.Customer.Name != "" {
 		return e.Customer.Name
@@ -635,6 +641,7 @@ func buildGroupsByCustomer(entries []models.TimeEntry) []timeEntryGroup {
 		if b.Entries == nil {
 			b.Entries = []models.TimeEntry{}
 		}
+		sortGroupEntries(b.Entries)
 		result = append(result, *b)
 	}
 	return setDeclarable(result)
@@ -674,6 +681,7 @@ func buildGroupsByProject(entries []models.TimeEntry) []timeEntryGroup {
 		if b.Entries == nil {
 			b.Entries = []models.TimeEntry{}
 		}
+		sortGroupEntries(b.Entries)
 		result = append(result, *b)
 	}
 	return setDeclarable(result)
@@ -721,6 +729,7 @@ func buildGroupsByCustomerProject(entries []models.TimeEntry) []timeEntryGroup {
 		if b.Entries == nil {
 			b.Entries = []models.TimeEntry{}
 		}
+		sortGroupEntries(b.Entries)
 		result = append(result, *b)
 	}
 	return setDeclarable(result)
