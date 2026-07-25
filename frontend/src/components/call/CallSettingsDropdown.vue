@@ -3,10 +3,13 @@
     <div
       class="call-settings-panel"
       ref="panelEl"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="csp-title"
       :style="{ top: pos.top + 'px', right: pos.right + 'px' }"
     >
       <div class="csp-header">
-        <span class="csp-title">{{ $t('call.settings') }}</span>
+        <span id="csp-title" class="csp-title">{{ $t('call.settings') }}</span>
         <button class="csp-close" @click="$emit('close')" :aria-label="$t('common.close')">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -18,7 +21,7 @@
         <!-- ── Microphone ─────────────────────────────────────────── -->
         <div class="csp-section">
           <label class="csp-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
             {{ $t('call.microphone') }}
           </label>
           <select class="csp-select" v-model="localAudioIn" @change="onAudioInChange">
@@ -35,7 +38,7 @@
         <!-- ── Camera ────────────────────────────────────────────── -->
         <div class="csp-section">
           <label class="csp-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
             {{ $t('call.camera') }}
           </label>
           <select class="csp-select" v-model="localVideoIn" @change="onVideoInChange">
@@ -48,7 +51,7 @@
           <div class="csp-preview-wrap">
             <video ref="previewVideoEl" autoplay playsinline muted class="csp-preview"></video>
             <div v-if="!cameraActive" class="csp-preview-off">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34"/></svg>
             </div>
           </div>
         </div>
@@ -56,7 +59,7 @@
         <!-- ── Speaker (only shown when setSinkId is supported and devices found) ── -->
         <div v-if="showSpeaker" class="csp-section">
           <label class="csp-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
             {{ $t('call.speaker') }}
           </label>
           <div class="csp-row">
@@ -66,7 +69,7 @@
               </option>
             </select>
             <button class="csp-test-btn" @click="testSpeaker" :title="$t('call.test_speaker')" :aria-label="$t('call.test_speaker')">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </button>
           </div>
           <audio ref="testAudioEl" style="display:none"></audio>
@@ -221,6 +224,8 @@ function onKeyDown(e) {
 onMounted(async () => {
   document.addEventListener('pointerdown', onPointerDown)
   document.addEventListener('keydown', onKeyDown)
+  await nextTick()
+  panelEl.value?.querySelector('.csp-close')?.focus()
   await loadDevices(true)
   localAudioIn.value  = audioDeviceId.value || devices.audioInputs[0]?.deviceId  || ''
   localVideoIn.value  = videoDeviceId.value || devices.videoInputs[0]?.deviceId  || ''

@@ -119,7 +119,8 @@ function onPick(emoji) {
   border: 5px solid transparent;
   border-top-color: var(--color-tooltip-bg, #1e293b);
 }
-.reaction-pill:hover .reaction-tooltip { display: block; }
+.reaction-pill:hover .reaction-tooltip,
+.reaction-pill:focus-visible .reaction-tooltip { display: block; }
 
 .add-reaction-wrap { position: relative; }
 .add-reaction-btn {

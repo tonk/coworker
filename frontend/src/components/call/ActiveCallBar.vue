@@ -37,8 +37,8 @@
         </div>
 
         <!-- ── Invite picker panel ───────────────────────────────────────── -->
-        <div v-if="showInvitePicker" class="invite-picker" @click.stop>
-          <div class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
+        <div v-if="showInvitePicker" class="invite-picker" role="dialog" aria-modal="true" aria-labelledby="invite-picker-title" @click.stop @keydown.escape="closeInvitePicker">
+          <div id="invite-picker-title" class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
           <input
             v-model="inviteSearch"
             class="invite-picker-search"
@@ -152,8 +152,8 @@
         <div class="call-duration">{{ formattedDuration }}</div>
 
         <!-- Invite picker for 1:1 → group upgrade -->
-        <div v-if="showInvitePicker && upgradeMode" class="invite-picker" @click.stop>
-          <div class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
+        <div v-if="showInvitePicker && upgradeMode" class="invite-picker" role="dialog" aria-modal="true" aria-labelledby="invite-picker-title" @click.stop @keydown.escape="closeInvitePicker">
+          <div id="invite-picker-title" class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
           <input v-model="inviteSearch" class="invite-picker-search" :placeholder="$t('call.search_users')" aria-label="Search participants to invite" autofocus />
           <div class="invite-picker-list">
             <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">
@@ -255,8 +255,8 @@
         <audio ref="remoteAudio" autoplay playsinline></audio>
 
         <!-- Invite picker anchored above the audio bar -->
-        <div v-if="showInvitePicker && upgradeMode" class="invite-picker invite-picker-above-bar" @click.stop>
-          <div class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
+        <div v-if="showInvitePicker && upgradeMode" class="invite-picker invite-picker-above-bar" role="dialog" aria-modal="true" aria-labelledby="invite-picker-title" @click.stop @keydown.escape="closeInvitePicker">
+          <div id="invite-picker-title" class="invite-picker-header">{{ $t('call.invite_to_call') }}</div>
           <input v-model="inviteSearch" class="invite-picker-search" :placeholder="$t('call.search_users')" aria-label="Search participants to invite" autofocus />
           <div class="invite-picker-list">
             <label v-for="u in filteredInviteUsers" :key="u.id" class="invite-picker-user">

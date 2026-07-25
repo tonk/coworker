@@ -1,9 +1,10 @@
 <template>
   <Teleport to="body">
     <div class="modal-backdrop" @click.self="$emit('close')">
-      <div class="about-modal" role="dialog" aria-modal="true" aria-label="About WarmDesk">
+      <div class="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-modal-title" ref="modalEl">
         <button class="about-close" @click="$emit('close')" aria-label="Close">✕</button>
 
+        <h2 id="about-modal-title" class="sr-only">{{ $t('common.about') }} WarmDesk</h2>
         <div class="about-logo">
           <img :src="systemStore.logoFullSrc" alt="WarmDesk" />
         </div>
@@ -65,6 +66,7 @@ const loading = ref(true)
 const year = new Date().getFullYear()
 
 let previousFocus = null
+const modalEl = ref(null)
 
 function onKeyDown(e) {
   if (e.key === 'Escape') emit('close')
@@ -73,6 +75,7 @@ function onKeyDown(e) {
 onMounted(() => {
   previousFocus = document.activeElement
   document.addEventListener('keydown', onKeyDown)
+  modalEl.value?.querySelector('.about-close')?.focus()
   client.get('/version')
     .then(r => { serverVersion.value = r.data.version })
     .catch(() => {})

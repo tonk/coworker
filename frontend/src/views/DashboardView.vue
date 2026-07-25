@@ -29,9 +29,14 @@
             :key="project.id"
             class="project-card"
             :data-id="project.id"
+            role="button"
+            tabindex="0"
+            :aria-label="project.name"
             @click="router.push(`/projects/${project.slug}`)"
+            @keydown.enter="router.push(`/projects/${project.slug}`)"
+            @keydown.space.prevent="router.push(`/projects/${project.slug}`)"
           >
-            <div v-if="isAdmin && !selectedCustomer" class="drag-handle" title="Drag to reorder" @click.stop>⠿</div>
+            <div v-if="isAdmin && !selectedCustomer" class="drag-handle" title="Drag to reorder" aria-hidden="true" @click.stop>⠿</div>
             <div class="project-color-bar" :style="{ background: project.color || '#6366f1' }"></div>
             <div class="project-card-body">
               <h3 class="project-title-row">
@@ -47,10 +52,11 @@
                   class="btn btn-ghost btn-sm star-btn"
                   :class="{ starred: sidebarStore.isStarred(project.slug) }"
                   @click.stop="toggleStar(project)"
+                  @keydown.stop
                   :title="sidebarStore.isStarred(project.slug) ? $t('project.unstar') : $t('project.star')"
                   :aria-label="sidebarStore.isStarred(project.slug) ? 'Unstar ' + project.name : 'Star ' + project.name"
                 >★</button>
-                <RouterLink :to="`/projects/${project.slug}/settings`" class="btn btn-ghost btn-sm" @click.stop aria-label="Project settings">
+                <RouterLink :to="`/projects/${project.slug}/settings`" class="btn btn-ghost btn-sm" @click.stop @keydown.stop aria-label="Project settings">
                   ⚙
                 </RouterLink>
               </div>

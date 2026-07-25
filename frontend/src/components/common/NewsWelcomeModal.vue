@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div class="welcome-backdrop" @click.self="close">
-      <div class="welcome-modal" role="dialog" aria-modal="true" :aria-labelledby="'welcome-title-' + current.id">
+      <div class="welcome-modal" role="dialog" aria-modal="true" :aria-labelledby="'welcome-title-' + current.id" ref="modalEl">
         <div class="welcome-header" :style="current.sidebar_color ? { borderTopColor: current.sidebar_color } : {}">
           <div class="welcome-logo-row">
             <img :src="systemStore.logoSrc" alt="WarmDesk" class="welcome-logo" />
@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { useSystemStore } from '@/stores/system'
@@ -66,10 +66,13 @@ function onKeyDown(e) {
 }
 
 let previousFocus = null
+const modalEl = ref(null)
 
-onMounted(() => {
+onMounted(async () => {
   previousFocus = document.activeElement
   document.addEventListener('keydown', onKeyDown)
+  await nextTick()
+  modalEl.value?.querySelector('.welcome-close')?.focus()
 })
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKeyDown)

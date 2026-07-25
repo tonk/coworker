@@ -948,9 +948,10 @@
                   <template v-if="editingTTProject && editingTTProject.id === p.id">
                     <td colspan="4" style="padding:8px">
                       <div class="tt-admin-add-row">
-                        <input class="form-input" v-model="editingTTProject.name" @keydown.enter="saveEditTTProject" @keydown.escape="editingTTProject = null" style="flex:1" />
-                        <input type="color" class="tt-admin-color" v-model="editingTTProject.color" :aria-label="$t('timeTracking.tt_project_color')" />
-                        <input class="form-input" v-model="editingTTProject.undeclStr" :placeholder="'0:00'" style="width:80px" :title="$t('timeTracking.undeclarable_per_entry')" @keydown.enter="saveEditTTProject" @keydown.escape="editingTTProject = null" />
+                        <input class="form-input" v-model="editingTTProject.name" :aria-label="$t('timeTracking.tt_project_name')" @keydown.enter="saveEditTTProject" @keydown.escape="editingTTProject = null" style="flex:1" />
+                        <label class="sr-only" for="adm-tt-proj-edit-color">{{ $t('timeTracking.tt_project_color') }}</label>
+                        <input id="adm-tt-proj-edit-color" type="color" class="tt-admin-color" v-model="editingTTProject.color" :aria-label="$t('timeTracking.tt_project_color')" />
+                        <input class="form-input" v-model="editingTTProject.undeclStr" :placeholder="'0:00'" style="width:80px" :aria-label="$t('timeTracking.undeclarable_per_entry')" :title="$t('timeTracking.undeclarable_per_entry')" @keydown.enter="saveEditTTProject" @keydown.escape="editingTTProject = null" />
                         <button class="btn btn-primary btn-sm" @click="saveEditTTProject">{{ $t('common.save') }}</button>
                         <button class="btn btn-secondary btn-sm" @click="editingTTProject = null">{{ $t('common.cancel') }}</button>
                       </div>
@@ -998,7 +999,8 @@
                     <div class="tt-admin-add-row">
                       <label class="sr-only" for="adm-tt-cust-name">{{ $t('timeTracking.tt_customer_name') }}</label>
                       <input id="adm-tt-cust-name" class="form-input" v-model="newTTCustomer.name" :placeholder="$t('timeTracking.tt_customer_name')" @keydown.enter="confirmAddTTCustomer" @keydown.escape="addingTTCustomer = false" ref="newTTCustRef" style="flex:1" />
-                      <input type="color" class="tt-admin-color" v-model="newTTCustomer.color" :aria-label="$t('customer.color')" />
+                      <label class="sr-only" for="adm-tt-cust-color">{{ $t('customer.color') }}</label>
+                      <input id="adm-tt-cust-color" type="color" class="tt-admin-color" v-model="newTTCustomer.color" :aria-label="$t('customer.color')" />
                       <button class="btn btn-primary btn-sm" @click="confirmAddTTCustomer">{{ $t('common.create') }}</button>
                       <button class="btn btn-secondary btn-sm" @click="addingTTCustomer = false">{{ $t('common.cancel') }}</button>
                     </div>
@@ -1008,8 +1010,9 @@
                   <template v-if="editingTTCustomer && editingTTCustomer.id === c.id">
                     <td colspan="3" style="padding:8px">
                       <div class="tt-admin-add-row">
-                        <input class="form-input" v-model="editingTTCustomer.name" @keydown.enter="saveEditTTCustomer" @keydown.escape="editingTTCustomer = null" style="flex:1" />
-                        <input type="color" class="tt-admin-color" v-model="editingTTCustomer.color" :aria-label="$t('customer.color')" />
+                        <input class="form-input" v-model="editingTTCustomer.name" :aria-label="$t('timeTracking.tt_customer_name')" @keydown.enter="saveEditTTCustomer" @keydown.escape="editingTTCustomer = null" style="flex:1" />
+                        <label class="sr-only" for="adm-tt-cust-edit-color">{{ $t('customer.color') }}</label>
+                        <input id="adm-tt-cust-edit-color" type="color" class="tt-admin-color" v-model="editingTTCustomer.color" :aria-label="$t('customer.color')" />
                         <button class="btn btn-primary btn-sm" @click="saveEditTTCustomer">{{ $t('common.save') }}</button>
                         <button class="btn btn-secondary btn-sm" @click="editingTTCustomer = null">{{ $t('common.cancel') }}</button>
                       </div>
@@ -1664,7 +1667,7 @@
             <span class="member-name">{{ m.user.display_name || m.user.username }}</span>
             <span class="member-email">{{ m.user.email }}</span>
           </div>
-          <button class="icon-btn icon-danger" @click="removeGroupMember(m.user_id)" title="Remove">✕</button>
+          <button class="icon-btn icon-danger" @click="removeGroupMember(m.user_id)" title="Remove" :aria-label="'Remove ' + (m.user.display_name || m.user.username)">✕</button>
         </div>
       </div>
 
@@ -1695,7 +1698,7 @@
                 <option value="owner">{{ $t('project.roles.owner') }}</option>
               </select>
             </td>
-            <td><button class="icon-btn icon-danger" @click="removeGroupProjectAccess(pa)">✕</button></td>
+            <td><button class="icon-btn icon-danger" @click="removeGroupProjectAccess(pa)" title="Remove" :aria-label="'Remove ' + pa.project.name + ' access'">✕</button></td>
           </tr>
         </tbody>
       </table>
@@ -1727,7 +1730,7 @@
                 <option value="owner">{{ $t('project.roles.owner') }}</option>
               </select>
             </td>
-            <td><button class="icon-btn icon-danger" @click="removeGroupCustomerAccess(ca)">✕</button></td>
+            <td><button class="icon-btn icon-danger" @click="removeGroupCustomerAccess(ca)" title="Remove" :aria-label="'Remove ' + ca.customer.name + ' access'">✕</button></td>
           </tr>
         </tbody>
       </table>
@@ -1803,8 +1806,8 @@
     @close="showNewsModal = false; editingNews = null"
   >
     <div class="form-group">
-      <label class="form-label">{{ $t('admin.news_title_col') }}</label>
-      <input class="form-input" v-model="newsForm.title" required autofocus />
+      <label class="form-label" for="admin-news-title">{{ $t('admin.news_title_col') }}</label>
+      <input id="admin-news-title" class="form-input" v-model="newsForm.title" required autofocus />
     </div>
     <div class="form-group">
       <label class="form-label">{{ $t('admin.news_text') }}</label>

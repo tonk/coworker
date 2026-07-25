@@ -298,6 +298,7 @@
                   :class="{ 'time-popup-below': timePopupFlip }"
                   ref="timePopupRef"
                   role="dialog"
+                  aria-modal="true"
                   :aria-label="$t('timeTracking.set_time_range')"
                   @mousedown.stop
                 >
@@ -347,6 +348,7 @@
                   :class="{ 'time-popup-below': distPopupFlip }"
                   ref="distPopupRef"
                   role="dialog"
+                  aria-modal="true"
                   :aria-label="$t('timeTracking.set_distance')"
                   @mousedown.stop
                 >
@@ -551,7 +553,7 @@
             <button class="pdf-options-btn" :class="{ 'is-active': gridPdfOpen }" @click="openGridPdf" :aria-expanded="String(gridPdfOpen)" aria-haspopup="dialog">
               {{ $t('timeTracking.export_grid') }}<span class="pdf-opts-chevron" :class="{ open: gridPdfOpen }" aria-hidden="true">›</span>
             </button>
-            <div v-if="gridPdfOpen" class="pdf-options-panel grid-pdf-panel" role="dialog" :aria-label="$t('timeTracking.export_grid')">
+            <div v-if="gridPdfOpen" class="pdf-options-panel grid-pdf-panel" role="dialog" aria-modal="true" :aria-label="$t('timeTracking.export_grid')">
               <div class="grid-pdf-section-label">{{ $t('report.period') }}</div>
               <div class="grid-pdf-type-row" role="group" :aria-label="$t('report.period')">
                 <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'week' }" @click="gridPdfType = 'week'" role="radio" :aria-checked="String(gridPdfType === 'week')">{{ $t('report.period_week') }}</button>
@@ -1125,7 +1127,7 @@
   <!-- ── Create Invoice from report group modal ───────────────────────── -->
   <Teleport to="body">
     <div v-if="showCreateInvoiceFromGroup" class="tt-modal-backdrop" @click.self="showCreateInvoiceFromGroup = false" @keydown.escape="showCreateInvoiceFromGroup = false">
-      <div class="tt-modal tt-modal-lg" role="dialog" aria-modal="true" aria-labelledby="cinv-grp-title">
+      <div class="tt-modal tt-modal-lg" role="dialog" aria-modal="true" aria-labelledby="cinv-grp-title" ref="createInvModalRef">
         <div class="tt-modal-hd">
           <h2 id="cinv-grp-title" class="tt-modal-title">{{ $t('invoice.new_invoice') }}</h2>
           <button class="tt-modal-close" @click="showCreateInvoiceFromGroup = false" :aria-label="$t('common.close')">✕</button>
@@ -1627,6 +1629,11 @@ function openWkPicker() {
     calAnchor.value = new Date(s.getFullYear(), s.getMonth(), 1)
   }
   wkPickerOpen.value = !wkPickerOpen.value
+  if (wkPickerOpen.value) {
+    nextTick(() => {
+      wkPickerRef.value?.querySelector('.wk-cal button')?.focus()
+    })
+  }
 }
 
 function calShiftMonth(delta) {
@@ -1731,7 +1738,8 @@ function onNavEscapeKey(e) {
   if (e.key !== 'Escape') return
   if (wkPickerOpen.value) { wkPickerOpen.value = false; e.stopPropagation(); return }
   if (holidaysDropOpen.value) { holidaysDropOpen.value = false; e.stopPropagation(); return }
-  if (macroRunOpen.value) { macroRunOpen.value = false; e.stopPropagation() }
+  if (macroRunOpen.value) { macroRunOpen.value = false; e.stopPropagation(); return }
+  if (gridPdfOpen.value) { gridPdfOpen.value = false; e.stopPropagation() }
 }
 
 async function addHolidays(loc) {
@@ -3167,6 +3175,10 @@ function openDistPopup(row, dateISO, event) {
   const scrollTop = scrollEl ? scrollEl.getBoundingClientRect().top : 0
   distPopupFlip.value = rect ? (rect.top - scrollTop) < 200 : false
   distPopupKey.value = key
+  nextTick(() => {
+    const el = Array.isArray(distPopupRef.value) ? distPopupRef.value[0] : distPopupRef.value
+    el?.querySelector('.tp-inp')?.focus()
+  })
 }
 
 async function applyDistPopup(row, dateISO) {
@@ -3253,6 +3265,10 @@ function openTimePopup(row, dateISO, event) {
   const scrollTop = scrollEl ? scrollEl.getBoundingClientRect().top : 0
   timePopupFlip.value = rect ? (rect.top - scrollTop) < 200 : false
   timePopupKey.value   = key
+  nextTick(() => {
+    const el = Array.isArray(timePopupRef.value) ? timePopupRef.value[0] : timePopupRef.value
+    el?.querySelector('.tp-inp')?.focus()
+  })
 }
 
 // Parse a wall-clock string to minutes-since-midnight.
@@ -3766,6 +3782,9 @@ function toggleMacroRun() {
       macroRunId.value = macrosSorted.value[0]?.id ?? null
     }
     macroRunStartDay.value = defaultMacroStartDayIndex()
+    nextTick(() => {
+      macroRunRef.value?.querySelector('#macro-run-select')?.focus()
+    })
   }
 }
 function openMacroEditor() {
@@ -4787,6 +4806,11 @@ function openGridPdf() {
     gridPdfYear.value = d.getFullYear()
   }
   gridPdfOpen.value = !gridPdfOpen.value
+  if (gridPdfOpen.value) {
+    nextTick(() => {
+      gridPdfRef.value?.querySelector('.grid-pdf-panel button, .grid-pdf-panel [href], .grid-pdf-panel input, .grid-pdf-panel select')?.focus()
+    })
+  }
 }
 
 // Export grid PDF using the period and date selected in the panel.
@@ -5207,6 +5231,7 @@ async function changeAllInvStatus(inv, status) {
 
 // ── Create invoice from report group ─────────────────────────────────────
 const showCreateInvoiceFromGroup = ref(false)
+const createInvModalRef = ref(null)
 const createInvGroup   = ref(null)
 const createInvStep    = ref(1)
 const createInvLineItems = ref([])
@@ -5286,6 +5311,9 @@ function openCreateInvoiceFromGroup(grp) {
   createInvLineItems.value = items
   createInvStep.value = 1
   showCreateInvoiceFromGroup.value = true
+  nextTick(() => {
+    createInvModalRef.value?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')?.focus()
+  })
 }
 
 async function saveInvoiceFromGroup() {

@@ -10,17 +10,17 @@
         <div class="detail-title-row">
           <div class="title-edit-wrap">
             <h1 v-if="!editingTitle" @dblclick="startTitleEdit" :title="$t('common.double_click_edit')">{{ ticket.title }}</h1>
-            <input v-else ref="titleInput" v-model="editTitleVal" class="form-input title-input" @blur="saveTitle" @keydown.enter="saveTitle" @keydown.escape="cancelTitleEdit" />
+            <input v-else ref="titleInput" v-model="editTitleVal" class="form-input title-input" :aria-label="$t('ticket.title')" @blur="saveTitle" @keydown.enter="saveTitle" @keydown.escape="cancelTitleEdit" />
           </div>
           <div class="detail-actions">
-            <select class="form-input form-input-sm" :value="ticket.status" @change="updateStatus($event.target.value)">
+            <select class="form-input form-input-sm" :value="ticket.status" :aria-label="$t('ticket.status')" @change="updateStatus($event.target.value)">
               <option value="new">{{ $t('ticket.status_new') }}</option>
               <option value="open">{{ $t('ticket.status_open') }}</option>
               <option value="pending">{{ $t('ticket.status_pending') }}</option>
               <option value="pending_close" :disabled="checklistBlocksClose">{{ $t('ticket.status_pending_close') }}</option>
               <option value="closed" :disabled="checklistBlocksClose">{{ $t('ticket.status_closed') }}</option>
             </select>
-            <select class="form-input form-input-sm" :value="ticket.priority" @change="updatePriority($event.target.value)">
+            <select class="form-input form-input-sm" :value="ticket.priority" :aria-label="$t('ticket.priority')" @change="updatePriority($event.target.value)">
               <option value="low">{{ $t('ticket.priority_low') }}</option>
               <option value="medium">{{ $t('ticket.priority_medium') }}</option>
               <option value="high">{{ $t('ticket.priority_high') }}</option>
@@ -31,7 +31,7 @@
               <option v-for="m in macros" :key="m.id" :value="m.id">{{ m.name }}</option>
             </select>
             <HelpIcon v-if="macros.length" i18n-key="help.fields.ticket_macros" :label="$t('macro.apply_macro')" />
-            <select v-if="checklistTemplates.length && !ticket.checklist_template_id" class="form-input form-input-sm" :value="''" :disabled="applyingChecklist" @change="applyChecklist($event.target.value); $event.target.value = ''">
+            <select v-if="checklistTemplates.length && !ticket.checklist_template_id" class="form-input form-input-sm" :value="''" :disabled="applyingChecklist" :aria-label="$t('ticketChecklist.apply')" @change="applyChecklist($event.target.value); $event.target.value = ''">
               <option value="" disabled>{{ $t('ticketChecklist.apply') }}</option>
               <option v-for="t in checklistTemplates" :key="t.id" :value="t.id">{{ t.name }}</option>
             </select>
@@ -90,7 +90,7 @@
           </span>
         </div>
         <div class="tag-input-row">
-          <input class="form-input form-input-sm tag-input" v-model="newTagName" :placeholder="$t('ticket.add_tag_placeholder')" @keydown.enter.prevent="addTag" @keydown.comma.prevent="addTag" />
+          <input class="form-input form-input-sm tag-input" v-model="newTagName" :placeholder="$t('ticket.add_tag_placeholder')" :aria-label="$t('ticket.tags')" @keydown.enter.prevent="addTag" @keydown.comma.prevent="addTag" />
           <button class="btn btn-secondary btn-sm" @click="addTag" :disabled="!newTagName.trim()">{{ $t('common.add') }}</button>
         </div>
       </div>
@@ -169,7 +169,7 @@
           </div>
         </div>
         <div class="linked-add-row">
-          <input class="form-input form-input-sm" v-model="newLinkId" :placeholder="$t('ticket.add_link_placeholder')" @keydown.enter.prevent="addLinkedTicket" />
+          <input class="form-input form-input-sm" v-model="newLinkId" :placeholder="$t('ticket.add_link_placeholder')" :aria-label="$t('ticket.linked_tickets')" @keydown.enter.prevent="addLinkedTicket" />
           <button class="btn btn-secondary btn-sm" @click="addLinkedTicket" :disabled="!newLinkId.trim()">{{ $t('common.add') }}</button>
         </div>
       </div>
@@ -184,7 +184,7 @@
           </div>
         </div>
         <div class="linked-add-row">
-          <input class="form-input form-input-sm" v-model="newCardLink" :placeholder="$t('card_ref.add_link_placeholder')" @keydown.enter.prevent="addCardLink" />
+          <input class="form-input form-input-sm" v-model="newCardLink" :placeholder="$t('card_ref.add_link_placeholder')" :aria-label="$t('card_ref.linked_cards')" @keydown.enter.prevent="addCardLink" />
           <button class="btn btn-secondary btn-sm" @click="addCardLink" :disabled="!newCardLink.trim()">{{ $t('common.add') }}</button>
         </div>
       </div>
@@ -282,7 +282,7 @@
               <button class="btn btn-ghost btn-xs" @click="startReply(item.msg)">{{ $t('ticket.reply') }}</button>
             </div>
             <form v-if="replyingToMsgId === item.msg.id" class="message-reply-form" :style="{ marginLeft: `${32 + item.depth * 32}px` }" @submit.prevent="submitReply()">
-              <textarea v-model="replyText" class="form-input reply-textarea" rows="3" :placeholder="$t('ticket.reply_placeholder')" required></textarea>
+              <textarea v-model="replyText" class="form-input reply-textarea" rows="3" :placeholder="$t('ticket.reply_placeholder')" :aria-label="$t('ticket.reply')" required></textarea>
               <div class="reply-form-actions">
                 <button type="button" class="btn btn-secondary btn-sm" @click="cancelReply">{{ $t('common.cancel') }}</button>
                 <button type="submit" class="btn btn-primary btn-sm" :disabled="!replyText.trim() || sendingReply">{{ $t('ticket.send') }}</button>

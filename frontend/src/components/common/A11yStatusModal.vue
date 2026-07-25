@@ -1,8 +1,8 @@
 <template>
-  <div class="modal-overlay" role="dialog" aria-modal="true" :aria-label="$t('dashboard.a11y_title')" @click.self="$emit('close')" @keydown.esc="$emit('close')">
+  <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="a11y-modal-title" @click.self="$emit('close')" @keydown.esc="$emit('close')">
     <div class="modal-box" tabindex="-1" ref="boxRef">
       <button class="modal-close" :aria-label="$t('common.close')" @click="$emit('close')">×</button>
-      <div class="a11y-tag">{{ $t('dashboard.a11y_title') }}</div>
+      <div id="a11y-modal-title" class="a11y-tag">{{ $t('dashboard.a11y_title') }}</div>
       <div class="a11y-badge">WCAG 2.1 AA</div>
       <ul class="a11y-list">
         <li>✓ Skip-to-content &amp; focus management</li>

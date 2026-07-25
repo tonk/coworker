@@ -442,10 +442,10 @@
           <div class="date-input-row">
             <input id="contract-start" class="form-input" type="text" v-model="displayContractStartDate" :placeholder="dateOnlyFormat()" @blur="parseContractStartDate" />
             <label class="picker-wrap" :title="$t('common.pick_date')">
-              <span class="btn-icon-xs">&#128197;</span>
-              <input type="date" class="date-picker-overlay" :value="contractForm.start_date" @change="onContractStartDateChange" />
+              <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="contractForm.start_date" :aria-label="$t('contract.start_date')" @change="onContractStartDateChange" />
             </label>
-            <button v-if="displayContractStartDate" class="btn-icon-xs" @click="displayContractStartDate = ''; contractForm.start_date = ''" title="Clear">×</button>
+            <button v-if="displayContractStartDate" class="btn-icon-xs" @click="displayContractStartDate = ''; contractForm.start_date = ''" title="Clear" :aria-label="$t('common.clear')">×</button>
           </div>
         </div>
         <div class="form-group half">
@@ -453,10 +453,10 @@
           <div class="date-input-row">
             <input id="contract-end" class="form-input" type="text" v-model="displayContractEndDate" :placeholder="dateOnlyFormat()" @blur="parseContractEndDate" />
             <label class="picker-wrap" :title="$t('common.pick_date')">
-              <span class="btn-icon-xs">&#128197;</span>
-              <input type="date" class="date-picker-overlay" :value="contractForm.end_date" @change="onContractEndDateChange" />
+              <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="contractForm.end_date" :aria-label="$t('contract.end_date')" @change="onContractEndDateChange" />
             </label>
-            <button v-if="displayContractEndDate" class="btn-icon-xs" @click="displayContractEndDate = ''; contractForm.end_date = ''" title="Clear">×</button>
+            <button v-if="displayContractEndDate" class="btn-icon-xs" @click="displayContractEndDate = ''; contractForm.end_date = ''" title="Clear" :aria-label="$t('common.clear')">×</button>
           </div>
         </div>
       </div>
@@ -642,10 +642,10 @@
           <div class="date-input-row">
             <input id="inv-from" class="form-input" type="text" v-model="displayInvFrom" :placeholder="dateOnlyFormat()" @blur="parseInvFrom" />
             <label class="picker-wrap" :title="$t('common.pick_date')">
-              <span class="btn-icon-xs">&#128197;</span>
-              <input type="date" class="date-picker-overlay" :value="invoiceForm.period_start" @change="e => { invoiceForm.period_start = e.target.value; displayInvFrom = e.target.value ? formatDate(e.target.value) : '' }" />
+              <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="invoiceForm.period_start" :aria-label="$t('invoice.period_start')" @change="e => { invoiceForm.period_start = e.target.value; displayInvFrom = e.target.value ? formatDate(e.target.value) : '' }" />
             </label>
-            <button v-if="displayInvFrom" class="btn-icon-xs" @click="displayInvFrom = ''; invoiceForm.period_start = ''" title="Clear">×</button>
+            <button v-if="displayInvFrom" class="btn-icon-xs" @click="displayInvFrom = ''; invoiceForm.period_start = ''" title="Clear" :aria-label="$t('common.clear')">×</button>
           </div>
         </div>
         <div class="form-group half">
@@ -653,10 +653,10 @@
           <div class="date-input-row">
             <input id="inv-to" class="form-input" type="text" v-model="displayInvTo" :placeholder="dateOnlyFormat()" @blur="parseInvTo" />
             <label class="picker-wrap" :title="$t('common.pick_date')">
-              <span class="btn-icon-xs">&#128197;</span>
-              <input type="date" class="date-picker-overlay" :value="invoiceForm.period_end" @change="e => { invoiceForm.period_end = e.target.value; displayInvTo = e.target.value ? formatDate(e.target.value) : '' }" />
+              <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="invoiceForm.period_end" :aria-label="$t('invoice.period_end')" @change="e => { invoiceForm.period_end = e.target.value; displayInvTo = e.target.value ? formatDate(e.target.value) : '' }" />
             </label>
-            <button v-if="displayInvTo" class="btn-icon-xs" @click="displayInvTo = ''; invoiceForm.period_end = ''" title="Clear">×</button>
+            <button v-if="displayInvTo" class="btn-icon-xs" @click="displayInvTo = ''; invoiceForm.period_end = ''" title="Clear" :aria-label="$t('common.clear')">×</button>
           </div>
         </div>
       </div>
@@ -666,10 +666,10 @@
           <div class="date-input-row">
             <input id="inv-due" class="form-input" type="text" v-model="displayInvDue" :placeholder="dateOnlyFormat()" @blur="parseInvDue" />
             <label class="picker-wrap" :title="$t('common.pick_date')">
-              <span class="btn-icon-xs">&#128197;</span>
-              <input type="date" class="date-picker-overlay" :value="invoiceForm.due_date" @change="e => { invoiceForm.due_date = e.target.value; displayInvDue = e.target.value ? formatDate(e.target.value) : '' }" />
+              <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
+              <input type="date" class="date-picker-overlay" :value="invoiceForm.due_date" :aria-label="$t('invoice.due_date')" @change="e => { invoiceForm.due_date = e.target.value; displayInvDue = e.target.value ? formatDate(e.target.value) : '' }" />
             </label>
-            <button v-if="displayInvDue" class="btn-icon-xs" @click="displayInvDue = ''; invoiceForm.due_date = ''" title="Clear">×</button>
+            <button v-if="displayInvDue" class="btn-icon-xs" @click="displayInvDue = ''; invoiceForm.due_date = ''" title="Clear" :aria-label="$t('common.clear')">×</button>
           </div>
         </div>
         <div class="form-group half">
@@ -848,13 +848,17 @@
         <div class="email-body-tabs" role="tablist">
           <button
             role="tab"
+            id="send-body-tab-write"
             :aria-selected="!sendEmailPreview"
+            aria-controls="send-body"
             :class="['email-tab', { active: !sendEmailPreview }]"
             @click="sendEmailPreview = false"
           >{{ $t('common.write') }}</button>
           <button
             role="tab"
+            id="send-body-tab-preview"
             :aria-selected="sendEmailPreview"
+            aria-controls="send-body-preview"
             :class="['email-tab', { active: sendEmailPreview }]"
             @click="sendEmailPreview = true"
           >{{ $t('common.preview') }}</button>
@@ -863,6 +867,8 @@
       <textarea
         v-if="!sendEmailPreview"
         id="send-body"
+        role="tabpanel"
+        aria-labelledby="send-body-tab-write"
         class="form-input email-body-textarea"
         rows="8"
         v-model="sendEmailForm.body"
@@ -870,6 +876,9 @@
       ></textarea>
       <div
         v-else
+        id="send-body-preview"
+        role="tabpanel"
+        aria-labelledby="send-body-tab-preview"
         class="email-body-preview markdown-body"
         v-html="sendEmailRendered"
         aria-live="polite"
@@ -897,10 +906,10 @@
       <div class="date-input-row">
         <input id="pay-date" class="form-input" type="text" v-model="paymentForm.display_payment_date" :placeholder="dateOnlyFormat()" @blur="parsePaymentDate" />
         <label class="picker-wrap" :title="$t('common.pick_date')">
-          <span class="btn-icon-xs">&#128197;</span>
-          <input type="date" class="date-picker-overlay" :value="paymentForm.payment_date" @change="e => { paymentForm.payment_date = e.target.value; paymentForm.display_payment_date = e.target.value ? formatDate(e.target.value) : '' }" />
+          <span class="btn-icon-xs" aria-hidden="true">&#128197;</span>
+          <input type="date" class="date-picker-overlay" :value="paymentForm.payment_date" :aria-label="$t('invoice.payment_date')" @change="e => { paymentForm.payment_date = e.target.value; paymentForm.display_payment_date = e.target.value ? formatDate(e.target.value) : '' }" />
         </label>
-        <button v-if="paymentForm.display_payment_date" class="btn-icon-xs" @click="paymentForm.display_payment_date = ''; paymentForm.payment_date = ''" title="Clear">×</button>
+        <button v-if="paymentForm.display_payment_date" class="btn-icon-xs" @click="paymentForm.display_payment_date = ''; paymentForm.payment_date = ''" title="Clear" :aria-label="$t('common.clear')">×</button>
       </div>
     </div>
     <div class="form-group">

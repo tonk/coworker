@@ -32,9 +32,9 @@
       <header class="ticket-list-header">
         <div class="header-actions">
           <div class="view-toggle" role="tablist">
-            <button role="tab" :aria-selected="viewMode === 'cards'" :class="['view-toggle-btn', { active: viewMode === 'cards' }]" @click="viewMode = 'cards'">☰ {{ $t('ticket.card_view') }}</button>
-            <button role="tab" :aria-selected="viewMode === 'group'" :class="['view-toggle-btn', { active: viewMode === 'group' }]" @click="viewMode = 'group'">⊞ {{ $t('ticket.group_view') }}</button>
-            <button role="tab" :aria-selected="viewMode === 'list'" :class="['view-toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
+            <button id="ticket-tab-cards" role="tab" :aria-selected="viewMode === 'cards'" aria-controls="ticket-view-cards" :class="['view-toggle-btn', { active: viewMode === 'cards' }]" @click="viewMode = 'cards'">☰ {{ $t('ticket.card_view') }}</button>
+            <button id="ticket-tab-group" role="tab" :aria-selected="viewMode === 'group'" aria-controls="ticket-view-group" :class="['view-toggle-btn', { active: viewMode === 'group' }]" @click="viewMode = 'group'">⊞ {{ $t('ticket.group_view') }}</button>
+            <button id="ticket-tab-list" role="tab" :aria-selected="viewMode === 'list'" aria-controls="ticket-view-list" :class="['view-toggle-btn', { active: viewMode === 'list' }]" @click="viewMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
           </div>
           <button :class="['btn btn-sm', showClosed ? 'btn-secondary' : 'btn-warning']" @click="showClosed = !showClosed">
             {{ showClosed ? $t('ticket.hide_closed') : $t('ticket.show_closed') }}
@@ -58,7 +58,7 @@
         </div>
 
         <!-- Card view -->
-        <template v-else-if="viewMode === 'cards'">
+        <div v-else-if="viewMode === 'cards'" id="ticket-view-cards" role="tabpanel" aria-labelledby="ticket-tab-cards">
           <div v-if="regularTickets.length" class="ticket-grid">
             <div
               v-for="t in regularTickets"
@@ -217,10 +217,10 @@
               </div>
             </div>
           </div>
-        </template>
+        </div>
 
         <!-- Group view -->
-        <template v-else-if="viewMode === 'group'">
+        <div v-else-if="viewMode === 'group'" id="ticket-view-group" role="tabpanel" aria-labelledby="ticket-tab-group">
           <div class="group-sub-toggle">
             <button :class="['group-sub-btn', { active: groupSubMode === 'cards' }]" @click="groupSubMode = 'cards'">☰ {{ $t('ticket.card_view') }}</button>
             <button :class="['group-sub-btn', { active: groupSubMode === 'list' }]" @click="groupSubMode = 'list'">☷ {{ $t('ticket.list_view') }}</button>
@@ -304,10 +304,10 @@
               </tbody>
             </table>
           </div>
-        </template>
+        </div>
 
         <!-- List view -->
-        <template v-else-if="viewMode === 'list'">
+        <div v-else-if="viewMode === 'list'" id="ticket-view-list" role="tabpanel" aria-labelledby="ticket-tab-list">
           <template v-for="section in listSections" :key="section.key">
             <div class="pending-reminder-divider"><span class="pending-reminder-label">{{ section.label }}</span></div>
             <table class="ticket-table">
@@ -347,15 +347,15 @@
               </tbody>
             </table>
           </template>
-        </template>
+        </div>
       </template>
     </div>
 
     <BaseModal v-if="showCreate" :title="$t('ticket.new_ticket')" @close="showCreate = false" :resizable="true">
       <form @submit.prevent="submitCreate">
         <div class="form-group">
-          <label>{{ $t('ticket.title') }}</label>
-          <input v-model="newTicket.title" class="form-input" required :placeholder="$t('ticket.title_placeholder')" />
+          <label for="new-ticket-title">{{ $t('ticket.title') }}</label>
+          <input id="new-ticket-title" v-model="newTicket.title" class="form-input" required :placeholder="$t('ticket.title_placeholder')" />
         </div>
         <div class="form-group">
           <label>{{ $t('ticket.description') }}</label>
@@ -375,8 +375,8 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>{{ $t('ticket.type') }}</label>
-            <select v-model="newTicket.type" class="form-input">
+            <label for="new-ticket-type">{{ $t('ticket.type') }}</label>
+            <select id="new-ticket-type" v-model="newTicket.type" class="form-input">
               <option value="incident">{{ $t('ticket.type_incident') }}</option>
               <option value="problem">{{ $t('ticket.type_problem') }}</option>
               <option value="service_request">{{ $t('ticket.type_service_request') }}</option>
@@ -384,8 +384,8 @@
             </select>
           </div>
           <div class="form-group">
-            <label>{{ $t('ticket.priority') }}</label>
-            <select v-model="newTicket.priority" class="form-input">
+            <label for="new-ticket-priority">{{ $t('ticket.priority') }}</label>
+            <select id="new-ticket-priority" v-model="newTicket.priority" class="form-input">
               <option value="low">{{ $t('ticket.priority_low') }}</option>
               <option value="medium" selected>{{ $t('ticket.priority_medium') }}</option>
               <option value="high">{{ $t('ticket.priority_high') }}</option>
@@ -395,15 +395,15 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>{{ $t('ticket.group') }}</label>
-            <select v-model="newTicket.group_id" class="form-input">
+            <label for="new-ticket-group">{{ $t('ticket.group') }}</label>
+            <select id="new-ticket-group" v-model="newTicket.group_id" class="form-input">
               <option :value="null">—</option>
               <option v-for="g in customerGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
             </select>
           </div>
           <div class="form-group">
-            <label>{{ $t('ticket.owner') }}</label>
-            <select v-model="newTicket.owner_id" class="form-input">
+            <label for="new-ticket-owner">{{ $t('ticket.owner') }}</label>
+            <select id="new-ticket-owner" v-model="newTicket.owner_id" class="form-input">
               <option :value="null">—</option>
               <option v-for="u in customerUsers" :key="u.id" :value="u.id">{{ u.display_name || u.username }}</option>
             </select>

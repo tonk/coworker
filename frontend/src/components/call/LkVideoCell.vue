@@ -13,7 +13,7 @@
       <span v-else class="lk-initial">{{ initial }}</span>
     </div>
     <div v-if="track && cameraOff" class="lk-off-overlay">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <line x1="1" y1="1" x2="23" y2="23"/>
         <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34"/>
       </svg>

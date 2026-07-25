@@ -64,9 +64,12 @@ router.beforeEach((to) => {
 })
 
 // After each navigation, move focus to main content so screen readers
-// announce the new page without re-reading the sidebar/header.
+// announce the new page without re-reading the sidebar/header. Skipped when
+// a dialog is already open (e.g. the news welcome modal on first load) so
+// this doesn't steal focus back from the dialog's own focus-on-open logic.
 router.afterEach(() => {
   nextTick(() => {
+    if (document.querySelector('[role="dialog"][aria-modal="true"]')) return
     const main = document.getElementById('main-content')
     if (main) main.focus()
   })

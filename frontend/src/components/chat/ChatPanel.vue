@@ -12,12 +12,17 @@
         </div>
         <span>{{ $t('chat.title') }}</span>
       </div>
-      <div class="layout-picker" role="tablist" aria-label="Chat layout">
+      <!-- A radio group, not tabs: these switch the display style of one
+           message list, not between separate content panels, so role="tab"
+           would need a role="tabpanel" partner — but #chat-messages-panel is
+           already role="log" for live-announcing new messages, and an
+           element can't correctly be both. "Pick one of N" with no separate
+           panel is exactly what radiogroup/radio models. -->
+      <div class="layout-picker" role="radiogroup" aria-label="Chat layout">
         <button v-for="l in ['bubble','comfortable','compact','cozy','grouped']" :key="l"
           :class="['layout-btn', { active: layout === l }]"
-          role="tab"
-          :aria-selected="layout === l"
-          :aria-controls="'chat-messages-panel'"
+          role="radio"
+          :aria-checked="layout === l"
           :aria-label="l.charAt(0).toUpperCase() + l.slice(1) + ' layout'"
           @click="setLayout(l)" :title="l.charAt(0).toUpperCase() + l.slice(1)">
           <svg v-if="l === 'bubble'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M3 9a2 2 0 0 1 2-2h14"/></svg>
