@@ -526,6 +526,16 @@ func buildGroups(period string, from, to time.Time, entries []models.TimeEntry) 
 		}
 	}
 
+	for _, b := range buckets {
+		sort.SliceStable(b.Entries, func(i, j int) bool {
+			ei, ej := b.Entries[i], b.Entries[j]
+			if !ei.Date.Equal(ej.Date) {
+				return ei.Date.Before(ej.Date)
+			}
+			return entrySortKey(ei) < entrySortKey(ej)
+		})
+	}
+
 	result := make([]timeEntryGroup, 0, len(order))
 	for _, l := range order {
 		b := buckets[l]
@@ -566,6 +576,15 @@ func projIDKey(e models.TimeEntry) uint {
 		return *e.ProjectID
 	}
 	return 0
+}
+
+// entrySortKey orders same-date entries by start time when set, falling
+// back to the activity description for entries with no start time.
+func entrySortKey(e models.TimeEntry) string {
+	if e.StartTime != nil && *e.StartTime != "" {
+		return *e.StartTime
+	}
+	return e.Description
 }
 
 func custLabel(e models.TimeEntry) string {
