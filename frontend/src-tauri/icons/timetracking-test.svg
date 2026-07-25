@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="160"
+   height="156.5"
+   viewBox="0 0 160 156.5"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .desk-top   { fill: #FFE0A3; }
+      .desk-body  { fill: #F5A93F; }
+      .desk-leg   { fill: #C97A1D; }
+      .clock-rim  { fill: #8A5010; }
+      .clock-face { fill: #C97A1D; }
+      .clock-hand { stroke: #FFE0A3; fill: none; }
+      .clock-dot  { fill: #FFE0A3; }
+      .ribbon { fill: #8A5010; }
+      .ribbon-text { fill: #FFFFFF; font-family: FreeSans, 'Liberation Sans', Arial, Helvetica, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 2px; }
+    </style>
+  </defs>
+
+  <!-- Desk legs -->
+  <rect class="desk-leg" x="24"  y="104.5" width="11" height="52" rx="3"/>
+  <rect class="desk-leg" x="125" y="104.5" width="11" height="52" rx="3"/>
+
+  <!-- Desk apron -->
+  <rect class="desk-body" x="10" y="88.5" width="140" height="20" rx="5"/>
+
+  <!-- Desk top surface -->
+  <rect class="desk-top" x="0" y="76.5" width="160" height="16" rx="4"/>
+
+  <!-- Clock (drawn after desk so it sits on the surface, same as the cup) -->
+  <!-- Outer rim -->
+  <circle class="clock-rim"  cx="80" cy="50" r="30"/>
+  <!-- Face -->
+  <circle class="clock-face" cx="80" cy="50" r="24"/>
+  <!-- Hour hand — pointing to 10 o'clock (−60° from 12, length 12) -->
+  <line  class="clock-hand"  x1="80" y1="50" x2="70" y2="44"
+         stroke-width="4" stroke-linecap="round"/>
+  <!-- Minute hand — pointing to 2 (10 minutes = +60° from 12, length 17) -->
+  <line  class="clock-hand"  x1="80" y1="50" x2="95" y2="41"
+         stroke-width="3" stroke-linecap="round"/>
+  <!-- Centre dot -->
+  <circle class="clock-dot" cx="80" cy="50" r="3"/>
+
+  <!-- TEST corner ribbon -->
+  <g transform="translate(135,25) rotate(40)">
+    <rect class="ribbon" x="-70" y="-13" width="140" height="26" rx="3"/>
+    <text class="ribbon-text" x="0" y="5" text-anchor="middle">TEST</text>
+  </g>
+</svg>
