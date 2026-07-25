@@ -810,3 +810,5 @@ Create an application that has all these features and requirements
 - Fix overnight time entries (e.g. 19:00 to 07:00 the next day) rendering as a ~15-minute sliver instead of spanning to midnight; render them as two linked blocks split at midnight instead
 - Fix dragging to resize an overnight time entry collapsing its duration down to 15 minutes, because the resize math assumed the end time always came after the start time on the same day
 - Fix the time entry edit dialog rejecting any overnight time range (end time earlier than start time) outright, with an unrelated borrowed error message; overnight ranges are now accepted with a correct validation message
+- Add an instance_mode config setting ("" production | "test") that serves orange, "TEST"-ribboned logo variants across the web UI and exported PDFs instead of the default green ones, so a test/staging instance is never mistaken for production; composes independently with the existing app_mode timetracking branding
+- Add ready-made multi-instance deployment templates (deploy/multi-instance/) for running several WarmDesk instances behind a load balancer sharing one database, Redis, and upload volume

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.17.0 — 2026-07-25
+
+### Added
+- **`instance_mode` config setting — test-branded logos** — a new `instance_mode` setting (`""` production | `"test"`) serves orange, "TEST"-ribboned logo variants across the web UI and exported PDFs instead of the default green WarmDesk/time-tracking logos, so a test or staging instance is never visually mistaken for production. Combines independently with the existing `app_mode` timetracking branding. Set via `instance_mode` in `warmdesk.yaml`, the `INSTANCE_MODE` environment variable, or the `--instance-mode` CLI flag.
+- **Multi-instance deployment templates** — ready-made templates under `deploy/multi-instance/` for running several interchangeable WarmDesk instances behind a load balancer, sharing one database, Redis, and upload volume, with setup notes and known limitations (per-instance rate limiter, backup scheduler).
+
 ## v0.16.5 — 2026-07-23
 
 ### Fixed

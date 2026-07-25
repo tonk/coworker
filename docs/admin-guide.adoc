@@ -1,6 +1,6 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.16.3
-:revdate: 2026-07-22
+:revnumber: v0.17.0
+:revdate: 2026-07-25
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -145,6 +145,11 @@ default_locale: "en"
 # app_mode: "timetracking"
 # APP_MODE — leave empty for full WarmDesk; set to "timetracking" for
 # a time-tracking-only deployment (see below).
+
+# Instance mode (optional)
+# instance_mode: "test"
+# INSTANCE_MODE — leave empty for production; set to "test" to serve
+# test-branded logos (see below).
 ----
 
 === Time-tracking-only mode
@@ -156,6 +161,18 @@ Effects:
 * Board, chat, topic, and helpdesk API routes are disabled — only time tracking and user management remain active.
 * The time-tracking logos (clock-on-desk) replace the default WarmDesk logos everywhere: the web interface, the login screen, and exported PDFs (when no custom company logo is configured in Admin → Branding).
 * The `/api/v1/version` endpoint returns `"app_mode": "timetracking"` so clients can detect the mode.
+
+The CLI flag takes precedence over the YAML key, which takes precedence over the environment variable.
+
+=== Test instance branding
+
+Set `instance_mode: "test"` (or pass `--instance-mode=test` on the command line, or set `INSTANCE_MODE=test` as an environment variable) to mark a deployment as a test or staging instance.
+
+Effects:
+
+* The logo variants switch to an orange palette with a "TEST" corner ribbon everywhere: the web interface, the login screen, and exported PDFs (when no custom company logo is configured in Admin → Branding).
+* Combines independently with `app_mode` — a `timetracking` instance with `instance_mode: "test"` serves the orange time-tracking logo, not the orange full-WarmDesk logo.
+* The `/api/v1/version` endpoint returns `"instance_mode": "test"` so clients can detect the mode.
 
 The CLI flag takes precedence over the YAML key, which takes precedence over the environment variable.
 

@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.16.5)
+## Latest release (v0.17.0)
 
-- **Fix** — the time tracking calendar view no longer leaves dead space below the grid, and scrolling it no longer drags the page footer along with it.
-- **Fix** — overnight time entries (e.g. a 19:00 → 07:00 standby shift) now render, drag-resize, and save correctly instead of collapsing to a 15-minute sliver or being rejected outright.
-- **Added** — a new `gc-uploads` CLI tool for reclaiming orphaned avatar/logo files left behind by upload bugs fixed in earlier releases.
+- **Added** — a new `instance_mode` setting serves orange, "TEST"-ribboned logo variants across the web UI and PDFs so a test/staging instance is never mistaken for production.
+- **Added** — ready-made multi-instance deployment templates (`deploy/multi-instance/`) for running WarmDesk behind a load balancer with shared database, Redis, and uploads.
 
 ## Experiment
 
