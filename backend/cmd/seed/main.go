@@ -28,6 +28,7 @@ import (
 	"github.com/tonk/warmdesk/services"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // version is set at build time via -ldflags "-X main.version=<tag>".
@@ -47,6 +48,28 @@ func must(err error) {
 	if err != nil {
 		log.Fatalf("seed: %v", err)
 	}
+}
+
+// seedSetting upserts a system setting by key.
+//
+// Uses a single atomic INSERT ... ON CONFLICT DO UPDATE (GORM translates
+// this to each driver's native upsert syntax) rather than "try an Update,
+// then Create if nothing happened". That older pattern had two bugs on
+// MySQL/MariaDB: a raw string Where("key = ?", ...) condition bypasses
+// GORM's per-dialect identifier quoting ("key" is a reserved word there, so
+// the Update failed with a SQL syntax error on every call); and even once
+// that's quoted correctly, MySQL's UPDATE reports RowsAffected as rows
+// *changed*, not rows *matched* — re-running the seed with the same static
+// values (e.g. --reset) reports 0 rows affected despite the row existing,
+// so "RowsAffected == 0" was wrongly taken to mean "no such row" and the
+// fallback Create then failed on a duplicate primary key. SQLite and
+// PostgreSQL both report rows *matched*, which is why this never surfaced
+// against SQLite.
+func seedSetting(db *gorm.DB, key, value string) {
+	must(db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "key"}},
+		DoUpdates: clause.AssignmentColumns([]string{"value"}),
+	}).Create(&models.SystemSetting{Key: key, Value: value}).Error)
 }
 
 func hashPassword(plain string) string {
@@ -229,56 +252,22 @@ func main() {
 
 	// ── 0. System settings ────────────────────────────────────────────────────
 	fmt.Println("→ Configuring system settings…")
-	defaultColumns := "Backlog\nIn Progress\nTest & Review\nTo Production"
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "default_columns").Update("value", defaultColumns); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "default_columns", Value: defaultColumns}).Error)
-	}
-	defaultLabels := "Bug\nFeature\nDesign\nContent"
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "default_labels").Update("value", defaultLabels); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "default_labels", Value: defaultLabels}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_name").Update("value", "WarmDesk Company"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_name", Value: "WarmDesk Company"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_logo").Update("value", "/logo.svg"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_logo", Value: "/logo.svg"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "login_branding_enabled").Update("value", "true"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "login_branding_enabled", Value: "true"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_address").Update("value", "Innovatielaan 42"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_address", Value: "Innovatielaan 42"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_city").Update("value", "Datastad"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_city", Value: "Datastad"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_postal_code").Update("value", "1234 WD"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_postal_code", Value: "1234 WD"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_country").Update("value", "Netherlands"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_country", Value: "Netherlands"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_vat_number").Update("value", "NL001234567B01"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_vat_number", Value: "NL001234567B01"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_coc_number").Update("value", "12345678"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_coc_number", Value: "12345678"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_iban").Update("value", "NL91 ABNA 0417 1643 00"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_iban", Value: "NL91 ABNA 0417 1643 00"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_bic").Update("value", "ABNANL2A"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_bic", Value: "ABNANL2A"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "company_payment_terms").Update("value", "30"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "company_payment_terms", Value: "30"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "invoice_number_prefix").Update("value", "INV"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "invoice_number_prefix", Value: "INV"}).Error)
-	}
-	if r := db.Model(&models.SystemSetting{}).Where("key = ?", "default_vat_rate").Update("value", "21"); r.RowsAffected == 0 {
-		must(db.Create(&models.SystemSetting{Key: "default_vat_rate", Value: "21"}).Error)
-	}
+	seedSetting(db, "default_columns", "Backlog\nIn Progress\nTest & Review\nTo Production")
+	seedSetting(db, "default_labels", "Bug\nFeature\nDesign\nContent")
+	seedSetting(db, "company_name", "WarmDesk Company")
+	seedSetting(db, "company_logo", "/logo.svg")
+	seedSetting(db, "login_branding_enabled", "true")
+	seedSetting(db, "company_address", "Innovatielaan 42")
+	seedSetting(db, "company_city", "Datastad")
+	seedSetting(db, "company_postal_code", "1234 WD")
+	seedSetting(db, "company_country", "Netherlands")
+	seedSetting(db, "company_vat_number", "NL001234567B01")
+	seedSetting(db, "company_coc_number", "12345678")
+	seedSetting(db, "company_iban", "NL91 ABNA 0417 1643 00")
+	seedSetting(db, "company_bic", "ABNANL2A")
+	seedSetting(db, "company_payment_terms", "30")
+	seedSetting(db, "invoice_number_prefix", "INV")
+	seedSetting(db, "default_vat_rate", "21")
 
 	// ── 1. Users ──────────────────────────────────────────────────────────────
 	fmt.Println("→ Creating users…")
@@ -1418,7 +1407,8 @@ func main() {
 
 			// Multi-assignees (mirror the single assignee for display consistency)
 			if assigneeID != nil {
-				must(db.Exec("INSERT OR IGNORE INTO card_assignees (card_id, user_id) VALUES (?, ?)", card.ID, *assigneeID).Error)
+				assn := models.CardAssignee{CardID: card.ID, UserID: *assigneeID}
+				must(db.Where(assn).FirstOrCreate(&assn).Error)
 			}
 
 			// Checklist
@@ -1472,7 +1462,8 @@ func main() {
 				must(db.Create(subCard).Error)
 				must(db.Create(&models.CardHistory{CardID: subCard.ID, UserID: users["admin"].ID, EventType: "created"}).Error)
 				if subAssigneeID != nil {
-					must(db.Exec("INSERT OR IGNORE INTO card_assignees (card_id, user_id) VALUES (?, ?)", subCard.ID, *subAssigneeID).Error)
+					assn := models.CardAssignee{CardID: subCard.ID, UserID: *subAssigneeID}
+					must(db.Where(assn).FirstOrCreate(&assn).Error)
 				}
 				totalCards++
 			}
@@ -1964,8 +1955,8 @@ func main() {
 			CardID:       card.ID,
 			UserID:       users["admin"].ID,
 			EventType:    "column_move",
-			FromColumnID: fromCol.ID,
-			ToColumnID:   toCol.ID,
+			FromColumnID: &fromCol.ID,
+			ToColumnID:   &toCol.ID,
 		}
 		must(db.Create(hist).Error)
 		must(db.Model(hist).UpdateColumn("created_at", moveTime).Error)
@@ -4992,7 +4983,19 @@ func removeDemoData(db *gorm.DB) {
 		}
 
 		if len(cardIDs) > 0 {
-			db.Where("card_id IN ?", cardIDs).Delete(&models.CardComment{})
+			// card_histories.card_id is a NOT-NULL foreign key, and every card
+			// has at least one history row (the "created" event) — without
+			// deleting these first, the Card delete below fails on any database
+			// that enforces foreign keys (MySQL/PostgreSQL; not SQLite by
+			// default), silently, since none of these Delete calls check their
+			// error. That left every demo project/card/comment/user
+			// permanently un-deletable across every past --reset run.
+			db.Where("card_id IN ?", cardIDs).Delete(&models.CardHistory{})
+			// CardComment is soft-deletable (has DeletedAt); without Unscoped()
+			// this only sets deleted_at, leaving the row (and its card_id/
+			// user_id foreign keys) physically in place — which then blocks
+			// hard-deleting the card and the comment's author.
+			db.Unscoped().Where("card_id IN ?", cardIDs).Delete(&models.CardComment{})
 			db.Where("card_id IN ?", cardIDs).Delete(&models.CardChecklistItem{})
 			db.Where("card_id IN ?", cardIDs).Delete(&models.CardTag{})
 			db.Exec("DELETE FROM card_labels WHERE card_id IN ?", cardIDs)
@@ -5022,27 +5025,13 @@ func removeDemoData(db *gorm.DB) {
 		db.Unscoped().Where("id IN ?", projectIDs).Delete(&models.Project{})
 	}
 
-	// Conversations created by or involving demo users
-	if len(userIDs) > 0 {
-		var convIDs []uint
-		db.Model(&models.ConversationMember{}).
-			Where("user_id IN ?", userIDs).
-			Pluck("conversation_id", &convIDs)
-		if len(convIDs) > 0 {
-			// Collect conv message IDs to clean up reactions
-			var convMsgIDs []uint
-			db.Model(&models.ConversationMessage{}).Where("conversation_id IN ?", convIDs).Pluck("id", &convMsgIDs)
-			if len(convMsgIDs) > 0 {
-				db.Where("owner_type = 'conv_message' AND owner_id IN ?", convMsgIDs).Delete(&models.MessageReaction{})
-			}
-			db.Unscoped().Where("conversation_id IN ?", convIDs).Delete(&models.ConversationMessage{})
-			db.Where("conversation_id IN ?", convIDs).Delete(&models.ConversationMember{})
-			db.Unscoped().Where("id IN ?", convIDs).Delete(&models.Conversation{})
-		}
-		db.Where("user_id IN ?", userIDs).Delete(&models.TimeEntry{})
-		db.Where("user_id IN ?", userIDs).Delete(&models.TimeMacroLibrary{})
-		db.Unscoped().Where("id IN ?", userIDs).Delete(&models.User{})
-	}
+	// Groups, tickets, and customers all reference users (ticket owner/
+	// assignee/creator, ticket_histories.user_id, etc. via NOT-NULL foreign
+	// keys) and must be cleaned up BEFORE the Conversations+Users block
+	// below hard-deletes the demo users — deleting users first left these
+	// referencing rows still in place, which then blocked the user delete
+	// itself on any database that enforces foreign keys (MySQL/PostgreSQL;
+	// not SQLite by default).
 
 	// Groups
 	demoGroupNames := []string{"Frontend Team", "DevOps Team", "Acme Stakeholders"}
@@ -5105,10 +5094,45 @@ func removeDemoData(db *gorm.DB) {
 	// Customers, invoices, and contracts
 	db.Model(&models.Customer{}).Where("name IN ?", demoCustomerNames).Pluck("id", &custIDs)
 	if len(custIDs) > 0 {
+		// contract_time_slots.contract_id and time_entries.contract_id/
+		// customer_id are NOT-NULL foreign keys; without clearing these first,
+		// the Contract/Customer deletes below fail on any database that
+		// enforces foreign keys (silently, since these errors are never
+		// checked), leaving customers — and everything that references them —
+		// to accumulate across every past --reset run.
+		var contractIDs []uint
+		db.Model(&models.Contract{}).Where("customer_id IN ?", custIDs).Pluck("id", &contractIDs)
+		if len(contractIDs) > 0 {
+			db.Where("contract_id IN ?", contractIDs).Delete(&models.ContractTimeSlot{})
+			db.Where("contract_id IN ?", contractIDs).Delete(&models.TimeEntry{})
+		}
+		db.Where("customer_id IN ?", custIDs).Delete(&models.TimeEntry{})
 		db.Where("customer_id IN ?", custIDs).Delete(&models.Invoice{})
 		db.Where("customer_id IN ?", custIDs).Delete(&models.CustomerFavorite{})
 		db.Where("customer_id IN ?", custIDs).Delete(&models.Contract{})
 		db.Where("id IN ?", custIDs).Delete(&models.Customer{})
+	}
+
+	// Conversations created by or involving demo users
+	if len(userIDs) > 0 {
+		var convIDs []uint
+		db.Model(&models.ConversationMember{}).
+			Where("user_id IN ?", userIDs).
+			Pluck("conversation_id", &convIDs)
+		if len(convIDs) > 0 {
+			// Collect conv message IDs to clean up reactions
+			var convMsgIDs []uint
+			db.Model(&models.ConversationMessage{}).Where("conversation_id IN ?", convIDs).Pluck("id", &convMsgIDs)
+			if len(convMsgIDs) > 0 {
+				db.Where("owner_type = 'conv_message' AND owner_id IN ?", convMsgIDs).Delete(&models.MessageReaction{})
+			}
+			db.Unscoped().Where("conversation_id IN ?", convIDs).Delete(&models.ConversationMessage{})
+			db.Where("conversation_id IN ?", convIDs).Delete(&models.ConversationMember{})
+			db.Unscoped().Where("id IN ?", convIDs).Delete(&models.Conversation{})
+		}
+		db.Where("user_id IN ?", userIDs).Delete(&models.TimeEntry{})
+		db.Where("user_id IN ?", userIDs).Delete(&models.TimeMacroLibrary{})
+		db.Unscoped().Where("id IN ?", userIDs).Delete(&models.User{})
 	}
 
 	// News items (matched by title so re-seeding is clean)
