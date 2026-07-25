@@ -22,6 +22,7 @@ export function useTrayUnread() {
       () => auth.user?.tray_icon_enabled,
       () => auth.user?.close_to_tray_enabled,
       () => systemStore.isTimetrackingMode,
+      () => systemStore.isTestInstance,
     ],
     async () => {
       if (!isTauri || !auth.isLoggedIn) return
@@ -35,6 +36,7 @@ export function useTrayUnread() {
           count: total,
           enabled,
           isTimetracking: systemStore.isTimetrackingMode,
+          isTest: systemStore.isTestInstance,
           closeToTray,
         })
       } catch {

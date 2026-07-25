@@ -691,27 +691,36 @@ fn set_tray_unread(
     count: u32,
     enabled: bool,
     is_timetracking: bool,
+    is_test: bool,
     close_to_tray: bool,
 ) -> Result<(), String> {
     CLOSE_TO_TRAY_ENABLED.store(close_to_tray, Ordering::Relaxed);
 
     let tray = app.tray_by_id("main").ok_or("tray not found")?;
-    let (normal_icon, badge_icon) = if is_timetracking {
-        (
+    let (normal_icon, badge_icon) = match (is_timetracking, is_test) {
+        (true, true) => (
+            include_bytes!("../icons/timetracking-tray-icon-test.png") as &[u8],
+            include_bytes!("../icons/timetracking-tray-icon-test-badge.png") as &[u8],
+        ),
+        (true, false) => (
             include_bytes!("../icons/timetracking-tray-icon.png") as &[u8],
             include_bytes!("../icons/timetracking-tray-icon-badge.png") as &[u8],
-        )
-    } else {
-        (
+        ),
+        (false, true) => (
+            include_bytes!("../icons/tray-icon-test.png") as &[u8],
+            include_bytes!("../icons/tray-icon-test-badge.png") as &[u8],
+        ),
+        (false, false) => (
             include_bytes!("../icons/tray-icon.png") as &[u8],
             include_bytes!("../icons/tray-icon-badge.png") as &[u8],
-        )
+        ),
     };
 
-    let title = if is_timetracking {
-        "WarmDesk — Time Tracking"
-    } else {
-        "WarmDesk"
+    let title = match (is_timetracking, is_test) {
+        (true, true) => "WarmDesk — Time Tracking (TEST)",
+        (true, false) => "WarmDesk — Time Tracking",
+        (false, true) => "WarmDesk (TEST)",
+        (false, false) => "WarmDesk",
     };
     tray.set_title(Some(title)).map_err(|e| e.to_string())?;
 
