@@ -69,14 +69,17 @@ The params feed the homepage release strip; the AsciiDoc attribute feeds the ins
 In `ansible/galaxy.yml`, increment the `version` field by one patch level (e.g. `0.3.1` → `0.3.2`).
 Only do this if any commits since the last tag touched files under `ansible/`.
 
-## 8. Commit and tag
+## 8. Sync doc revision headers
+Run `./scripts/sync-doc-revisions.sh` (or `make sync-doc-revisions`) to update `:revnumber:`/`:revdate:` in `docs/admin-guide.adoc` and `docs/user-guide.adoc` from the CHANGELOG entry just added. Do this *after* step 2 (CHANGELOG.md) — the script reads the latest release header from it. Easy to forget since it's a script step rather than a direct edit like the others; skipping it leaves both guides' PDFs claiming the previous release's version.
+
+## 9. Commit and tag
 ```bash
-git add CHANGELOG.md README.md what.md website/hugo.toml ansible/galaxy.yml
+git add CHANGELOG.md README.md what.md website/hugo.toml ansible/galaxy.yml docs/admin-guide.adoc docs/user-guide.adoc
 git commit -m "chore: release v{version} — CHANGELOG, README, what.md\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git tag -a v{version} -m "Release v{version}"
 ```
 
-## 9. Push
+## 10. Push
 ```bash
 git push && git push --tags
 ```

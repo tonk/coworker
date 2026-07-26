@@ -37,11 +37,21 @@ Usage (manual):
 
 5. Update documentation
 - Edit any docs that require updates.
+- If a change touches anything a multi-instance deployment depends on — shared config keys (`db_driver`/`db_dsn`, `redis_url`, `upload_dir`, `jwt_secret`, `trusted_proxies`), the WebSocket/Redis pub-sub layer, the auth rate limiter, or the backup scheduler — update `deploy/multi-instance/README.md` (and its templates) to match.
 
-6. Commit and tag (use this template)
+6. Update website version
+- In `website/hugo.toml`, update `warmdesk_version = "v{version}"` and `release_date = "{YYYY-MM-DD}"` under `[params]`, and `"warmdesk-version" = "v{version}"` under `[markup.asciidocext.attributes]`.
+
+7. Bump Ansible collection version
+- In `ansible/galaxy.yml`, increment `version` by one patch level (e.g. `0.3.1` → `0.3.2`). Only if commits since the last tag touched files under `ansible/`.
+
+8. Sync doc revision headers
+- Run `./scripts/sync-doc-revisions.sh` (or `make sync-doc-revisions`) *after* step 2, so it picks up the CHANGELOG entry just added. Updates `:revnumber:`/`:revdate:` in `docs/admin-guide.adoc` and `docs/user-guide.adoc`. Easy to skip since it's a script step, not a direct edit — skipping it leaves both guides' PDFs claiming the previous release's version.
+
+9. Commit and tag (use this template)
 
 ```bash
-git add CHANGELOG.md README.md what.md
+git add CHANGELOG.md README.md what.md website/hugo.toml ansible/galaxy.yml docs/admin-guide.adoc docs/user-guide.adoc
 
 git commit -m "chore: release v{version} — CHANGELOG, README, what.md\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
 
@@ -50,7 +60,7 @@ git tag -a v{version} -m "Release v{version}"
 
 Note: commits created by you must include the Copilot co-author trailer above when this tool assisted with the release.
 
-7. Push
+10. Push
 
 ```bash
 git push && git push --tags
