@@ -2209,6 +2209,8 @@
     "replace_title": "Cerca e sostituisci",
     "find": "Cerca",
     "replace_with": "Sostituisci con",
+    "results_per_type": "Risultati per tipo",
+    "results_truncated": "mostrando i primi {limit} — aumenta il limite sopra e visualizza di nuovo l'anteprima per vederne altri",
     "scope": "Cerca in",
     "scope_cards": "Schede",
     "scope_dms": "Messaggi diretti",

@@ -23,6 +23,17 @@ func TestReplaceAllCINoMatch(t *testing.T) {
 	assert.Equal(t, 0, n)
 }
 
+// resolveSearchLimit lets a user raise the default 20-per-type cap (up to
+// maxSearchLimit), defaulting for anything zero/negative and clamping
+// anything above the ceiling instead of running an unbounded query.
+func TestResolveSearchLimit(t *testing.T) {
+	assert.Equal(t, defaultSearchLimit, resolveSearchLimit(0))
+	assert.Equal(t, defaultSearchLimit, resolveSearchLimit(-5))
+	assert.Equal(t, 50, resolveSearchLimit(50))
+	assert.Equal(t, maxSearchLimit, resolveSearchLimit(maxSearchLimit))
+	assert.Equal(t, maxSearchLimit, resolveSearchLimit(maxSearchLimit+1000))
+}
+
 func TestReplaceAllCIEmptyOld(t *testing.T) {
 	out, n := replaceAllCI("unchanged", "", "x")
 	assert.Equal(t, "unchanged", out)

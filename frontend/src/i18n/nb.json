@@ -2209,6 +2209,8 @@
     "replace_title": "Søk og erstatt",
     "find": "Søk",
     "replace_with": "Erstatt med",
+    "results_per_type": "Resultater per type",
+    "results_truncated": "viser de første {limit} — øk grensen ovenfor og forhåndsvis igjen for flere",
     "scope": "Søk i",
     "scope_cards": "Kort",
     "scope_dms": "Direktemeldinger",

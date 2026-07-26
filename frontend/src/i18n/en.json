@@ -2206,6 +2206,8 @@
     "replace_title": "Search and replace",
     "find": "Find",
     "replace_with": "Replace with",
+    "results_per_type": "Results per type",
+    "results_truncated": "showing first {limit} — raise the limit above and preview again for more",
     "scope": "Search in",
     "scope_cards": "Cards",
     "scope_dms": "Direct messages",

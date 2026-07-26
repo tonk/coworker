@@ -2209,6 +2209,8 @@
     "replace_title": "Zoeken en vervangen",
     "find": "Zoeken",
     "replace_with": "Vervangen door",
+    "results_per_type": "Resultaten per type",
+    "results_truncated": "toont eerste {limit} — verhoog de limiet hierboven en bekijk opnieuw voor meer",
     "scope": "Zoeken in",
     "scope_cards": "Kaarten",
     "scope_dms": "Directe berichten",

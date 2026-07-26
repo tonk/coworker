@@ -144,9 +144,9 @@ type replaceCandidate struct {
 	Reason   string `json:"reason,omitempty"`
 }
 
-func cardCandidates(scope searchScope, pattern, raw, replacement string) []replaceCandidate {
+func cardCandidates(scope searchScope, pattern, raw, replacement string, limit int) []replaceCandidate {
 	var out []replaceCandidate
-	for _, r := range searchCards(scope, pattern) {
+	for _, r := range searchCards(scope, pattern, limit) {
 		card := r.Item.(models.Card)
 		editable, reason := cardEditable(card, scope.userID, scope.globalRole)
 		if containsCI(card.Title, raw) {
@@ -163,9 +163,9 @@ func cardCandidates(scope searchScope, pattern, raw, replacement string) []repla
 	return out
 }
 
-func cardCommentCandidates(scope searchScope, pattern, raw, replacement string) []replaceCandidate {
+func cardCommentCandidates(scope searchScope, pattern, raw, replacement string, limit int) []replaceCandidate {
 	var out []replaceCandidate
-	for _, r := range searchCardComments(scope, pattern) {
+	for _, r := range searchCardComments(scope, pattern, limit) {
 		comment := r.Item.(models.CardComment)
 		var card models.Card
 		database.DB.Select("project_id").First(&card, comment.CardID)
@@ -177,9 +177,9 @@ func cardCommentCandidates(scope searchScope, pattern, raw, replacement string) 
 	return out
 }
 
-func dmMessageCandidates(scope searchScope, pattern, raw, replacement string) []replaceCandidate {
+func dmMessageCandidates(scope searchScope, pattern, raw, replacement string, limit int) []replaceCandidate {
 	var out []replaceCandidate
-	for _, r := range searchDMMessages(scope, pattern) {
+	for _, r := range searchDMMessages(scope, pattern, limit) {
 		msg := r.Item.(models.ConversationMessage)
 		editable, reason := dmMessageEditable(msg, scope.userID)
 		after, _ := replaceAllCI(msg.Body, raw, replacement)
@@ -189,9 +189,9 @@ func dmMessageCandidates(scope searchScope, pattern, raw, replacement string) []
 	return out
 }
 
-func ticketCandidates(scope searchScope, pattern, raw, replacement string) []replaceCandidate {
+func ticketCandidates(scope searchScope, pattern, raw, replacement string, limit int) []replaceCandidate {
 	var out []replaceCandidate
-	for _, r := range searchTickets(scope, pattern) {
+	for _, r := range searchTickets(scope, pattern, limit) {
 		ticket := r.Item.(models.Ticket)
 		var editable bool
 		var reason string
@@ -207,9 +207,9 @@ func ticketCandidates(scope searchScope, pattern, raw, replacement string) []rep
 	return out
 }
 
-func timeEntryCandidates(scope searchScope, pattern, raw, replacement string) []replaceCandidate {
+func timeEntryCandidates(scope searchScope, pattern, raw, replacement string, limit int) []replaceCandidate {
 	var out []replaceCandidate
-	for _, r := range searchTimeEntries(scope, pattern) {
+	for _, r := range searchTimeEntries(scope, pattern, limit) {
 		entry := r.Item.(models.TimeEntry)
 		editable, reason := timeEntryEditable(entry, scope.userID)
 		after, _ := replaceAllCI(entry.Description, raw, replacement)
@@ -219,26 +219,47 @@ func timeEntryCandidates(scope searchScope, pattern, raw, replacement string) []
 	return out
 }
 
-func collectCandidates(t string, scope searchScope, pattern, raw, replacement string) []replaceCandidate {
+func collectCandidates(t string, scope searchScope, pattern, raw, replacement string, limit int) []replaceCandidate {
 	switch t {
 	case "card":
-		return cardCandidates(scope, pattern, raw, replacement)
+		return cardCandidates(scope, pattern, raw, replacement, limit)
 	case "card_comment":
-		return cardCommentCandidates(scope, pattern, raw, replacement)
+		return cardCommentCandidates(scope, pattern, raw, replacement, limit)
 	case "dm_message":
-		return dmMessageCandidates(scope, pattern, raw, replacement)
+		return dmMessageCandidates(scope, pattern, raw, replacement, limit)
 	case "ticket":
-		return ticketCandidates(scope, pattern, raw, replacement)
+		return ticketCandidates(scope, pattern, raw, replacement, limit)
 	case "time_entry":
-		return timeEntryCandidates(scope, pattern, raw, replacement)
+		return timeEntryCandidates(scope, pattern, raw, replacement, limit)
 	}
 	return nil
+}
+
+// maxSearchLimit caps how high the user-editable per-type result limit can
+// go, so a runaway value in the request can't turn a preview into an
+// unbounded table scan.
+const maxSearchLimit = 500
+
+// resolveSearchLimit applies the same default the quick-search dropdown uses
+// when the request omits (or zeroes) the field, and clamps it to a sane
+// upper bound otherwise.
+func resolveSearchLimit(requested int) int {
+	if requested <= 0 {
+		return defaultSearchLimit
+	}
+	if requested > maxSearchLimit {
+		return maxSearchLimit
+	}
+	return requested
 }
 
 type replaceRequest struct {
 	Q       string   `json:"q"`
 	Replace string   `json:"replace"`
 	Types   []string `json:"types"`
+	// Limit overrides the default 20-per-type cap (up to maxSearchLimit);
+	// omit or send 0 to keep the default.
+	Limit int `json:"limit"`
 }
 
 // SearchReplacePreview godoc
@@ -274,11 +295,12 @@ func SearchReplacePreview(c *gin.Context) {
 	}
 
 	scope := buildSearchScope(userID, globalRole)
+	limit := resolveSearchLimit(req.Limit)
 
 	var candidates []replaceCandidate
 	counts := map[string]int{}
 	for _, t := range req.Types {
-		items := collectCandidates(t, scope, pattern, raw, req.Replace)
+		items := collectCandidates(t, scope, pattern, raw, req.Replace, limit)
 		candidates = append(candidates, items...)
 		counts[t] = len(items)
 	}
@@ -286,7 +308,7 @@ func SearchReplacePreview(c *gin.Context) {
 		candidates = []replaceCandidate{}
 	}
 
-	c.JSON(http.StatusOK, gin.H{"results": candidates, "counts": counts})
+	c.JSON(http.StatusOK, gin.H{"results": candidates, "counts": counts, "limit": limit})
 }
 
 type replaceItem struct {

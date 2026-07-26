@@ -2209,6 +2209,8 @@
     "replace_title": "Suchen und ersetzen",
     "find": "Suchen",
     "replace_with": "Ersetzen durch",
+    "results_per_type": "Ergebnisse pro Typ",
+    "results_truncated": "zeigt die ersten {limit} — erhöhen Sie das Limit oben und aktualisieren Sie die Vorschau für mehr",
     "scope": "Suchen in",
     "scope_cards": "Karten",
     "scope_dms": "Direktnachrichten",

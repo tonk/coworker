@@ -1640,6 +1640,8 @@ Search is scoped to projects you are a member of (or all projects, for global ad
 
 Click the ⇄ icon next to the search box to open Search & replace. Enter text to find and, optionally, text to replace it with, choose which categories to include (Cards, Comments, Direct messages, Tickets, Time entries), then click Preview.
 
+Each category shows up to 20 matches by default — the same as the regular search bar. Raise the *Results per type* field before clicking Preview if you expect more than that; a note appears under any category still capped at the limit shown.
+
 The preview lists every match with a before/after snippet, grouped by type. Matches you don't have permission to edit (for example, someone else's direct message, or a card in a project where you're only a viewer) are shown greyed out with the reason, and can't be selected. Uncheck anything you don't want changed, then click Replace — only the checked rows are updated; every row is re-checked against your permissions at that point too, not just when the preview was generated.
 
 Project chat messages are search-only — there is no edit capability for chat messages, so they can't be part of a replace.

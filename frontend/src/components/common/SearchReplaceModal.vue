@@ -9,6 +9,18 @@
         <label for="sr-replace">{{ $t('search.replace_with') }}</label>
         <input id="sr-replace" v-model="replaceText" type="text" class="form-input" />
       </div>
+      <div class="sr-field sr-field-limit">
+        <label for="sr-limit">{{ $t('search.results_per_type') }}</label>
+        <input
+          id="sr-limit"
+          v-model.number="resultsLimit"
+          type="number"
+          class="form-input"
+          min="1"
+          :max="MAX_RESULTS_LIMIT"
+          step="1"
+        />
+      </div>
 
       <fieldset class="sr-scope">
         <legend>{{ $t('search.scope') }}</legend>
@@ -47,7 +59,10 @@
       <div v-if="!results.length" class="sr-empty">{{ $t('common.no_results') }}</div>
 
       <template v-for="(group, gName) in grouped" :key="gName">
-        <div class="sr-group-label">{{ groupLabel(gName) }}</div>
+        <div class="sr-group-label">
+          {{ groupLabel(gName) }}
+          <span v-if="truncatedTypes.has(gName)" class="sr-truncated-note">{{ $t('search.results_truncated', { limit: appliedLimit }) }}</span>
+        </div>
         <label
           v-for="r in group"
           :key="rowKey(r)"
@@ -93,8 +108,11 @@ const ui = useUIStore()
 
 defineEmits(['close'])
 
+const MAX_RESULTS_LIMIT = 500
+
 const findText = ref('')
 const replaceText = ref('')
+const resultsLimit = ref(20)
 
 const scopeCard = ref(true)
 const scopeComment = ref(true)
@@ -112,6 +130,8 @@ const applying = ref(false)
 const previewError = ref('')
 const results = ref(null) // null = no preview run yet
 const checked = reactive({})
+const appliedLimit = ref(20)
+const truncatedTypes = ref(new Set())
 
 function rowKey(r) {
   return `${r.type}:${r.id}:${r.field}`
@@ -136,8 +156,16 @@ async function runPreview() {
   }
   previewing.value = true
   try {
-    const { data } = await searchApi.preview(findText.value.trim(), replaceText.value, types)
+    const limit = Math.min(Math.max(Math.trunc(resultsLimit.value) || 20, 1), MAX_RESULTS_LIMIT)
+    resultsLimit.value = limit
+    const { data } = await searchApi.preview(findText.value.trim(), replaceText.value, types, limit)
     results.value = data.results || []
+    appliedLimit.value = data.limit || limit
+    truncatedTypes.value = new Set(
+      Object.entries(data.counts || {})
+        .filter(([, count]) => count >= appliedLimit.value)
+        .map(([type]) => type)
+    )
     for (const key of Object.keys(checked)) delete checked[key]
     for (const r of results.value) {
       checked[rowKey(r)] = r.editable
@@ -221,6 +249,9 @@ async function runApply() {
   font-weight: 600;
   color: var(--color-text);
 }
+.sr-field-limit {
+  max-width: 160px;
+}
 .sr-scope {
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -276,6 +307,13 @@ async function runApply() {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text-muted);
+}
+.sr-truncated-note {
+  text-transform: none;
+  font-weight: 400;
+  letter-spacing: normal;
+  margin-left: 6px;
+  color: var(--color-warning, #b58900);
 }
 .sr-row {
   display: flex;

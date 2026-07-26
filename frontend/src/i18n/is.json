@@ -2209,6 +2209,8 @@
     "replace_title": "Leita og skipta út",
     "find": "Leita",
     "replace_with": "Skipta út fyrir",
+    "results_per_type": "Niðurstöður á tegund",
+    "results_truncated": "sýnir fyrstu {limit} — hækkaðu mörkin hér að ofan og forskoðaðu aftur til að sjá fleiri",
     "scope": "Leita í",
     "scope_cards": "Spjöld",
     "scope_dms": "Bein skilaboð",

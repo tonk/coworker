@@ -81,14 +81,19 @@ func sanitizeSearchQuery(q string) (raw string, pattern string, ok bool) {
 	return q, "%" + q + "%", true
 }
 
-func searchCards(scope searchScope, pattern string) []SearchResult {
+// defaultSearchLimit is the per-type result cap used by the quick-search
+// dropdown (GlobalSearch). Search-replace uses the same default but lets the
+// user raise it - see maxSearchLimit in search_replace.go.
+const defaultSearchLimit = 20
+
+func searchCards(scope searchScope, pattern string, limit int) []SearchResult {
 	if len(scope.memberProjectIDs) == 0 {
 		return nil
 	}
 	var cards []models.Card
 	database.DB.Preload("Assignee").
 		Where("project_id IN ? AND (title LIKE ? OR description LIKE ?)", scope.memberProjectIDs, pattern, pattern).
-		Limit(20).Find(&cards)
+		Limit(limit).Find(&cards)
 	results := make([]SearchResult, 0, len(cards))
 	for _, c := range cards {
 		results = append(results, SearchResult{Type: "card", Item: c})
@@ -96,14 +101,14 @@ func searchCards(scope searchScope, pattern string) []SearchResult {
 	return results
 }
 
-func searchChatMessages(scope searchScope, pattern string) []SearchResult {
+func searchChatMessages(scope searchScope, pattern string, limit int) []SearchResult {
 	if len(scope.memberProjectIDs) == 0 {
 		return nil
 	}
 	var msgs []models.ChatMessage
 	database.DB.Preload("User").
 		Where("project_id IN ? AND body LIKE ? AND is_deleted = false AND is_bot = false", scope.memberProjectIDs, pattern).
-		Limit(20).Find(&msgs)
+		Limit(limit).Find(&msgs)
 	results := make([]SearchResult, 0, len(msgs))
 	for _, m := range msgs {
 		results = append(results, SearchResult{Type: "chat_message", Item: m})
@@ -111,14 +116,14 @@ func searchChatMessages(scope searchScope, pattern string) []SearchResult {
 	return results
 }
 
-func searchDMMessages(scope searchScope, pattern string) []SearchResult {
+func searchDMMessages(scope searchScope, pattern string, limit int) []SearchResult {
 	if len(scope.convIDs) == 0 {
 		return nil
 	}
 	var dms []models.ConversationMessage
 	database.DB.Preload("Sender").
 		Where("conversation_id IN ? AND body LIKE ? AND is_deleted = false", scope.convIDs, pattern).
-		Limit(20).Find(&dms)
+		Limit(limit).Find(&dms)
 	results := make([]SearchResult, 0, len(dms))
 	for _, m := range dms {
 		results = append(results, SearchResult{Type: "dm_message", Item: m})
@@ -126,7 +131,7 @@ func searchDMMessages(scope searchScope, pattern string) []SearchResult {
 	return results
 }
 
-func searchCardComments(scope searchScope, pattern string) []SearchResult {
+func searchCardComments(scope searchScope, pattern string, limit int) []SearchResult {
 	if len(scope.memberProjectIDs) == 0 {
 		return nil
 	}
@@ -140,7 +145,7 @@ func searchCardComments(scope searchScope, pattern string) []SearchResult {
 	var comments []models.CardComment
 	database.DB.Preload("User").
 		Where("card_id IN ? AND body LIKE ?", cardIDs, pattern).
-		Limit(20).Find(&comments)
+		Limit(limit).Find(&comments)
 	results := make([]SearchResult, 0, len(comments))
 	for _, cm := range comments {
 		results = append(results, SearchResult{Type: "card_comment", Item: cm})
@@ -148,7 +153,7 @@ func searchCardComments(scope searchScope, pattern string) []SearchResult {
 	return results
 }
 
-func searchTickets(scope searchScope, pattern string) []SearchResult {
+func searchTickets(scope searchScope, pattern string, limit int) []SearchResult {
 	if !scope.helpdeskAccess {
 		return nil
 	}
@@ -166,7 +171,7 @@ func searchTickets(scope searchScope, pattern string) []SearchResult {
 	var tickets []models.Ticket
 	database.DB.Preload("Customer").
 		Where("customer_id IN ? AND title LIKE ? AND is_spam = false", customerIDs, pattern).
-		Limit(20).Find(&tickets)
+		Limit(limit).Find(&tickets)
 	results := make([]SearchResult, 0, len(tickets))
 	for _, t := range tickets {
 		results = append(results, SearchResult{Type: "ticket", Item: t})
@@ -174,7 +179,7 @@ func searchTickets(scope searchScope, pattern string) []SearchResult {
 	return results
 }
 
-func searchTimeEntries(scope searchScope, pattern string) []SearchResult {
+func searchTimeEntries(scope searchScope, pattern string, limit int) []SearchResult {
 	if !scope.timeTrackingAccess {
 		return nil
 	}
@@ -186,7 +191,7 @@ func searchTimeEntries(scope searchScope, pattern string) []SearchResult {
 		query = query.Preload("User")
 	}
 	var entries []models.TimeEntry
-	query.Order("date desc").Limit(20).Find(&entries)
+	query.Order("date desc").Limit(limit).Find(&entries)
 	results := make([]SearchResult, 0, len(entries))
 	for _, e := range entries {
 		results = append(results, SearchResult{Type: "time_entry", Item: e})
@@ -216,12 +221,12 @@ func GlobalSearch(c *gin.Context) {
 	scope := buildSearchScope(userID, globalRole)
 
 	var results []SearchResult
-	results = append(results, searchCards(scope, pattern)...)
-	results = append(results, searchChatMessages(scope, pattern)...)
-	results = append(results, searchDMMessages(scope, pattern)...)
-	results = append(results, searchCardComments(scope, pattern)...)
-	results = append(results, searchTickets(scope, pattern)...)
-	results = append(results, searchTimeEntries(scope, pattern)...)
+	results = append(results, searchCards(scope, pattern, defaultSearchLimit)...)
+	results = append(results, searchChatMessages(scope, pattern, defaultSearchLimit)...)
+	results = append(results, searchDMMessages(scope, pattern, defaultSearchLimit)...)
+	results = append(results, searchCardComments(scope, pattern, defaultSearchLimit)...)
+	results = append(results, searchTickets(scope, pattern, defaultSearchLimit)...)
+	results = append(results, searchTimeEntries(scope, pattern, defaultSearchLimit)...)
 
 	if results == nil {
 		results = []SearchResult{}

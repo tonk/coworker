@@ -2209,6 +2209,8 @@
     "replace_title": "Buscar y reemplazar",
     "find": "Buscar",
     "replace_with": "Reemplazar por",
+    "results_per_type": "Resultados por tipo",
+    "results_truncated": "mostrando los primeros {limit} — aumenta el límite arriba y vuelve a previsualizar para ver más",
     "scope": "Buscar en",
     "scope_cards": "Tarjetas",
     "scope_dms": "Mensajes directos",

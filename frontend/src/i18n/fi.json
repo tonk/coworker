@@ -2209,6 +2209,8 @@
     "replace_title": "Etsi ja korvaa",
     "find": "Etsi",
     "replace_with": "Korvaa",
+    "results_per_type": "Tuloksia tyyppiä kohti",
+    "results_truncated": "näytetään ensimmäiset {limit} — nosta rajaa yllä ja esikatsele uudelleen nähdäksesi lisää",
     "scope": "Etsi kohteesta",
     "scope_cards": "Kortit",
     "scope_dms": "Yksityisviestit",
