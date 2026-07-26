@@ -21,10 +21,15 @@
 // over what --dst-config loaded.
 //
 // --backup extracts the archive, detects the source driver, converts, and
-// copies the bundled uploads/ folder, all in one step. If the backup's dump
-// is a pg_dump/mysqldump .sql script rather than a SQLite file, there's no
-// way to read it as a live database without one — pass --src-dsn pointing at
-// an empty/scratch instance of that same engine (reachable from this
+// copies the bundled uploads/ folder, all in one step. Detection recognizes a
+// real SQLite file, and a pg_dump/mysqldump .sql script from its standard
+// header comment (mysqldump on many self-hosted Linux boxes is actually
+// MariaDB's build, which says "MariaDB dump" instead — both are recognized).
+// If a dump doesn't match either (an unusual format, e.g. pg_dump's custom
+// -Fc binary output instead of plain SQL), pass --src-driver to force it.
+//
+// A .sql script has no live database to read from, so --src-dsn must point
+// at an empty/scratch instance of that same engine (reachable from this
 // machine) and it's imported there first via the matching CLI (psql/mysql,
 // same tools handlers/backup.go's own restore path already requires).
 //
@@ -255,7 +260,7 @@ func reenableFKChecks(db *gorm.DB) {
 
 func main() {
 	backupPath := flag.String("backup", "", "path to a WarmDesk backup file (warmdesk_backup_*.tar.gz, or a legacy bare .db/.sql) — alternative to --src-driver/--src-dsn")
-	srcDriver := flag.String("src-driver", "", "source database driver: sqlite | postgres | mysql (ignored/auto-detected when --backup resolves to a SQLite dump)")
+	srcDriver := flag.String("src-driver", "", "source database driver: sqlite | postgres | mysql (with --backup, this is auto-detected from the dump — only needed as a fallback if detection fails)")
 	srcDSN := flag.String("src-dsn", "", "source database DSN (with --backup, only needed when the dump is a pg_dump/mysqldump .sql script — see file header comment)")
 	dstDriver := flag.String("dst-driver", "", "destination database driver: sqlite | postgres | mysql")
 	dstDSN := flag.String("dst-dsn", "", "destination database DSN")
@@ -301,7 +306,13 @@ func main() {
 		uploadsDir = foundUploadsDir
 
 		detected, err := detectDumpDriver(dbPath)
-		must(err)
+		if err != nil {
+			if *srcDriver == "" {
+				log.Fatalf("db-convert: %v — pass --src-driver (sqlite | postgres | mysql) to override auto-detection", err)
+			}
+			log.Printf("Could not auto-detect the dump's driver (%v) — using --src-driver=%s as given.", err, *srcDriver)
+			detected = *srcDriver
+		}
 
 		switch detected {
 		case "sqlite":
