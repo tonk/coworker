@@ -1,0 +1,57 @@
+---
+title: "Search & Replace, and a Smarter Search Bar"
+date: "2026-07-26"
+author: "Ton Kersten"
+description: "The header search bar now also matches ticket subjects and time-entry descriptions, and clicking a result jumps straight to it instead of just its container. A new Search & Replace mode lets you find and replace text across cards, comments, direct messages, tickets, and time entries, with a permission-aware preview before anything changes."
+draft: false
+---
+:doctype: article
+:icons!:
+
+The search bar in the header has always been a fast way to find a card, a comment, or a message without hunting through boards and conversations. `v0.18.0` widens what it can find, changes what happens when you click a result, and adds an entirely new mode: search and replace.
+
+== Search now covers tickets and time entries
+
+Alongside cards, card comments, project chat messages, and direct messages, the search bar now also matches:
+
+* *Ticket subjects*, if you have helpdesk access.
+* *Time-entry descriptions* — your own, or everyone's if you're an admin or a time-tracking viewer.
+
+Both are scoped the same way the rest of search already was: to the customers, projects, and conversations you actually have access to, or everything for global admins. Seeing someone else's time entry in search is not the same as being able to edit it, though — that still always requires being its owner, exactly as it does everywhere else in WarmDesk.
+
+== Clicking a result now takes you to the exact item
+
+Previously, clicking a card comment or a time entry in the results list opened the containing card, or the general Time Tracking page — useful, but you still had to go find the specific thing you searched for.
+
+Now:
+
+* A *card comment* result scrolls straight to that comment inside the card and briefly highlights it.
+* A *time entry* result jumps to the correct week in the calendar view and highlights the exact block.
+
+Neither one drops you into an edit form automatically. A search result shows you where something is — opening it for editing is still a deliberate click, same as it's always been.
+
+Cards and tickets already worked this way and are unchanged: a card result opens straight to that card, and a ticket result opens straight to the ticket detail page.
+
+== Search & Replace
+
+The most requested part of this release: a *Search & Replace* mode, opened with the ⇄ icon next to the search box.
+
+Enter text to find and, optionally, text to replace it with, then choose which categories to include:
+
+* Cards
+* Card comments
+* Direct messages
+* Tickets
+* Time entries
+
+Click *Preview* and every match is listed with a before/after snippet, grouped by type — nothing changes yet. Rows you don't have permission to edit (someone else's direct message, a card in a project where you're only a viewer, a ticket you can only comment on) are shown greyed out with the reason, and can't be selected. Uncheck anything else you'd rather leave alone, then click *Replace*.
+
+Only the checked rows are ever touched, and every one of them is re-checked against your permissions again at that point — not just when the preview was generated — so nothing can slip through if something changed in between.
+
+Project chat messages are search-only for now: there's currently no capability to edit a chat message at all in WarmDesk, so there's nothing for replace to hook into there yet.
+
+== Upgrade
+
+Search & Replace and the wider search coverage are part of `v0.18.0`. No database migration is required — as with every WarmDesk release, this is a purely additive change to existing functionality.
+
+Download from the link:../download[download page] or pull the latest release tag.

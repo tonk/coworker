@@ -18,11 +18,11 @@ enableEmoji = true
   warmdesk_version = "v0.18.0"
   release_date     = "2026-07-26"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/mysql-compatibility-bug-hunt/"
+  release_blog     = "blog/search-and-replace/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Fix — a broad WCAG 2.1 AA accessibility remediation pass** — keyboard-reachable dashboard cards, proper dialog semantics and focus management across modals and popovers, accessible names on previously unlabeled form fields, and consistent ARIA wiring on tabs and toggle groups.",
-    "**Changed — removed dead code** identified by a `deadcode`/`knip` audit (no user-facing effect).",
+    "**Added — Search & Replace** — find and replace text across cards, comments, direct messages, tickets, and time entries, with a permission-aware preview before anything changes.",
+    "**Added — global search now covers tickets and time entries**, and clicking a comment or time-entry result jumps straight to it instead of just its container.",
   ]
 
 [markup]
