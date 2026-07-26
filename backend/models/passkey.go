@@ -7,8 +7,8 @@ type PasskeyCredential struct {
 	UserID       uint       `gorm:"not null;index" json:"-"`
 	Name         string     `gorm:"size:100" json:"name"`
 	CredentialID []byte     `gorm:"not null;uniqueIndex" json:"-"`
-	PublicKey    []byte     `gorm:"not null;type:blob" json:"-"`
-	AAGUID       []byte     `gorm:"type:blob" json:"-"`
+	PublicKey    []byte     `gorm:"not null" json:"-"`
+	AAGUID       []byte     `json:"-"`
 	SignCount     uint32     `json:"-"`
 	Transports   string     `gorm:"size:200" json:"-"`
 	// Nil means "never recorded" — true for every passkey registered before this
