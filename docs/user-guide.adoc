@@ -1,5 +1,5 @@
 = WarmDesk — User Guide
-:revnumber: v0.17.4
+:revnumber: v0.18.0
 :revdate: 2026-07-26
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -1630,6 +1630,16 @@ The global search bar in the header searches across:
 * Card comments
 * Project chat messages
 * Direct message / group conversation messages (in conversations you belong to)
+* Ticket subjects (if you have helpdesk access)
+* Time-entry descriptions (yours, or everyone's if you're an admin or time-tracking viewer)
 
-Queries must be at least 3 characters. Results are capped at 20 per type, grouped by type, and clicking one navigates directly to it.
+Queries must be at least 3 characters. Results are capped at 20 per type, grouped by type, and clicking one navigates directly to it — card comments and time entries scroll to and briefly highlight the exact one instead of just opening the card or the time-tracking page in general.
 Search is scoped to projects you are a member of (or all projects, for global admins) — it does not search project names themselves.
+
+=== Search & replace
+
+Click the ⇄ icon next to the search box to open Search & replace. Enter text to find and, optionally, text to replace it with, choose which categories to include (Cards, Comments, Direct messages, Tickets, Time entries), then click Preview.
+
+The preview lists every match with a before/after snippet, grouped by type. Matches you don't have permission to edit (for example, someone else's direct message, or a card in a project where you're only a viewer) are shown greyed out with the reason, and can't be selected. Uncheck anything you don't want changed, then click Replace — only the checked rows are updated; every row is re-checked against your permissions at that point too, not just when the preview was generated.
+
+Project chat messages are search-only — there is no edit capability for chat messages, so they can't be part of a replace.

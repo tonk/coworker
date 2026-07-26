@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.18.0 — 2026-07-26
+
+### Added
+- **Global search now covers tickets and time entries** — ticket subjects and time-entry descriptions are now matched alongside cards, card comments, chat messages, and direct messages, scoped the same way as the rest of search (your projects/customers/conversations, or everything for global admins; time-entry visibility is additionally widened for admins and time-tracking viewers, though editing one is still always owner-only).
+- **Search & replace** — a new ⇄ icon next to the search box opens a find-and-replace mode covering Cards, Card comments, Direct messages, Tickets, and Time entries (your choice of which to include). Every match is shown with a before/after preview before anything changes; matches you don't have permission to edit are greyed out with the reason and can't be selected, and every edit permission is re-checked against the database at apply time, not just when the preview was generated. Project chat messages are search-only, since there's no edit capability for them at all.
+- Clicking a card-comment or time-entry search result now scrolls to and briefly highlights the exact comment or calendar entry, instead of just opening the card or landing on the general time-tracking page.
+
+### Fixed
+- Patched several known vulnerabilities in frontend dependencies: axios, dompurify, form-data, postcss, and undici.
+
 ## v0.17.4 — 2026-07-26
 
 ### Added
