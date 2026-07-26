@@ -1829,6 +1829,45 @@ gunzip -c /backup/warmdesk-20260416.sql.gz \
   | psql -U warmdesk warmdesk
 ----
 
+=== Cross-driver restore (`warmdesk-db-convert`)
+
+The restore options above (admin panel, manual dump/restore) all work only *within* the same database driver — a SQLite backup can only be restored onto a SQLite server, a PostgreSQL dump onto PostgreSQL, and so on. `warmdesk-db-convert`, shipped alongside `warmdesk` in the release tarball, fills the gap: it copies every table across *any* combination of the three supported drivers (SQLite, PostgreSQL, MySQL/MariaDB) — for example, restoring a production SQLite backup onto a MySQL-driven test server.
+
+*Typical use: restore a backup onto a different server*
+
+. Download or `scp` the backup file (`warmdesk_backup_*.tar.gz`, or a legacy bare `.db`/`.sql`) onto the destination server.
+. From the destination server, in the directory where its `warmdesk.yaml` lives:
++
+[source,bash]
+----
+./warmdesk-db-convert \
+  --backup ~/warmdesk_backup_20260416_1430_a3f9.tar.gz \
+  --dst-config ./warmdesk.yaml \
+  --truncate
+----
+
+`--dst-config` reads `db_driver`, `db_dsn`, and `upload_dir` from that server's own config file — the same file (and environment-variable overrides) the app itself reads on startup — so the destination's database credentials never need to be typed on the command line. `--truncate` clears each destination table before importing, so the command can be re-run safely; omit it to add the backup's data on top of what's already there instead.
+
+`--backup` handles the rest automatically:
+
+* Extracts the archive and locates the database dump (`db/`) and, if bundled, the upload directory (`uploads/`).
+* Detects which engine produced the dump — a real SQLite file is used directly as the source; a `pg_dump`/`mysqldump` `.sql` script is recognized from its standard header comment (including MariaDB's `mysqldump` build, which labels itself differently from Oracle's). If detection can't identify an unusual dump format, pass `--src-driver sqlite|postgres|mysql` to force it.
+* A `.sql` script has no live database to read from, so restoring one requires `--src-dsn` pointing at an empty/scratch instance of that same engine (reachable from the machine running the conversion) to import the dump into first — this needs the matching `psql` or `mysql` client in `PATH`, the same tools the admin panel's own PostgreSQL/MySQL restore path already requires. Restoring a SQLite-sourced backup (the common case) needs none of this.
+* Copies the bundled `uploads/` folder to `--dst-upload-dir` after the database is converted (filled in automatically from `--dst-config`, same as `db_driver`/`db_dsn`) — a full restore (database + attachments/avatars/logos) is one command with no manual `tar`/`rsync` step. If the backup bundles uploads but no destination is known, a note is logged rather than silently skipping them.
+
+The destination schema is migrated automatically (the same `AutoMigrate` the server runs on every startup), so it can point at a brand-new, empty database.
+
+*Converting directly between two running databases* (no backup file involved) works the same way with `--src-driver`/`--src-dsn` in place of `--backup`:
+
+[source,bash]
+----
+./warmdesk-db-convert \
+  --src-driver sqlite --src-dsn ./warmdesk.db \
+  --dst-driver mysql  --dst-dsn "user:pass@tcp(host:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local"
+----
+
+TIP: Run `./warmdesk-db-convert` with no arguments for the full list of flags and usage notes.
+
 '''
 
 == Demo Data
