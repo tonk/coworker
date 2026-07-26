@@ -5,18 +5,30 @@
 // system (handlers/backup.go) always restores using the destination server's
 // own configured driver and has no cross-driver conversion path.
 //
-// It does NOT copy upload_dir (attachments, avatars, logos) — copy that
-// directory separately (e.g. the "uploads/" folder inside a WarmDesk backup
-// archive) to the destination server's own upload_dir.
-//
-// Usage (run from the backend/ directory):
-//
-//	# extract the backup archive first, e.g.:
-//	#   tar xzf warmdesk_backup_20260726_0201_97704e2a.tar.gz
-//	#   -> db/warmdesk.db (or db/dump.sql for postgres/mysql sources)
+// Usage — hand it a downloaded backup file directly (current-format
+// warmdesk_backup_*.tar.gz, or a legacy bare warmdesk_db_*.db/.sql — see
+// CLAUDE.md's "Backup / restore" section) and it extracts, detects the
+// source driver, converts, and copies the bundled uploads/ folder, in one
+// step (run from the backend/ directory):
 //
 //	go run ./cmd/db-convert \
-//	  --src-driver sqlite --src-dsn ./db/warmdesk.db \
+//	  --backup ~/warmdesk_backup_20260726_0201_97704e2a.tar.gz \
+//	  --dst-driver mysql --dst-dsn "user:pass@tcp(host:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local" \
+//	  --dst-upload-dir /srv/warmdesk-test/uploads \
+//	  --truncate
+//
+// If the backup's dump is a pg_dump/mysqldump .sql script rather than a
+// SQLite file, there's no way to read it as a live database without one —
+// pass --src-dsn pointing at an empty/scratch instance of that same engine
+// (reachable from this machine) and it's imported there first via the
+// matching CLI (psql/mysql, same tools handlers/backup.go's own restore path
+// already requires).
+//
+// --src-driver/--src-dsn can be used instead of --backup to convert directly
+// between two already-running databases (no backup file involved):
+//
+//	go run ./cmd/db-convert \
+//	  --src-driver sqlite --src-dsn ./warmdesk.db \
 //	  --dst-driver mysql  --dst-dsn "user:pass@tcp(host:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local"
 //
 // The destination is schema-migrated automatically (the same GORM
@@ -237,19 +249,50 @@ func reenableFKChecks(db *gorm.DB) {
 }
 
 func main() {
-	srcDriver := flag.String("src-driver", "", "source database driver: sqlite | postgres | mysql")
-	srcDSN := flag.String("src-dsn", "", "source database DSN")
+	backupPath := flag.String("backup", "", "path to a WarmDesk backup file (warmdesk_backup_*.tar.gz, or a legacy bare .db/.sql) — alternative to --src-driver/--src-dsn")
+	srcDriver := flag.String("src-driver", "", "source database driver: sqlite | postgres | mysql (ignored/auto-detected when --backup resolves to a SQLite dump)")
+	srcDSN := flag.String("src-dsn", "", "source database DSN (with --backup, only needed when the dump is a pg_dump/mysqldump .sql script — see file header comment)")
 	dstDriver := flag.String("dst-driver", "", "destination database driver: sqlite | postgres | mysql")
 	dstDSN := flag.String("dst-dsn", "", "destination database DSN")
+	dstUploadDir := flag.String("dst-upload-dir", "", "if --backup bundles an uploads/ folder, copy its files here after the database is converted")
 	truncate := flag.Bool("truncate", false, "delete existing rows in each destination table before importing (makes the run repeatable)")
 	batchSize := flag.Int("batch-size", 200, "rows per insert batch")
 	flag.Parse()
 
-	if *srcDriver == "" || *srcDSN == "" || *dstDriver == "" || *dstDSN == "" {
-		log.Fatal("db-convert: --src-driver, --src-dsn, --dst-driver, and --dst-dsn are all required (see the file header comment for usage)")
+	if *backupPath == "" && (*srcDriver == "" || *srcDSN == "") {
+		log.Fatal("db-convert: pass --backup, or both --src-driver and --src-dsn (see the file header comment for usage)")
+	}
+	if *dstDriver == "" || *dstDSN == "" {
+		log.Fatal("db-convert: --dst-driver and --dst-dsn are required")
 	}
 
-	srcDB, err := database.Open(&config.Config{DBDriver: *srcDriver, DBDSN: *srcDSN, DBLog: "silent"})
+	resolvedSrcDriver, resolvedSrcDSN := *srcDriver, *srcDSN
+	var uploadsDir string
+
+	if *backupPath != "" {
+		dbPath, foundUploadsDir, cleanup, err := resolveBackupSource(*backupPath)
+		must(err)
+		defer cleanup()
+		uploadsDir = foundUploadsDir
+
+		detected, err := detectDumpDriver(dbPath)
+		must(err)
+
+		switch detected {
+		case "sqlite":
+			log.Printf("Backup dump %s is SQLite — using it directly as the source.", dbPath)
+			resolvedSrcDriver, resolvedSrcDSN = "sqlite", dbPath
+		default: // postgres, mysql
+			if *srcDSN == "" {
+				log.Fatalf("db-convert: backup dump %s is a %s script — pass --src-dsn pointing at an empty/scratch %s instance (reachable from this machine) to import it into before conversion", dbPath, detected, detected)
+			}
+			log.Printf("Backup dump %s is %s — importing into --src-dsn...", dbPath, detected)
+			must(importSQLDump(detected, *srcDSN, dbPath))
+			resolvedSrcDriver, resolvedSrcDSN = detected, *srcDSN
+		}
+	}
+
+	srcDB, err := database.Open(&config.Config{DBDriver: resolvedSrcDriver, DBDSN: resolvedSrcDSN, DBLog: "silent"})
 	must(err)
 
 	dstDB, err := database.Open(&config.Config{DBDriver: *dstDriver, DBDSN: *dstDSN, DBLog: "silent"})
@@ -280,5 +323,15 @@ func main() {
 			total += n
 		}
 	}
-	log.Printf("Done — copied %d rows from %s to %s.", total, *srcDriver, *dstDriver)
+	log.Printf("Done — copied %d rows from %s to %s.", total, resolvedSrcDriver, *dstDriver)
+
+	if uploadsDir != "" {
+		if *dstUploadDir == "" {
+			log.Printf("NOTE: backup includes an uploads/ folder (%s) that was NOT copied — pass --dst-upload-dir to copy it automatically.", uploadsDir)
+		} else {
+			n, err := copyTree(uploadsDir, *dstUploadDir)
+			must(err)
+			log.Printf("Copied %d upload file(s) to %s", n, *dstUploadDir)
+		}
+	}
 }
