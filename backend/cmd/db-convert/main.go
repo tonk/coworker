@@ -5,27 +5,32 @@
 // system (handlers/backup.go) always restores using the destination server's
 // own configured driver and has no cross-driver conversion path.
 //
-// Usage — hand it a downloaded backup file directly (current-format
-// warmdesk_backup_*.tar.gz, or a legacy bare warmdesk_db_*.db/.sql — see
-// CLAUDE.md's "Backup / restore" section) and it extracts, detects the
-// source driver, converts, and copies the bundled uploads/ folder, in one
-// step (run from the backend/ directory):
+// Simplest usage — run this ON the destination server, from wherever its own
+// warmdesk.yaml lives, with a backup file uploaded there (e.g. via scp):
 //
 //	go run ./cmd/db-convert \
 //	  --backup ~/warmdesk_backup_20260726_0201_97704e2a.tar.gz \
-//	  --dst-driver mysql --dst-dsn "user:pass@tcp(host:3306)/warmdesk?charset=utf8mb4&parseTime=True&loc=Local" \
-//	  --dst-upload-dir /srv/warmdesk-test/uploads \
+//	  --dst-config ./warmdesk.yaml \
 //	  --truncate
 //
-// If the backup's dump is a pg_dump/mysqldump .sql script rather than a
-// SQLite file, there's no way to read it as a live database without one —
-// pass --src-dsn pointing at an empty/scratch instance of that same engine
-// (reachable from this machine) and it's imported there first via the
-// matching CLI (psql/mysql, same tools handlers/backup.go's own restore path
-// already requires).
+// --dst-config reads db_driver, db_dsn, and upload_dir from that server's own
+// config file — the same file (and env-var overrides) the app itself reads
+// on startup — so the destination's DB credentials never need to be typed on
+// the command line, and --dst-upload-dir is filled in automatically too. Any
+// of --dst-driver/--dst-dsn/--dst-upload-dir passed explicitly still wins
+// over what --dst-config loaded.
 //
-// --src-driver/--src-dsn can be used instead of --backup to convert directly
-// between two already-running databases (no backup file involved):
+// --backup extracts the archive, detects the source driver, converts, and
+// copies the bundled uploads/ folder, all in one step. If the backup's dump
+// is a pg_dump/mysqldump .sql script rather than a SQLite file, there's no
+// way to read it as a live database without one — pass --src-dsn pointing at
+// an empty/scratch instance of that same engine (reachable from this
+// machine) and it's imported there first via the matching CLI (psql/mysql,
+// same tools handlers/backup.go's own restore path already requires).
+//
+// --src-driver/--src-dsn/--dst-driver/--dst-dsn can be given directly instead
+// of --backup/--dst-config, to convert between two already-running databases
+// (no backup file, no config file, involved):
 //
 //	go run ./cmd/db-convert \
 //	  --src-driver sqlite --src-dsn ./warmdesk.db \
@@ -255,15 +260,35 @@ func main() {
 	dstDriver := flag.String("dst-driver", "", "destination database driver: sqlite | postgres | mysql")
 	dstDSN := flag.String("dst-dsn", "", "destination database DSN")
 	dstUploadDir := flag.String("dst-upload-dir", "", "if --backup bundles an uploads/ folder, copy its files here after the database is converted")
+	dstConfig := flag.String("dst-config", "", "path to the destination server's warmdesk.yaml — reads db_driver, db_dsn, and upload_dir from it (same resolution as the app itself: this path, then CONFIG_FILE env var, then warmdesk.yaml/.yml in the current directory), filling in whichever of --dst-driver/--dst-dsn/--dst-upload-dir wasn't given explicitly")
 	truncate := flag.Bool("truncate", false, "delete existing rows in each destination table before importing (makes the run repeatable)")
 	batchSize := flag.Int("batch-size", 200, "rows per insert batch")
 	flag.Parse()
+
+	dstConfigGiven := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "dst-config" {
+			dstConfigGiven = true
+		}
+	})
+	if dstConfigGiven {
+		dc := config.Load(*dstConfig)
+		if *dstDriver == "" {
+			*dstDriver = dc.DBDriver
+		}
+		if *dstDSN == "" {
+			*dstDSN = dc.DBDSN
+		}
+		if *dstUploadDir == "" {
+			*dstUploadDir = dc.UploadDir
+		}
+	}
 
 	if *backupPath == "" && (*srcDriver == "" || *srcDSN == "") {
 		log.Fatal("db-convert: pass --backup, or both --src-driver and --src-dsn (see the file header comment for usage)")
 	}
 	if *dstDriver == "" || *dstDSN == "" {
-		log.Fatal("db-convert: --dst-driver and --dst-dsn are required")
+		log.Fatal("db-convert: --dst-driver and --dst-dsn are required (or pass --dst-config to read them from a warmdesk.yaml)")
 	}
 
 	resolvedSrcDriver, resolvedSrcDSN := *srcDriver, *srcDSN
