@@ -1009,12 +1009,16 @@
                   <td class="rpt-th-time">{{ fmtTime(reportEntryDeclarable(e)) }}</td>
                 </tr>
               </tbody>
+              <tfoot>
+                <tr class="rpt-grp-totals-row">
+                  <td colspan="4">{{ $t('timeTracking.totals') }}</td>
+                  <td v-if="report.total_distance > 0" class="rpt-th-time">{{ fmtDistance(grp.total_distance) }}</td>
+                  <td v-if="report.undeclarable_minutes > 0" class="rpt-th-time">{{ grp.undeclarable_minutes > 0 ? '-' + fmtTime(grp.undeclarable_minutes) : fmtTime(0) }}</td>
+                  <td class="rpt-th-time rpt-grp-totals-time">{{ fmtTime(grp.declarable_minutes) }}</td>
+                </tr>
+              </tfoot>
             </table>
             <div v-else class="rpt-grp-empty">{{ $t('timeTracking.no_entries_group') }}</div>
-            <div v-if="grp.undeclarable_minutes > 0" class="rpt-grp-undecl-line">
-              <span>{{ $t('timeTracking.undeclarable') }}</span>
-              <span>-{{ fmtTime(grp.undeclarable_minutes) }}</span>
-            </div>
           </div>
         </template>
         <div v-else class="rpt-chart-panel">
@@ -1053,16 +1057,10 @@
           </template>
         </div>
         <div class="rpt-grand-total">
-          <span>{{ $t('timeTracking.total') }}</span>
+          <span class="rpt-gt-label">{{ $t('timeTracking.totals') }}</span>
+          <span v-if="report.total_distance > 0" class="rpt-gt-item">{{ $t('timeTracking.distance_total') }} ({{ distanceUnit }}): {{ fmtDistance(report.total_distance) }}</span>
+          <span v-if="report.undeclarable_minutes > 0" class="rpt-gt-item">{{ $t('timeTracking.undeclarable') }}: -{{ fmtTime(report.undeclarable_minutes) }}</span>
           <span>{{ fmtTime(report.undeclarable_minutes > 0 ? report.declarable_minutes : report.total_minutes) }}</span>
-        </div>
-        <div v-if="report.undeclarable_minutes > 0" class="rpt-undeclarable">
-          <span>{{ $t('timeTracking.undeclarable') }}</span>
-          <span>-{{ fmtTime(report.undeclarable_minutes) }}</span>
-        </div>
-        <div v-if="report.total_distance > 0" class="rpt-distance-total">
-          <span>{{ $t('timeTracking.distance_total') }} ({{ distanceUnit }})</span>
-          <span>{{ fmtDistance(report.total_distance) }}</span>
         </div>
       </template>
     </div>
@@ -5579,16 +5577,6 @@ td.c-day:focus-within .cell-dist-toggle,
   color: var(--color-text-muted);
 }
 
-/* Distance total in report tab */
-.rpt-distance-total {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 14px;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  border-top: 1px solid var(--color-border);
-  margin-top: 4px;
-}
 
 /* Time range popup */
 .time-popup {
@@ -6378,7 +6366,7 @@ td.c-day-holiday-cell.c-day-popup-open {
 .rpt-period-label { font-size: 18px; font-weight: 700; color: var(--color-primary); margin-top: 4px; }
 
 .rpt-group {
-  margin-bottom: 16px;
+  margin-bottom: 28px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   overflow: hidden;
@@ -6394,16 +6382,15 @@ td.c-day-holiday-cell.c-day-popup-open {
 }
 .rpt-grp-total { color: var(--color-primary); }
 .rpt-grp-empty { padding: 10px 14px; color: var(--color-text-muted); font-size: 12px; }
-.rpt-grp-undecl-line {
-  display: flex;
-  justify-content: space-between;
-  padding: 5px 14px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-muted);
-  background: var(--color-bg);
-  border-top: 1px dashed var(--color-border);
+.rpt-table tfoot td {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-top: 2px solid var(--color-border);
+  border-bottom: none;
 }
+.rpt-grp-totals-time { color: var(--color-primary); }
 
 .rpt-table {
   width: 100%;
@@ -6433,7 +6420,8 @@ td.c-day-holiday-cell.c-day-popup-open {
 
 .rpt-grand-total {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
   padding: 12px 16px;
   background: var(--color-primary);
   color: #fff;
@@ -6442,18 +6430,8 @@ td.c-day-holiday-cell.c-day-popup-open {
   margin-top: 8px;
   font-size: 14px;
 }
-.rpt-undeclarable {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 16px;
-  background: var(--color-bg);
-  color: var(--color-text-muted);
-  font-weight: 500;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  margin-top: 4px;
-  font-size: 13px;
-}
+.rpt-gt-label { margin-right: auto; }
+.rpt-gt-item { font-weight: 500; font-size: 13px; opacity: 0.9; }
 .rpt-declarable {
   background: color-mix(in srgb, var(--color-success, #38a169) 80%, #1a5c38);
 }

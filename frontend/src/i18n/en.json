@@ -1223,6 +1223,7 @@
     "description": "Description",
     "time": "Time",
     "total": "Total",
+    "totals": "Totals",
     "no_customer": "No customer",
     "no_project": "No project",
     "no_entries": "No entries found.",

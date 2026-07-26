@@ -1105,6 +1105,7 @@
     "description": "Lýsing",
     "time": "Tími",
     "total": "Samtals",
+    "totals": "Samtals",
     "no_customer": "Enginn viðskiptavinur",
     "no_project": "Ekkert verkefni",
     "no_entries": "Engar færslur fundust.",

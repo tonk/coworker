@@ -1105,6 +1105,7 @@
     "description": "Beskrivelse",
     "time": "Tid",
     "total": "I alt",
+    "totals": "I alt",
     "no_customer": "Ingen kunde",
     "no_project": "Intet projekt",
     "no_entries": "Ingen poster fundet.",

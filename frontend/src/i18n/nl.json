@@ -1105,6 +1105,7 @@
     "description": "Omschrijving",
     "time": "Tijd",
     "total": "Totaal",
+    "totals": "Totalen",
     "no_customer": "Zonder klant",
     "no_project": "Geen project",
     "no_entries": "Geen invoer gevonden.",

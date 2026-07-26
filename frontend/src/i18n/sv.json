@@ -1105,6 +1105,7 @@
     "description": "Beskrivning",
     "time": "Tid",
     "total": "Totalt",
+    "totals": "Totalt",
     "no_customer": "Ingen kund",
     "no_project": "Inget projekt",
     "no_entries": "Inga poster hittades.",

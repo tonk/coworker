@@ -1105,6 +1105,7 @@
     "description": "Description",
     "time": "Temps",
     "total": "Total",
+    "totals": "Totaux",
     "no_customer": "Aucun client",
     "no_project": "Aucun projet",
     "no_entries": "Aucune entrée trouvée.",

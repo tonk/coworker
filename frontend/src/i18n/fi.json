@@ -1105,6 +1105,7 @@
     "description": "Kuvaus",
     "time": "Aika",
     "total": "Yhteensä",
+    "totals": "Yhteensä",
     "no_customer": "Ei asiakasta",
     "no_project": "Ei projektia",
     "no_entries": "Merkintöjä ei löydy.",
