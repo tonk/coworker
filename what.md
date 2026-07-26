@@ -828,3 +828,4 @@ Create an application that has all these features and requirements
 - Add search & replace: find and replace text across cards, card comments, direct messages, tickets, and time entries, with a per-category selection, a permission-aware preview showing every match before anything changes, and re-checked permissions at apply time; chat messages are search-only since there's no edit capability for them
 - Make clicking a card-comment or time-entry search result scroll to and briefly highlight the exact comment or calendar entry, instead of just opening the containing card or the general time-tracking page
 - Patch known vulnerabilities in frontend dependencies: axios, dompurify, form-data, postcss, and undici
+- Make search & replace's per-type result limit adjustable (default 20, up to 500) instead of a fixed 20 inherited from the quick-search dropdown; show a note under any category still capped at the limit shown

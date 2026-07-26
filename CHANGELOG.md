@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.18.1 — 2026-07-26
+
+### Added
+- **Search & replace's per-type result limit is now adjustable** — the preview step was fixed at 20 matches per category (inherited unchanged from the quick-search dropdown), so a find/replace covering more matches than that was silently truncated. A new "Results per type" field (default 20, up to 500) lets you raise it before previewing, and a note appears under any category still capped at the limit shown.
+
 ## v0.18.0 — 2026-07-26
 
 ### Added

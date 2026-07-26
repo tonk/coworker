@@ -15,7 +15,7 @@ enableEmoji = true
   # Social preview image (absolute URL built via absURL). Prefer ≥1200×630 PNG/JPEG for best crawler support.
   og_image = "images/logo-full.svg"
   # Release info — update both this and warmdesk-version in [markup.asciidocext.attributes] on each release
-  warmdesk_version = "v0.18.0"
+  warmdesk_version = "v0.18.1"
   release_date     = "2026-07-26"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
   release_blog     = "blog/search-and-replace/"
@@ -23,6 +23,7 @@ enableEmoji = true
   release_highlights = [
     "**Added — Search & Replace** — find and replace text across cards, comments, direct messages, tickets, and time entries, with a permission-aware preview before anything changes.",
     "**Added — global search now covers tickets and time entries**, and clicking a comment or time-entry result jumps straight to it instead of just its container.",
+    "**Added — search & replace's per-type result limit is now adjustable** (default 20, up to 500) instead of a fixed 20.",
   ]
 
 [markup]
@@ -41,7 +42,7 @@ enableEmoji = true
       "source-highlighter" = "highlight.js"
       "sectanchors" = ""
       "sectlinks" = ""
-      "warmdesk-version" = "v0.18.0"
+      "warmdesk-version" = "v0.18.1"
 
   # Chroma off — fenced Markdown code stays plain <pre><code>; AsciiDoc uses hljs (see theme head).
   [markup.highlight]
