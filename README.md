@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.17.3)
+## Latest release (v0.17.4)
 
-- **Added** — the desktop app's system tray icon now turns orange (with a "(TEST)" title/tooltip) when connected to a test-instance server, matching the existing web UI and PDF branding.
-- **Fix** — the desktop system tray icon never actually updated at all (badge counts, timetracking icon, title) due to two compounding bugs: a tray lookup by an id that was never assigned, and a GTK call made off the main thread that hung indefinitely. Both are fixed.
+- **Added** — `warmdesk-db-convert`, a new CLI (bundled in the release tarball) that restores a backup, or converts a live database, across any combination of SQLite/PostgreSQL/MySQL — e.g. restoring a production SQLite backup onto a MySQL test server, which the built-in backup/restore system can't do on its own.
+- **Fixed** — a schema bug that made attaching a label to a card fail outright on every install, and one that stopped a fresh PostgreSQL install from starting at all.
+- **Changed** — the time-tracking report's per-group and grand-total footers are now single, clearly highlighted rows instead of several stacked lines.
 
 ## Experiment
 
@@ -381,6 +382,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **@mention autocomplete** — `@username` dropdown in project chat, card descriptions, and card comments
 - **Prometheus metrics** — `GET /api/v1/metrics` exposes project, column, and card counts plus backup status (`last_run_timestamp`, `last_success`, `files_total`); protected by the `metrics` role
 - **Database backup** — Admin → Backup / Restore tab; create timestamped backups stored in `./backups/`; list, restore (live, no restart needed for SQLite), download, and delete backups from the UI; built-in scheduler (every 6 h / 8 h / 12 h / 24 h) with configurable retention; optional email notification after every backup; automated backups via `POST /api/v1/backup` using a dedicated `backup` role service account
+- **Cross-driver restore/migration** — `warmdesk-db-convert` standalone tool copies every table between any combination of SQLite, PostgreSQL, and MySQL/MariaDB; point it at a downloaded backup file with `--backup` and a destination server's config with `--dst-config` to restore in one step, no database credentials on the command line
 - **Git integration** — connect GitHub, GitLab, Gitea, or Forgejo; commit/PR/issue events post to project chat and automatically link to cards when a card reference (e.g. `PRJ-42`) appears in the message or title; Forgejo events show the Forgejo logo
 - **Database support** — SQLite (zero configuration), PostgreSQL, MySQL/MariaDB
 - **Horizontal scaling** — Redis pub/sub for multi-instance WebSocket broadcast

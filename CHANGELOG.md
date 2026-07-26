@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.17.4 — 2026-07-26
+
+### Added
+- **`warmdesk-db-convert` — cross-driver backup restore and database migration tool** — a new CLI (bundled in the release tarball) that copies every table between any combination of the three supported drivers (SQLite, PostgreSQL, MySQL/MariaDB) — for example, restoring a production SQLite backup onto a MySQL-driven test server, something the built-in backup/restore system can't do since it always restores using the destination's own configured driver. Point it at a downloaded backup file directly with `--backup` (it extracts the archive, auto-detects whether the dump is SQLite or a pg_dump/mysqldump script, and copies the bundled `uploads/` folder too) and `--dst-config` to read the destination's `db_driver`/`db_dsn`/`upload_dir` straight from its own `warmdesk.yaml` — no database credentials need to be typed on the command line. `--src-driver` can override detection if an unusual dump format isn't recognized. See the Admin Guide's "Cross-driver restore" section for full usage.
+
+### Fixed
+- **Time-tracking report — same-date entries in an unpredictable order** — entries logged on the same day within a period-grouped report, and within customer/project groupings, weren't ordered by start time, so multiple same-day entries could appear in a confusing sequence.
+- **Time-tracking report — distance/time columns misaligned** — the Distance and Time columns in the on-screen report table weren't right-aligned like the rest of the numeric columns.
+- **`card_labels` was missing its `created_at` column on every install** — attaching a label to a card (or duplicating a card with labels) failed outright, because the implicit join table GORM generates from `Card.Labels`/`Label.Cards` collided with the richer explicit model the app actually uses, which has an extra column the generated table never had. Existing databases self-heal on next startup.
+- **A fresh PostgreSQL install couldn't start at all** — the passkey table's `PublicKey`/`AAGUID` columns were pinned to SQLite's `blob` type, which doesn't exist in PostgreSQL, so schema migration failed as soon as it reached that table.
+
+### Changed
+- **Time-tracking report — per-group and grand totals redesigned for readability** — each customer/project/period group's footer now shows a single "Totals" row with Distance, Undeclarable, and Time totals (previously just a plain "Undeclarable" line), visually matching the group's header; the report's overall Total/Undeclarable/Distance lines are now one combined, highlighted bar instead of three separate ones.
+
 ## v0.17.3 — 2026-07-25
 
 ### Added
