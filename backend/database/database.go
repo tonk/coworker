@@ -23,27 +23,32 @@ import (
 
 var DB *gorm.DB
 
-func Init(cfg *config.Config) error {
+// Open connects to the database described by cfg and returns the raw handle,
+// without touching the package-level DB var, running migrations, or applying
+// any of the app-startup side effects Init performs. Used by Init itself, and
+// by standalone cmd/ tools (e.g. db-convert) that need a second, independent
+// connection alongside the app's own.
+func Open(cfg *config.Config) (*gorm.DB, error) {
 	var dialector gorm.Dialector
 
 	switch cfg.DBDriver {
 	case "mysql":
 		mcfg, err := mysqldriver.ParseDSN(cfg.DBDSN)
 		if err != nil {
-			return fmt.Errorf("invalid mysql db_dsn: %w", err)
+			return nil, fmt.Errorf("invalid mysql db_dsn: %w", err)
 		}
 		if !mcfg.ParseTime {
-			return fmt.Errorf(`mysql db_dsn must include parseTime=true, e.g. "user:pass@tcp(host:port)/dbname?charset=utf8mb4&parseTime=True&loc=Local" — without it, DATETIME columns fail to scan into Go's time.Time and reads silently fail (inserts still succeed, masking the problem as "invalid credentials" / "user not found" instead of a database error)`)
+			return nil, fmt.Errorf(`mysql db_dsn must include parseTime=true, e.g. "user:pass@tcp(host:port)/dbname?charset=utf8mb4&parseTime=True&loc=Local" — without it, DATETIME columns fail to scan into Go's time.Time and reads silently fail (inserts still succeed, masking the problem as "invalid credentials" / "user not found" instead of a database error)`)
 		}
 		dsn, err := applyMySQLTLS(cfg)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		dialector = mysql.Open(dsn)
 	case "postgres":
 		dsn, err := applyPostgresTLS(cfg)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		dialector = postgres.Open(dsn)
 	default:
@@ -64,21 +69,30 @@ func Init(cfg *config.Config) error {
 		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-
-	DB = db
-	log.Printf("Connected to %s database", cfg.DBDriver)
 
 	if cfg.DBDriver == "sqlite" || cfg.DBDriver == "" {
 		db.Exec("PRAGMA journal_mode=WAL")
 		db.Exec("PRAGMA busy_timeout=5000")
 	}
 
+	return db, nil
+}
+
+func Init(cfg *config.Config) error {
+	db, err := Open(cfg)
+	if err != nil {
+		return err
+	}
+
+	DB = db
+	log.Printf("Connected to %s database", cfg.DBDriver)
+
 	if err := deduplicateKeyPrefixes(db); err != nil {
 		return err
 	}
-	if err := autoMigrate(db); err != nil {
+	if err := AutoMigrate(db); err != nil {
 		return err
 	}
 	return backfillCardNumbers(db)
@@ -375,8 +389,23 @@ func migrateLegacyColumnWIPLimitName(db *gorm.DB) error {
 	return nil
 }
 
-func autoMigrate(db *gorm.DB) error {
+// AutoMigrate creates/updates every model's table on db. Exported so
+// standalone cmd/ tools (e.g. db-convert) can prepare a destination database
+// without going through Init (which also touches the package-level DB var).
+func AutoMigrate(db *gorm.DB) error {
 	if err := migrateLegacyColumnWIPLimitName(db); err != nil {
+		return err
+	}
+	// Card.Labels/Label.Cards declare "card_labels" as a many2many join table,
+	// which by default GORM auto-generates as a bare (card_id, label_id)
+	// table. models.CardLabel is a richer explicit model for the same table
+	// (adds CreatedAt) used directly by handlers (FirstOrCreate/Delete) — tell
+	// GORM to use it so the join table actually gets that column instead of
+	// silently colliding with the auto-generated bare one.
+	if err := db.SetupJoinTable(&models.Card{}, "Labels", &models.CardLabel{}); err != nil {
+		return err
+	}
+	if err := db.SetupJoinTable(&models.Label{}, "Cards", &models.CardLabel{}); err != nil {
 		return err
 	}
 	err := db.AutoMigrate(
