@@ -2204,5 +2204,18 @@
       "slot_end_day": "For nattlige luker, velg når sluttiden faller. 'Samme dag' slutter før midnatt. 'Neste dag' slutter neste morgen (f.eks. start fredag 19:00, slutt lørdag 07:00). 'To dager senere' dekker en vakt som strekker seg over en hel natt og dag.",
       "slot_day_type": "Begrenser denne prisluka til bestemte dager. 'Alle dager' gjelder hver dag; 'Hverdager' dekker mandag–fredag; 'Helger' dekker lørdag–søndag; individuelle dagsalternativer gjelder bare på den eksakte ukedagen."
     }
+  },
+  "search": {
+    "replace_title": "Søk og erstatt",
+    "find": "Søk",
+    "replace_with": "Erstatt med",
+    "scope": "Søk i",
+    "scope_cards": "Kort",
+    "scope_dms": "Direktemeldinger",
+    "select_scope": "Velg minst én type å søke i.",
+    "match_summary": "{total} treff ({notEditable} kan ikke redigeres)",
+    "replace_selected": "Erstatt {count} valgte",
+    "replace_success": "{count} treff erstattet",
+    "replace_partial": "{updated} erstattet, {skipped} hoppet over"
   }
 }

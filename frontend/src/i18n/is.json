@@ -2204,5 +2204,18 @@
       "slot_end_day": "Fyrir næturraufar skaltu velja hvenær lokatíminn fellur. 'Sama dag' lýkur fyrir miðnætti. 'Næsti dagur' lýkur næsta morgun (t.d. byrjun föstudagur 19:00, lok laugardagur 07:00). 'Tveimur dögum síðar' nær yfir vakt sem spannar heila nótt og dag.",
       "slot_day_type": "Takmarkar þessa verðrauf við tilteknar daga. 'Allir dagar' gildir á hverjum degi; 'Virkir dagar' nær yfir mánudag–föstudag; 'Helgar' nær yfir laugardag–sunnudag; einstakar dagsvalkostir gilda aðeins á þeim nákvæma vikudegi."
     }
+  },
+  "search": {
+    "replace_title": "Leita og skipta út",
+    "find": "Leita",
+    "replace_with": "Skipta út fyrir",
+    "scope": "Leita í",
+    "scope_cards": "Spjöld",
+    "scope_dms": "Bein skilaboð",
+    "select_scope": "Veldu að minnsta kosti eina tegund til að leita í.",
+    "match_summary": "{total} niðurstöður ({notEditable} ekki breytanlegar)",
+    "replace_selected": "Skipta út {count} völdum",
+    "replace_success": "{count} niðurstöðum skipt út",
+    "replace_partial": "{updated} skipt út, {skipped} sleppt"
   }
 }

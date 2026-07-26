@@ -366,7 +366,13 @@
           </span>
         </div>
         <div class="comment-list">
-          <div v-for="comment in card.comments" :key="comment.id" class="comment" :class="{ 'comment-reply': comment.body.trimStart().startsWith('>') }">
+          <div
+            v-for="comment in card.comments"
+            :key="comment.id"
+            :id="`comment-${comment.id}`"
+            class="comment"
+            :class="{ 'comment-reply': comment.body.trimStart().startsWith('>'), 'comment-highlight': highlightedCommentId === comment.id }"
+          >
             <div class="comment-avatar">
               <img v-if="avatarUrl(comment.user)" :src="avatarUrl(comment.user)" :alt="comment.user.display_name" class="comment-avatar-img" @error="e => e.target.style.display='none'" />
               <span v-else>{{ comment.user.display_name?.slice(0,2).toUpperCase() }}</span>
@@ -589,7 +595,8 @@ const props = defineProps({
   members: { type: Array, default: () => [] },
   projectSlug: { type: String, required: true },
   parentCard: { type: Object, default: null },
-  readonly: { type: Boolean, default: false }
+  readonly: { type: Boolean, default: false },
+  focusCommentId: { type: [Number, String], default: null }
 })
 const emit = defineEmits(['close', 'deleted', 'back', 'restore'])
 
@@ -1113,7 +1120,26 @@ onMounted(async () => {
   await loadSubCards()
   await loadLinkedCards()
   await loadLinkedTickets()
+  scrollToFocusedComment()
 })
+
+const highlightedCommentId = ref(null)
+let highlightTimer = null
+
+function scrollToFocusedComment() {
+  const id = props.focusCommentId
+  if (!id) return
+  clearTimeout(highlightTimer)
+  nextTick(() => {
+    const el = document.getElementById(`comment-${id}`)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    highlightedCommentId.value = Number(id)
+    highlightTimer = setTimeout(() => { highlightedCommentId.value = null }, 2500)
+  })
+}
+
+watch(() => props.focusCommentId, () => scrollToFocusedComment())
 
 onUnmounted(() => {
   ui.setHelpContext(null)
@@ -1622,8 +1648,12 @@ function renderMarkdown(text) {
 .comments-section h4 { font-size: 14px; }
 
 .comment-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
-.comment { display: flex; gap: 10px; }
+.comment { display: flex; gap: 10px; border-radius: 8px; transition: background-color 1.5s ease-out; }
 .comment-reply { margin-left: 28px; padding-left: 12px; border-left: 3px solid var(--color-border); }
+.comment-highlight { background-color: color-mix(in srgb, var(--color-primary) 18%, transparent); transition: background-color .2s ease-in; }
+@media (prefers-reduced-motion: reduce) {
+  .comment { transition: none; }
+}
 
 .comment-avatar {
   width: 28px;

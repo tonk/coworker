@@ -2204,5 +2204,18 @@
       "slot_end_day": "Selecteer voor nachtelijke slots wanneer de eindtijd valt. 'Zelfde dag' eindigt voor middernacht. 'Volgende dag' eindigt de volgende ochtend (bijv. start vrijdag 19:00, einde zaterdag 07:00). 'Twee dagen later' beslaat een dienst die een volledige nacht en dag overbrugt.",
       "slot_day_type": "Beperkt dit tariefslot tot specifieke dagen. 'Alle dagen' geldt elke dag; 'Weekdagen' omvat maandag–vrijdag; 'Weekenden' omvat zaterdag–zondag; individuele dag-opties gelden alleen op die exacte dag van de week."
     }
+  },
+  "search": {
+    "replace_title": "Zoeken en vervangen",
+    "find": "Zoeken",
+    "replace_with": "Vervangen door",
+    "scope": "Zoeken in",
+    "scope_cards": "Kaarten",
+    "scope_dms": "Directe berichten",
+    "select_scope": "Selecteer minstens één type om in te zoeken.",
+    "match_summary": "{total} overeenkomsten ({notEditable} niet bewerkbaar)",
+    "replace_selected": "{count} geselecteerde vervangen",
+    "replace_success": "{count} overeenkomsten vervangen",
+    "replace_partial": "{updated} vervangen, {skipped} overgeslagen"
   }
 }

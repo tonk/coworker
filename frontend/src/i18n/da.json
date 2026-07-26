@@ -2204,5 +2204,18 @@
       "slot_end_day": "For natlige slots skal du vælge, hvornår sluttiden falder. 'Samme dag' slutter før midnat. 'Næste dag' slutter næste morgen (f.eks. start fredag 19:00, slut lørdag 07:00). 'To dage senere' dækker en vagt, der strækker sig over en hel nat og dag.",
       "slot_day_type": "Begrænser dette prissslot til bestemte dage. 'Alle dage' gælder hver dag; 'Hverdage' dækker mandag–fredag; 'Weekender' dækker lørdag–søndag; individuelle dagsindstillinger gælder kun på præcis den ugedag."
     }
+  },
+  "search": {
+    "replace_title": "Søg og erstat",
+    "find": "Søg",
+    "replace_with": "Erstat med",
+    "scope": "Søg i",
+    "scope_cards": "Kort",
+    "scope_dms": "Direkte beskeder",
+    "select_scope": "Vælg mindst én type at søge i.",
+    "match_summary": "{total} match ({notEditable} kan ikke redigeres)",
+    "replace_selected": "Erstat {count} valgte",
+    "replace_success": "{count} match erstattet",
+    "replace_partial": "{updated} erstattet, {skipped} sprunget over"
   }
 }

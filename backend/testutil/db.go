@@ -74,5 +74,13 @@ func allModels() []interface{} {
 		&models.NewsItem{},
 		&models.PasskeyCredential{},
 		&models.MFATrustedDevice{},
+		&models.Ticket{},
+		&models.TicketTag{},
+		&models.TicketLink{},
+		&models.TicketCardLink{},
+		&models.TicketMessage{},
+		&models.TicketHistory{},
+		&models.TicketView{},
+		&models.SlaPolicy{},
 	}
 }

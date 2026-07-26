@@ -2204,5 +2204,18 @@
       "slot_end_day": "Pour les créneaux de nuit, sélectionnez quand tombe l'heure de fin. 'Même jour' se termine avant minuit. 'Jour suivant' se termine le lendemain matin (ex. début vendredi 19h00, fin samedi 07h00). 'Deux jours plus tard' couvre une équipe sur une nuit entière et un jour.",
       "slot_day_type": "Limite ce créneau tarifaire à des jours spécifiques. 'Tous les jours' s'applique chaque jour ; 'Jours ouvrables' couvre lundi–vendredi ; 'Week-ends' couvre samedi–dimanche ; les options de jours individuels s'appliquent uniquement à ce jour exact de la semaine."
     }
+  },
+  "search": {
+    "replace_title": "Rechercher et remplacer",
+    "find": "Rechercher",
+    "replace_with": "Remplacer par",
+    "scope": "Rechercher dans",
+    "scope_cards": "Cartes",
+    "scope_dms": "Messages directs",
+    "select_scope": "Sélectionnez au moins un type dans lequel rechercher.",
+    "match_summary": "{total} résultats ({notEditable} non modifiables)",
+    "replace_selected": "Remplacer {count} sélectionné(s)",
+    "replace_success": "{count} résultats remplacés",
+    "replace_partial": "{updated} remplacés, {skipped} ignorés"
   }
 }

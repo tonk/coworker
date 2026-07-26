@@ -2204,5 +2204,18 @@
       "slot_end_day": "Välj för nattiga luckor när sluttiden infaller. 'Samma dag' slutar före midnatt. 'Nästa dag' slutar följande morgon (t.ex. start fredag 19:00, slut lördag 07:00). 'Två dagar senare' täcker ett pass som sträcker sig över en hel natt och dag.",
       "slot_day_type": "Begränsar denna taxalucka till specifika dagar. 'Alla dagar' gäller varje dag; 'Vardagar' täcker måndag–fredag; 'Helger' täcker lördag–söndag; individuella dagsalternativ gäller bara på exakt den veckodagen."
     }
+  },
+  "search": {
+    "replace_title": "Sök och ersätt",
+    "find": "Sök",
+    "replace_with": "Ersätt med",
+    "scope": "Sök i",
+    "scope_cards": "Kort",
+    "scope_dms": "Direktmeddelanden",
+    "select_scope": "Välj minst en typ att söka i.",
+    "match_summary": "{total} träffar ({notEditable} ej redigerbara)",
+    "replace_selected": "Ersätt {count} valda",
+    "replace_success": "{count} träffar ersatta",
+    "replace_partial": "{updated} ersatta, {skipped} överhoppade"
   }
 }

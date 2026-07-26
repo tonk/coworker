@@ -125,6 +125,7 @@
       :labels="projectStore.currentProject?.labels || []"
       :members="projectMembers"
       :project-slug="slug"
+      :focus-comment-id="route.query.comment ? Number(route.query.comment) : null"
       @close="selectedCard = null"
       @deleted="selectedCard = null"
     />
@@ -224,6 +225,14 @@ watch(slug, async (newSlug) => {
   columnSortable?.destroy()
   columnSortable = null
   await loadBoard(newSlug)
+})
+
+// Reopen a card when a search result is clicked while already viewing this
+// project (e.g. another card, or a different comment on the current card) -
+// route.query.card alone wouldn't otherwise re-trigger anything since only
+// the project slug is watched above.
+watch(() => route.query.card, (val) => {
+  if (val) openCardById(Number(val))
 })
 
 onUnmounted(() => {

@@ -2204,5 +2204,18 @@
       "slot_end_day": "Yöllisille aikaväleille valitse milloin loppuaika on. 'Sama päivä' päättyy ennen puoltayötä. 'Seuraava päivä' päättyy seuraavana aamuna (esim. alku perjantai 19:00, loppu lauantai 07:00). 'Kaksi päivää myöhemmin' kattaa vuoron, joka kestää koko yön ja päivän.",
       "slot_day_type": "Rajoittaa tämän hinta-aikavälin tiettyihin päiviin. 'Kaikki päivät' koskee joka päivää; 'Arkipäivät' kattaa maanantai–perjantai; 'Viikonloput' kattaa lauantai–sunnuntai; yksittäiset päivävaihtoehdot koskevat vain kyseistä viikonpäivää."
     }
+  },
+  "search": {
+    "replace_title": "Etsi ja korvaa",
+    "find": "Etsi",
+    "replace_with": "Korvaa",
+    "scope": "Etsi kohteesta",
+    "scope_cards": "Kortit",
+    "scope_dms": "Yksityisviestit",
+    "select_scope": "Valitse vähintään yksi tyyppi, josta etsiä.",
+    "match_summary": "{total} osumaa ({notEditable} ei muokattavissa)",
+    "replace_selected": "Korvaa {count} valittua",
+    "replace_success": "{count} osumaa korvattu",
+    "replace_partial": "{updated} korvattu, {skipped} ohitettu"
   }
 }

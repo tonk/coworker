@@ -2204,5 +2204,18 @@
       "slot_end_day": "Para franjas nocturnas, selecciona cuándo cae la hora de fin. 'Mismo día' termina antes de medianoche. 'Día siguiente' termina a la mañana siguiente (p. ej. inicio viernes 19:00, fin sábado 07:00). 'Dos días después' cubre un turno que abarca una noche completa y un día.",
       "slot_day_type": "Limita esta franja de tarifa a días específicos. 'Todos los días' se aplica cada día; 'Días laborables' cubre lunes–viernes; 'Fines de semana' cubre sábado–domingo; las opciones de días individuales se aplican solo en ese día exacto de la semana."
     }
+  },
+  "search": {
+    "replace_title": "Buscar y reemplazar",
+    "find": "Buscar",
+    "replace_with": "Reemplazar por",
+    "scope": "Buscar en",
+    "scope_cards": "Tarjetas",
+    "scope_dms": "Mensajes directos",
+    "select_scope": "Selecciona al menos un tipo en el que buscar.",
+    "match_summary": "{total} coincidencias ({notEditable} no editables)",
+    "replace_selected": "Reemplazar {count} seleccionados",
+    "replace_success": "{count} coincidencias reemplazadas",
+    "replace_partial": "{updated} reemplazados, {skipped} omitidos"
   }
 }

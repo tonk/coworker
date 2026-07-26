@@ -2201,5 +2201,18 @@
       "slot_end_day": "For overnight slots, select when the end time falls. 'Same day' ends before midnight. 'Next day' ends the following morning (e.g. start Friday 19:00, end Saturday 07:00). 'Two days later' covers a shift spanning a full night and day.",
       "slot_day_type": "Limits this rate slot to specific days. 'All days' applies every day; 'Weekdays' covers Monday–Friday; 'Weekends' covers Saturday–Sunday; individual day options apply only on that exact day of the week."
     }
+  },
+  "search": {
+    "replace_title": "Search and replace",
+    "find": "Find",
+    "replace_with": "Replace with",
+    "scope": "Search in",
+    "scope_cards": "Cards",
+    "scope_dms": "Direct messages",
+    "select_scope": "Select at least one type to search in.",
+    "match_summary": "{total} matches ({notEditable} not editable)",
+    "replace_selected": "Replace {count} selected",
+    "replace_success": "Replaced {count} matches",
+    "replace_partial": "Replaced {updated}, skipped {skipped}"
   }
 }

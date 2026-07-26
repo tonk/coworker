@@ -601,6 +601,7 @@
       class="tt-calendar-outer"
     >
       <TimeTrackingCalendar
+        ref="timeTrackingCalendarRef"
         :entries="rawEntries"
         :week-days="weekDays"
         :all-customers="allCustomers"
@@ -5160,6 +5161,8 @@ onUnmounted(() => {
 })
 
 // ── Init ──────────────────────────────────────────────────────────────────
+const timeTrackingCalendarRef = ref(null)
+
 onMounted(async () => {
   const fetches = [
     // include_hidden: a customer hidden from the main Customers list can still
@@ -5181,11 +5184,54 @@ onMounted(async () => {
     allUsers.value = results[4].data
     selectedUserId.value = auth.user?.id ?? null
   }
+
+  await jumpToSearchedEntry()
+
   await loadMacroLibraryFromServer()
   await loadWeek()
   await nextTick()
   initRowSortable()
   await loadReport()
+
+  await scrollToSearchedEntry()
+})
+
+// A global search result for a time entry links here as
+// ?entry=<id>&date=<iso>&user=<owner id>. jumpToSearchedEntry() points the
+// sheet at that entry's week (and, for admins/time_tracking_viewer, that
+// owner) instead of whatever week/user it would otherwise default to;
+// scrollToSearchedEntry() then scrolls to and highlights its block once
+// loadWeek() has populated rawEntries - it does not open the edit modal,
+// since a search result should land you where the item is, not straight
+// into editing it. Split in two (rather than one function bracketing
+// loadWeek()) so the query-watcher below can re-run both when a second
+// search result is clicked while already on this page - route.query alone
+// wouldn't otherwise re-trigger anything since this is the same mounted
+// component instance.
+async function jumpToSearchedEntry() {
+  if (!route.query.entry) return
+  if (route.query.date) anchor.value = new Date(route.query.date)
+  logTimeView.value = 'calendar'
+  if (canViewOtherUsers.value && route.query.user) {
+    const ownerId = Number(route.query.user)
+    selectedUserId.value = (ownerId && ownerId !== auth.user?.id) ? ownerId : (auth.user?.id ?? null)
+  }
+}
+
+async function scrollToSearchedEntry() {
+  const targetEntryId = route.query.entry ? Number(route.query.entry) : null
+  if (!targetEntryId) return
+  const target = rawEntries.value.find(e => e.id === targetEntryId)
+  if (!target) return
+  await nextTick()
+  timeTrackingCalendarRef.value?.scrollToEntry(target)
+}
+
+watch(() => route.query.entry, async (val) => {
+  if (!val) return
+  await jumpToSearchedEntry()
+  await loadWeek()
+  await scrollToSearchedEntry()
 })
 
 // ── Invoices ──────────────────────────────────────────────────────────────

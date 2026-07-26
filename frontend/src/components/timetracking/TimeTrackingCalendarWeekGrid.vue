@@ -14,6 +14,7 @@
         <button
           v-for="e in unscheduledByDay[d.iso] || []"
           :key="e.entry.id"
+          :id="`tt-entry-${e.entry.id}`"
           type="button"
           class="cal-unscheduled-chip"
           :style="{ borderLeftColor: e.color }"
@@ -230,6 +231,14 @@ onMounted(async () => {
   background: var(--color-bg);
   color: var(--color-text);
   cursor: pointer;
+}
+.cal-block-highlight {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  transition: outline-color .2s ease-in;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cal-block-highlight { transition: none; }
 }
 
 .cal-scroll {

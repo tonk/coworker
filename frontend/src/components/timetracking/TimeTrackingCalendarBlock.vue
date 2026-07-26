@@ -1,6 +1,7 @@
 <template>
   <div
     ref="blockEl"
+    :id="`tt-entry-${entry.id}`"
     role="button"
     :tabindex="readOnly ? -1 : 0"
     class="cal-block"
@@ -249,6 +250,14 @@ function onResizePointerUp(e) {
 
 .cal-block-dragging { cursor: grabbing; opacity: 0.9; }
 .cal-block-readonly { cursor: default; }
+.cal-block-highlight {
+  outline: 3px solid var(--color-text);
+  outline-offset: 2px;
+  transition: outline-color .2s ease-in;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cal-block-highlight { transition: none; }
+}
 
 /* Overnight entries split across midnight: the midnight-adjoining edge is dashed
    to show it's a continuation, not the entry's real start/end. Not draggable as

@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TimeTrackingCalendarWeekGrid from './TimeTrackingCalendarWeekGrid.vue'
 import ContextMenu from '@/components/common/ContextMenu.vue'
@@ -191,6 +191,25 @@ function onModalDelete(entry) {
   emit('delete-entry', entry)
   modalState.value = null
 }
+
+// Lets a parent (e.g. a global-search deep link) scroll to and briefly
+// highlight a specific entry's block - just showing where it is, the same
+// as clicking any other search result takes you to the item rather than
+// straight into editing it. Opening the edit form is still a deliberate
+// click on the block itself.
+let highlightTimer = null
+function scrollToEntry(entry) {
+  clearTimeout(highlightTimer)
+  nextTick(() => {
+    const el = document.getElementById(`tt-entry-${entry.id}`)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
+    el.classList.add('cal-block-highlight')
+    highlightTimer = setTimeout(() => el.classList.remove('cal-block-highlight'), 2500)
+  })
+}
+
+defineExpose({ scrollToEntry })
 </script>
 
 <style scoped>

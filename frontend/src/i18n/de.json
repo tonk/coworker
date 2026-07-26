@@ -2204,5 +2204,18 @@
       "slot_end_day": "Wählen Sie für nächtliche Slots, wann die Endzeit fällt. 'Gleicher Tag' endet vor Mitternacht. 'Nächster Tag' endet am folgenden Morgen (z. B. Start Freitag 19:00, Ende Samstag 07:00). 'Übernächster Tag' umfasst eine Schicht über eine ganze Nacht und einen Tag.",
       "slot_day_type": "Begrenzt diesen Tarifslot auf bestimmte Tage. 'Alle Tage' gilt jeden Tag; 'Werktage' umfasst Montag–Freitag; 'Wochenenden' umfasst Samstag–Sonntag; einzelne Tagesoptionen gelten nur an diesem genauen Wochentag."
     }
+  },
+  "search": {
+    "replace_title": "Suchen und ersetzen",
+    "find": "Suchen",
+    "replace_with": "Ersetzen durch",
+    "scope": "Suchen in",
+    "scope_cards": "Karten",
+    "scope_dms": "Direktnachrichten",
+    "select_scope": "Wählen Sie mindestens einen Typ zum Durchsuchen aus.",
+    "match_summary": "{total} Treffer ({notEditable} nicht bearbeitbar)",
+    "replace_selected": "{count} ausgewählte ersetzen",
+    "replace_success": "{count} Treffer ersetzt",
+    "replace_partial": "{updated} ersetzt, {skipped} übersprungen"
   }
 }

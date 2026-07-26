@@ -2204,5 +2204,18 @@
       "slot_end_day": "Per le fasce notturne, seleziona quando cade l'orario di fine. 'Stesso giorno' termina prima di mezzanotte. 'Giorno seguente' termina la mattina successiva (es. inizio venerdì 19:00, fine sabato 07:00). 'Due giorni dopo' copre un turno che si estende per una notte intera e un giorno.",
       "slot_day_type": "Limita questa fascia tariffaria a giorni specifici. 'Tutti i giorni' si applica ogni giorno; 'Giorni feriali' copre lunedì–venerdì; 'Fine settimana' copre sabato–domenica; le opzioni per giorni singoli si applicano solo in quel preciso giorno della settimana."
     }
+  },
+  "search": {
+    "replace_title": "Cerca e sostituisci",
+    "find": "Cerca",
+    "replace_with": "Sostituisci con",
+    "scope": "Cerca in",
+    "scope_cards": "Schede",
+    "scope_dms": "Messaggi diretti",
+    "select_scope": "Seleziona almeno un tipo in cui cercare.",
+    "match_summary": "{total} corrispondenze ({notEditable} non modificabili)",
+    "replace_selected": "Sostituisci {count} selezionati",
+    "replace_success": "{count} corrispondenze sostituite",
+    "replace_partial": "{updated} sostituite, {skipped} saltate"
   }
 }

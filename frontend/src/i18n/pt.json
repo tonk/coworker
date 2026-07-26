@@ -2204,5 +2204,18 @@
       "slot_end_day": "Para intervalos noturnos, selecione quando cai o horário de fim. 'Mesmo dia' termina antes da meia-noite. 'Dia seguinte' termina na manhã seguinte (ex. início sexta 19:00, fim sábado 07:00). 'Dois dias depois' cobre um turno que abrange uma noite inteira e um dia.",
       "slot_day_type": "Limita este intervalo de tarifa a dias específicos. 'Todos os dias' aplica-se todos os dias; 'Dias úteis' cobre segunda–sexta; 'Fins de semana' cobre sábado–domingo; as opções de dias individuais aplicam-se apenas nesse dia exato da semana."
     }
+  },
+  "search": {
+    "replace_title": "Pesquisar e substituir",
+    "find": "Pesquisar",
+    "replace_with": "Substituir por",
+    "scope": "Pesquisar em",
+    "scope_cards": "Cartões",
+    "scope_dms": "Mensagens diretas",
+    "select_scope": "Selecione pelo menos um tipo para pesquisar.",
+    "match_summary": "{total} correspondências ({notEditable} não editáveis)",
+    "replace_selected": "Substituir {count} selecionados",
+    "replace_success": "{count} correspondências substituídas",
+    "replace_partial": "{updated} substituídas, {skipped} ignoradas"
   }
 }

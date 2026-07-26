@@ -20,7 +20,18 @@
         ref="inputEl"
       />
       <span v-if="loading" class="search-spinner" role="status" :aria-label="$t('common.loading')"></span>
+      <button
+        type="button"
+        class="search-replace-btn"
+        :aria-label="$t('search.replace_title')"
+        :title="$t('search.replace_title')"
+        @click="openReplaceModal"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 2.1l4 4-4 4"/><path d="M3 12.1v-2a4 4 0 0 1 4-4h14"/><path d="M7 21.9l-4-4 4-4"/><path d="M21 11.9v2a4 4 0 0 1-4 4H3"/></svg>
+      </button>
     </div>
+
+    <SearchReplaceModal v-if="showReplaceModal" @close="showReplaceModal = false" />
 
     <div
       v-if="open && (results.length || query.length >= 2)"
@@ -45,6 +56,8 @@
         >
           <div class="result-icon" aria-hidden="true">
             <svg v-if="r.type === 'card'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+            <svg v-else-if="r.type === 'ticket'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            <svg v-else-if="r.type === 'time_entry'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </div>
           <div class="result-text">
@@ -63,6 +76,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { searchApi } from '@/api/search'
 import { projectsApi } from '@/api/projects'
+import SearchReplaceModal from './SearchReplaceModal.vue'
 
 const { t } = useI18n()
 
@@ -75,6 +89,12 @@ const activeIdx = ref(0)
 const containerEl = ref(null)
 const inputEl = ref(null)
 const projectSlugById = ref(new Map())
+const showReplaceModal = ref(false)
+
+function openReplaceModal() {
+  close()
+  showReplaceModal.value = true
+}
 
 let debounceTimer = null
 
@@ -107,6 +127,8 @@ function groupLabel(type) {
     chat_message: t('nav.messages', 'Chat'),
     dm_message: t('dm.messages', t('nav.messages', 'Messages')),
     card_comment: t('board.comments', 'Comments'),
+    ticket: t('ticket.tickets', 'Tickets'),
+    time_entry: t('timeTracking.nav', 'Time tracking'),
   }
   return map[type] || type
 }
@@ -117,6 +139,8 @@ function resultTitle(r) {
   if (r.type === 'chat_message') return item.body?.slice(0, 60) || ''
   if (r.type === 'dm_message') return item.body?.slice(0, 60) || ''
   if (r.type === 'card_comment') return item.body?.slice(0, 60) || ''
+  if (r.type === 'ticket') return item.title || 'Ticket'
+  if (r.type === 'time_entry') return item.description?.slice(0, 60) || ''
   return ''
 }
 
@@ -125,6 +149,8 @@ function resultSub(r) {
   if (r.type === 'chat_message') return 'by ' + (item.user?.display_name || item.user?.username || '')
   if (r.type === 'dm_message') return 'from ' + (item.sender?.display_name || item.sender?.username || '')
   if (r.type === 'card_comment') return 'comment by ' + (item.user?.display_name || item.user?.username || '')
+  if (r.type === 'ticket') return item.customer?.name || ''
+  if (r.type === 'time_entry') return [item.customer?.name || item.project?.name, item.user?.display_name || item.user?.username].filter(Boolean).join(' · ')
   return ''
 }
 
@@ -194,9 +220,16 @@ async function navigate(r) {
   } else if (r.type === 'card_comment') {
     if (slug) {
       const cardId = item?.card_id
-      if (cardId) router.push({ path: `/projects/${slug}`, query: { card: String(cardId) } })
+      if (cardId) router.push({ path: `/projects/${slug}`, query: { card: String(cardId), comment: String(item.id) } })
       else router.push(`/projects/${slug}`)
     }
+  } else if (r.type === 'ticket') {
+    if (item?.customer_id) router.push(`/customers/${item.customer_id}/tickets/${item.id}`)
+  } else if (r.type === 'time_entry') {
+    router.push({
+      path: '/time-tracking',
+      query: { entry: String(item.id), date: item.date, user: String(item.user_id) }
+    })
   }
 }
 
@@ -244,6 +277,23 @@ onBeforeUnmount(() => {
 }
 .search-input-wrap:focus-within { border-color: var(--color-primary); }
 .search-icon { color: var(--color-text-muted); flex-shrink: 0; }
+.search-replace-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+}
+.search-replace-btn:hover,
+.search-replace-btn:focus-visible {
+  color: var(--color-text);
+  background: var(--color-border);
+}
 .search-input {
   flex: 1;
   border: none;

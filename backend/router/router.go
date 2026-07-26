@@ -335,6 +335,8 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		if !ttMode {
 			// Global search
 			protected.GET("/search", handlers.GlobalSearch)
+			protected.POST("/search/replace/preview", handlers.SearchReplacePreview)
+			protected.POST("/search/replace/apply", handlers.SearchReplaceApply)
 
 			// Card reference resolver — resolves "PRJ-42" to project slug + card ID
 			protected.GET("/cards/resolve/:ref", handlers.ResolveCardRef)
