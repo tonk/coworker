@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.18.1)
+## Latest release (v0.18.2)
 
-- **Added** — Search & replace's per-type result limit (previously fixed at 20) is now adjustable up to 500, with a note shown whenever a category is still capped.
-- **Added** — Search & replace: find and replace text across cards, comments, direct messages, tickets, and time entries, with a permission-aware preview before anything changes.
-- **Added** — Global search now also matches ticket subjects and time-entry descriptions, and clicking a comment or time-entry result jumps straight to it.
+- **Fixed** — Time-tracking calendar click/drag-to-create-entry could land on the wrong time on the Tauri Linux desktop app, thrown off by scrolling, zoom level, or display scaling; also, the 00:00 label sat right on the grid's top border.
+- **Fixed** — Desktop tray icon's "Show WarmDesk" could hide the window instead of bringing it to front when it was already open but not focused.
 
 ## Experiment
 

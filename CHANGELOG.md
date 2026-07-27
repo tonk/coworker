@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.18.2 — 2026-07-27
+
+### Fixed
+- **Time-tracking calendar — click/drag-to-create-entry could land on the wrong time (Tauri Linux desktop)** — two distinct WebKitGTK issues were at fault: `getBoundingClientRect()` on the scrolled day column went stale once the calendar view had been scrolled, and `clientY`/`getBoundingClientRect()` could report values in a visual pixel space that's a constant multiple of the CSS pixel space the calendar's zoom level is defined in, tied to the display's OS-level scale factor. Both are now corrected — the calendar's click math is anchored to the scroll container's own stable position and calibrates the pixel ratio live, so click-to-create lands on the right time regardless of scroll position, zoom level, or display scaling.
+- **Time-tracking calendar — the 00:00 label sat right on the border separating the day-header row from the grid**, instead of clear of it.
+- **Desktop tray icon — "Show WarmDesk" could hide the window instead of bringing it to front** if the window was already open but not the focused one (e.g. sitting behind other windows). The menu action now checks focus state (and unminimizes if needed) before deciding whether to hide or activate.
+
 ## v0.18.1 — 2026-07-26
 
 ### Added
