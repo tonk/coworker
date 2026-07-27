@@ -3,6 +3,11 @@ import { parseWallClock, fmtWallClock, wallClockSpanMinutes } from './shiftTimeE
 export const PX_PER_HOUR = 60
 export const MIN_BLOCK_HEIGHT_PX = 16
 export const DEFAULT_SNAP_MINUTES = 15
+// Top padding on .cal-grid-body so the 00:00 label/gridline stands visually clear of the
+// border separating the day-header row from the scrollable grid, instead of sitting right
+// on it. Shared with TimeTrackingCalendarDay.vue's click math, which must subtract this
+// same amount to still land on the right time.
+export const GRID_TOP_INSET_PX = 12
 
 /** Vertical pixel offset of a wall-clock time within a 24h day column. */
 export function topOffsetPx(startTime, pxPerHour = PX_PER_HOUR) {

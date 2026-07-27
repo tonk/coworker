@@ -562,10 +562,19 @@ pub fn run() {
                     match event.id.as_ref() {
                         "show" => {
                             if let Some(w) = app.get_webview_window("main") {
+                                // is_visible() alone isn't enough: a window sitting
+                                // unfocused behind other windows also reports visible,
+                                // so checking only that hid the window instead of
+                                // bringing it to front when the user's intent was
+                                // clearly to activate it.
                                 let visible = w.is_visible().unwrap_or(true);
-                                if visible {
+                                let focused = w.is_focused().unwrap_or(false);
+                                if visible && focused {
                                     let _ = w.hide();
                                 } else {
+                                    if w.is_minimized().unwrap_or(false) {
+                                        let _ = w.unminimize();
+                                    }
                                     let _ = w.show();
                                     let _ = w.set_focus();
                                 }

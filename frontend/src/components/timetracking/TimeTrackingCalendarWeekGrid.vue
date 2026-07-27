@@ -25,7 +25,7 @@
     </div>
 
     <div ref="scrollEl" class="cal-scroll">
-      <div class="cal-grid-body" :style="{ height: pxPerHour * 24 + 'px' }">
+      <div class="cal-grid-body" :style="{ height: pxPerHour * 24 + 'px', paddingTop: GRID_TOP_INSET_PX + 'px' }">
         <div class="cal-hour-gutter">
           <div v-for="h in 24" :key="h" class="cal-hour-label" :style="{ top: (h - 1) * pxPerHour + 'px' }">
             {{ hourLabel(h - 1) }}
@@ -58,7 +58,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import TimeTrackingCalendarDay from './TimeTrackingCalendarDay.vue'
-import { topOffsetPx, heightPx, PX_PER_HOUR, MIN_BLOCK_HEIGHT_PX } from '@/utils/calendarLayout'
+import { topOffsetPx, heightPx, PX_PER_HOUR, MIN_BLOCK_HEIGHT_PX, GRID_TOP_INSET_PX } from '@/utils/calendarLayout'
 import { parseWallClock, addDaysISO } from '@/utils/shiftTimeEntries'
 import { useDateFormat } from '@/composables/useDateFormat'
 
