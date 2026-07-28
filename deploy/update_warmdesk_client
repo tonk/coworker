@@ -1,0 +1,302 @@
+#!/usr/bin/env bash
+# update_warmdesk_client — update the WarmDesk desktop client to the latest
+# GitHub release.
+#
+# Supports:
+#   Linux  — .deb / .rpm (installed via the system package manager) and
+#            AppImage (replaced in place)
+#   macOS  — .app in /Applications (universal dmg)
+#
+# Usage: update_warmdesk_client [options] [-- <path>]
+#   -f, --force        Reinstall even if already on the latest version
+#   -y, --yes          Don't ask for confirmation before installing
+#       --check        Only report installed vs. latest version, then exit
+#       --no-verify     Skip GPG signature verification of the download
+#       --path <path>  AppImage file (Linux) or .app bundle (macOS) to update,
+#                      if it can't be auto-detected
+#   -h, --help          Show this help
+#
+# Windows is not covered — use the in-app update banner (Settings) or download
+# the installer/portable zip manually from the GitHub releases page.
+
+set -euo pipefail
+
+# ── Configuration ─────────────────────────────────────────────────────────────
+readonly REPO="tonk/warmdesk"
+readonly PKG_NAME="warm-desk"                # dpkg/rpm package name (Tauri kebab-cases "WarmDesk")
+readonly BIN_NAME="warmdesk"                 # installed executable name (Cargo binary name, unhyphenated)
+readonly APP_BUNDLE_DEFAULT="/Applications/WarmDesk.app"
+readonly SIGNING_KEY_URL="https://raw.githubusercontent.com/${REPO}/main/signing-key.asc"
+
+# ── Argument parsing ──────────────────────────────────────────────────────────
+FORCE=0
+ASSUME_YES=0
+CHECK_ONLY=0
+VERIFY=1
+CUSTOM_PATH=""
+
+print_usage() {
+    cat <<'EOF'
+Update the WarmDesk desktop client to the latest GitHub release.
+
+Supports:
+  Linux — .deb / .rpm (installed via the system package manager) and
+          AppImage (replaced in place)
+  macOS — .app in /Applications (universal dmg)
+
+Usage: update_warmdesk_client [options]
+  -f, --force      Reinstall even if already on the latest version
+  -y, --yes        Don't ask for confirmation before installing
+      --check      Only report installed vs. latest version, then exit
+      --no-verify  Skip GPG signature verification of the download
+      --path PATH  AppImage file (Linux) or .app bundle (macOS) to update,
+                   if it can't be auto-detected
+  -h, --help       Show this help
+
+Windows is not covered — use the in-app update banner or download the
+installer/portable zip manually from the GitHub releases page.
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -f|--force)      FORCE=1; shift ;;
+        -y|--yes)        ASSUME_YES=1; shift ;;
+        --check)         CHECK_ONLY=1; shift ;;
+        --no-verify)     VERIFY=0; shift ;;
+        --path)          CUSTOM_PATH="${2:-}"; shift 2 ;;
+        -h|--help)       print_usage; exit 0 ;;
+        *) echo "Unknown option: $1" >&2; print_usage >&2; exit 1 ;;
+    esac
+done
+
+log()  { echo "==> $*" >&2; }
+warn() { echo "Warning: $*" >&2; }
+die()  { echo "Error: $*" >&2; exit 1; }
+
+command -v curl >/dev/null 2>&1 || die "curl is required."
+
+# ── Version comparison (semver, major.minor.patch) ────────────────────────────
+is_newer() { # is_newer <current> <latest>  → 0 (true) if latest > current
+    local cur="${1#v}" lat="${2#v}"
+    local c1 c2 c3 l1 l2 l3
+    IFS=. read -r c1 c2 c3 <<< "$cur"
+    IFS=. read -r l1 l2 l3 <<< "$lat"
+    c1=${c1:-0} c2=${c2:-0} c3=${c3:-0}
+    l1=${l1:-0} l2=${l2:-0} l3=${l3:-0}
+    if [[ $l1 -ne $c1 ]]; then [[ $l1 -gt $c1 ]]; return; fi
+    if [[ $l2 -ne $c2 ]]; then [[ $l2 -gt $c2 ]]; return; fi
+    [[ $l3 -gt $c3 ]]
+}
+
+# ── Latest release lookup ─────────────────────────────────────────────────────
+log "Checking latest release on GitHub..."
+LATEST="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
+    | grep '"tag_name"' | head -1 \
+    | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')" || true
+[[ -n "${LATEST}" ]] || die "could not determine latest release version from GitHub (check your network connection)."
+
+# ── Temp workspace + GPG verification ─────────────────────────────────────────
+TMPDIR="$(mktemp -d)"
+trap 'rm -rf "${TMPDIR}"' EXIT
+
+verify_signature() { # verify_signature <file> <asset-name>
+    local file="$1" name="$2"
+    [[ ${VERIFY} -eq 1 ]] || { warn "signature verification skipped (--no-verify)."; return 0; }
+    if ! command -v gpg >/dev/null 2>&1; then
+        warn "gpg not found — skipping signature verification. Install gnupg to verify downloads."
+        return 0
+    fi
+    local asc="${TMPDIR}/${name}.asc"
+    if ! curl -fsSL "https://github.com/${REPO}/releases/download/${LATEST}/${name}.asc" -o "${asc}" 2>/dev/null; then
+        warn "no .asc signature found for ${name} — skipping verification."
+        return 0
+    fi
+    local key="${TMPDIR}/signing-key.asc"
+    curl -fsSL "${SIGNING_KEY_URL}" -o "${key}" || { warn "could not fetch signing key — skipping verification."; return 0; }
+
+    local gnupghome="${TMPDIR}/gnupg"
+    mkdir -m 700 -p "${gnupghome}"
+    GNUPGHOME="${gnupghome}" gpg --batch --quiet --import "${key}" 2>/dev/null
+    if GNUPGHOME="${gnupghome}" gpg --batch --quiet --verify "${asc}" "${file}" 2>/dev/null; then
+        log "Signature OK for ${name}."
+    else
+        die "GPG signature verification FAILED for ${name}. Aborting — the download may be corrupt or tampered with. Re-run with --no-verify to override (not recommended)."
+    fi
+}
+
+download_asset() { # download_asset <asset-name> → prints path to downloaded file
+    local name="$1"
+    local url="https://github.com/${REPO}/releases/download/${LATEST}/${name}"
+    local dest="${TMPDIR}/${name}"
+    log "Downloading ${name} ..."
+    curl -fL --progress-bar "${url}" -o "${dest}" >&2 || die "download failed: ${url}"
+    verify_signature "${dest}" "${name}" >&2
+    echo "${dest}"
+}
+
+confirm() { # confirm <prompt>
+    [[ ${ASSUME_YES} -eq 1 ]] && return 0
+    local reply=""
+    read -r -p "$1 [y/N] " reply 2>/dev/null </dev/tty || true
+    [[ "${reply}" =~ ^[Yy]$ ]]
+}
+
+report_and_maybe_exit() { # report_and_maybe_exit <current> <latest>
+    local current="$1" latest="$2"
+    echo "Installed : ${current:-(not detected)}"
+    echo "Available : ${latest}"
+    if [[ ${CHECK_ONLY} -eq 1 ]]; then
+        exit 0
+    fi
+    if [[ -n "${current}" ]] && ! is_newer "${current}" "${latest}" && [[ ${FORCE} -eq 0 ]]; then
+        echo "WarmDesk is already up to date."
+        exit 0
+    fi
+}
+
+# ── macOS ──────────────────────────────────────────────────────────────────────
+update_macos() {
+    local app="${CUSTOM_PATH:-${APP_BUNDLE_DEFAULT}}"
+    local current=""
+    if [[ -d "${app}" ]]; then
+        current="$(defaults read "${app}/Contents/Info.plist" CFBundleShortVersionString 2>/dev/null || true)"
+    fi
+
+    report_and_maybe_exit "${current}" "${LATEST}"
+
+    confirm "Install WarmDesk ${LATEST} to ${app}?" || { echo "Aborted."; exit 1; }
+
+    if pgrep -f "${app}" >/dev/null 2>&1; then
+        log "WarmDesk is running — asking it to quit..."
+        osascript -e 'tell application "WarmDesk" to quit' >/dev/null 2>&1 || true
+        for _ in 1 2 3 4 5; do
+            pgrep -f "${app}" >/dev/null 2>&1 || break
+            sleep 1
+        done
+        if pgrep -f "${app}" >/dev/null 2>&1; then
+            die "WarmDesk is still running. Quit it manually and re-run this script."
+        fi
+    fi
+
+    local dmg
+    dmg="$(download_asset "WarmDesk-${LATEST}-universal.dmg")"
+
+    log "Mounting disk image..."
+    local mount_output mount_point
+    mount_output="$(hdiutil attach -nobrowse "${dmg}")" || die "hdiutil attach failed for ${dmg}."
+    mount_point="$(echo "${mount_output}" | grep -Eo '/Volumes/[^	]*' | tail -1)"
+    [[ -n "${mount_point}" ]] || die "could not determine mount point for ${dmg}."
+    trap 'hdiutil detach "${mount_point}" -quiet >/dev/null 2>&1 || true; rm -rf "${TMPDIR}"' EXIT
+
+    local src_app
+    src_app="$(find "${mount_point}" -maxdepth 1 -iname "*.app" | head -1)"
+    [[ -n "${src_app}" ]] || die "no .app bundle found in ${dmg}."
+
+    log "Installing to ${app} ..."
+    rm -rf "${app}" 2>/dev/null || sudo rm -rf "${app}"
+    if ! ditto "${src_app}" "${app}" 2>/dev/null; then
+        sudo ditto "${src_app}" "${app}"
+    fi
+
+    hdiutil detach "${mount_point}" -quiet >/dev/null 2>&1 || true
+    trap 'rm -rf "${TMPDIR}"' EXIT
+
+    echo "Done — WarmDesk updated to ${LATEST}. Open it from Applications or Spotlight."
+}
+
+# ── Linux ──────────────────────────────────────────────────────────────────────
+detect_linux_binary_version() {
+    local bin
+    bin="$(command -v "${BIN_NAME}" 2>/dev/null || true)"
+    [[ -z "${bin}" ]] && [[ -x "/usr/bin/${BIN_NAME}" ]] && bin="/usr/bin/${BIN_NAME}"
+    [[ -n "${bin}" ]] || return 0
+    "${bin}" --version 2>/dev/null | sed -n 's/^WarmDesk \(.*\)$/\1/p'
+}
+
+find_appimage() {
+    [[ -n "${CUSTOM_PATH}" ]] && { echo "${CUSTOM_PATH}"; return; }
+    [[ -n "${APPIMAGE:-}" ]] && { echo "${APPIMAGE}"; return; }
+    local candidates=(
+        "${HOME}/Applications/WarmDesk"*.AppImage
+        "${HOME}/.local/bin/WarmDesk"*.AppImage
+        "${HOME}/Downloads/WarmDesk"*.AppImage
+        "${HOME}/WarmDesk"*.AppImage
+    )
+    local f
+    for f in "${candidates[@]}"; do
+        [[ -f "${f}" ]] && { echo "${f}"; return; }
+    done
+}
+
+update_linux() {
+    case "$(uname -m)" in
+        x86_64) ;;
+        *) die "only x86_64 desktop builds are published for Linux (found $(uname -m))." ;;
+    esac
+
+    local method=""
+    if command -v dpkg >/dev/null 2>&1 && dpkg -s "${PKG_NAME}" >/dev/null 2>&1; then
+        method="deb"
+    elif command -v rpm >/dev/null 2>&1 && rpm -q "${PKG_NAME}" >/dev/null 2>&1; then
+        method="rpm"
+    else
+        local appimage
+        appimage="$(find_appimage)" || true
+        if [[ -n "${appimage}" ]]; then
+            method="appimage"
+            CUSTOM_PATH="${appimage}"
+        fi
+    fi
+    [[ -n "${method}" ]] || die "could not detect how WarmDesk is installed. If you're using the AppImage, pass its location: --path /path/to/WarmDesk-*.AppImage"
+
+    local current=""
+    if [[ "${method}" == "appimage" ]]; then
+        current="$("${CUSTOM_PATH}" --version 2>/dev/null | sed -n 's/^WarmDesk \(.*\)$/\1/p' || true)"
+    else
+        current="$(detect_linux_binary_version)" || true
+    fi
+
+    report_and_maybe_exit "${current}" "${LATEST}"
+
+    case "${method}" in
+        deb)
+            confirm "Install WarmDesk ${LATEST} (.deb) via dpkg? (requires sudo)" || { echo "Aborted."; exit 1; }
+            local deb_file
+            deb_file="$(download_asset "WarmDesk-${LATEST}-amd64.deb")"
+            log "Installing (sudo dpkg -i)..."
+            sudo dpkg -i "${deb_file}" || sudo apt-get install -f -y
+            ;;
+        rpm)
+            confirm "Install WarmDesk ${LATEST} (.rpm)? (requires sudo)" || { echo "Aborted."; exit 1; }
+            local rpm_file
+            rpm_file="$(download_asset "WarmDesk-${LATEST}-x86_64.rpm")"
+            log "Installing..."
+            if command -v dnf >/dev/null 2>&1; then
+                sudo dnf install -y "${rpm_file}"
+            elif command -v yum >/dev/null 2>&1; then
+                sudo yum install -y "${rpm_file}"
+            else
+                sudo rpm -Uvh "${rpm_file}"
+            fi
+            ;;
+        appimage)
+            confirm "Replace ${CUSTOM_PATH} with WarmDesk ${LATEST}?" || { echo "Aborted."; exit 1; }
+            local new_appimage
+            new_appimage="$(download_asset "WarmDesk-${LATEST}-x86_64.AppImage")"
+            chmod +x "${new_appimage}"
+            if ! mv "${new_appimage}" "${CUSTOM_PATH}" 2>/dev/null; then
+                cp "${new_appimage}" "${CUSTOM_PATH}"
+            fi
+            ;;
+    esac
+
+    echo "Done — WarmDesk updated to ${LATEST}. Restart WarmDesk to use the new version."
+}
+
+# ── Entry point ────────────────────────────────────────────────────────────────
+case "$(uname -s)" in
+    Darwin) update_macos ;;
+    Linux)  update_linux ;;
+    *) die "unsupported platform $(uname -s). This script covers Linux and macOS only." ;;
+esac
