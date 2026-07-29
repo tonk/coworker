@@ -8,10 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.18.2)
+## Latest release (v0.19.0)
 
-- **Fixed** — Time-tracking calendar click/drag-to-create-entry could land on the wrong time on the Tauri Linux desktop app, thrown off by scrolling, zoom level, or display scaling; also, the 00:00 label sat right on the grid's top border.
-- **Fixed** — Desktop tray icon's "Show WarmDesk" could hide the window instead of bringing it to front when it was already open but not focused.
+- **Added** — Customer locations: multiple addresses per customer with contact person and a standard travel distance, managed from a new "Locations" tab in customer settings.
+- **Added** — Time tracking now auto-fills travel distance from a customer's location, in both the weekly grid and the calendar view, while staying freely editable for day-to-day variation.
+- **Added** — `deploy/update_warmdesk_client` script to update the Tauri desktop client to the latest GitHub release on Linux and macOS.
 
 ## Experiment
 
@@ -114,7 +115,7 @@ warmdesk.exe --url=http://localhost:8080
 
 A seed tool is included in the distribution to populate the database with
 realistic demo content (users, projects, cards, comments, time entries, topics,
-conversations, and system settings including company branding):
+conversations, customer locations, and system settings including company branding):
 
 ```bash
 cd dist
@@ -330,6 +331,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 ## Features
 
 - **Customer / Contract / Project hierarchy** — customers are top-level entities; contracts sit under a customer; projects can be linked to a customer and optionally to a contract; manage from the Customers page or from Project Settings; customers (including time-tracking-only ones) can be given a color, used to color-code the time-tracking calendar view
+- **Customer locations** — a customer can have multiple locations, each with a full address (line 1/2, city, postcode, region, country), phone number, contact person (name, email, phone), and a standard travel distance; managed from the customer detail page's Locations tab
 - **Customers sidebar** — starred customers listed in the sidebar with star/unstar toggle; dedicated Customers page (`/customers`) with grid view and full Customer detail page
 - **Sub-cards** — add child cards (one level deep) inside a parent card's detail view; hidden from the board; parent card shows a done/total progress pill; each sub-card has its own card number, assignees, labels, and comments; opening a sub-card shows a ← back link to return to the parent
 - **Kanban boards** — columns, cards, drag-and-drop reorder, labels, priorities, start date, due dates, assignees, watchers, markdown descriptions and comments; configurable card prefix set at creation time (e.g. `PRJ`, `SHOP`, `API`) used in all card references like `PRJ-42`; primary and extra assignee avatars shown on card tiles
@@ -344,6 +346,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Linked cards (cross-references)** — link any two cards across projects; linked cards appear in the card detail with their reference, title, current column, and open/closed status; opening a linked card shows a ← back link to return to the originating card; remove a link at any time
 - **Comment replies** — reply to any comment; replies are visually indented
 - **Time tracking** — log hours and minutes spent directly on a card; the weekly timesheet also supports time-tracking-only projects and customers (lightweight entries that don't create a board or CRM record), managed via the ⚙ button in the time-tracking view; each time-tracking project can carry an *undeclarable minutes* value (travel time, holidays, etc.) that is automatically subtracted from totals in the sheet, report, PDF, and XLSX export
+- **Travel distance auto-fill** — pick one of a customer's locations from the weekly grid (add row, edit row, or the per-cell distance popup) or the calendar entry editor to auto-fill the standard travel distance, staying freely editable for day-to-day variation; re-picking a row's location also corrects that week's already-logged distances
 - **Time tracking calendar view** — toggle the Log Time tab between the weekly table and a drag-and-drop calendar: entries render as blocks positioned by start/end time, draggable to move between days/times and resizable to change duration; right-click or click-drag an empty slot to create a new entry; zoomable grid density (remembered per browser); blocks color-coded per customer or per project (switchable via a "Calendar block color" user setting); a "Log Time view" user setting picks which one opens by default
 - **Global search** — the search bar in the header matches card titles/descriptions, card comments, chat and direct messages, ticket subjects, and time-entry descriptions, scoped to what you have access to; clicking a comment or time-entry result jumps straight to and highlights it
 - **Search & replace** — find and replace text across cards, card comments, direct messages, tickets, and time entries; pick which categories to include, preview every match (with a before/after snippet) before anything changes, and matches you don't have permission to edit are shown greyed out and can't be applied; the 20-per-category preview limit is adjustable up to 500

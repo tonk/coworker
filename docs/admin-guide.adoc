@@ -1,6 +1,6 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.18.2
-:revdate: 2026-07-27
+:revnumber: v0.19.0
+:revdate: 2026-07-29
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -899,6 +899,31 @@ Contacts are informational — they are not WarmDesk user accounts and have no l
 |*Primary contact*
 |When enabled, marks this as the primary contact for the customer (only one contact may be primary at a time)
 |===
+
+==== Locations
+
+Each customer can have any number of physical locations (*Customers → (click customer) → Locations*).
+
+[cols="1,3", options="header"]
+|===
+|Field |Purpose
+
+|*Address line 1 / 2, city, postcode, region, country*
+|Full postal address of the location
+
+|*Phone*
+|Site phone number
+
+|*Contact name / email / phone*
+|Contact person at that location
+
+|*Travel distance*
+|Standard one-way travel distance to this location, in the unit set by each user's *Distance unit* preference (km or mi)
+|===
+
+The travel distance feeds time tracking: a *Location* dropdown appears wherever an entry's distance can be set (the weekly grid's add-row and edit-row forms, the per-cell distance popup, and the calendar entry editor), auto-filling the distance field from the picked location.
+The filled-in value stays freely editable per entry — picking a location only sets a starting value.
+Re-picking a different location for a row also updates that week's already-logged entries that already have a distance set, so correcting a row's location fixes the whole week at once instead of just new entries.
 
 ==== Invoices
 
@@ -1945,7 +1970,7 @@ cd dist
 * Multiple columns per project with realistic cards including checklists, labels, priorities, start dates, due dates, time entries, and card cross-references
 * Threaded topics per project
 * 4 direct message conversations and 1 group chat with realistic history
-* 3 customers (Acme Corporation, Globex Systems, Initech Ltd) with contracts linked to projects
+* 3 customers (Acme Corporation, Globex Systems, Initech Ltd) with contracts linked to projects, and 2-3 locations each (address, contact person, and travel distance)
 * 3 groups: Frontend Team, DevOps Team, Acme Stakeholders (with members and project/customer access pre-configured)
 * Favorite projects pre-set for each demo user (e.g. admin has all three; owners have their own project plus one adjacent)
 * Favorite customers pre-set (Acme starred for admin, sarah, marc; Globex for marc, lisa)

@@ -1,6 +1,6 @@
 = WarmDesk — User Guide
-:revnumber: v0.18.2
-:revdate: 2026-07-27
+:revnumber: v0.19.0
+:revdate: 2026-07-29
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -958,6 +958,11 @@ Symbols that appear on hover (cell buttons) also stay visible when active (e.g. 
 |*Set Time Range* (bottom-left of a day cell, on hover) — opens the time-range popup for that cell.
 Highlighted in the primary colour when a range is stored (see the blue dot).
 
+|⇆
+|*Set Distance* (bottom-left of a day cell, on hover) — opens the distance popup for that cell.
+Highlighted when a distance is stored.
+If the row's customer has a location with a standard travel distance, a *Location* dropdown appears in the popup to auto-fill it — see <<travel-distance-auto-fill,Travel distance auto-fill>>.
+
 |✦
 |*Extra time slots* (next to the rate in the *Rate* column) — this row's contract has alternate rate tiers for certain days or times.
 Hover to see the full list.
@@ -1051,8 +1056,17 @@ Multi-day overnight slots (e.g. a Friday standby that runs until Monday 07:00) a
 Each row's customer, project, and activity can be changed after the row exists.
 
 * Click ✎ *Edit* in the *Actions* column, or *double-click* the customer/project cell or the activity cell.
-* Update customer, project, contract (when available), and activity, then click ✓ to save or ✕ to cancel.
+* Update customer, project, contract (when available), location (when available), and activity, then click ✓ to save or ✕ to cancel.
 * Existing time entries on that row are updated to match the new customer/project/activity combination.
+
+[[travel-distance-auto-fill]]
+=== Travel distance auto-fill
+
+If a customer has one or more <<customers,locations>> with a standard travel distance set, a *Location* dropdown appears wherever a row's distance can be set — the *Add row* form, the *Edit row* form, and the per-cell distance popup (see the icons table above).
+Picking a location fills the distance field with that location's standard distance, which you can still edit afterward for day-to-day variation (traffic, road closures, etc.).
+
+Re-picking a different location for a row also corrects that week's *already-logged* entries: any day this week that already has a distance recorded for that row is updated to the newly picked location's distance.
+Days deliberately left blank (no travel that day) are left alone.
 
 [[cell-selection-copy-cut-paste]]
 === Cell selection, copy, cut, and paste
@@ -1131,6 +1145,7 @@ Blocks are coloured by customer by default, or by project if you switch the *Cal
 |===
 
 Every drag/resize action can also be done by keyboard: tab to a block and press kbd:[Enter] to open its edit form, which lets you change the date, start time, end time, customer, project, activity, and distance directly.
+If the selected customer has a location with a standard travel distance, a *Location* dropdown appears to auto-fill the distance field — see <<travel-distance-auto-fill,Travel distance auto-fill>>.
 
 [[time-macros]]
 === Time macros
@@ -1578,6 +1593,14 @@ The *Contacts* section lists the contact persons for the customer (name, role, e
 Contacts are informational records — they are not WarmDesk user accounts.
 
 Customer-admins and global admins can add, edit, and delete contacts.
+
+==== Locations
+
+The *Locations* section lists the customer's physical locations — each with a full address (address line 1/2, city, postcode, region, country), phone number, a contact person (name, email, phone), and a standard *travel distance*.
+
+Customer-admins and global admins can add, edit, and delete locations.
+
+The travel distance set here can be picked in <<log-time,time tracking>> to auto-fill an entry's distance field — see <<travel-distance-auto-fill,Travel distance auto-fill>>.
 
 ==== Invoices
 

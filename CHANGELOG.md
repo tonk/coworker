@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.19.0 — 2026-07-29
+
+### Added
+- **Customer locations** — customers can now have multiple locations under a new "Locations" tab in customer settings, each with a full address (line 1/2, city, postcode, region, country), phone number, contact person (name, email, phone), and a standard travel distance.
+- **Time tracking auto-fills travel distance from customer locations** — a location picker in the weekly grid (add row, edit row, and the per-cell distance popup) and in the calendar entry editor lets you pick a customer's location and auto-fills the distance field from it. The value stays freely editable afterward for day-to-day variation (traffic, road closures, etc.). Re-picking a row's location also corrects that week's already-logged distances, not just new entries going forward.
+- **`deploy/update_warmdesk_client` script** — updates the Tauri desktop client to the latest GitHub release on Linux (.deb/.rpm/AppImage, auto-detected) and macOS (.app in /Applications), verifying the GPG detached signature when available.
+
+### Fixed
+- **Time-tracking weekly grid — editing an entry's hours, or renaming a row's customer/project, silently wiped its saved travel distance** (and renaming also dropped the assigned contract) because the save requests omitted those fields entirely instead of preserving them.
+
 ## v0.18.2 — 2026-07-27
 
 ### Fixed
