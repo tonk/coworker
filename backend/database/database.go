@@ -10,12 +10,12 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/glebarez/sqlite"
 	mysqldriver "github.com/go-sql-driver/mysql"
 	"github.com/tonk/warmdesk/config"
 	"github.com/tonk/warmdesk/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
-	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
@@ -205,8 +205,8 @@ func applyMySQLTLS(cfg *config.Config) (string, error) {
 // key_prefix before AutoMigrate adds the unique index.
 //
 // The tricky case is a database that predates the key_prefix column entirely:
-// AutoMigrate would add the column (DEFAULT '') and the unique index in one
-// step, which fails immediately because every existing row gets ''.
+// AutoMigrate would add the column (DEFAULT ”) and the unique index in one
+// step, which fails immediately because every existing row gets ”.
 //
 // To handle that we add the column ourselves — without the unique index — if
 // it is not already present, then fill and deduplicate, and finally let
@@ -473,6 +473,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&models.Invoice{},
 		&models.InvoiceTemplate{},
 		&models.CustomerContact{},
+		&models.CustomerLocation{},
 	)
 	if err != nil {
 		return err

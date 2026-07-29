@@ -61,6 +61,14 @@
           @click="activeTab = 'contacts'"
         >{{ $t('customer.contacts') }}</button>
         <button
+          id="tab-btn-locations"
+          role="tab"
+          :aria-selected="activeTab === 'locations'"
+          aria-controls="tab-panel-locations"
+          :class="['tab', { active: activeTab === 'locations' }]"
+          @click="activeTab = 'locations'"
+        >{{ $t('customer.locations') }}</button>
+        <button
           v-if="auth.helpdeskEnabled"
           id="tab-btn-tickets"
           role="tab"
@@ -329,6 +337,46 @@
 
       </div><!-- end tab-panel-contacts -->
 
+      <!-- Locations tab -->
+      <div id="tab-panel-locations" role="tabpanel" aria-labelledby="tab-btn-locations" v-show="activeTab === 'locations'">
+
+      <!-- Locations section -->
+      <section class="locations-section">
+        <div class="section-header-row">
+          <h2>{{ $t('customer.locations') }}</h2>
+          <button v-if="canManage" class="btn btn-primary btn-sm" @click="openAddLocation">+ {{ $t('customer.add_location') }}</button>
+        </div>
+        <div v-if="!locations.length" class="empty-state-sm" style="padding:16px 0">
+          {{ $t('customer.no_locations') }}
+        </div>
+        <div v-else class="locations-list">
+          <div v-for="loc in locations" :key="loc.id" class="location-row">
+            <div class="location-info">
+              <span v-if="formatLocationAddress(loc)" class="location-detail">
+                <span aria-hidden="true">📍</span> {{ formatLocationAddress(loc) }}
+              </span>
+              <span v-if="loc.phone" class="location-detail">
+                <span aria-hidden="true">📞</span> {{ loc.phone }}
+              </span>
+              <span v-if="loc.contact_name" class="location-detail">{{ loc.contact_name }}</span>
+              <span v-if="loc.contact_email" class="location-detail">
+                <span aria-hidden="true">✉</span> {{ loc.contact_email }}
+              </span>
+              <span v-if="loc.contact_phone" class="location-detail">
+                <span aria-hidden="true">📞</span> {{ loc.contact_phone }}
+              </span>
+              <span v-if="loc.travel_distance != null" class="location-detail">{{ loc.travel_distance }} {{ distanceUnit }}</span>
+            </div>
+            <div v-if="canManage" class="contact-actions">
+              <button class="btn btn-sm" @click="openEditLocation(loc)" :aria-label="$t('customer.edit_location') + ': ' + (formatLocationAddress(loc) || loc.id)">✎</button>
+              <button class="icon-btn icon-danger" @click="removeLocation(loc)" :aria-label="$t('common.delete') + ' ' + (formatLocationAddress(loc) || loc.id)">✕</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      </div><!-- end tab-panel-locations -->
+
     </template>
 
     <!-- Add / edit contact modal -->
@@ -360,6 +408,66 @@
       <template #footer>
         <button class="btn" @click="showContactModal = false">{{ $t('common.cancel') }}</button>
         <button class="btn btn-primary" :disabled="!contactForm.name.trim()" @click="saveContact">{{ $t('common.save') }}</button>
+      </template>
+    </BaseModal>
+
+    <!-- Add / edit location modal -->
+    <BaseModal
+      v-if="showLocationModal"
+      :title="editingLocation ? $t('customer.edit_location') : $t('customer.add_location')"
+      @close="showLocationModal = false"
+    >
+      <div class="form-group">
+        <label class="form-label" for="loc-address1">{{ $t('customer.location_address_line1') }}</label>
+        <input id="loc-address1" class="form-input" type="text" v-model="locationForm.address_line1" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loc-address2">{{ $t('customer.location_address_line2') }}</label>
+        <input id="loc-address2" class="form-input" type="text" v-model="locationForm.address_line2" />
+      </div>
+      <div class="form-group form-row">
+        <div class="form-group half">
+          <label class="form-label" for="loc-postal">{{ $t('customer.location_postal_code') }}</label>
+          <input id="loc-postal" class="form-input" v-model="locationForm.postal_code" />
+        </div>
+        <div class="form-group half">
+          <label class="form-label" for="loc-city">{{ $t('customer.location_city') }}</label>
+          <input id="loc-city" class="form-input" v-model="locationForm.city" />
+        </div>
+      </div>
+      <div class="form-group form-row">
+        <div class="form-group half">
+          <label class="form-label" for="loc-region">{{ $t('customer.location_region') }}</label>
+          <input id="loc-region" class="form-input" v-model="locationForm.region" />
+        </div>
+        <div class="form-group half">
+          <label class="form-label" for="loc-country">{{ $t('customer.location_country') }}</label>
+          <input id="loc-country" class="form-input" v-model="locationForm.country" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loc-phone">{{ $t('customer.location_phone') }}</label>
+        <input id="loc-phone" class="form-input" type="tel" v-model="locationForm.phone" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loc-contact-name">{{ $t('customer.location_contact_name') }}</label>
+        <input id="loc-contact-name" class="form-input" type="text" v-model="locationForm.contact_name" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loc-contact-email">{{ $t('customer.location_contact_email') }}</label>
+        <input id="loc-contact-email" class="form-input" type="email" v-model="locationForm.contact_email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loc-contact-phone">{{ $t('customer.location_contact_phone') }}</label>
+        <input id="loc-contact-phone" class="form-input" type="tel" v-model="locationForm.contact_phone" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loc-travel-distance">{{ $t('customer.location_travel_distance', { unit: distanceUnit }) }}</label>
+        <input id="loc-travel-distance" class="form-input" type="number" step="0.1" min="0" v-model.number="locationForm.travel_distance" />
+      </div>
+      <template #footer>
+        <button class="btn" @click="showLocationModal = false">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-primary" @click="saveLocation">{{ $t('common.save') }}</button>
       </template>
     </BaseModal>
 
@@ -972,7 +1080,7 @@ const distanceUnit = computed(() => auth.user?.distance_unit || 'km')
 
 const loading = ref(true)
 const detail = ref(null)
-const VALID_TABS = ['overview', 'invoices', 'contacts']
+const VALID_TABS = ['overview', 'invoices', 'contacts', 'locations']
 const activeTab = ref(VALID_TABS.includes(route.query.tab) ? route.query.tab : 'overview')
 
 const showEdit = ref(false)
@@ -1418,6 +1526,80 @@ async function removeContact(ct) {
     contacts.value = contacts.value.filter(c => c.id !== ct.id)
   } catch {
     ui.error('Failed to delete contact')
+  }
+}
+
+// ── Locations ────────────────────────────────────────────────────────────────
+const locations = ref([])
+const showLocationModal = ref(false)
+const editingLocation = ref(null)
+const emptyLocationForm = () => ({
+  address_line1: '', address_line2: '', city: '', postal_code: '', region: '', country: '',
+  phone: '', contact_name: '', contact_email: '', contact_phone: '', travel_distance: null,
+})
+const locationForm = ref(emptyLocationForm())
+
+watch(() => detail.value?.locations, (v) => { if (v) locations.value = [...v] }, { immediate: true })
+
+function formatLocationAddress(loc) {
+  const addressLines = [loc.address_line1, loc.address_line2].filter(Boolean).join(', ')
+  const cityLine = [loc.postal_code, loc.city].filter(Boolean).join(' ')
+  return [addressLines, cityLine, loc.region, loc.country].filter(Boolean).join(', ')
+}
+
+function openAddLocation() {
+  editingLocation.value = null
+  locationForm.value = emptyLocationForm()
+  showLocationModal.value = true
+}
+
+function openEditLocation(loc) {
+  editingLocation.value = loc
+  locationForm.value = {
+    address_line1: loc.address_line1 || '',
+    address_line2: loc.address_line2 || '',
+    city: loc.city || '',
+    postal_code: loc.postal_code || '',
+    region: loc.region || '',
+    country: loc.country || '',
+    phone: loc.phone || '',
+    contact_name: loc.contact_name || '',
+    contact_email: loc.contact_email || '',
+    contact_phone: loc.contact_phone || '',
+    travel_distance: loc.travel_distance ?? null,
+  }
+  showLocationModal.value = true
+}
+
+async function saveLocation() {
+  const payload = {
+    ...locationForm.value,
+    travel_distance: locationForm.value.travel_distance === '' || locationForm.value.travel_distance == null
+      ? null
+      : Number(locationForm.value.travel_distance),
+  }
+  try {
+    if (editingLocation.value) {
+      const { data } = await customersApi.updateLocation(custId.value, editingLocation.value.id, payload)
+      const idx = locations.value.findIndex(l => l.id === data.id)
+      if (idx >= 0) locations.value.splice(idx, 1, data)
+    } else {
+      const { data } = await customersApi.createLocation(custId.value, payload)
+      locations.value.push(data)
+    }
+    showLocationModal.value = false
+  } catch {
+    ui.error('Failed to save location')
+  }
+}
+
+async function removeLocation(loc) {
+  if (!await ui.confirm(t('customer.delete_location_confirm'), { destructive: true })) return
+  try {
+    await customersApi.deleteLocation(custId.value, loc.id)
+    locations.value = locations.value.filter(l => l.id !== loc.id)
+  } catch {
+    ui.error('Failed to delete location')
   }
 }
 
@@ -2195,6 +2377,23 @@ async function deleteContract(grp) {
 }
 
 .contact-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.locations-section { margin-top: 32px; }
+
+.locations-list { display: flex; flex-direction: column; gap: 8px; }
+
+.location-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.location-info { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.location-detail { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
 
 .form-check-row { display: flex; align-items: center; gap: 8px; }
 .form-check-row input[type="checkbox"] { width: 16px; height: 16px; flex-shrink: 0; }

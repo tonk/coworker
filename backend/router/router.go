@@ -250,6 +250,10 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 			customers.POST("/:customerId/contacts", handlers.CreateContact)
 			customers.PUT("/:customerId/contacts/:contactId", handlers.UpdateContact)
 			customers.DELETE("/:customerId/contacts/:contactId", handlers.DeleteContact)
+			customers.GET("/:customerId/locations", handlers.ListLocations)
+			customers.POST("/:customerId/locations", handlers.CreateLocation)
+			customers.PUT("/:customerId/locations/:locationId", handlers.UpdateLocation)
+			customers.DELETE("/:customerId/locations/:locationId", handlers.DeleteLocation)
 			customers.GET("/:customerId/members", handlers.ListCustomerMembers)
 			customers.PUT("/:customerId/members", handlers.SetCustomerMembers)
 			// Group membership management delegated to customer owners
@@ -392,187 +396,187 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.POST("/backup", middleware.BackupAuth(), handlers.AdminBackupDatabase)
 
 		if !ttMode {
-		// Conversations (1-on-1 and group)
-		convs := protected.Group("/conversations")
-		convs.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("chat_enabled"))
-		{
-			convs.GET("", handlers.GetConversations)
-			convs.POST("", handlers.CreateConversation)
-			convs.GET("/:id/messages", handlers.GetConversationMessages)
-			convs.POST("/:id/messages", middleware.MessageRateLimit(), handlers.SendConversationMessage)
-			convs.PATCH("/:id/messages/:msgId", handlers.EditConversationMessage)
-			convs.DELETE("/:id/messages/:msgId", handlers.DeleteConversationMessage)
-			convs.DELETE("/:id", handlers.LeaveConversation)
-			convs.POST("/:id/members", handlers.AddConversationMember)
-			convs.DELETE("/:id/members/:userId", handlers.RemoveConversationMember)
-			convs.POST("/:id/avatar", handlers.UploadConversationAvatar)
-			convs.POST("/:id/messages/:msgId/reactions", handlers.ToggleConvReaction)
-			convs.GET("/:id/livekit-token", handlers.GetLiveKitToken)
-		}
+			// Conversations (1-on-1 and group)
+			convs := protected.Group("/conversations")
+			convs.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("chat_enabled"))
+			{
+				convs.GET("", handlers.GetConversations)
+				convs.POST("", handlers.CreateConversation)
+				convs.GET("/:id/messages", handlers.GetConversationMessages)
+				convs.POST("/:id/messages", middleware.MessageRateLimit(), handlers.SendConversationMessage)
+				convs.PATCH("/:id/messages/:msgId", handlers.EditConversationMessage)
+				convs.DELETE("/:id/messages/:msgId", handlers.DeleteConversationMessage)
+				convs.DELETE("/:id", handlers.LeaveConversation)
+				convs.POST("/:id/members", handlers.AddConversationMember)
+				convs.DELETE("/:id/members/:userId", handlers.RemoveConversationMember)
+				convs.POST("/:id/avatar", handlers.UploadConversationAvatar)
+				convs.POST("/:id/messages/:msgId/reactions", handlers.ToggleConvReaction)
+				convs.GET("/:id/livekit-token", handlers.GetLiveKitToken)
+			}
 
-		// Projects
-		projects := protected.Group("/projects")
-		projects.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("board_enabled"))
-		{
-			projects.GET("", handlers.ListProjects)
-			projects.POST("", handlers.CreateProject)
-			projects.PATCH("/reorder", handlers.ReorderProjects)
-			projects.GET("/:projectSlug", handlers.GetProject)
-			projects.PUT("/:projectSlug", handlers.UpdateProject)
-			projects.DELETE("/:projectSlug", handlers.DeleteProject)
+			// Projects
+			projects := protected.Group("/projects")
+			projects.Use(middleware.BlockCustomerRole(), middleware.RequireFeature("board_enabled"))
+			{
+				projects.GET("", handlers.ListProjects)
+				projects.POST("", handlers.CreateProject)
+				projects.PATCH("/reorder", handlers.ReorderProjects)
+				projects.GET("/:projectSlug", handlers.GetProject)
+				projects.PUT("/:projectSlug", handlers.UpdateProject)
+				projects.DELETE("/:projectSlug", handlers.DeleteProject)
 
-			// Members
-			projects.GET("/:projectSlug/members", handlers.ListMembers)
-			projects.POST("/:projectSlug/members", handlers.InviteMember)
-			projects.PUT("/:projectSlug/members/:userId/role", handlers.UpdateMemberRole)
-			// Group membership management delegated to project owners
-			projects.GET("/:projectSlug/groups", handlers.ListProjectGroups)
-			projects.POST("/:projectSlug/groups/:groupId/members", handlers.ProjectAddGroupMember)
-			projects.DELETE("/:projectSlug/groups/:groupId/members/:userId", handlers.ProjectRemoveGroupMember)
-			projects.DELETE("/:projectSlug/members/:userId", handlers.RemoveMember)
+				// Members
+				projects.GET("/:projectSlug/members", handlers.ListMembers)
+				projects.POST("/:projectSlug/members", handlers.InviteMember)
+				projects.PUT("/:projectSlug/members/:userId/role", handlers.UpdateMemberRole)
+				// Group membership management delegated to project owners
+				projects.GET("/:projectSlug/groups", handlers.ListProjectGroups)
+				projects.POST("/:projectSlug/groups/:groupId/members", handlers.ProjectAddGroupMember)
+				projects.DELETE("/:projectSlug/groups/:groupId/members/:userId", handlers.ProjectRemoveGroupMember)
+				projects.DELETE("/:projectSlug/members/:userId", handlers.RemoveMember)
 
-			// Labels
-			projects.GET("/:projectSlug/labels", handlers.ListLabels)
-			projects.POST("/:projectSlug/labels", handlers.CreateLabel)
-			projects.PUT("/:projectSlug/labels/:labelId", handlers.UpdateLabel)
-			projects.DELETE("/:projectSlug/labels/:labelId", handlers.DeleteLabel)
+				// Labels
+				projects.GET("/:projectSlug/labels", handlers.ListLabels)
+				projects.POST("/:projectSlug/labels", handlers.CreateLabel)
+				projects.PUT("/:projectSlug/labels/:labelId", handlers.UpdateLabel)
+				projects.DELETE("/:projectSlug/labels/:labelId", handlers.DeleteLabel)
 
-			// Columns
-			projects.GET("/:projectSlug/columns", handlers.ListColumns)
-			projects.POST("/:projectSlug/columns", handlers.CreateColumn)
-			projects.PUT("/:projectSlug/columns/:columnId", handlers.UpdateColumn)
-			projects.DELETE("/:projectSlug/columns/:columnId", handlers.DeleteColumn)
-			projects.PATCH("/:projectSlug/columns/reorder", handlers.ReorderColumns)
+				// Columns
+				projects.GET("/:projectSlug/columns", handlers.ListColumns)
+				projects.POST("/:projectSlug/columns", handlers.CreateColumn)
+				projects.PUT("/:projectSlug/columns/:columnId", handlers.UpdateColumn)
+				projects.DELETE("/:projectSlug/columns/:columnId", handlers.DeleteColumn)
+				projects.PATCH("/:projectSlug/columns/reorder", handlers.ReorderColumns)
 
-			// Cards
-			projects.GET("/:projectSlug/columns/:columnId/cards", handlers.ListCards)
-			projects.POST("/:projectSlug/columns/:columnId/cards", handlers.CreateCard)
-			projects.PATCH("/:projectSlug/columns/:columnId/cards/reorder", handlers.ReorderCards)
-			projects.GET("/:projectSlug/cards/:cardId", handlers.GetCard)
-			projects.PUT("/:projectSlug/cards/:cardId", handlers.UpdateCard)
-			projects.DELETE("/:projectSlug/cards/:cardId", handlers.DeleteCard)
-			projects.PATCH("/:projectSlug/cards/:cardId/move", handlers.MoveCard)
-			projects.POST("/:projectSlug/cards/:cardId/copy", handlers.CopyCard)
-			projects.POST("/:projectSlug/cards/:cardId/transfer", handlers.TransferCard)
-			projects.GET("/:projectSlug/cards/deleted", handlers.ListDeletedCards)
-			projects.DELETE("/:projectSlug/cards/:cardId/permanent", handlers.PermanentDeleteCard)
-			projects.POST("/:projectSlug/cards/:cardId/restore", handlers.RestoreCard)
-			projects.POST("/:projectSlug/cards/:cardId/labels/:labelId", handlers.AssignLabel)
-			projects.DELETE("/:projectSlug/cards/:cardId/labels/:labelId", handlers.RemoveLabel)
-			projects.PUT("/:projectSlug/cards/:cardId/assignee", handlers.UpdateAssignee)
-			projects.POST("/:projectSlug/cards/:cardId/watchers/:userId", handlers.AddWatcher)
-			projects.DELETE("/:projectSlug/cards/:cardId/watchers/:userId", handlers.RemoveWatcher)
-			projects.POST("/:projectSlug/cards/:cardId/tags", handlers.AddCardTag)
-			projects.DELETE("/:projectSlug/cards/:cardId/tags/:tagId", handlers.RemoveCardTag)
+				// Cards
+				projects.GET("/:projectSlug/columns/:columnId/cards", handlers.ListCards)
+				projects.POST("/:projectSlug/columns/:columnId/cards", handlers.CreateCard)
+				projects.PATCH("/:projectSlug/columns/:columnId/cards/reorder", handlers.ReorderCards)
+				projects.GET("/:projectSlug/cards/:cardId", handlers.GetCard)
+				projects.PUT("/:projectSlug/cards/:cardId", handlers.UpdateCard)
+				projects.DELETE("/:projectSlug/cards/:cardId", handlers.DeleteCard)
+				projects.PATCH("/:projectSlug/cards/:cardId/move", handlers.MoveCard)
+				projects.POST("/:projectSlug/cards/:cardId/copy", handlers.CopyCard)
+				projects.POST("/:projectSlug/cards/:cardId/transfer", handlers.TransferCard)
+				projects.GET("/:projectSlug/cards/deleted", handlers.ListDeletedCards)
+				projects.DELETE("/:projectSlug/cards/:cardId/permanent", handlers.PermanentDeleteCard)
+				projects.POST("/:projectSlug/cards/:cardId/restore", handlers.RestoreCard)
+				projects.POST("/:projectSlug/cards/:cardId/labels/:labelId", handlers.AssignLabel)
+				projects.DELETE("/:projectSlug/cards/:cardId/labels/:labelId", handlers.RemoveLabel)
+				projects.PUT("/:projectSlug/cards/:cardId/assignee", handlers.UpdateAssignee)
+				projects.POST("/:projectSlug/cards/:cardId/watchers/:userId", handlers.AddWatcher)
+				projects.DELETE("/:projectSlug/cards/:cardId/watchers/:userId", handlers.RemoveWatcher)
+				projects.POST("/:projectSlug/cards/:cardId/tags", handlers.AddCardTag)
+				projects.DELETE("/:projectSlug/cards/:cardId/tags/:tagId", handlers.RemoveCardTag)
 
-			// Sub-cards
-			projects.GET("/:projectSlug/cards/:cardId/subcards", handlers.ListSubCards)
-			projects.POST("/:projectSlug/cards/:cardId/subcards", handlers.CreateSubCard)
+				// Sub-cards
+				projects.GET("/:projectSlug/cards/:cardId/subcards", handlers.ListSubCards)
+				projects.POST("/:projectSlug/cards/:cardId/subcards", handlers.CreateSubCard)
 
-			// Card history
-			projects.GET("/:projectSlug/cards/:cardId/history", handlers.GetCardHistory)
+				// Card history
+				projects.GET("/:projectSlug/cards/:cardId/history", handlers.GetCardHistory)
 
-			// Card git links
-			projects.GET("/:projectSlug/cards/:cardId/links", handlers.ListCardLinks)
+				// Card git links
+				projects.GET("/:projectSlug/cards/:cardId/links", handlers.ListCardLinks)
 
-			// Card cross-references
-			projects.GET("/:projectSlug/cards/:cardId/refs", handlers.ListCardRefs)
-			projects.POST("/:projectSlug/cards/:cardId/refs", handlers.CreateCardRef)
-			projects.DELETE("/:projectSlug/cards/:cardId/refs/:refId", handlers.DeleteCardRef)
+				// Card cross-references
+				projects.GET("/:projectSlug/cards/:cardId/refs", handlers.ListCardRefs)
+				projects.POST("/:projectSlug/cards/:cardId/refs", handlers.CreateCardRef)
+				projects.DELETE("/:projectSlug/cards/:cardId/refs/:refId", handlers.DeleteCardRef)
 
-			// Ticket links (card side)
-			projects.GET("/:projectSlug/cards/:cardId/tickets", handlers.ListCardTicketLinks)
+				// Ticket links (card side)
+				projects.GET("/:projectSlug/cards/:cardId/tickets", handlers.ListCardTicketLinks)
 
-			// Card comments
-			projects.GET("/:projectSlug/cards/:cardId/comments", handlers.ListComments)
-			projects.POST("/:projectSlug/cards/:cardId/comments", handlers.CreateComment)
-			projects.PUT("/:projectSlug/cards/:cardId/comments/:commentId", handlers.UpdateComment)
-			projects.DELETE("/:projectSlug/cards/:cardId/comments/:commentId", handlers.DeleteComment)
+				// Card comments
+				projects.GET("/:projectSlug/cards/:cardId/comments", handlers.ListComments)
+				projects.POST("/:projectSlug/cards/:cardId/comments", handlers.CreateComment)
+				projects.PUT("/:projectSlug/cards/:cardId/comments/:commentId", handlers.UpdateComment)
+				projects.DELETE("/:projectSlug/cards/:cardId/comments/:commentId", handlers.DeleteComment)
 
-			// Card checklist
-			projects.GET("/:projectSlug/cards/:cardId/checklist", handlers.ListChecklistItems)
-			projects.POST("/:projectSlug/cards/:cardId/checklist", handlers.CreateChecklistItem)
-			projects.PATCH("/:projectSlug/cards/:cardId/checklist/reorder", handlers.ReorderChecklistItems)
-			projects.PUT("/:projectSlug/cards/:cardId/checklist/:itemId", handlers.UpdateChecklistItem)
-			projects.DELETE("/:projectSlug/cards/:cardId/checklist/:itemId", handlers.DeleteChecklistItem)
+				// Card checklist
+				projects.GET("/:projectSlug/cards/:cardId/checklist", handlers.ListChecklistItems)
+				projects.POST("/:projectSlug/cards/:cardId/checklist", handlers.CreateChecklistItem)
+				projects.PATCH("/:projectSlug/cards/:cardId/checklist/reorder", handlers.ReorderChecklistItems)
+				projects.PUT("/:projectSlug/cards/:cardId/checklist/:itemId", handlers.UpdateChecklistItem)
+				projects.DELETE("/:projectSlug/cards/:cardId/checklist/:itemId", handlers.DeleteChecklistItem)
 
-			// Card assignees (multiple)
-			projects.POST("/:projectSlug/cards/:cardId/assignees/:userId", handlers.AddCardAssignee)
-			projects.DELETE("/:projectSlug/cards/:cardId/assignees/:userId", handlers.RemoveCardAssignee)
+				// Card assignees (multiple)
+				projects.POST("/:projectSlug/cards/:cardId/assignees/:userId", handlers.AddCardAssignee)
+				projects.DELETE("/:projectSlug/cards/:cardId/assignees/:userId", handlers.RemoveCardAssignee)
 
-			// Topics (threaded project discussions)
-			projects.GET("/:projectSlug/topics", handlers.ListTopics)
-			projects.POST("/:projectSlug/topics", handlers.CreateTopic)
-			projects.GET("/:projectSlug/topics/:topicId", handlers.GetTopic)
-			projects.PUT("/:projectSlug/topics/:topicId", handlers.UpdateTopic)
-			projects.DELETE("/:projectSlug/topics/:topicId", handlers.DeleteTopic)
-			projects.POST("/:projectSlug/topics/:topicId/replies", handlers.CreateTopicReply)
-			projects.PUT("/:projectSlug/topics/:topicId/replies/:replyId", handlers.UpdateTopicReply)
-			projects.DELETE("/:projectSlug/topics/:topicId/replies/:replyId", handlers.DeleteTopicReply)
+				// Topics (threaded project discussions)
+				projects.GET("/:projectSlug/topics", handlers.ListTopics)
+				projects.POST("/:projectSlug/topics", handlers.CreateTopic)
+				projects.GET("/:projectSlug/topics/:topicId", handlers.GetTopic)
+				projects.PUT("/:projectSlug/topics/:topicId", handlers.UpdateTopic)
+				projects.DELETE("/:projectSlug/topics/:topicId", handlers.DeleteTopic)
+				projects.POST("/:projectSlug/topics/:topicId/replies", handlers.CreateTopicReply)
+				projects.PUT("/:projectSlug/topics/:topicId/replies/:replyId", handlers.UpdateTopicReply)
+				projects.DELETE("/:projectSlug/topics/:topicId/replies/:replyId", handlers.DeleteTopicReply)
 
-			// Chat history
-			projects.GET("/:projectSlug/chat/messages", handlers.ListChatMessages)
-			projects.DELETE("/:projectSlug/chat/messages/:msgId", handlers.DeleteChatMessage)
-			projects.POST("/:projectSlug/chat/messages/:msgId/reactions", handlers.ToggleChatReaction)
+				// Chat history
+				projects.GET("/:projectSlug/chat/messages", handlers.ListChatMessages)
+				projects.DELETE("/:projectSlug/chat/messages/:msgId", handlers.DeleteChatMessage)
+				projects.POST("/:projectSlug/chat/messages/:msgId/reactions", handlers.ToggleChatReaction)
 
-			// Webhooks
-			projects.GET("/:projectSlug/webhooks", handlers.ListWebhooks)
-			projects.POST("/:projectSlug/webhooks", handlers.CreateWebhook)
-			projects.DELETE("/:projectSlug/webhooks/:webhookId", handlers.DeleteWebhook)
-			projects.POST("/:projectSlug/webhooks/:webhookId/regenerate", handlers.RegenerateWebhookToken)
+				// Webhooks
+				projects.GET("/:projectSlug/webhooks", handlers.ListWebhooks)
+				projects.POST("/:projectSlug/webhooks", handlers.CreateWebhook)
+				projects.DELETE("/:projectSlug/webhooks/:webhookId", handlers.DeleteWebhook)
+				projects.POST("/:projectSlug/webhooks/:webhookId/regenerate", handlers.RegenerateWebhookToken)
 
-			// Project-scoped API keys
-			projects.GET("/:projectSlug/api-keys", handlers.ListProjectAPIKeys)
-			projects.POST("/:projectSlug/api-keys", handlers.CreateProjectAPIKey)
-			projects.DELETE("/:projectSlug/api-keys/:keyId", handlers.DeleteProjectAPIKey)
+				// Project-scoped API keys
+				projects.GET("/:projectSlug/api-keys", handlers.ListProjectAPIKeys)
+				projects.POST("/:projectSlug/api-keys", handlers.CreateProjectAPIKey)
+				projects.DELETE("/:projectSlug/api-keys/:keyId", handlers.DeleteProjectAPIKey)
 
-			// Star / unstar project
-			projects.POST("/:projectSlug/star", handlers.StarProject)
-			projects.DELETE("/:projectSlug/star", handlers.UnstarProject)
+				// Star / unstar project
+				projects.POST("/:projectSlug/star", handlers.StarProject)
+				projects.DELETE("/:projectSlug/star", handlers.UnstarProject)
 
-			// Sprints (Scrum)
-			projects.GET("/:projectSlug/sprints", handlers.ListSprints)
-			projects.POST("/:projectSlug/sprints", handlers.CreateSprint)
-			projects.PATCH("/:projectSlug/sprints/reorder", handlers.ReorderSprints)
-			projects.PUT("/:projectSlug/sprints/:sprintId", handlers.UpdateSprint)
-			projects.DELETE("/:projectSlug/sprints/:sprintId", handlers.DeleteSprint)
-			projects.POST("/:projectSlug/sprints/:sprintId/start", handlers.StartSprint)
-			projects.POST("/:projectSlug/sprints/:sprintId/complete", handlers.CompleteSprint)
-			projects.POST("/:projectSlug/sprints/:sprintId/cards/:cardId", handlers.AddCardToSprint)
-			projects.DELETE("/:projectSlug/sprints/:sprintId/cards/:cardId", handlers.RemoveCardFromSprint)
-			projects.PATCH("/:projectSlug/sprints/:sprintId/cards/reorder", handlers.ReorderSprintCards)
+				// Sprints (Scrum)
+				projects.GET("/:projectSlug/sprints", handlers.ListSprints)
+				projects.POST("/:projectSlug/sprints", handlers.CreateSprint)
+				projects.PATCH("/:projectSlug/sprints/reorder", handlers.ReorderSprints)
+				projects.PUT("/:projectSlug/sprints/:sprintId", handlers.UpdateSprint)
+				projects.DELETE("/:projectSlug/sprints/:sprintId", handlers.DeleteSprint)
+				projects.POST("/:projectSlug/sprints/:sprintId/start", handlers.StartSprint)
+				projects.POST("/:projectSlug/sprints/:sprintId/complete", handlers.CompleteSprint)
+				projects.POST("/:projectSlug/sprints/:sprintId/cards/:cardId", handlers.AddCardToSprint)
+				projects.DELETE("/:projectSlug/sprints/:sprintId/cards/:cardId", handlers.RemoveCardFromSprint)
+				projects.PATCH("/:projectSlug/sprints/:sprintId/cards/reorder", handlers.ReorderSprintCards)
 
-			// Epics
-			projects.GET("/:projectSlug/epics", handlers.ListEpics)
-			projects.POST("/:projectSlug/epics", handlers.CreateEpic)
-			projects.PATCH("/:projectSlug/epics/reorder", handlers.ReorderEpics)
-			projects.GET("/:projectSlug/epics/:epicId/cards", handlers.ListEpicCards)
-			projects.PUT("/:projectSlug/epics/:epicId", handlers.UpdateEpic)
-			projects.DELETE("/:projectSlug/epics/:epicId", handlers.DeleteEpic)
+				// Epics
+				projects.GET("/:projectSlug/epics", handlers.ListEpics)
+				projects.POST("/:projectSlug/epics", handlers.CreateEpic)
+				projects.PATCH("/:projectSlug/epics/reorder", handlers.ReorderEpics)
+				projects.GET("/:projectSlug/epics/:epicId/cards", handlers.ListEpicCards)
+				projects.PUT("/:projectSlug/epics/:epicId", handlers.UpdateEpic)
+				projects.DELETE("/:projectSlug/epics/:epicId", handlers.DeleteEpic)
 
-			// Backlog (Scrum)
-			projects.GET("/:projectSlug/backlog", handlers.ListBacklog)
-			projects.PATCH("/:projectSlug/backlog/reorder", handlers.ReorderBacklog)
+				// Backlog (Scrum)
+				projects.GET("/:projectSlug/backlog", handlers.ListBacklog)
+				projects.PATCH("/:projectSlug/backlog/reorder", handlers.ReorderBacklog)
 
-			// Releases (Scrum)
-			projects.GET("/:projectSlug/releases", handlers.ListReleases)
-			projects.POST("/:projectSlug/releases", handlers.CreateRelease)
-			projects.PUT("/:projectSlug/releases/:releaseId", handlers.UpdateRelease)
-			projects.DELETE("/:projectSlug/releases/:releaseId", handlers.DeleteRelease)
-			projects.POST("/:projectSlug/releases/:releaseId/sprints/:sprintId", handlers.AddSprintToRelease)
-			projects.DELETE("/:projectSlug/releases/:releaseId/sprints/:sprintId", handlers.RemoveSprintFromRelease)
+				// Releases (Scrum)
+				projects.GET("/:projectSlug/releases", handlers.ListReleases)
+				projects.POST("/:projectSlug/releases", handlers.CreateRelease)
+				projects.PUT("/:projectSlug/releases/:releaseId", handlers.UpdateRelease)
+				projects.DELETE("/:projectSlug/releases/:releaseId", handlers.DeleteRelease)
+				projects.POST("/:projectSlug/releases/:releaseId/sprints/:sprintId", handlers.AddSprintToRelease)
+				projects.DELETE("/:projectSlug/releases/:releaseId/sprints/:sprintId", handlers.RemoveSprintFromRelease)
 
-			// Charts
-			projects.GET("/:projectSlug/charts/velocity", handlers.GetVelocityChart)
-			projects.GET("/:projectSlug/charts/burndown/:sprintId", handlers.GetBurndownChart)
-			projects.GET("/:projectSlug/charts/burnup/:sprintId", handlers.GetBurnupChart)
-			projects.GET("/:projectSlug/charts/cfd", handlers.GetCFDChart)
-			projects.GET("/:projectSlug/charts/cycle-time", handlers.GetCycleTimeChart)
-			projects.GET("/:projectSlug/charts/throughput", handlers.GetThroughputChart)
-			projects.GET("/:projectSlug/charts/release-burndown/:releaseId", handlers.GetReleaseBurndownChart)
-			projects.GET("/:projectSlug/charts/sprint-report/:sprintId", handlers.GetSprintReport)
-			projects.GET("/:projectSlug/epics/:epicId/burndown", handlers.GetEpicBurndown)
-		}
+				// Charts
+				projects.GET("/:projectSlug/charts/velocity", handlers.GetVelocityChart)
+				projects.GET("/:projectSlug/charts/burndown/:sprintId", handlers.GetBurndownChart)
+				projects.GET("/:projectSlug/charts/burnup/:sprintId", handlers.GetBurnupChart)
+				projects.GET("/:projectSlug/charts/cfd", handlers.GetCFDChart)
+				projects.GET("/:projectSlug/charts/cycle-time", handlers.GetCycleTimeChart)
+				projects.GET("/:projectSlug/charts/throughput", handlers.GetThroughputChart)
+				projects.GET("/:projectSlug/charts/release-burndown/:releaseId", handlers.GetReleaseBurndownChart)
+				projects.GET("/:projectSlug/charts/sprint-report/:sprintId", handlers.GetSprintReport)
+				projects.GET("/:projectSlug/epics/:epicId/burndown", handlers.GetEpicBurndown)
+			}
 		} // end if !ttMode (conversations + projects)
 	}
 

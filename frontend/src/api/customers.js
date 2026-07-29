@@ -40,6 +40,12 @@ export const customersApi = {
   updateContact:  (cid, ctid, data) => client.put(`/customers/${cid}/contacts/${ctid}`, data),
   deleteContact:  (cid, ctid)       => client.delete(`/customers/${cid}/contacts/${ctid}`),
 
+  // Locations
+  listLocations:  (cid)             => client.get(`/customers/${cid}/locations`),
+  createLocation: (cid, data)       => client.post(`/customers/${cid}/locations`, data),
+  updateLocation: (cid, lid, data)  => client.put(`/customers/${cid}/locations/${lid}`, data),
+  deleteLocation: (cid, lid)        => client.delete(`/customers/${cid}/locations/${lid}`),
+
   // Time-tracking-only customers (no CRM entry)
   listTimeTracking:   ()           => client.get('/time-tracking-customers'),
   createTimeTracking: (data)       => client.post('/time-tracking-customers', data),

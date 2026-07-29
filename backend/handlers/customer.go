@@ -77,14 +77,14 @@ func canManageCustomer(c *gin.Context, customerID uint) bool {
 // CustomerListItem wraps Customer with extra UI metadata.
 type CustomerListItem struct {
 	models.Customer
-	IsFavorite     bool   `json:"is_favorite"`
-	ProjectCount   int64  `json:"project_count"`
-	ContractCount  int64  `json:"contract_count"`
-	TicketNew           int64  `json:"ticket_new"`
-	TicketPending       int64  `json:"ticket_pending"`
-	TicketPendingClose  int64  `json:"ticket_pending_close"`
-	TicketClosed        int64  `json:"ticket_closed"`
-	MyRole              string `json:"my_role"` // "admin", "member", or "" (unrestricted / global admin)
+	IsFavorite         bool   `json:"is_favorite"`
+	ProjectCount       int64  `json:"project_count"`
+	ContractCount      int64  `json:"contract_count"`
+	TicketNew          int64  `json:"ticket_new"`
+	TicketPending      int64  `json:"ticket_pending"`
+	TicketPendingClose int64  `json:"ticket_pending_close"`
+	TicketClosed       int64  `json:"ticket_closed"`
+	MyRole             string `json:"my_role"` // "admin", "member", or "" (unrestricted / global admin)
 }
 
 // ListCustomers returns all customers with favourite status and counts.
@@ -157,6 +157,7 @@ type CustomerDetailResponse struct {
 	Contracts []ContractGroup           `json:"contracts"`
 	Projects  []models.Project          `json:"projects"` // projects with no contract
 	Contacts  []models.CustomerContact  `json:"contacts"`
+	Locations []models.CustomerLocation `json:"locations"`
 }
 
 // ContractGroup bundles a contract with its projects.
@@ -221,11 +222,15 @@ func GetCustomer(c *gin.Context) {
 	var contacts []models.CustomerContact
 	database.DB.Where("customer_id = ?", cust.ID).Order("is_primary desc, id asc").Find(&contacts)
 
+	var locations []models.CustomerLocation
+	database.DB.Where("customer_id = ?", cust.ID).Order("id asc").Find(&locations)
+
 	c.JSON(http.StatusOK, CustomerDetailResponse{
 		Customer:  custItem,
 		Contracts: contractGroups,
 		Projects:  unassigned,
 		Contacts:  contacts,
+		Locations: locations,
 	})
 }
 
@@ -419,14 +424,14 @@ func CreateContract(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name          string   `json:"name" binding:"required,min=1,max=200"`
-		Description   string   `json:"description"`
-		StartDate     string   `json:"start_date"`
-		EndDate       string   `json:"end_date"`
-		PricePerHour  *float64 `json:"price_per_hour"`
-		PricePerKm    *float64 `json:"price_per_km"`
-		Currency      string   `json:"currency"`
-		TimeSlots     []struct {
+		Name         string   `json:"name" binding:"required,min=1,max=200"`
+		Description  string   `json:"description"`
+		StartDate    string   `json:"start_date"`
+		EndDate      string   `json:"end_date"`
+		PricePerHour *float64 `json:"price_per_hour"`
+		PricePerKm   *float64 `json:"price_per_km"`
+		Currency     string   `json:"currency"`
+		TimeSlots    []struct {
 			Label                string   `json:"label"`
 			StartTime            string   `json:"start_time"`
 			EndTime              string   `json:"end_time"`
@@ -502,14 +507,14 @@ func UpdateContract(c *gin.Context) {
 		return
 	}
 	var req struct {
-		Name          string   `json:"name"`
-		Description   string   `json:"description"`
-		StartDate     string   `json:"start_date"`
-		EndDate       string   `json:"end_date"`
-		PricePerHour  *float64 `json:"price_per_hour"`
-		PricePerKm    *float64 `json:"price_per_km"`
-		Currency      string   `json:"currency"`
-		TimeSlots     []struct {
+		Name         string   `json:"name"`
+		Description  string   `json:"description"`
+		StartDate    string   `json:"start_date"`
+		EndDate      string   `json:"end_date"`
+		PricePerHour *float64 `json:"price_per_hour"`
+		PricePerKm   *float64 `json:"price_per_km"`
+		Currency     string   `json:"currency"`
+		TimeSlots    []struct {
 			Label                string   `json:"label"`
 			StartTime            string   `json:"start_time"`
 			EndTime              string   `json:"end_time"`
