@@ -1,0 +1,50 @@
+---
+title: "Customer Locations and Travel Distance Auto-Fill"
+date: "2026-07-29"
+author: "Ton Kersten"
+description: "Customers can now have multiple locations — each with a full address, a contact person, and a standard travel distance. Time tracking picks up on that: a Location dropdown in the weekly grid and the calendar view auto-fills an entry's distance, and stays freely editable for the day-to-day reality of traffic and detours."
+draft: false
+---
+:doctype: article
+:icons!:
+
+If you bill mileage, you've typed the same travel distance into a time entry a hundred times. `v0.19.0` teaches WarmDesk to remember it for you.
+
+== Customer locations
+
+A customer can now have any number of *locations* — a new tab on the customer detail page, next to Contacts.
+
+Each location carries:
+
+* A full postal address (address line 1/2, city, postcode, region, country)
+* A phone number
+* A contact person (name, email, phone)
+* A standard *travel distance*, in whichever unit (km or mi) you've set as your distance preference
+
+This is useful on its own as a record of where a customer actually operates — head office, a branch, a data centre — separate from the single billing address a customer already had.
+
+== Travel distance auto-fill
+
+The real payoff is in time tracking. Wherever you can set a time entry's distance, a *Location* dropdown now appears if the row's customer has at least one location with a distance set:
+
+* The weekly grid's *Add row* and *Edit row* forms
+* The per-cell distance popup (the ⇆ button)
+* The calendar view's entry editor
+
+Pick a location and its standard distance fills the field immediately. It's still a completely normal, editable number afterward — picking a location just gives you a starting point, not a locked-in value. Traffic, road closures, taking the scenic route — adjust it same as always.
+
+=== Fixing a week at once
+
+Re-picking a different location for a row doesn't just apply going forward. Every day that week which *already* has a distance logged for that row gets corrected to the new value too — so if you realize halfway through the week that you picked the wrong site, one dropdown change fixes every day already logged, not just the ones still to come. Days you deliberately left blank (no travel that day) are never touched.
+
+== Also in this release
+
+Chasing down how entries should keep their distance surfaced a real bug: editing an entry's hours, or renaming a row to a different customer or project, was silently wiping out its saved distance — and the row rename was dropping the assigned contract too. Both are fixed; a save no longer clears a field just because that save wasn't about that field.
+
+`deploy/update_warmdesk_client` also joins the deploy scripts: it updates the Tauri desktop client to the latest GitHub release on Linux (.deb/.rpm/AppImage) and macOS (.app), verifying the GPG signature when available.
+
+== Upgrade
+
+All of this is part of `v0.19.0`. No database migration is required — as with every WarmDesk release, this is a purely additive change to existing functionality.
+
+Download from the link:../download[download page] or pull the latest release tag.

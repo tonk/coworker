@@ -18,12 +18,12 @@ enableEmoji = true
   warmdesk_version = "v0.19.0"
   release_date     = "2026-07-29"
   # Blog post slug for the current release (linked from the homepage "What's new" strip)
-  release_blog     = "blog/search-and-replace/"
+  release_blog     = "blog/travel-distance-auto-fill/"
   # Release highlights shown in the "What's new" strip on the homepage (2-3 bullets)
   release_highlights = [
-    "**Added — Search & Replace** — find and replace text across cards, comments, direct messages, tickets, and time entries, with a permission-aware preview before anything changes.",
-    "**Added — global search now covers tickets and time entries**, and clicking a comment or time-entry result jumps straight to it instead of just its container.",
-    "**Added — search & replace's per-type result limit is now adjustable** (default 20, up to 500) instead of a fixed 20.",
+    "**Added — Customer locations** — a customer can now have multiple locations, each with a full address, a contact person, and a standard travel distance.",
+    "**Added — travel distance auto-fill in time tracking** — pick a customer's location from the weekly grid or calendar view to auto-fill an entry's distance, still freely editable afterward; re-picking a row's location also corrects that week's already-logged distances.",
+    "**Added — `deploy/update_warmdesk_client`** script to update the Tauri desktop client to the latest GitHub release on Linux and macOS.",
   ]
 
 [markup]
