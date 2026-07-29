@@ -44,8 +44,15 @@
         />
       </div>
     </div>
+    <div class="form-group" v-if="locationOptions.length">
+      <label class="form-label" for="te-location">{{ $t('timeTracking.location') }}</label>
+      <select id="te-location" class="form-input" v-model="locationSel" @change="applyLocationDistance">
+        <option value="">{{ $t('timeTracking.choose_location') }}</option>
+        <option v-for="l in locationOptions" :key="l.id" :value="l.id">{{ formatLocationLabel(l) }} — {{ l.travel_distance }} {{ distanceUnit }}</option>
+      </select>
+    </div>
     <div class="form-group">
-      <label class="form-label" for="te-distance">{{ $t('timeTracking.distance') }}</label>
+      <label class="form-label" for="te-distance">{{ $t('timeTracking.distance') }} ({{ distanceUnit }})</label>
       <input id="te-distance" class="form-input" type="number" min="0" step="0.1" v-model.number="form.distance" />
     </div>
     <p v-if="timeError" class="field-error" role="alert">{{ timeError }}</p>
@@ -63,14 +70,18 @@
 </template>
 
 <script setup>
-import { reactive, computed } from 'vue'
+import { reactive, ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/common/BaseModal.vue'
 import DatePicker from '@/components/common/DatePicker.vue'
+import { useAuthStore } from '@/stores/auth'
+import { customersApi } from '@/api/customers'
 import { filterProjectsForCustomer } from '@/utils/projectFilter'
 import { parseWallClock, fmtWallClock, wallClockSpanMinutes } from '@/utils/shiftTimeEntries'
 
 const { t } = useI18n()
+const auth = useAuthStore()
+const distanceUnit = computed(() => auth.user?.distance_unit || 'km')
 
 const props = defineProps({
   entry: { type: Object, default: null },      // existing TimeEntry when editing
@@ -97,6 +108,39 @@ const form = reactive({
 const projectOptions = computed(() => filterProjectsForCustomer(form.customer_id, {
   allProjects: props.allProjects, ttCustomers: props.ttCustomers, ttProjects: props.ttProjects, projects: props.projects,
 }))
+
+// Locations (with a standard travel distance) for the selected customer — used to
+// quickly fill the distance field; the value itself stays freely editable afterward.
+const locationsByCustomer = ref({})
+const locationSel = ref('')
+
+async function loadLocations(customerId) {
+  if (!customerId || locationsByCustomer.value[customerId]) return
+  try {
+    const { data } = await customersApi.listLocations(customerId)
+    locationsByCustomer.value = { ...locationsByCustomer.value, [customerId]: data }
+  } catch {}
+}
+if (form.customer_id) loadLocations(form.customer_id)
+
+watch(() => form.customer_id, (id) => {
+  locationSel.value = ''
+  loadLocations(id)
+})
+
+const locationOptions = computed(() =>
+  (locationsByCustomer.value[form.customer_id] || []).filter(l => l.travel_distance != null),
+)
+
+function formatLocationLabel(loc) {
+  const parts = [loc.address_line1, loc.city].filter(Boolean)
+  return parts.length ? parts.join(', ') : `#${loc.id}`
+}
+
+function applyLocationDistance() {
+  const loc = locationOptions.value.find(l => l.id === locationSel.value)
+  if (loc) form.distance = loc.travel_distance
+}
 
 // Auto-insert a colon after 2 digits, mirroring the existing time-popup input UX.
 function onTimeInput(field, event) {

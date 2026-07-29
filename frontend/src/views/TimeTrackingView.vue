@@ -174,7 +174,7 @@
               <!-- Edit mode -->
               <template v-if="editingRow === row.key">
                 <td class="c-info tt-editing">
-                  <select class="nr-sel" v-model="editForm.customer_id" @change="editForm.project_id = null" aria-label="Customer">
+                  <select class="nr-sel" v-model="editForm.customer_id" @change="editForm.project_id = null; editForm.contract_id = null; editForm.location_id = null" aria-label="Customer">
                     <option :value="null">{{ $t('timeTracking.no_customer') }}</option>
                     <option v-for="c in allCustomers" :key="c.id" :value="c.id">{{ c.name }}</option>
                   </select>
@@ -185,6 +185,10 @@
                   <select class="nr-sel" v-model="editForm.project_id" aria-label="Project">
                     <option :value="null">{{ $t('timeTracking.no_project') }}</option>
                     <option v-for="p in editRowProjects" :key="p.id" :value="p.id">{{ p.name }}</option>
+                  </select>
+                  <select v-if="editRowLocations.length" class="nr-sel" v-model="editForm.location_id" :aria-label="$t('timeTracking.location')">
+                    <option :value="null">{{ $t('timeTracking.no_location') }}</option>
+                    <option v-for="l in editRowLocations" :key="l.id" :value="l.id">{{ formatLocationLabel(l) }} — {{ l.travel_distance }} {{ distanceUnit }}</option>
                   </select>
                 </td>
                 <td class="c-desc tt-editing">
@@ -359,6 +363,12 @@
                       @keydown.escape.prevent="distPopupKey = ''"
                     />
                   </label>
+                  <label v-if="distPopupLocations.length" class="tp-label">{{ $t('timeTracking.location') }}
+                    <select class="tp-inp" v-model="distPopupLocationSel" @change="applyDistPopupLocation" :aria-label="$t('timeTracking.location')">
+                      <option value="">{{ $t('timeTracking.choose_location') }}</option>
+                      <option v-for="l in distPopupLocations" :key="l.id" :value="l.id">{{ formatLocationLabel(l) }} — {{ l.travel_distance }} {{ distanceUnit }}</option>
+                    </select>
+                  </label>
                   <div class="tp-actions">
                     <button class="tp-btn tp-apply" @mousedown.prevent="applyDistPopup(row, d.iso)">{{ $t('common.save') }}</button>
                     <button v-if="getEntry(row, d.iso)?.distance" class="tp-btn tp-clear" @mousedown.prevent="clearDistPopup(row, d.iso)">{{ $t('common.clear') }}</button>
@@ -412,6 +422,10 @@
                 <select class="nr-sel" v-model="newRow.project_id" aria-label="Project">
                   <option :value="null">{{ $t('timeTracking.no_project') }}</option>
                   <option v-for="p in newRowProjects" :key="p.id" :value="p.id">{{ p.name }}</option>
+                </select>
+                <select v-if="newRowLocations.length" class="nr-sel" v-model="newRow.location_id" :aria-label="$t('timeTracking.location')">
+                  <option :value="null">{{ $t('timeTracking.no_location') }}</option>
+                  <option v-for="l in newRowLocations" :key="l.id" :value="l.id">{{ formatLocationLabel(l) }} — {{ l.travel_distance }} {{ distanceUnit }}</option>
                 </select>
               </td>
               <td class="c-desc">
@@ -1436,6 +1450,32 @@ async function loadContractsForCustomer(customerId) {
   } catch {}
 }
 
+// Locations per customer — lazy-loaded when a customer is selected in add row / the distance popup
+const locationsByCustomer = ref({})
+
+async function loadLocationsForCustomer(customerId) {
+  if (!customerId || locationsByCustomer.value[customerId]) return
+  try {
+    const { data } = await customersApi.listLocations(customerId)
+    locationsByCustomer.value = { ...locationsByCustomer.value, [customerId]: data }
+  } catch {}
+}
+
+// Distance (in km/mi) to auto-fill for newly created entries on a row, keyed by row.key —
+// seeded either from the add-row location picker or from the per-cell distance popup's
+// location picker. Session-only: not persisted, since each created entry stores its own
+// distance value going forward.
+const rowLocationDistance = ref({})
+
+function locationsWithDistance(customerId) {
+  return (locationsByCustomer.value[customerId] || []).filter(l => l.travel_distance != null)
+}
+
+function formatLocationLabel(loc) {
+  const parts = [loc.address_line1, loc.city].filter(Boolean)
+  return parts.length ? parts.join(', ') : `#${loc.id}`
+}
+
 // ── User switching (admin / time_tracking_viewer only) ────────────────────
 const canViewOtherUsers = computed(() => auth.isAdmin || !!auth.user?.time_tracking_viewer)
 const allUsers = ref([])
@@ -2380,6 +2420,7 @@ async function onCellBlur(row, dateISO, rawVal) {
           is_holiday:   true,
           start_time:   existing.start_time || null,
           end_time:     existing.end_time   || null,
+          distance:     existing.distance ?? null,
         })
         const idx = rawEntries.value.findIndex(e => e.id === existing.id)
         rawEntries.value[idx] = data
@@ -2401,6 +2442,7 @@ async function onCellBlur(row, dateISO, rawVal) {
         is_holiday:   existing.is_holiday,
         start_time:   existing.start_time || null,
         end_time:     existing.end_time   || null,
+        distance:     existing.distance ?? null,
       })
       const idx = rawEntries.value.findIndex(e => e.id === existing.id)
       rawEntries.value[idx] = data
@@ -2413,6 +2455,7 @@ async function onCellBlur(row, dateISO, rawVal) {
         date:         dateISO,
         minutes,
         description:  row.description,
+        distance:     rowLocationDistance.value[row.key] ?? null,
       })
       rawEntries.value.push(data)
       localRows.value = localRows.value.filter(r => r.key !== row.key)
@@ -2446,7 +2489,7 @@ function rowHasSlots(row) {
 
 // ── Edit row ──────────────────────────────────────────────────────────────
 const editingRow = ref(null)
-const editForm   = ref({ customer_id: null, project_id: null, contract_id: null, description: '' })
+const editForm   = ref({ customer_id: null, project_id: null, contract_id: null, location_id: null, description: '' })
 const deletingRow = ref(null)
 
 const editRowContracts = computed(() => {
@@ -2454,6 +2497,8 @@ const editRowContracts = computed(() => {
   if (!id) return []
   return contractsByCustomer.value[id] || []
 })
+
+const editRowLocations = computed(() => locationsWithDistance(editForm.value.customer_id))
 
 const editRowProjects = computed(() => {
   if (!editForm.value.customer_id) return allProjects.value
@@ -2470,8 +2515,19 @@ function onRowFieldDblClick(row) {
 
 function startEditRow(row) {
   cancelDeleteRow()
-  editForm.value = { customer_id: row.customer_id, project_id: row.project_id, contract_id: row.contract_id || null, description: row.description }
+  const knownDistance = rowLocationDistance.value[row.key]
+  const matchedLocation = knownDistance != null
+    ? locationsWithDistance(row.customer_id).find(l => l.travel_distance === knownDistance)
+    : null
+  editForm.value = {
+    customer_id: row.customer_id,
+    project_id:  row.project_id,
+    contract_id: row.contract_id || null,
+    location_id: matchedLocation?.id || null,
+    description: row.description,
+  }
   loadContractsForCustomer(row.customer_id)
+  loadLocationsForCustomer(row.customer_id)
   editingRow.value = row.key
 }
 
@@ -2520,12 +2576,24 @@ async function confirmEditRow(row) {
   const contracts = contractsByCustomer.value[r.customer_id] || []
   const cont = contracts.find(c => c.id === r.contract_id)
   const newKey = rowKey(r.customer_id, r.project_id, r.description)
+  const newLocation = r.location_id ? locationsWithDistance(r.customer_id).find(l => l.id === r.location_id) : null
+
+  if (newLocation) {
+    rowLocationDistance.value[newKey] = newLocation.travel_distance
+  } else if (newKey !== row.key && rowLocationDistance.value[row.key] != null) {
+    rowLocationDistance.value[newKey] = rowLocationDistance.value[row.key]
+  }
+  if (newKey !== row.key) delete rowLocationDistance.value[row.key]
 
   const toUpdate = rawEntries.value.filter(
     e => rowKey(e.customer_id, e.project_id, e.description) === row.key
   )
   try {
     for (const e of toUpdate) {
+      // A newly (re-)picked location's distance also corrects days already logged
+      // this week for this row — but only ones that already had a distance set;
+      // entries deliberately left blank (no travel that day) stay blank.
+      const distance = (newLocation && e.distance != null) ? newLocation.travel_distance : (e.distance ?? null)
       const { data } = await timeEntriesApi.update(e.id, {
         customer_id:  r.customer_id  || null,
         project_id:   r.project_id   || null,
@@ -2534,6 +2602,9 @@ async function confirmEditRow(row) {
         minutes:      e.minutes,
         description:  r.description,
         is_holiday:   e.is_holiday,
+        start_time:   e.start_time || null,
+        end_time:     e.end_time   || null,
+        distance,
       })
       const idx = rawEntries.value.findIndex(x => x.id === e.id)
       rawEntries.value[idx] = data
@@ -3163,12 +3234,20 @@ const distPopupKey  = ref('')
 const distPopupFlip = ref(false)
 const distPopupVal  = ref('')
 const distPopupRef  = ref(null)
+const distPopupRow  = ref(null)
+const distPopupDate = ref('')
+const distPopupLocationSel = ref('')
+const distPopupLocations = computed(() => locationsWithDistance(distPopupRow.value?.customer_id))
 
 function openDistPopup(row, dateISO, event) {
   const key = row.key + dateISO
   if (distPopupKey.value === key) { distPopupKey.value = ''; return }
   const existing = getEntry(row, dateISO)
   distPopupVal.value = existing?.distance != null ? String(existing.distance) : ''
+  distPopupRow.value = row
+  distPopupDate.value = dateISO
+  distPopupLocationSel.value = ''
+  if (row.customer_id) loadLocationsForCustomer(row.customer_id)
   const rect = event?.currentTarget?.getBoundingClientRect()
   const scrollEl = event?.currentTarget?.closest('.tt-scroll')
   const scrollTop = scrollEl ? scrollEl.getBoundingClientRect().top : 0
@@ -3178,6 +3257,48 @@ function openDistPopup(row, dateISO, event) {
     const el = Array.isArray(distPopupRef.value) ? distPopupRef.value[0] : distPopupRef.value
     el?.querySelector('.tp-inp')?.focus()
   })
+}
+
+// Updates every other entry this week on the given row that already has a distance
+// set, so re-picking a row's standard location also corrects days already logged —
+// not just new ones going forward. The currently-open cell is excluded: it's saved
+// through the normal popup Save flow (or immediately below, for a direct pick).
+async function syncRowDistance(rowKeyValue, distance, excludeDateISO) {
+  const entries = rawEntries.value.filter(e =>
+    e.distance != null &&
+    e.date.slice(0, 10) !== excludeDateISO &&
+    rowKey(e.customer_id, e.project_id, e.description) === rowKeyValue
+  )
+  for (const e of entries) {
+    try {
+      const { data } = await timeEntriesApi.update(e.id, {
+        customer_id: e.customer_id || null,
+        project_id:  e.project_id  || null,
+        contract_id: e.contract_id || null,
+        date:        e.date.slice(0, 10),
+        minutes:     e.minutes,
+        description: e.description,
+        is_holiday:  e.is_holiday,
+        start_time:  e.start_time || null,
+        end_time:    e.end_time   || null,
+        distance,
+      })
+      const idx = rawEntries.value.findIndex(x => x.id === e.id)
+      if (idx >= 0) rawEntries.value[idx] = data
+    } catch {
+      ui.error(t('timeTracking.save_error'))
+    }
+  }
+}
+
+async function applyDistPopupLocation() {
+  const loc = distPopupLocations.value.find(l => l.id === distPopupLocationSel.value)
+  const row = distPopupRow.value
+  if (!loc || !row) return
+  distPopupVal.value = String(loc.travel_distance)
+  rowLocationDistance.value[row.key] = loc.travel_distance
+  await applyDistPopup(row, distPopupDate.value)
+  await syncRowDistance(row.key, loc.travel_distance, distPopupDate.value)
 }
 
 async function applyDistPopup(row, dateISO) {
@@ -3191,6 +3312,7 @@ async function applyDistPopup(row, dateISO) {
     const { data } = await timeEntriesApi.update(existing.id, {
       customer_id: row.customer_id || null,
       project_id:  row.project_id  || null,
+      contract_id: row.contract_id || null,
       date:        dateISO,
       minutes:     existing.minutes,
       description: row.description,
@@ -3218,6 +3340,7 @@ async function clearDistPopup(row, dateISO) {
     const { data } = await timeEntriesApi.update(existing.id, {
       customer_id: row.customer_id || null,
       project_id:  row.project_id  || null,
+      contract_id: row.contract_id || null,
       date:        dateISO,
       minutes:     existing.minutes,
       description: row.description,
@@ -3649,7 +3772,7 @@ function onDistPopupDocClick(e) {
 // ── Add row ───────────────────────────────────────────────────────────────
 const addingRow   = ref(false)
 const newDescRef  = ref(null)
-const newRow      = ref({ customer_id: null, project_id: null, contract_id: null, description: '' })
+const newRow      = ref({ customer_id: null, project_id: null, contract_id: null, location_id: null, description: '' })
 const macroEditorOpen = ref(false)
 const macroRunOpen = ref(false)
 const macroRunRef = ref(null)
@@ -3868,6 +3991,8 @@ const newRowContracts = computed(() => {
 const newRowProjects = computed(() => filterProjectsForCustomer(newRow.value.customer_id, {
   allProjects: allProjects.value, ttCustomers: ttCustomers.value, ttProjects: ttProjects.value, projects: projects.value,
 }))
+
+const newRowLocations = computed(() => locationsWithDistance(newRow.value.customer_id))
 
 function macroProjectsForRow(row) {
   return filterProjectsForCustomer(row.customer_id, {
@@ -4116,16 +4241,23 @@ const newRowHasSlots = computed(() => {
 
 watch(() => newRow.value.customer_id, (id) => {
   newRow.value.contract_id = null
+  newRow.value.location_id = null
   loadContractsForCustomer(id)
+  loadLocationsForCustomer(id)
 })
 
 watch(() => editForm.value.customer_id, (id) => {
-  editForm.value.contract_id = null
+  // Resetting contract_id/location_id here (rather than just lazy-loading) would fire —
+  // and clobber the values startEditRow() just set — every time editForm.value is
+  // reassigned wholesale for a *different* row's customer, not just on a genuine
+  // customer change from the select itself. Those resets live on the select's
+  // own @change handler instead, matching the existing project_id pattern.
   loadContractsForCustomer(id)
+  loadLocationsForCustomer(id)
 })
 
 function startAddRow() {
-  newRow.value = { customer_id: null, project_id: null, contract_id: null, description: '' }
+  newRow.value = { customer_id: null, project_id: null, contract_id: null, location_id: null, description: '' }
   addingRow.value = true
   nextTick(() => newDescRef.value?.focus())
 }
@@ -4137,6 +4269,10 @@ function confirmNewRow() {
   const contracts = contractsByCustomer.value[r.customer_id] || []
   const cont = contracts.find(c => c.id === r.contract_id)
   const k = rowKey(r.customer_id, r.project_id, r.description)
+  if (r.location_id) {
+    const loc = locationsWithDistance(r.customer_id).find(l => l.id === r.location_id)
+    if (loc) rowLocationDistance.value[k] = loc.travel_distance
+  }
   if (!allRows.value.find(x => x.key === k)) {
     localRows.value.push({
       key:           k,

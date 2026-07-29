@@ -2552,6 +2552,20 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		pricePerKm   *float64
 		timeSlots    []timeSlotSpec
 	}
+	type locationSpec struct {
+		addressLine1   string
+		addressLine2   string
+		city           string
+		postalCode     string
+		region         string
+		country        string
+		phone          string
+		contactName    string
+		contactEmail   string
+		contactPhone   string
+		travelDistance *float64
+	}
+
 	type customerSpec struct {
 		name              string
 		desc              string
@@ -2564,6 +2578,7 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		billingPostalCode string
 		billingCountry    string
 		vatNumber         string
+		locations         []locationSpec
 	}
 
 	acmePricePerHour := 110.0
@@ -2607,6 +2622,44 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			billingPostalCode: "EC2A 4BX",
 			billingCountry:    "United Kingdom",
 			vatNumber:         "GB123456789",
+			locations: []locationSpec{
+				{
+					addressLine1:   "42 Acme Way",
+					city:           "London",
+					postalCode:     "EC2A 4BX",
+					region:         "Greater London",
+					country:        "United Kingdom",
+					phone:          "+44 20 7946 0101",
+					contactName:    "Priya Shah",
+					contactEmail:   "priya.shah@acme.example",
+					contactPhone:   "+44 20 7946 0102",
+					travelDistance: ptr(8.5),
+				},
+				{
+					addressLine1:   "15 Deansgate",
+					addressLine2:   "Floor 3",
+					city:           "Manchester",
+					postalCode:     "M3 2FW",
+					region:         "Greater Manchester",
+					country:        "United Kingdom",
+					phone:          "+44 161 496 0001",
+					contactName:    "Tom Fielding",
+					contactEmail:   "tom.fielding@acme.example",
+					contactPhone:   "+44 161 496 0002",
+					travelDistance: ptr(262.0),
+				},
+				{
+					addressLine1:   "Unit 4, Southern Gate Way",
+					city:           "Slough",
+					postalCode:     "SL1 4LX",
+					region:         "Berkshire",
+					country:        "United Kingdom",
+					phone:          "+44 1753 555 010",
+					contactName:    "Ops Desk",
+					contactEmail:   "ops@acme.example",
+					travelDistance: ptr(45.0),
+				},
+			},
 		},
 		{
 			name:    "Globex Systems",
@@ -2628,6 +2681,31 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			billingPostalCode: "D01 X2X1",
 			billingCountry:    "Ireland",
 			vatNumber:         "IE1234567F",
+			locations: []locationSpec{
+				{
+					addressLine1:   "10 Innovation Drive",
+					city:           "Dublin",
+					postalCode:     "D01 X2X1",
+					region:         "Leinster",
+					country:        "Ireland",
+					phone:          "+353 1 902 1001",
+					contactName:    "Niamh O'Callaghan",
+					contactEmail:   "niamh.ocallaghan@globex.example",
+					contactPhone:   "+353 1 902 1002",
+					travelDistance: ptr(12.0),
+				},
+				{
+					addressLine1:   "Unit 7, Model Farm Road",
+					city:           "Cork",
+					postalCode:     "T12 EFG3",
+					region:         "Munster",
+					country:        "Ireland",
+					phone:          "+353 21 234 5000",
+					contactName:    "Data Centre Ops",
+					contactEmail:   "dc-ops@globex.example",
+					travelDistance: ptr(220.0),
+				},
+			},
 		},
 		{
 			name:              "Initech Ltd",
@@ -2640,6 +2718,31 @@ Pagerduty schedules will be updated to match this by Friday.`,
 			billingPostalCode: "1017 DS",
 			billingCountry:    "Netherlands",
 			vatNumber:         "NL987654321B02",
+			locations: []locationSpec{
+				{
+					addressLine1:   "Keizersgracht 999",
+					city:           "Amsterdam",
+					postalCode:     "1017 DS",
+					region:         "Noord-Holland",
+					country:        "Netherlands",
+					phone:          "+31 20 555 0100",
+					contactName:    "Femke de Groot",
+					contactEmail:   "femke.degroot@initech.example",
+					contactPhone:   "+31 20 555 0101",
+					travelDistance: ptr(5.0),
+				},
+				{
+					addressLine1:   "Coolsingel 42",
+					city:           "Rotterdam",
+					postalCode:     "3011 AD",
+					region:         "Zuid-Holland",
+					country:        "Netherlands",
+					phone:          "+31 10 555 0200",
+					contactName:    "Bram Willemsen",
+					contactEmail:   "bram.willemsen@initech.example",
+					travelDistance: ptr(75.0),
+				},
+			},
 		},
 	}
 
@@ -2660,6 +2763,23 @@ Pagerduty schedules will be updated to match this by Friday.`,
 		}
 		must(db.Create(cust).Error)
 		demoCustomerIDs = append(demoCustomerIDs, cust.ID)
+
+		for _, locSpec := range cs.locations {
+			must(db.Create(&models.CustomerLocation{
+				CustomerID:     cust.ID,
+				AddressLine1:   locSpec.addressLine1,
+				AddressLine2:   locSpec.addressLine2,
+				City:           locSpec.city,
+				PostalCode:     locSpec.postalCode,
+				Region:         locSpec.region,
+				Country:        locSpec.country,
+				Phone:          locSpec.phone,
+				ContactName:    locSpec.contactName,
+				ContactEmail:   locSpec.contactEmail,
+				ContactPhone:   locSpec.contactPhone,
+				TravelDistance: locSpec.travelDistance,
+			}).Error)
+		}
 
 		// Star customers for relevant users so the sidebar shows favourites
 		switch cs.name {
@@ -5109,6 +5229,7 @@ func removeDemoData(db *gorm.DB) {
 		db.Where("customer_id IN ?", custIDs).Delete(&models.TimeEntry{})
 		db.Where("customer_id IN ?", custIDs).Delete(&models.Invoice{})
 		db.Where("customer_id IN ?", custIDs).Delete(&models.CustomerFavorite{})
+		db.Where("customer_id IN ?", custIDs).Delete(&models.CustomerLocation{})
 		db.Where("customer_id IN ?", custIDs).Delete(&models.Contract{})
 		db.Where("id IN ?", custIDs).Delete(&models.Customer{})
 	}
