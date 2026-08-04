@@ -8,11 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.19.0)
+## Latest release (v0.19.1)
 
-- **Added** — Customer locations: multiple addresses per customer with contact person and a standard travel distance, managed from a new "Locations" tab in customer settings.
-- **Added** — Time tracking now auto-fills travel distance from a customer's location, in both the weekly grid and the calendar view, while staying freely editable for day-to-day variation.
-- **Added** — `deploy/update_warmdesk_client` script to update the Tauri desktop client to the latest GitHub release on Linux and macOS.
+- **Fixed** — Creating a project from the Admin Panel failed with "project name or slug already exists" starting with the second project, because the admin creation path never set the new project's key prefix.
 
 ## Experiment
 

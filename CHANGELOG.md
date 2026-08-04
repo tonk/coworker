@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.19.1 — 2026-08-04
+
+### Fixed
+- **Creating a project from the Admin Panel failed with "project name or slug already exists" starting with the second project** — the admin creation path never set the new project's `key_prefix`, so every project after the first collided on that column's unique index; the error pointed at name/slug, which was never the actual cause. The regular (non-admin) project creation flow was unaffected.
+
 ## v0.19.0 — 2026-07-29
 
 ### Added
