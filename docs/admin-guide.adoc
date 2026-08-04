@@ -1,5 +1,5 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.19.1
+:revnumber: v0.19.2
 :revdate: 2026-08-04
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]

@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.19.1)
+## Latest release (v0.19.2)
 
-- **Fixed** — Creating a project from the Admin Panel failed with "project name or slug already exists" starting with the second project, because the admin creation path never set the new project's key prefix.
+- **Fixed** — The Admin Panel's Groups list and a group's "Customer access" table showed the literal text `customer.title` instead of a "Customers" column heading, due to a reference to a nonexistent translation key.
 
 ## Experiment
 

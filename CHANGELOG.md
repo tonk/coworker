@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.19.2 — 2026-08-04
+
+### Fixed
+- **Admin Panel — the Groups list and a group's "Customer access" table showed the literal text `customer.title` instead of a "Customers" column heading** — both tables referenced a nonexistent translation key; they now use the correct, already-translated key.
+
 ## v0.19.1 — 2026-08-04
 
 ### Fixed
