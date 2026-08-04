@@ -276,7 +276,7 @@
                 </th>
                 <th>{{ $t('groups.members') }}</th>
                 <th>{{ $t('admin.projects') }}</th>
-                <th>{{ $t('customer.title') }}</th>
+                <th>{{ $t('customer.customers') }}</th>
                 <th>{{ $t('common.actions') }}</th>
               </tr>
             </thead>
@@ -1719,7 +1719,7 @@
       </div>
       <div v-if="!groupDetail.customer_access.length" class="empty-hint">{{ $t('groups.no_customer_access') }}</div>
       <table v-else class="data-table">
-        <thead><tr><th>{{ $t('customer.title') }}</th><th>{{ $t('groups.role') }}</th><th></th></tr></thead>
+        <thead><tr><th>{{ $t('customer.customers') }}</th><th>{{ $t('groups.role') }}</th><th></th></tr></thead>
         <tbody>
           <tr v-for="ca in groupDetail.customer_access" :key="ca.customer_id">
             <td>{{ ca.customer.name }}</td>
