@@ -32,6 +32,7 @@ func AdminCreateProject(c *gin.Context) {
 		Description: req.Description,
 		Color:       req.Color,
 		Avatar:      req.Avatar,
+		KeyPrefix:   services.GenerateKeyPrefix(req.Name),
 		CreatedByID: userID,
 	}
 	if err := database.DB.Create(&project).Error; err != nil {
