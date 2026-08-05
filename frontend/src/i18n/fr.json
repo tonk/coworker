@@ -323,6 +323,7 @@
     "edited": "modifié",
     "back": "Retour aux sujets",
     "project_chat": "Discussion du projet",
+    "toggle_sidebar_entries": "Options de la barre latérale",
     "no_chat_messages": "Pas encore de messages. Dites bonjour !",
     "chat_placeholder": "Message au projet…",
     "send": "Envoyer"

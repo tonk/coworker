@@ -14,12 +14,25 @@
       <aside class="topics-sidebar">
         <div class="topics-sidebar-header">
           <h1>{{ $t('topics.title') }}</h1>
-          <button class="btn btn-primary btn-sm" @click="showNew = true">
-            + {{ $t('topics.new_topic') }}
-          </button>
+          <div class="topics-sidebar-header-actions">
+            <button class="btn btn-primary btn-sm" @click="showNew = true">
+              + {{ $t('topics.new_topic') }}
+            </button>
+            <div class="sections-menu-wrap" ref="sidebarMenuEl">
+              <button class="sections-menu-btn" @click.stop="sidebarMenuOpen = !sidebarMenuOpen" :title="$t('topics.toggle_sidebar_entries')" :aria-label="$t('topics.toggle_sidebar_entries')">⋮</button>
+              <div v-if="sidebarMenuOpen" class="sections-menu-dropdown">
+                <div v-for="entry in sidebarEntriesConfig" :key="entry.key" class="sections-menu-item">
+                  <label class="sections-menu-label">
+                    <input type="checkbox" :checked="isSidebarEntryVisible(entry.key)" @change="toggleSidebarEntry(entry.key)" />
+                    <span>{{ entry.label }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <button class="topic-item chat-nav-item" :class="{ active: chatOpen }" @click="openChat">
+        <button v-if="isSidebarEntryVisible('chat')" class="topic-item chat-nav-item" :class="{ active: chatOpen }" @click="openChat">
           <span aria-hidden="true">💬</span> {{ $t('topics.project_chat') }}
         </button>
 
@@ -350,6 +363,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import BaseModal from '@/components/common/BaseModal.vue'
@@ -374,6 +388,7 @@ import { resolveAssetUrl } from '@/api/serverConfig'
 
 const route = useRoute()
 const slug = computed(() => route.params.slug)
+const { t } = useI18n()
 
 const topicsStore = useTopicsStore()
 const projectStore = useProjectStore()
@@ -381,6 +396,40 @@ const chatStore = useChatStore()
 const auth = useAuthStore()
 const ui = useUIStore()
 const { formatDateTime } = useDateFormat()
+
+// Sidebar entries menu — which fixed nav entries (e.g. Project Chat) show
+// above the topic list. Global preference (not per-project), same pattern
+// as CardDetail's shown-sections menu.
+const sidebarMenuOpen = ref(false)
+const sidebarMenuEl = ref(null)
+const shownSidebarEntries = ref(new Set(JSON.parse(localStorage.getItem('warmdesk-topics-shown-entries') || '["chat"]')))
+
+const sidebarEntriesConfig = computed(() => [
+  { key: 'chat', label: t('topics.project_chat') },
+])
+
+function isSidebarEntryVisible(key) {
+  return shownSidebarEntries.value.has(key)
+}
+
+function toggleSidebarEntry(key) {
+  const next = new Set(shownSidebarEntries.value)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  shownSidebarEntries.value = next
+  localStorage.setItem('warmdesk-topics-shown-entries', JSON.stringify([...next]))
+}
+
+function onSidebarMenuDocClick(e) {
+  if (sidebarMenuEl.value && !sidebarMenuEl.value.contains(e.target)) {
+    sidebarMenuOpen.value = false
+  }
+}
+
+watch(sidebarMenuOpen, (open) => {
+  if (open) document.addEventListener('click', onSidebarMenuDocClick)
+  else document.removeEventListener('click', onSidebarMenuDocClick)
+})
 
 const activeTopic = ref(null)
 const chatOpen = ref(false)
@@ -513,6 +562,7 @@ onUnmounted(() => {
   disconnect()
   topicsStore.reset()
   chatStore.reset()
+  document.removeEventListener('click', onSidebarMenuDocClick)
 })
 
 // Re-fetch active topic detail when WS updates it
@@ -831,6 +881,59 @@ function renderMarkdown(text) {
   flex-shrink: 0;
 }
 .topics-sidebar-header h1 { margin: 0; font-size: 16px; }
+
+.topics-sidebar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sections-menu-wrap {
+  position: relative;
+}
+.sections-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+}
+.sections-menu-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+.sections-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  padding: 4px 0;
+  z-index: 20;
+}
+.sections-menu-item {
+  padding: 0;
+}
+.sections-menu-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text);
+  user-select: none;
+}
+.sections-menu-label:hover {
+  background: var(--color-bg);
+}
 
 .chat-nav-item {
   width: 100%;

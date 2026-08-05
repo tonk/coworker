@@ -323,6 +323,7 @@
     "edited": "edited",
     "back": "Back to Topics",
     "project_chat": "Project Chat",
+    "toggle_sidebar_entries": "Sidebar options",
     "no_chat_messages": "No messages yet. Say hello!",
     "chat_placeholder": "Message the project…",
     "send": "Send"

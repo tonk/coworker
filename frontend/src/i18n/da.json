@@ -323,6 +323,7 @@
     "edited": "redigeret",
     "back": "Tilbage til emner",
     "project_chat": "Projektchat",
+    "toggle_sidebar_entries": "Sidebjælkeindstillinger",
     "no_chat_messages": "Ingen beskeder endnu. Sig hej!",
     "chat_placeholder": "Skriv til projektet…",
     "send": "Send"
