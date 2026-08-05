@@ -921,7 +921,8 @@
     "no_customers": "Geen gemarkeerde klanten",
     "all_invoices": "Alle facturen",
     "hide_sidebar": "Zijbalk verbergen",
-    "show_sidebar": "Zijbalk tonen"
+    "show_sidebar": "Zijbalk tonen",
+    "toggle_sections": "Zijbalkonderdelen"
   },
   "apikeys": {
     "tab": "API-sleutels",

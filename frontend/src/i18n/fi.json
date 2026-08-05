@@ -957,7 +957,8 @@
     "unread_messages": "Lukemattomat viestit",
     "all_invoices": "Kaikki laskut",
     "hide_sidebar": "Piilota sivupalkki",
-    "show_sidebar": "Näytä sivupalkki"
+    "show_sidebar": "Näytä sivupalkki",
+    "toggle_sections": "Sivupalkin osiot"
   },
   "apikeys": {
     "tab": "API-avaimet",

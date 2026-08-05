@@ -921,7 +921,8 @@
     "no_customers": "Aucun client marqué",
     "all_invoices": "Toutes les factures",
     "hide_sidebar": "Masquer la barre latérale",
-    "show_sidebar": "Afficher la barre latérale"
+    "show_sidebar": "Afficher la barre latérale",
+    "toggle_sections": "Sections de la barre latérale"
   },
   "apikeys": {
     "tab": "Clés API",

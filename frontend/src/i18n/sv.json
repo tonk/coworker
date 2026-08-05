@@ -957,7 +957,8 @@
     "unread_messages": "Olästa meddelanden",
     "all_invoices": "Alla fakturor",
     "hide_sidebar": "Dölj sidofält",
-    "show_sidebar": "Visa sidofält"
+    "show_sidebar": "Visa sidofält",
+    "toggle_sections": "Sidofältssektioner"
   },
   "apikeys": {
     "tab": "API-nycklar",

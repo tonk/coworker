@@ -1075,7 +1075,8 @@
     "unread_messages": "Unread messages",
     "all_invoices": "All Invoices",
     "hide_sidebar": "Hide sidebar",
-    "show_sidebar": "Show sidebar"
+    "show_sidebar": "Show sidebar",
+    "toggle_sections": "Sidebar sections"
   },
   "apikeys": {
     "tab": "API Keys",

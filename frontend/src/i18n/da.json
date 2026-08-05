@@ -957,7 +957,8 @@
     "unread_messages": "Ulæste beskeder",
     "all_invoices": "Alle fakturaer",
     "hide_sidebar": "Skjul sidepanel",
-    "show_sidebar": "Vis sidepanel"
+    "show_sidebar": "Vis sidepanel",
+    "toggle_sections": "Sidepanelafsnit"
   },
   "apikeys": {
     "tab": "API-nøgler",

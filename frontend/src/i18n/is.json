@@ -957,7 +957,8 @@
     "unread_messages": "Ólesnar skilaboð",
     "all_invoices": "Allar reikningar",
     "hide_sidebar": "Fela hliðarstiku",
-    "show_sidebar": "Sýna hliðarstiku"
+    "show_sidebar": "Sýna hliðarstiku",
+    "toggle_sections": "Hlutar hliðarstiku"
   },
   "apikeys": {
     "tab": "API-lyklar",

@@ -11,9 +11,23 @@
       :title="$t('sidebar.hide_sidebar')"
     ><span aria-hidden="true">{{ sidebarPos === 'right' ? '›' : '‹' }}</span></button>
 
+    <div v-if="!collapsed" class="sidebar-top-bar">
+      <div class="sections-menu-wrap" ref="sectionsMenuEl">
+        <button class="sections-menu-btn" @click.stop="sectionsMenuOpen = !sectionsMenuOpen" :title="$t('sidebar.toggle_sections')" :aria-label="$t('sidebar.toggle_sections')">⋮</button>
+        <div v-if="sectionsMenuOpen" class="sections-menu-dropdown">
+          <div v-for="sec in sectionsMenuConfig" :key="sec.key" class="sections-menu-item">
+            <label class="sections-menu-label">
+              <input type="checkbox" :checked="shownSections[sec.key]" @change="toggleShownSection(sec.key)" />
+              <span>{{ sec.label }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="sidebar-scroll">
     <!-- Starred Projects -->
-    <section v-if="auth.boardEnabled && !systemStore.isTimetrackingMode"
+    <section v-if="auth.boardEnabled && !systemStore.isTimetrackingMode && shownSections.starred"
       class="sidebar-section"
       :style="sectionStyle('starred')"
       :class="{ 'section-drag-over': sectionDragOver === 'starred' }"
@@ -51,7 +65,7 @@
     </section>
 
     <!-- All Projects -->
-    <section v-if="auth.boardEnabled && !systemStore.isTimetrackingMode"
+    <section v-if="auth.boardEnabled && !systemStore.isTimetrackingMode && shownSections.projects"
       class="sidebar-section"
       :style="sectionStyle('projects')"
       :class="{ 'section-drag-over': sectionDragOver === 'projects' }"
@@ -84,7 +98,7 @@
     </section>
 
     <!-- Favorite Customers -->
-    <section
+    <section v-if="shownSections.customers"
       class="sidebar-section"
       :style="sectionStyle('customers')"
       :class="{ 'section-drag-over': sectionDragOver === 'customers' }"
@@ -122,7 +136,7 @@
     </section>
 
     <!-- All Customers -->
-    <section
+    <section v-if="shownSections.allCustomers"
       class="sidebar-section"
       :style="sectionStyle('allCustomers')"
       :class="{ 'section-drag-over': sectionDragOver === 'allCustomers' }"
@@ -159,7 +173,7 @@
     </section>
 
     <!-- Favorite People -->
-    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode"
+    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode && shownSections.favorites"
       class="sidebar-section"
       :style="sectionStyle('favorites')"
       :class="{ 'section-drag-over': sectionDragOver === 'favorites' }"
@@ -193,7 +207,7 @@
     </section>
 
     <!-- Helpdesk (tickets) -->
-    <section v-if="auth.helpdeskEnabled && !systemStore.isTimetrackingMode" class="sidebar-section" :style="sectionStyle('helpdesk')" data-section-key="helpdesk">
+    <section v-if="auth.helpdeskEnabled && !systemStore.isTimetrackingMode && shownSections.helpdesk" class="sidebar-section" :style="sectionStyle('helpdesk')" data-section-key="helpdesk">
       <button class="section-header" @click="toggle('helpdesk')" :aria-expanded="open.helpdesk" aria-controls="section-body-helpdesk">
         <span class="section-drag-handle" aria-hidden="true" @pointerdown.prevent.stop="onSectionHandleDown($event, 'helpdesk')">⠿</span>
         <span class="section-title">{{ $t('ticket.tickets') }}</span>
@@ -234,7 +248,7 @@
     </section>
 
     <!-- All People -->
-    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode"
+    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode && shownSections.people"
       class="sidebar-section"
       :style="sectionStyle('people')"
       :class="{ 'section-drag-over': sectionDragOver === 'people' }"
@@ -274,7 +288,7 @@
     </section>
 
     <!-- Chats -->
-    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode"
+    <section v-if="auth.chatEnabled && !systemStore.isTimetrackingMode && shownSections.chats"
       class="sidebar-section"
       :style="sectionStyle('chats')"
       :class="{ 'section-drag-over': sectionDragOver === 'chats' }"
@@ -314,7 +328,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, computed, reactive, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   collapsed: { type: Boolean, default: false }
@@ -363,6 +377,7 @@ function stopResize() {
   document.body.style.userSelect = ''
 }
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useAuthStore } from '@/stores/auth'
 import { useSystemStore } from '@/stores/system'
@@ -371,6 +386,7 @@ import { useCustomersStore } from '@/stores/customers'
 import { useTicketsStore } from '@/stores/tickets'
 import { resolveAssetUrl } from '@/api/serverConfig'
 
+const { t } = useI18n()
 const sidebarStore = useSidebarStore()
 const auth = useAuthStore()
 const systemStore = useSystemStore()
@@ -390,6 +406,44 @@ function toggle(section) {
   open.value[section] = !open.value[section]
   localStorage.setItem(STORAGE_KEY, JSON.stringify(open.value))
 }
+
+// Section visibility menu — which sections (Starred, All Projects, Customers,
+// etc.) appear in the sidebar at all, as opposed to `open` above which only
+// collapses/expands a section's body while keeping its header visible.
+const SHOWN_STORAGE_KEY = 'sidebar_shown'
+const shownDefaults = { starred: true, projects: true, customers: true, allCustomers: true, helpdesk: true, favorites: true, chats: true, people: true }
+const savedShown = JSON.parse(localStorage.getItem(SHOWN_STORAGE_KEY) || 'null') || shownDefaults
+const shownSections = ref({ ...shownDefaults, ...savedShown })
+
+function toggleShownSection(key) {
+  shownSections.value[key] = !shownSections.value[key]
+  localStorage.setItem(SHOWN_STORAGE_KEY, JSON.stringify(shownSections.value))
+}
+
+const sectionsMenuOpen = ref(false)
+const sectionsMenuEl = ref(null)
+
+const sectionsMenuConfig = computed(() => [
+  { key: 'starred', label: t('sidebar.starred'), enabled: auth.boardEnabled && !systemStore.isTimetrackingMode },
+  { key: 'projects', label: t('sidebar.all_projects'), enabled: auth.boardEnabled && !systemStore.isTimetrackingMode },
+  { key: 'customers', label: t('sidebar.customers'), enabled: true },
+  { key: 'allCustomers', label: t('customer.all_customers'), enabled: true },
+  { key: 'favorites', label: t('sidebar.favorites'), enabled: auth.chatEnabled && !systemStore.isTimetrackingMode },
+  { key: 'helpdesk', label: t('ticket.tickets'), enabled: auth.helpdeskEnabled && !systemStore.isTimetrackingMode },
+  { key: 'people', label: t('sidebar.users'), enabled: auth.chatEnabled && !systemStore.isTimetrackingMode },
+  { key: 'chats', label: t('nav.messages'), enabled: auth.chatEnabled && !systemStore.isTimetrackingMode },
+].filter(s => s.enabled))
+
+function onSectionsMenuDocClick(e) {
+  if (sectionsMenuEl.value && !sectionsMenuEl.value.contains(e.target)) {
+    sectionsMenuOpen.value = false
+  }
+}
+
+watch(sectionsMenuOpen, (isOpen) => {
+  if (isOpen) document.addEventListener('click', onSectionsMenuDocClick)
+  else document.removeEventListener('click', onSectionsMenuDocClick)
+})
 
 const onlineIds = computed(() => new Set(sidebarStore.chatUsers.map(u => u.id)))
 
@@ -679,6 +733,7 @@ onUnmounted(() => {
   document.removeEventListener('pointerup', onSectionPointerUp)
   document.removeEventListener('pointermove', onItemPointerMove)
   document.removeEventListener('pointerup', onItemPointerUp)
+  document.removeEventListener('click', onSectionsMenuDocClick)
 })
 </script>
 
@@ -732,6 +787,60 @@ onUnmounted(() => {
   min-height: 0;
   overflow-y: auto;
   padding: 12px 0;
+}
+
+.sidebar-top-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 6px 8px 0;
+  flex-shrink: 0;
+}
+
+.sections-menu-wrap {
+  position: relative;
+}
+.sections-menu-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+}
+.sections-menu-btn:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+.sections-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  padding: 4px 0;
+  z-index: 20;
+}
+.sections-menu-item {
+  padding: 0;
+}
+.sections-menu-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text);
+  user-select: none;
+}
+.sections-menu-label:hover {
+  background: var(--color-bg);
 }
 
 .resize-handle {

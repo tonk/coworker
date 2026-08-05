@@ -921,7 +921,8 @@
     "no_customers": "Keine markierten Kunden",
     "all_invoices": "Alle Rechnungen",
     "hide_sidebar": "Seitenleiste ausblenden",
-    "show_sidebar": "Seitenleiste einblenden"
+    "show_sidebar": "Seitenleiste einblenden",
+    "toggle_sections": "Seitenleisten-Abschnitte"
   },
   "apikeys": {
     "tab": "API-Schlüssel",

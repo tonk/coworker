@@ -957,7 +957,8 @@
     "unread_messages": "Messaggi non letti",
     "all_invoices": "Tutte le fatture",
     "hide_sidebar": "Nascondi barra laterale",
-    "show_sidebar": "Mostra barra laterale"
+    "show_sidebar": "Mostra barra laterale",
+    "toggle_sections": "Sezioni della barra laterale"
   },
   "apikeys": {
     "tab": "Chiavi API",
