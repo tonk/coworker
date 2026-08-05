@@ -364,6 +364,7 @@
           <div class="labels-list">
             <div v-for="label in labels" :key="label.id" class="label-row">
               <span class="label-preview" :style="{ background: label.color }">{{ label.name }}</span>
+              <button class="btn btn-secondary btn-sm" @click="openEditLabel(label)" :aria-label="`Edit label ${label.name}`">Edit</button>
               <button class="btn btn-danger btn-sm" @click="deleteLabel(label)">{{ $t('common.delete') }}</button>
             </div>
           </div>
@@ -412,18 +413,18 @@
       </template>
   </BaseModal>
 
-  <BaseModal v-if="showAddLabel" title="Add Label" @close="showAddLabel = false" :resizable="true">
+  <BaseModal v-if="showAddLabel || editingLabel" :title="editingLabel ? 'Edit Label' : 'Add Label'" @close="closeLabelModal" :resizable="true">
       <div class="form-group">
-        <label class="form-label">Name</label>
-        <input class="form-input" v-model="newLabel.name" autofocus />
+        <label class="form-label" for="field-label-name">Name</label>
+        <input id="field-label-name" class="form-input" v-model="labelForm.name" autofocus />
       </div>
       <div class="form-group">
-        <label class="form-label">{{ $t('project.color') }}</label>
-        <input type="color" class="form-input" v-model="newLabel.color" :aria-label="$t('project.color')" style="height:40px;padding:4px;width:80px" />
+        <label class="form-label" for="field-label-color">{{ $t('project.color') }}</label>
+        <input id="field-label-color" type="color" class="form-input" v-model="labelForm.color" :aria-label="$t('project.color')" style="height:40px;padding:4px;width:80px" />
       </div>
       <template #footer>
-        <button class="btn btn-secondary" @click="showAddLabel = false">{{ $t('common.cancel') }}</button>
-        <button class="btn btn-primary" @click="createLabel">{{ $t('common.create') }}</button>
+        <button class="btn btn-secondary" @click="closeLabelModal">{{ $t('common.cancel') }}</button>
+        <button class="btn btn-primary" @click="saveLabel">{{ editingLabel ? $t('common.save') : $t('common.create') }}</button>
       </template>
   </BaseModal>
 
@@ -499,10 +500,11 @@ const groupsNotOnProject = computed(() => {
 })
 const showInvite = ref(false)
 const showAddLabel = ref(false)
+const editingLabel = ref(null)
 const invite = ref({ userIds: [], role: 'member' })
 const inviteSearch = ref('')
 const allUsers = ref([])
-const newLabel = ref({ name: '', color: '#6366f1' })
+const labelForm = ref({ name: '', color: '#6366f1' })
 const form = ref({ name: '', description: '', color: '', avatar: '', customer_id: null, contract_id: null, board_type: 'kanban' })
 const customers = ref([])
 const allContracts = ref([])
@@ -716,14 +718,28 @@ async function sendInvite() {
   }
 }
 
-async function createLabel() {
+function openEditLabel(label) {
+  editingLabel.value = label
+  labelForm.value = { name: label.name, color: label.color }
+}
+
+function closeLabelModal() {
+  showAddLabel.value = false
+  editingLabel.value = null
+  labelForm.value = { name: '', color: '#6366f1' }
+}
+
+async function saveLabel() {
   try {
-    await projectsApi.createLabel(slug.value, newLabel.value)
-    showAddLabel.value = false
-    newLabel.value = { name: '', color: '#6366f1' }
+    if (editingLabel.value) {
+      await projectsApi.updateLabel(slug.value, editingLabel.value.id, labelForm.value)
+    } else {
+      await projectsApi.createLabel(slug.value, labelForm.value)
+    }
+    closeLabelModal()
     loadLabels()
   } catch (e) {
-    ui.error('Failed to create label')
+    ui.error(editingLabel.value ? 'Failed to update label' : 'Failed to create label')
   }
 }
 
