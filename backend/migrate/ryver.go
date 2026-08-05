@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -785,8 +786,12 @@ func ImportFromRyver(cfg PlatformConfig, columnMap map[string]string, includeCar
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 func ryverFindTeam(base, token, teamName string) (int, error) {
-	url := fmt.Sprintf("%s/workrooms?$filter=name+eq+'%s'&$select=id,name", base, teamName)
-	data, status, err := ryverDo("GET", url, token, nil)
+	// teamName can contain spaces, "&", or other characters that are not
+	// valid unescaped in a URL — a raw space alone is enough for a strict
+	// reverse proxy in front of Ryver to reject the request outright with a
+	// plain-HTML 400 before it ever reaches Ryver's own API.
+	reqURL := fmt.Sprintf("%s/workrooms?$filter=name+eq+'%s'&$select=id,name", base, url.QueryEscape(teamName))
+	data, status, err := ryverDo("GET", reqURL, token, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -873,7 +878,7 @@ func DumpFirstTask(cfg PlatformConfig, ref, path string) error {
 
 	var chosen json.RawMessage
 	if ref != "" {
-		tasksURL := fmt.Sprintf("%s/taskBoards(%d)/tasks?$filter=short+eq+'%s'&$expand=createUser,category,assignees,attachments,attachments/storage", base, boardID, ref)
+		tasksURL := fmt.Sprintf("%s/taskBoards(%d)/tasks?$filter=short+eq+'%s'&$expand=createUser,category,assignees,attachments,attachments/storage", base, boardID, url.QueryEscape(ref))
 		rawTasks, err := ryverPaginate(token, tasksURL)
 		if err != nil {
 			return fmt.Errorf("get task %q: %w", ref, err)
