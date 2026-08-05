@@ -102,6 +102,62 @@ func ryverPaginate(token, url string) ([]json.RawMessage, error) {
 	return all, nil
 }
 
+// ryverPaginateChatHistory fetches all pages of workrooms(id)/Chat.History().
+// Unlike every other collection endpoint used by this package, Chat.History()
+// rejects $skip outright ("$skip not supported; use $filter=id+[gt|lt]+'[id]'
+// to page through results") — so it needs its own cursor-based paginator
+// instead of the generic $skip/$top one above. Results come back newest
+// first, so paging further back means asking for id lt the oldest id seen
+// so far.
+func ryverPaginateChatHistory(token, url string) ([]json.RawMessage, error) {
+	const pageSize = 50
+	var all []json.RawMessage
+	beforeID := ""
+	for {
+		sep := "&"
+		if !strings.Contains(url, "?") {
+			sep = "?"
+		}
+		pageURL := fmt.Sprintf("%s%s$top=%d", url, sep, pageSize)
+		if beforeID != "" {
+			pageURL = fmt.Sprintf("%s&$filter=id+lt+'%s'", pageURL, beforeID)
+		}
+		data, status, err := ryverDo("GET", pageURL, token, nil)
+		if err != nil {
+			return nil, err
+		}
+		if status != http.StatusOK {
+			return nil, fmt.Errorf("HTTP %d: %s", status, string(data))
+		}
+
+		var page struct {
+			D struct {
+				Results []json.RawMessage `json:"results"`
+			} `json:"d"`
+		}
+		if err := json.Unmarshal(data, &page); err != nil {
+			return nil, fmt.Errorf("parse page: %w", err)
+		}
+		if len(page.D.Results) == 0 {
+			break
+		}
+		all = append(all, page.D.Results...)
+
+		var last struct {
+			ID json.RawMessage `json:"id"`
+		}
+		if err := json.Unmarshal(page.D.Results[len(page.D.Results)-1], &last); err != nil || len(last.ID) == 0 {
+			break
+		}
+		beforeID = strings.Trim(string(last.ID), `"`)
+
+		if len(page.D.Results) < pageSize {
+			break
+		}
+	}
+	return all, nil
+}
+
 // ryverGetTaskBoardID looks up the task board attached to a team/forum.
 // Ryver returns 404 when tasks have never been set up for that team.
 func ryverGetTaskBoardID(base, token string, teamID int) (int, bool, error) {
@@ -505,9 +561,13 @@ type ryverCommentJSON struct {
 // workrooms(id)/Chat.History(). Unlike other entities, its author is only a
 // bare user id — there is no inline createUser object to read a name from.
 type ryverChatMessageJSON struct {
-	When    string `json:"when"`
-	Subtype string `json:"subtype"` // empty for a regular chat message
-	Body    string `json:"body"`
+	// Raw so it round-trips whether Ryver encodes it as a JSON string or
+	// number — needed verbatim (minus surrounding quotes) to build the next
+	// page's $filter=id lt '...' cursor.
+	ID      json.RawMessage `json:"id"`
+	When    string          `json:"when"`
+	Subtype string          `json:"subtype"` // empty for a regular chat message
+	Body    string          `json:"body"`
 	From    struct {
 		ID int `json:"id"`
 	} `json:"from"`
@@ -738,7 +798,7 @@ func ImportFromRyver(cfg PlatformConfig, columnMap map[string]string, includeCar
 			return nil, fmt.Errorf("list users: %w", err)
 		}
 		messagesURL := fmt.Sprintf("%s/workrooms(%d)/Chat.History()?$format=json", base, teamID)
-		rawMessages, err := ryverPaginate(token, messagesURL)
+		rawMessages, err := ryverPaginateChatHistory(token, messagesURL)
 		if err != nil {
 			return nil, fmt.Errorf("get chat history: %w", err)
 		}
@@ -844,7 +904,7 @@ func DumpChatHistory(cfg PlatformConfig, path string) error {
 		return fmt.Errorf("find team %q: %w", cfg.Team, err)
 	}
 
-	url := fmt.Sprintf("%s/workrooms(%d)/Chat.History()?$format=json&$top=20&$skip=0", base, teamID)
+	url := fmt.Sprintf("%s/workrooms(%d)/Chat.History()?$format=json&$top=20", base, teamID)
 	data, status, err := ryverDo("GET", url, token, nil)
 	if err != nil {
 		return err

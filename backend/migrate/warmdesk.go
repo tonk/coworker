@@ -504,25 +504,39 @@ func WriteProject(baseURL, token string, p *Project, columnMap map[string]string
 	if explicitPrefix != "" {
 		prefix = strings.ToUpper(explicitPrefix)
 	}
-	data, status, err := cwDo("POST", baseURL+"/api/v1/projects", hdrs, createProjReq{
-		Name:        p.Name,
-		Slug:        slug,
-		Description: p.Description,
-		Color:       "#6366f1",
-		KeyPrefix:   prefix,
-		CustomerID:  customerID,
-	})
-	if err != nil {
-		return err
-	}
-	if status != http.StatusCreated && status != http.StatusOK {
-		return fmt.Errorf("create project (HTTP %d): %s", status, string(data))
-	}
+	// A partial re-run (e.g. include.chat: true, include.cards: false, to
+	// backfill chat into a project whose cards were already imported in an
+	// earlier run) must write into that already-existing project rather than
+	// attempt to create another one — a second create attempt fails with
+	// "card prefix is already used by another project" since key_prefix is
+	// unique across all projects.
 	var createdProj apiProject
-	if err := json.Unmarshal(data, &createdProj); err != nil {
-		return fmt.Errorf("parse created project: %w", err)
+	existingData, existingStatus, existingErr := cwDo("GET", baseURL+"/api/v1/projects/"+slug, hdrs, nil)
+	if existingErr == nil && existingStatus == http.StatusOK {
+		if err := json.Unmarshal(existingData, &createdProj); err != nil {
+			return fmt.Errorf("parse existing project: %w", err)
+		}
+		fmt.Printf("  → reusing existing project %q (slug=%s)\n", p.Name, createdProj.Slug)
+	} else {
+		data, status, err := cwDo("POST", baseURL+"/api/v1/projects", hdrs, createProjReq{
+			Name:        p.Name,
+			Slug:        slug,
+			Description: p.Description,
+			Color:       "#6366f1",
+			KeyPrefix:   prefix,
+			CustomerID:  customerID,
+		})
+		if err != nil {
+			return err
+		}
+		if status != http.StatusCreated && status != http.StatusOK {
+			return fmt.Errorf("create project (HTTP %d): %s", status, string(data))
+		}
+		if err := json.Unmarshal(data, &createdProj); err != nil {
+			return fmt.Errorf("parse created project: %w", err)
+		}
+		fmt.Printf("  → created project %q (slug=%s)\n", p.Name, createdProj.Slug)
 	}
-	fmt.Printf("  → created project %q (slug=%s)\n", p.Name, createdProj.Slug)
 
 	// ── collect unique labels ─────────────────────────────────────────────────
 	labelIDMap := map[string]uint{} // label name → id in WarmDesk
@@ -643,17 +657,23 @@ func WriteProject(baseURL, token string, p *Project, columnMap map[string]string
 		}
 	}
 
-	// Remove default columns that weren't used by any migrated column.
-	for name, col := range existingCols {
-		if usedColumnNames[name] {
-			continue
+	// Remove default columns that weren't used by any migrated column. Only
+	// when this run actually processed columns — a chat-only run (p.Columns
+	// empty because include.cards is false) never touches usedColumnNames,
+	// which would otherwise make this loop delete every real column already
+	// sitting in a project reused from an earlier cards import.
+	if len(p.Columns) > 0 {
+		for name, col := range existingCols {
+			if usedColumnNames[name] {
+				continue
+			}
+			delURL := fmt.Sprintf("%s/%d", columnsURL, col.ID)
+			if data, status, err := cwDo("DELETE", delURL, hdrs, nil); err != nil || status != http.StatusOK {
+				fmt.Printf("  ⚠ could not remove unused default column %q (HTTP %d): %s\n", name, status, string(data))
+				continue
+			}
+			fmt.Printf("  → removed unused default column %q\n", name)
 		}
-		delURL := fmt.Sprintf("%s/%d", columnsURL, col.ID)
-		if data, status, err := cwDo("DELETE", delURL, hdrs, nil); err != nil || status != http.StatusOK {
-			fmt.Printf("  ⚠ could not remove unused default column %q (HTTP %d): %s\n", name, status, string(data))
-			continue
-		}
-		fmt.Printf("  → removed unused default column %q\n", name)
 	}
 
 	// ── topics ────────────────────────────────────────────────────────────────
