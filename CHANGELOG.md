@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.20.1 — 2026-08-05
+
+### Fixed
+- **Project labels could only be created and deleted, never edited** — the `PUT` endpoint and API client function already existed and worked; the Project Settings → Labels tab just had no button to reach them. The existing "Add Label" modal now doubles as an edit modal, and each label row gets an Edit button alongside Delete.
+- **Ryver migration failed with a plain-HTML 400 for any team name containing a space** (e.g. "Restic Server") — the team name was spliced into the request URL unescaped, producing an invalid raw HTTP request line that a reverse proxy in front of Ryver rejected before it ever reached Ryver's own API. A name with a literal `&` (e.g. "Sysadmin & Networking") would have failed worse, truncating the query string entirely. Both the team lookup and the `--dump-task-ref` lookup now URL-encode the value.
+
 ## v0.20.0 — 2026-08-05
 
 ### Added

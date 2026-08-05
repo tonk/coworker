@@ -846,3 +846,5 @@ Create an application that has all these features and requirements
 - Bring back a UI for project chat (a "Project Chat" entry on the Topics page) after its previous panel was removed as unused dead code in an earlier cleanup, leaving the feature fully functional at the API/database level but with no way to actually view or send a message
 - Add support for multiple backup-notification email addresses (comma, semicolon, or whitespace separated) instead of a single address
 - Patch a transitive brace-expansion vulnerability in frontend dev dependencies
+- Fix project labels being creatable and deletable but not editable in the UI, even though the backend endpoint and API client already supported it; the Add Label modal now doubles as an edit modal with an Edit button on each label row
+- Fix Ryver migration failing with a plain-HTML 400 for any team name containing a space (e.g. "Restic Server") because the name was spliced into the request URL unescaped, producing an invalid raw HTTP request line rejected by the reverse proxy in front of Ryver before it reached Ryver's own API; a name with a literal "&" would have failed worse by truncating the query string

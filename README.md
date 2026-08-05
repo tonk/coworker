@@ -8,11 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.20.0)
+## Latest release (v0.20.1)
 
-- **Ryver migration support** — import tasks, topics, and full chat history from Ryver via the standalone `warmdesk-import` tool, with per-user attribution and configurable per-category import.
-- **Project chat has a UI again** — view and post project chat messages from a new "Project Chat" entry on the Topics page, with screenshot paste/file-attach support.
-- **Card comments can now carry attachments.**
+- **Fixed** — Project labels can now be edited, not just created and deleted; the backend already supported it, only the UI button was missing.
+- **Fixed** — Ryver migration failing outright for any team name containing a space (e.g. "Restic Server") or an `&` (e.g. "Sysadmin & Networking"), due to the name being spliced into the request URL unescaped.
 
 ## Experiment
 
