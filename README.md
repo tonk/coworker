@@ -8,9 +8,11 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.19.2)
+## Latest release (v0.20.0)
 
-- **Fixed** — The Admin Panel's Groups list and a group's "Customer access" table showed the literal text `customer.title` instead of a "Customers" column heading, due to a reference to a nonexistent translation key.
+- **Ryver migration support** — import tasks, topics, and full chat history from Ryver via the standalone `warmdesk-import` tool, with per-user attribution and configurable per-category import.
+- **Project chat has a UI again** — view and post project chat messages from a new "Project Chat" entry on the Topics page, with screenshot paste/file-attach support.
+- **Card comments can now carry attachments.**
 
 ## Experiment
 

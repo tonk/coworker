@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.20.0 — 2026-08-05
+
+### Added
+- **Project chat has a UI again** — a "Project Chat" entry in the Topics page sidebar shows the project's chat history and lets you post new messages, with paste-a-screenshot/file-attach support and live updates; the feature had backend and unread-badge support but no way to actually view or send a message since its old UI panel was removed as unused dead code in an earlier cleanup.
+- **Card comments can now carry attachments** — paste a screenshot or attach a file directly in the comment box. Comment attachments were previously accepted by the upload endpoint but never loaded back or shown anywhere.
+- **Ryver migration support** for the standalone `warmdesk-import`/`warmdesk-export` tools — imports tasks (columns, labels/tags, comments with their own attachments, assignees, creator, start/due dates), forum topics, and full project chat history from Ryver. A configurable `user_map` resolves external usernames to WarmDesk accounts so cards, comments, and chat messages land on the right person — including real author attribution via short-lived per-user API keys, rather than everything appearing as the importing account. Existing default columns/labels are reused instead of duplicated. New `include.cards` / `include.chat` config toggles let either category be imported independently.
+- **Backup notification email accepts multiple addresses** — separate them with a comma, semicolon, or whitespace.
+
+### Fixed
+- **A comment or chat message consisting only of an attachment (no text) could not be created at all** — the backend required a non-empty body, so an image-only comment or message was silently rejected before its attachment ever got a chance to upload.
+
 ## v0.19.2 — 2026-08-04
 
 ### Fixed

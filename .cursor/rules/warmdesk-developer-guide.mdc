@@ -382,6 +382,27 @@ Tokens are stored in `system_settings`. Access tokens are masked in admin API re
 
 ---
 
+## Migration tools (`backend/migrate/`, `cmd/importer`, `cmd/export`)
+
+`warmdesk-import`/`warmdesk-export` move projects to/from Jira, Trello, OpenProject, or Ryver — see the admin guide's "Migration Tools" section for user-facing config. Ryver is the deepest-implemented platform; its real OData API differs from what you'd guess in several ways that cost real debugging time to discover:
+
+- **Entity set names are lowercase** (`workrooms`, `posts`, `tasks`, `taskBoards`, `taskComments`) even though bound action names stay PascalCase (`Chat.PostMessage()`, `TaskBoard.Create()`). A team only has tasks once a task board is explicitly set up (`GET workrooms(id)/board` 404s if not); tasks then live under `taskBoards(id)/tasks`, never queried directly by workroom.
+- **Columns are task board categories, not tags.** Each task's `category` nav property is the WarmDesk-column equivalent; tags are a separate, unrelated concept that now maps to WarmDesk Labels (case-insensitive dedup against existing labels, including auto-created project defaults, before creating a new one — same pattern used for reusing default columns).
+- **Nested `$expand` on a collection query silently truncates** to a small page size independent of the outer collection's own (50-item) page cap — task attachments and task-comment attachments are each fetched as their own dedicated paginated query (`ryverFetchAttachments`), never via inline expand on the parent.
+- **Timestamp formats vary per entity** and don't parse with one layout: task/topic dates use `2021-09-22T15:07:53+0000`; chat message `when` uses fractional seconds with a literal `Z` (`2022-06-01T08:01:27.588852Z`, parsed with `time.RFC3339Nano`). A task is "done" via a nullable `completeDate`, not an `isComplete` field (which doesn't exist).
+- **Chat messages only carry a bare author user ID** (`from.id`), unlike every other entity which inlines a `createUser` object — resolve authors via one org-wide `GET /users` lookup instead of a request per message.
+- **DMs are unreachable from a Custom Integration token.** `Chat.History()` on a `users(id)` entity is implicitly scoped to "the caller's own conversation with that user" — an integration has no personal DMs of its own. Only real per-user Basic Auth credentials can recover a given person's DM history, and only for threads they were part of. Not implemented.
+
+**Author attribution on import** (`authorHeaders`/`mintTempAPIKey` in `warmdesk.go`): `user_map` resolves an external display name to a WarmDesk account, then a short-lived personal API key is minted for that user (the same admin capability behind Admin → Users → API Keys — requires `warmdesk.username` to be a global admin), used to post the comment/message/topic-reply as them, then revoked once the whole import finishes. Falls back to a `*[Name]* ...` text prefix under the importer's own account when unresolvable. `include.cards`/`include.chat` gate which categories `ImportFromRyver` fetches at all.
+
+**Chat backfill needed new backend surface**: project chat previously had no REST create path, only the WebSocket `TypeChatSend` handler, which always stamps `time.Now()`. `POST /projects/:slug/chat/messages` (`handlers/chat.go`, `CreateChatMessage`) adds an optional `created_at` override — when set, the message is treated as a backfill and skips the WS broadcast/mention notification, since flooding online users with years-old imported history would be worse than silence. `CreateComment`/`CreateTopicReply` similarly no longer require a non-empty `body`, since a comment/message can legitimately be just an attachment (the web UI's own compose boxes still block empty submissions client-side, so this doesn't open a new footgun there).
+
+**`card_comment` attachments were a dead end until this release**: `UploadAttachment` always accepted and stored them (`owner_type: "card_comment"` was already valid), but nothing ever called `LoadAttachments("card_comment", ...)` on read — not `GetCard`, not `ListComments`, not `CreateComment`. Fixed via a shared `attachComments()` helper in `handlers/card_comment.go`, called from all of those plus `UpdateComment`.
+
+**Project chat's own UI was deleted as dead code** (`ChatPanel.vue`, in a prior cleanup, after an earlier release removed its slide-in panel from the board page without ever shipping the promised replacement page) — only the backend, the `chat` Pinia store, and unread-badge plumbing (`useProjectChatUnread`) survived. Revived as a "Project Chat" entry in the Topics page sidebar (`TopicsView.vue`) rather than a new dedicated route, reusing `FileUploadButton`/`AttachmentList` from the DM compose pattern. No message-edit or reaction UI yet — those only exist over WebSocket, not REST.
+
+---
+
 ## Time reporting
 
 All reporting lives in **`TimeTrackingView.vue`** under `/time-tracking`, which has three tabs:

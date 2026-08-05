@@ -1,6 +1,6 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.19.2
-:revdate: 2026-08-04
+:revnumber: v0.20.0
+:revdate: 2026-08-05
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -2036,7 +2036,7 @@ The `warmdesk-training` binary sets up isolated training environments — one cu
 |Jira, Trello, OpenProject, or Ryver → WarmDesk
 |===
 
-Both binaries export / import: columns, cards (with title, description, priority, due date, labels, tags, assignees, checklist, comments, time entries, attachments), and threaded topics.
+Both binaries export / import: columns, cards (with title, description, priority, start/due date, labels, tags, assignees, checklist, comments and their own attachments, time entries, attachments), and threaded topics. For Ryver specifically, `warmdesk-import` additionally imports the team's full chat history.
 
 === Configuration
 
@@ -2048,12 +2048,14 @@ Sensitive values can be supplied as environment variables instead:
 WARMDESK_URL        URL of your WarmDesk instance
 WARMDESK_USERNAME   WarmDesk account username
 WARMDESK_PASSWORD   WarmDesk account password
-WARMDESK_PROJECT    Project slug (visible in the URL)
+WARMDESK_PROJECT    Project slug (visible in the URL; warmdesk-export only)
 PLATFORM_API_TOKEN  API token for the target platform
 PLATFORM_API_KEY    API key for the target platform (Trello)
 ----
 
 Any field still missing after reading the file and environment is prompted interactively.
+
+`warmdesk-import` always creates a **new** project, named after the source project/team — it never writes into an existing one. Every WarmDesk project needs a customer, so `warmdesk.customer` (the exact name of an existing customer) is required; resolving it, along with resolving `user_map` usernames below, requires the `warmdesk.username` account to be a global admin. `warmdesk.key_prefix` optionally overrides the auto-derived card prefix (the first three letters of the project name), for when two source projects would otherwise collide on it.
 
 === Column mapping
 
@@ -2069,6 +2071,32 @@ column_map:
 ----
 
 Columns not listed are passed through unchanged.
+
+=== User mapping
+
+The `user_map` section maps an external display name (as it appears on a card, comment, or chat message) to a WarmDesk username, so `warmdesk-import` assigns cards to, and attributes comments/messages to, the right person instead of everything landing on the importing account:
+
+[source,yaml]
+----
+user_map:
+  "Jane Doe": jane
+  "jane.d": jane   # a second external name (e.g. a bare username) can map to the same account
+----
+
+Author attribution works by minting a short-lived personal API key for the mapped WarmDesk account (the same mechanism as Admin → Users → API Keys), posting as that user, then revoking the key — so imported comments and chat messages are genuinely authored by the right person, not just labeled with their name. A name not listed here is imported unassigned (cards) or with a `*[Name]* ...` text prefix instead of real authorship (comments/messages).
+
+=== Content selection (Ryver only)
+
+The `include` section controls which categories of content `warmdesk-import` pulls from Ryver. Both default to `true` (import everything) when the section, or a field within it, is omitted — existing config files need no changes:
+
+[source,yaml]
+----
+include:
+  cards: true   # columns, cards, topics
+  chat: true    # team/group chat history
+----
+
+This is useful for importing cards and chat history as separate runs, or re-running one without repeating the other.
 
 === Usage
 

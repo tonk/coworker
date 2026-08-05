@@ -15,7 +15,14 @@ warmdesk:
   url: https://warmdesk.example.com
   username: admin
   password: ""               # or set WARMDESK_PASSWORD
-  project: my-project-slug   # project slug (visible in the URL)
+  project: my-project-slug   # project slug (visible in the URL); used by warmdesk-export only —
+                             # warmdesk-import always creates a new project named after the
+                             # source project/team
+  customer: ""               # required by warmdesk-import: exact name of an existing WarmDesk
+                             # customer the new project belongs to (every project needs one).
+                             # Resolving it requires the account above to be a global admin.
+  # key_prefix: ""           # optional: override the auto-derived card prefix (first 3 letters
+                             # of the project name) if it collides with another project's
 
 # ── Target / source platform ──────────────────────────────────────────────────
 
@@ -44,7 +51,9 @@ platform:
 
   # ── Ryver ───────────────────────────────────────────────────────────────────
   # org: mycompany           # your Ryver subdomain (mycompany.ryver.com)
-  # api_token: ""            # Ryver API token from the admin console
+  # api_token: ""            # token from a Ryver Custom Integration (Integrations →
+                             # Custom Integrations → + → Tokens tab), scoped to the team(s)
+                             # below; not a personal Ryver login
   # team: My Team            # Ryver team/workroom name to import from / export to
 
 # ── Column mapping ─────────────────────────────────────────────────────────────
@@ -62,3 +71,24 @@ column_map:
   "In Progress": "In Progress"
   "Test & Review": "In Review"
   "To Production": Done
+
+# ── User mapping (warmdesk-import) ──────────────────────────────────────────────
+#
+# Maps an external display name (as it appears on cards/comments/messages) to a
+# WarmDesk username, so imported content is assigned to / authored by the right
+# person instead of the importing account. Resolving usernames requires the
+# warmdesk.username account above to be a global admin. Names not listed here
+# are imported unassigned / with a "*[Name]* ..." text prefix instead of real
+# authorship.
+
+user_map:
+  "Jane Doe": jane
+
+# ── Content selection (Ryver import only) ───────────────────────────────────────
+#
+# Which categories of content to import. Both default to true (import
+# everything) when this section, or a field within it, is omitted.
+
+include:
+  cards: true   # columns, cards, topics
+  chat: true    # team/group chat history
