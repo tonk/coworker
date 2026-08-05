@@ -794,7 +794,7 @@
                 <input ref="logoDarkFileInput" type="file" accept="image/*" style="display:none" @change="onLogoDarkFileSelected" />
                 <div v-if="systemSettings.company_logo_dark" style="margin-top:8px">
                   <span class="form-hint">{{ $t('admin.company_logo_preview') }}</span>
-                  <div style="margin-top:6px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius);display:inline-block;background:var(--color-surface)">
+                  <div style="margin-top:6px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius);display:inline-block;background:#1e293b">
                     <img :src="resolveAssetUrl(systemSettings.company_logo_dark)" alt="Logo dark preview" style="max-height:60px;max-width:200px;object-fit:contain" @error="systemSettings.company_logo_dark=''" />
                   </div>
                 </div>
