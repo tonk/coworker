@@ -204,6 +204,7 @@ func GetCard(c *gin.Context) {
 	if am := LoadAttachments("card", []uint{card.ID}); len(am[card.ID]) > 0 {
 		card.Attachments = am[card.ID]
 	}
+	attachComments(card.Comments)
 	// Populate sub-card counts
 	var subTotal, subDone int64
 	database.DB.Model(&models.Card{}).Where("parent_card_id = ?", card.ID).Count(&subTotal)

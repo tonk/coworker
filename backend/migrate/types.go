@@ -24,10 +24,12 @@ type Card struct {
 	Ref         string // e.g. "PRJ-1"
 	Title       string
 	Description string
-	Priority    string      // none | low | medium | high | critical
-	DueDate     string      // YYYY-MM-DD or ""
+	Priority    string // none | low | medium | high | critical
+	StartDate   string // YYYY-MM-DD or ""
+	DueDate     string // YYYY-MM-DD or ""
 	Closed      bool
-	Assignees   []string    // display names or emails
+	Creator     string   // display name or username of whoever created the source item; used as the primary assignee if resolvable
+	Assignees   []string // display names or emails
 	Labels      []Label
 	Tags        []string
 	Checklist   []CheckItem
@@ -50,9 +52,10 @@ type CheckItem struct {
 
 // Comment is a single comment on a card.
 type Comment struct {
-	Author    string
-	Body      string
-	CreatedAt time.Time
+	Author      string
+	Body        string
+	CreatedAt   time.Time
+	Attachments []Attachment
 }
 
 // Attachment is a file attached to a card.

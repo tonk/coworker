@@ -11,19 +11,26 @@ import (
 
 // Config holds all configuration for both export and import operations.
 type Config struct {
-	WarmDesk  WarmDeskConfig    `yaml:"warmdesk"`
-	Platform  PlatformConfig    `yaml:"platform"`
+	WarmDesk WarmDeskConfig `yaml:"warmdesk"`
+	Platform PlatformConfig `yaml:"platform"`
 	// ColumnMap maps WarmDesk column names → external platform column/status names.
 	// If empty or a name is not found, the WarmDesk column name is used as-is.
 	ColumnMap map[string]string `yaml:"column_map"`
+	// UserMap maps external platform user names (as they appear on cards —
+	// e.g. a Ryver display name like "Ton Kersten") to a WarmDesk username
+	// (e.g. "tonk"). Used on import to assign cards to the right WarmDesk
+	// user. Names not present here are left unassigned.
+	UserMap map[string]string `yaml:"user_map"`
 }
 
 // WarmDeskConfig holds connection details for the WarmDesk server.
 type WarmDeskConfig struct {
-	URL      string `yaml:"url"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Project  string `yaml:"project"` // project slug
+	URL       string `yaml:"url"`
+	Username  string `yaml:"username"`
+	Password  string `yaml:"password"`
+	Project   string `yaml:"project"`    // project slug
+	Customer  string `yaml:"customer"`   // exact name of the WarmDesk customer the project belongs to (required)
+	KeyPrefix string `yaml:"key_prefix"` // override the auto-derived card prefix (e.g. when two source project names would collide); optional
 }
 
 // PlatformConfig holds connection details for the external platform.
@@ -70,6 +77,7 @@ func LoadConfig(path string) (*Config, error) {
 	applyEnv(&cfg.WarmDesk.Username, "WARMDESK_USERNAME")
 	applyEnv(&cfg.WarmDesk.Password, "WARMDESK_PASSWORD")
 	applyEnv(&cfg.WarmDesk.Project, "WARMDESK_PROJECT")
+	applyEnv(&cfg.WarmDesk.Customer, "WARMDESK_CUSTOMER")
 	applyEnv(&cfg.Platform.APIToken, "PLATFORM_API_TOKEN")
 	applyEnv(&cfg.Platform.APIKey, "PLATFORM_API_KEY")
 
@@ -78,10 +86,17 @@ func LoadConfig(path string) (*Config, error) {
 	promptIfEmpty(&cfg.WarmDesk.Username, "WarmDesk username")
 	promptIfEmpty(&cfg.WarmDesk.Password, "WarmDesk password")
 	promptIfEmpty(&cfg.WarmDesk.Project, "WarmDesk project slug")
+	promptIfEmpty(&cfg.WarmDesk.Customer, "WarmDesk customer name")
 
 	if cfg.Platform.IssueType == "" {
 		cfg.Platform.IssueType = "Task"
 	}
+
+	// Trim trailing slashes so URL-joining call sites (baseURL + "/api/v1/...")
+	// never produce a double slash — which some reverse proxies route to a
+	// fallback/HTML response instead of the Go backend.
+	cfg.WarmDesk.URL = strings.TrimRight(cfg.WarmDesk.URL, "/")
+	cfg.Platform.URL = strings.TrimRight(cfg.Platform.URL, "/")
 
 	return cfg, nil
 }

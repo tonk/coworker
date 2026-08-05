@@ -651,6 +651,7 @@
     "backup_schedule_save": "Tallenna aikataulu",
     "backup_email_enabled": "Lähetä sähköposti-ilmoitus varmuuskopion jälkeen",
     "backup_email_address": "Ilmoitusten sähköpostiosoite",
+    "backup_email_address_placeholder": "alice{'@'}example.com, bob{'@'}example.com",
     "backup_include_uploads": "Sisällytä ladatut tiedostot (liitteet, avatarit, logot)",
     "role_backup": "Varmuuskopio",
     "role_customer": "Asiakas",

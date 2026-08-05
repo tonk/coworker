@@ -651,6 +651,7 @@
     "backup_schedule_save": "Spara schema",
     "backup_email_enabled": "Skicka e-postmeddelande efter säkerhetskopiering",
     "backup_email_address": "E-postadress för aviseringar",
+    "backup_email_address_placeholder": "alice{'@'}example.com, bob{'@'}example.com",
     "backup_include_uploads": "Inkludera uppladdade filer (bilagor, avatarer, logotyper)",
     "role_backup": "Backup",
     "role_customer": "Kund",

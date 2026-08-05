@@ -651,6 +651,7 @@
     "backup_schedule_save": "Enregistrer la planification",
     "backup_email_enabled": "Envoyer une notification par e-mail après la sauvegarde",
     "backup_email_address": "Adresse e-mail de notification",
+    "backup_email_address_placeholder": "alice{'@'}exemple.fr, bob{'@'}exemple.fr",
     "backup_include_uploads": "Inclure les fichiers téléchargés (pièces jointes, avatars, logos)",
     "role_backup": "Sauvegarde",
     "role_customer": "Client",

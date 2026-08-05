@@ -651,6 +651,7 @@
     "backup_schedule_save": "Guardar agendamento",
     "backup_email_enabled": "Enviar notificação por e-mail após cópia de segurança",
     "backup_email_address": "Endereço de e-mail para notificações",
+    "backup_email_address_placeholder": "alice{'@'}example.com, bob{'@'}example.com",
     "backup_include_uploads": "Incluir ficheiros enviados (anexos, avatares, logótipos)",
     "role_backup": "Cópia de segurança",
     "role_customer": "Cliente",

@@ -246,7 +246,8 @@ func CreateTopicReply(c *gin.Context) {
 	}
 
 	var req struct {
-		Body string `json:"body" binding:"required"`
+		// Not required — see CreateComment's identical reasoning.
+		Body string `json:"body"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -300,7 +301,8 @@ func UpdateTopicReply(c *gin.Context) {
 	}
 
 	var req struct {
-		Body string `json:"body" binding:"required"`
+		// Not required — see CreateComment's identical reasoning.
+		Body string `json:"body"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})

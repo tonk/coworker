@@ -692,6 +692,7 @@
     "backup_schedule_save": "Save Schedule",
     "backup_email_enabled": "Send email notification after backup",
     "backup_email_address": "Notification email address",
+    "backup_email_address_placeholder": "alice{'@'}example.com, bob{'@'}example.com",
     "backup_include_uploads": "Include uploaded files (attachments, avatars, logos)",
     "role_backup": "Backup",
     "role_customer": "Customer",

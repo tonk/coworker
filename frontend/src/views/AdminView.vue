@@ -1105,7 +1105,8 @@
                 <span>{{ $t('admin.backup_email_enabled') }}</span>
                 <input type="checkbox" v-model="systemSettings.backup_email_enabled" />
               </label>
-              <input v-if="systemSettings.backup_email_enabled" class="form-input" v-model="systemSettings.backup_email_address" :placeholder="$t('admin.smtp_test_placeholder')" style="margin-top:4px" />
+              <label v-if="systemSettings.backup_email_enabled" class="sr-only" for="sys-backup-email-address">{{ $t('admin.backup_email_address') }}</label>
+              <input v-if="systemSettings.backup_email_enabled" id="sys-backup-email-address" class="form-input" v-model="systemSettings.backup_email_address" :placeholder="$t('admin.backup_email_address_placeholder')" style="margin-top:4px" />
             </div>
 
             <div style="margin-top:12px">

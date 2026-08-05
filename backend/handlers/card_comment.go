@@ -93,7 +93,25 @@ func ListComments(c *gin.Context) {
 
 	var comments []models.CardComment
 	database.DB.Preload("User").Where("card_id = ?", cardID).Order("created_at asc").Find(&comments)
+	attachComments(comments)
 	c.JSON(http.StatusOK, comments)
+}
+
+// attachComments populates each comment's Attachments field in place.
+func attachComments(comments []models.CardComment) {
+	if len(comments) == 0 {
+		return
+	}
+	ids := make([]uint, len(comments))
+	for i, cm := range comments {
+		ids[i] = cm.ID
+	}
+	am := LoadAttachments("card_comment", ids)
+	for i, cm := range comments {
+		if atts := am[cm.ID]; len(atts) > 0 {
+			comments[i].Attachments = atts
+		}
+	}
 }
 
 func CreateComment(c *gin.Context) {
@@ -116,7 +134,11 @@ func CreateComment(c *gin.Context) {
 	}
 
 	var req struct {
-		Body             string `json:"body" binding:"required"`
+		// Body is not required — a comment can be just an attachment (the
+		// web UI's own compose box still requires non-empty text via its
+		// disabled-submit-button guard; this only matters for callers that
+		// attach a file with no text, e.g. imported comments).
+		Body             string `json:"body"`
 		TimeSpentMinutes int    `json:"time_spent_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -144,6 +166,9 @@ func CreateComment(c *gin.Context) {
 		recalcCardTimeSpent(uint(cardID))
 	}
 	database.DB.Preload("User").First(&comment, comment.ID)
+	commentSlice := []models.CardComment{comment}
+	attachComments(commentSlice)
+	comment = commentSlice[0]
 
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCommentCreated, Payload: comment})
 
@@ -184,7 +209,8 @@ func UpdateComment(c *gin.Context) {
 	}
 
 	var req struct {
-		Body             string `json:"body" binding:"required"`
+		// See CreateComment — a comment can be just an attachment.
+		Body             string `json:"body"`
 		TimeSpentMinutes int    `json:"time_spent_minutes"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -223,6 +249,9 @@ func UpdateComment(c *gin.Context) {
 		recalcCardTimeSpent(comment.CardID)
 	}
 	database.DB.Preload("User").First(&comment, comment.ID)
+	commentSlice := []models.CardComment{comment}
+	attachComments(commentSlice)
+	comment = commentSlice[0]
 
 	ws.BroadcastToProject(project.ID, ws.Message{Type: ws.TypeBoardCommentUpdated, Payload: comment})
 	c.JSON(http.StatusOK, comment)

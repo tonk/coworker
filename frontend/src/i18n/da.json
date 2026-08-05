@@ -651,6 +651,7 @@
     "backup_schedule_save": "Gem tidsplan",
     "backup_email_enabled": "Send e-mailbesked efter sikkerhedskopi",
     "backup_email_address": "E-mailadresse til beskeder",
+    "backup_email_address_placeholder": "alice{'@'}example.com, bob{'@'}example.com",
     "backup_include_uploads": "Inkluder uploadede filer (vedhæftninger, avatarer, logoer)",
     "role_backup": "Sikkerhedskopi",
     "role_customer": "Kunde",

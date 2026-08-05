@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/mail"
 	"net/url"
 	"os"
 	"os/exec"
@@ -15,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/config"
@@ -824,6 +826,23 @@ func recordBackupResult(success bool, t time.Time) {
 	}
 }
 
+// parseEmailAddresses splits a setting value that may list multiple email
+// addresses separated by commas, semicolons, and/or whitespace (in any mix),
+// trims each, and keeps only the ones that parse as valid addresses.
+func parseEmailAddresses(raw string) []string {
+	fields := strings.FieldsFunc(raw, func(r rune) bool {
+		return r == ',' || r == ';' || unicode.IsSpace(r)
+	})
+	addrs := make([]string, 0, len(fields))
+	for _, f := range fields {
+		if _, err := mail.ParseAddress(f); err != nil {
+			continue
+		}
+		addrs = append(addrs, f)
+	}
+	return addrs
+}
+
 // sendBackupEmail sends a backup notification email if the feature is enabled.
 // On success pass the created filename; on failure pass the error message via errMsg.
 func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
@@ -831,8 +850,8 @@ func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
 	if all[settingBackupEmailEnabled] != "true" {
 		return
 	}
-	to := all[settingBackupEmailAddress]
-	if to == "" {
+	recipients := parseEmailAddresses(all[settingBackupEmailAddress])
+	if len(recipients) == 0 {
 		return
 	}
 	emailSvc := services.GetEmailService()
@@ -873,7 +892,7 @@ func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
 	htmlBody := buildBackupEmailHTML(success, filename, errMsg, t, backupFiles)
 	textBody := buildBackupEmailText(success, filename, errMsg, t, companyName, backupFiles)
 
-	go emailSvc.SendHTML(to, subject, htmlBody, textBody)
+	go emailSvc.SendHTMLMulti(recipients, subject, htmlBody, textBody)
 }
 
 func buildBackupEmailText(success bool, filename, errMsg string, t time.Time, companyName string, files []BackupInfo) string {

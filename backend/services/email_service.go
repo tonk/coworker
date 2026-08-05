@@ -210,6 +210,45 @@ func (s *EmailService) SendHTML(to, subject, htmlBody, textBody string) error {
 	return smtp.SendMail(addr, auth, envelopeAddress(from), []string{to}, []byte(b.String()))
 }
 
+// SendHTMLMulti is like SendHTML but delivers a single message to multiple
+// recipients at once — used for settings (e.g. backup notifications) that
+// may list more than one address.
+func (s *EmailService) SendHTMLMulti(to []string, subject, htmlBody, textBody string) error {
+	if len(to) == 0 {
+		return nil
+	}
+	cfg := s.cfg()
+	if cfg.Host == "" {
+		return nil
+	}
+	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	from := cfg.From
+	if from == "" {
+		from = "warmdesk@localhost"
+	}
+
+	boundary := "==WarmDesk_boundary_42=="
+	var b strings.Builder
+	fmt.Fprintf(&b, "From: %s\r\n", from)
+	fmt.Fprintf(&b, "To: %s\r\n", strings.Join(to, ", "))
+	fmt.Fprintf(&b, "Subject: %s\r\n", foldHeader(subject))
+	fmt.Fprintf(&b, "MIME-Version: 1.0\r\n")
+	fmt.Fprintf(&b, "Content-Type: multipart/alternative; boundary=%q\r\n", boundary)
+	fmt.Fprintf(&b, "\r\n")
+	fmt.Fprintf(&b, "--%s\r\n", boundary)
+	fmt.Fprintf(&b, "Content-Type: text/plain; charset=UTF-8\r\n\r\n%s\r\n", foldBody(textBody))
+	fmt.Fprintf(&b, "--%s\r\n", boundary)
+	fmt.Fprintf(&b, "Content-Type: text/html; charset=UTF-8\r\n\r\n%s\r\n", foldBody(htmlBody))
+	fmt.Fprintf(&b, "--%s--\r\n", boundary)
+
+	var auth smtp.Auth
+	if cfg.Username != "" {
+		auth = smtp.PlainAuth("", cfg.Username, cfg.Password, cfg.Host)
+	}
+
+	return smtp.SendMail(addr, auth, envelopeAddress(from), to, []byte(b.String()))
+}
+
 // SendWithHTMLAndAttachment sends a multipart/mixed email with an HTML body (and
 // plain-text fallback) plus a single binary attachment.
 func (s *EmailService) SendWithHTMLAndAttachment(to, subject, plainText, htmlBody, filename, mimeType string, data []byte) error {

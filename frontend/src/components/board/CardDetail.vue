@@ -388,12 +388,14 @@
               </div>
               <!-- nosemgrep: javascript.vue.security.audit.xss.templates.avoid-v-html.avoid-v-html -- renderMarkdown sanitizes with DOMPurify -->
               <div class="comment-text" v-html="renderMarkdown(comment.body)"></div>
+              <AttachmentList v-if="comment.attachments?.length" :attachments="comment.attachments" />
               <button class="btn btn-ghost btn-sm reply-btn" @click="replyTo(comment)">{{ $t('board.reply') }}</button>
             </div>
           </div>
         </div>
 
         <div class="add-comment">
+          <AttachmentList v-if="pendingCommentFiles.length" :attachments="pendingCommentFiles" :can-delete="true" @remove="removePendingCommentFile" />
           <div style="position:relative">
             <MentionDropdown v-if="commentMentionUsers.length" :users="commentMentionUsers" :active-index="commentMentionIndex"
               @pick="commentPickMention" @update:activeIndex="commentMentionIndex = $event" />
@@ -414,7 +416,11 @@
               rows="3"
               @input="commentOnInput"
               @keydown="commentOnKeydown"
+              @paste="onCommentPaste"
             ></textarea>
+          </div>
+          <div class="comment-toolbar" style="margin-top:4px">
+            <FileUploadButton @files-selected="onCommentFilesSelected" />
           </div>
           <div v-if="auth.timeTrackingEnabled" class="log-time-row">
             <span class="log-time-label">{{ $t('board.log_time') }}</span>
@@ -423,7 +429,7 @@
             <input class="form-input time-input" type="number" min="0" max="59" v-model.number="newCommentMinutes" aria-label="Minutes" />
             <span class="time-sep">{{ $t('board.time_minutes') }}</span>
           </div>
-          <button class="btn btn-primary btn-sm" @click="submitComment" :disabled="!newComment.trim()">
+          <button class="btn btn-primary btn-sm" @click="submitComment" :disabled="!newComment.trim() && !pendingCommentFiles.length">
             {{ $t('board.add_comment') }}
           </button>
         </div>
@@ -573,6 +579,7 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import BaseModal from '@/components/common/BaseModal.vue'
 import AttachmentList from '@/components/common/AttachmentList.vue'
+import FileUploadButton from '@/components/common/FileUploadButton.vue'
 import MentionDropdown from '@/components/common/MentionDropdown.vue'
 import InlineEmojiPicker from '@/components/common/InlineEmojiPicker.vue'
 import CardDetail from '@/components/board/CardDetail.vue'
@@ -650,6 +657,7 @@ function onDatePickerChange(e) {
 const locked = ref(!!props.card.description)
 const isClosed = ref(!!props.card.closed)
 const newComment = ref('')
+const pendingCommentFiles = ref([])
 const history = ref([])
 const showActivityPanel = ref(false)
 const saving = ref(false)
@@ -1359,13 +1367,33 @@ async function save() {
 }
 
 async function submitComment() {
-  if (!newComment.value.trim()) return
+  if (!newComment.value.trim() && !pendingCommentFiles.value.length) return
   const timeMinutes = (newCommentHours.value || 0) * 60 + (newCommentMinutes.value || 0)
   try {
     const { data } = await projectsApi.createComment(props.projectSlug, props.card.id, {
       body: newComment.value,
       time_spent_minutes: timeMinutes,
     })
+    data.attachments = []
+
+    if (pendingCommentFiles.value.length) {
+      const filesToUpload = [...pendingCommentFiles.value]
+      pendingCommentFiles.value = []
+      filesToUpload.forEach(pf => { if (pf._previewUrl) URL.revokeObjectURL(pf._previewUrl) })
+      for (const pf of filesToUpload) {
+        const fd = new FormData()
+        fd.append('file', pf._file)
+        fd.append('owner_type', 'card_comment')
+        fd.append('owner_id', String(data.id))
+        try {
+          const { data: att } = await attachmentsApi.upload(fd)
+          data.attachments.push(att)
+        } catch {
+          ui.error(`Failed to upload ${pf.filename}`)
+        }
+      }
+    }
+
     props.card.comments = [...(props.card.comments || []), data]
     if (timeMinutes > 0) {
       props.card.time_spent_minutes = (props.card.time_spent_minutes || 0) + timeMinutes
@@ -1376,6 +1404,33 @@ async function submitComment() {
   } catch (e) {
     ui.error('Failed to post comment')
   }
+}
+
+function onCommentFilesSelected(files) {
+  for (const f of files) {
+    pendingCommentFiles.value.push({
+      id: Math.random(),
+      filename: f.name,
+      size_bytes: f.size,
+      mime_type: f.type || 'application/octet-stream',
+      _file: f,
+      _previewUrl: f.type?.startsWith('image/') ? URL.createObjectURL(f) : null,
+    })
+  }
+}
+
+function onCommentPaste(e) {
+  const items = Array.from(e.clipboardData?.items || [])
+  const images = items.filter(it => it.kind === 'file' && it.type.startsWith('image/'))
+  if (images.length) {
+    e.preventDefault()
+    onCommentFilesSelected(images.map(it => it.getAsFile()).filter(Boolean))
+  }
+}
+
+function removePendingCommentFile(a) {
+  if (a._previewUrl) URL.revokeObjectURL(a._previewUrl)
+  pendingCommentFiles.value = pendingCommentFiles.value.filter(p => p.id !== a.id)
 }
 
 function replyTo(comment) {

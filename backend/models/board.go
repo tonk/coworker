@@ -104,6 +104,7 @@ type CardComment struct {
 	IsEdited         bool           `gorm:"default:false" json:"is_edited"`
 	TimeSpentMinutes int            `gorm:"default:0" json:"time_spent_minutes"`
 	TimeEntryID      *uint          `gorm:"index" json:"time_entry_id,omitempty"`
+	Attachments      []Attachment   `gorm:"-" json:"attachments,omitempty"`
 }
 
 type Label struct {

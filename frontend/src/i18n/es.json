@@ -651,6 +651,7 @@
     "backup_schedule_save": "Guardar programación",
     "backup_email_enabled": "Enviar notificación por correo tras la copia de seguridad",
     "backup_email_address": "Dirección de correo para notificaciones",
+    "backup_email_address_placeholder": "alice{'@'}ejemplo.es, bob{'@'}ejemplo.es",
     "backup_include_uploads": "Incluir archivos subidos (adjuntos, avatares, logotipos)",
     "role_backup": "Copia de seguridad",
     "role_customer": "Cliente",
