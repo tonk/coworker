@@ -321,7 +321,11 @@
     "pin": "Fäst",
     "unpin": "Lossa",
     "edited": "redigerad",
-    "back": "Tillbaka till ämnen"
+    "back": "Tillbaka till ämnen",
+    "project_chat": "Projektchatt",
+    "no_chat_messages": "Inga meddelanden än. Säg hej!",
+    "chat_placeholder": "Meddelande till projektet…",
+    "send": "Skicka"
   },
   "checklist": {
     "title": "Checklista",

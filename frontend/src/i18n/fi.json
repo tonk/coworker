@@ -321,7 +321,11 @@
     "pin": "Kiinnitä",
     "unpin": "Irrota",
     "edited": "muokattu",
-    "back": "Takaisin aiheisiin"
+    "back": "Takaisin aiheisiin",
+    "project_chat": "Projektichat",
+    "no_chat_messages": "Ei viestejä vielä. Sano hei!",
+    "chat_placeholder": "Viesti projektille…",
+    "send": "Lähetä"
   },
   "checklist": {
     "title": "Tarkistuslista",

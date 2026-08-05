@@ -11,6 +11,7 @@ type Project struct {
 	Description string
 	Columns     []Column
 	Topics      []Topic
+	Messages    []ChatMessage
 }
 
 // Column represents a Kanban column (list) inside a project.
@@ -77,4 +78,13 @@ type Topic struct {
 type TopicReply struct {
 	Author string
 	Body   string
+}
+
+// ChatMessage is a single message in a project's team/group chat, as opposed
+// to a Card comment or Topic reply.
+type ChatMessage struct {
+	Author     string
+	Body       string
+	CreatedAt  time.Time
+	Attachment *Attachment // at most one, per Ryver's chat message model
 }

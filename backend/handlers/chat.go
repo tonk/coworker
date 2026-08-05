@@ -3,12 +3,14 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
 	"github.com/tonk/warmdesk/services"
+	"github.com/tonk/warmdesk/ws"
 )
 
 // ChatMessageResponse wraps ChatMessage with extra computed fields.
@@ -78,6 +80,63 @@ func ListChatMessages(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, out)
+}
+
+// CreateChatMessage POST /projects/:projectSlug/chat/messages
+//
+// A REST alternative to the WebSocket TypeChatSend flow, for bulk/backfill
+// tools (e.g. the Ryver migration importer) that need to create historical
+// messages without a live connection. created_at is optional — when given,
+// it overrides the default "now" timestamp so imported history keeps its
+// original time, and the message is treated as a backfill: no websocket
+// broadcast or @mention notification is fired, since flooding anyone
+// currently online with years-old messages would be worse than silence.
+func CreateChatMessage(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	slug := c.Param("projectSlug")
+
+	project, err := services.GetProjectBySlug(slug)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "project not found"})
+		return
+	}
+	if err := services.RequireProjectRole(project.ID, userID, middleware.GetGlobalRole(c), "member"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+		return
+	}
+
+	var req struct {
+		Body      string     `json:"body" binding:"required"`
+		CreatedAt *time.Time `json:"created_at"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	chatMsg := models.ChatMessage{
+		ProjectID: project.ID,
+		UserID:    userID,
+		Body:      req.Body,
+	}
+	isBackfill := req.CreatedAt != nil
+	if isBackfill {
+		chatMsg.CreatedAt = *req.CreatedAt
+	}
+	database.DB.Create(&chatMsg)
+	database.DB.Preload("User").First(&chatMsg, chatMsg.ID)
+
+	if !isBackfill {
+		ws.BroadcastToProject(project.ID, ws.Message{
+			Type:    ws.TypeChatMessageCreated,
+			Payload: chatMsg,
+		})
+		if notifSvc != nil {
+			go notifSvc.NotifyMentions(req.Body, userID, "project chat")
+		}
+	}
+
+	c.JSON(http.StatusCreated, chatMsg)
 }
 
 func DeleteChatMessage(c *gin.Context) {

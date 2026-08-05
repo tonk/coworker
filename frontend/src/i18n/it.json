@@ -321,7 +321,11 @@
     "pin": "Metti in evidenza",
     "unpin": "Rimuovi dall'evidenza",
     "edited": "modificato",
-    "back": "Torna agli argomenti"
+    "back": "Torna agli argomenti",
+    "project_chat": "Chat del progetto",
+    "no_chat_messages": "Ancora nessun messaggio. Saluta!",
+    "chat_placeholder": "Messaggio al progetto…",
+    "send": "Invia"
   },
   "checklist": {
     "title": "Lista di controllo",

@@ -500,9 +500,56 @@ type ryverCommentJSON struct {
 	} `json:"createUser"`
 }
 
+// ryverChatMessageJSON is a raw chat message as returned by
+// workrooms(id)/Chat.History(). Unlike other entities, its author is only a
+// bare user id — there is no inline createUser object to read a name from.
+type ryverChatMessageJSON struct {
+	When    string `json:"when"`
+	Subtype string `json:"subtype"` // empty for a regular chat message
+	Body    string `json:"body"`
+	From    struct {
+		ID int `json:"id"`
+	} `json:"from"`
+	// At most one attached file or link; Ryver represents both the same way.
+	Extras *struct {
+		File *struct {
+			FileName string `json:"fileName"`
+			URL      string `json:"url"`
+			Type     string `json:"type"`
+		} `json:"file"`
+	} `json:"extras"`
+}
+
+// ryverBuildUserMap fetches every user in the Ryver organization once and
+// returns a userID -> display name (falling back to username) lookup, used
+// to resolve chat message authors.
+func ryverBuildUserMap(base, token string) (map[int]string, error) {
+	raw, err := ryverPaginate(token, base+"/users?$select=id,username,displayName")
+	if err != nil {
+		return nil, err
+	}
+	byID := make(map[int]string, len(raw))
+	for _, r := range raw {
+		var u struct {
+			ID          int    `json:"id"`
+			Username    string `json:"username"`
+			DisplayName string `json:"displayName"`
+		}
+		if err := json.Unmarshal(r, &u); err != nil {
+			continue
+		}
+		name := u.DisplayName
+		if name == "" {
+			name = u.Username
+		}
+		byID[u.ID] = name
+	}
+	return byID, nil
+}
+
 // ImportFromRyver reads tasks and topics from a Ryver team and returns the
 // canonical project representation.
-func ImportFromRyver(cfg PlatformConfig, columnMap map[string]string) (*Project, error) {
+func ImportFromRyver(cfg PlatformConfig, columnMap map[string]string, includeCards, includeChat bool) (*Project, error) {
 	base := ryverBase(cfg.Org)
 	token := cfg.APIToken
 	reverseMap := ReverseColumnMap(columnMap)
@@ -516,167 +563,221 @@ func ImportFromRyver(cfg PlatformConfig, columnMap map[string]string) (*Project,
 	proj := &Project{Name: cfg.Team}
 	colIndex := map[string]*Column{}
 
-	// Tasks live on the team's task board, if one has been set up.
-	boardID, hasBoard, err := ryverGetTaskBoardID(base, token, teamID)
-	if err != nil {
-		return nil, fmt.Errorf("get task board: %w", err)
-	}
-	if hasBoard {
-		tasksURL := fmt.Sprintf("%s/taskBoards(%d)/tasks?$expand=createUser,category,assignees&$filter=(archived+eq+false+and+parent+eq+null)", base, boardID)
-		rawTasks, err := ryverPaginate(token, tasksURL)
+	if includeCards {
+		// Tasks live on the team's task board, if one has been set up.
+		boardID, hasBoard, err := ryverGetTaskBoardID(base, token, teamID)
 		if err != nil {
-			return nil, fmt.Errorf("get tasks: %w", err)
+			return nil, fmt.Errorf("get task board: %w", err)
 		}
-
-		for _, raw := range rawTasks {
-			var t ryverTaskJSON
-			if err := json.Unmarshal(raw, &t); err != nil {
-				continue
+		if hasBoard {
+			tasksURL := fmt.Sprintf("%s/taskBoards(%d)/tasks?$expand=createUser,category,assignees&$filter=(archived+eq+false+and+parent+eq+null)", base, boardID)
+			rawTasks, err := ryverPaginate(token, tasksURL)
+			if err != nil {
+				return nil, fmt.Errorf("get tasks: %w", err)
 			}
 
-			// The task's category is the Ryver equivalent of a WarmDesk column.
-			colName := "Tasks"
-			if t.Category != nil && t.Category.Name != "" {
-				colName = MapColumnReverse(t.Category.Name, reverseMap)
-			}
-
-			// Ryver's #-style tags map to WarmDesk's colored Labels, not its
-			// free-form per-card Tags — Labels is the closer conceptual fit
-			// for a category-of-work marker like "feature" or "bug".
-			labels := make([]Label, 0, len(t.Tags))
-			for _, tag := range t.Tags {
-				tag = strings.TrimSpace(tag)
-				if tag != "" {
-					labels = append(labels, Label{Name: tag})
-				}
-			}
-
-			col, ok := colIndex[colName]
-			if !ok {
-				proj.Columns = append(proj.Columns, Column{Name: colName})
-				col = &proj.Columns[len(proj.Columns)-1]
-				colIndex[colName] = col
-			}
-
-			dueDate := ""
-			if len(t.DueDate) >= 10 {
-				dueDate = t.DueDate[:10]
-			}
-			startDate := ""
-			if len(t.CreateDate) >= 10 {
-				startDate = t.CreateDate[:10]
-			}
-
-			// A task is closed if it has been marked complete, or if it sits
-			// in a category literally named "Completed" (some boards use a
-			// category instead of the completion checkbox to track this).
-			closed := t.CompleteDate != ""
-			if t.Category != nil && strings.EqualFold(t.Category.Name, "completed") {
-				closed = true
-			}
-
-			var comments []Comment
-			commentsURL := fmt.Sprintf("%s/tasks(%d)/comments?$format=json&$expand=createUser", base, t.ID)
-			rawComments, err := ryverPaginate(token, commentsURL)
-			if err == nil {
-				for _, craw := range rawComments {
-					var c ryverCommentJSON
-					if err := json.Unmarshal(craw, &c); err != nil {
-						continue
-					}
-					author := c.CreateUser.DisplayName
-					if author == "" {
-						author = c.CreateUser.Username
-					}
-					comments = append(comments, Comment{
-						Author:      author,
-						Body:        c.Comment,
-						Attachments: ryverFetchAttachments(token, base, "taskComments", c.ID),
-					})
-				}
-			}
-
-			var assignees []string
-			for _, a := range t.Assignees.Results {
-				name := a.DisplayName
-				if name == "" {
-					name = a.Username
-				}
-				if name != "" {
-					assignees = append(assignees, name)
-				}
-			}
-
-			creator := t.CreateUser.DisplayName
-			if creator == "" {
-				creator = t.CreateUser.Username
-			}
-
-			// Fetched as its own paginated collection, not via inline
-			// $expand on the tasks query — an expanded nav collection is
-			// subject to its own (much smaller) server-side default page
-			// size, which silently truncated tasks with more than one
-			// attachment down to just the first.
-			attachments := ryverFetchAttachments(token, base, "tasks", t.ID)
-
-			col.Cards = append(col.Cards, Card{
-				Title:       t.Subject,
-				Description: t.Body,
-				StartDate:   startDate,
-				DueDate:     dueDate,
-				Closed:      closed,
-				Creator:     creator,
-				Labels:      labels,
-				Comments:    comments,
-				Assignees:   assignees,
-				Attachments: attachments,
-			})
-		}
-	}
-
-	// Get forum topics
-	topicsURL := fmt.Sprintf("%s/workrooms(%d)/Post.Stream(archived=false)?$format=json&$expand=createUser", base, teamID)
-	rawTopics, err := ryverPaginate(token, topicsURL)
-	if err != nil {
-		return nil, fmt.Errorf("get topics: %w", err)
-	}
-
-	for _, raw := range rawTopics {
-		var t ryverTopicJSON
-		if err := json.Unmarshal(raw, &t); err != nil {
-			continue
-		}
-		author := t.CreateUser.DisplayName
-		if author == "" {
-			author = t.CreateUser.Username
-		}
-		topic := Topic{
-			Title:  t.Subject,
-			Body:   t.Body,
-			Author: author,
-		}
-
-		// Get replies
-		repliesURL := fmt.Sprintf("%s/posts(%d)/comments?$format=json&$expand=createUser", base, t.ID)
-		rawReplies, err := ryverPaginate(token, repliesURL)
-		if err == nil {
-			for _, rraw := range rawReplies {
-				var r ryverCommentJSON
-				if err := json.Unmarshal(rraw, &r); err != nil {
+			for _, raw := range rawTasks {
+				var t ryverTaskJSON
+				if err := json.Unmarshal(raw, &t); err != nil {
 					continue
 				}
-				rAuthor := r.CreateUser.DisplayName
-				if rAuthor == "" {
-					rAuthor = r.CreateUser.Username
+
+				// The task's category is the Ryver equivalent of a WarmDesk column.
+				colName := "Tasks"
+				if t.Category != nil && t.Category.Name != "" {
+					colName = MapColumnReverse(t.Category.Name, reverseMap)
 				}
-				topic.Replies = append(topic.Replies, TopicReply{
-					Author: rAuthor,
-					Body:   r.Comment,
+
+				// Ryver's #-style tags map to WarmDesk's colored Labels, not its
+				// free-form per-card Tags — Labels is the closer conceptual fit
+				// for a category-of-work marker like "feature" or "bug".
+				labels := make([]Label, 0, len(t.Tags))
+				for _, tag := range t.Tags {
+					tag = strings.TrimSpace(tag)
+					if tag != "" {
+						labels = append(labels, Label{Name: tag})
+					}
+				}
+
+				col, ok := colIndex[colName]
+				if !ok {
+					proj.Columns = append(proj.Columns, Column{Name: colName})
+					col = &proj.Columns[len(proj.Columns)-1]
+					colIndex[colName] = col
+				}
+
+				dueDate := ""
+				if len(t.DueDate) >= 10 {
+					dueDate = t.DueDate[:10]
+				}
+				startDate := ""
+				if len(t.CreateDate) >= 10 {
+					startDate = t.CreateDate[:10]
+				}
+
+				// A task is closed if it has been marked complete, or if it sits
+				// in a category literally named "Completed" (some boards use a
+				// category instead of the completion checkbox to track this).
+				closed := t.CompleteDate != ""
+				if t.Category != nil && strings.EqualFold(t.Category.Name, "completed") {
+					closed = true
+				}
+
+				var comments []Comment
+				commentsURL := fmt.Sprintf("%s/tasks(%d)/comments?$format=json&$expand=createUser", base, t.ID)
+				rawComments, err := ryverPaginate(token, commentsURL)
+				if err == nil {
+					for _, craw := range rawComments {
+						var c ryverCommentJSON
+						if err := json.Unmarshal(craw, &c); err != nil {
+							continue
+						}
+						author := c.CreateUser.DisplayName
+						if author == "" {
+							author = c.CreateUser.Username
+						}
+						comments = append(comments, Comment{
+							Author:      author,
+							Body:        c.Comment,
+							Attachments: ryverFetchAttachments(token, base, "taskComments", c.ID),
+						})
+					}
+				}
+
+				var assignees []string
+				for _, a := range t.Assignees.Results {
+					name := a.DisplayName
+					if name == "" {
+						name = a.Username
+					}
+					if name != "" {
+						assignees = append(assignees, name)
+					}
+				}
+
+				creator := t.CreateUser.DisplayName
+				if creator == "" {
+					creator = t.CreateUser.Username
+				}
+
+				// Fetched as its own paginated collection, not via inline
+				// $expand on the tasks query — an expanded nav collection is
+				// subject to its own (much smaller) server-side default page
+				// size, which silently truncated tasks with more than one
+				// attachment down to just the first.
+				attachments := ryverFetchAttachments(token, base, "tasks", t.ID)
+
+				col.Cards = append(col.Cards, Card{
+					Title:       t.Subject,
+					Description: t.Body,
+					StartDate:   startDate,
+					DueDate:     dueDate,
+					Closed:      closed,
+					Creator:     creator,
+					Labels:      labels,
+					Comments:    comments,
+					Assignees:   assignees,
+					Attachments: attachments,
 				})
 			}
 		}
-		proj.Topics = append(proj.Topics, topic)
-	}
+
+		// Get forum topics
+		topicsURL := fmt.Sprintf("%s/workrooms(%d)/Post.Stream(archived=false)?$format=json&$expand=createUser", base, teamID)
+		rawTopics, err := ryverPaginate(token, topicsURL)
+		if err != nil {
+			return nil, fmt.Errorf("get topics: %w", err)
+		}
+
+		for _, raw := range rawTopics {
+			var t ryverTopicJSON
+			if err := json.Unmarshal(raw, &t); err != nil {
+				continue
+			}
+			author := t.CreateUser.DisplayName
+			if author == "" {
+				author = t.CreateUser.Username
+			}
+			topic := Topic{
+				Title:  t.Subject,
+				Body:   t.Body,
+				Author: author,
+			}
+
+			// Get replies
+			repliesURL := fmt.Sprintf("%s/posts(%d)/comments?$format=json&$expand=createUser", base, t.ID)
+			rawReplies, err := ryverPaginate(token, repliesURL)
+			if err == nil {
+				for _, rraw := range rawReplies {
+					var r ryverCommentJSON
+					if err := json.Unmarshal(rraw, &r); err != nil {
+						continue
+					}
+					rAuthor := r.CreateUser.DisplayName
+					if rAuthor == "" {
+						rAuthor = r.CreateUser.Username
+					}
+					topic.Replies = append(topic.Replies, TopicReply{
+						Author: rAuthor,
+						Body:   r.Comment,
+					})
+				}
+			}
+			proj.Topics = append(proj.Topics, topic)
+		}
+	} // includeCards
+
+	if includeChat {
+		// Team/group chat history. Unlike tasks/topics/comments, a raw chat
+		// message only carries its author as a bare user ID ("from":{"id":N}),
+		// not an inline createUser object — so resolve authors via one
+		// org-wide user lookup instead of a request per message.
+		usersByID, err := ryverBuildUserMap(base, token)
+		if err != nil {
+			return nil, fmt.Errorf("list users: %w", err)
+		}
+		messagesURL := fmt.Sprintf("%s/workrooms(%d)/Chat.History()?$format=json", base, teamID)
+		rawMessages, err := ryverPaginate(token, messagesURL)
+		if err != nil {
+			return nil, fmt.Errorf("get chat history: %w", err)
+		}
+		for _, mraw := range rawMessages {
+			var m ryverChatMessageJSON
+			if err := json.Unmarshal(mraw, &m); err != nil {
+				continue
+			}
+			// Skip system-generated "X created a task/topic" announcements —
+			// SUBTYPE_CHAT_MESSAGE is represented as an absent subtype, not a
+			// literal value, per Ryver's own API.
+			if m.Subtype != "" {
+				continue
+			}
+			// Chat message timestamps are a different format from task/topic
+			// dates ("2022-06-01T08:01:27.588852Z" — fractional seconds, literal
+			// "Z" for UTC) rather than e.g. "2021-09-22T15:07:53+0000".
+			when, err := time.Parse(time.RFC3339Nano, m.When)
+			if err != nil {
+				continue
+			}
+			author := usersByID[m.From.ID]
+
+			var attachment *Attachment
+			if m.Extras != nil && m.Extras.File != nil && m.Extras.File.URL != "" {
+				attachment = &Attachment{
+					Filename: m.Extras.File.FileName,
+					URL:      m.Extras.File.URL,
+					MimeType: m.Extras.File.Type,
+				}
+			}
+
+			proj.Messages = append(proj.Messages, ChatMessage{
+				Author:     author,
+				Body:       m.Body,
+				CreatedAt:  when,
+				Attachment: attachment,
+			})
+		}
+	} // includeChat
 
 	return proj, nil
 }
@@ -723,6 +824,37 @@ func ryverFindTeam(base, token, teamName string) (int, error) {
 // (attachmentsCount > 0) and dumps that one if found, falling back to the
 // first task otherwise — an empty attachments list wouldn't show what an
 // attachment's shape is.
+// DumpChatHistory fetches the first page (up to 20) of a Ryver team's raw,
+// unfiltered chat history — no subtype filtering, no date parsing — and
+// writes it to path. Purely a debugging aid for inspecting what a message
+// actually looks like when ImportFromRyver reports zero messages
+// unexpectedly (e.g. a subtype value or "when" timestamp format that
+// doesn't match what was assumed).
+func DumpChatHistory(cfg PlatformConfig, path string) error {
+	base := ryverBase(cfg.Org)
+	token := cfg.APIToken
+
+	teamID, err := ryverFindTeam(base, token, cfg.Team)
+	if err != nil {
+		return fmt.Errorf("find team %q: %w", cfg.Team, err)
+	}
+
+	url := fmt.Sprintf("%s/workrooms(%d)/Chat.History()?$format=json&$top=20&$skip=0", base, teamID)
+	data, status, err := ryverDo("GET", url, token, nil)
+	if err != nil {
+		return err
+	}
+	if status != http.StatusOK {
+		return fmt.Errorf("HTTP %d: %s", status, string(data))
+	}
+
+	var pretty bytes.Buffer
+	if err := json.Indent(&pretty, data, "", "  "); err != nil {
+		return fmt.Errorf("indent json: %w", err)
+	}
+	return os.WriteFile(path, pretty.Bytes(), 0o644)
+}
+
 func DumpFirstTask(cfg PlatformConfig, ref, path string) error {
 	base := ryverBase(cfg.Org)
 	token := cfg.APIToken

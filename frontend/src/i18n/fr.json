@@ -321,7 +321,11 @@
     "pin": "Épingler",
     "unpin": "Désépingler",
     "edited": "modifié",
-    "back": "Retour aux sujets"
+    "back": "Retour aux sujets",
+    "project_chat": "Discussion du projet",
+    "no_chat_messages": "Pas encore de messages. Dites bonjour !",
+    "chat_placeholder": "Message au projet…",
+    "send": "Envoyer"
   },
   "checklist": {
     "title": "Liste de contrôle",

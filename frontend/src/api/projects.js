@@ -72,6 +72,7 @@ export const projectsApi = {
 
   // Chat
   listMessages: (slug, params) => client.get(`/projects/${slug}/chat/messages`, { params }),
+  sendMessage: (slug, data) => client.post(`/projects/${slug}/chat/messages`, data),
   deleteMessage: (slug, msgId) => client.delete(`/projects/${slug}/chat/messages/${msgId}`),
 
   // Card git links

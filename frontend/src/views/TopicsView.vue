@@ -19,6 +19,10 @@
           </button>
         </div>
 
+        <button class="topic-item chat-nav-item" :class="{ active: chatOpen }" @click="openChat">
+          <span aria-hidden="true">💬</span> {{ $t('topics.project_chat') }}
+        </button>
+
         <div v-if="topicsStore.loading" class="topics-loading">
           <div class="spinner"></div>
         </div>
@@ -48,9 +52,78 @@
         </div>
       </aside>
 
-      <!-- ── Topic detail ─────────────────────────────────── -->
+      <!-- ── Topic detail / project chat ──────────────────── -->
       <main class="topics-main">
-        <div v-if="!activeTopic" class="topics-placeholder">
+        <div v-if="chatOpen" class="chat-view">
+          <h2 class="chat-view-title">{{ $t('topics.project_chat') }}</h2>
+
+          <div class="chat-messages" ref="chatMessagesEl" role="log">
+            <div v-if="chatStore.loading && !chatStore.messages.length" class="topics-loading">
+              <div class="spinner"></div>
+            </div>
+            <div v-else-if="!chatStore.messages.length" class="topics-empty">
+              {{ $t('topics.no_chat_messages') }}
+            </div>
+            <div v-for="msg in visibleChatMessages" :key="msg.id" class="reply-item">
+              <div class="comment-avatar">
+                <img v-if="avatarUrl(msg.user)" :src="avatarUrl(msg.user)" class="avatar-img" @error="e => e.target.style.display='none'" />
+                <span v-else>{{ (msg.user?.display_name || msg.user?.username || '?').slice(0,2).toUpperCase() }}</span>
+              </div>
+              <div class="reply-content">
+                <div class="reply-meta">
+                  <strong>{{ msg.user?.display_name || msg.user?.username }}</strong>
+                  <span class="topic-date">{{ formatDateTime(msg.created_at) }}</span>
+                  <span v-if="msg.is_edited" class="edited-badge">({{ $t('topics.edited') }})</span>
+                  <button v-if="canDeleteMessage(msg)" class="btn btn-ghost btn-xs btn-danger" @click="deleteChatMessage(msg)">{{ $t('topics.delete') }}</button>
+                </div>
+                <!-- nosemgrep: javascript.vue.security.audit.xss.templates.avoid-v-html.avoid-v-html -- renderMarkdown sanitizes with DOMPurify -->
+                <div class="reply-body" v-html="renderMarkdown(msg.body)"></div>
+                <AttachmentList v-if="msg.attachments?.length" :attachments="msg.attachments" />
+              </div>
+            </div>
+          </div>
+
+          <div class="add-reply">
+            <AttachmentList v-if="pendingChatFiles.length" :attachments="pendingChatFiles" :can-delete="true" @remove="removePendingChatFile" />
+            <div class="compose-outer">
+              <InlineEmojiPicker
+                v-if="chatEmojiOpen"
+                :initial-search="chatEmojiQuery || ''"
+                @pick="onChatEmojiPick"
+                @escape="onChatEmojiEscape"
+                @close="chatEmojiOpen = false"
+              />
+              <MentionDropdown
+                v-if="chatMentionUsers.length"
+                :users="chatMentionUsers"
+                :active-index="chatMentionIndex"
+                @pick="pickChatMention"
+                @update:activeIndex="chatMentionIndex = $event"
+              />
+              <div class="topic-editor-wrap">
+                <button class="emoji-trigger-btn" type="button" aria-label="Add emoji reaction" @click="chatEmojiOpen = !chatEmojiOpen">😊</button>
+                <FileUploadButton @files-selected="onChatFilesSelected" />
+                <textarea
+                  ref="chatTextareaEl"
+                  class="topic-textarea topic-textarea-sm"
+                  v-model="newChatBody"
+                  :placeholder="$t('topics.chat_placeholder')"
+                  rows="3"
+                  spellcheck="true"
+                  :lang="auth.user?.locale || 'en'"
+                  @input="onChatInput"
+                  @keydown="onChatKeydownCompose"
+                  @paste="onChatPaste"
+                ></textarea>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" @click="sendChatMessage" :disabled="!newChatBody.trim() && !pendingChatFiles.length">
+              {{ $t('topics.send') }}
+            </button>
+          </div>
+        </div>
+
+        <div v-else-if="!activeTopic" class="topics-placeholder">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <p>{{ $t('topics.no_topics') }}</p>
         </div>
@@ -282,13 +355,17 @@ import DOMPurify from 'dompurify'
 import BaseModal from '@/components/common/BaseModal.vue'
 import MentionDropdown from '@/components/common/MentionDropdown.vue'
 import InlineEmojiPicker from '@/components/common/InlineEmojiPicker.vue'
+import AttachmentList from '@/components/common/AttachmentList.vue'
+import FileUploadButton from '@/components/common/FileUploadButton.vue'
 import { useTopicsStore } from '@/stores/topics'
 import { useProjectStore } from '@/stores/project'
+import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
 import { useUIStore } from '@/stores/ui'
 import { topicsApi } from '@/api/topics'
 import { projectsApi } from '@/api/projects'
 import { messagesApi } from '@/api/messages'
+import { attachmentsApi } from '@/api/attachments'
 import { useWebSocket } from '@/composables/useWebSocket'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
@@ -300,11 +377,18 @@ const slug = computed(() => route.params.slug)
 
 const topicsStore = useTopicsStore()
 const projectStore = useProjectStore()
+const chatStore = useChatStore()
 const auth = useAuthStore()
 const ui = useUIStore()
 const { formatDateTime } = useDateFormat()
 
 const activeTopic = ref(null)
+const chatOpen = ref(false)
+const chatMessagesEl = ref(null)
+const chatTextareaEl = ref(null)
+const newChatBody = ref('')
+const pendingChatFiles = ref([])
+const visibleChatMessages = computed(() => chatStore.messages.filter(m => !m.is_deleted))
 
 function projectAvatar(project) {
   return resolveAssetUrl(project?.avatar || '')
@@ -397,6 +481,23 @@ const {
 const newTopicEmojiOpen = ref(false)
 watch(newTopicEmojiQuery, (q) => { newTopicEmojiOpen.value = q !== null })
 
+const {
+  mentionUsers: chatMentionUsers,
+  mentionIndex: chatMentionIndex,
+  onTextareaInput: onChatInput,
+  onTextareaKeydown: onChatKeydownCompose,
+  pickMention: pickChatMention,
+  emojiQuery: chatEmojiQuery,
+  pickEmoji: pickChatEmoji,
+} = useCompose({
+  textareaEl: chatTextareaEl,
+  getValue: () => newChatBody.value,
+  setValue: (v) => { newChatBody.value = v },
+  users: projectMentionUsers,
+})
+const chatEmojiOpen = ref(false)
+watch(chatEmojiQuery, (q) => { chatEmojiOpen.value = q !== null })
+
 const { connect, disconnect } = useWebSocket(slug.value)
 
 onMounted(async () => {
@@ -411,6 +512,7 @@ onMounted(async () => {
 onUnmounted(() => {
   disconnect()
   topicsStore.reset()
+  chatStore.reset()
 })
 
 // Re-fetch active topic detail when WS updates it
@@ -420,6 +522,11 @@ watch(() => topicsStore.topics, (topics) => {
     if (updated) activeTopic.value = { ...activeTopic.value, ...updated }
   }
 }, { deep: true })
+
+// Scroll to the newest chat message as more arrive live via WebSocket
+watch(() => chatStore.messages.length, () => {
+  if (chatOpen.value) nextTick(() => scrollChatToBottom())
+})
 
 async function loadProjectMembers() {
   try {
@@ -452,6 +559,7 @@ function canEditReply(reply) {
 }
 
 async function openTopic(topic) {
+  chatOpen.value = false
   activeTopic.value = topic
   replies.value = []
   newReplyBody.value = ''
@@ -464,6 +572,103 @@ async function openTopic(topic) {
   } catch {
     ui.error('Failed to load topic')
   }
+}
+
+async function openChat() {
+  activeTopic.value = null
+  chatOpen.value = true
+  if (!chatStore.messages.length) {
+    await chatStore.loadMessages(slug.value)
+  }
+  await nextTick()
+  scrollChatToBottom()
+}
+
+function scrollChatToBottom() {
+  if (chatMessagesEl.value) chatMessagesEl.value.scrollTop = chatMessagesEl.value.scrollHeight
+}
+
+function canDeleteMessage(msg) {
+  return msg.user_id === auth.user?.id || auth.isAdmin
+}
+
+async function deleteChatMessage(msg) {
+  if (!await ui.confirm('Delete this message?', { destructive: true })) return
+  try {
+    await projectsApi.deleteMessage(slug.value, msg.id)
+    chatStore.removeMessage({ id: msg.id })
+  } catch {
+    ui.error('Failed to delete message')
+  }
+}
+
+function onChatFilesSelected(files) {
+  for (const f of files) {
+    pendingChatFiles.value.push({
+      id: Math.random(),
+      filename: f.name,
+      size_bytes: f.size,
+      mime_type: f.type || 'application/octet-stream',
+      _file: f,
+      _previewUrl: f.type?.startsWith('image/') ? URL.createObjectURL(f) : null,
+    })
+  }
+}
+
+function onChatPaste(e) {
+  const items = Array.from(e.clipboardData?.items || [])
+  const images = items.filter(it => it.kind === 'file' && it.type.startsWith('image/'))
+  if (images.length) {
+    e.preventDefault()
+    onChatFilesSelected(images.map(it => it.getAsFile()).filter(Boolean))
+  }
+}
+
+function removePendingChatFile(a) {
+  if (a._previewUrl) URL.revokeObjectURL(a._previewUrl)
+  pendingChatFiles.value = pendingChatFiles.value.filter(p => p.id !== a.id)
+}
+
+async function sendChatMessage() {
+  if (!newChatBody.value.trim() && !pendingChatFiles.value.length) return
+  try {
+    const { data } = await projectsApi.sendMessage(slug.value, { body: newChatBody.value })
+    data.attachments = []
+
+    if (pendingChatFiles.value.length) {
+      const filesToUpload = [...pendingChatFiles.value]
+      pendingChatFiles.value = []
+      filesToUpload.forEach(pf => { if (pf._previewUrl) URL.revokeObjectURL(pf._previewUrl) })
+      for (const pf of filesToUpload) {
+        const fd = new FormData()
+        fd.append('file', pf._file)
+        fd.append('owner_type', 'chat_message')
+        fd.append('owner_id', String(data.id))
+        try {
+          const { data: att } = await attachmentsApi.upload(fd)
+          data.attachments.push(att)
+        } catch {
+          ui.error(`Failed to upload ${pf.filename}`)
+        }
+      }
+    }
+
+    chatStore.addMessage(data)
+    newChatBody.value = ''
+    await nextTick()
+    scrollChatToBottom()
+  } catch {
+    ui.error('Failed to send message')
+  }
+}
+
+function onChatEmojiPick(emoji) {
+  pickChatEmoji(emoji)
+  chatEmojiOpen.value = false
+}
+function onChatEmojiEscape() {
+  chatEmojiOpen.value = false
+  nextTick(() => chatTextareaEl.value?.focus())
 }
 
 async function createTopic() {
@@ -626,6 +831,29 @@ function renderMarkdown(text) {
   flex-shrink: 0;
 }
 .topics-sidebar-header h1 { margin: 0; font-size: 16px; }
+
+.chat-nav-item {
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-nav-item:hover { background: var(--color-bg); }
+.chat-nav-item.active { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
+
+.chat-view { display: flex; flex-direction: column; height: 100%; max-width: 760px; }
+.chat-view-title { margin: 0 0 16px; font-size: 20px; font-weight: 700; }
+.chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 4px; margin-bottom: 16px; }
 
 .topics-loading, .topics-empty {
   display: flex; align-items: center; justify-content: center;

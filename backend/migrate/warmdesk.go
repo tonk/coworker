@@ -663,6 +663,13 @@ func WriteProject(baseURL, token string, p *Project, columnMap map[string]string
 		}
 	}
 
+	// ── chat messages ─────────────────────────────────────────────────────────
+	for _, m := range p.Messages {
+		if err := writeChatMessage(baseURL, token, createdProj.Slug, m, userMap, addedMembers, tempKeys); err != nil {
+			fmt.Printf("  ⚠ could not import chat message: %v\n", err)
+		}
+	}
+
 	return nil
 }
 
@@ -1035,6 +1042,41 @@ func writeTopic(baseURL, token, slug string, topic Topic, userMap map[string]Res
 	}
 
 	return nil
+}
+
+// writeChatMessage creates a single project chat message via the REST
+// backfill endpoint (see handlers.CreateChatMessage), preserving the
+// original timestamp and, where resolvable, the original author.
+func writeChatMessage(baseURL, token, slug string, m ChatMessage, userMap map[string]ResolvedUser, addedMembers map[uint]bool, tempKeys map[uint]tempAPIKey) error {
+	hdrs := map[string]string{"Authorization": "Bearer " + token}
+	msgHdrs, _ := authorHeaders(baseURL, token, slug, m.Author, userMap, addedMembers, tempKeys, hdrs)
+
+	type createChatMsgReq struct {
+		Body      string    `json:"body"`
+		CreatedAt time.Time `json:"created_at"`
+	}
+	data, status, err := cwDo("POST",
+		fmt.Sprintf("%s/api/v1/projects/%s/chat/messages", baseURL, slug),
+		msgHdrs,
+		createChatMsgReq{Body: m.Body, CreatedAt: m.CreatedAt},
+	)
+	if err != nil {
+		return err
+	}
+	if status != http.StatusCreated && status != http.StatusOK {
+		return fmt.Errorf("create chat message (HTTP %d): %s", status, string(data))
+	}
+	if m.Attachment == nil {
+		return nil
+	}
+
+	var created struct {
+		ID uint `json:"id"`
+	}
+	if err := json.Unmarshal(data, &created); err != nil {
+		return fmt.Errorf("parse created chat message: %w", err)
+	}
+	return uploadAttachment(baseURL, msgHdrs, "chat_message", created.ID, m.Attachment.Filename, m.Attachment.URL)
 }
 
 // ─── helpers ─────────────────────────────────────────────────────────────────

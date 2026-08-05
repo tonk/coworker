@@ -321,7 +321,11 @@
     "pin": "Vastzetten",
     "unpin": "Losmaken",
     "edited": "bewerkt",
-    "back": "Terug naar onderwerpen"
+    "back": "Terug naar onderwerpen",
+    "project_chat": "Projectchat",
+    "no_chat_messages": "Nog geen berichten. Zeg hallo!",
+    "chat_placeholder": "Bericht naar het project…",
+    "send": "Versturen"
   },
   "checklist": {
     "title": "Checklist",

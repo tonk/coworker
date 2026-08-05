@@ -21,6 +21,27 @@ type Config struct {
 	// (e.g. "tonk"). Used on import to assign cards to the right WarmDesk
 	// user. Names not present here are left unassigned.
 	UserMap map[string]string `yaml:"user_map"`
+	// Include controls which categories of content get imported. Ryver only.
+	Include IncludeConfig `yaml:"include"`
+}
+
+// IncludeConfig selects which categories of content an import pulls in.
+// Every field defaults to true (import everything) when the "include"
+// section, or a field within it, is omitted entirely — so existing config
+// files with no "include" section keep behaving exactly as before.
+type IncludeConfig struct {
+	Cards *bool `yaml:"cards"` // columns, cards, topics
+	Chat  *bool `yaml:"chat"`  // team/group chat history
+}
+
+// CardsEnabled reports whether columns/cards/topics should be imported.
+func (i IncludeConfig) CardsEnabled() bool {
+	return i.Cards == nil || *i.Cards
+}
+
+// ChatEnabled reports whether chat history should be imported.
+func (i IncludeConfig) ChatEnabled() bool {
+	return i.Chat == nil || *i.Chat
 }
 
 // WarmDeskConfig holds connection details for the WarmDesk server.

@@ -321,7 +321,11 @@
     "pin": "Anheften",
     "unpin": "Lösen",
     "edited": "bearbeitet",
-    "back": "Zurück zu Themen"
+    "back": "Zurück zu Themen",
+    "project_chat": "Projekt-Chat",
+    "no_chat_messages": "Noch keine Nachrichten. Sag Hallo!",
+    "chat_placeholder": "Nachricht an das Projekt…",
+    "send": "Senden"
   },
   "checklist": {
     "title": "Checkliste",

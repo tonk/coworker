@@ -321,7 +321,11 @@
     "pin": "Pin",
     "unpin": "Unpin",
     "edited": "edited",
-    "back": "Back to Topics"
+    "back": "Back to Topics",
+    "project_chat": "Project Chat",
+    "no_chat_messages": "No messages yet. Say hello!",
+    "chat_placeholder": "Message the project…",
+    "send": "Send"
   },
   "checklist": {
     "title": "Checklist",

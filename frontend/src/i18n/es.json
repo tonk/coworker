@@ -321,7 +321,11 @@
     "pin": "Fijar",
     "unpin": "Desfijar",
     "edited": "editado",
-    "back": "Volver a temas"
+    "back": "Volver a temas",
+    "project_chat": "Chat del proyecto",
+    "no_chat_messages": "Aún no hay mensajes. ¡Saluda!",
+    "chat_placeholder": "Escribe al proyecto…",
+    "send": "Enviar"
   },
   "checklist": {
     "title": "Lista de verificación",

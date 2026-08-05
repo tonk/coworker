@@ -516,6 +516,7 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 
 				// Chat history
 				projects.GET("/:projectSlug/chat/messages", handlers.ListChatMessages)
+				projects.POST("/:projectSlug/chat/messages", handlers.CreateChatMessage)
 				projects.DELETE("/:projectSlug/chat/messages/:msgId", handlers.DeleteChatMessage)
 				projects.POST("/:projectSlug/chat/messages/:msgId/reactions", handlers.ToggleChatReaction)
 

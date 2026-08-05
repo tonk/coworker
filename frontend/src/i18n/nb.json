@@ -321,7 +321,11 @@
     "pin": "Fest",
     "unpin": "Løsne",
     "edited": "redigert",
-    "back": "Tilbake til emner"
+    "back": "Tilbake til emner",
+    "project_chat": "Prosjektchat",
+    "no_chat_messages": "Ingen meldinger enda. Si hei!",
+    "chat_placeholder": "Melding til prosjektet…",
+    "send": "Send"
   },
   "checklist": {
     "title": "Sjekkliste",

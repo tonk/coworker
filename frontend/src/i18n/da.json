@@ -321,7 +321,11 @@
     "pin": "Fastgør",
     "unpin": "Frigør",
     "edited": "redigeret",
-    "back": "Tilbage til emner"
+    "back": "Tilbage til emner",
+    "project_chat": "Projektchat",
+    "no_chat_messages": "Ingen beskeder endnu. Sig hej!",
+    "chat_placeholder": "Skriv til projektet…",
+    "send": "Send"
   },
   "checklist": {
     "title": "Tjekliste",

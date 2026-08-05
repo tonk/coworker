@@ -321,7 +321,11 @@
     "pin": "Festa",
     "unpin": "Losa",
     "edited": "breytt",
-    "back": "Til baka í efni"
+    "back": "Til baka í efni",
+    "project_chat": "Verkefnaspjall",
+    "no_chat_messages": "Engin skilaboð enn. Segðu hæ!",
+    "chat_placeholder": "Skilaboð til verkefnisins…",
+    "send": "Senda"
   },
   "checklist": {
     "title": "Gátlisti",

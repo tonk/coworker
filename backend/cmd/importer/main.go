@@ -5,6 +5,7 @@
 //
 //	warmdesk-import [--config FILE] [--dry-run]
 //	warmdesk-import [--config FILE] --dump-task PATH [--dump-task-ref REF]   # Ryver only, debugging
+//	warmdesk-import [--config FILE] --dump-chat PATH                        # Ryver only, debugging
 //
 // Required fields can be supplied in the config file, as environment variables,
 // or interactively when the program prompts for them.
@@ -29,6 +30,7 @@ func main() {
 	dryRun := flag.Bool("dry-run", false, "print what would be imported without writing to WarmDesk")
 	dumpTask := flag.String("dump-task", "", "Ryver only: write a task's raw JSON (plus its comments) to this path and exit, for debugging")
 	dumpTaskRef := flag.String("dump-task-ref", "", "Ryver only: with --dump-task, target this exact task by its short ref (e.g. CON-17) instead of auto-picking one")
+	dumpChat := flag.String("dump-chat", "", "Ryver only: write the first page (up to 20) of raw chat history to this path and exit, for debugging")
 	flag.Parse()
 
 	cfg, err := migrate.LoadConfig(*configFile)
@@ -50,6 +52,17 @@ func main() {
 		return
 	}
 
+	if *dumpChat != "" {
+		if strings.ToLower(cfg.Platform.Name) != "ryver" {
+			log.Fatalf("--dump-chat is only supported for platform.name: ryver")
+		}
+		if err := migrate.DumpChatHistory(cfg.Platform, *dumpChat); err != nil {
+			log.Fatalf("dump chat: %v", err)
+		}
+		fmt.Printf("✓ wrote chat history JSON to %s\n", *dumpChat)
+		return
+	}
+
 	fmt.Printf("WarmDesk import\n")
 	fmt.Printf("  source  : %s\n", strings.ToLower(cfg.Platform.Name))
 	fmt.Printf("  target  : %s (project will be created)\n", cfg.WarmDesk.URL)
@@ -65,7 +78,7 @@ func main() {
 	case "openproject":
 		project, err = migrate.ImportFromOpenProject(cfg.Platform, cfg.ColumnMap)
 	case "ryver":
-		project, err = migrate.ImportFromRyver(cfg.Platform, cfg.ColumnMap)
+		project, err = migrate.ImportFromRyver(cfg.Platform, cfg.ColumnMap, cfg.Include.CardsEnabled(), cfg.Include.ChatEnabled())
 	default:
 		log.Fatalf("unknown platform %q — must be jira, trello, openproject, or ryver", cfg.Platform.Name)
 	}
@@ -79,8 +92,8 @@ func main() {
 		totalCards += len(col.Cards)
 	}
 	fmt.Printf("\nProject: %s\n", project.Name)
-	fmt.Printf("  %d column(s), %d card(s), %d topic(s)\n",
-		len(project.Columns), totalCards, len(project.Topics))
+	fmt.Printf("  %d column(s), %d card(s), %d topic(s), %d chat message(s)\n",
+		len(project.Columns), totalCards, len(project.Topics), len(project.Messages))
 	for _, col := range project.Columns {
 		fmt.Printf("  %-20s  %d cards\n", col.Name, len(col.Cards))
 	}
