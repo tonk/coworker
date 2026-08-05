@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.21.0 — 2026-08-05
+
+### Added
+- **Sidebar section visibility menus** — a "⋮" menu at the top of the main sidebar lets you show/hide entire sections (Favorite Projects, All Projects, Customers, Tickets, People, Chats, etc.), on top of the existing per-section collapse/expand. The Topics page sidebar gets the same kind of menu for its "Project Chat" entry. Both persist per-browser and only list sections actually enabled for your account/instance.
+
+### Fixed
+- **Company Logo (dark background) preview in Admin → Settings didn't show** — the preview swatch used a theme-dependent background color that was light in light mode, so the (typically light/white) dark-background logo artwork was invisible against it unless the admin's own UI happened to be in dark mode.
+- **Ryver chat-only import failed with "$skip not supported"** — `Chat.History()` rejects Ryver's usual `$skip`-based pagination outright, unlike every other endpoint; chat history import now pages with an id-based cursor instead.
+- **Re-importing chat only (`include.cards: false`) into an already-imported Ryver project failed with "card prefix is already used by another project"** — the migration tool always created a brand-new project; it now reuses the existing project by slug when one is found, instead of colliding on prefix.
+
 ## v0.20.1 — 2026-08-05
 
 ### Fixed

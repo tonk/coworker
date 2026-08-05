@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.20.1)
+## Latest release (v0.21.0)
 
-- **Fixed** — Project labels can now be edited, not just created and deleted; the backend already supported it, only the UI button was missing.
-- **Fixed** — Ryver migration failing outright for any team name containing a space (e.g. "Restic Server") or an `&` (e.g. "Sysadmin & Networking"), due to the name being spliced into the request URL unescaped.
+- **Added** — Sidebar section visibility menus: hide sections you don't use (Favorite Projects, Customers, Tickets, People, Chats, etc.) from the main sidebar, and hide "Project Chat" from the Topics page sidebar, via a new "⋮" menu.
+- **Fixed** — The dark-background company logo preview in Admin Settings, and two Ryver migration bugs (chat-history pagination, and re-importing chat only into an already-imported project).
 
 ## Experiment
 

@@ -1,5 +1,5 @@
 = WarmDesk — User Guide
-:revnumber: v0.20.1
+:revnumber: v0.21.0
 :revdate: 2026-08-05
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -147,6 +147,8 @@ The collapsible sidebar on the left (or right — configurable in User Settings)
 
 All sections are drag-to-reorder (grab the ⠿ handle on the section header).
 Drag the inner edge of the sidebar to resize it — width and section order are persisted in your browser.
+
+Click the ⋮ menu at the top of the sidebar to show or hide entire sections (e.g. hide *Tickets* or *Customers* if you never use them) — this is separate from collapsing a section's contents with its header's chevron. Only sections actually enabled for your account/instance are listed. The same kind of menu is available at the top of a project's *Topics* sidebar, to show or hide the *Project Chat* entry.
 
 === Header
 
