@@ -243,7 +243,12 @@ func AdminUpdateUser(c *gin.Context) {
 	if req.Email != "" {
 		updates["email"] = strings.ToLower(req.Email)
 	}
-	if req.Locale == "en" || req.Locale == "nl" {
+	validLocales := map[string]bool{
+		"en": true, "nl": true, "de": true, "fr": true, "es": true,
+		"da": true, "sv": true, "nb": true, "fi": true, "is": true,
+		"pt": true, "it": true,
+	}
+	if validLocales[req.Locale] {
 		updates["locale"] = req.Locale
 	}
 	if req.DateTimeFormat != "" {
