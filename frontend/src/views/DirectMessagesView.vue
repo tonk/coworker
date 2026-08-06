@@ -1975,12 +1975,35 @@ function dayLabel(dateStr) {
   color: #ffffff;
   border: 1px solid rgba(255,255,255,0.28);
 }
+/* The rule above is for *inline* single-backtick code in the purple "own
+   message" bubble — white text on a translucent white tint reads fine there.
+   But :deep(code) also matches <code> nested inside a fenced ```block```
+   (pre > code), which has its own separate white card design with dark
+   navy text (see pre rules below); without this override that white text
+   color leaks in and makes any plain, non-syntax-highlighted text in the
+   block invisible (white on white) — only hljs-token spans stayed visible
+   since they carry their own explicit colors. */
+.bubble-own .msg-body :deep(pre code) {
+  background: none;
+  color: inherit;
+  border: none;
+}
 .msg-body :deep(pre) {
   background: rgba(0,0,0,.15);
   border-radius: 8px;
   padding: 10px 12px;
   overflow-x: auto;
   margin: 6px 0;
+}
+/* .msg-bubble sets font-variant-emoji: emoji so real emoji in chat text render
+   full-color instead of as monochrome text glyphs. Digits 0-9 (and a few symbols
+   like # and *) are also emoji-eligible codepoints in Unicode, so that same
+   property — inherited into code blocks — forces them into wide emoji-style
+   glyph metrics too, which reads as extra spacing between every digit/symbol
+   in a fenced code block. Code content is never meant to render as emoji. */
+.msg-body :deep(pre),
+.msg-body :deep(code) {
+  font-variant-emoji: normal;
 }
 .bubble-own .msg-body :deep(pre) {
   background: #ffffff !important;
