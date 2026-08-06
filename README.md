@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.21.1)
+## Latest release (v0.22.0)
 
-- **Added** — TURN server support for 1:1 calls (fixes connect-but-no-audio/video on VPNs and restrictive networks), and the browser tab now blinks a "New message!" title when you get a message while it's not focused.
-- **Fixed** — 1:1 calls could silently fail to connect if you clicked Accept more than once; the admin panel's locale restriction when editing another user; and the Linux desktop build's missing camera/microphone device detection.
+- **Added** — restrict project creation to explicitly-permitted users (Admin → Users), a muted-mic indicator for the other party during a call, and a resizable in-call chat sidebar.
+- **Fixed** — cropped screen shares now fit properly for the viewer, the tab-blink unread counter no longer gets stuck on, several admin user-creation rough edges, and the emoji picker no longer opens on a bare `:`, eats typed text, or fails to find ASCII emoticons like `:-)`.
 
 ## Experiment
 
@@ -350,10 +350,10 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Global search** — the search bar in the header matches card titles/descriptions, card comments, chat and direct messages, ticket subjects, and time-entry descriptions, scoped to what you have access to; clicking a comment or time-entry result jumps straight to and highlights it
 - **Search & replace** — find and replace text across cards, card comments, direct messages, tickets, and time entries; pick which categories to include, preview every match (with a before/after snippet) before anything changes, and matches you don't have permission to edit are shown greyed out and can't be applied; the 20-per-category preview limit is adjustable up to 500
 - **Multi-project** — each project has its own board, members, and chat; open card counts shown on project tiles and in the admin panel; admins can drag-reorder projects on the dashboard
-- **Role-based access** — global roles (admin / user / viewer / metrics / backup / customer) and per-project roles (owner / admin / member / viewer); project admins can manage columns; the `customer` role gives end-customers a read/comment-only ticket portal
+- **Role-based access** — global roles (admin / user / viewer / metrics / backup / customer) and per-project roles (owner / admin / member / viewer); project admins can manage columns; the `customer` role gives end-customers a read/comment-only ticket portal; project creation itself can be restricted to explicitly-permitted users (Admin → Users), off by default for non-admins
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
 - **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management; every user group automatically gets a linked group conversation that stays in sync with group membership
-- **1:1 and group video calls** — call any user from a direct message conversation with WebRTC peer-to-peer for 1:1 calls, and start LiveKit-powered group video rooms in any group chat; includes call settings for microphone, camera, and speaker plus in-app status guidance when LiveKit is not configured; an optional TURN server (configured by an admin) keeps 1:1 calls connecting across restrictive networks and VPNs where STUN alone isn't enough
+- **1:1 and group video calls** — call any user from a direct message conversation with WebRTC peer-to-peer for 1:1 calls, and start LiveKit-powered group video rooms in any group chat; includes call settings for microphone, camera, and speaker plus in-app status guidance when LiveKit is not configured; an optional TURN server (configured by an admin) keeps 1:1 calls connecting across restrictive networks and VPNs where STUN alone isn't enough; screen sharing scales correctly for the viewer; a muted-mic indicator shows when the other party mutes; the optional in-call text chat sidebar is resizable
 - **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
 - **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages, plus a blinking browser tab title while the tab isn't focused
 - **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted); all sections are drag-to-reorder with custom order persisted in localStorage

@@ -1,5 +1,5 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.21.1
+:revnumber: v0.22.0
 :revdate: 2026-08-06
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -487,6 +487,9 @@ Access the admin panel via the *Admin* link in the navigation (visible to admin 
 
 |Assign to projects
 |Admin → Users → (click user) → Projects tab
+
+|Allow a user to create new projects
+|Admin → Users → Feature Access table → *Create projects* checkbox. Off by default for non-admin users — admins can always create projects regardless of this setting.
 
 |Assign to customers
 |Admin → Users → (click user) → Customer Access picker

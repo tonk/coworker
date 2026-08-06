@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.22.0 — 2026-08-06
+
+### Added
+- **Restrict who can create projects** — previously any non-viewer user could create a project. New per-user "Create projects" toggle in Admin → Users (feature-access matrix), default **off** — admins can always create projects; everyone else needs it explicitly granted. The "+ New Project" button is hidden for users without the permission.
+- **See if the other party is muted during a call** — a muted-mic icon now appears next to their name in both the video and audio-only call bar, via a new signal sent when either side toggles mute (WebRTC has no built-in way to convey this otherwise).
+- **In-call text chat sidebar is resizable** — drag its left edge, same pattern as the main app sidebar; width persists per browser.
+
+### Fixed
+- **Screen share only showed a cropped portion of the shared screen to the other party** — the remote video always used `object-fit: cover` (crops to fill), which is wrong for an arbitrary screen resolution, unlike a camera feed. A new signal tells the viewer when the incoming stream is a screen share so it can switch to `object-fit: contain` (fit, not crop) for that case only.
+- **Browser tab kept blinking "New message!" even after reading the message** — the project-chat unread counter only ever incremented and was never cleared anywhere in the code; now cleared on opening the Project Chat panel and on window refocus if it was already open.
+- **Creating a user with only First/Last name (no explicit display name) set the display name to the user ID** — now falls back to "First Last" before falling back to the user ID, matching the convention already used elsewhere (e.g. macro placeholders).
+- **Creating a user with an invalid email (or other bad field) just said "invalid request"** — now reports the specific problem, e.g. "invalid email address" or "username must be at least 3 characters".
+- **Emoji picker opened on a bare `:`** before any search text was typed — disruptive since `:` is common in ordinary prose, unlike `@` for mentions. Now requires at least one character after the colon.
+- **Emoji picker silently ate typed text** — it always stole focus into its own search box on open, even when triggered by typing `:something` in a compose box, so further keystrokes (including retyping the colon) landed in the hidden search field instead of the message. Focus now only moves into the popup when opened with nothing pre-typed (the toolbar 😊 button); typing `:something` keeps focus in the textarea and updates the popup's results live instead.
+- **Searching `:-)` (or `:)`, `<3`, etc.) in the emoji picker returned "No results"** — the search only matched emoji shortcode names/tags, which have no ASCII-emoticon aliases; it now also checks against the app's existing emoticon-to-emoji table.
+
 ## v0.21.1 — 2026-08-06
 
 ### Added
