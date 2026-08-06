@@ -47,6 +47,7 @@
 
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import client from '@/api/client'
 
 const appVersion = __APP_VERSION__
@@ -79,6 +80,7 @@ import A11yStatusModal from '@/components/common/A11yStatusModal.vue'
 import NewsWelcomeModal from '@/components/common/NewsWelcomeModal.vue'
 import { newsApi } from '@/api/news'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const systemStore = useSystemStore()
 const ui = useUIStore()
@@ -181,10 +183,58 @@ const routeCrumbs = computed(() => {
   })
 })
 
-watch([() => notificationsStore.hasUnread, projectChatUnread, () => systemStore.isTimetrackingMode], ([hasUnread, chatUnread]) => {
-  const base = systemStore.isTimetrackingMode ? 'WarmDesk - Time Tracking' : 'WarmDesk'
-  document.title = (hasUnread || chatUnread > 0) ? `● ${base}` : base
-}, { immediate: true })
+// ── Tab title + blink-on-new-message (browser only — Tauri has its own tray icon badge) ──
+const TITLE_BLINK_MS = 1000
+let titleBlinkTimer = null
+let titleBlinkOn = false
+
+function baseTitle() {
+  return systemStore.isTimetrackingMode ? 'WarmDesk - Time Tracking' : 'WarmDesk'
+}
+
+function hasNewMessage() {
+  return notificationsStore.hasUnread || projectChatUnread.value > 0
+}
+
+function stopTitleBlink() {
+  if (titleBlinkTimer) {
+    clearInterval(titleBlinkTimer)
+    titleBlinkTimer = null
+  }
+  titleBlinkOn = false
+}
+
+function renderStaticTitle() {
+  const base = baseTitle()
+  document.title = hasNewMessage() ? `● ${base}` : base
+}
+
+function startTitleBlink() {
+  if (titleBlinkTimer) return
+  titleBlinkTimer = setInterval(() => {
+    titleBlinkOn = !titleBlinkOn
+    document.title = titleBlinkOn ? t('app.new_message_title') : baseTitle()
+  }, TITLE_BLINK_MS)
+}
+
+// Tab is "open" when the document is visible AND the window has focus —
+// switching to the tab (visibility) or clicking back into it (focus) both count.
+function isTabOpen() {
+  return !document.hidden && document.hasFocus()
+}
+
+function updateTitleState() {
+  if (!isTauri && hasNewMessage() && !isTabOpen()) {
+    startTitleBlink()
+  } else {
+    stopTitleBlink()
+    renderStaticTitle()
+  }
+}
+
+watch([() => notificationsStore.hasUnread, projectChatUnread, () => systemStore.isTimetrackingMode], updateTitleState, { immediate: true })
+
+function onTitleVisibilityChange() { updateTitleState() }
 
 const { updateAvailable, latestVersion, releaseUrl, downloadUrl, check: checkForUpdate } = useUpdateCheck()
 let versionTimer = null
@@ -454,6 +504,9 @@ onMounted(() => {
   window.addEventListener('open-keyboard-shortcuts', onOpenShortcuts)
   const savedZoom = localStorage.getItem(ZOOM_KEY)
   if (savedZoom) applyZoom(parseFloat(savedZoom))
+  document.addEventListener('visibilitychange', onTitleVisibilityChange)
+  window.addEventListener('focus', onTitleVisibilityChange)
+  window.addEventListener('blur', onTitleVisibilityChange)
 })
 
 onUnmounted(() => {
@@ -461,6 +514,10 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKeyZoom)
   window.removeEventListener('wheel', onWheelZoom)
   window.removeEventListener('open-keyboard-shortcuts', onOpenShortcuts)
+  document.removeEventListener('visibilitychange', onTitleVisibilityChange)
+  window.removeEventListener('focus', onTitleVisibilityChange)
+  window.removeEventListener('blur', onTitleVisibilityChange)
+  stopTitleBlink()
   auth.stopIdleTimer()
   disconnectUserWs()
 })
