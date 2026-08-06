@@ -39,8 +39,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { gemoji } from 'gemoji'
+import { EMOTICONS } from '@/utils/emoticons'
 
 const props = defineProps({ initialSearch: { type: String, default: '' } })
 const emit = defineEmits(['pick', 'close', 'escape'])
@@ -49,6 +50,12 @@ const panelEl = ref(null)
 const searchEl = ref(null)
 const search = ref(props.initialSearch || '')
 const activeCat = ref('Smileys')
+
+// Keep the picker's own search box mirroring the live query as the host
+// textarea's `:something` autocomplete keeps typing (initialSearch changes
+// after mount, not just at creation) — this lets the results filter live
+// without ever needing to move focus into the popup itself.
+watch(() => props.initialSearch, (v) => { search.value = v || '' })
 
 const CATEGORIES = [
   { icon: '😀', name: 'Smileys', emojis: ['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','🥰','😘','🙂','🤗','🤔','😐','🙄','😏','😒','😔','😟','😢','😭','😤','😠','😡','🤬','😱','😳','🥺','😴','🤒','🤧','🥳','🤩','🥸','🫠','😵','🥴','🤪','😜','😛','🤭','🫣','🫢','🤫','🫡','🤐','🫥'] },
@@ -100,10 +107,34 @@ function matchesSearch(emoji, query) {
   return meta.descriptions.some(d => String(d || '').toLowerCase().includes(query))
 }
 
+// ASCII emoticons (":-)", ":D", "<3", ...) don't appear in gemoji's shortcode
+// names/tags at all, so matchesSearch() above never finds them — check
+// against the same EMOTICONS table useCompose.js uses for live replacement.
+// Matched against the raw (non-normalized) query since normalizeQuery()
+// strips a leading ':', which would turn ":-)" into "-)" and break the
+// comparison. Prefix matching (rather than exact-only) surfaces candidates
+// while the user is still mid-way through typing one, e.g. ":-" alone.
+function matchEmoticons(rawQuery) {
+  const q = rawQuery.trim().toLowerCase()
+  if (!q) return []
+  const seen = new Set()
+  const out = []
+  for (const [pattern, emoji] of EMOTICONS) {
+    if (!pattern.toLowerCase().startsWith(q)) continue
+    if (seen.has(emoji)) continue
+    seen.add(emoji)
+    out.push(emoji)
+  }
+  return out
+}
+
 const visibleEmojis = computed(() => {
   if (search.value.trim()) {
+    const emoticonMatches = matchEmoticons(search.value)
     const q = normalizeQuery(search.value)
-    return ALL_EMOJIS.filter(e => matchesSearch(e, q)).slice(0, 120)
+    const keywordMatches = ALL_EMOJIS.filter(e => matchesSearch(e, q))
+    const combined = [...emoticonMatches, ...keywordMatches.filter(e => !emoticonMatches.includes(e))]
+    return combined.slice(0, 120)
   }
   return CATEGORIES.find(c => c.name === activeCat.value)?.emojis || []
 })
@@ -131,7 +162,15 @@ function onClickOutside(e) {
 
 onMounted(() => {
   document.addEventListener('mousedown', onClickOutside)
-  nextTick(() => searchEl.value?.focus())
+  // Only steal focus into our own search box when opened with nothing
+  // pre-typed (e.g. clicking a toolbar 😊 button). When opened via typing
+  // ":something" in a host textarea, initialSearch already has content —
+  // focus must stay in that textarea so further keystrokes keep composing
+  // the message instead of silently landing in this popup's search input
+  // (which used to "eat" everything typed after the triggering ':').
+  if (!props.initialSearch) {
+    nextTick(() => searchEl.value?.focus())
+  }
 })
 onBeforeUnmount(() => document.removeEventListener('mousedown', onClickOutside))
 </script>

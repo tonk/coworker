@@ -95,8 +95,13 @@ export function useCompose({ textareaEl, getValue, setValue, users }) {
       mentionQuery.value = null
     }
 
-    // Emoji-name detection (start with ':' and then letters/numbers/_+-)
-    const em = before.match(/:([a-z0-9_+\-]*)$/i)
+    // Emoji-name detection (start with ':' and then letters/numbers/_+-).
+    // Requires at least one character after the colon — ':' is common in
+    // ordinary prose (e.g. "Note: ..."), so opening the picker on the bare
+    // colon alone before any search text is typed is more disruptive than
+    // helpful; unlike '@' for mentions, which is rarely typed outside an
+    // intentional mention.
+    const em = before.match(/:([a-z0-9_+\-]+)$/i)
     if (em) {
       emojiQuery.value = em[1]
       emojiStart.value = pos - em[0].length
