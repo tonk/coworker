@@ -964,7 +964,8 @@
     "board": "Scrum / Kanban boards",
     "chat": "Team chat & direct messages",
     "time_tracking": "Time tracking",
-    "helpdesk": "Helpdesk (tickets)"
+    "helpdesk": "Helpdesk (tickets)",
+    "create_projects": "Create projects"
   },
   "settings": {
     "title": "Account Settings",
@@ -1468,6 +1469,7 @@
     "rejected": "{name} declined the call",
     "no_mic": "Microphone access denied",
     "failed": "Call failed to connect",
+    "remote_muted": "{name} is muted",
     "ended": "Call ended",
     "incoming_video": "Incoming video call",
     "camera_on": "Camera on",

@@ -269,7 +269,7 @@ func handleIncoming(client *appws.Client, raw []byte) {
 			Payload: map[string]uint{"id": payload.MessageID},
 		})
 
-	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject, appws.TypeCallFailed:
+	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject, appws.TypeCallFailed, appws.TypeCallMute, appws.TypeCallScreenShare:
 		handleCallSignal(client, msg)
 	}
 }
@@ -291,7 +291,7 @@ func handleUserIncoming(client *appws.Client, raw []byte) {
 		data, _ := json.Marshal(pong)
 		client.Send(data)
 
-	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject, appws.TypeCallFailed:
+	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject, appws.TypeCallFailed, appws.TypeCallMute, appws.TypeCallScreenShare:
 		handleCallSignal(client, msg)
 
 	case appws.TypeCallGroupInvite:
@@ -306,6 +306,8 @@ type callBasePayload struct {
 	SDP            string `json:"sdp,omitempty"`
 	Candidate      string `json:"candidate,omitempty"`
 	HasVideo       bool   `json:"has_video,omitempty"`
+	Muted          bool   `json:"muted,omitempty"`
+	Sharing        bool   `json:"sharing,omitempty"`
 }
 
 // handleCallSignal relays WebRTC signaling messages between two conversation members.
@@ -402,6 +404,26 @@ func handleCallSignal(client *appws.Client, msg appws.Message) {
 			Payload: map[string]any{
 				"from_user_id":    callerID,
 				"conversation_id": convID,
+			},
+		})
+
+	case appws.TypeCallMute:
+		appws.BroadcastToUser(calleeID, appws.Message{
+			Type: appws.TypeCallMute,
+			Payload: map[string]any{
+				"from_user_id":    callerID,
+				"conversation_id": convID,
+				"muted":           payload.Muted,
+			},
+		})
+
+	case appws.TypeCallScreenShare:
+		appws.BroadcastToUser(calleeID, appws.Message{
+			Type: appws.TypeCallScreenShare,
+			Payload: map[string]any{
+				"from_user_id":    callerID,
+				"conversation_id": convID,
+				"sharing":         payload.Sharing,
 			},
 		})
 	}

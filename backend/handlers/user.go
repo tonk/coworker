@@ -1,17 +1,45 @@
 package handlers
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/tonk/warmdesk/database"
 	"github.com/tonk/warmdesk/middleware"
 	"github.com/tonk/warmdesk/models"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// bindErrorMessage turns a ShouldBindJSON error into a specific, user-facing
+// message when it's a struct-tag validation failure (required/email/min/max),
+// falling back to a generic message for anything else (malformed JSON, wrong
+// types, etc.). Field names come from the Go struct field lowercased, which
+// matches its JSON tag for every field this is currently used on.
+func bindErrorMessage(err error) string {
+	var ve validator.ValidationErrors
+	if errors.As(err, &ve) && len(ve) > 0 {
+		fe := ve[0]
+		field := strings.ToLower(fe.Field())
+		switch fe.Tag() {
+		case "required":
+			return field + " is required"
+		case "email":
+			return "invalid email address"
+		case "min":
+			return fmt.Sprintf("%s must be at least %s characters", field, fe.Param())
+		case "max":
+			return fmt.Sprintf("%s must be at most %s characters", field, fe.Param())
+		}
+		return field + " is invalid"
+	}
+	return "invalid request"
+}
 
 func AdminListUsers(c *gin.Context) {
 	var users []models.User
@@ -153,6 +181,7 @@ func AdminUpdateUser(c *gin.Context) {
 		BoardEnabled        *bool  `json:"board_enabled"`
 		ChatEnabled         *bool  `json:"chat_enabled"`
 		HelpdeskEnabled     *bool  `json:"helpdesk_enabled"`
+		CanCreateProjects   *bool  `json:"can_create_projects"`
 		Theme               string `json:"theme"`
 		ShowBreadcrumbs     *bool  `json:"show_breadcrumbs"`
 		EmailNotifications  *bool  `json:"email_notifications"`
@@ -215,6 +244,9 @@ func AdminUpdateUser(c *gin.Context) {
 	}
 	if req.HelpdeskEnabled != nil {
 		updates["helpdesk_enabled"] = *req.HelpdeskEnabled
+	}
+	if req.CanCreateProjects != nil {
+		updates["can_create_projects"] = *req.CanCreateProjects
 	}
 	validThemes := map[string]bool{"light": true, "dark": true, "system": true}
 	if validThemes[req.Theme] {
@@ -442,7 +474,7 @@ func AdminCreateUser(c *gin.Context) {
 		MustChangePassword bool   `json:"must_change_password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": bindErrorMessage(err)})
 		return
 	}
 
@@ -454,6 +486,9 @@ func AdminCreateUser(c *gin.Context) {
 	hash := string(hashBytes)
 
 	displayName := req.DisplayName
+	if displayName == "" {
+		displayName = strings.TrimSpace(req.FirstName + " " + req.LastName)
+	}
 	if displayName == "" {
 		displayName = req.Username
 	}

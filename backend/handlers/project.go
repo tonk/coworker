@@ -179,9 +179,17 @@ func ListProjects(c *gin.Context) {
 // @Router       /projects [post]
 func CreateProject(c *gin.Context) {
 	userID := middleware.GetUserID(c)
-	if middleware.GetGlobalRole(c) == "viewer" {
+	role := middleware.GetGlobalRole(c)
+	if role == "viewer" {
 		c.JSON(http.StatusForbidden, gin.H{"error": "viewers cannot create projects"})
 		return
+	}
+	if role != "admin" {
+		var creator models.User
+		if err := database.DB.Select("can_create_projects").First(&creator, userID).Error; err != nil || !creator.CanCreateProjects {
+			c.JSON(http.StatusForbidden, gin.H{"error": "you do not have permission to create projects"})
+			return
+		}
 	}
 	var req struct {
 		Name        string `json:"name" binding:"required,min=1,max=200"`

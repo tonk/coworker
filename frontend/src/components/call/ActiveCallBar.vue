@@ -9,7 +9,7 @@
         fixed
         @close="setCallChat(false)"
       />
-      <div v-if="lkState.phase === 'connecting'" class="active-call-bar lk-connecting-bar" :class="{ 'bar-with-chat': showCallChat }">
+      <div v-if="lkState.phase === 'connecting'" class="active-call-bar lk-connecting-bar" :class="{ 'bar-with-chat': showCallChat }" :style="showCallChat ? { right: callChatWidth + 'px' } : null">
         <div class="call-bar-info">
           <div class="call-bar-name">{{ lkState.title || $t('call.group_call') }}</div>
           <div class="call-bar-status"><span class="status-calling">{{ $t('call.joining_group') }}</span></div>
@@ -133,8 +133,9 @@
       <!-- ── VIDEO OVERLAY (active + video) — WebRTC 1:1 ─────────────────────── -->
       <div v-else-if="state.phase === 'active' && state.hasVideo" class="call-video-chat-row">
         <div class="call-stage video-overlay">
-        <!-- Remote video fills the background -->
-        <video ref="remoteVideo" autoplay playsinline class="remote-video"></video>
+        <!-- Remote video fills the background; screen shares are fit (not cropped) since
+             their aspect ratio rarely matches the viewport, unlike a camera feed -->
+        <video ref="remoteVideo" autoplay playsinline class="remote-video" :class="{ 'remote-video--contain': state.remoteScreenSharing }"></video>
 
         <!-- Local self-preview (PiP, bottom-right) -->
         <div class="local-pip">
@@ -148,7 +149,14 @@
         </div>
 
         <!-- Remote name (top-left) -->
-        <div class="remote-name">{{ state.remoteName }}</div>
+        <div class="remote-name">
+          {{ state.remoteName }}
+          <svg v-if="state.remoteMuted" class="remote-muted-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" role="img" :aria-label="$t('call.remote_muted', { name: state.remoteName || '…' })">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+            <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+          </svg>
+        </div>
         <div class="call-duration">{{ formattedDuration }}</div>
 
         <!-- Invite picker for 1:1 → group upgrade -->
@@ -250,7 +258,7 @@
         fixed
         @close="setCallChat(false)"
       />
-      <div v-else-if="showWebRTC" class="active-call-bar" :class="{ 'bar-with-chat': showCallChat }">
+      <div v-else-if="showWebRTC" class="active-call-bar" :class="{ 'bar-with-chat': showCallChat }" :style="showCallChat ? { right: callChatWidth + 'px' } : null">
         <!-- Hidden audio element for remote stream in audio-only mode -->
         <audio ref="remoteAudio" autoplay playsinline></audio>
 
@@ -275,7 +283,14 @@
         </div>
 
         <div class="call-bar-info">
-          <div class="call-bar-name">{{ state.remoteName || '…' }}</div>
+          <div class="call-bar-name">
+            {{ state.remoteName || '…' }}
+            <svg v-if="state.remoteMuted" class="remote-muted-icon remote-muted-icon--bar" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" role="img" :aria-label="$t('call.remote_muted', { name: state.remoteName || '…' })">
+              <line x1="1" y1="1" x2="23" y2="23"/>
+              <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+              <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+            </svg>
+          </div>
           <div class="call-bar-status">
             <span v-if="state.phase === 'calling'" class="status-calling">{{ $t('call.calling') }}</span>
             <span v-else class="status-duration">{{ formattedDuration }}</span>
@@ -367,7 +382,7 @@ import CallChatSidebar from '@/components/call/CallChatSidebar.vue'
 const { t } = useI18n()
 const ui = useUIStore()
 const auth = useAuthStore()
-const { showCallChat, toggleCallChat, setCallChat } = useCallChatPanel()
+const { showCallChat, toggleCallChat, setCallChat, callChatWidth } = useCallChatPanel()
 
 const {
   state: lkState,
@@ -680,6 +695,9 @@ onUnmounted(() => {
   height: 100%;
   object-fit: cover;
 }
+.remote-video--contain {
+  object-fit: contain;
+}
 
 .local-pip {
   position: absolute;
@@ -717,6 +735,17 @@ onUnmounted(() => {
   font-size: 16px;
   font-weight: 600;
   text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.remote-muted-icon {
+  color: #f87171;
+  flex-shrink: 0;
+}
+.remote-muted-icon--bar {
+  color: #ef4444;
+  vertical-align: -1px;
 }
 .call-duration {
   position: absolute;
@@ -780,9 +809,7 @@ onUnmounted(() => {
   box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
   height: 56px;
 }
-.active-call-bar.bar-with-chat {
-  right: 340px;
-}
+/* .bar-with-chat's actual `right` offset is set inline (callChatWidth is dynamic/resizable) */
 .call-bar-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .call-bar-name { font-size: 14px; font-weight: 600; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .call-bar-status { font-size: 12px; }

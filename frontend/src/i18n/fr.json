@@ -1351,6 +1351,7 @@
     "rejected": "{name} a refusé l'appel",
     "no_mic": "Accès au microphone refusé",
     "failed": "Échec de la connexion de l'appel",
+    "remote_muted": "{name} est en sourdine",
     "ended": "Appel terminé",
     "incoming_video": "Appel vidéo entrant",
     "camera_on": "Caméra activée",
@@ -1589,6 +1590,7 @@
     "chat": "Chat d'équipe et messages directs",
     "features": "Accès aux fonctionnalités",
     "helpdesk": "Assistance (tickets)",
+    "create_projects": "Créer des projets",
     "time_tracking": "Suivi du temps"
   },
   "inbox": {

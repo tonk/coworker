@@ -126,6 +126,7 @@
                   <th style="text-align:center;width:90px;">{{ $t('feature.time_tracking') }}</th>
                   <th style="text-align:center;width:100px;">{{ $t('admin.timetracking_viewer') }}</th>
                   <th v-if="!systemStore.isTimetrackingMode" style="text-align:center;width:90px;">{{ $t('feature.helpdesk') }}</th>
+                  <th v-if="!systemStore.isTimetrackingMode" style="text-align:center;width:110px;">{{ $t('feature.create_projects') }}</th>
                   <th style="text-align:center;width:60px;">{{ $t('admin.mfa_enabled') }}</th>
                 </tr>
               </thead>
@@ -165,6 +166,12 @@
                     <template v-else-if="user.global_role === 'customer'"><span class="feat-check feat-always">✓</span></template>
                     <span v-else-if="user.global_role === 'metrics' || user.global_role === 'backup'" class="feat-check feat-off">—</span>
                     <input v-else type="checkbox" class="feat-toggle" :checked="!!user.helpdesk_enabled" @change="toggleFeature(user, 'helpdesk_enabled', $event.target.checked)" />
+                  </td>
+                  <td v-if="!systemStore.isTimetrackingMode" style="text-align:center;">
+                    <template v-if="user.global_role === 'admin'"><span class="feat-check feat-always">✓</span></template>
+                    <template v-else-if="user.global_role === 'customer' || user.global_role === 'viewer'"><span class="feat-check feat-off">—</span></template>
+                    <span v-else-if="user.global_role === 'metrics' || user.global_role === 'backup'" class="feat-check feat-off">—</span>
+                    <input v-else type="checkbox" class="feat-toggle" :checked="!!user.can_create_projects" @change="toggleFeature(user, 'can_create_projects', $event.target.checked)" />
                   </td>
                   <td style="text-align:center;">
                     <span v-if="user.totp_enabled" class="feat-check feat-on">✓</span>
@@ -3149,6 +3156,7 @@ const featureLabels = {
   time_tracking_enabled: 'feature.time_tracking',
   time_tracking_viewer: 'admin.timetracking_viewer',
   helpdesk_enabled: 'feature.helpdesk',
+  can_create_projects: 'feature.create_projects',
 }
 
 async function toggleFeature(user, field, value) {

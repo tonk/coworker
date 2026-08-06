@@ -1351,6 +1351,7 @@
     "rejected": "{name} hylkäsi puhelun",
     "no_mic": "Mikrofonin käyttö estetty",
     "failed": "Puhelua ei voitu yhdistää",
+    "remote_muted": "{name} on mykistetty",
     "ended": "Puhelu päättyi",
     "incoming_video": "Saapuva videopuhelu",
     "camera_on": "Kamera päällä",
@@ -1589,6 +1590,7 @@
     "chat": "Tiimichat ja yksityisviestit",
     "features": "Ominaisuuksien käyttöoikeus",
     "helpdesk": "Helpdesk (tukipyynnöt)",
+    "create_projects": "Luoda projekteja",
     "time_tracking": "Ajanseuranta"
   },
   "inbox": {

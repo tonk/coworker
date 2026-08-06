@@ -26,6 +26,11 @@ const _s = reactive({
   isCameraOff: false,
   hasVideo:    false,
   isScreenSharing: false,
+  // Remote party's reported state — set only from call.mute/call.screen_share
+  // signals, since track.enabled=false on the sender is invisible to the
+  // receiver otherwise (WebRTC has no built-in "peer is muted" signal).
+  remoteMuted: false,
+  remoteScreenSharing: false,
   errorMsg:    '',
   // True while acceptCall() is negotiating (getUserMedia can take several
   // seconds with no other visual feedback). Lets the UI disable the accept
@@ -85,6 +90,8 @@ function _reset() {
   _s.isCameraOff  = false
   _s.hasVideo     = false
   _s.isScreenSharing = false
+  _s.remoteMuted  = false
+  _s.remoteScreenSharing = false
   _s.errorMsg     = ''
   _s.accepting    = false
   _pendingCandidates = []
@@ -252,7 +259,17 @@ function handleSignal(msg) {
     case 'call.reject':      return _onReject()
     case 'call.unavailable': return _onUnavailable()
     case 'call.failed':      return _onCallFailed()
+    case 'call.mute':        return _onMuteState(msg.payload)
+    case 'call.screen_share': return _onScreenShareState(msg.payload)
   }
+}
+
+function _onMuteState(payload) {
+  _s.remoteMuted = !!payload.muted
+}
+
+function _onScreenShareState(payload) {
+  _s.remoteScreenSharing = !!payload.sharing
 }
 
 function _onRing(payload) {
@@ -393,6 +410,7 @@ function toggleMute() {
   if (!_localStream) return
   _localStream.getAudioTracks().forEach(t => { t.enabled = !t.enabled })
   _s.isMuted = !_s.isMuted
+  _send({ type: 'call.mute', payload: { to_user_id: _s.remoteUserId, conversation_id: _s.convId, muted: _s.isMuted } })
 }
 
 function toggleCamera() {
@@ -420,6 +438,7 @@ async function toggleScreenShare() {
       await sender.replaceTrack(cam)
     } catch {}
     _s.isScreenSharing = false
+    _send({ type: 'call.screen_share', payload: { to_user_id: _s.remoteUserId, conversation_id: _s.convId, sharing: false } })
     return
   }
 
@@ -444,6 +463,7 @@ async function toggleScreenShare() {
   try {
     await sender.replaceTrack(v)
     _s.isScreenSharing = true
+    _send({ type: 'call.screen_share', payload: { to_user_id: _s.remoteUserId, conversation_id: _s.convId, sharing: true } })
   } catch {
     stream.getTracks().forEach(t => t.stop())
     _screenStream = null

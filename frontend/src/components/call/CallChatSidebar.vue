@@ -1,5 +1,6 @@
 <template>
-  <aside class="call-chat-sidebar" :class="{ 'call-chat-sidebar--fixed': fixed }" @click.stop @keydown.esc.stop="onEsc">
+  <aside class="call-chat-sidebar" :class="{ 'call-chat-sidebar--fixed': fixed }" :style="{ width: callChatWidth + 'px' }" @click.stop @keydown.esc.stop="onEsc">
+    <div class="call-chat-resize-handle" @mousedown="startResize"></div>
     <div class="call-chat-head">
       <span class="call-chat-title">{{ $t('call.chat_while_in_call') }}</span>
       <button type="button" class="call-chat-close" aria-label="Close sidebar" :title="$t('call.hide_chat')" @click="$emit('close')">
@@ -51,6 +52,7 @@ import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { messagesApi } from '@/api/messages'
 import { renderMarkdown } from '@/composables/useCardRef'
+import { useCallChatPanel } from '@/composables/useCallChatPanel'
 
 const props = defineProps({
   conversationId: { type: Number, required: true },
@@ -60,6 +62,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
+const { callChatWidth, setCallChatWidth } = useCallChatPanel()
 const auth = useAuthStore()
 const messages = ref([])
 const loading = ref(true)
@@ -121,12 +124,42 @@ watch(
   }
 )
 
+// ── Resize (drag the left edge — this panel is always docked to the right) ──
+let resizing = false
+let startX = 0
+let startWidth = 0
+
+function startResize(e) {
+  resizing = true
+  startX = e.clientX
+  startWidth = callChatWidth.value
+  document.addEventListener('mousemove', onResize)
+  document.addEventListener('mouseup', stopResize)
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+}
+
+function onResize(e) {
+  if (!resizing) return
+  setCallChatWidth(startWidth - (e.clientX - startX))
+}
+
+function stopResize() {
+  if (!resizing) return
+  resizing = false
+  document.removeEventListener('mousemove', onResize)
+  document.removeEventListener('mouseup', stopResize)
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+}
+
 onMounted(() => {
   void load()
   pollTimer = setInterval(load, 5_000)
 })
 
 onUnmounted(() => {
+  stopResize()
   clearInterval(pollTimer)
 })
 </script>
@@ -135,13 +168,28 @@ onUnmounted(() => {
 .call-chat-sidebar {
   display: flex;
   flex-direction: column;
-  width: 340px;
   flex-shrink: 0;
+  position: relative;
   background: var(--color-surface);
   border-left: 1px solid var(--color-border);
   color: var(--color-text);
   box-sizing: border-box;
   z-index: 520;
+}
+
+.call-chat-resize-handle {
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+}
+.call-chat-resize-handle:hover,
+.call-chat-resize-handle:active {
+  background: var(--color-primary);
+  opacity: 0.4;
 }
 .call-chat-sidebar--fixed {
   position: fixed;

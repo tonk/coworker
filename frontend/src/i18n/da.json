@@ -1351,6 +1351,7 @@
     "rejected": "{name} afviste opkaldet",
     "no_mic": "Mikrofonadgang nægtet",
     "failed": "Opkaldet kunne ikke oprettes",
+    "remote_muted": "{name} er på lydløs",
     "ended": "Opkald afsluttet",
     "incoming_video": "Indgående videoopkald",
     "camera_on": "Kamera til",
@@ -1589,6 +1590,7 @@
     "chat": "Teamchat og direkte beskeder",
     "features": "Funktionsadgang",
     "helpdesk": "Helpdesk (sager)",
+    "create_projects": "Opret projekter",
     "time_tracking": "Tidsregistrering"
   },
   "inbox": {

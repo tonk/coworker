@@ -1351,6 +1351,7 @@
     "rejected": "{name} heeft het gesprek geweigerd",
     "no_mic": "Microfoontoegang geweigerd",
     "failed": "Gesprek kon niet worden opgezet",
+    "remote_muted": "{name} is gedempt",
     "ended": "Gesprek beëindigd",
     "incoming_video": "Inkomend videogesprek",
     "camera_on": "Camera aan",
@@ -1589,6 +1590,7 @@
     "chat": "Teamchat en directe berichten",
     "features": "Functietoegang",
     "helpdesk": "Helpdesk (tickets)",
+    "create_projects": "Projecten aanmaken",
     "time_tracking": "Tijdregistratie"
   },
   "inbox": {

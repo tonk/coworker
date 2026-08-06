@@ -1351,6 +1351,7 @@
     "rejected": "{name} avvisade samtalet",
     "no_mic": "Mikrofonåtkomst nekad",
     "failed": "Samtalet kunde inte anslutas",
+    "remote_muted": "{name} är avstängd",
     "ended": "Samtal avslutat",
     "incoming_video": "Inkommande videosamtal",
     "camera_on": "Kamera på",
@@ -1589,6 +1590,7 @@
     "chat": "Teamchatt och direktmeddelanden",
     "features": "Funktionsåtkomst",
     "helpdesk": "Helpdesk (ärenden)",
+    "create_projects": "Skapa projekt",
     "time_tracking": "Tidsspårning"
   },
   "inbox": {

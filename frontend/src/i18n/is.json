@@ -1351,6 +1351,7 @@
     "rejected": "{name} hafnaði símtalinu",
     "no_mic": "Aðgangur að hljóðnema hafnaður",
     "failed": "Ekki tókst að tengja símtalið",
+    "remote_muted": "{name} er á hljóði",
     "ended": "Símtali lokið",
     "incoming_video": "Móttekið myndsímtal",
     "camera_on": "Myndavél kveikt",
@@ -1589,6 +1590,7 @@
     "chat": "Hópspjall og bein skilaboð",
     "features": "Aðgangur að eiginleikum",
     "helpdesk": "Þjónustuborð (mál)",
+    "create_projects": "Búa til verkefni",
     "time_tracking": "Tímaskráning"
   },
   "inbox": {

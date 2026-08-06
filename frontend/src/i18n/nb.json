@@ -1351,6 +1351,7 @@
     "rejected": "{name} avslo anropet",
     "no_mic": "Mikrofontilgang nektet",
     "failed": "Samtalen kunne ikke kobles til",
+    "remote_muted": "{name} er dempet",
     "ended": "Samtale avsluttet",
     "incoming_video": "Innkommende videosamtale",
     "camera_on": "Kamera på",
@@ -1589,6 +1590,7 @@
     "chat": "Teamchat og direktemeldinger",
     "features": "Funksjonstilgang",
     "helpdesk": "Helpdesk (saker)",
+    "create_projects": "Opprette prosjekter",
     "time_tracking": "Timeregistrering"
   },
   "inbox": {

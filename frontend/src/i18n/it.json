@@ -1351,6 +1351,7 @@
     "rejected": "{name} ha rifiutato la chiamada",
     "no_mic": "Accesso al microfono negato",
     "failed": "Impossibile connettere la chiamata",
+    "remote_muted": "{name} è silenziato",
     "ended": "Chiamata terminata",
     "incoming_video": "Videochiamata in arrivo",
     "camera_on": "Fotocamera attiva",
@@ -1589,6 +1590,7 @@
     "chat": "Chat di team e messaggi diretti",
     "features": "Accesso alle funzionalità",
     "helpdesk": "Helpdesk (ticket)",
+    "create_projects": "Creare progetti",
     "time_tracking": "Registrazione del tempo"
   },
   "inbox": {

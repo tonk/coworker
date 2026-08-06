@@ -381,6 +381,7 @@ import { projectsApi } from '@/api/projects'
 import { messagesApi } from '@/api/messages'
 import { attachmentsApi } from '@/api/attachments'
 import { useWebSocket } from '@/composables/useWebSocket'
+import { useProjectChatUnread } from '@/composables/useProjectChatUnread'
 import { useDateFormat } from '@/composables/useDateFormat'
 import { avatarUrl } from '@/composables/useAvatar'
 import { useCompose } from '@/composables/useCompose'
@@ -395,6 +396,7 @@ const projectStore = useProjectStore()
 const chatStore = useChatStore()
 const auth = useAuthStore()
 const ui = useUIStore()
+const { clearProjectChatUnread } = useProjectChatUnread()
 const { formatDateTime } = useDateFormat()
 
 // Sidebar entries menu — which fixed nav entries (e.g. Project Chat) show
@@ -549,6 +551,13 @@ watch(chatEmojiQuery, (q) => { chatEmojiOpen.value = q !== null })
 
 const { connect, disconnect } = useWebSocket(slug.value)
 
+// Also clear the tab-blink counter on refocus if the chat panel was already
+// open the whole time (openChat() only fires when the panel is first opened,
+// not when the tab merely regains focus while it stays open).
+function onWindowFocus() {
+  if (chatOpen.value) clearProjectChatUnread()
+}
+
 onMounted(async () => {
   await Promise.all([
     projectStore.fetchProject(slug.value),
@@ -556,6 +565,7 @@ onMounted(async () => {
     loadProjectMembers(),
   ])
   connect()
+  window.addEventListener('focus', onWindowFocus)
 })
 
 onUnmounted(() => {
@@ -563,6 +573,7 @@ onUnmounted(() => {
   topicsStore.reset()
   chatStore.reset()
   document.removeEventListener('click', onSidebarMenuDocClick)
+  window.removeEventListener('focus', onWindowFocus)
 })
 
 // Re-fetch active topic detail when WS updates it
@@ -627,6 +638,7 @@ async function openTopic(topic) {
 async function openChat() {
   activeTopic.value = null
   chatOpen.value = true
+  clearProjectChatUnread()
   if (!chatStore.messages.length) {
     await chatStore.loadMessages(slug.value)
   }

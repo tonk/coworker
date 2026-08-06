@@ -44,6 +44,7 @@ type User struct {
 	BoardEnabled            bool           `gorm:"default:true" json:"board_enabled"`
 	ChatEnabled             bool           `gorm:"default:true" json:"chat_enabled"`
 	HelpdeskEnabled         bool           `gorm:"default:false" json:"helpdesk_enabled"`
+	CanCreateProjects       bool           `gorm:"default:false" json:"can_create_projects"`
 	TimeNotation            string         `gorm:"size:10;default:'decimal'" json:"time_notation"`            // "decimal" | "hhmm"
 	WeekStart               string         `gorm:"size:10;default:'monday'" json:"week_start"`                // "monday" | "sunday"
 	DistanceUnit            string         `gorm:"size:10;default:'km'" json:"distance_unit"`                 // "km" | "miles"

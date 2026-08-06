@@ -8,7 +8,7 @@
               <option value="">{{ $t('customer.all_customers') }}</option>
               <option v-for="c in customerOptions" :key="c.value" :value="c.value">{{ c.label }}</option>
             </select>
-            <button class="btn btn-primary" @click="showCreate = true">+ {{ $t('project.new_project') }}</button>
+            <button v-if="canCreateProject" class="btn btn-primary" @click="showCreate = true">+ {{ $t('project.new_project') }}</button>
           </div>
         </div>
 
@@ -141,6 +141,7 @@ const gridEl = ref(null)
 let sortable = null
 
 const isAdmin = computed(() => auth.user?.global_role === 'admin')
+const canCreateProject = computed(() => isAdmin.value || !!auth.user?.can_create_projects)
 const selectedCustomer = ref('')
 
 const customerOptions = computed(() => {

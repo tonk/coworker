@@ -80,6 +80,8 @@ const (
 	TypeCallRing        = "call.ring"
 	TypeCallUnavailable = "call.unavailable"
 	TypeCallFailed      = "call.failed"
+	TypeCallMute        = "call.mute"
+	TypeCallScreenShare = "call.screen_share"
 	TypeCallGroupInvite = "call.group_invite"
 
 	// Server -> Client: tickets / helpdesk

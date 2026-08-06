@@ -1351,6 +1351,7 @@
     "rejected": "{name} hat den Anruf abgelehnt",
     "no_mic": "Mikrofonzugriff verweigert",
     "failed": "Anruf konnte nicht verbunden werden",
+    "remote_muted": "{name} ist stummgeschaltet",
     "ended": "Anruf beendet",
     "incoming_video": "Eingehender Videoanruf",
     "camera_on": "Kamera an",
@@ -1589,6 +1590,7 @@
     "chat": "Team-Chat & Direktnachrichten",
     "features": "Funktionszugriff",
     "helpdesk": "Helpdesk (Tickets)",
+    "create_projects": "Projekte erstellen",
     "time_tracking": "Zeiterfassung"
   },
   "inbox": {
