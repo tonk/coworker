@@ -340,7 +340,7 @@ const avatarErrors = reactive(new Set())
 const SIDEBAR_WIDTH_KEY = 'sidebar_width'
 const MIN_WIDTH = 150
 const MAX_WIDTH = 480
-const DEFAULT_WIDTH = 220
+const DEFAULT_WIDTH = 260
 
 const sidebarWidth = ref(
   Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, parseInt(localStorage.getItem(SIDEBAR_WIDTH_KEY) || DEFAULT_WIDTH)))
@@ -786,27 +786,39 @@ onUnmounted(() => {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 12px 0;
+  padding: 0 0 12px;
 }
 
+/* Overlays the top-right corner of whichever section renders first — every
+   .section-header reserves matching space on its right (see padding-right
+   below) so this never collides with that section's own title/chevron, and
+   staying a flex sibling of (not inside) .sidebar-scroll means it doesn't
+   scroll away with the list. pointer-events:none lets clicks in the rest of
+   that reserved strip fall through to the section header underneath. */
 .sidebar-top-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 26px;
   display: flex;
-  justify-content: flex-end;
-  padding: 6px 8px 0;
-  flex-shrink: 0;
+  align-items: center;
+  padding: 0 8px 0 0;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .sections-menu-wrap {
   position: relative;
+  pointer-events: auto;
 }
 .sections-menu-btn {
   background: none;
   border: none;
   cursor: pointer;
   color: var(--color-text-muted);
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1;
-  padding: 2px 6px;
+  padding: 6px;
   border-radius: var(--radius-sm);
   letter-spacing: 0.05em;
 }
@@ -879,6 +891,11 @@ onUnmounted(() => {
   cursor: pointer;
   gap: 6px;
   text-align: left;
+}
+/* Only the first visible section needs extra right padding — that's the
+   only row the sections-menu overlay (⋮) can land on. */
+.sidebar-section:first-child .section-header {
+  padding-right: 40px;
 }
 .section-header:hover { background: var(--color-bg); }
 
