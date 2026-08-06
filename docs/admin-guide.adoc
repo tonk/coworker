@@ -1,6 +1,6 @@
 = WarmDesk — Administrator Guide
-:revnumber: v0.21.0
-:revdate: 2026-08-05
+:revnumber: v0.21.1
+:revdate: 2026-08-06
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -123,6 +123,17 @@ livekit_api_secret: "your-secret"
 livekit_room_prefix: ""
 # LIVEKIT_ROOM_PREFIX — optional prefix for LiveKit room names,
 # useful when multiple WarmDesk instances share one LiveKit server
+
+# TURN server for 1:1 calls (optional, strongly recommended for anything
+# but a local LAN)
+turn_urls: "turn:turn.example.com:3478"
+# TURN_URLS — comma-separated TURN/TURNS URIs
+
+turn_username: "warmdesk"
+# TURN_USERNAME — static username configured on the TURN server
+
+turn_credential: "your-secret"
+# TURN_CREDENTIAL — matching password/credential
 
 # Logging
 gin_mode: "release"
@@ -1486,6 +1497,21 @@ livekit_api_secret: "your-secret"
 ----
 
 Without these values, 1:1 WebRTC calls still work, but group video shows an in-app "not configured" banner.
+
+=== TURN server (1:1 calls)
+
+1:1 calls use two public Google STUN servers by default, which is enough to discover peers on the same local network but cannot relay media across symmetric NATs, CGNAT, or restrictive firewalls — a common setup for home/office networks and VPNs. Without a TURN server, affected calls will connect (signaling succeeds) but show a black screen with no audio/video.
+
+Set these server values in `warmdesk.yaml` (or env vars) and restart the service:
+
+[source,yaml]
+----
+turn_urls: "turn:turn.example.com:3478"
+turn_username: "warmdesk"
+turn_credential: "your-secret"
+----
+
+Any standard TURN server works, e.g. https://github.com/coturn/coturn[coturn] with a static long-term username/password. `turn_urls` accepts a comma-separated list if you need to offer more than one URI (e.g. both `turn:` and `turns:`).
 
 === Global defaults (overridden per user)
 

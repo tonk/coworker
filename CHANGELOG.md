@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.21.1 — 2026-08-06
+
+### Added
+- **TURN server support for 1:1 calls** — previously STUN-only (two public Google servers), which can't relay media across symmetric NATs/CGNAT/restrictive firewalls (a common cause of calls connecting but showing a black screen with no audio/video on VPNs and some home/office networks). New `turn_urls`/`turn_username`/`turn_credential` config keys and a `GET /api/v1/ice-servers` endpoint let an admin configure a TURN server; the app falls back to STUN-only automatically if unset.
+- **Browser tab blinks on new message** — while a DM or project chat message is unread and the tab isn't visible/focused, the title now alternates with "New message!" every second instead of only showing a static "●" prefix. Stops as soon as the tab regains focus.
+
+### Fixed
+- **1:1 calls could silently fail to connect, or fail only after clicking Accept several times** — `acceptCall()` had no guard against being invoked twice: `getUserMedia()` can take several seconds with no visual feedback, and an impatient second click during that window started a second, concurrent negotiation that corrupted shared peer-connection state. The Accept button now disables itself (with a spinner) while connecting, and negotiation failures show a real error and reset cleanly instead of leaving the call hung with no explanation.
+- **Admin Panel — editing another user's profile only allowed setting their language to English or Dutch** — the admin-only endpoint had an outdated locale allowlist; it now matches the same 12 languages available everywhere else, including the user's own self-service settings.
+- **Linux desktop (AppImage) build shipped with no working camera/microphone device detection** — `make appimage` relied on a linuxdeploy plugin that doesn't reliably invoke, so the built app had no GStreamer capture plugins at all and the call-settings device picker showed nothing. The build now bundles them directly from the build host, and warns at build time if the `webrtcbin` plugin specifically didn't make it in. Note: 1:1 calls themselves are still not functional on this client — `RTCPeerConnection` is currently undefined in this WebView for reasons still under investigation, independent of this fix.
+
 ## v0.21.0 — 2026-08-05
 
 ### Added

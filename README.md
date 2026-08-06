@@ -8,10 +8,10 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.21.0)
+## Latest release (v0.21.1)
 
-- **Added** — Sidebar section visibility menus: hide sections you don't use (Favorite Projects, Customers, Tickets, People, Chats, etc.) from the main sidebar, and hide "Project Chat" from the Topics page sidebar, via a new "⋮" menu.
-- **Fixed** — The dark-background company logo preview in Admin Settings, and two Ryver migration bugs (chat-history pagination, and re-importing chat only into an already-imported project).
+- **Added** — TURN server support for 1:1 calls (fixes connect-but-no-audio/video on VPNs and restrictive networks), and the browser tab now blinks a "New message!" title when you get a message while it's not focused.
+- **Fixed** — 1:1 calls could silently fail to connect if you clicked Accept more than once; the admin panel's locale restriction when editing another user; and the Linux desktop build's missing camera/microphone device detection.
 
 ## Experiment
 
@@ -353,9 +353,9 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Role-based access** — global roles (admin / user / viewer / metrics / backup / customer) and per-project roles (owner / admin / member / viewer); project admins can manage columns; the `customer` role gives end-customers a read/comment-only ticket portal
 - **Real-time** — board changes, card moves, and chat messages sync instantly across all connected users via WebSocket
 - **Internal chat** — per-project team chat and direct messages between users; group chats support custom avatars and member management; every user group automatically gets a linked group conversation that stays in sync with group membership
-- **1:1 and group video calls** — call any user from a direct message conversation with WebRTC peer-to-peer for 1:1 calls, and start LiveKit-powered group video rooms in any group chat; includes call settings for microphone, camera, and speaker plus in-app status guidance when LiveKit is not configured
+- **1:1 and group video calls** — call any user from a direct message conversation with WebRTC peer-to-peer for 1:1 calls, and start LiveKit-powered group video rooms in any group chat; includes call settings for microphone, camera, and speaker plus in-app status guidance when LiveKit is not configured; an optional TURN server (configured by an admin) keeps 1:1 calls connecting across restrictive networks and VPNs where STUN alone isn't enough
 - **Start team chat from DM** — open the Teams tab in Direct Messages to instantly start a group chat with all members of a project
-- **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages
+- **Unread DM notifications** — pulsing indicator in the sidebar and header when there are unread direct messages, plus a blinking browser tab title while the tab isn't focused
 - **Sidebar** — starred projects, live online-users list, auto-refreshes when users are added or removed; drag the inner edge to resize (width persisted); all sections are drag-to-reorder with custom order persisted in localStorage
 - **Dark / light / black / system theme** — defaults to light; black mode uses a pure #000000 background (AMOLED-friendly); switchable from the header menu
 - **Accent colour** — per-user accent colour (blue, red, green, or orange) applied throughout the UI; saved as a user setting
