@@ -69,8 +69,27 @@ sudo apt install -y \
     libayatana-appindicator3-dev \
     libssl-dev \
     patchelf \
-    squashfs-tools
+    squashfs-tools \
+    gstreamer1.0-tools \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-pulseaudio
 ```
+
+The `gstreamer1.0-*` packages aren't linked in — `make appimage` copies them
+from this host straight into the built AppImage after `tauri build` (its
+`_bundle-gst-appimage` step) so the app's camera/microphone device picker
+actually finds devices. Without `plugins-base`/`plugins-good`/`pulseaudio`,
+WebKitGTK's bundled GStreamer core has no `v4l2src`/`pulsesrc`/`autoaudiosrc`
+elements, so `getUserMedia`'s device list comes back silently empty. Without
+**`plugins-bad`** specifically (it provides the `webrtcbin` element),
+`RTCPeerConnection` is missing entirely — calls fail with `ReferenceError:
+Can't find variable: RTCPeerConnection` even though device selection still
+works fine. `_bundle-gst-appimage` warns at build time if no `webrtc*.so`
+plugin ends up bundled. Must be built on Ubuntu 24.04 for the copied plugins
+to be ABI-compatible with the webkit2gtk GStreamer core also bundled from this
+host.
 
 ---
 
@@ -134,8 +153,24 @@ sudo dnf -y install \
     libappindicator-gtk3-devel \
     openssl-devel \
     patchelf \
-    squashfs-tools
+    squashfs-tools \
+    gstreamer1-tools \
+    gstreamer1-plugins-base \
+    gstreamer1-plugins-good \
+    gstreamer1-plugins-good-extras \
+    gstreamer1-plugins-bad-free \
+    gstreamer1-plugins-bad-free-extras
 ```
+
+As on Debian/Ubuntu, these aren't linked at build time — `make appimage`'s
+`_bundle-gst-appimage` step copies them from this host into the built
+AppImage after `tauri build` so camera/microphone selection actually finds
+devices (without `plugins-base`/`plugins-good`, WebKitGTK's bundled GStreamer
+core has no `v4l2src`/`pulsesrc`/`autoaudiosrc` elements to enumerate with).
+Without **`plugins-bad-free`** specifically (it provides the `webrtcbin`
+element), `RTCPeerConnection` is missing entirely and calls fail with
+`ReferenceError: Can't find variable: RTCPeerConnection`. `_bundle-gst-appimage`
+warns at build time if no `webrtc*.so` plugin ends up bundled.
 
 ---
 

@@ -37,8 +37,27 @@ AppImage additionally requires these system libraries (Debian/Ubuntu):
 ```bash
 sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev \
                  libayatana-appindicator3-dev libssl-dev \
-                 patchelf squashfs-tools
+                 patchelf squashfs-tools \
+                 gstreamer1.0-tools gstreamer1.0-plugins-base \
+                 gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+                 gstreamer1.0-pulseaudio
 ```
+The `gstreamer1.0-*` packages are not linked at build time — `make appimage`'s
+`_bundle-gst-appimage` step copies them from the build host straight into the
+AppImage after `tauri build` (`linuxdeploy-plugin-gstreamer` doesn't reliably
+invoke, so this project post-processes the AppImage directly instead). Without
+`plugins-base`/`plugins-good`/`pulseaudio`, camera/microphone selection in the
+built app silently shows no devices — WebKitGTK's bundled GStreamer core has no
+`v4l2src`/`pulsesrc`/`autoaudiosrc` elements to enumerate with. Without
+**`plugins-bad`** specifically (which provides the `webrtcbin` element),
+`RTCPeerConnection` is **entirely undefined** in the built app — calls fail
+with `ReferenceError: Can't find variable: RTCPeerConnection` even though
+device selection itself still works fine, since that only needs the
+`good`/`base`/`pulseaudio` plugins. `_bundle-gst-appimage` prints a warning if
+no `webrtc*.so` plugin ends up bundled, precisely to catch this. Must be built
+on Ubuntu 24.04 so the copied plugins are ABI-compatible with the webkit2gtk
+GStreamer core also bundled from this host (e.g. Fedora's GStreamer is a
+different major version and cannot be mixed in).
 
 ### Targets
 

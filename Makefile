@@ -138,33 +138,80 @@ stamp-desktop-version:
 		console.log('Stamped desktop version:', ver);\
 	"
 
-# URL for the linuxdeploy GStreamer plugin script (bundles audio/video capture plugins).
-LINUXDEPLOY_PLUGIN_GST_URL := https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gstreamer/master/linuxdeploy-plugin-gstreamer.sh
-# Cached to /tmp so repeated builds in one session skip the download.
-LINUXDEPLOY_PLUGIN_GST     := /tmp/linuxdeploy-plugin-gstreamer
-
-# Fetch linuxdeploy-plugin-gstreamer if not already present.
-# linuxdeploy auto-discovers executables named linuxdeploy-plugin-* in PATH and
-# runs them, so placing the script here and prepending /tmp to PATH is enough.
-.PHONY: _fetch-gst-plugin
-_fetch-gst-plugin:
-	@if [ ! -x $(LINUXDEPLOY_PLUGIN_GST) ]; then \
-		echo "  Downloading linuxdeploy-plugin-gstreamer..."; \
-		curl -fsSL -o $(LINUXDEPLOY_PLUGIN_GST) "$(LINUXDEPLOY_PLUGIN_GST_URL)" \
-		&& chmod +x $(LINUXDEPLOY_PLUGIN_GST) \
-		|| { echo "ERROR: failed to download linuxdeploy-plugin-gstreamer"; exit 1; }; \
-	fi
+# Post-process the built AppImage to bundle real GStreamer plugins (v4l2src,
+# pulsesrc/autoaudiosrc, videoconvert, …) so getUserMedia / camera-mic
+# selection works. linuxdeploy-plugin-gstreamer doesn't reliably invoke, so
+# instead we extract the AppImage, copy the build host's GStreamer plugins
+# (ABI-compatible with the webkit2gtk GStreamer core also bundled from this
+# host) directly into usr/lib/gstreamer-1.0/, then repack. At runtime lib.rs
+# sets GST_PLUGIN_PATH to that directory so GStreamer finds the bundled
+# plugins instead of falling back to a possibly ABI-incompatible system path.
+# Must be built on Ubuntu 24.04 for this to be correct (see appimage target).
+.PHONY: _bundle-gst-appimage
+_bundle-gst-appimage:
+	@echo "Bundling GStreamer plugins into AppImage..."
+	@set -euo pipefail; \
+	APPIMAGE=$$(readlink -f "$$(ls $(FRONTEND)/src-tauri/target/release/bundle/appimage/*.AppImage | head -1)"); \
+	WORKDIR=$$(mktemp -d); \
+	( \
+		cd "$$WORKDIR" && \
+		chmod +x "$$APPIMAGE"; \
+		"$$APPIMAGE" --appimage-extract >/dev/null; \
+		GST_SRC=$$({ find /usr/lib/*-linux-gnu*/gstreamer-1.0 /usr/lib64/gstreamer-1.0 -maxdepth 0 2>/dev/null || true; } | head -1); \
+		if [ -z "$$GST_SRC" ]; then \
+			echo "ERROR: no system GStreamer plugin directory found (install gstreamer1.0-plugins-base/good and gstreamer1.0-pulseaudio)"; \
+			exit 1; \
+		fi; \
+		GST_DST=squashfs-root/usr/lib/gstreamer-1.0; \
+		APPLIB=squashfs-root/usr/lib; \
+		mkdir -p "$$GST_DST/gstreamer-1.0"; \
+		find "$$GST_SRC" -maxdepth 1 -name "lib*.so" -type f | sort | while IFS= read -r src; do \
+			cp "$$src" "$$GST_DST/"; \
+		done; \
+		echo "  Bundled $$(ls "$$GST_DST"/lib*.so 2>/dev/null | wc -l) GStreamer plugins from $$GST_SRC"; \
+		for plugin_so in "$$GST_DST"/lib*.so; do \
+			{ ldd "$$plugin_so" 2>/dev/null | grep '=> /usr/lib' | awk '{print $$3}' || true; } | while IFS= read -r lib; do \
+				[ -f "$$lib" ] || continue; \
+				base=$$(basename "$$lib"); \
+				if ! find squashfs-root/usr -name "$$base" 2>/dev/null | grep -q .; then \
+					cp "$$lib" "$$APPLIB/"; \
+				fi; \
+			done; \
+		done; \
+		GST_SCANNER=$$(find /usr -name 'gst-plugin-scanner' -type f 2>/dev/null | head -1) || true; \
+		if [ -n "$$GST_SCANNER" ]; then \
+			cp "$$GST_SCANNER" "$$GST_DST/gstreamer-1.0/"; \
+		else \
+			echo "  Warning: gst-plugin-scanner not found on this host"; \
+		fi; \
+		if ! ls "$$GST_DST"/*webrtc*.so >/dev/null 2>&1; then \
+			echo "  WARNING: no webrtcbin plugin found among bundled GStreamer plugins."; \
+			echo "  WebKitGTK will not expose RTCPeerConnection at all (calls fail with"; \
+			echo "  'ReferenceError: Cant find variable: RTCPeerConnection') even though"; \
+			echo "  camera/mic device selection still works. Install gstreamer1.0-plugins-bad"; \
+			echo "  (Debian/Ubuntu) or gstreamer1-plugins-bad-free (Fedora/RHEL) on this build"; \
+			echo "  host and re-run make appimage."; \
+		fi; \
+		if [ ! -x /tmp/appimagetool ]; then \
+			curl -fsSL -o /tmp/appimagetool "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"; \
+			chmod +x /tmp/appimagetool; \
+		fi; \
+		ARCH=x86_64 /tmp/appimagetool squashfs-root "$$APPIMAGE" >/dev/null; \
+	); \
+	rm -rf "$$WORKDIR"
 
 # Build the Tauri desktop client as an AppImage (Linux).
-# Requires: Rust, webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel
+# Requires: Rust, webkit2gtk4.1-devel, gtk3-devel, librsvg2-devel, openssl-devel,
+#   gstreamer1.0-tools gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-pulseaudio
 # Must be built on Ubuntu 24.04: the AppImage bundles webkit2gtk + GStreamer core
-# from the build host.  linuxdeploy-plugin-gstreamer then adds the matching
-# GStreamer plugins so getUserMedia / camera-mic selection works on all distros
-# (Fedora's GStreamer is a different major version and cannot be mixed in).
+# from the build host, and _bundle-gst-appimage copies this host's matching
+# GStreamer plugins into it so getUserMedia / camera-mic selection works on all
+# distros (Fedora's GStreamer is a different major version and cannot be mixed in).
 # NO_STRIP=true works around linuxdeploy's bundled strip being too old for newer glibc.
-appimage: stamp-desktop-version _fetch-gst-plugin
+appimage: stamp-desktop-version
 	@echo "Building WarmDesk desktop app (AppImage)..."
-	cd $(FRONTEND) && NO_STRIP=true PATH="$$PATH:/tmp" npm run tauri:build -- --bundles appimage
+	cd $(FRONTEND) && NO_STRIP=true npm run tauri:build -- --bundles appimage
+	$(MAKE) _bundle-gst-appimage
 	@echo "AppImage: $(FRONTEND)/src-tauri/target/release/bundle/appimage/WarmDesk_*_amd64.AppImage"
 
 # Build the Tauri desktop client as an AppImage (Linux, arm64).
@@ -173,10 +220,14 @@ appimage: stamp-desktop-version _fetch-gst-plugin
 # Fedora/RHEL: dnf install gcc-aarch64-linux-gnu
 # Debian/Ubuntu: apt install gcc-aarch64-linux-gnu
 # The linker is configured in frontend/src-tauri/.cargo/config.toml.
-appimage-arm64: stamp-desktop-version _fetch-gst-plugin
+# NOTE: unlike appimage, this does NOT bundle GStreamer plugins — _bundle-gst-appimage
+# copies plugins from the (x86_64) build host, which are architecture-incompatible
+# with an arm64 AppImage. Cross-compiled builds need an arm64 host/sysroot to fix
+# camera/mic device detection the same way; not yet automated here.
+appimage-arm64: stamp-desktop-version
 	@echo "Building WarmDesk desktop app (AppImage, arm64)..."
 	rustup target add aarch64-unknown-linux-gnu 2>/dev/null || true
-	cd $(FRONTEND) && NO_STRIP=true PATH="$$PATH:/tmp" npm run tauri:build -- --target aarch64-unknown-linux-gnu --bundles appimage
+	cd $(FRONTEND) && NO_STRIP=true npm run tauri:build -- --target aarch64-unknown-linux-gnu --bundles appimage
 	@echo "AppImage: $(FRONTEND)/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/WarmDesk_*_aarch64.AppImage"
 
 # Build the Tauri desktop client as a .deb package (Debian/Ubuntu).
