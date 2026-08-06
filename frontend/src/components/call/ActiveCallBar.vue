@@ -563,7 +563,9 @@ watch(() => state.errorMsg, (msg) => {
       ? t('call.rejected', { name: state.remoteName || '…' })
       : msg === 'no_mic'
         ? t('call.no_mic')
-        : null
+        : msg === 'failed'
+          ? t('call.failed')
+          : null
   if (key) ui.error(key)
 })
 

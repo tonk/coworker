@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "WarmDesk"
+    "name": "WarmDesk",
+    "new_message_title": "Nytt meddelande!"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1341,6 +1342,7 @@
     "calling": "Ringer...",
     "connected": "Ansluten",
     "accept": "Svara",
+    "connecting": "Ansluter…",
     "decline": "Avvisa",
     "hangup": "Lägg på",
     "mute": "Ljud av",
@@ -1348,6 +1350,7 @@
     "unavailable": "{name} är inte tillgänglig",
     "rejected": "{name} avvisade samtalet",
     "no_mic": "Mikrofonåtkomst nekad",
+    "failed": "Samtalet kunde inte anslutas",
     "ended": "Samtal avslutat",
     "incoming_video": "Inkommande videosamtal",
     "camera_on": "Kamera på",

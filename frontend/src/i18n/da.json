@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "WarmDesk"
+    "name": "WarmDesk",
+    "new_message_title": "Ny besked!"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1341,6 +1342,7 @@
     "calling": "Ringer...",
     "connected": "Forbundet",
     "accept": "Svar",
+    "connecting": "Forbinder…",
     "decline": "Afvis",
     "hangup": "Læg på",
     "mute": "Lyd fra",
@@ -1348,6 +1350,7 @@
     "unavailable": "{name} er ikke tilgængelig",
     "rejected": "{name} afviste opkaldet",
     "no_mic": "Mikrofonadgang nægtet",
+    "failed": "Opkaldet kunne ikke oprettes",
     "ended": "Opkald afsluttet",
     "incoming_video": "Indgående videoopkald",
     "camera_on": "Kamera til",

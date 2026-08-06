@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "WarmDesk"
+    "name": "WarmDesk",
+    "new_message_title": "Nieuw bericht!"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1341,6 +1342,7 @@
     "calling": "Bellen...",
     "connected": "Verbonden",
     "accept": "Opnemen",
+    "connecting": "Verbinden…",
     "decline": "Weigeren",
     "hangup": "Ophangen",
     "mute": "Dempen",
@@ -1348,6 +1350,7 @@
     "unavailable": "{name} is niet beschikbaar",
     "rejected": "{name} heeft het gesprek geweigerd",
     "no_mic": "Microfoontoegang geweigerd",
+    "failed": "Gesprek kon niet worden opgezet",
     "ended": "Gesprek beëindigd",
     "incoming_video": "Inkomend videogesprek",
     "camera_on": "Camera aan",

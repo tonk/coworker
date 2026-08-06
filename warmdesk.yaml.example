@@ -114,6 +114,27 @@ allowed_origins: "http://localhost:5173"
 # livekit_api_key: "APIxxxxxxxxxxxxxxxx"
 # livekit_api_secret: "a_long_random_secret_string"
 
+# TURN server — 1-on-1 call relay (strongly recommended for anything but a
+# local LAN). WarmDesk's 1-on-1 calls use two public Google STUN servers by
+# default, which is enough to discover peers on the same network but cannot
+# relay media across symmetric NATs, CGNAT, or restrictive firewalls — a very
+# common setup for home/office networks and VPNs. Without a TURN server,
+# calls between such peers will connect (signaling succeeds) but show a
+# black screen with no audio/video. Any standard TURN server works, e.g.
+# coturn (https://github.com/coturn/coturn) with a static long-term
+# username/password.
+#
+# turn_urls       — comma-separated TURN/TURNS URIs, e.g.
+#                    "turn:turn.yourcompany.com:3478,turns:turn.yourcompany.com:5349"
+# turn_username   — the static username configured on your TURN server.
+# turn_credential — the matching password/credential.
+#
+# Env var overrides: TURN_URLS, TURN_USERNAME, TURN_CREDENTIAL
+#
+# turn_urls: "turn:turn.yourcompany.com:3478"
+# turn_username: "warmdesk"
+# turn_credential: "a_long_random_secret_string"
+
 # IMAP mailbox settings.
 # The poller reads new messages from `mailbox` (default INBOX) and moves each
 # processed message to `processed_mailbox` (default Processed) so it is never

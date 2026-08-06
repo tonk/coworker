@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "WarmDesk"
+    "name": "WarmDesk",
+    "new_message_title": "Ný skilaboð!"
   },
   "nav": {
     "dashboard": "Mælaborð",
@@ -1341,6 +1342,7 @@
     "calling": "Hringt...",
     "connected": "Tengt",
     "accept": "Svara",
+    "connecting": "Tengist…",
     "decline": "Hafna",
     "hangup": "Leggja á",
     "mute": "Þagga",
@@ -1348,6 +1350,7 @@
     "unavailable": "{name} er ekki tiltækur",
     "rejected": "{name} hafnaði símtalinu",
     "no_mic": "Aðgangur að hljóðnema hafnaður",
+    "failed": "Ekki tókst að tengja símtalið",
     "ended": "Símtali lokið",
     "incoming_video": "Móttekið myndsímtal",
     "camera_on": "Myndavél kveikt",

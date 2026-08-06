@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "WarmDesk"
+    "name": "WarmDesk",
+    "new_message_title": "Uusi viesti!"
   },
   "nav": {
     "dashboard": "Kojelauta",
@@ -1341,6 +1342,7 @@
     "calling": "Soitetaan...",
     "connected": "Yhdistetty",
     "accept": "Vastaa",
+    "connecting": "Yhdistetään…",
     "decline": "Hylkää",
     "hangup": "Lopeta puhelu",
     "mute": "Mykistä",
@@ -1348,6 +1350,7 @@
     "unavailable": "{name} ei ole tavoitettavissa",
     "rejected": "{name} hylkäsi puhelun",
     "no_mic": "Mikrofonin käyttö estetty",
+    "failed": "Puhelua ei voitu yhdistää",
     "ended": "Puhelu päättyi",
     "incoming_video": "Saapuva videopuhelu",
     "camera_on": "Kamera päällä",

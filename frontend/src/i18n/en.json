@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "WarmDesk"
+    "name": "WarmDesk",
+    "new_message_title": "New message!"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1458,6 +1459,7 @@
     "calling": "Calling...",
     "connected": "Connected",
     "accept": "Accept",
+    "connecting": "Connecting…",
     "decline": "Decline",
     "hangup": "End call",
     "mute": "Mute",
@@ -1465,6 +1467,7 @@
     "unavailable": "{name} is not available",
     "rejected": "{name} declined the call",
     "no_mic": "Microphone access denied",
+    "failed": "Call failed to connect",
     "ended": "Call ended",
     "incoming_video": "Incoming video call",
     "camera_on": "Camera on",

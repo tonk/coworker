@@ -39,6 +39,9 @@ type Config struct {
 	LiveKitAPIKey     string `yaml:"livekit_api_key"`
 	LiveKitAPISecret  string `yaml:"livekit_api_secret"`
 	LiveKitRoomPrefix string `yaml:"livekit_room_prefix"` // optional prefix to avoid room collisions when sharing a LiveKit server between instances
+	TurnURLs          string `yaml:"turn_urls"`           // comma-separated TURN/TURNS URIs, e.g. "turn:turn.example.com:3478,turns:turn.example.com:5349"
+	TurnUsername      string `yaml:"turn_username"`
+	TurnCredential    string `yaml:"turn_credential"`
 }
 
 type SMTPConfig struct {
@@ -222,5 +225,14 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv("LIVEKIT_ROOM_PREFIX"); v != "" {
 		cfg.LiveKitRoomPrefix = v
+	}
+	if v := os.Getenv("TURN_URLS"); v != "" {
+		cfg.TurnURLs = v
+	}
+	if v := os.Getenv("TURN_USERNAME"); v != "" {
+		cfg.TurnUsername = v
+	}
+	if v := os.Getenv("TURN_CREDENTIAL"); v != "" {
+		cfg.TurnCredential = v
 	}
 }

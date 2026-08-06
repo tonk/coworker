@@ -79,6 +79,7 @@ const (
 	TypeCallReject      = "call.reject"
 	TypeCallRing        = "call.ring"
 	TypeCallUnavailable = "call.unavailable"
+	TypeCallFailed      = "call.failed"
 	TypeCallGroupInvite = "call.group_invite"
 
 	// Server -> Client: tickets / helpdesk

@@ -269,7 +269,7 @@ func handleIncoming(client *appws.Client, raw []byte) {
 			Payload: map[string]uint{"id": payload.MessageID},
 		})
 
-	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject:
+	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject, appws.TypeCallFailed:
 		handleCallSignal(client, msg)
 	}
 }
@@ -291,7 +291,7 @@ func handleUserIncoming(client *appws.Client, raw []byte) {
 		data, _ := json.Marshal(pong)
 		client.Send(data)
 
-	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject:
+	case appws.TypeCallOffer, appws.TypeCallAnswer, appws.TypeCallICE, appws.TypeCallHangup, appws.TypeCallReject, appws.TypeCallFailed:
 		handleCallSignal(client, msg)
 
 	case appws.TypeCallGroupInvite:
@@ -390,6 +390,15 @@ func handleCallSignal(client *appws.Client, msg appws.Message) {
 	case appws.TypeCallReject:
 		appws.BroadcastToUser(calleeID, appws.Message{
 			Type: appws.TypeCallReject,
+			Payload: map[string]any{
+				"from_user_id":    callerID,
+				"conversation_id": convID,
+			},
+		})
+
+	case appws.TypeCallFailed:
+		appws.BroadcastToUser(calleeID, appws.Message{
+			Type: appws.TypeCallFailed,
 			Payload: map[string]any{
 				"from_user_id":    callerID,
 				"conversation_id": convID,

@@ -149,6 +149,7 @@ func main() {
 	handlers.SetOAuth2Config(&cfg.OAuth2)
 	handlers.InitBackup(cfg)
 	handlers.InitLiveKit(cfg)
+	handlers.InitWebRTC(cfg)
 
 	emailSvc := services.NewEmailService(cfg.SMTP)
 	// Allow the email service to read live SMTP settings from the DB after startup

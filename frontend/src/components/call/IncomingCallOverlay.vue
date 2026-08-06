@@ -25,8 +25,16 @@
         <div :id="labelId" class="call-name">{{ state.remoteName || $t('common.unknown') }}</div>
       </div>
       <div class="call-actions">
-        <button ref="acceptBtnEl" class="call-btn accept-btn" :aria-label="$t('call.accept')" @click="acceptCall">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <button
+          ref="acceptBtnEl"
+          class="call-btn accept-btn"
+          :class="{ 'is-busy': state.accepting }"
+          :disabled="state.accepting"
+          :aria-label="state.accepting ? $t('call.connecting') : $t('call.accept')"
+          @click="acceptCall"
+        >
+          <span v-if="state.accepting" class="accept-spinner" aria-hidden="true"></span>
+          <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l1.22-1.22a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
           </svg>
         </button>
@@ -201,9 +209,24 @@ onUnmounted(() => {
 }
 .call-btn:hover { opacity: 0.88; transform: scale(1.06); }
 .call-btn:active { transform: scale(0.96); }
+.call-btn:disabled { cursor: default; }
+.call-btn:disabled:hover { transform: none; }
 
 .accept-btn { background: var(--color-success); }
+.accept-btn.is-busy { opacity: 0.75; }
 .decline-btn { background: var(--color-danger); }
+
+.accept-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: accept-spin 0.7s linear infinite;
+}
+@keyframes accept-spin {
+  to { transform: rotate(360deg); }
+}
 
 /* Transition */
 .call-overlay-enter-from,

@@ -12,6 +12,7 @@ import { useCallSettings } from './useCallSettings'
 import { isLiveKitCallActive } from './callsGate'
 import { useUIStore } from '@/stores/ui'
 import { i18n } from '@/i18n'
+import { webrtcApi } from '@/api/webrtc'
 
 // ── Module-level singleton ──────────────────────────────────────────────────
 
@@ -26,6 +27,10 @@ const _s = reactive({
   hasVideo:    false,
   isScreenSharing: false,
   errorMsg:    '',
+  // True while acceptCall() is negotiating (getUserMedia can take several
+  // seconds with no other visual feedback). Lets the UI disable the accept
+  // button so a second click can't start a concurrent, colliding negotiation.
+  accepting:   false,
 })
 
 let _pc                = null
@@ -42,10 +47,27 @@ let _ringTimeout       = null   // auto-cancel unanswered outgoing calls
 
 const RING_TIMEOUT_MS = 45_000
 
-const ICE_SERVERS = [
+// STUN-only fallback, used if the backend's /ice-servers call fails or the
+// server has no TURN server configured.
+const DEFAULT_ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
 ]
+
+let _iceServersPromise = null
+
+// Fetched once per session (TURN credentials don't change at runtime) and
+// reused for every call. Falls back to STUN-only on any failure so a
+// misconfigured/unreachable endpoint never blocks calling — it just loses
+// TURN relay.
+function _loadIceServers() {
+  if (!_iceServersPromise) {
+    _iceServersPromise = webrtcApi.getIceServers()
+      .then((res) => res.data?.ice_servers || DEFAULT_ICE_SERVERS)
+      .catch(() => DEFAULT_ICE_SERVERS)
+  }
+  return _iceServersPromise
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -64,6 +86,7 @@ function _reset() {
   _s.hasVideo     = false
   _s.isScreenSharing = false
   _s.errorMsg     = ''
+  _s.accepting    = false
   _pendingCandidates = []
   _pendingOffer   = null
   _remoteStream   = null
@@ -90,8 +113,8 @@ function _teardown() {
 
 // ── RTCPeerConnection setup ──────────────────────────────────────────────────
 
-function _setupPC() {
-  _pc = new RTCPeerConnection({ iceServers: ICE_SERVERS })
+function _setupPC(iceServers) {
+  _pc = new RTCPeerConnection({ iceServers })
 
   _pc.onicecandidate = (e) => {
     if (!e.candidate) return
@@ -162,8 +185,7 @@ function setLocalStreamCallback(fn) {
 }
 
 async function startCall(userId, userName, avatar, convId) {
-  if (_s.phase !== 'idle') return
-  if (isLiveKitCallActive()) return
+  if (_s.phase !== 'idle' || isLiveKitCallActive()) return
 
   _s.remoteUserId = userId
   _s.remoteName   = userName || ''
@@ -177,9 +199,9 @@ async function startCall(userId, userName, avatar, convId) {
     if (_s.phase === 'calling') endCall(true)
   }, RING_TIMEOUT_MS)
 
-  let stream, hasVideo
+  let stream, hasVideo, iceServers
   try {
-    ;({ stream, hasVideo } = await _getMedia(true))
+    ;[{ stream, hasVideo }, iceServers] = await Promise.all([_getMedia(true), _loadIceServers()])
   } catch {
     clearTimeout(_ringTimeout); _ringTimeout = null
     _s.errorMsg = 'no_mic'
@@ -195,25 +217,30 @@ async function startCall(userId, userName, avatar, convId) {
 
   _localStream  = stream
   _s.hasVideo   = hasVideo
-  if (typeof _onLocalStream === 'function') _onLocalStream(_localStream)
 
-  _setupPC()
-  _localStream.getTracks().forEach(t => _pc.addTrack(t, _localStream))
+  try {
+    if (typeof _onLocalStream === 'function') _onLocalStream(_localStream)
 
-  const offer = await _pc.createOffer()
-  await _pc.setLocalDescription(offer)
+    _setupPC(iceServers)
+    _localStream.getTracks().forEach(t => _pc.addTrack(t, _localStream))
 
-  if (_s.phase !== 'calling') return
+    const offer = await _pc.createOffer()
+    await _pc.setLocalDescription(offer)
 
-  _send({
-    type: 'call.offer',
-    payload: {
-      to_user_id:      userId,
-      conversation_id: convId,
-      sdp:             offer.sdp,
-      has_video:       hasVideo,
-    },
-  })
+    if (_s.phase !== 'calling') return
+
+    _send({
+      type: 'call.offer',
+      payload: {
+        to_user_id:      userId,
+        conversation_id: convId,
+        sdp:             offer.sdp,
+        has_video:       hasVideo,
+      },
+    })
+  } catch {
+    _failCall()
+  }
 }
 
 function handleSignal(msg) {
@@ -224,6 +251,7 @@ function handleSignal(msg) {
     case 'call.hangup':      return _onHangup()
     case 'call.reject':      return _onReject()
     case 'call.unavailable': return _onUnavailable()
+    case 'call.failed':      return _onCallFailed()
   }
 }
 
@@ -248,7 +276,29 @@ async function _onAnswer(payload) {
     await _pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: payload.sdp }))
     await _applyPendingCandidates()
     _s.phase = 'active'
-  } catch {}
+  } catch {
+    _failCall()
+  }
+}
+
+// Negotiation failed after signaling was already underway (as opposed to
+// hangup/reject, which are deliberate user actions) — notify the other side,
+// tear down locally, and surface an error instead of leaving the UI hung.
+function _failCall() {
+  clearTimeout(_ringTimeout); _ringTimeout = null
+  _send({ type: 'call.failed', payload: { to_user_id: _s.remoteUserId, conversation_id: _s.convId } })
+  _teardown()
+  _s.errorMsg = 'failed'
+  _s.phase = 'ended'
+  setTimeout(_reset, 3000)
+}
+
+function _onCallFailed() {
+  clearTimeout(_ringTimeout); _ringTimeout = null
+  _teardown()
+  _s.errorMsg = 'failed'
+  _s.phase = 'ended'
+  setTimeout(_reset, 3000)
 }
 
 async function _onICE(payload) {
@@ -267,43 +317,58 @@ function _onReject()      { clearTimeout(_ringTimeout); _ringTimeout = null; _te
 function _onUnavailable() { clearTimeout(_ringTimeout); _ringTimeout = null; _teardown(); _s.errorMsg = 'unavailable'; _s.phase = 'ended'; setTimeout(_reset, 3000) }
 
 async function acceptCall() {
-  if (_s.phase !== 'ringing' || !_pendingOffer) return
+  // _s.accepting guards against re-entrancy: getUserMedia can take several
+  // seconds (permission prompt, camera init) with no other visual feedback,
+  // and phase stays 'ringing' throughout — so an impatient second click on
+  // Accept would otherwise start a second, concurrent negotiation that races
+  // the first one for the shared _pc/_pendingOffer module state.
+  if (_s.phase !== 'ringing' || !_pendingOffer || _s.accepting) return
+  _s.accepting = true
 
-  let stream, hasVideo
   try {
-    ;({ stream, hasVideo } = await _getMedia(_s.hasVideo))
-  } catch {
-    _s.errorMsg = 'no_mic'
-    rejectCall()
-    return
+    let stream, hasVideo, iceServers
+    try {
+      ;[{ stream, hasVideo }, iceServers] = await Promise.all([_getMedia(_s.hasVideo), _loadIceServers()])
+    } catch {
+      _s.errorMsg = 'no_mic'
+      rejectCall()
+      return
+    }
+
+    // Caller may have hung up while getUserMedia was pending
+    if (_s.phase !== 'ringing') {
+      stream.getTracks().forEach(t => t.stop())
+      return
+    }
+
+    _localStream = stream
+    _s.hasVideo  = hasVideo
+
+    try {
+      if (typeof _onLocalStream === 'function') _onLocalStream(_localStream)
+
+      _setupPC(iceServers)
+      _localStream.getTracks().forEach(t => _pc.addTrack(t, _localStream))
+
+      await _pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: _pendingOffer }))
+      _pendingOffer = null
+      await _applyPendingCandidates()
+
+      const answer = await _pc.createAnswer()
+      await _pc.setLocalDescription(answer)
+
+      _send({
+        type: 'call.answer',
+        payload: { to_user_id: _s.remoteUserId, conversation_id: _s.convId, sdp: answer.sdp },
+      })
+
+      _s.phase = 'active'
+    } catch {
+      _failCall()
+    }
+  } finally {
+    _s.accepting = false
   }
-
-  // Caller may have hung up while getUserMedia was pending
-  if (_s.phase !== 'ringing') {
-    stream.getTracks().forEach(t => t.stop())
-    return
-  }
-
-  _localStream = stream
-  _s.hasVideo  = hasVideo
-  if (typeof _onLocalStream === 'function') _onLocalStream(_localStream)
-
-  _setupPC()
-  _localStream.getTracks().forEach(t => _pc.addTrack(t, _localStream))
-
-  await _pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: _pendingOffer }))
-  _pendingOffer = null
-  await _applyPendingCandidates()
-
-  const answer = await _pc.createAnswer()
-  await _pc.setLocalDescription(answer)
-
-  _send({
-    type: 'call.answer',
-    payload: { to_user_id: _s.remoteUserId, conversation_id: _s.convId, sdp: answer.sdp },
-  })
-
-  _s.phase = 'active'
 }
 
 function rejectCall() {

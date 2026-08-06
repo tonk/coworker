@@ -90,6 +90,9 @@ func Setup(authSvc *services.AuthService, allowedOrigins string, webFS fs.FS, ap
 		protected.POST("/auth/ws-ticket", authHandler.IssueWSTicket)
 		protected.POST("/auth/media-ticket", authHandler.IssueMediaTicket)
 
+		// STUN/TURN servers for 1:1 WebRTC calls
+		protected.GET("/ice-servers", handlers.GetICEServers)
+
 		// API keys (personal tokens)
 		protected.GET("/auth/api-keys", handlers.ListAPIKeys)
 		protected.POST("/auth/api-keys", handlers.CreateAPIKey)

@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "WarmDesk"
+    "name": "WarmDesk",
+    "new_message_title": "Neue Nachricht!"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1341,6 +1342,7 @@
     "calling": "Rufe an...",
     "connected": "Verbunden",
     "accept": "Annehmen",
+    "connecting": "Verbindung wird hergestellt…",
     "decline": "Ablehnen",
     "hangup": "Auflegen",
     "mute": "Stummschalten",
@@ -1348,6 +1350,7 @@
     "unavailable": "{name} ist nicht verfügbar",
     "rejected": "{name} hat den Anruf abgelehnt",
     "no_mic": "Mikrofonzugriff verweigert",
+    "failed": "Anruf konnte nicht verbunden werden",
     "ended": "Anruf beendet",
     "incoming_video": "Eingehender Videoanruf",
     "camera_on": "Kamera an",
