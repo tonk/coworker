@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.22.1 — 2026-08-06
+
+### Fixed
+- **Code blocks in direct-message chat were unreadable in dark theme** — the purple "own message" bubble's inline-code color rule leaked into fenced ```code``` blocks via CSS descendant matching, making plain (non-highlighted) text render white-on-white.
+- **Numbers and some symbols in DM code blocks looked oddly spaced out** (e.g. `100644` rendering as `1 0 0 6 4 4`) — the message bubble's `font-variant-emoji: emoji` (added so real emoji in chat text render full-color) was inherited into code blocks, forcing digits and a few symbols into wide emoji-style glyph metrics.
+- **The sidebar's "⋮" section-visibility menu sat visibly out of line with the first section's row** — the sidebar is now a bit wider by default and the menu is repositioned to sit on the same row as the section title, to the right of its collapse chevron.
+
 ## v0.22.0 — 2026-08-06
 
 ### Added

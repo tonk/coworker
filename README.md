@@ -8,10 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.22.0)
+## Latest release (v0.22.1)
 
-- **Added** — restrict project creation to explicitly-permitted users (Admin → Users), a muted-mic indicator for the other party during a call, and a resizable in-call chat sidebar.
-- **Fixed** — cropped screen shares now fit properly for the viewer, the tab-blink unread counter no longer gets stuck on, several admin user-creation rough edges, and the emoji picker no longer opens on a bare `:`, eats typed text, or fails to find ASCII emoticons like `:-)`.
+- **Fixed** — direct-message code blocks are readable in dark theme again, no longer show numbers/symbols with odd extra spacing, and the sidebar's "⋮" menu lines up with the first section's row.
 
 ## Experiment
 
