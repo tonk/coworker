@@ -105,6 +105,7 @@ func CreateWebhook(c *gin.Context) {
 		"type":       hook.Type,
 		"token_hint": hook.TokenHint,
 		"token":      token,
+		"project_id": hook.ProjectID,
 		"created_at": hook.CreatedAt,
 	})
 }

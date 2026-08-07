@@ -20,6 +20,9 @@ notes:
     detached (not deleted) automatically by the API.
   - The C(starred) parameter controls whether the calling user has the customer
     starred.  It does not affect other users.
+  - C(GET /customers) excludes hidden customers by default; this module
+    always queries with C(include_hidden=true) so a customer previously
+    hidden via the admin UI is found instead of creating a duplicate.
 
 extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
@@ -41,6 +44,45 @@ options:
     description:
       - URL to the customer's logo image.
     type: str
+
+  color:
+    description:
+      - Hex colour code for the customer's UI colour swatch (e.g. C(#3b82f6)).
+      - Omit to leave unset or unchanged. The API only applies non-empty
+        values, so this cannot be cleared back to empty through this module.
+    type: str
+
+  billing_street:
+    description: Billing address street line. Same omit/no-clear behaviour as C(color).
+    type: str
+
+  billing_city:
+    description: Billing address city. Same omit/no-clear behaviour as C(color).
+    type: str
+
+  billing_postal_code:
+    description: Billing address postal code. Same omit/no-clear behaviour as C(color).
+    type: str
+
+  billing_country:
+    description: Billing address country. Same omit/no-clear behaviour as C(color).
+    type: str
+
+  vat_number:
+    description: VAT/tax identification number. Same omit/no-clear behaviour as C(color).
+    type: str
+
+  po_reference:
+    description: Default purchase-order reference. Same omit/no-clear behaviour as C(color).
+    type: str
+
+  is_hidden:
+    description:
+      - Whether the customer is hidden from the default (non-admin) customer
+        list. Requires admin credentials to take effect; silently ignored
+        server-side otherwise.
+      - Omit to leave unchanged.
+    type: bool
 
   starred:
     description:
@@ -84,6 +126,33 @@ EXAMPLES = r"""
     name: Acme Corp
     description: Largest enterprise client — Q1 contract renewed.
     starred: true
+
+# ---------------------------------------------------------------------------
+# Set billing details and VAT/PO reference
+# ---------------------------------------------------------------------------
+- name: Set Acme Corp billing details
+  ansilabnl.warmdesk.customer:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    name: Acme Corp
+    color: "#3b82f6"
+    billing_street: "1 Main St"
+    billing_city: Amsterdam
+    billing_postal_code: "1011 AB"
+    billing_country: Netherlands
+    vat_number: NL123456789B01
+    po_reference: PO-2025-042
+
+# ---------------------------------------------------------------------------
+# Hide a customer from the default customer list (admin only)
+# ---------------------------------------------------------------------------
+- name: Hide legacy customer without deleting it
+  ansilabnl.warmdesk.customer:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_username: admin
+    warmdesk_password: "{{ vault_admin_password }}"
+    name: OldCo Inc
+    is_hidden: true
 
 # ---------------------------------------------------------------------------
 # Ensure a customer is unstarred (without changing other fields)
@@ -146,6 +215,46 @@ customer:
       returned: when set
       type: str
       sample: https://cdn.example.com/logos/acme.png
+    color:
+      description: Hex colour code for the customer's UI swatch.
+      returned: when set
+      type: str
+      sample: "#3b82f6"
+    billing_street:
+      description: Billing address street line.
+      returned: when set
+      type: str
+      sample: "1 Main St"
+    billing_city:
+      description: Billing address city.
+      returned: when set
+      type: str
+      sample: Amsterdam
+    billing_postal_code:
+      description: Billing address postal code.
+      returned: when set
+      type: str
+      sample: "1011 AB"
+    billing_country:
+      description: Billing address country.
+      returned: when set
+      type: str
+      sample: Netherlands
+    vat_number:
+      description: VAT/tax identification number.
+      returned: when set
+      type: str
+      sample: NL123456789B01
+    po_reference:
+      description: Default purchase-order reference.
+      returned: when set
+      type: str
+      sample: PO-2025-042
+    is_hidden:
+      description: Whether the customer is hidden from the default customer list.
+      returned: always
+      type: bool
+      sample: false
     is_favorite:
       description: Whether the customer is starred by the calling user.
       returned: always
@@ -180,9 +289,21 @@ from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_api im
 # Helpers
 # ---------------------------------------------------------------------------
 
+_TEXT_FIELDS = (
+    'name', 'description', 'logo_url', 'color',
+    'billing_street', 'billing_city', 'billing_postal_code', 'billing_country',
+    'vat_number', 'po_reference',
+)
+
+
 def _find_customer(client, name):
-    """Return the customer dict whose name matches, or None."""
-    customers = client.get('/customers')
+    """Return the customer dict whose name matches, or None.
+
+    Includes hidden customers (GET /customers excludes them by default) so a
+    customer hidden via the admin UI is found instead of creating a
+    duplicate.
+    """
+    customers = client.get('/customers', params={'include_hidden': 'true'})
     for c in customers:
         if c.get('name') == name:
             return c
@@ -190,29 +311,35 @@ def _find_customer(client, name):
 
 
 def _fetch_customer(client, customer_id):
-    """Fetch the full CustomerDetailResponse for *customer_id*."""
-    return client.get('/customers/%d' % customer_id)
+    """Fetch the flat customer object for *customer_id*.
+
+    GET /customers/:id returns {customer: {...}, contracts: [...], ...} —
+    unwrap it so the return value matches the flat shape POST/PUT return.
+    """
+    return client.get('/customers/%d' % customer_id)['customer']
 
 
 def _build_body(p):
     """Build a create/update body from module params, omitting None values."""
     body = {}
-    for key in ('name', 'description', 'logo_url'):
+    for key in _TEXT_FIELDS:
         if p.get(key) is not None:
             body[key] = p[key]
+    if p.get('is_hidden') is not None:
+        body['is_hidden'] = p['is_hidden']
     return body
 
 
 def _fields_changed(existing, p):
     """Return True if any mutable field in *p* differs from *existing*."""
-    for api_key, param_key in (('name', 'name'),
-                                ('description', 'description'),
-                                ('logo_url', 'logo_url')):
-        desired = p.get(param_key)
+    for key in _TEXT_FIELDS:
+        desired = p.get(key)
         if desired is None:
             continue
-        if existing.get(api_key) != desired:
+        if existing.get(key) != desired:
             return True
+    if p.get('is_hidden') is not None and existing.get('is_hidden', False) != p['is_hidden']:
+        return True
     return False
 
 
@@ -238,6 +365,14 @@ def run_module():
         name=dict(type='str', required=True),
         description=dict(type='str'),
         logo_url=dict(type='str'),
+        color=dict(type='str'),
+        billing_street=dict(type='str'),
+        billing_city=dict(type='str'),
+        billing_postal_code=dict(type='str'),
+        billing_country=dict(type='str'),
+        vat_number=dict(type='str'),
+        po_reference=dict(type='str'),
+        is_hidden=dict(type='bool'),
         starred=dict(type='bool'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
@@ -272,6 +407,12 @@ def run_module():
                 module.exit_json(changed=True, customer=None)
 
             customer = client.post('/customers', _build_body(p))
+
+            # is_hidden is not accepted by the create endpoint — apply it
+            # with a follow-up update when explicitly requested as true
+            # (new customers already default to false).
+            if p.get('is_hidden'):
+                customer = client.put('/customers/%d' % customer['id'], {'is_hidden': True})
 
             # Handle starring on a freshly created customer.
             star_action = _starred_action_needed(customer, p.get('starred'))

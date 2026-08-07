@@ -20,6 +20,13 @@ notes:
     detached (not deleted) by the API automatically.
   - Date strings must be in C(YYYY-MM-DD) format or omitted entirely.  Passing
     an empty string clears a previously set date.
+  - The API's update endpoint overwrites C(description), C(start_date),
+    C(end_date), C(price_per_hour), C(price_per_km), and C(time_slots) from
+    whatever is in the request body on every call — an omitted field is
+    indistinguishable, server-side, from an explicit clear.  This module
+    works around that by fetching the current contract and resending its
+    existing value for any of those fields you don't explicitly set, so a
+    task that only changes C(name) (for example) won't wipe the others.
 
 extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
@@ -43,6 +50,7 @@ options:
   description:
     description:
       - Free-text description of the contract.
+      - Omit to leave unset or unchanged; pass an empty string to clear it.
     type: str
 
   start_date:
@@ -56,6 +64,66 @@ options:
       - Contract end date in C(YYYY-MM-DD) format.
       - Omit to leave unset or unchanged.
     type: str
+
+  price_per_hour:
+    description:
+      - Hourly rate for this contract, as a decimal string (e.g. C("75.00")).
+      - Omit to leave unset or unchanged; pass an empty string to clear it.
+    type: str
+
+  price_per_km:
+    description:
+      - Per-kilometre travel rate for this contract, as a decimal string.
+      - Omit to leave unset or unchanged; pass an empty string to clear it.
+    type: str
+
+  currency:
+    description:
+      - ISO 4217-style currency code or symbol (e.g. C(EUR), C(€)).
+      - The API only applies this when non-empty — there is no way to clear
+        it back to the server default through this endpoint.
+    type: str
+
+  time_slots:
+    description:
+      - Alternative hourly rates for work performed outside standard hours.
+      - Omit to leave the existing time slots unchanged; pass an empty list
+        to remove all of them.  When supplied, this is a full replacement of
+        the contract's time slots, not a merge.
+    type: list
+    elements: dict
+    suboptions:
+      label:
+        description: Free-text label for the slot (e.g. C(Evening)).
+        type: str
+      start_time:
+        description: Start time in C(HH:MM) format.
+        type: str
+        required: true
+      end_time:
+        description: End time in C(HH:MM) format.
+        type: str
+        required: true
+      day_type:
+        description:
+          - C(all), C(weekdays), C(weekends), or a comma-separated list of
+            day names (C(monday), C(tuesday), …, C(sunday)).
+        type: str
+        default: all
+      end_day_offset:
+        description:
+          - Number of calendar days after the anchor day when C(end_time)
+            applies (C(1) = next morning, C(2) = two days later, …). Used
+            when C(end_time) is earlier than C(start_time) (an overnight
+            slot).
+        type: int
+        default: 0
+      multiplication_factor:
+        description: Rate multiplier applied instead of a flat hourly rate.
+        type: float
+      hourly_rate:
+        description: Flat hourly rate for this slot, overriding the contract rate.
+        type: float
 
   state:
     description:
@@ -105,6 +173,38 @@ EXAMPLES = r"""
     name: Phase 2 Implementation
     description: Fixed-price implementation engagement (scope extended).
     end_date: "2025-12-31"
+
+# ---------------------------------------------------------------------------
+# Create a contract with pricing and an evening rate time slot
+# ---------------------------------------------------------------------------
+- name: Create contract with rates and an out-of-hours time slot
+  ansilabnl.warmdesk.contract:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    customer: Acme Corp
+    name: Standby Support 2025
+    price_per_hour: "95.00"
+    price_per_km: "0.35"
+    currency: EUR
+    time_slots:
+      - label: Evening
+        start_time: "19:00"
+        end_time: "07:00"
+        day_type: all
+        end_day_offset: 1
+        multiplication_factor: 1.5
+
+# ---------------------------------------------------------------------------
+# Clear a contract's hourly rate and remove all time slots
+# ---------------------------------------------------------------------------
+- name: Clear pricing on Standby Support 2025
+  ansilabnl.warmdesk.contract:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    customer: Acme Corp
+    name: Standby Support 2025
+    price_per_hour: ""
+    time_slots: []
 
 # ---------------------------------------------------------------------------
 # Provision contracts from a variable list (idempotent loop)
@@ -171,6 +271,26 @@ contract:
       returned: always
       type: str
       sample: "2025-12-31"
+    price_per_hour:
+      description: Hourly rate, or null when unset.
+      returned: always
+      type: float
+      sample: 95.0
+    price_per_km:
+      description: Per-kilometre travel rate, or null when unset.
+      returned: always
+      type: float
+      sample: 0.35
+    currency:
+      description: Currency code or symbol.
+      returned: always
+      type: str
+      sample: EUR
+    time_slots:
+      description: Alternative rate time slots configured for this contract.
+      returned: always
+      type: list
+      elements: dict
     created_at:
       description: ISO-8601 creation timestamp.
       returned: always
@@ -200,6 +320,12 @@ from ansible_collections.ansilabnl.warmdesk.plugins.module_utils.warmdesk_resolv
 
 _DATE_PARAMS = ('start_date', 'end_date')
 _TEXT_PARAMS = ('name', 'description')
+# Fields the API unconditionally overwrites from the request body on every
+# update — an omitted key is indistinguishable from an explicit clear
+# server-side, so the module must resend the current value for any of these
+# it isn't explicitly changing. 'name' and 'currency' are excluded: the API
+# only touches them when the request value is non-empty.
+_MERGE_ON_UPDATE = ('description',) + _DATE_PARAMS
 
 
 def _find_contract(client, customer_id, name):
@@ -211,25 +337,89 @@ def _find_contract(client, customer_id, name):
     return None
 
 
-def _build_body(p):
-    """Build a create/update body from module params, omitting None values.
+def _resolve_price(raw):
+    """Parse a price_per_* string param.
 
-    Empty strings are sent through unchanged so the caller can explicitly
-    clear a date field.  Only Python None is treated as "not provided".
+    Returns (value, was_given). was_given is False when raw is None (the
+    param was omitted — leave the field untouched). An empty string is an
+    explicit request to clear the price back to null.
+    """
+    if raw is None:
+        return None, False
+    if raw == '':
+        return None, True
+    try:
+        return float(raw), True
+    except ValueError:
+        raise ValueError('must be a decimal number or an empty string, got %r' % raw)
+
+
+def _normalize_time_slots(slots):
+    """Return time-slot dicts in the API's canonical shape (order preserved).
+
+    Strips server-only keys (id, contract_id) and fills in the same defaults
+    the backend applies, so slots freshly returned by the API and slots
+    freshly supplied by the caller compare equal.
+    """
+    normalized = []
+    for s in slots:
+        normalized.append(dict(
+            label=s.get('label') or '',
+            start_time=s.get('start_time') or '',
+            end_time=s.get('end_time') or '',
+            day_type=s.get('day_type') or 'all',
+            end_day_offset=s.get('end_day_offset') or 0,
+            multiplication_factor=s.get('multiplication_factor'),
+            hourly_rate=s.get('hourly_rate'),
+        ))
+    return normalized
+
+
+def _build_body(p, existing=None):
+    """Build a create/update body from module params.
+
+    On update (existing is not None), fields in _MERGE_ON_UPDATE plus
+    price_per_hour/price_per_km/time_slots are resent with their current
+    value whenever the caller didn't explicitly supply a new one — see
+    _MERGE_ON_UPDATE's comment for why this is necessary.
     """
     body = {}
-    for key in _TEXT_PARAMS + _DATE_PARAMS:
+
+    if p.get('name') is not None:
+        body['name'] = p['name']
+    if p.get('currency') is not None:
+        body['currency'] = p['currency']
+
+    for key in _MERGE_ON_UPDATE:
         if p.get(key) is not None:
             body[key] = p[key]
+        elif existing is not None:
+            body[key] = existing.get(key) or ''
+
+    price_per_hour, given = _resolve_price(p.get('price_per_hour'))
+    if given:
+        body['price_per_hour'] = price_per_hour
+    elif existing is not None:
+        body['price_per_hour'] = existing.get('price_per_hour')
+
+    price_per_km, given = _resolve_price(p.get('price_per_km'))
+    if given:
+        body['price_per_km'] = price_per_km
+    elif existing is not None:
+        body['price_per_km'] = existing.get('price_per_km')
+
+    if p.get('time_slots') is not None:
+        body['time_slots'] = _normalize_time_slots(p['time_slots'])
+    elif existing is not None:
+        body['time_slots'] = _normalize_time_slots(existing.get('time_slots') or [])
+
     return body
 
 
 def _fields_changed(existing, p):
-    """Return True if any mutable field in *p* differs from *existing*.
-
-    Date comparison is string-based (YYYY-MM-DD).  The API may return
-    None / null for unset dates; we treat that as an empty string for
-    comparison purposes so that an explicit empty-string param causes a write.
+    """Return True if any mutable field explicitly supplied in *p* differs
+    from *existing*. Merged (preserved) fields are equal to *existing* by
+    construction and never contribute a difference here.
     """
     for key in _TEXT_PARAMS:
         desired = p.get(key)
@@ -247,6 +437,22 @@ def _fields_changed(existing, p):
         if current != desired:
             return True
 
+    if p.get('currency') is not None and existing.get('currency') != p['currency']:
+        return True
+
+    for key in ('price_per_hour', 'price_per_km'):
+        desired, given = _resolve_price(p.get(key))
+        if not given:
+            continue
+        if existing.get(key) != desired:
+            return True
+
+    if p.get('time_slots') is not None:
+        desired_slots = _normalize_time_slots(p['time_slots'])
+        current_slots = _normalize_time_slots(existing.get('time_slots') or [])
+        if desired_slots != current_slots:
+            return True
+
     return False
 
 
@@ -262,6 +468,18 @@ def run_module():
         description=dict(type='str'),
         start_date=dict(type='str'),
         end_date=dict(type='str'),
+        price_per_hour=dict(type='str'),
+        price_per_km=dict(type='str'),
+        currency=dict(type='str'),
+        time_slots=dict(type='list', elements='dict', options=dict(
+            label=dict(type='str'),
+            start_time=dict(type='str', required=True),
+            end_time=dict(type='str', required=True),
+            day_type=dict(type='str', default='all'),
+            end_day_offset=dict(type='int', default=0),
+            multiplication_factor=dict(type='float'),
+            hourly_rate=dict(type='float'),
+        )),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
 
@@ -317,12 +535,14 @@ def run_module():
 
         contract = client.put(
             '/customers/%d/contracts/%d' % (customer_id, existing['id']),
-            _build_body(p),
+            _build_body(p, existing),
         )
         module.exit_json(changed=True, contract=contract)
 
     except WarmDeskAPIError as e:
         module.fail_json(msg='WarmDesk API error %d: %s' % (e.status, e.message))
+    except ValueError as e:
+        module.fail_json(msg=str(e))
 
 
 def main():

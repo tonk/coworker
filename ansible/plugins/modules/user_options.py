@@ -30,7 +30,7 @@ options:
     description:
       - UI theme preference.
     type: str
-    choices: [light, dark, system]
+    choices: [light, dark, system, black]
   show_breadcrumbs:
     description:
       - Whether to show breadcrumb navigation in the UI.
@@ -183,7 +183,7 @@ def run_module():
     argument_spec = warmdesk_argument_spec()
     argument_spec.update(dict(
         username=dict(type='str', required=True),
-        theme=dict(type='str', choices=['light', 'dark', 'system']),
+        theme=dict(type='str', choices=['light', 'dark', 'system', 'black']),
         show_breadcrumbs=dict(type='bool'),
         email_notifications=dict(type='bool'),
         locale=dict(type='str'),

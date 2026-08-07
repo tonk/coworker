@@ -50,6 +50,10 @@ extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
 notes:
   - Check mode is fully supported; no changes are made to the server.
+  - Clearing the WIP limit on an C(existing) column (C(wip_limit: 0)) is sent
+    as C(wip_limit_clear=true) rather than C(wip_limit=0) — the update
+    endpoint rejects C(wip_limit) values below 1 outright, unlike creation,
+    which normalises C(0) to "no limit" automatically.
 seealso:
   - module: ansilabnl.warmdesk.card
   - module: ansilabnl.warmdesk.label
@@ -157,9 +161,24 @@ def _needs_update(existing, color, wip_limit):
     """Return True if any desired attribute differs from the current value."""
     if color is not None and existing.get('color') != color:
         return True
-    if wip_limit is not None and existing.get('wip_limit') != wip_limit:
+    if wip_limit is not None and (existing.get('wip_limit') or 0) != wip_limit:
         return True
     return False
+
+
+def _wip_limit_update_fields(wip_limit):
+    """Return the PUT-body fragment for wip_limit on an *existing* column.
+
+    UpdateColumn rejects wip_limit < 1 outright (unlike CreateColumn, which
+    silently normalises 0 to "no limit"), so clearing an existing column's
+    limit must go through the dedicated wip_limit_clear flag instead of
+    sending wip_limit=0.
+    """
+    if wip_limit is None:
+        return {}
+    if wip_limit < 1:
+        return {'wip_limit_clear': True}
+    return {'wip_limit': wip_limit}
 
 
 def run_module():
@@ -233,8 +252,7 @@ def run_module():
     body = {'name': name}
     if color is not None:
         body['color'] = color
-    if wip_limit is not None:
-        body['wip_limit'] = wip_limit
+    body.update(_wip_limit_update_fields(wip_limit))
     try:
         updated = client.put(
             '/projects/%s/columns/%d' % (project, existing['id']), body

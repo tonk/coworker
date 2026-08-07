@@ -313,19 +313,36 @@ func UpdateCustomer(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-	updates := map[string]interface{}{
-		"description":         req.Description,
-		"logo_url":            req.LogoURL,
-		"color":               req.Color,
-		"billing_street":      req.BillingStreet,
-		"billing_city":        req.BillingCity,
-		"billing_postal_code": req.BillingPostalCode,
-		"billing_country":     req.BillingCountry,
-		"vat_number":          req.VATNumber,
-		"po_reference":        req.POReference,
-	}
+	updates := map[string]interface{}{}
 	if req.Name != "" {
 		updates["name"] = req.Name
+	}
+	if req.Description != "" {
+		updates["description"] = req.Description
+	}
+	if req.LogoURL != "" {
+		updates["logo_url"] = req.LogoURL
+	}
+	if req.Color != "" {
+		updates["color"] = req.Color
+	}
+	if req.BillingStreet != "" {
+		updates["billing_street"] = req.BillingStreet
+	}
+	if req.BillingCity != "" {
+		updates["billing_city"] = req.BillingCity
+	}
+	if req.BillingPostalCode != "" {
+		updates["billing_postal_code"] = req.BillingPostalCode
+	}
+	if req.BillingCountry != "" {
+		updates["billing_country"] = req.BillingCountry
+	}
+	if req.VATNumber != "" {
+		updates["vat_number"] = req.VATNumber
+	}
+	if req.POReference != "" {
+		updates["po_reference"] = req.POReference
 	}
 	// is_hidden: only global admins can set this field
 	if req.IsHidden != nil && middleware.GetGlobalRole(c) == "admin" {
@@ -333,7 +350,9 @@ func UpdateCustomer(c *gin.Context) {
 	}
 	oldLogoURL := cust.LogoURL
 	database.DB.Model(&cust).Updates(updates)
-	deleteOldUpload(oldLogoURL, req.LogoURL)
+	if req.LogoURL != "" {
+		deleteOldUpload(oldLogoURL, req.LogoURL)
+	}
 	database.DB.First(&cust, id)
 	c.JSON(http.StatusOK, cust)
 }

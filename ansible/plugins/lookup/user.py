@@ -20,6 +20,16 @@ notes:
     fields and is used by the C(ansilabnl.warmdesk.user) module.
   - Pass C(wantlist=true) in your task to always receive a list even when
     looking up a single username.
+  - C(/users) only lists active accounts — a soft-disabled user (e.g. one set
+    to C(is_active=false) via the C(user)/C(user_access) modules) is absent
+    from the result and this lookup raises "not found" for it, not a dict
+    with C(is_active=false).
+  - For a caller whose access is restricted to specific customers (i.e. not a
+    global admin), C(/users) returns a reduced field set — only C(id),
+    C(username), C(first_name), C(last_name), C(display_name), and
+    C(avatar_url). C(email), C(global_role), C(is_active), and C(created_at)
+    are absent from the returned dict in that case, even though they're
+    documented below as always present for an unrestricted (admin) caller.
 
 options:
   _terms:

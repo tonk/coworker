@@ -90,6 +90,19 @@ func UploadImage(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"url": "/uploads/" + storedName})
 }
 
+// isValidAvatarURL reports whether url is acceptable as an avatar/logo value —
+// either a local upload path or a fully-qualified http(s) URL. An empty
+// string is valid (it means "no avatar").
+func isValidAvatarURL(url string) bool {
+	if url == "" {
+		return true
+	}
+	lower := strings.ToLower(url)
+	return strings.HasPrefix(url, "/uploads/") ||
+		strings.HasPrefix(lower, "http://") ||
+		strings.HasPrefix(lower, "https://")
+}
+
 // deleteOldUpload removes the file behind a previous /uploads/... URL when it's
 // being replaced by a different one (or cleared), so avatars/logos don't pile up
 // as orphaned files every time they're changed. No-op for empty, unchanged, or

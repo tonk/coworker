@@ -10,6 +10,18 @@ import (
 	"github.com/tonk/warmdesk/config"
 )
 
+func TestIsValidAvatarURL(t *testing.T) {
+	valid := []string{"", "/uploads/abc123.png", "http://example.com/a.png", "https://example.com/a.png", "HTTPS://Example.com/A.png"}
+	for _, u := range valid {
+		assert.True(t, isValidAvatarURL(u), "expected %q to be valid", u)
+	}
+
+	invalid := []string{"javascript:alert(1)", "ftp://example.com/a.png", "not-a-url", "uploads/abc123.png"}
+	for _, u := range invalid {
+		assert.False(t, isValidAvatarURL(u), "expected %q to be invalid", u)
+	}
+}
+
 func TestDeleteOldUpload(t *testing.T) {
 	dir := t.TempDir()
 	prevCfg := attachmentCfg

@@ -42,6 +42,13 @@ options:
       - Hex color code for the project avatar (e.g. C(#3b82f6)). Must include
         the leading C(#). Ignored when C(state=absent).
     type: str
+  avatar:
+    description:
+      - URL of an image to use as the project avatar, overriding the
+        generated C(color) swatch. Ignored when C(state=absent).
+      - Pass an empty string to clear a previously set avatar and fall back
+        to the color swatch.
+    type: str
   board_type:
     description:
       - Layout type for the project board.
@@ -122,6 +129,7 @@ EXAMPLES = r'''
     name: Edge Data Analytics
     description: "Analytics platform cards and tasks"
     color: "#3b82f6"
+    avatar: "https://example.com/logos/eda.png"
     key_prefix: EDA
     customer: Acme Corp
     contract: "Support 2026"
@@ -183,6 +191,15 @@ EXAMPLES = r'''
     is_closed: false
     state: present
 
+- name: Clear a project's avatar, falling back to the color swatch
+  ansilabnl.warmdesk.project:
+    warmdesk_url: https://desk.example.com
+    warmdesk_token: "{{ vault_wd_token }}"
+    name: Edge Data Analytics
+    customer: Acme Corp
+    avatar: ""
+    state: present
+
 - name: Ensure a project does not exist
   ansilabnl.warmdesk.project:
     warmdesk_url: https://desk.example.com
@@ -224,6 +241,10 @@ project:
       description: Hex colour code.
       type: str
       sample: "#3b82f6"
+    avatar:
+      description: URL of the project's avatar image, or empty when unset.
+      type: str
+      sample: "https://example.com/logos/eda.png"
     board_type:
       description: Board layout type — C(kanban) or C(scrum).
       type: str
@@ -340,6 +361,7 @@ def _needs_update(existing, desired_body):
         'name': 'name',
         'description': 'description',
         'color': 'color',
+        'avatar': 'avatar',
         'is_archived': 'is_archived',
         'is_closed': 'is_closed',
         'customer_id': 'customer_id',
@@ -363,6 +385,7 @@ def run_module():
         name=dict(type='str', required=True),
         description=dict(type='str'),
         color=dict(type='str'),
+        avatar=dict(type='str'),
         board_type=dict(type='str', choices=['kanban', 'scrum']),
         key_prefix=dict(type='str'),
         customer=dict(type='str'),
@@ -431,6 +454,8 @@ def run_module():
                 create_body['description'] = params['description']
             if params['color'] is not None:
                 create_body['color'] = params['color']
+            if params['avatar'] is not None:
+                create_body['avatar'] = params['avatar']
             if params['board_type'] is not None:
                 create_body['board_type'] = params['board_type']
             if params['key_prefix'] is not None:
@@ -478,6 +503,8 @@ def run_module():
             update_body['description'] = params['description']
         if params['color'] is not None:
             update_body['color'] = params['color']
+        if params['avatar'] is not None:
+            update_body['avatar'] = params['avatar']
         if params['is_archived'] is not None:
             update_body['is_archived'] = params['is_archived']
         if params['is_closed'] is not None:

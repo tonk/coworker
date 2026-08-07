@@ -54,8 +54,13 @@ def resolve_user_id(client, username, project_slug=None):
 
 
 def resolve_customer_id(client, name):
-    """Return the numeric ID of the customer whose name equals *name*."""
-    customers = client.get('/customers')
+    """Return the numeric ID of the customer whose name equals *name*.
+
+    Includes hidden customers (GET /customers excludes them by default) so a
+    customer hidden via the admin UI still resolves instead of looking
+    not-found and triggering a duplicate create.
+    """
+    customers = client.get('/customers', params={'include_hidden': 'true'})
     for c in customers:
         if c['name'] == name:
             return c['id']

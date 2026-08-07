@@ -174,48 +174,48 @@ func AdminUpdateUser(c *gin.Context) {
 		return
 	}
 	var req struct {
-		GlobalRole          string `json:"global_role"`
-		IsActive            *bool  `json:"is_active"`
-		TimeTrackingViewer  *bool  `json:"time_tracking_viewer"`
-		TimeTrackingEnabled *bool  `json:"time_tracking_enabled"`
-		BoardEnabled        *bool  `json:"board_enabled"`
-		ChatEnabled         *bool  `json:"chat_enabled"`
-		HelpdeskEnabled     *bool  `json:"helpdesk_enabled"`
-		CanCreateProjects   *bool  `json:"can_create_projects"`
-		Theme               string `json:"theme"`
-		ShowBreadcrumbs     *bool  `json:"show_breadcrumbs"`
-		EmailNotifications  *bool  `json:"email_notifications"`
-		FirstName           string `json:"first_name"`
-		LastName            string `json:"last_name"`
-		DisplayName         string `json:"display_name"`
-		AvatarURL           string `json:"avatar_url"`
-		Email               string `json:"email"`
-		Password            string `json:"password"`
-		Locale              string `json:"locale"`
-		DateTimeFormat      string `json:"date_time_format"`
-		Timezone            string `json:"timezone"`
-		Font                string `json:"font"`
-		FontSize            string `json:"font_size"`
-		SidebarPosition     string `json:"sidebar_position"`
-		AccentColor         string `json:"accent_color"`
-		TimeNotation        string `json:"time_notation"`
-		WeekStart           string `json:"week_start"`
-		MonWorkStart        string `json:"mon_work_start"`
-		MonWorkEnd          string `json:"mon_work_end"`
-		TueWorkStart        string `json:"tue_work_start"`
-		TueWorkEnd          string `json:"tue_work_end"`
-		WedWorkStart        string `json:"wed_work_start"`
-		WedWorkEnd          string `json:"wed_work_end"`
-		ThuWorkStart        string `json:"thu_work_start"`
-		ThuWorkEnd          string `json:"thu_work_end"`
-		FriWorkStart        string `json:"fri_work_start"`
-		FriWorkEnd          string `json:"fri_work_end"`
-		SatWorkStart        string `json:"sat_work_start"`
-		SatWorkEnd          string `json:"sat_work_end"`
-		SunWorkStart        string `json:"sun_work_start"`
-		SunWorkEnd          string `json:"sun_work_end"`
-		LunchBreakMinutes   int    `json:"lunch_break_minutes"`
-		MustChangePassword  *bool  `json:"must_change_password"`
+		GlobalRole          string  `json:"global_role"`
+		IsActive            *bool   `json:"is_active"`
+		TimeTrackingViewer  *bool   `json:"time_tracking_viewer"`
+		TimeTrackingEnabled *bool   `json:"time_tracking_enabled"`
+		BoardEnabled        *bool   `json:"board_enabled"`
+		ChatEnabled         *bool   `json:"chat_enabled"`
+		HelpdeskEnabled     *bool   `json:"helpdesk_enabled"`
+		CanCreateProjects   *bool   `json:"can_create_projects"`
+		Theme               string  `json:"theme"`
+		ShowBreadcrumbs     *bool   `json:"show_breadcrumbs"`
+		EmailNotifications  *bool   `json:"email_notifications"`
+		FirstName           string  `json:"first_name"`
+		LastName            string  `json:"last_name"`
+		DisplayName         string  `json:"display_name"`
+		AvatarURL           *string `json:"avatar_url"`
+		Email               string  `json:"email"`
+		Password            string  `json:"password"`
+		Locale              string  `json:"locale"`
+		DateTimeFormat      string  `json:"date_time_format"`
+		Timezone            string  `json:"timezone"`
+		Font                string  `json:"font"`
+		FontSize            string  `json:"font_size"`
+		SidebarPosition     string  `json:"sidebar_position"`
+		AccentColor         string  `json:"accent_color"`
+		TimeNotation        string  `json:"time_notation"`
+		WeekStart           string  `json:"week_start"`
+		MonWorkStart        string  `json:"mon_work_start"`
+		MonWorkEnd          string  `json:"mon_work_end"`
+		TueWorkStart        string  `json:"tue_work_start"`
+		TueWorkEnd          string  `json:"tue_work_end"`
+		WedWorkStart        string  `json:"wed_work_start"`
+		WedWorkEnd          string  `json:"wed_work_end"`
+		ThuWorkStart        string  `json:"thu_work_start"`
+		ThuWorkEnd          string  `json:"thu_work_end"`
+		FriWorkStart        string  `json:"fri_work_start"`
+		FriWorkEnd          string  `json:"fri_work_end"`
+		SatWorkStart        string  `json:"sat_work_start"`
+		SatWorkEnd          string  `json:"sat_work_end"`
+		SunWorkStart        string  `json:"sun_work_start"`
+		SunWorkEnd          string  `json:"sun_work_end"`
+		LunchBreakMinutes   int     `json:"lunch_break_minutes"`
+		MustChangePassword  *bool   `json:"must_change_password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -248,7 +248,7 @@ func AdminUpdateUser(c *gin.Context) {
 	if req.CanCreateProjects != nil {
 		updates["can_create_projects"] = *req.CanCreateProjects
 	}
-	validThemes := map[string]bool{"light": true, "dark": true, "system": true}
+	validThemes := map[string]bool{"light": true, "dark": true, "system": true, "black": true}
 	if validThemes[req.Theme] {
 		updates["theme"] = req.Theme
 	}
@@ -268,9 +268,14 @@ func AdminUpdateUser(c *gin.Context) {
 		updates["display_name"] = req.DisplayName
 	}
 	var oldAvatarURL string
-	if req.AvatarURL != "" {
+	if req.AvatarURL != nil {
+		av := *req.AvatarURL
+		if !isValidAvatarURL(av) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid avatar URL"})
+			return
+		}
 		database.DB.Model(&models.User{}).Where("id = ?", id).Pluck("avatar_url", &oldAvatarURL)
-		updates["avatar_url"] = req.AvatarURL
+		updates["avatar_url"] = av
 	}
 	if req.Email != "" {
 		updates["email"] = strings.ToLower(req.Email)
@@ -364,8 +369,8 @@ func AdminUpdateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
-	if req.AvatarURL != "" {
-		deleteOldUpload(oldAvatarURL, req.AvatarURL)
+	if req.AvatarURL != nil {
+		deleteOldUpload(oldAvatarURL, *req.AvatarURL)
 	}
 
 	var user models.User
@@ -470,11 +475,16 @@ func AdminCreateUser(c *gin.Context) {
 		FirstName          string `json:"first_name"`
 		LastName           string `json:"last_name"`
 		DisplayName        string `json:"display_name"`
+		AvatarURL          string `json:"avatar_url"`
 		GlobalRole         string `json:"global_role"`
 		MustChangePassword bool   `json:"must_change_password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": bindErrorMessage(err)})
+		return
+	}
+	if !isValidAvatarURL(req.AvatarURL) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid avatar URL"})
 		return
 	}
 
@@ -507,6 +517,7 @@ func AdminCreateUser(c *gin.Context) {
 		FirstName:          req.FirstName,
 		LastName:           req.LastName,
 		DisplayName:        displayName,
+		AvatarURL:          req.AvatarURL,
 		GlobalRole:         role,
 		Locale:             "en",
 		IsActive:           true,

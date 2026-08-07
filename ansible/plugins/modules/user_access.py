@@ -70,6 +70,12 @@ options:
       - Only meaningful when C(time_tracking_enabled) is C(false).
     type: bool
 
+  can_create_projects:
+    description:
+      - Whether the user can create new projects (in addition to global
+        admins, who can always create projects).
+    type: bool
+
   is_active:
     description:
       - Whether the account is enabled.  Set to C(false) to soft-disable a
@@ -116,6 +122,13 @@ EXAMPLES = r"""
     chat_enabled: false
     helpdesk_enabled: false
     time_tracking_enabled: false
+
+- name: Allow a user to create their own projects
+  ansilabnl.warmdesk.user_access:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_token: "{{ warmdesk_token }}"
+    username: alice
+    can_create_projects: true
 
 - name: Soft-disable a user account
   ansilabnl.warmdesk.user_access:
@@ -174,6 +187,11 @@ user:
       returned: always
       type: bool
       sample: false
+    can_create_projects:
+      description: Whether the user can create new projects.
+      returned: always
+      type: bool
+      sample: false
     global_role:
       description: System-wide role.
       returned: always
@@ -212,6 +230,7 @@ def _build_body(p, existing):
         'helpdesk_enabled': 'helpdesk_enabled',
         'time_tracking_enabled': 'time_tracking_enabled',
         'time_tracking_viewer': 'time_tracking_viewer',
+        'can_create_projects': 'can_create_projects',
         'is_active': 'is_active',
         'global_role': 'global_role',
     }
@@ -235,6 +254,7 @@ def run_module():
         helpdesk_enabled=dict(type='bool'),
         time_tracking_enabled=dict(type='bool'),
         time_tracking_viewer=dict(type='bool'),
+        can_create_projects=dict(type='bool'),
         is_active=dict(type='bool'),
         global_role=dict(
             type='str',

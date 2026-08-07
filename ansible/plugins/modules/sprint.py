@@ -21,6 +21,12 @@ notes:
     fail if another sprint is already active when trying to start this one.
   - Deleting a sprint that does not exist is a no-op (no error).
   - Completing a sprint moves all unfinished cards back to the backlog.
+  - The API's update endpoint overwrites C(goal), C(start_date), and
+    C(end_date) from whatever is in the request body on every call — an
+    omitted field is indistinguishable, server-side, from an explicit clear.
+    This module works around that by resending the current value for any of
+    those three fields you don't explicitly change, whenever a write is
+    needed at all (e.g. renaming a sprint won't blank its goal or dates).
 
 extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
@@ -229,24 +235,39 @@ def _find_sprint(client, project_slug, name):
 
 
 def _build_update_body(p, existing):
+    """Build the PUT body for an update, returning (body, changed).
+
+    UpdateSprint writes goal/start_date/end_date unconditionally from the
+    request body — an omitted key is indistinguishable, server-side, from an
+    explicit clear. So whenever anything actually needs writing, all three
+    are resent (the caller's new value, or the current one when not
+    changing it). 'name' is safely guarded (`if req.Name != ""`), so it's
+    only included when it's actually changing.
+    """
+    name_changed = p.get('name') is not None and existing.get('name') != p['name']
+    goal_changed = p.get('goal') is not None and existing.get('goal') != p['goal']
+    start_changed = _date_field_changed(p.get('start_date'), existing.get('start_date'))
+    end_changed = _date_field_changed(p.get('end_date'), existing.get('end_date'))
+
+    changed = name_changed or goal_changed or start_changed or end_changed
+    if not changed:
+        return {}, False
+
     body = {}
-    changed = False
-
-    if p.get('name') is not None and existing.get('name') != p['name']:
+    if name_changed:
         body['name'] = p['name']
-        changed = True
 
-    if p.get('goal') is not None and existing.get('goal') != p['goal']:
-        body['goal'] = p['goal']
-        changed = True
+    body['goal'] = p['goal'] if p.get('goal') is not None else existing.get('goal', '')
 
-    if _date_field_changed(p.get('start_date'), existing.get('start_date')):
+    if p.get('start_date') is not None:
         body['start_date'] = _date_to_iso(p['start_date'])
-        changed = True
+    else:
+        body['start_date'] = existing.get('start_date')
 
-    if _date_field_changed(p.get('end_date'), existing.get('end_date')):
+    if p.get('end_date') is not None:
         body['end_date'] = _date_to_iso(p['end_date'])
-        changed = True
+    else:
+        body['end_date'] = existing.get('end_date')
 
     return body, changed
 

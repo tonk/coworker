@@ -251,7 +251,10 @@ func UpdateInvoice(c *gin.Context) {
 		return
 	}
 
-	updates := map[string]interface{}{"notes": req.Notes}
+	updates := map[string]interface{}{}
+	if req.Notes != "" {
+		updates["notes"] = req.Notes
+	}
 	if req.Status != "" {
 		valid := map[string]bool{
 			models.InvoiceStatusDraft: true,
@@ -268,8 +271,6 @@ func UpdateInvoice(c *gin.Context) {
 		if dd, err := time.Parse("2006-01-02", req.DueDate); err == nil {
 			updates["due_date"] = dd
 		}
-	} else {
-		updates["due_date"] = nil
 	}
 	if req.VATRate != nil {
 		vatAmount := invoice.Subtotal * *req.VATRate / 100.0
@@ -295,7 +296,9 @@ func UpdateInvoice(c *gin.Context) {
 		updates["total"] = newSubtotal + vatAmt
 	}
 	// Payment details.
-	updates["payment_reference"] = req.PaymentReference
+	if req.PaymentReference != "" {
+		updates["payment_reference"] = req.PaymentReference
+	}
 	if req.PaymentMethod != nil {
 		updates["payment_method"] = *req.PaymentMethod
 	}
@@ -303,8 +306,6 @@ func UpdateInvoice(c *gin.Context) {
 		if pd, err := time.Parse("2006-01-02", req.PaymentDate); err == nil {
 			updates["payment_date"] = pd
 		}
-	} else {
-		updates["payment_date"] = nil
 	}
 	if req.PaymentAmount != nil {
 		updates["payment_amount"] = req.PaymentAmount

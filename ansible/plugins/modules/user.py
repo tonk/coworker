@@ -61,6 +61,15 @@ options:
         C(first_name + last_name) server-side when omitted.
     type: str
 
+  avatar_url:
+    description:
+      - URL of the user's avatar image.
+      - The API only applies this when non-empty — there is no way to clear an
+        existing avatar back to none through this endpoint.
+      - On creation, the avatar is applied via a follow-up update call since
+        the create endpoint itself does not accept it.
+    type: str
+
   global_role:
     description:
       - System-wide role for the account.
@@ -179,6 +188,16 @@ EXAMPLES = r"""
     global_role: admin
     locale: nl
     timezone: Europe/Amsterdam
+
+# ---------------------------------------------------------------------------
+# Set a user's avatar
+# ---------------------------------------------------------------------------
+- name: Set alice's avatar
+  ansilabnl.warmdesk.user:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_api_key: "{{ vault_api_key }}"
+    username: alice
+    avatar_url: "https://example.com/avatars/alice.png"
 
 # ---------------------------------------------------------------------------
 # Disable an account without deleting it
@@ -305,6 +324,11 @@ user:
       returned: always
       type: str
       sample: Alice Wonderland
+    avatar_url:
+      description: URL of the user's avatar image.
+      returned: when set
+      type: str
+      sample: "https://example.com/avatars/alice.png"
     global_role:
       description: System-wide role.
       returned: always
@@ -443,6 +467,7 @@ def _build_update_body(p, existing, has_password):
         'first_name': 'first_name',
         'last_name': 'last_name',
         'display_name': 'display_name',
+        'avatar_url': 'avatar_url',
         'email': 'email',
         'locale': 'locale',
         'timezone': 'timezone',
@@ -479,6 +504,7 @@ def run_module():
         first_name=dict(type='str'),
         last_name=dict(type='str'),
         display_name=dict(type='str'),
+        avatar_url=dict(type='str'),
         global_role=dict(
             type='str',
             default='user',
@@ -560,6 +586,10 @@ def run_module():
             if module.check_mode:
                 module.exit_json(changed=True, user=None)
             user = client.post('/admin/users', _build_create_body(p))
+            # avatar_url is not accepted by the create endpoint — apply it
+            # with a follow-up update call when supplied.
+            if p.get('avatar_url'):
+                user = client.put('/admin/users/%d' % user['id'], {'avatar_url': p['avatar_url']})
             # Optionally disable MFA right after creation (edge-case but
             # consistent with the idempotent contract).
             if p['mfa_disable']:

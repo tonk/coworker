@@ -35,6 +35,11 @@ options:
       - Free-text description of the group.
       - When omitted the description is left unchanged on an existing group.
     type: str
+  avatar:
+    description:
+      - URL of an image to use as the group's avatar.
+      - When omitted the avatar is left unchanged on an existing group.
+    type: str
   members:
     description:
       - Declarative list of WarmDesk usernames that should belong to the group.
@@ -143,6 +148,14 @@ EXAMPLES = r'''
     description: Web, mobile, and design engineers
     state: present
 
+- name: Set a group's avatar
+  ansilabnl.warmdesk.group:
+    warmdesk_url: https://desk.example.com
+    warmdesk_token: "{{ vault_wd_token }}"
+    name: Frontend Team
+    avatar: "https://example.com/avatars/frontend-team.png"
+    state: present
+
 - name: Remove a stale group
   ansilabnl.warmdesk.group:
     warmdesk_url: https://desk.example.com
@@ -189,6 +202,10 @@ group:
       description: Group description.
       type: str
       sample: Web and mobile engineers
+    avatar:
+      description: URL of the group's avatar image, or empty when unset.
+      type: str
+      sample: "https://example.com/avatars/frontend-team.png"
     created_at:
       description: ISO-8601 creation timestamp.
       type: str
@@ -429,6 +446,7 @@ def run_module():
     argument_spec.update(
         name=dict(type='str', required=True),
         description=dict(type='str'),
+        avatar=dict(type='str'),
         members=dict(type='list', elements='str'),
         project_access=dict(
             type='list',
@@ -487,6 +505,8 @@ def run_module():
             body = {'name': p['name']}
             if p.get('description') is not None:
                 body['description'] = p['description']
+            if p.get('avatar') is not None:
+                body['avatar'] = p['avatar']
 
             group = client.post('/admin/groups', body)
             group_id = group['id']
@@ -511,15 +531,25 @@ def run_module():
 
         changed = False
 
-        # Check description change
+        # Check description/avatar change. AdminUpdateGroup overwrites
+        # description unconditionally from the request body, so whenever
+        # either field needs writing, both are resent — the caller's new
+        # value if given, the current one otherwise — to avoid wiping
+        # whichever field isn't the one actually changing.
         desc_changed = (
             p.get('description') is not None
             and existing.get('description') != p['description']
         )
-        if desc_changed:
+        avatar_changed = (
+            p.get('avatar') is not None
+            and (existing.get('avatar') or '') != p['avatar']
+        )
+        if desc_changed or avatar_changed:
             if not module.check_mode:
-                client.patch('/admin/groups/%d' % group_id,
-                             {'description': p['description']})
+                client.patch('/admin/groups/%d' % group_id, {
+                    'description': p['description'] if p.get('description') is not None else existing.get('description', ''),
+                    'avatar': p['avatar'] if p.get('avatar') is not None else existing.get('avatar', ''),
+                })
             changed = True
 
         # Check member list

@@ -385,14 +385,9 @@ func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	var oldAvatarURL string
 	if req.AvatarURL != nil {
 		av := *req.AvatarURL
-		if av != "" {
-			lower := strings.ToLower(av)
-			if !strings.HasPrefix(av, "/uploads/") &&
-				!strings.HasPrefix(lower, "http://") &&
-				!strings.HasPrefix(lower, "https://") {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid avatar URL"})
-				return
-			}
+		if !isValidAvatarURL(av) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid avatar URL"})
+			return
 		}
 		database.DB.Model(&models.User{}).Where("id = ?", userID).Pluck("avatar_url", &oldAvatarURL)
 		updates["avatar_url"] = av

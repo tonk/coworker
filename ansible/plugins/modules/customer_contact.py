@@ -19,6 +19,14 @@ notes:
   - At most one contact per customer may be marked as C(is_primary=true).  The
     API enforces this; use a separate task to demote an existing primary contact
     before promoting another one if needed.
+  - The API's update endpoint overwrites C(department), C(phone), C(email),
+    and C(is_primary) from whatever is in the request body on every call — an
+    omitted field is indistinguishable, server-side, from an explicit clear
+    (and for C(is_primary), from an explicit demotion). This module works
+    around that by fetching the current contact and resending its existing
+    value for any of those fields you don't explicitly set, so a task that
+    only changes C(phone) (for example) won't blank C(department)/C(email)
+    or silently demote a primary contact.
 
 extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
@@ -225,19 +233,32 @@ def _find_contact(client, customer_id, name):
     return None
 
 
-def _build_body(p):
+def _build_body(p, existing=None):
     """Build a create/update body from module params, omitting None values.
 
     Empty strings are sent through unchanged so the caller can explicitly
     clear a text field.  Only Python None is treated as "not provided".
+
+    On update (existing is not None), department/phone/email/is_primary are
+    resent with their current value when not explicitly supplied — see the
+    module's notes for why this is necessary (UpdateContact overwrites all
+    four unconditionally from the request body).
     """
     body = {}
-    for key in _TEXT_PARAMS:
+    if p.get('name') is not None:
+        body['name'] = p['name']
+
+    for key in ('department', 'phone', 'email'):
         if p.get(key) is not None:
             body[key] = p[key]
-    for key in _BOOL_PARAMS:
-        if p.get(key) is not None:
-            body[key] = p[key]
+        elif existing is not None:
+            body[key] = existing.get(key) or ''
+
+    if p.get('is_primary') is not None:
+        body['is_primary'] = p['is_primary']
+    elif existing is not None:
+        body['is_primary'] = existing.get('is_primary', False)
+
     return body
 
 
@@ -336,7 +357,7 @@ def run_module():
 
         contact = client.put(
             '/customers/%d/contacts/%d' % (customer_id, existing['id']),
-            _build_body(p),
+            _build_body(p, existing),
         )
         module.exit_json(changed=True, contact=contact)
 

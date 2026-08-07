@@ -82,5 +82,7 @@ func allModels() []interface{} {
 		&models.TicketHistory{},
 		&models.TicketView{},
 		&models.SlaPolicy{},
+		&models.Invoice{},
+		&models.InvoiceTemplate{},
 	}
 }

@@ -65,6 +65,9 @@ notes:
     both create and update tasks.
   - Project owners and global admins can delete any comment regardless of
     authorship.
+  - This module does not support attachment uploads, so C(body) is always
+    required to create a meaningful comment — even though the underlying API
+    itself also allows attachment-only comments with an empty body.
 seealso:
   - module: ansilabnl.warmdesk.card
   - module: ansilabnl.warmdesk.checklist_item
@@ -141,7 +144,7 @@ comment:
       description: Whether the comment has been edited after creation.
       type: bool
       sample: false
-    time_spent:
+    time_spent_minutes:
       description: Time logged with this comment, in minutes.
       type: int
       sample: 0

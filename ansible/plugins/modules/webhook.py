@@ -275,7 +275,14 @@ def run_module():
             regen = client.post(
                 '/projects/%s/webhooks/%d/regenerate' % (project_slug, existing['id'])
             )
-            ret = dict(changed=True, webhook=existing)
+            # /regenerate only returns {token, token_hint} — merge the fresh
+            # hint into the pre-rotation webhook dict so callers reading
+            # webhook.token_hint after rotation see the current value, not
+            # the one that just became invalid.
+            webhook = dict(existing)
+            if regen and 'token_hint' in regen:
+                webhook['token_hint'] = regen['token_hint']
+            ret = dict(changed=True, webhook=webhook)
             if regen and 'token' in regen:
                 ret['token'] = regen['token']
                 module.warn(

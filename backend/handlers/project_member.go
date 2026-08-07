@@ -115,7 +115,7 @@ func UpdateMemberRole(c *gin.Context) {
 	}
 
 	var member models.ProjectMember
-	if err := database.DB.Where("project_id = ? AND user_id = ?", project.ID, targetID).First(&member).Error; err != nil {
+	if err := database.DB.Preload("User").Where("project_id = ? AND user_id = ?", project.ID, targetID).First(&member).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "member not found"})
 		return
 	}

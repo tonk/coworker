@@ -57,6 +57,9 @@ notes:
   - If two items with identical body text exist on the same card (which the UI
     allows), only the first match is operated on. Use distinct body text to
     avoid ambiguity.
+  - The create endpoint does not accept C(is_completed) — when creating a
+    pre-completed item, this module applies it with an immediate follow-up
+    update, at the cost of one extra request on the creating run only.
 seealso:
   - module: ansilabnl.warmdesk.card
   - module: ansilabnl.warmdesk.column
@@ -266,12 +269,26 @@ def run_module():
         try:
             created = client.post(
                 '/projects/%s/cards/%d/checklist' % (project, card_id),
-                {'body': body, 'is_completed': is_completed},
+                {'body': body},
             )
         except WarmDeskAPIError as exc:
             module.fail_json(
                 msg='Failed to create checklist item: %s (HTTP %s)' % (exc.message, exc.status)
             )
+        # The create endpoint doesn't accept is_completed — apply it with an
+        # immediate follow-up update when a pre-completed item was requested
+        # (new items already default to false, so no call needed otherwise).
+        if is_completed:
+            try:
+                created = client.put(
+                    '/projects/%s/cards/%d/checklist/%d' % (project, card_id, created['id']),
+                    {'is_completed': True},
+                )
+            except WarmDeskAPIError as exc:
+                module.fail_json(
+                    msg='Checklist item created but failed to mark it completed: '
+                        '%s (HTTP %s)' % (exc.message, exc.status)
+                )
         module.exit_json(changed=True, checklist_item=created)
 
     # Update if is_completed differs

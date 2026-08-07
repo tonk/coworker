@@ -189,6 +189,15 @@ _BOOL_KEYS = {
     'password_require_lower',
     'password_require_digit',
     'password_require_special',
+    'imap_enabled',
+    'imap_use_tls',
+    'invoice_vat_exempt',
+    'backup_email_enabled',
+    'backup_include_uploads',
+    'scrum_storypoints_enabled',
+    'gravatar_enabled',
+    'external_image_proxy_enabled',
+    'login_branding_enabled',
 }
 
 # Settings that the API accepts as integers in the PUT body.

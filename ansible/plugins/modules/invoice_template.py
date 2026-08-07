@@ -18,6 +18,12 @@ notes:
     an admin account.
   - The template name is used as the idempotency key.
   - Deleting an invoice template that does not exist is a no-op (no error).
+  - The API's update endpoint overwrites every field (C(name),
+    C(default_vat_rate), C(default_currency), C(notes), C(line_items)) from
+    whatever is in the request body on every call, with no guard for an
+    omitted key. This module works around that by resending the current
+    value for any field you don't explicitly change, whenever a write is
+    needed at all (e.g. updating just C(notes) won't blank C(line_items)).
   - C(line_items) are compared by C(description), C(quantity), and
     C(unit_price) in order.  The module computes C(amount) and sets
     C(is_manual=true) automatically before sending to the API.
@@ -265,31 +271,38 @@ def _line_items_changed(desired_items, existing_items):
 def _build_update_body(p, existing, desired_items):
     """Return (body, changed) for a PUT call against an existing template.
 
-    The backend requires ``name`` in every PUT body, so it is always included.
+    AdminUpdateInvoiceTemplate overwrites every field unconditionally from
+    the request body — an omitted key zeroes it out. So whenever the PUT is
+    actually going to fire, every field is included: the caller's new value
+    if supplied, the current value otherwise.
     """
-    # name is always required by the API even on partial updates.
-    body = {'name': p['name']}
-    changed = False
+    name_changed = p['name'] != existing.get('name')
 
-    # Allow renaming (name change) to be detected via the name param itself.
-    if p['name'] != existing.get('name'):
-        changed = True
-
-    # Scalar fields
+    scalar_changed = {}
     for param_key in ('default_vat_rate', 'default_currency', 'notes'):
         desired = p.get(param_key)
-        if desired is None:
-            continue
-        if existing.get(param_key) != desired:
-            body[param_key] = desired
-            changed = True
+        scalar_changed[param_key] = desired is not None and existing.get(param_key) != desired
 
-    # line_items — only compare when the caller supplied them
     if p.get('line_items') is not None:
         existing_items = _parse_existing_line_items(existing)
-        if _line_items_changed(desired_items, existing_items):
-            body['line_items'] = json.dumps(desired_items)
-            changed = True
+        line_items_changed = _line_items_changed(desired_items, existing_items)
+    else:
+        line_items_changed = False
+
+    changed = name_changed or any(scalar_changed.values()) or line_items_changed
+    if not changed:
+        return {}, False
+
+    body = {
+        'name': p['name'],
+        'default_vat_rate': p['default_vat_rate'] if p.get('default_vat_rate') is not None else existing.get('default_vat_rate', 0.0),
+        'default_currency': p['default_currency'] if p.get('default_currency') is not None else existing.get('default_currency', '€'),
+        'notes': p['notes'] if p.get('notes') is not None else existing.get('notes', ''),
+    }
+    if p.get('line_items') is not None:
+        body['line_items'] = json.dumps(desired_items)
+    else:
+        body['line_items'] = existing.get('line_items') or '[]'
 
     return body, changed
 

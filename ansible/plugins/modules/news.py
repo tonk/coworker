@@ -63,6 +63,20 @@ options:
     type: bool
     default: true
 
+  sidebar_color:
+    description:
+      - Hex colour code for the news item's sidebar accent (e.g. C(#3b82f6)).
+      - Like C(start_date)/C(end_date), this is resent on every update —
+        omit (or leave unset) to clear a previously set colour.
+    type: str
+
+  show_on_login:
+    description:
+      - When C(true), the item is also shown on the login screen (not just
+        the dashboard).
+    type: bool
+    default: false
+
   state:
     description:
       - C(present) ensures the news item exists with the given field values.
@@ -87,6 +101,8 @@ EXAMPLES = r"""
     start_date: "2026-06-14T00:00:00Z"
     end_date: "2026-06-15T23:59:59Z"
     active: true
+    sidebar_color: "#f59e0b"
+    show_on_login: true
     state: present
 
 # ---------------------------------------------------------------------------
@@ -175,6 +191,14 @@ news_item:
       description: Whether the item is active.
       type: bool
       sample: true
+    sidebar_color:
+      description: Hex colour code for the sidebar accent, or empty when unset.
+      type: str
+      sample: "#f59e0b"
+    show_on_login:
+      description: Whether the item is also shown on the login screen.
+      type: bool
+      sample: false
     created_at:
       description: ISO-8601 creation timestamp.
       type: str
@@ -241,6 +265,10 @@ def _needs_update(existing, params):
         return True
     if existing.get('active') != params['active']:
         return True
+    if (existing.get('sidebar_color') or '') != (params['sidebar_color'] or ''):
+        return True
+    if bool(existing.get('show_on_login')) != bool(params['show_on_login']):
+        return True
     return False
 
 
@@ -251,6 +279,8 @@ def _build_payload(params):
         start_date=params['start_date'] or None,
         end_date=params['end_date'] or None,
         active=params['active'],
+        sidebar_color=params['sidebar_color'] or '',
+        show_on_login=params['show_on_login'],
     )
 
 
@@ -266,6 +296,8 @@ def run_module():
         start_date=dict(type='str'),
         end_date=dict(type='str'),
         active=dict(type='bool', default=True),
+        sidebar_color=dict(type='str'),
+        show_on_login=dict(type='bool', default=False),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
 

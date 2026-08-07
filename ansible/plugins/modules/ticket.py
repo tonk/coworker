@@ -101,6 +101,15 @@ options:
       - Only settable after creation; ignored when creating a new ticket.
     type: str
 
+  is_spam:
+    description:
+      - Whether the ticket is marked as spam.
+      - Marking as spam also closes the ticket; this is applied via the
+        dedicated spam endpoint rather than the general update endpoint,
+        which has no C(is_spam) field of its own.
+      - Ignored when creating a new ticket (new tickets are never spam).
+    type: bool
+
   state:
     description:
       - C(present) ensures the ticket exists with the specified attributes.
@@ -183,6 +192,14 @@ EXAMPLES = r"""
     status: pending_close
     close_at: "2026-06-20"
 
+- name: Mark a ticket as spam (also closes it)
+  ansilabnl.warmdesk.ticket:
+    warmdesk_url: https://warmdesk.example.com
+    warmdesk_token: "{{ warmdesk_token }}"
+    customer: Acme Corporation
+    title: "Buy cheap watches now!!!"
+    is_spam: true
+
 - name: Delete a ticket
   ansilabnl.warmdesk.ticket:
     warmdesk_url: https://warmdesk.example.com
@@ -257,6 +274,21 @@ ticket:
       returned: always
       type: str
       sample: "2026-06-20T12:00:00Z"
+    is_spam:
+      description: Whether the ticket is marked as spam.
+      returned: always
+      type: bool
+      sample: false
+    sla_response_breached:
+      description: Whether the SLA response deadline has been breached.
+      returned: always
+      type: bool
+      sample: false
+    sla_resolution_breached:
+      description: Whether the SLA resolution deadline has been breached.
+      returned: always
+      type: bool
+      sample: false
     created_at:
       description: ISO-8601 creation timestamp.
       returned: always
@@ -417,6 +449,7 @@ def run_module():
         group=dict(type='str'),
         reminder_at=dict(type='str'),
         close_at=dict(type='str'),
+        is_spam=dict(type='bool'),
         state=dict(type='str', default='present', choices=['present', 'absent']),
     ))
 
@@ -486,6 +519,12 @@ def run_module():
         user_errors = []
         update_body, changed = _build_update_body(p, existing, user_errors)
 
+        spam_changed = (
+            p.get('is_spam') is not None
+            and bool(existing.get('is_spam')) != p['is_spam']
+        )
+        changed = changed or spam_changed
+
         if not changed:
             module.exit_json(changed=False, ticket=existing)
 
@@ -495,7 +534,18 @@ def run_module():
         if user_errors:
             module.fail_json(msg='Failed to resolve users: %s' % '; '.join(user_errors))
 
-        ticket = client.put('/customers/%d/tickets/%d' % (customer_id, existing['id']), update_body)
+        ticket = existing
+        if update_body:
+            ticket = client.put('/customers/%d/tickets/%d' % (customer_id, existing['id']), update_body)
+
+        # is_spam has no field on the update endpoint — apply it via the
+        # dedicated spam routes instead.
+        if spam_changed:
+            if p['is_spam']:
+                ticket = client.post('/customers/%d/tickets/%d/spam' % (customer_id, existing['id']))
+            else:
+                ticket = client.delete('/customers/%d/tickets/%d/spam' % (customer_id, existing['id']))
+
         module.exit_json(changed=True, ticket=ticket)
 
     except WarmDeskAPIError as e:

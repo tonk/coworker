@@ -23,6 +23,9 @@ notes:
     supported; use C(state=absent) then C(state=present) with the new name.
   - C(rows) are matched by position.  Supplying fewer rows than the existing
     macro silently truncates; supplying more rows appends them.
+  - The API rejects an empty macro library outright, so C(state=absent)
+    fails with a clear message when asked to remove the last remaining
+    macro — add a replacement first, or leave at least one macro in place.
 
 extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
@@ -328,8 +331,19 @@ def run_module():
             existing = _find_macro(library, p['name'])
             if existing is None:
                 module.exit_json(changed=False, macro=None, library=library)
+            remaining = [m for m in library['macros'] if m.get('name') != p['name']]
+            if not remaining:
+                # UpdateTimeMacroLibrary rejects an empty macros array outright
+                # (HTTP 400 "invalid macro library") — surface that up front
+                # with an actionable message instead of a raw API error.
+                module.fail_json(
+                    msg='Cannot remove macro "%s": it is the last macro in the '
+                        'library, and the API does not allow an empty macro '
+                        'library. Add a replacement macro first, or leave at '
+                        'least one macro in place.' % p['name']
+                )
             if not module.check_mode:
-                library['macros'] = [m for m in library['macros'] if m.get('name') != p['name']]
+                library['macros'] = remaining
                 client.put('/time-entries/macro-library', {'library': library})
             module.exit_json(changed=True, macro=None, library=library)
 

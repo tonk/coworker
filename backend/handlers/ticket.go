@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,6 +14,30 @@ import (
 	"github.com/tonk/warmdesk/services"
 	"gorm.io/gorm/clause"
 )
+
+// parseNullableTimestamp distinguishes an omitted JSON key (raw is empty —
+// caller wants to leave the field untouched) from an explicit "null" (caller
+// wants to clear it) or a real RFC3339 timestamp — a distinction a plain
+// *time.Time field can't make, since both an absent key and an explicit null
+// unmarshal to a nil pointer. ok is false when the key was absent or held an
+// unparseable value; t is nil when the caller asked to clear the field.
+func parseNullableTimestamp(raw json.RawMessage) (t *time.Time, ok bool) {
+	if len(raw) == 0 {
+		return nil, false
+	}
+	if string(raw) == "null" {
+		return nil, true
+	}
+	var s string
+	if err := json.Unmarshal(raw, &s); err != nil {
+		return nil, false
+	}
+	parsed, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		return nil, false
+	}
+	return &parsed, true
+}
 
 // ListTickets GET /api/v1/customers/:customerId/tickets
 func ListTickets(c *gin.Context) {
@@ -281,17 +306,17 @@ func UpdateTicket(c *gin.Context) {
 		return
 	}
 
-		var req struct {
-		Title       *string    `json:"title"`
-		Description *string    `json:"description"`
-		Type        *string    `json:"type"`
-		Status      *string    `json:"status"`
-		Priority    *string    `json:"priority"`
-		AssignedTo  *uint      `json:"assigned_to_id"`
-		OwnerID     *uint      `json:"owner_id"`
-		GroupID     *uint      `json:"group_id"`
-		ReminderAt  *time.Time `json:"reminder_at"`
-		CloseAt     *time.Time `json:"close_at"`
+	var req struct {
+		Title       *string         `json:"title"`
+		Description *string         `json:"description"`
+		Type        *string         `json:"type"`
+		Status      *string         `json:"status"`
+		Priority    *string         `json:"priority"`
+		AssignedTo  *uint           `json:"assigned_to_id"`
+		OwnerID     *uint           `json:"owner_id"`
+		GroupID     *uint           `json:"group_id"`
+		ReminderAt  json.RawMessage `json:"reminder_at"`
+		CloseAt     json.RawMessage `json:"close_at"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -322,15 +347,11 @@ func UpdateTicket(c *gin.Context) {
 			updates["status"] = *req.Status
 		}
 	}
-	if req.ReminderAt != nil {
-		updates["reminder_at"] = req.ReminderAt
+	if t, ok := parseNullableTimestamp(req.ReminderAt); ok {
+		updates["reminder_at"] = t // nil clears
 	}
-	if req.CloseAt != nil {
-		if req.CloseAt.IsZero() {
-			updates["close_at"] = nil
-		} else {
-			updates["close_at"] = req.CloseAt
-		}
+	if t, ok := parseNullableTimestamp(req.CloseAt); ok {
+		updates["close_at"] = t // nil clears
 	}
 	if req.Priority != nil {
 		validPriorities := map[string]bool{"low": true, "medium": true, "high": true, "critical": true}
@@ -940,17 +961,17 @@ func UpdateInboxTicket(c *gin.Context) {
 	}
 
 	var req struct {
-		Title       *string    `json:"title"`
-		Description *string    `json:"description"`
-		Type        *string    `json:"type"`
-		Status      *string    `json:"status"`
-		Priority    *string    `json:"priority"`
-		AssignedTo  *uint      `json:"assigned_to_id"`
-		OwnerID     *uint      `json:"owner_id"`
-		GroupID     *uint      `json:"group_id"`
-		ReminderAt  *time.Time `json:"reminder_at"`
-		CloseAt     *time.Time `json:"close_at"`
-		CustomerID  *uint      `json:"customer_id"`
+		Title       *string         `json:"title"`
+		Description *string         `json:"description"`
+		Type        *string         `json:"type"`
+		Status      *string         `json:"status"`
+		Priority    *string         `json:"priority"`
+		AssignedTo  *uint           `json:"assigned_to_id"`
+		OwnerID     *uint           `json:"owner_id"`
+		GroupID     *uint           `json:"group_id"`
+		ReminderAt  json.RawMessage `json:"reminder_at"`
+		CloseAt     json.RawMessage `json:"close_at"`
+		CustomerID  *uint           `json:"customer_id"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -981,15 +1002,11 @@ func UpdateInboxTicket(c *gin.Context) {
 			updates["status"] = *req.Status
 		}
 	}
-	if req.ReminderAt != nil {
-		updates["reminder_at"] = req.ReminderAt
+	if t, ok := parseNullableTimestamp(req.ReminderAt); ok {
+		updates["reminder_at"] = t // nil clears
 	}
-	if req.CloseAt != nil {
-		if req.CloseAt.IsZero() {
-			updates["close_at"] = nil
-		} else {
-			updates["close_at"] = req.CloseAt
-		}
+	if t, ok := parseNullableTimestamp(req.CloseAt); ok {
+		updates["close_at"] = t // nil clears
 	}
 	if req.Priority != nil {
 		validPriorities := map[string]bool{"low": true, "medium": true, "high": true, "critical": true}
