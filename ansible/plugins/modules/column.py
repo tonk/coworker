@@ -50,7 +50,7 @@ extends_documentation_fragment:
   - ansilabnl.warmdesk.connection
 notes:
   - Check mode is fully supported; no changes are made to the server.
-  - Clearing the WIP limit on an C(existing) column (C(wip_limit: 0)) is sent
+  - Clearing the WIP limit on an C(existing) column (C(wip_limit=0)) is sent
     as C(wip_limit_clear=true) rather than C(wip_limit=0) — the update
     endpoint rejects C(wip_limit) values below 1 outright, unlike creation,
     which normalises C(0) to "no limit" automatically.
