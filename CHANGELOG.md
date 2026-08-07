@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.23.1 — 2026-08-07
+
+### Fixed
+- **CI builds for the server and Linux client were failing** — `frontend/package-lock.json` had been mistakenly untracked from git in a prior cleanup (grouped with an unrelated generated PNG) and added to `.gitignore`. Without it, `actions/setup-node`'s dependency caching and `npm ci` both had nothing to work from. The lockfile is re-tracked; no user-facing change.
+
 ## v0.23.0 — 2026-08-07
 
 ### Added

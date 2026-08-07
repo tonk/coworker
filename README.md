@@ -8,10 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.23.0)
+## Latest release (v0.23.1)
 
-- **Added** — calls (1:1 and group) can now be popped out into a small floating, draggable, resizable window instead of always covering the full screen.
-- **Fixed** — the "New message!" tab-title blink now names its source (which conversation or project) instead of leaving you to guess.
+- **Fixed** — CI builds for the server and Linux client (broken by an accidentally untracked `package-lock.json`) are working again. No user-facing change.
 
 ## Experiment
 
