@@ -37,7 +37,6 @@ frontend/src-tauri/gen/
 # Packaged installers/bundles (AppImage, DMG, MSI, NSIS, deb, rpm, etc.)
 frontend/src-tauri/target/release/bundle/
 frontend/src-tauri/Cargo.lock
-frontend/package-lock.json
 
 # ── Runtime data ─────────────────────────────────────────────────────────────
 *.db
