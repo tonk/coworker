@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.24.1 — 2026-08-07
+
+### Fixed
+- **The Ansible collection failed `ansible-doc`/`ansible-lint` entirely** — a documentation note on the `column` module contained an unescaped `wip_limit: 0` (a colon followed by a space in plain prose text), which YAML parses as an attempted mapping key. This broke parsing for the whole collection, not just that one module, since tooling typically loads every module's documentation in a single pass.
+
 ## v0.24.0 — 2026-08-07
 
 ### Added

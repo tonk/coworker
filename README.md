@@ -8,8 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.24.0)
+## Latest release (v0.24.1)
 
+- **Fixed** — a YAML syntax error in the Ansible collection's `column` module broke `ansible-doc`/`ansible-lint` for the whole collection; also includes everything from v0.24.0 below.
 - **Fixed** — renaming a customer or toggling its hidden status, marking an invoice as sent or recording a payment, and clearing a ticket's reminder/close date no longer silently discard other data on the record.
 - **Added** — user avatars can be set at creation time via the admin API; the Ansible collection gained several previously-missing fields (customer/group avatars and billing details, ticket spam marking, contract pricing, and more).
 
