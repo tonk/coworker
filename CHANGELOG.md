@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.24.0 — 2026-08-07
+
+### Added
+- **User avatars can now be set when creating a user via the admin API**, and cleared afterward — `avatar_url` was previously ignored on creation and couldn't be cleared on update, unlike project avatars which already supported both.
+- **Ansible collection** (`ansilabnl.warmdesk`) gained several fields the API already supported but the modules didn't expose: `avatar`/`color`/billing address fields on `customer`, `avatar` on `group`, `sidebar_color` on `news`, `can_create_projects` on `user_access`, `is_spam` on `ticket`, hourly/km pricing and time-slots on `contract`, and story points / external issue link / epic on `card`.
+
+### Fixed
+- **Renaming a customer, or toggling its hidden status in Admin → Customers, silently wiped its color, billing address, VAT number, and PO reference** — the update endpoint applied every field from the request unconditionally, even ones the request never mentioned; it now only touches fields that are actually sent.
+- **Marking an invoice as sent, editing its line items, or recording a payment could silently wipe its notes and due date** — same underlying bug as the customer fix above, fixed the same way.
+- **Clicking "clear" on a ticket's reminder or close date showed a success message but didn't actually clear anything** — the server couldn't distinguish an explicit clear from the field simply being left out of the request; it now can.
+- Smaller fixes: promoting a project member's role via the API could return an incomplete user object in the response; the "black" theme couldn't be set for other users through the admin API; a freshly created webhook's API response was missing its project ID.
+- **Ansible collection**: fixed several modules that silently blanked fields they weren't touching whenever they wrote anything else (contract pricing/time-slots, sprint dates, invoice-template line items, group description); fixed fields that can't be set at card/checklist-item creation time now applying automatically via a follow-up update; fixed clearing a column's WIP limit failing outright; corrected a few stale return-value descriptions and a stale internal list of boolean settings.
+
 ## v0.23.1 — 2026-08-07
 
 ### Fixed
