@@ -1,6 +1,6 @@
 = WarmDesk — User Guide
-:revnumber: v0.22.1
-:revdate: 2026-08-06
+:revnumber: v0.23.0
+:revdate: 2026-08-07
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -796,6 +796,17 @@ WarmDesk supports two call modes in direct messages:
 In any group chat, use the camera button in the header to join the group room.
 If the server has not configured LiveKit yet, a status banner is shown in the conversation with a clear admin-facing message.
 
+==== Popping a call out into a floating window
+
+Either call type can be shrunk from the full-screen view into a small floating window, so you can keep working elsewhere while staying on the call.
+
+* Click the pop-out button (arrows pointing inward) in the call's bottom controls bar.
+* Drag the window by its top edge, or resize it from the bottom-right corner.
+* Both the move and resize handles can also be operated with the keyboard (arrow keys, Shift for larger steps) once focused.
+* Click the same button again (now arrows pointing outward) to restore full screen.
+
+The window's position and size are remembered for next time.
+
 ==== Desktop app (Linux AppImage)
 
 Camera and microphone access work in the Linux desktop app on all major distributions, including Fedora, openSUSE, and Ubuntu.
@@ -820,6 +831,8 @@ Clicking a project pre-fills all its members and the project name as a group con
 A pulsing red dot appears next to a conversation in the *Chats* sidebar section when there are messages you have not seen.
 The dot clears as soon as you open the conversation.
 The main navigation item also shows an indicator when any conversation has unread messages.
+
+While the browser tab is not focused, unread messages also blink the tab title — it names the source, e.g. "New message from Alice" or "New message in Marketing", instead of a generic notice.
 
 === Emoji reactions
 

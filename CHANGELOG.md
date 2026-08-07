@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.23.0 — 2026-08-07
+
+### Added
+- **Pop calls out into a floating window** — the WebRTC 1:1 video call and LiveKit group-call grid no longer have to cover the full browser window; a new pop-out button shrinks either into a small draggable, resizable panel (the move/resize handles also work via arrow keys) so you can keep working elsewhere during a call.
+
+### Fixed
+- **The "New message!" browser tab blink never said what it was about** — switching to the tab gave no clue which conversation or project chat triggered it, and focusing the tab only swapped the blink for an equally unexplained static "●". It now reads "New message from {name}", "New message in {project}", or "New messages (N)".
+
 ## v0.22.1 — 2026-08-06
 
 ### Fixed
