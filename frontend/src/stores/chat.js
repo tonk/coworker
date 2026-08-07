@@ -87,8 +87,13 @@ export const useChatStore = defineStore('chat', () => {
               const sender = (payload.user && (payload.user.display_name || payload.user.username)) || 'Someone'
               const body = (payload.body || '').replace(/```[\s\S]*?```|`[^`]+`/g, '[code]').slice(0, 90)
               desktopNotify(sender, body)
-              // increment global unread counter
-              addProjectChatUnread()
+              // increment global unread counter, tagged with which project/sender
+              // raised it so the tab-title blink (App.vue) can name a source
+              addProjectChatUnread({
+                projectName: payload.project_name || payload.project_slug || '',
+                projectSlug: payload.project_slug || '',
+                senderName: sender,
+              })
             }
           }
         } catch (e) {}

@@ -116,7 +116,7 @@ async function checkWelcomeNews(userID) {
     if (unseen.length) welcomeItems.value = unseen
   } catch {}
 }
-const { projectChatUnread } = useProjectChatUnread()
+const { projectChatUnread, projectChatUnreadSource } = useProjectChatUnread()
 useTrayUnread()
 const call = useWebRTCCall()
 const lkGroupCall = useLiveKitGroupCall()
@@ -196,6 +196,23 @@ function hasNewMessage() {
   return notificationsStore.hasUnread || projectChatUnread.value > 0
 }
 
+// Names the source of the pending notification(s) so the blink doesn't leave
+// the user guessing which conversation/project to go check — falls back to
+// the old generic text only when nothing more specific is known.
+function newMessageTitle() {
+  if (projectChatUnreadSource.value) {
+    return t('app.new_message_title_project', { project: projectChatUnreadSource.value.projectName || t('app.a_project') })
+  }
+  const unreadCount = notificationsStore.unreadConversations.length
+  if (unreadCount === 1 && notificationsStore.unreadSourceLabel) {
+    return t('app.new_message_title_dm', { name: notificationsStore.unreadSourceLabel })
+  }
+  if (unreadCount > 1) {
+    return t('app.new_message_title_multi', { count: unreadCount })
+  }
+  return t('app.new_message_title')
+}
+
 function stopTitleBlink() {
   if (titleBlinkTimer) {
     clearInterval(titleBlinkTimer)
@@ -206,14 +223,14 @@ function stopTitleBlink() {
 
 function renderStaticTitle() {
   const base = baseTitle()
-  document.title = hasNewMessage() ? `● ${base}` : base
+  document.title = hasNewMessage() ? `● ${newMessageTitle()}` : base
 }
 
 function startTitleBlink() {
   if (titleBlinkTimer) return
   titleBlinkTimer = setInterval(() => {
     titleBlinkOn = !titleBlinkOn
-    document.title = titleBlinkOn ? t('app.new_message_title') : baseTitle()
+    document.title = titleBlinkOn ? newMessageTitle() : baseTitle()
   }, TITLE_BLINK_MS)
 }
 

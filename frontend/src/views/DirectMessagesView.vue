@@ -526,6 +526,7 @@ import { useDateFormat } from '@/composables/useDateFormat'
 import { useChatLayout } from '@/composables/useChatLayout'
 import { useChatNotify } from '@/composables/useChatNotify'
 import { resolveAssetUrl } from '@/api/serverConfig'
+import { getOtherMember, getConversationDisplayName } from '@/utils/conversationDisplay'
 import { avatarUrl } from '@/composables/useAvatar'
 import { useCompose } from '@/composables/useCompose'
 import { QUICK_REACTION_EMOJIS } from '@/utils/emoticons'
@@ -1281,25 +1282,12 @@ function avatarBg(u) {
   return { background: AVATAR_COLORS[idx] }
 }
 
-// Returns the other participant in a 1-on-1 conversation
 function otherMember(conv) {
-  if (!conv?.members) return null
-  const m = conv.members.find(m => m.user_id !== auth.user?.id)
-  return m?.user || null
+  return getOtherMember(conv, auth.user?.id)
 }
 
-// Human-readable conversation name
 function convDisplayName(conv) {
-  if (!conv) return ''
-  if (conv.name) return conv.name
-  if (conv.is_group) {
-    return conv.members
-      ?.filter(m => m.user_id !== auth.user?.id)
-      .map(m => m.user?.display_name || m.user?.username)
-      .join(', ') || 'Group'
-  }
-  const other = otherMember(conv)
-  return other?.display_name || other?.username || 'Unknown'
+  return getConversationDisplayName(conv, auth.user?.id)
 }
 
 // Short member list for subtitle

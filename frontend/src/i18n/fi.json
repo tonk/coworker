@@ -1,7 +1,11 @@
 {
   "app": {
     "name": "WarmDesk",
-    "new_message_title": "Uusi viesti!"
+    "new_message_title": "Uusi viesti!",
+    "new_message_title_project": "Uusi viesti projektissa {project}",
+    "new_message_title_dm": "Uusi viesti käyttäjältä {name}",
+    "new_message_title_multi": "Uusia viestejä ({count})",
+    "a_project": "projekti"
   },
   "nav": {
     "dashboard": "Kojelauta",

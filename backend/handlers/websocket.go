@@ -102,7 +102,7 @@ func (h *WSHandler) HandleWS(c *gin.Context) {
 	database.DB.First(&user, claims.UserID)
 
 	hub := appws.GetOrCreateHub(project.ID)
-	client := appws.NewClient(hub, conn, user.ID, user.Username, user.DisplayName, user.AvatarURL, project.ID, claims.GlobalRole, handleIncoming)
+	client := appws.NewClient(hub, conn, user.ID, user.Username, user.DisplayName, user.AvatarURL, project.ID, project.Name, project.Slug, claims.GlobalRole, handleIncoming)
 
 	hub.Register(client)
 
@@ -149,7 +149,7 @@ func (h *WSHandler) HandleUserWS(c *gin.Context) {
 	database.DB.First(&user, claims.UserID)
 
 	hub := appws.GetOrCreateUserHub(user.ID)
-	client := appws.NewClient(hub, conn, user.ID, user.Username, user.DisplayName, user.AvatarURL, 0, claims.GlobalRole, handleUserIncoming)
+	client := appws.NewClient(hub, conn, user.ID, user.Username, user.DisplayName, user.AvatarURL, 0, "", "", claims.GlobalRole, handleUserIncoming)
 	hub.Register(client)
 
 	go client.WritePump()
@@ -197,9 +197,17 @@ func handleIncoming(client *appws.Client, raw []byte) {
 		database.DB.Create(&chatMsg)
 		database.DB.Preload("User").First(&chatMsg, chatMsg.ID)
 
+		// The frontend's title-blink indicator needs to name which project a chat
+		// notification came from; ChatMessage.Project is json:"-" (never serialized
+		// on its own), so it's added as sibling fields here rather than exposing the
+		// full Project on every chat API response.
 		appws.BroadcastToProject(client.ProjectID(), appws.Message{
-			Type:    appws.TypeChatMessageCreated,
-			Payload: chatMsg,
+			Type: appws.TypeChatMessageCreated,
+			Payload: struct {
+				models.ChatMessage
+				ProjectName string `json:"project_name"`
+				ProjectSlug string `json:"project_slug"`
+			}{ChatMessage: chatMsg, ProjectName: client.ProjectName(), ProjectSlug: client.ProjectSlug()},
 		})
 
 		if notifSvc != nil {

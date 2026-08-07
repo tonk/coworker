@@ -24,13 +24,15 @@ type Client struct {
 	displayName string
 	avatarURL   string
 	projectID   uint
+	projectName string
+	projectSlug string
 	globalRole  string
 
 	// injected handler for incoming chat messages
 	onMessage func(client *Client, raw []byte)
 }
 
-func NewClient(hub *Hub, conn *websocket.Conn, userID uint, username, displayName, avatarURL string, projectID uint, globalRole string, onMessage func(*Client, []byte)) *Client {
+func NewClient(hub *Hub, conn *websocket.Conn, userID uint, username, displayName, avatarURL string, projectID uint, projectName, projectSlug, globalRole string, onMessage func(*Client, []byte)) *Client {
 	return &Client{
 		hub:         hub,
 		conn:        conn,
@@ -40,6 +42,8 @@ func NewClient(hub *Hub, conn *websocket.Conn, userID uint, username, displayNam
 		displayName: displayName,
 		avatarURL:   avatarURL,
 		projectID:   projectID,
+		projectName: projectName,
+		projectSlug: projectSlug,
 		globalRole:  globalRole,
 		onMessage:   onMessage,
 	}
@@ -100,10 +104,12 @@ func (c *Client) WritePump() {
 	}
 }
 
-func (c *Client) UserID() uint       { return c.userID }
-func (c *Client) ProjectID() uint    { return c.projectID }
-func (c *Client) GlobalRole() string { return c.globalRole }
-func (c *Client) Username() string   { return c.username }
+func (c *Client) UserID() uint        { return c.userID }
+func (c *Client) ProjectID() uint     { return c.projectID }
+func (c *Client) ProjectName() string { return c.projectName }
+func (c *Client) ProjectSlug() string { return c.projectSlug }
+func (c *Client) GlobalRole() string  { return c.globalRole }
+func (c *Client) Username() string    { return c.username }
 func (c *Client) DisplayName() string { return c.displayName }
 
 func (c *Client) Send(data []byte) {

@@ -1,7 +1,11 @@
 {
   "app": {
     "name": "WarmDesk",
-    "new_message_title": "Nytt meddelande!"
+    "new_message_title": "Nytt meddelande!",
+    "new_message_title_project": "Nytt meddelande i {project}",
+    "new_message_title_dm": "Nytt meddelande från {name}",
+    "new_message_title_multi": "Nya meddelanden ({count})",
+    "a_project": "ett projekt"
   },
   "nav": {
     "dashboard": "Dashboard",
