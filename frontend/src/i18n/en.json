@@ -1505,7 +1505,11 @@
     "peer_screen": "{name}'s screen",
     "invite_sent": "Invite sent",
     "nobody_online": "No other members are currently online",
-    "user_offline": "User is offline"
+    "user_offline": "User is offline",
+    "pop_out_window": "Pop out to floating window",
+    "restore_fullscreen": "Restore to full screen",
+    "move_window": "Move window",
+    "resize_window": "Resize window"
   },
   "shortcuts": {
     "title": "Keyboard Shortcuts",

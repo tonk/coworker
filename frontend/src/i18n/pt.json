@@ -1387,7 +1387,11 @@
     "peer_screen": "Ecrã de {name}",
     "invite_sent": "Convite enviado",
     "nobody_online": "De momento, não há outros membros online",
-    "user_offline": "O utilizador está offline"
+    "user_offline": "O utilizador está offline",
+    "pop_out_window": "Destacar em janela flutuante",
+    "restore_fullscreen": "Restaurar para ecrã inteiro",
+    "move_window": "Mover janela",
+    "resize_window": "Redimensionar janela"
   },
   "shortcuts": {
     "title": "Atalhos de teclado",

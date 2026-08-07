@@ -1387,7 +1387,11 @@
     "peer_screen": "{name}s skærm",
     "invite_sent": "Invitation sendt",
     "nobody_online": "Ingen andre medlemmer er online i øjeblikket",
-    "user_offline": "Brugeren er offline"
+    "user_offline": "Brugeren er offline",
+    "pop_out_window": "Flyt til flydende vindue",
+    "restore_fullscreen": "Gendan til fuld skærm",
+    "move_window": "Flyt vindue",
+    "resize_window": "Skift vinduesstørrelse"
   },
   "shortcuts": {
     "title": "Tastaturgenveje",

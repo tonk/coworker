@@ -1387,7 +1387,11 @@
     "peer_screen": "Scherm van {name}",
     "invite_sent": "Uitnodiging verzonden",
     "nobody_online": "Er zijn momenteel geen andere leden online",
-    "user_offline": "Gebruiker is offline"
+    "user_offline": "Gebruiker is offline",
+    "pop_out_window": "Loskoppelen naar zwevend venster",
+    "restore_fullscreen": "Terug naar volledig scherm",
+    "move_window": "Venster verplaatsen",
+    "resize_window": "Venster van grootte veranderen"
   },
   "shortcuts": {
     "title": "Sneltoetsen",

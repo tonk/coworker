@@ -1387,7 +1387,11 @@
     "peer_screen": "Bildschirm von {name}",
     "invite_sent": "Einladung gesendet",
     "nobody_online": "Derzeit sind keine anderen Mitglieder online",
-    "user_offline": "Benutzer ist offline"
+    "user_offline": "Benutzer ist offline",
+    "pop_out_window": "In schwebendes Fenster lösen",
+    "restore_fullscreen": "Vollbild wiederherstellen",
+    "move_window": "Fenster verschieben",
+    "resize_window": "Fenstergröße ändern"
   },
   "shortcuts": {
     "title": "Tastenkürzel",

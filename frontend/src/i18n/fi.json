@@ -1387,7 +1387,11 @@
     "peer_screen": "Henkilön {name} näyttö",
     "invite_sent": "Kutsu lähetetty",
     "nobody_online": "Muita jäseniä ei ole tällä hetkellä paikalla",
-    "user_offline": "Käyttäjä on poissa"
+    "user_offline": "Käyttäjä on poissa",
+    "pop_out_window": "Irrota kelluvaan ikkunaan",
+    "restore_fullscreen": "Palauta koko näyttöön",
+    "move_window": "Siirrä ikkunaa",
+    "resize_window": "Muuta ikkunan kokoa"
   },
   "shortcuts": {
     "title": "Pikanäppäimet",

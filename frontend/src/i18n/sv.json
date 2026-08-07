@@ -1387,7 +1387,11 @@
     "peer_screen": "{name}s skärm",
     "invite_sent": "Inbjudan skickad",
     "nobody_online": "Inga andra medlemmar är online just nu",
-    "user_offline": "Användaren är offline"
+    "user_offline": "Användaren är offline",
+    "pop_out_window": "Flytta till flytande fönster",
+    "restore_fullscreen": "Återställ till helskärm",
+    "move_window": "Flytta fönster",
+    "resize_window": "Ändra fönsterstorlek"
   },
   "shortcuts": {
     "title": "Tangentbordsgenvägar",

@@ -17,8 +17,17 @@
       </div>
 
       <!-- ── LiveKit: active (grid) ───────────────────────────────────────── -->
-      <div v-else-if="lkState.phase === 'active'" class="call-video-chat-row">
+      <div v-else-if="lkState.phase === 'active'" class="call-video-chat-row" :class="{ 'is-windowed': isWindowed }" :style="windowStyle">
         <div class="call-stage lk-grid-overlay" @click.self="closeInvitePicker">
+        <div
+          v-if="isWindowed"
+          class="call-window-drag-handle"
+          role="button"
+          tabindex="0"
+          :aria-label="$t('call.move_window')"
+          @pointerdown="onWindowDragStart"
+          @keydown="onWindowDragHandleKeydown"
+        ></div>
         <div class="lk-grid-top">
           <div class="remote-name">{{ lkState.title || $t('call.group_call') }}</div>
           <div class="call-duration">{{ formattedLkDuration }}</div>
@@ -63,6 +72,14 @@
         </div>
 
         <div class="video-controls">
+          <button
+            class="vc-btn"
+            :aria-label="isWindowed ? $t('call.restore_fullscreen') : $t('call.pop_out_window')"
+            @click.stop="toggleWindowed"
+          >
+            <svg v-if="isWindowed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/></svg>
+          </button>
           <button
             :class="['vc-btn', { active: showCallChat }]"
             :aria-label="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
@@ -122,6 +139,15 @@
             </svg>
           </button>
         </div>
+        <div
+          v-if="isWindowed"
+          class="call-window-resize-handle"
+          role="button"
+          tabindex="0"
+          :aria-label="$t('call.resize_window')"
+          @pointerdown.stop="onWindowResizeStart"
+          @keydown.stop="onWindowResizeHandleKeydown"
+        ></div>
         </div>
         <CallChatSidebar
           v-if="showCallChat && activeCallConvId"
@@ -131,8 +157,17 @@
       </div>
 
       <!-- ── VIDEO OVERLAY (active + video) — WebRTC 1:1 ─────────────────────── -->
-      <div v-else-if="state.phase === 'active' && state.hasVideo" class="call-video-chat-row">
+      <div v-else-if="state.phase === 'active' && state.hasVideo" class="call-video-chat-row" :class="{ 'is-windowed': isWindowed }" :style="windowStyle">
         <div class="call-stage video-overlay">
+        <div
+          v-if="isWindowed"
+          class="call-window-drag-handle"
+          role="button"
+          tabindex="0"
+          :aria-label="$t('call.move_window')"
+          @pointerdown="onWindowDragStart"
+          @keydown="onWindowDragHandleKeydown"
+        ></div>
         <!-- Remote video fills the background; screen shares are fit (not cropped) since
              their aspect ratio rarely matches the viewport, unlike a camera feed -->
         <video ref="remoteVideo" autoplay playsinline class="remote-video" :class="{ 'remote-video--contain': state.remoteScreenSharing }"></video>
@@ -181,6 +216,14 @@
 
         <!-- Controls bar -->
         <div class="video-controls">
+          <button
+            class="vc-btn"
+            :aria-label="isWindowed ? $t('call.restore_fullscreen') : $t('call.pop_out_window')"
+            @click.stop="toggleWindowed"
+          >
+            <svg v-if="isWindowed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/></svg>
+          </button>
           <button
             :class="['vc-btn', { active: showCallChat }]"
             :aria-label="showCallChat ? $t('call.hide_chat') : $t('call.show_chat')"
@@ -243,6 +286,15 @@
             </svg>
           </button>
         </div>
+        <div
+          v-if="isWindowed"
+          class="call-window-resize-handle"
+          role="button"
+          tabindex="0"
+          :aria-label="$t('call.resize_window')"
+          @pointerdown.stop="onWindowResizeStart"
+          @keydown.stop="onWindowResizeHandleKeydown"
+        ></div>
         </div>
         <CallChatSidebar
           v-if="showCallChat && activeCallConvId"
@@ -547,6 +599,7 @@ onMounted(() => {
     _localStream.value = stream
     _applyStreams()
   })
+  window.addEventListener('resize', _onViewportResize)
 })
 
 // Re-apply when phase changes (video overlay appears after 'active' transition)
@@ -643,11 +696,157 @@ watch(
   }
 )
 
+// ── Windowed (floating, draggable/resizable) call mode ─────────────────────
+// Lets a call shrink from the full-viewport overlay into a small movable panel,
+// e.g. so the caller can keep working elsewhere while staying on the call.
+const WINDOW_GEOM_KEY = 'warmdesk_call_window_geom'
+const MIN_WINDOW_WIDTH = 280
+const MIN_WINDOW_HEIGHT = 200
+const DEFAULT_WINDOW_WIDTH = 420
+const DEFAULT_WINDOW_HEIGHT = 300
+const WINDOW_MARGIN = 20
+const WINDOW_KEY_STEP = 24
+const WINDOW_KEY_STEP_LARGE = 80
+
+function _defaultWindowGeom() {
+  const width = DEFAULT_WINDOW_WIDTH
+  const height = DEFAULT_WINDOW_HEIGHT
+  return {
+    width,
+    height,
+    x: Math.max(WINDOW_MARGIN, window.innerWidth - width - WINDOW_MARGIN),
+    y: Math.max(WINDOW_MARGIN, window.innerHeight - height - WINDOW_MARGIN),
+  }
+}
+
+function _loadWindowGeom() {
+  try {
+    const raw = localStorage.getItem(WINDOW_GEOM_KEY)
+    if (raw) {
+      const g = JSON.parse(raw)
+      if (g && Number.isFinite(g.x) && Number.isFinite(g.y) && Number.isFinite(g.width) && Number.isFinite(g.height)) return g
+    }
+  } catch { /* ignore malformed/unavailable storage */ }
+  return _defaultWindowGeom()
+}
+
+const isWindowed = ref(false)
+const windowGeom = ref(_loadWindowGeom())
+
+function _saveWindowGeom() {
+  try { localStorage.setItem(WINDOW_GEOM_KEY, JSON.stringify(windowGeom.value)) } catch { /* ignore */ }
+}
+
+function _clampWindowGeom() {
+  windowGeom.value.width = Math.min(windowGeom.value.width, window.innerWidth)
+  windowGeom.value.height = Math.min(windowGeom.value.height, window.innerHeight)
+  const maxX = Math.max(0, window.innerWidth - windowGeom.value.width)
+  const maxY = Math.max(0, window.innerHeight - windowGeom.value.height)
+  windowGeom.value.x = Math.min(Math.max(0, windowGeom.value.x), maxX)
+  windowGeom.value.y = Math.min(Math.max(0, windowGeom.value.y), maxY)
+}
+
+const windowStyle = computed(() => {
+  if (!isWindowed.value) return null
+  const g = windowGeom.value
+  return { top: `${g.y}px`, left: `${g.x}px`, width: `${g.width}px`, height: `${g.height}px`, right: 'auto', bottom: 'auto' }
+})
+
+function toggleWindowed() {
+  isWindowed.value = !isWindowed.value
+  if (isWindowed.value) {
+    _clampWindowGeom()
+    // The chat sidebar is a viewport-edge-pinned panel, not meant to share
+    // space with a small floating window — close it rather than overlap it.
+    if (showCallChat.value) setCallChat(false)
+  }
+}
+
+let _winDrag = null
+function onWindowDragStart(e) {
+  if (e.button !== 0) return
+  e.preventDefault()
+  _winDrag = { startX: e.clientX, startY: e.clientY, startLeft: windowGeom.value.x, startTop: windowGeom.value.y }
+  window.addEventListener('pointermove', onWindowDragMove)
+  window.addEventListener('pointerup', onWindowDragEnd, { once: true })
+}
+function onWindowDragMove(e) {
+  if (!_winDrag) return
+  const maxX = Math.max(0, window.innerWidth - windowGeom.value.width)
+  const maxY = Math.max(0, window.innerHeight - windowGeom.value.height)
+  windowGeom.value.x = Math.min(Math.max(0, _winDrag.startLeft + (e.clientX - _winDrag.startX)), maxX)
+  windowGeom.value.y = Math.min(Math.max(0, _winDrag.startTop + (e.clientY - _winDrag.startY)), maxY)
+}
+function onWindowDragEnd() {
+  window.removeEventListener('pointermove', onWindowDragMove)
+  _winDrag = null
+  _saveWindowGeom()
+}
+
+function onWindowDragHandleKeydown(e) {
+  const step = e.shiftKey ? WINDOW_KEY_STEP_LARGE : WINDOW_KEY_STEP
+  const maxX = Math.max(0, window.innerWidth - windowGeom.value.width)
+  const maxY = Math.max(0, window.innerHeight - windowGeom.value.height)
+  if (e.key === 'ArrowLeft') windowGeom.value.x = Math.max(0, windowGeom.value.x - step)
+  else if (e.key === 'ArrowRight') windowGeom.value.x = Math.min(maxX, windowGeom.value.x + step)
+  else if (e.key === 'ArrowUp') windowGeom.value.y = Math.max(0, windowGeom.value.y - step)
+  else if (e.key === 'ArrowDown') windowGeom.value.y = Math.min(maxY, windowGeom.value.y + step)
+  else return
+  e.preventDefault()
+  _saveWindowGeom()
+}
+
+let _winResize = null
+function onWindowResizeStart(e) {
+  if (e.button !== 0) return
+  e.preventDefault()
+  _winResize = { startX: e.clientX, startY: e.clientY, startWidth: windowGeom.value.width, startHeight: windowGeom.value.height }
+  window.addEventListener('pointermove', onWindowResizeMove)
+  window.addEventListener('pointerup', onWindowResizeEnd, { once: true })
+}
+function onWindowResizeMove(e) {
+  if (!_winResize) return
+  const maxWidth = window.innerWidth - windowGeom.value.x
+  const maxHeight = window.innerHeight - windowGeom.value.y
+  windowGeom.value.width = Math.min(Math.max(MIN_WINDOW_WIDTH, _winResize.startWidth + (e.clientX - _winResize.startX)), maxWidth)
+  windowGeom.value.height = Math.min(Math.max(MIN_WINDOW_HEIGHT, _winResize.startHeight + (e.clientY - _winResize.startY)), maxHeight)
+}
+function onWindowResizeEnd() {
+  window.removeEventListener('pointermove', onWindowResizeMove)
+  _winResize = null
+  _saveWindowGeom()
+}
+
+function onWindowResizeHandleKeydown(e) {
+  const step = e.shiftKey ? WINDOW_KEY_STEP_LARGE : WINDOW_KEY_STEP
+  const maxWidth = window.innerWidth - windowGeom.value.x
+  const maxHeight = window.innerHeight - windowGeom.value.y
+  if (e.key === 'ArrowLeft') windowGeom.value.width = Math.max(MIN_WINDOW_WIDTH, windowGeom.value.width - step)
+  else if (e.key === 'ArrowRight') windowGeom.value.width = Math.min(maxWidth, windowGeom.value.width + step)
+  else if (e.key === 'ArrowUp') windowGeom.value.height = Math.max(MIN_WINDOW_HEIGHT, windowGeom.value.height - step)
+  else if (e.key === 'ArrowDown') windowGeom.value.height = Math.min(maxHeight, windowGeom.value.height + step)
+  else return
+  e.preventDefault()
+  _saveWindowGeom()
+}
+
+function _onViewportResize() {
+  if (isWindowed.value) _clampWindowGeom()
+}
+
+// A call that ends while windowed shouldn't leave the next call starting small.
+watch([showWebRTC, showLiveKit], ([webrtc, liveKit]) => {
+  if (!webrtc && !liveKit) isWindowed.value = false
+})
+
 onUnmounted(() => {
   setRemoteStreamCallback(null)
   setLocalStreamCallback(null)
   clearInterval(_durationTimer)
   clearInterval(_lkDurTimer)
+  window.removeEventListener('resize', _onViewportResize)
+  window.removeEventListener('pointermove', onWindowDragMove)
+  window.removeEventListener('pointermove', onWindowResizeMove)
 })
 
 </script>
@@ -679,6 +878,59 @@ onUnmounted(() => {
 .call-stage.lk-grid-overlay {
   height: 100%;
 }
+
+/* ── Windowed (floating, draggable/resizable) call mode ───────────────────── */
+.call-video-chat-row.is-windowed {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.call-window-drag-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  z-index: 26;
+  cursor: move;
+}
+.call-window-drag-handle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+.call-window-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  z-index: 26;
+  cursor: nwse-resize;
+}
+.call-window-resize-handle::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid rgba(255,255,255,0.7);
+  border-bottom: 2px solid rgba(255,255,255,0.7);
+}
+.call-window-resize-handle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+/* Scale controls/pip/text down so they still fit a small floating window */
+.is-windowed .video-controls { padding: 8px 6px 10px; gap: 6px 8px; }
+.is-windowed .vc-btn { width: 34px; height: 34px; }
+.is-windowed .vc-btn svg { width: 14px; height: 14px; }
+.is-windowed .local-pip { width: 84px; height: 47px; bottom: 44px; right: 8px; }
+.is-windowed .remote-name { top: 40px; left: 10px; font-size: 13px; }
+.is-windowed .call-duration { top: 58px; left: 10px; font-size: 11px; }
+.is-windowed .lk-grid-top { padding-top: 36px; }
+.is-windowed .invite-picker { width: calc(100% - 24px); bottom: 56px; }
 
 .video-overlay {
   position: fixed;

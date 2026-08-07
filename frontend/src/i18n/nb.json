@@ -1387,7 +1387,11 @@
     "peer_screen": "{name} sin skjerm",
     "invite_sent": "Invitasjon sendt",
     "nobody_online": "Ingen andre medlemmer er pålogget for øyeblikket",
-    "user_offline": "Brukeren er frakoblet"
+    "user_offline": "Brukeren er frakoblet",
+    "pop_out_window": "Flytt til flytende vindu",
+    "restore_fullscreen": "Gjenopprett fullskjerm",
+    "move_window": "Flytt vindu",
+    "resize_window": "Endre vindusstørrelse"
   },
   "shortcuts": {
     "title": "Tastatursnarveier",

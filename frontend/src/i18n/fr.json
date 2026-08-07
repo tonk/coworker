@@ -1387,7 +1387,11 @@
     "peer_screen": "Écran de {name}",
     "invite_sent": "Invitation envoyée",
     "nobody_online": "Aucun autre membre n'est actuellement en ligne",
-    "user_offline": "Utilisateur hors ligne"
+    "user_offline": "Utilisateur hors ligne",
+    "pop_out_window": "Détacher dans une fenêtre flottante",
+    "restore_fullscreen": "Revenir au plein écran",
+    "move_window": "Déplacer la fenêtre",
+    "resize_window": "Redimensionner la fenêtre"
   },
   "shortcuts": {
     "title": "Raccourcis clavier",

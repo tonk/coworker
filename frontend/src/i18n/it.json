@@ -1387,7 +1387,11 @@
     "peer_screen": "Schermo di {name}",
     "invite_sent": "Invito inviato",
     "nobody_online": "Nessun altro membro è attualmente online",
-    "user_offline": "L'utente è offline"
+    "user_offline": "L'utente è offline",
+    "pop_out_window": "Sgancia in finestra flottante",
+    "restore_fullscreen": "Ripristina schermo intero",
+    "move_window": "Sposta finestra",
+    "resize_window": "Ridimensiona finestra"
   },
   "shortcuts": {
     "title": "Scorciatoie da tastiera",

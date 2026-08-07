@@ -1387,7 +1387,11 @@
     "peer_screen": "Skjár {name}",
     "invite_sent": "Boð sent",
     "nobody_online": "Engir aðrir meðlimir eru á netinu núna",
-    "user_offline": "Notandinn er ekki á netinu"
+    "user_offline": "Notandinn er ekki á netinu",
+    "pop_out_window": "Losa í fljótandi glugga",
+    "restore_fullscreen": "Fara aftur í fullan skjá",
+    "move_window": "Færa glugga",
+    "resize_window": "Breyta stærð glugga"
   },
   "shortcuts": {
     "title": "Lyklaborðsflýtilyklar",

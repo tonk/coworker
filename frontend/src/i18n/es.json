@@ -1387,7 +1387,11 @@
     "peer_screen": "Pantalla de {name}",
     "invite_sent": "Invitación enviada",
     "nobody_online": "No hay otros miembros conectados en este momento",
-    "user_offline": "El usuario está desconectado"
+    "user_offline": "El usuario está desconectado",
+    "pop_out_window": "Separar en ventana flotante",
+    "restore_fullscreen": "Restaurar a pantalla completa",
+    "move_window": "Mover ventana",
+    "resize_window": "Cambiar tamaño de la ventana"
   },
   "shortcuts": {
     "title": "Atajos de teclado",
