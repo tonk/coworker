@@ -884,9 +884,9 @@ func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
 		companyName = "WarmDesk"
 	}
 
-	subject := companyName + " — WarmDesk backup succeeded"
+	subject := companyName + " — backup succeeded"
 	if !success {
-		subject = companyName + " — WarmDesk backup failed"
+		subject = companyName + " — backup failed"
 	}
 
 	htmlBody := buildBackupEmailHTML(success, filename, errMsg, t, backupFiles)
@@ -897,7 +897,7 @@ func sendBackupEmail(success bool, filename, errMsg string, t time.Time) {
 
 func buildBackupEmailText(success bool, filename, errMsg string, t time.Time, companyName string, files []BackupInfo) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "%s — WarmDesk Backup Notification\n", companyName)
+	fmt.Fprintf(&b, "%s — Backup Notification\n", companyName)
 	b.WriteString("========================================\n\n")
 	if success {
 		b.WriteString("Status:    SUCCESS\n")
