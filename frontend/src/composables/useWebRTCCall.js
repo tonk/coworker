@@ -191,7 +191,7 @@ function setLocalStreamCallback(fn) {
   if (_localStream && typeof fn === 'function') fn(_localStream)
 }
 
-async function startCall(userId, userName, avatar, convId) {
+async function startCall(userId, userName, avatar, convId, wantVideo = true) {
   if (_s.phase !== 'idle' || isLiveKitCallActive()) return
 
   _s.remoteUserId = userId
@@ -208,7 +208,7 @@ async function startCall(userId, userName, avatar, convId) {
 
   let stream, hasVideo, iceServers
   try {
-    ;[{ stream, hasVideo }, iceServers] = await Promise.all([_getMedia(true), _loadIceServers()])
+    ;[{ stream, hasVideo }, iceServers] = await Promise.all([_getMedia(wantVideo), _loadIceServers()])
   } catch {
     clearTimeout(_ringTimeout); _ringTimeout = null
     _s.errorMsg = 'no_mic'

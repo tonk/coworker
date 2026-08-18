@@ -245,10 +245,17 @@
           </div>
           <!-- Call button — 1-on-1 only -->
           <div v-if="!activeConv.is_group" class="call-btn-group" ref="callBtnGroupRef">
-            <button class="add-member-btn call-btn-header" :disabled="!otherUserOnline" :aria-label="otherUserOnline ? $t('call.start_call') : $t('call.user_offline')" :title="otherUserOnline ? $t('call.start_call') : $t('call.user_offline')" @click="initiateCall">
+            <button class="add-member-btn call-btn-header" :disabled="!otherUserOnline" :aria-label="otherUserOnline ? $t('call.start_call') : $t('call.user_offline')" :title="otherUserOnline ? $t('call.start_call') : $t('call.user_offline')" @click="initiateCall(true)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7"/>
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </button>
+            <button class="add-member-btn voice-btn-header" :disabled="!otherUserOnline" :aria-label="otherUserOnline ? $t('call.start_voice_call') : $t('call.user_offline')" :title="otherUserOnline ? $t('call.start_voice_call') : $t('call.user_offline')" @click="initiateCall(false)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
               </svg>
             </button>
             <button class="add-member-btn call-settings-chevron" :aria-label="$t('call.settings')" :title="$t('call.settings')" @click.stop="toggleCallSettings">
@@ -258,10 +265,17 @@
           </div>
           <!-- Group video — LiveKit room -->
           <div v-else-if="activeConv.is_group" class="call-btn-group" ref="groupCallBtnGroupRef">
-            <button class="add-member-btn call-btn-header" :aria-label="$t('call.group_video')" :title="$t('call.group_video')" @click="initiateGroupCall">
+            <button class="add-member-btn call-btn-header" :aria-label="$t('call.group_video')" :title="$t('call.group_video')" @click="initiateGroupCall(true)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="23 7 16 12 23 17 23 7"/>
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </button>
+            <button class="add-member-btn voice-btn-header" :aria-label="$t('call.group_voice_call')" :title="$t('call.group_voice_call')" @click="initiateGroupCall(false)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
               </svg>
             </button>
             <button class="add-member-btn call-settings-chevron" :aria-label="$t('call.settings')" :title="$t('call.settings')" @click.stop="toggleGroupCallSettings">
@@ -592,7 +606,7 @@ function toggleGroupCallSettings() {
   showGroupCallSettings.value = true
 }
 
-function initiateCall() {
+function initiateCall(wantVideo = true) {
   if (!activeConv.value || activeConv.value.is_group) return
   const other = otherMember(activeConv.value)
   if (!other) return
@@ -604,11 +618,12 @@ function initiateCall() {
     other.id,
     other.display_name || other.username,
     getAvatar(other),
-    activeConv.value.id
+    activeConv.value.id,
+    wantVideo
   )
 }
 
-function initiateGroupCall() {
+function initiateGroupCall(wantVideo = true) {
   const c = activeConv.value
   if (!c?.is_group || (c.members?.length ?? 0) < 2) return
   const othersOnline = (c.members || []).some(
@@ -623,7 +638,7 @@ function initiateGroupCall() {
     name: m.user?.display_name || m.user?.username || '',
     avatar: getAvatar(m.user) || '',
   }))
-  void _joinGroupCall(c.id, convDisplayName(c), profiles)
+  void _joinGroupCall(c.id, convDisplayName(c), profiles, wantVideo)
 }
 
 const showGroupCallBanner = computed(() => {
@@ -1763,12 +1778,13 @@ function dayLabel(dateStr) {
   transition: all .15s;
 }
 .add-member-btn:hover { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
-.call-btn-header:hover { background: #22c55e !important; border-color: #22c55e !important; }
-.call-btn-header:disabled { opacity: .35; cursor: default; pointer-events: auto; }
-.call-btn-header:disabled:hover { background: transparent !important; border-color: var(--color-border) !important; }
+.call-btn-header:hover, .voice-btn-header:hover { background: #22c55e !important; border-color: #22c55e !important; }
+.call-btn-header:disabled, .voice-btn-header:disabled { opacity: .35; cursor: default; pointer-events: auto; }
+.call-btn-header:disabled:hover, .voice-btn-header:disabled:hover { background: transparent !important; border-color: var(--color-border) !important; }
 .call-btn-group { display: flex; align-items: center; gap: 1px; }
 .call-settings-chevron { width: 18px !important; padding: 0 !important; border-left: none !important; border-radius: 0 6px 6px 0 !important; }
 .call-btn-group .call-btn-header { border-radius: 6px 0 0 6px !important; }
+.call-btn-group .voice-btn-header { border-radius: 0 !important; border-left: none !important; }
 
 /* Add member panel */
 .add-member-panel {

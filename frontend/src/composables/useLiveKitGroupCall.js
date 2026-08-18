@@ -169,8 +169,9 @@ function _clearToIdle() {
  * @param {number} convId
  * @param {string} [title] header label
  * @param {{ identity: string|number, name?: string, avatar?: string }[]} [participantProfiles]
+ * @param {boolean} [wantVideo] whether to turn on the camera on join (voice-only when false)
  */
-async function joinGroupCall(convId, title = '', participantProfiles = []) {
+async function joinGroupCall(convId, title = '', participantProfiles = [], wantVideo = true) {
   if (_s.phase === 'connecting' || _s.phase === 'active') return
   if (isWebRTCCallBusy()) return
   setLiveKitCallActive(true)
@@ -234,11 +235,13 @@ async function joinGroupCall(convId, title = '', participantProfiles = []) {
     } catch {}
     await room.localParticipant.setMicrophoneEnabled(true, _lkAudioOptions())
     let hasVideo = false
-    try {
-      await room.localParticipant.setCameraEnabled(true, _lkVideoOptions())
-      hasVideo = true
-    } catch {
-      hasVideo = false
+    if (wantVideo) {
+      try {
+        await room.localParticipant.setCameraEnabled(true, _lkVideoOptions())
+        hasVideo = true
+      } catch {
+        hasVideo = false
+      }
     }
     _s.hasVideo = hasVideo
     _s.phase = 'active'
