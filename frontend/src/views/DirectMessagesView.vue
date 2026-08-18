@@ -660,14 +660,6 @@ function dismissGroupCallBanner() {
   dismissedGroupCallBanners.value = { ...dismissedGroupCallBanners.value, [convId]: true }
 }
 
-watch(
-  () => [activeConv.value?.id, groupCallState.errorMsg],
-  ([convId, err], [, prevErr]) => {
-    if (!convId || !err || err === prevErr) return
-    dismissedGroupCallBanners.value = { ...dismissedGroupCallBanners.value, [convId]: false }
-  }
-)
-
 // ── New-message toast ────────────────────────────────────────────────────────
 const chatToast = ref(null)
 let toastTimer = null
@@ -701,6 +693,15 @@ const loadingTeams = ref(false)
 
 const activeConv = ref(null)
 const activeConvId = ref(null)
+
+watch(
+  () => [activeConv.value?.id, groupCallState.errorMsg],
+  ([convId, err], [, prevErr]) => {
+    if (!convId || !err || err === prevErr) return
+    dismissedGroupCallBanners.value = { ...dismissedGroupCallBanners.value, [convId]: false }
+  }
+)
+
 const messages = ref([])
 const newMessage = ref('')
 const sending = ref(false)
