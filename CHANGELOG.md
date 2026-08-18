@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.25.0 — 2026-08-18
+
+### Added
+- **Voice-only calls** — a mic button now sits next to the camera button in both 1:1 and group chat headers, letting you start a call without ever requesting camera access. Uses the same call infrastructure as video calls (the audio-only call bar already existed as a camera-failure fallback; it's now a deliberate choice too).
+
+### Fixed
+- **A group call that failed to connect (e.g. LiveKit not configured) could throw a console error and leave the "dismissed" banner state stuck** — a `watch()` closed over a variable that was declared later in the same function, so its very first evaluation hit a reference error before the variable existed.
+- **The scheduled/manual backup notification email's subject and body repeated "WarmDesk" twice** (e.g. "WarmDesk — WarmDesk backup succeeded") when no company branding was configured, since the default company name is itself "WarmDesk".
+
 ## v0.24.1 — 2026-08-07
 
 ### Fixed
