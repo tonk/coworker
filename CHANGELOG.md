@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.25.1 — 2026-08-29
+
+### Fixed
+- **`systemctl start warmdesk` reported success even when the server was about to crash on startup** (bad `JWT_SECRET`, wildcard CORS in release mode, port already in use, etc.) — the unit used `Type=simple`, so systemd considered the job done the instant the process forked. The server now binds its listener and signals readiness to systemd only once startup has actually succeeded; both `deploy/warmdesk.service` and `deploy/multi-instance/warmdesk.service` switch to `Type=notify` to wait for it, matching how a failed `nginx` start is reported immediately.
+
 ## v0.25.0 — 2026-08-18
 
 ### Added

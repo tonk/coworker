@@ -8,11 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.25.0)
+## Latest release (v0.25.1)
 
-- **Added** — a voice-only call button next to the camera button in 1:1 and group chat headers starts a call without ever requesting camera access.
-- **Fixed** — a group call that failed to connect could throw a console error and leave the "dismissed" call-failure banner stuck.
-- **Fixed** — the backup notification email's subject and body no longer repeat "WarmDesk" twice when no company branding is configured.
+- **Fixed** — `systemctl start warmdesk` now reports a failed startup immediately (bad JWT secret, port in use, etc.) instead of silently reporting success right before the process crashes.
 
 ## Experiment
 
