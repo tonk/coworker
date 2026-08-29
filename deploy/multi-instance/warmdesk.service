@@ -5,7 +5,11 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-Type=simple
+# Type=notify: the binary calls sd_notify(READY=1) itself once it has
+# successfully bound its HTTP listener, so `systemctl start warmdesk`
+# blocks until startup actually succeeds (or fails) instead of reporting
+# success the instant the process is forked.
+Type=notify
 User=warmdesk
 Group=warmdesk
 WorkingDirectory=/opt/warmdesk
@@ -18,6 +22,7 @@ Environment=CONFIG_FILE=/etc/warmdesk/warmdesk.yaml
 ExecStart=/opt/warmdesk/warmdesk
 Restart=on-failure
 RestartSec=5
+TimeoutStartSec=30
 TimeoutStopSec=10
 
 # Security hardening

@@ -4,7 +4,12 @@ Documentation=https://github.com/tonk/warmdesk
 After=network.target
 
 [Service]
-Type=simple
+# Type=notify: the binary calls sd_notify(READY=1) itself once it has
+# successfully bound its HTTP listener, so `systemctl start warmdesk`
+# blocks until startup actually succeeds (or fails) instead of reporting
+# success the instant the process is forked — matching how `systemctl
+# start nginx` reports a failed start immediately.
+Type=notify
 User=warmdesk
 Group=warmdesk
 WorkingDirectory=/opt/warmdesk
@@ -12,6 +17,7 @@ WorkingDirectory=/opt/warmdesk
 ExecStart=/opt/warmdesk/warmdesk
 Restart=on-failure
 RestartSec=5
+TimeoutStartSec=30
 TimeoutStopSec=10
 
 # Environment — adjust to your setup

@@ -24,12 +24,15 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"errors"
 	"io/fs"
 	"log"
 	"mime"
+	"net"
+	"net/http"
 	"os"
 	"strings"
 
@@ -54,6 +57,30 @@ func init() {
 	_ = mime.AddExtensionType(".css", "text/css; charset=utf-8")
 	_ = mime.AddExtensionType(".json", "application/json; charset=utf-8")
 	_ = mime.AddExtensionType(".map", "application/json; charset=utf-8")
+}
+
+// notifySystemdReady tells systemd (when running under a Type=notify unit,
+// i.e. NOTIFY_SOCKET is set) that startup has finished successfully. Called
+// only after the HTTP listener is bound, so a startup failure (bad config,
+// port already in use) makes `systemctl start` fail synchronously instead of
+// reporting success right before the process crashes. No-op outside systemd.
+func notifySystemdReady() {
+	socket := os.Getenv("NOTIFY_SOCKET")
+	if socket == "" {
+		return
+	}
+	if strings.HasPrefix(socket, "@") {
+		socket = "\x00" + socket[1:]
+	}
+	conn, err := net.Dial("unixgram", socket)
+	if err != nil {
+		log.Printf("systemd notify failed: %v", err)
+		return
+	}
+	defer conn.Close()
+	if _, err := conn.Write([]byte("READY=1")); err != nil {
+		log.Printf("systemd notify failed: %v", err)
+	}
 }
 
 type overlayFS struct {
@@ -221,14 +248,25 @@ func main() {
 	r := router.Setup(authSvc, cfg.AllowedOrigins, webFS, cfg.APILog, cfg.UploadDir, trustedProxies, cfg.AppMode, cfg.InstanceMode)
 
 	addr := ":" + cfg.Port
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Fatalf("failed to bind to %s: %v", addr, err)
+	}
 	if cfg.TLSCert != "" && cfg.TLSKey != "" {
+		cert, err := tls.LoadX509KeyPair(cfg.TLSCert, cfg.TLSKey)
+		if err != nil {
+			log.Fatalf("failed to load TLS certificate: %v", err)
+		}
+		ln = tls.NewListener(ln, &tls.Config{Certificates: []tls.Certificate{cert}})
 		log.Printf("Starting server (HTTPS) on %s", addr)
-		if err := r.RunTLS(addr, cfg.TLSCert, cfg.TLSKey); err != nil {
+		notifySystemdReady()
+		if err := http.Serve(ln, r); err != nil {
 			log.Fatalf("server failed: %v", err)
 		}
 	} else {
 		log.Printf("Starting server on %s", addr)
-		if err := r.Run(addr); err != nil {
+		notifySystemdReady()
+		if err := http.Serve(ln, r); err != nil {
 			log.Fatalf("server failed: %v", err)
 		}
 	}
