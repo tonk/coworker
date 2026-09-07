@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.25.2 — 2026-09-07
+
+### Fixed
+- **The Calendar sub-view of Log Time had no bottom toolbar at all** — switching Log Time to the calendar view (via the 📅 button, or the "Log Time view" default setting) hid the add-row/macro/copy-previous-week/undo/export bar entirely, since it only ever existed inside the table sub-view. It's now shared between both sub-views (with the table-only "Add row" control hidden in calendar mode).
+
 ## v0.25.1 — 2026-08-29
 
 ### Fixed

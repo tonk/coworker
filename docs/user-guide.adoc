@@ -1,6 +1,6 @@
 = WarmDesk — User Guide
-:revnumber: v0.25.1
-:revdate: 2026-08-29
+:revnumber: v0.25.2
+:revdate: 2026-09-07
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
 :title-page:
@@ -1160,6 +1160,9 @@ Blocks are coloured by customer by default, or by project if you switch the *Cal
 |*−* / *+* (top-right of the calendar)
 |Zooms the grid out or in (changes how many pixels represent an hour); your zoom level is remembered on this browser.
 |===
+
+The bottom bar below the calendar is the same one used by the weekly grid: *⚡ Run macro*, *⇐ Copy Previous Week*, *↶ Undo*, and the export controls (*Export XLSX* / *Export PDF* / *Grid PDF*) all work here too — see *Icons and indicators* above and <<time-macros,Time macros>>.
+The *+ Add row* button only appears in the weekly grid, since the calendar has no row concept.
 
 Every drag/resize action can also be done by keyboard: tab to a block and press kbd:[Enter] to open its edit form, which lets you change the date, start time, end time, customer, project, activity, and distance directly.
 If the selected customer has a location with a standard travel distance, a *Location* dropdown appears to auto-fill the distance field — see <<travel-distance-auto-fill,Travel distance auto-fill>>.

@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.25.1)
+## Latest release (v0.25.2)
 
-- **Fixed** — `systemctl start warmdesk` now reports a failed startup immediately (bad JWT secret, port in use, etc.) instead of silently reporting success right before the process crashes.
+- **Fixed** — the Calendar sub-view of Log Time was missing its bottom toolbar (add row, run macro, copy previous week, undo, exports) entirely; it's now shared with the table view.
 
 ## Experiment
 
