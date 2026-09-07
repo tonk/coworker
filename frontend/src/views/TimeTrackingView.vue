@@ -699,8 +699,13 @@
             <span>{{ $t('timeTracking.macro_col_b_end') }}</span>
             <span>{{ $t('timeTracking.macro_col_a_km') }}</span>
             <span>{{ $t('timeTracking.macro_col_b_km') }}</span>
+            <span>{{ $t('timeTracking.macro_col_a_location') }}</span>
+            <span>{{ $t('timeTracking.macro_col_b_location') }}</span>
           </template>
-          <span v-else>{{ $t('timeTracking.macro_col_distance') }}</span>
+          <template v-else>
+            <span>{{ $t('timeTracking.macro_col_distance') }}</span>
+            <span>{{ $t('timeTracking.macro_col_location') }}</span>
+          </template>
           <span>{{ $t('timeTracking.macro_col_action') }}</span>
         </div>
         <div
@@ -739,10 +744,25 @@
             <input :id="'macro-day1-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day1_distance" />
             <label class="sr-only" :for="'macro-day2-dist-' + idx">{{ $t('timeTracking.macro_pattern_b_distance') }} {{ idx + 1 }}</label>
             <input :id="'macro-day2-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day2_distance" />
+            <label class="sr-only" :for="'macro-day1-loc-' + idx">{{ $t('timeTracking.macro_pattern_a_location') }} {{ idx + 1 }}</label>
+            <select :id="'macro-day1-loc-' + idx" class="form-input" v-model="row.day1_location_id" @change="onMacroLocationChange(row, 1)">
+              <option :value="null">{{ $t('timeTracking.no_location') }}</option>
+              <option v-for="l in macroLocationsForRow(row)" :key="l.id" :value="l.id">{{ formatLocationLabel(l) }} — {{ l.travel_distance }} {{ distanceUnit }}</option>
+            </select>
+            <label class="sr-only" :for="'macro-day2-loc-' + idx">{{ $t('timeTracking.macro_pattern_b_location') }} {{ idx + 1 }}</label>
+            <select :id="'macro-day2-loc-' + idx" class="form-input" v-model="row.day2_location_id" @change="onMacroLocationChange(row, 2)">
+              <option :value="null">{{ $t('timeTracking.no_location') }}</option>
+              <option v-for="l in macroLocationsForRow(row)" :key="l.id" :value="l.id">{{ formatLocationLabel(l) }} — {{ l.travel_distance }} {{ distanceUnit }}</option>
+            </select>
           </template>
           <template v-else>
             <label class="sr-only" :for="'macro-day1-dist-' + idx">{{ $t('timeTracking.macro_col_distance') }} {{ idx + 1 }}</label>
             <input :id="'macro-day1-dist-' + idx" class="form-input" type="number" min="0" step="0.1" v-model="row.day1_distance" />
+            <label class="sr-only" :for="'macro-day1-loc-' + idx">{{ $t('timeTracking.macro_col_location') }} {{ idx + 1 }}</label>
+            <select :id="'macro-day1-loc-' + idx" class="form-input" v-model="row.day1_location_id" @change="onMacroLocationChange(row, 1)">
+              <option :value="null">{{ $t('timeTracking.no_location') }}</option>
+              <option v-for="l in macroLocationsForRow(row)" :key="l.id" :value="l.id">{{ formatLocationLabel(l) }} — {{ l.travel_distance }} {{ distanceUnit }}</option>
+            </select>
           </template>
           <button class="btn btn-secondary macro-row-remove" :disabled="activeMacro.rows.length <= 1" @click="removeMacroRow(idx)" :aria-label="$t('timeTracking.macro_row_remove', { n: idx + 1 })">{{ $t('timeTracking.macro_row_remove_btn') }}</button>
         </div>
@@ -3793,6 +3813,8 @@ function makeMacroRow(description = '') {
     day2_end: '',
     day1_distance: '',
     day2_distance: '',
+    day1_location_id: null,
+    day2_location_id: null,
   }
 }
 
@@ -3832,6 +3854,8 @@ function normalizeMacroRow(rawRow, fallbackDescription = '') {
   row.day2_end = row.day2_end == null ? '' : String(row.day2_end)
   row.day1_distance = row.day1_distance == null ? '' : String(row.day1_distance)
   row.day2_distance = row.day2_distance == null ? '' : String(row.day2_distance)
+  row.day1_location_id = row.day1_location_id != null && row.day1_location_id !== '' ? Number(row.day1_location_id) : null
+  row.day2_location_id = row.day2_location_id != null && row.day2_location_id !== '' ? Number(row.day2_location_id) : null
   return row
 }
 
@@ -3895,6 +3919,13 @@ function macroById(id) {
   const numId = Number(id)
   return macroLibrary.value.macros.find(m => m.id === numId || m.id === id) || null
 }
+// Pre-load locations for every customer already used in the macro being edited,
+// so a row's Location dropdown is populated without requiring a customer re-pick.
+watch(activeMacro, (macro) => {
+  if (!macro) return
+  const ids = new Set(macro.rows.map(r => r.customer_id).filter(Boolean))
+  ids.forEach(loadLocationsForCustomer)
+}, { immediate: true })
 function defaultMacroStartDayIndex() {
   const todayIdx = weekDays.value.findIndex(d => d.isToday)
   return todayIdx >= 0 ? todayIdx : 0
@@ -4002,8 +4033,24 @@ function macroProjectsForRow(row) {
   })
 }
 
+function macroLocationsForRow(row) {
+  return locationsWithDistance(row.customer_id)
+}
+
 function onMacroCustomerChange(row) {
   row.project_id = null
+  row.day1_location_id = null
+  row.day2_location_id = null
+  loadLocationsForCustomer(row.customer_id)
+}
+
+function onMacroLocationChange(row, day) {
+  const idKey = `day${day}_location_id`
+  const distKey = `day${day}_distance`
+  const locId = row[idKey]
+  if (locId == null) return
+  const loc = (locationsByCustomer.value[row.customer_id] || []).find(l => l.id === locId)
+  if (loc && loc.travel_distance != null) row[distKey] = String(loc.travel_distance)
 }
 
 function addMacroRow() {
@@ -5896,14 +5943,14 @@ td.c-day:focus-within .cell-dist-toggle,
 .macro-head--single,
 .macro-row--single {
   display: grid;
-  grid-template-columns: 1.1fr 1.1fr 1.4fr 0.7fr 0.7fr 0.7fr 0.7fr auto;
+  grid-template-columns: 1.1fr 1.1fr 1.4fr 0.7fr 0.7fr 0.7fr 0.7fr 1fr auto;
   gap: 6px;
   align-items: center;
 }
 .macro-head--alt,
 .macro-row--alt {
   display: grid;
-  grid-template-columns: 1.1fr 1.1fr 1.4fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr auto;
+  grid-template-columns: 1.1fr 1.1fr 1.4fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 0.7fr 1fr 1fr auto;
   gap: 6px;
   align-items: center;
 }
