@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.26.0)
+## Latest release (v0.26.1)
 
-- **Added** — time-tracking macro rows now have a Location picker to auto-fill travel distance, matching the weekly grid and calendar entry forms.
+- **Fixed** — a time entry's picked location now actually persists (weekly grid, calendar modal, and macros), instead of only filling in the distance and forgetting which location it came from.
 
 ## Experiment
 

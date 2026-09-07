@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.26.1 — 2026-09-07
+
+### Fixed
+- **Picking a location for a time entry didn't actually stick** — the weekly grid's per-cell distance popup, the calendar entry modal, and macro-applied entries all only copied the location's travel distance into the distance field; the location itself was never saved, so reopening the popup/modal always showed "Choose location" again even though the distance had saved correctly. The picked location is now remembered and can be changed independently of the distance value afterward.
+
 ## v0.26.0 — 2026-09-07
 
 ### Added
