@@ -473,138 +473,6 @@
           </tfoot>
         </table>
       </div>
-
-      <!-- Bottom bar: add row + exports -->
-      <div class="tt-add-bar">
-        <template v-if="!viewingOther && !addingRow">
-          <button class="btn-add-row" @click="startAddRow">
-            ＋ {{ $t('timeTracking.add_row') }}
-          </button>
-          <div class="macro-run-wrap" ref="macroRunRef">
-            <button
-              type="button"
-              class="btn-copy-prev"
-              :class="{ 'macro-run-open': macroRunOpen }"
-              @click="toggleMacroRun"
-              :aria-expanded="String(macroRunOpen)"
-              aria-haspopup="dialog"
-              aria-controls="macro-run-panel"
-              :aria-label="$t('timeTracking.macro_run_aria')"
-            >
-              ⚡ {{ $t('timeTracking.macro_button') }}
-            </button>
-            <div
-              v-if="macroRunOpen"
-              id="macro-run-panel"
-              class="macro-run-drop"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="macro-run-title"
-            >
-              <p id="macro-run-title" class="macro-run-title">{{ $t('timeTracking.macro_run') }}</p>
-              <label class="form-label" for="macro-run-select">{{ $t('timeTracking.macro_label') }}</label>
-              <select id="macro-run-select" class="form-input" v-model="macroRunId" :aria-label="$t('timeTracking.macro_run_select')">
-                <option v-for="m in macrosSorted" :key="m.id" :value="m.id">{{ m.name }}</option>
-              </select>
-              <label class="form-label" for="macro-run-start">{{ $t('timeTracking.macro_start_on') }}</label>
-              <select id="macro-run-start" class="form-input" v-model.number="macroRunStartDay" aria-describedby="macro-run-preview-text">
-                <option v-for="(d, i) in weekDays" :key="d.iso" :value="i">{{ d.abbr }} {{ d.mmdd }}</option>
-              </select>
-              <p id="macro-run-preview-text" class="macro-run-preview">{{ macroRunPreview }}</p>
-              <button type="button" class="btn btn-primary macro-run-btn" @click="runMacroFromPopout">{{ $t('timeTracking.macro_run') }}</button>
-            </div>
-          </div>
-          <button class="btn-copy-prev" @click="copyPrevWeek" :disabled="copyingPrevWeek" :aria-label="$t('timeTracking.copy_prev_week')">
-            {{ copyingPrevWeek ? '…' : '⇐' }} {{ $t('timeTracking.copy_prev_week') }}
-          </button>
-          <button
-            type="button"
-            class="btn-undo"
-            :disabled="undoStack.length === 0 || viewingOther"
-            :title="$t('timeTracking.undo')"
-            :aria-label="$t('timeTracking.undo')"
-            @click="undoLastChange"
-          >↶ {{ $t('timeTracking.undo') }}</button>
-        </template>
-        <template v-else-if="!viewingOther">
-          <button class="btn btn-primary" @click="confirmNewRow">{{ $t('common.save') }}</button>
-          <button class="btn btn-secondary" @click="cancelNewRow">{{ $t('common.cancel') }}</button>
-        </template>
-        <div class="tt-export-group" v-if="allRows.length > 0">
-          <div class="pdf-font-group">
-            <label class="filter-label">{{ $t('report.pdf_font') }}</label>
-            <select class="form-input" v-model="pdfFont">
-              <option value="inter">Inter</option>
-              <option value="roboto">Roboto</option>
-              <option value="opensans">Open Sans</option>
-              <option value="sourcecode">Source Code Pro</option>
-              <option value="freesans">{{ $t('report.pdf_font_freesans') }}</option>
-              <option value="freeserif">{{ $t('report.pdf_font_freeserif') }}</option>
-              <option value="freemono">{{ $t('report.pdf_font_freemono') }}</option>
-            </select>
-          </div>
-          <div class="pdf-font-group">
-            <label class="filter-label">{{ $t('report.pdf_lang') }}</label>
-            <select class="form-input" v-model="pdfLang">
-              <option value="auto">{{ $t('report.pdf_lang_auto') }}</option>
-              <option value="en">English</option>
-              <option value="nl">Nederlands</option>
-              <option value="de">Deutsch</option>
-              <option value="fr">Français</option>
-              <option value="es">Español</option>
-              <option value="da">Dansk</option>
-              <option value="sv">Svenska</option>
-              <option value="nb">Norsk</option>
-              <option value="fi">Suomi</option>
-              <option value="is">Íslenska</option>
-              <option value="pt">Português</option>
-              <option value="it">Italiano</option>
-            </select>
-          </div>
-          <button class="btn btn-secondary" @click="exportSheetXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
-          <button class="btn btn-secondary" @click="exportSheetPDF">{{ $t('timeTracking.export_pdf') }}</button>
-          <div class="pdf-options-wrapper" ref="gridPdfRef">
-            <button class="pdf-options-btn" :class="{ 'is-active': gridPdfOpen }" @click="openGridPdf" :aria-expanded="String(gridPdfOpen)" aria-haspopup="dialog">
-              {{ $t('timeTracking.export_grid') }}<span class="pdf-opts-chevron" :class="{ open: gridPdfOpen }" aria-hidden="true">›</span>
-            </button>
-            <div v-if="gridPdfOpen" class="pdf-options-panel grid-pdf-panel" role="dialog" aria-modal="true" :aria-label="$t('timeTracking.export_grid')">
-              <div class="grid-pdf-section-label">{{ $t('report.period') }}</div>
-              <div class="grid-pdf-type-row" role="group" :aria-label="$t('report.period')">
-                <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'week' }" @click="gridPdfType = 'week'" role="radio" :aria-checked="String(gridPdfType === 'week')">{{ $t('report.period_week') }}</button>
-                <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'month' }" @click="gridPdfType = 'month'" role="radio" :aria-checked="String(gridPdfType === 'month')">{{ $t('report.period_month') }}</button>
-                <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'year' }" @click="gridPdfType = 'year'" role="radio" :aria-checked="String(gridPdfType === 'year')">{{ $t('report.period_year') }}</button>
-              </div>
-              <div class="grid-pdf-date-row">
-                <template v-if="gridPdfType === 'week'">
-                  <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfWeek" :aria-label="$t('timeTracking.week')">
-                    <option v-for="w in 53" :key="w" :value="w">{{ $t('timeTracking.week_n', { n: w }) }}</option>
-                  </select>
-                  <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfWeekYear" :aria-label="$t('report.year')">
-                    <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
-                  </select>
-                </template>
-                <template v-else-if="gridPdfType === 'month'">
-                  <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfMonth" :aria-label="$t('report.period_month')">
-                    <option v-for="(name, idx) in gridPdfMonthNames" :key="idx + 1" :value="idx + 1">{{ name }}</option>
-                  </select>
-                  <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfMonthYear" :aria-label="$t('report.year')">
-                    <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
-                  </select>
-                </template>
-                <template v-else>
-                  <select class="form-input pdf-option-select grid-pdf-select grid-pdf-select-full" v-model.number="gridPdfYear" :aria-label="$t('report.period_year')">
-                    <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
-                  </select>
-                </template>
-              </div>
-              <div class="pdf-options-divider" role="separator"></div>
-              <div class="grid-pdf-actions">
-                <button class="btn btn-primary grid-pdf-export-btn" @click="exportGridPDFFromPanel">{{ $t('timeTracking.export_grid') }}</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div
@@ -629,6 +497,140 @@
         @move-entry="applyCalendarEntryTimes"
         @resize-entry="applyCalendarEntryTimes"
       />
+    </div>
+
+    <!-- Bottom bar: add row (table view only) + macro run + copy prev week + undo + exports.
+         Shared between the table and calendar sub-views of Log Time - the calendar view
+         used to have no equivalent of this bar at all. -->
+    <div v-show="mode === 'sheet'" class="tt-add-bar">
+      <template v-if="!viewingOther && !addingRow">
+        <button v-if="logTimeView === 'table'" class="btn-add-row" @click="startAddRow">
+          ＋ {{ $t('timeTracking.add_row') }}
+        </button>
+        <div class="macro-run-wrap" ref="macroRunRef">
+          <button
+            type="button"
+            class="btn-copy-prev"
+            :class="{ 'macro-run-open': macroRunOpen }"
+            @click="toggleMacroRun"
+            :aria-expanded="String(macroRunOpen)"
+            aria-haspopup="dialog"
+            aria-controls="macro-run-panel"
+            :aria-label="$t('timeTracking.macro_run_aria')"
+          >
+            ⚡ {{ $t('timeTracking.macro_button') }}
+          </button>
+          <div
+            v-if="macroRunOpen"
+            id="macro-run-panel"
+            class="macro-run-drop"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="macro-run-title"
+          >
+            <p id="macro-run-title" class="macro-run-title">{{ $t('timeTracking.macro_run') }}</p>
+            <label class="form-label" for="macro-run-select">{{ $t('timeTracking.macro_label') }}</label>
+            <select id="macro-run-select" class="form-input" v-model="macroRunId" :aria-label="$t('timeTracking.macro_run_select')">
+              <option v-for="m in macrosSorted" :key="m.id" :value="m.id">{{ m.name }}</option>
+            </select>
+            <label class="form-label" for="macro-run-start">{{ $t('timeTracking.macro_start_on') }}</label>
+            <select id="macro-run-start" class="form-input" v-model.number="macroRunStartDay" aria-describedby="macro-run-preview-text">
+              <option v-for="(d, i) in weekDays" :key="d.iso" :value="i">{{ d.abbr }} {{ d.mmdd }}</option>
+            </select>
+            <p id="macro-run-preview-text" class="macro-run-preview">{{ macroRunPreview }}</p>
+            <button type="button" class="btn btn-primary macro-run-btn" @click="runMacroFromPopout">{{ $t('timeTracking.macro_run') }}</button>
+          </div>
+        </div>
+        <button class="btn-copy-prev" @click="copyPrevWeek" :disabled="copyingPrevWeek" :aria-label="$t('timeTracking.copy_prev_week')">
+          {{ copyingPrevWeek ? '…' : '⇐' }} {{ $t('timeTracking.copy_prev_week') }}
+        </button>
+        <button
+          type="button"
+          class="btn-undo"
+          :disabled="undoStack.length === 0 || viewingOther"
+          :title="$t('timeTracking.undo')"
+          :aria-label="$t('timeTracking.undo')"
+          @click="undoLastChange"
+        >↶ {{ $t('timeTracking.undo') }}</button>
+      </template>
+      <template v-else-if="!viewingOther">
+        <button class="btn btn-primary" @click="confirmNewRow">{{ $t('common.save') }}</button>
+        <button class="btn btn-secondary" @click="cancelNewRow">{{ $t('common.cancel') }}</button>
+      </template>
+      <div class="tt-export-group" v-if="allRows.length > 0">
+        <div class="pdf-font-group">
+          <label class="filter-label">{{ $t('report.pdf_font') }}</label>
+          <select class="form-input" v-model="pdfFont">
+            <option value="inter">Inter</option>
+            <option value="roboto">Roboto</option>
+            <option value="opensans">Open Sans</option>
+            <option value="sourcecode">Source Code Pro</option>
+            <option value="freesans">{{ $t('report.pdf_font_freesans') }}</option>
+            <option value="freeserif">{{ $t('report.pdf_font_freeserif') }}</option>
+            <option value="freemono">{{ $t('report.pdf_font_freemono') }}</option>
+          </select>
+        </div>
+        <div class="pdf-font-group">
+          <label class="filter-label">{{ $t('report.pdf_lang') }}</label>
+          <select class="form-input" v-model="pdfLang">
+            <option value="auto">{{ $t('report.pdf_lang_auto') }}</option>
+            <option value="en">English</option>
+            <option value="nl">Nederlands</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="da">Dansk</option>
+            <option value="sv">Svenska</option>
+            <option value="nb">Norsk</option>
+            <option value="fi">Suomi</option>
+            <option value="is">Íslenska</option>
+            <option value="pt">Português</option>
+            <option value="it">Italiano</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" @click="exportSheetXLSX">{{ $t('timeTracking.export_xlsx') }}</button>
+        <button class="btn btn-secondary" @click="exportSheetPDF">{{ $t('timeTracking.export_pdf') }}</button>
+        <div class="pdf-options-wrapper" ref="gridPdfRef">
+          <button class="pdf-options-btn" :class="{ 'is-active': gridPdfOpen }" @click="openGridPdf" :aria-expanded="String(gridPdfOpen)" aria-haspopup="dialog">
+            {{ $t('timeTracking.export_grid') }}<span class="pdf-opts-chevron" :class="{ open: gridPdfOpen }" aria-hidden="true">›</span>
+          </button>
+          <div v-if="gridPdfOpen" class="pdf-options-panel grid-pdf-panel" role="dialog" aria-modal="true" :aria-label="$t('timeTracking.export_grid')">
+            <div class="grid-pdf-section-label">{{ $t('report.period') }}</div>
+            <div class="grid-pdf-type-row" role="group" :aria-label="$t('report.period')">
+              <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'week' }" @click="gridPdfType = 'week'" role="radio" :aria-checked="String(gridPdfType === 'week')">{{ $t('report.period_week') }}</button>
+              <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'month' }" @click="gridPdfType = 'month'" role="radio" :aria-checked="String(gridPdfType === 'month')">{{ $t('report.period_month') }}</button>
+              <button class="grid-pdf-type-btn" :class="{ active: gridPdfType === 'year' }" @click="gridPdfType = 'year'" role="radio" :aria-checked="String(gridPdfType === 'year')">{{ $t('report.period_year') }}</button>
+            </div>
+            <div class="grid-pdf-date-row">
+              <template v-if="gridPdfType === 'week'">
+                <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfWeek" :aria-label="$t('timeTracking.week')">
+                  <option v-for="w in 53" :key="w" :value="w">{{ $t('timeTracking.week_n', { n: w }) }}</option>
+                </select>
+                <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfWeekYear" :aria-label="$t('report.year')">
+                  <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
+                </select>
+              </template>
+              <template v-else-if="gridPdfType === 'month'">
+                <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfMonth" :aria-label="$t('report.period_month')">
+                  <option v-for="(name, idx) in gridPdfMonthNames" :key="idx + 1" :value="idx + 1">{{ name }}</option>
+                </select>
+                <select class="form-input pdf-option-select grid-pdf-select" v-model.number="gridPdfMonthYear" :aria-label="$t('report.year')">
+                  <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
+                </select>
+              </template>
+              <template v-else>
+                <select class="form-input pdf-option-select grid-pdf-select grid-pdf-select-full" v-model.number="gridPdfYear" :aria-label="$t('report.period_year')">
+                  <option v-for="y in gridPdfYears" :key="y" :value="y">{{ y }}</option>
+                </select>
+              </template>
+            </div>
+            <div class="pdf-options-divider" role="separator"></div>
+            <div class="grid-pdf-actions">
+              <button class="btn btn-primary grid-pdf-export-btn" @click="exportGridPDFFromPanel">{{ $t('timeTracking.export_grid') }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <BaseModal
