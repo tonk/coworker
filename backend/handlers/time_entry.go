@@ -119,6 +119,7 @@ func CreateTimeEntry(c *gin.Context) {
 		ProjectID   *uint    `json:"project_id"`
 		ContractID  *uint    `json:"contract_id"`
 		TicketID    *uint    `json:"ticket_id"`
+		LocationID  *uint    `json:"location_id"`
 		Date        string   `json:"date"`
 		Minutes     int      `json:"minutes"`
 		Description string   `json:"description"`
@@ -160,6 +161,7 @@ func CreateTimeEntry(c *gin.Context) {
 		ProjectID:   req.ProjectID,
 		ContractID:  req.ContractID,
 		TicketID:    req.TicketID,
+		LocationID:  req.LocationID,
 		Date:        date,
 		Minutes:     req.Minutes,
 		Description: req.Description,
@@ -195,6 +197,7 @@ func UpdateTimeEntry(c *gin.Context) {
 		CustomerID  *uint    `json:"customer_id"`
 		ProjectID   *uint    `json:"project_id"`
 		ContractID  *uint    `json:"contract_id"`
+		LocationID  *uint    `json:"location_id"`
 		Date        string   `json:"date"`
 		Minutes     int      `json:"minutes"`
 		Description string   `json:"description"`
@@ -225,6 +228,7 @@ func UpdateTimeEntry(c *gin.Context) {
 	entry.CustomerID = req.CustomerID
 	entry.ProjectID = req.ProjectID
 	entry.ContractID = req.ContractID
+	entry.LocationID = req.LocationID
 	entry.Date = date
 	entry.Minutes = req.Minutes
 	entry.Description = req.Description
@@ -242,6 +246,9 @@ func UpdateTimeEntry(c *gin.Context) {
 	}
 	if req.ContractID == nil {
 		database.DB.Model(&entry).Update("contract_id", nil)
+	}
+	if req.LocationID == nil {
+		database.DB.Model(&entry).Update("location_id", nil)
 	}
 	if req.StartTime == nil {
 		database.DB.Model(&entry).Update("start_time", nil)

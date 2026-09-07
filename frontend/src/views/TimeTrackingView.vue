@@ -1486,8 +1486,10 @@ async function loadLocationsForCustomer(customerId) {
 // Distance (in km/mi) to auto-fill for newly created entries on a row, keyed by row.key —
 // seeded either from the add-row location picker or from the per-cell distance popup's
 // location picker. Session-only: not persisted, since each created entry stores its own
-// distance value going forward.
+// distance value going forward. rowLocationId is the matching CustomerLocation id, stamped
+// onto newly created entries so their own location association survives from the start.
 const rowLocationDistance = ref({})
+const rowLocationId = ref({})
 
 function locationsWithDistance(customerId) {
   return (locationsByCustomer.value[customerId] || []).filter(l => l.travel_distance != null)
@@ -2356,6 +2358,7 @@ async function restoreCellChange(change) {
   const payload = {
     customer_id: change.customer_id ?? null,
     project_id: change.project_id ?? null,
+    location_id: before.location_id ?? null,
     date: change.dateISO,
     minutes: before.minutes,
     description: change.description,
@@ -2436,6 +2439,7 @@ async function onCellBlur(row, dateISO, rawVal) {
           customer_id:  row.customer_id  || null,
           project_id:   row.project_id   || null,
           contract_id:  row.contract_id  || null,
+          location_id:  existing.location_id ?? null,
           date:         dateISO,
           minutes:      0,
           description:  row.description,
@@ -2458,6 +2462,7 @@ async function onCellBlur(row, dateISO, rawVal) {
         customer_id:  row.customer_id  || null,
         project_id:   row.project_id   || null,
         contract_id:  row.contract_id  || null,
+        location_id:  existing.location_id ?? null,
         date:         dateISO,
         minutes,
         description:  row.description,
@@ -2474,6 +2479,7 @@ async function onCellBlur(row, dateISO, rawVal) {
         customer_id:  row.customer_id  || null,
         project_id:   row.project_id   || null,
         contract_id:  row.contract_id  || null,
+        location_id:  rowLocationId.value[row.key] ?? null,
         date:         dateISO,
         minutes,
         description:  row.description,
@@ -2537,15 +2543,22 @@ function onRowFieldDblClick(row) {
 
 function startEditRow(row) {
   cancelDeleteRow()
+  // Prefer the location actually saved on one of this row's entries (survives reload);
+  // fall back to the session-only rowLocationId/rowLocationDistance cache for a row that
+  // has no entries yet (or a stale distance-value match as a last resort).
+  const entryWithLocation = rawEntries.value.find(
+    e => rowKey(e.customer_id, e.project_id, e.description) === row.key && e.location_id != null
+  )
   const knownDistance = rowLocationDistance.value[row.key]
   const matchedLocation = knownDistance != null
     ? locationsWithDistance(row.customer_id).find(l => l.travel_distance === knownDistance)
     : null
+  const locationId = entryWithLocation?.location_id ?? rowLocationId.value[row.key] ?? matchedLocation?.id ?? null
   editForm.value = {
     customer_id: row.customer_id,
     project_id:  row.project_id,
     contract_id: row.contract_id || null,
-    location_id: matchedLocation?.id || null,
+    location_id: locationId,
     description: row.description,
   }
   loadContractsForCustomer(row.customer_id)
@@ -2602,10 +2615,15 @@ async function confirmEditRow(row) {
 
   if (newLocation) {
     rowLocationDistance.value[newKey] = newLocation.travel_distance
+    rowLocationId.value[newKey] = newLocation.id
   } else if (newKey !== row.key && rowLocationDistance.value[row.key] != null) {
     rowLocationDistance.value[newKey] = rowLocationDistance.value[row.key]
+    rowLocationId.value[newKey] = rowLocationId.value[row.key]
   }
-  if (newKey !== row.key) delete rowLocationDistance.value[row.key]
+  if (newKey !== row.key) {
+    delete rowLocationDistance.value[row.key]
+    delete rowLocationId.value[row.key]
+  }
 
   const toUpdate = rawEntries.value.filter(
     e => rowKey(e.customer_id, e.project_id, e.description) === row.key
@@ -2616,10 +2634,12 @@ async function confirmEditRow(row) {
       // this week for this row — but only ones that already had a distance set;
       // entries deliberately left blank (no travel that day) stay blank.
       const distance = (newLocation && e.distance != null) ? newLocation.travel_distance : (e.distance ?? null)
+      const locationId = (newLocation && e.distance != null) ? newLocation.id : (e.location_id ?? null)
       const { data } = await timeEntriesApi.update(e.id, {
         customer_id:  r.customer_id  || null,
         project_id:   r.project_id   || null,
         contract_id:  r.contract_id  || null,
+        location_id:  locationId,
         date:         e.date.slice(0, 10),
         minutes:      e.minutes,
         description:  r.description,
@@ -2821,11 +2841,12 @@ function getSelectionRect() {
 function snapshotCellData(row, dateISO) {
   const entry = getEntry(row, dateISO)
   return {
-    minutes:   entry?.minutes    ?? 0,
-    startTime: entry?.start_time ?? null,
-    endTime:   entry?.end_time   ?? null,
-    isHoliday: entry?.is_holiday ?? false,
-    distance:  entry?.distance   ?? null,
+    minutes:    entry?.minutes     ?? 0,
+    startTime:  entry?.start_time  ?? null,
+    endTime:    entry?.end_time    ?? null,
+    isHoliday:  entry?.is_holiday  ?? false,
+    distance:   entry?.distance    ?? null,
+    locationId: entry?.location_id ?? null,
   }
 }
 
@@ -2992,6 +3013,7 @@ async function pasteCellDataOne(row, dateISO, src) {
         const { data } = await timeEntriesApi.update(existing.id, {
           customer_id: row.customer_id || null,
           project_id:  row.project_id  || null,
+          location_id: src.locationId,
           date:        dateISO,
           minutes:     src.minutes,
           description: row.description,
@@ -3006,6 +3028,7 @@ async function pasteCellDataOne(row, dateISO, src) {
         const { data } = await timeEntriesApi.create({
           customer_id:  row.customer_id  || null,
           project_id:   row.project_id   || null,
+          location_id:  src.locationId,
           date:         dateISO,
           minutes:      src.minutes,
           description:  row.description,
@@ -3268,7 +3291,7 @@ function openDistPopup(row, dateISO, event) {
   distPopupVal.value = existing?.distance != null ? String(existing.distance) : ''
   distPopupRow.value = row
   distPopupDate.value = dateISO
-  distPopupLocationSel.value = ''
+  distPopupLocationSel.value = existing?.location_id ?? ''
   if (row.customer_id) loadLocationsForCustomer(row.customer_id)
   const rect = event?.currentTarget?.getBoundingClientRect()
   const scrollEl = event?.currentTarget?.closest('.tt-scroll')
@@ -3285,7 +3308,7 @@ function openDistPopup(row, dateISO, event) {
 // set, so re-picking a row's standard location also corrects days already logged —
 // not just new ones going forward. The currently-open cell is excluded: it's saved
 // through the normal popup Save flow (or immediately below, for a direct pick).
-async function syncRowDistance(rowKeyValue, distance, excludeDateISO) {
+async function syncRowDistance(rowKeyValue, distance, excludeDateISO, locationId = null) {
   const entries = rawEntries.value.filter(e =>
     e.distance != null &&
     e.date.slice(0, 10) !== excludeDateISO &&
@@ -3297,6 +3320,7 @@ async function syncRowDistance(rowKeyValue, distance, excludeDateISO) {
         customer_id: e.customer_id || null,
         project_id:  e.project_id  || null,
         contract_id: e.contract_id || null,
+        location_id: locationId,
         date:        e.date.slice(0, 10),
         minutes:     e.minutes,
         description: e.description,
@@ -3319,8 +3343,9 @@ async function applyDistPopupLocation() {
   if (!loc || !row) return
   distPopupVal.value = String(loc.travel_distance)
   rowLocationDistance.value[row.key] = loc.travel_distance
+  rowLocationId.value[row.key] = loc.id
   await applyDistPopup(row, distPopupDate.value)
-  await syncRowDistance(row.key, loc.travel_distance, distPopupDate.value)
+  await syncRowDistance(row.key, loc.travel_distance, distPopupDate.value, loc.id)
 }
 
 async function applyDistPopup(row, dateISO) {
@@ -3335,6 +3360,7 @@ async function applyDistPopup(row, dateISO) {
       customer_id: row.customer_id || null,
       project_id:  row.project_id  || null,
       contract_id: row.contract_id || null,
+      location_id: distPopupLocationSel.value || null,
       date:        dateISO,
       minutes:     existing.minutes,
       description: row.description,
@@ -3363,6 +3389,7 @@ async function clearDistPopup(row, dateISO) {
       customer_id: row.customer_id || null,
       project_id:  row.project_id  || null,
       contract_id: row.contract_id || null,
+      location_id: null,
       date:        dateISO,
       minutes:     existing.minutes,
       description: row.description,
@@ -3378,6 +3405,7 @@ async function clearDistPopup(row, dateISO) {
   } finally {
     if (savingCell.value === ck) savingCell.value = ''
     distPopupKey.value = ''
+    distPopupLocationSel.value = ''
   }
 }
 
@@ -3560,6 +3588,7 @@ async function saveCalendarEntry(payload) {
       customer_id: payload.customer_id,
       project_id: payload.project_id,
       contract_id: payload.contract_id ?? null,
+      location_id: payload.location_id ?? null,
       date: payload.date,
       minutes: payload.minutes,
       description: payload.description,
@@ -3599,6 +3628,7 @@ async function applyCalendarEntryTimes({ entry, newDate, newStartTime, newEndTim
       customer_id: entry.customer_id,
       project_id: entry.project_id,
       contract_id: entry.contract_id,
+      location_id: entry.location_id,
       date: newDate,
       minutes: newMinutes,
       description: entry.description,
@@ -4188,7 +4218,7 @@ function normalizeMacroTimePair(startRaw, endRaw) {
   return { start, end, valid: true, hasValue: true }
 }
 
-async function upsertMacroCell(row, dateISO, minutes, distance, startRaw, endRaw) {
+async function upsertMacroCell(row, dateISO, minutes, distance, startRaw, endRaw, locationId = null) {
   const existing = getEntry(row, dateISO)
   const tp = normalizeMacroTimePair(startRaw, endRaw)
   if (!tp.valid) throw new Error('invalid-time-range')
@@ -4204,6 +4234,7 @@ async function upsertMacroCell(row, dateISO, minutes, distance, startRaw, endRaw
     customer_id: row.customer_id || null,
     project_id: row.project_id || null,
     contract_id: row.contract_id || null,
+    location_id: locationId || null,
     date: dateISO,
     minutes,
     description: row.description,
@@ -4245,19 +4276,21 @@ async function applyMacroTemplate(macro = activeMacro.value, startDayIndex = 0) 
           distance: Math.max(0, parseFloat(rowDef.day1_distance) || 0),
           start: rowDef.day1_start,
           end: rowDef.day1_end,
+          locationId: rowDef.day1_location_id || null,
         },
         {
           minutes: parseMacroTimeInput(rowDef.day2_minutes, timeNotation.value),
           distance: Math.max(0, parseFloat(rowDef.day2_distance) || 0),
           start: rowDef.day2_start,
           end: rowDef.day2_end,
+          locationId: rowDef.day2_location_id || null,
         },
       ]
       for (let di = 0; di < targetDays.length; di++) {
         const dateISO = targetDays[di]
         const pattern = alternating ? dayPattern[di % 2] : dayPattern[0]
         undoItems.push({ row, dateISO, before: snapshotCell(row, dateISO) })
-        await upsertMacroCell(row, dateISO, pattern.minutes, pattern.distance, pattern.start, pattern.end)
+        await upsertMacroCell(row, dateISO, pattern.minutes, pattern.distance, pattern.start, pattern.end, pattern.locationId)
       }
     }
     if (undoItems.length) {
@@ -4320,7 +4353,10 @@ function confirmNewRow() {
   const k = rowKey(r.customer_id, r.project_id, r.description)
   if (r.location_id) {
     const loc = locationsWithDistance(r.customer_id).find(l => l.id === r.location_id)
-    if (loc) rowLocationDistance.value[k] = loc.travel_distance
+    if (loc) {
+    rowLocationDistance.value[k] = loc.travel_distance
+    rowLocationId.value[k] = loc.id
+  }
   }
   if (!allRows.value.find(x => x.key === k)) {
     localRows.value.push({

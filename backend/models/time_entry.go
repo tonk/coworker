@@ -38,6 +38,8 @@ type TimeEntry struct {
 	Contract    *Contract `gorm:"foreignKey:ContractID" json:"contract,omitempty"`
 	TicketID    *uint     `gorm:"index" json:"ticket_id,omitempty"`
 	Ticket      *Ticket   `gorm:"foreignKey:TicketID" json:"ticket,omitempty"`
+	LocationID  *uint             `gorm:"index" json:"location_id,omitempty"`
+	Location    *CustomerLocation `gorm:"foreignKey:LocationID" json:"location,omitempty"`
 	Date        time.Time `gorm:"not null;index" json:"date"`
 	Minutes     int     `gorm:"not null" json:"minutes"`
 	Description string  `json:"description"`

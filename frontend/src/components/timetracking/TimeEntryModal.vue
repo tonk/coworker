@@ -103,16 +103,18 @@ const form = reactive({
   start_time: source.start_time ?? '',
   end_time: source.end_time ?? '',
   distance: source.distance ?? null,
+  location_id: source.location_id ?? null,
 })
 
 const projectOptions = computed(() => filterProjectsForCustomer(form.customer_id, {
   allProjects: props.allProjects, ttCustomers: props.ttCustomers, ttProjects: props.ttProjects, projects: props.projects,
 }))
 
-// Locations (with a standard travel distance) for the selected customer — used to
-// quickly fill the distance field; the value itself stays freely editable afterward.
+// Locations (with a standard travel distance) for the selected customer — picking one
+// fills the distance field and is remembered on the entry via form.location_id; the
+// distance value itself stays freely editable afterward.
 const locationsByCustomer = ref({})
-const locationSel = ref('')
+const locationSel = ref(source.location_id ?? '')
 
 async function loadLocations(customerId) {
   if (!customerId || locationsByCustomer.value[customerId]) return
@@ -125,6 +127,7 @@ if (form.customer_id) loadLocations(form.customer_id)
 
 watch(() => form.customer_id, (id) => {
   locationSel.value = ''
+  form.location_id = null
   loadLocations(id)
 })
 
@@ -139,7 +142,10 @@ function formatLocationLabel(loc) {
 
 function applyLocationDistance() {
   const loc = locationOptions.value.find(l => l.id === locationSel.value)
-  if (loc) form.distance = loc.travel_distance
+  if (loc) {
+    form.distance = loc.travel_distance
+    form.location_id = loc.id
+  }
 }
 
 // Auto-insert a colon after 2 digits, mirroring the existing time-popup input UX.
@@ -183,6 +189,7 @@ function onSave() {
     start_time: fmtWallClock(startMinutes.value),
     end_time: fmtWallClock(endMinutes.value),
     distance: form.distance || null,
+    location_id: form.location_id || null,
   })
 }
 </script>
