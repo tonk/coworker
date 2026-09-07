@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.26.0 — 2026-09-07
+
+### Added
+- **Time-tracking macro rows now have a Location picker** next to each distance field (both single-day and alternating A/B patterns) — pick a customer location to auto-fill the row's travel distance, the same convenience already available in the weekly grid's add/edit-row forms and the calendar entry modal. The picked location is saved with the macro so it's remembered next time you edit it.
+
 ## v0.25.2 — 2026-09-07
 
 ### Fixed

@@ -8,9 +8,9 @@
 A self-hosted, multi-user project management tool with Kanban and Scrum boards, real-time
 collaboration, direct messaging with 1:1 and group video chat, time tracking, and a ticket API.
 
-## Latest release (v0.25.2)
+## Latest release (v0.26.0)
 
-- **Fixed** — the Calendar sub-view of Log Time was missing its bottom toolbar (add row, run macro, copy previous week, undo, exports) entirely; it's now shared with the table view.
+- **Added** — time-tracking macro rows now have a Location picker to auto-fill travel distance, matching the weekly grid and calendar entry forms.
 
 ## Experiment
 
@@ -344,7 +344,7 @@ See [INSTALL.md](INSTALL.md) for full instructions including:
 - **Linked cards (cross-references)** — link any two cards across projects; linked cards appear in the card detail with their reference, title, current column, and open/closed status; opening a linked card shows a ← back link to return to the originating card; remove a link at any time
 - **Comment replies** — reply to any comment; replies are visually indented
 - **Time tracking** — log hours and minutes spent directly on a card; the weekly timesheet also supports time-tracking-only projects and customers (lightweight entries that don't create a board or CRM record), managed via the ⚙ button in the time-tracking view; each time-tracking project can carry an *undeclarable minutes* value (travel time, holidays, etc.) that is automatically subtracted from totals in the sheet, report, PDF, and XLSX export
-- **Travel distance auto-fill** — pick one of a customer's locations from the weekly grid (add row, edit row, or the per-cell distance popup) or the calendar entry editor to auto-fill the standard travel distance, staying freely editable for day-to-day variation; re-picking a row's location also corrects that week's already-logged distances
+- **Travel distance auto-fill** — pick one of a customer's locations from the weekly grid (add row, edit row, or the per-cell distance popup), the calendar entry editor, or a time macro row to auto-fill the standard travel distance, staying freely editable for day-to-day variation; re-picking a row's location also corrects that week's already-logged distances
 - **Time tracking calendar view** — toggle the Log Time tab between the weekly table and a drag-and-drop calendar: entries render as blocks positioned by start/end time, draggable to move between days/times and resizable to change duration; right-click or click-drag an empty slot to create a new entry; zoomable grid density (remembered per browser); blocks color-coded per customer or per project (switchable via a "Calendar block color" user setting); a "Log Time view" user setting picks which one opens by default
 - **Global search** — the search bar in the header matches card titles/descriptions, card comments, chat and direct messages, ticket subjects, and time-entry descriptions, scoped to what you have access to; clicking a comment or time-entry result jumps straight to and highlights it
 - **Search & replace** — find and replace text across cards, card comments, direct messages, tickets, and time entries; pick which categories to include, preview every match (with a before/after snippet) before anything changes, and matches you don't have permission to edit are shown greyed out and can't be applied; the 20-per-category preview limit is adjustable up to 500

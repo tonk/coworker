@@ -1,5 +1,5 @@
 = WarmDesk — User Guide
-:revnumber: v0.25.2
+:revnumber: v0.26.0
 :revdate: 2026-09-07
 Ton Kersten <tonk@smartowl.nl>
 ifdef::backend-pdf[]
@@ -1194,6 +1194,7 @@ For every row you can preset:
 * Customer and project
 * Activity (description)
 * Hours, optional start/end times (`HH:MM`), and distance — one set per day when *Alternating A/B pattern* is off, or separate *Pattern A* and *Pattern B* columns when it is on
+* *Location* — if the row's customer has one or more <<customers,locations>> with a standard travel distance, pick one to auto-fill the distance field for that row (or for each pattern, when alternating); the distance stays freely editable afterwards, same as elsewhere — see <<travel-distance-auto-fill,Travel distance auto-fill>>
 
 Use *Add Row* / *Remove* to change how many rows the macro creates.
 The default teaching-block example ships with four rows (travel out, preparation, teaching, travel home).
